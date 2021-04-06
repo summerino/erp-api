@@ -1,0 +1,27 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq.Expressions;
+using ERP_API.Domain.Models;
+using ERP_API.Model;
+using Swift.Framework.Model;
+
+namespace ERP_API.Domain.Interfaces
+{
+    public interface IGeneralService<T> where T : class
+    {
+        DataSourceResult GetData(int take, int skip, IEnumerable<Filter> filter, IEnumerable<Sort> sort);
+
+        DataSourceResult GetData<TEntity>(int take, int skip, IEnumerable<Filter> filter, IEnumerable<Sort> sort)
+            where TEntity : class;
+
+        SaveResult Insert(T data);
+
+        SaveResult Update(T data);
+
+        SaveResult Update(T data, params Expression<Func<T, object>>[] properties);
+
+        SaveResult ReverseUpdate(T data, params Expression<Func<T, object>>[] properties);
+
+        string GetNewCode(string code, DateTime? date = null);
+    }
+}
