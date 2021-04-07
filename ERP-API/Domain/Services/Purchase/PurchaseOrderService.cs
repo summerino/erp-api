@@ -1,15 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.EntityFrameworkCore;
 using ERP_API.Domain.Entities;
 using ERP_API.Domain.Entities.Purchase;
 using ERP_API.Domain.Interfaces.Purchase;
 using ERP_API.Domain.Models;
-using ERP_API.Extensions;
-using ERP_API.Model;
 using ERP_API.Model.Purchase;
-using Swift.Framework.Model;
 
 namespace ERP_API.Domain.Services.Purchase
 {
@@ -20,9 +16,18 @@ namespace ERP_API.Domain.Services.Purchase
         {
         }
 
-        public IEnumerable<VwPurchaseOrderDetail> GetDetailData(string code)
+        public IEnumerable<VwPurchaseOrderDetail> GetDetailData(string code, bool? fullReceived)
         {
-            return Db.VwPurchaseOrderDetails.Where(x => x.Code == code).OrderBy(x => x.LineNo);
+            var data = Db.VwPurchaseOrderDetails.Where(x => x.Code == code);
+
+            if (fullReceived.HasValue)
+            {
+                data = (bool) fullReceived
+                    ? data.Where(x => x.Qty <= x.QtyRcv)
+                    : data.Where(x => x.Qty > x.QtyRcv);
+            }
+
+            return data.OrderBy(x => x.LineNo);
         }
 
         public SaveResult Insert(PurchaseOrderRequest data)
@@ -30,7 +35,6 @@ namespace ERP_API.Domain.Services.Purchase
             var result = new SaveResult(false);
 
             using var transaction = Db.Database.BeginTransaction();
-
             try
             {
                 // Get new code
@@ -61,10 +65,9 @@ namespace ERP_API.Domain.Services.Purchase
                         QtyRcv = 0,
                         UnitPrice = item.UnitPrice,
                         Disc = item.Disc,
-                        NettPrice = item.NettPrice,
-                        IncludeTax = item.IncludeTax,
                         TaxId = item.TaxId,
                         TaxAmount = item.TaxAmount,
+                        NettPrice = item.NettPrice,
                         Total = item.Total,
                         Dpp = item.Dpp,
                         Notes = item.Notes,
@@ -97,7 +100,6 @@ namespace ERP_API.Domain.Services.Purchase
             var result = new SaveResult(false);
 
             using var transaction = Db.Database.BeginTransaction();
-
             try
             {
                 // Checking mark header data
@@ -146,10 +148,9 @@ namespace ERP_API.Domain.Services.Purchase
                             QtyRcv = 0,
                             UnitPrice = item.UnitPrice,
                             Disc = item.Disc,
-                            NettPrice = item.NettPrice,
-                            IncludeTax = item.IncludeTax,
                             TaxId = item.TaxId,
                             TaxAmount = item.TaxAmount,
+                            NettPrice = item.NettPrice,
                             Total = item.Total,
                             Dpp = item.Dpp,
                             Notes = item.Notes,

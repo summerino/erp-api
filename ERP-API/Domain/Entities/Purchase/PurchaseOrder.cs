@@ -46,6 +46,8 @@ namespace ERP_API.Domain.Entities.Purchase
         [Column(TypeName = "decimal(18, 2)")]
         public decimal FinalDisc { get; set; }
 
+        public bool IncludeTax { get; set; }
+
         [Column(TypeName = "decimal(18, 2)")]
         public decimal TaxAmount { get; set; }
 
@@ -62,7 +64,6 @@ namespace ERP_API.Domain.Entities.Purchase
         public string RcvStatus { get; set; }
     }
 
-    [Table("vw_po_h", Schema = "dbo")]
     public class VwPurchaseOrderHeader : BaseEntityWithMark
     {
         [StringLength(17)]
@@ -94,6 +95,8 @@ namespace ERP_API.Domain.Entities.Purchase
         public decimal FinalDiscPercent { get; set; }
 
         public decimal FinalDisc { get; set; }
+
+        public bool IncludeTax { get; set; }
 
         public decimal TaxAmount { get; set; }
 
@@ -159,8 +162,6 @@ namespace ERP_API.Domain.Entities.Purchase
         [Column(TypeName = "decimal(19, 6)")]
         public decimal Disc { get; set; }
 
-        public bool IncludeTax { get; set; }
-
         public int? TaxId { get; set; }
 
         [Column(TypeName = "decimal(19, 6)")]
@@ -196,7 +197,6 @@ namespace ERP_API.Domain.Entities.Purchase
         public int Type { get; set; }
     }
 
-    [Table("vw_po_d", Schema = "dbo")]
     public class VwPurchaseOrderDetail
     {
         public long Id { get; set; }
@@ -211,7 +211,7 @@ namespace ERP_API.Domain.Entities.Purchase
         public int UomId { get; set; }
 
         public int UnitId { get; set; }
-        
+
         public decimal Qty { get; set; }
 
         public decimal? Length { get; set; }
@@ -231,10 +231,8 @@ namespace ERP_API.Domain.Entities.Purchase
         public decimal? QtyRcv { get; set; }
 
         public decimal UnitPrice { get; set; }
-        
-        public decimal Disc { get; set; }
 
-        public bool IncludeTax { get; set; }
+        public decimal Disc { get; set; }
 
         public int? TaxId { get; set; }
 
@@ -269,11 +267,11 @@ namespace ERP_API.Domain.Entities.Purchase
 
         public string ItemName { get; set; }
 
-        public int ItemUomBuyId { get; set; }
+        public int? ItemUomBuyId { get; set; }
 
         public string ItemUomBuyName { get; set; }
 
-        public decimal ItemBuyPrice { get; set; }
+        public decimal? ItemBuyPrice { get; set; }
 
         public string UomInitial { get; set; }
         

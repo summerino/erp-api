@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
-using ERP_API.Domain.Entities.Purchase;
 using Microsoft.AspNetCore.Mvc;
+using ERP_API.Domain.Entities.Purchase;
 using ERP_API.Domain.Interfaces.Inventory;
 using ERP_API.Domain.Interfaces.Purchase;
 using ERP_API.Domain.Models;
@@ -46,19 +46,19 @@ namespace ERP_API.Controllers.Purchase
         }
 
         [HttpGet("item")]
-        public IActionResult GetDetailData(string code)
+        public IActionResult GetDetailData(string code, bool? fullReceived)
         {
             var uomC =_uomC.GetData().ToList();
 
-            var data = _po.GetDetailData(code)
+            var data = _po.GetDetailData(code, fullReceived)
                 .Select(x => new
                 {
                     x.Id, x.Code, x.LineNo, x.ItemId, x.ItemName, x.UomId, x.UnitId, x.UnitName, x.Qty,
                     x.Length, x.Width, x.Height, x.Weight, x.DimensionMeasurement, x.WeightMeasurement,
-                    x.QtyRcv, x.UnitPrice, x.Disc, x.IncludeTax, x.TaxId, x.TaxAmount,
+                    x.QtyRcv, x.UnitPrice, x.Disc, x.TaxId, x.TaxAmount,
                     x.NettPrice, x.Total, x.Dpp, x.Notes,
                     x.CoaInventory, x.CoaCogs, x.CoaPurc, x.CoaPurcDisc, x.CoaPurcReturn, x.Type,
-                    units = uomC.Where(u => u.UomId == x.UomId)
+                    Units = uomC.Where(u => u.UomId == x.UomId)
                         .Select(u => new
                         {
                             u.Id, u.UomId, u.UnitToConvert, u.UnitEquivalent,
@@ -81,7 +81,7 @@ namespace ERP_API.Controllers.Purchase
                 TableData = data
             });
         }
-
+        
         [HttpPost]
         public IActionResult OnPost(PurchaseOrderRequest data)
         {

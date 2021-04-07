@@ -108,7 +108,6 @@ namespace ERP_API.Domain.Entities.Inventory
         public string CoaExpense { get; set; }
     }
 
-    [Table("vw_items", Schema = "dbo")]
     public class VwItem : BaseEntityWithActive
     {
         public int Id { get; set; }

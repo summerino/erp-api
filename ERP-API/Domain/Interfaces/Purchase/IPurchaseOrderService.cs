@@ -7,7 +7,7 @@ namespace ERP_API.Domain.Interfaces.Purchase
 {
     public interface IPurchaseOrderService : IGeneralService<PurchaseOrderHeader>
     {
-        IEnumerable<VwPurchaseOrderDetail> GetDetailData(string code);
+        IEnumerable<VwPurchaseOrderDetail> GetDetailData(string code, bool? fullReceived = null);
 
         SaveResult Insert(PurchaseOrderRequest data);
 

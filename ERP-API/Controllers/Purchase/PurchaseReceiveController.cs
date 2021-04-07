@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
+using ERP_API.Domain.Entities.Purchase;
 using Microsoft.AspNetCore.Mvc;
 using ERP_API.Domain.Interfaces.Inventory;
 using ERP_API.Domain.Interfaces.Purchase;
@@ -34,8 +35,8 @@ namespace ERP_API.Controllers.Purchase
                 ? JsonConvert.DeserializeObject<List<Sort>>(sorts)
                 : null;
 
-            var data = _rcv.GetData(skip, take, null, sortLists);
-            
+            var data = _rcv.GetData<VwPurchaseReceiveHeader>(skip, take, null, sortLists);
+
             return Ok(new MasterViewDto
             {
                 RowCount = data.Total,
@@ -46,24 +47,14 @@ namespace ERP_API.Controllers.Purchase
         [HttpGet("item")]
         public IActionResult GetDetailData(string code)
         {
-            var uomC =_uomC.GetData().ToList();
-
             var data = _rcv.GetDetailData(code)
                 .Select(x => new
                 {
-                    x.Id, x.Code, x.LineNo, x.ItemId, x.ItemName, x.UomId, x.UnitId, x.UnitName, x.Qty,
+                    x.Id, x.Code, x.LineNo, x.ItemId, x.ItemName, x.OrderQty, x.OutstandingQty, x.Qty,
+                    x.UomId, x.UnitId, x.UnitName,
                     x.Length, x.Width, x.Height, x.Weight, x.DimensionMeasurement, x.WeightMeasurement,
-                    x.QtyRcv, x.UnitPrice, x.Disc, x.IncludeTax, x.TaxId, x.TaxAmount,
-                    x.NettPrice, x.Total, x.Dpp, x.Notes,
-                    x.CoaInventory, x.CoaCogs, x.CoaPurc, x.CoaPurcDisc, x.CoaPurcReturn, x.Type,
-                    units = uomC.Where(u => u.UomId == x.UomId)
-                        .Select(u => new
-                        {
-                            u.Id, u.UomId, u.UnitToConvert, u.UnitEquivalent,
-                            u.Conversion, u.IsBaseUnit, u.Seq
-                        })
-                        .OrderBy(u => u.Seq)
-                        .ToList(),
+                    x.UnitPrice, x.Disc, x.TaxId, x.TaxAmount, x.NettPrice, x.Total, x.Dpp,
+                    x.WarehouseCode, x.Type,
                     OldUnitId = x.ItemUomBuyId,
                     OldUnitName = x.ItemUomBuyName,
                     OldUnitPrice = x.ItemBuyPrice,
@@ -81,7 +72,7 @@ namespace ERP_API.Controllers.Purchase
         }
 
         [HttpPost]
-        public IActionResult OnPost(PurchaseOrderRequest data)
+        public IActionResult OnPost(PurchaseReceiveRequest data)
         {
             // Validate process
             var (isValid, message) = Validate(data);
@@ -101,7 +92,7 @@ namespace ERP_API.Controllers.Purchase
         }
 
         [HttpPut("{code}")]
-        public IActionResult OnPut(string code, PurchaseOrderRequest data)
+        public IActionResult OnPut(string code, PurchaseReceiveRequest data)
         {
             // Validate process
             var (isValid, message) = Validate(data);
@@ -125,7 +116,7 @@ namespace ERP_API.Controllers.Purchase
             return Ok(result);
         }
 
-        private static (bool, string) Validate(PurchaseOrderRequest data)
+        private static (bool, string) Validate(PurchaseReceiveRequest data)
         {
             if (!data.ItemDetails.Any())
                 return (false, "Item details can't be empty.");

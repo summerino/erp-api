@@ -3,7 +3,6 @@ using System.Linq;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ERP_API.Dtos;
-using Microsoft.AspNetCore.Cors;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Swift.Framework;
@@ -31,45 +30,44 @@ namespace ERP_API.Controllers
                 //invalid - master belum di setup utk table ini atau inactive, return 404?
                 return NotFound();
             }
-            else
+
+            WhereFilter whFilter = null;
+            if (!string.IsNullOrWhiteSpace(filters))
             {
-                WhereFilter whFilter = null;
-                if (!string.IsNullOrWhiteSpace(filters))
+                whFilter = new WhereFilter
                 {
-                    whFilter = new WhereFilter
-                    {
-                        Adjective = FilterAdjective.AND,
-                        Statements = JsonConvert.DeserializeObject<List<WhereStatement>>(filters)
-                    };
-                }
-
-                var sortLists = !string.IsNullOrWhiteSpace(sorts)
-                    ? JsonConvert.DeserializeObject<List<Sort>>(sorts)
-                    : null;
-
-                using var dataAccess = builder.CreateDataAccess(masterConfig.ConnectionString);
-                var tableData =
-                    dataAccess.GetData(
-                        masterConfig.SchemaName, masterConfig.TableName,
-                        fieldNames?.Split(','), whFilter, sortLists, -1, -1);
-
-                var toReturn = new MasterViewDto {
-                    RowCount = tableData.RowCount,
-                    TableData = tableData.TableData,
-                    PKColumnName = masterConfig.PKColumnName
+                    Adjective = FilterAdjective.AND,
+                    Statements = JsonConvert.DeserializeObject<List<WhereStatement>>(filters)
                 };
-
-                if (includeMetaData.GetValueOrDefault(true))
-                {
-                    var metadata = dataAccess.GetGridViewSchema(masterConfig.SchemaName, masterConfig.TableName);
-                    var hiddenColumns = masterConfig.HiddenColumns.Split(',').Select(p => p.Trim());
-                    metadata = metadata.Where((v, i) => v.Value != masterConfig.PKColumnName && !hiddenColumns.Contains( v.Value )).ToList();
-
-                    toReturn.MetaData = metadata;
-                } 
-
-                return Ok(toReturn);
             }
+
+            var sortLists = !string.IsNullOrWhiteSpace(sorts)
+                ? JsonConvert.DeserializeObject<List<Sort>>(sorts)
+                : null;
+
+            using var dataAccess = builder.CreateDataAccess(masterConfig.ConnectionString);
+
+            var tableData =
+                dataAccess.GetData(
+                    masterConfig.SchemaName, masterConfig.TableName,
+                    fieldNames?.Split(','), whFilter, sortLists, -1, -1);
+
+            var toReturn = new MasterViewDto {
+                RowCount = tableData.RowCount,
+                TableData = tableData.TableData,
+                PKColumnName = masterConfig.PKColumnName
+            };
+
+            if (includeMetaData.GetValueOrDefault(true))
+            {
+                var metadata = dataAccess.GetGridViewSchema(masterConfig.SchemaName, masterConfig.TableName);
+                var hiddenColumns = masterConfig.HiddenColumns.Split(',').Select(p => p.Trim());
+                metadata = metadata.Where((v, i) => v.Value != masterConfig.PKColumnName && !hiddenColumns.Contains( v.Value )).ToList();
+
+                toReturn.MetaData = metadata;
+            } 
+
+            return Ok(toReturn);
         }
 
         [HttpGet("addnew")]
@@ -96,33 +94,36 @@ namespace ERP_API.Controllers
 
         // GET api/<MasterViewController>/5
         [HttpGet("{id}")]
-        public IActionResult GetOneData(string id, [FromQueryAttribute] string param)
+        public IActionResult GetOneData(string id, string param, string fieldNames, bool? includeMetaData)
         {
             var builder = new Builder();
-            var toReturn = default(MasterAddEditDto);
             var masterConfig = builder.GetActiveConfiguration(param);
             if (masterConfig is null || masterConfig.IsActive == false)
             {
                 //invalid - master belum di setup utk table ini atau inactive, return 404?
                 return NotFound();
             }
-            else
+
+            var dataAccess = builder.CreateDataAccess(masterConfig.ConnectionString);
+
+            var primaryKeys = new Dictionary<string, object>
             {
-                var dataAccess = builder.CreateDataAccess(masterConfig.ConnectionString);
+                [masterConfig.PKColumnName] = id
+            };
 
+            var tableData =
+                dataAccess.GetOneData(
+                    masterConfig.SchemaName, masterConfig.TableName, primaryKeys, fieldNames?.Split(','));
+
+            var toReturn = new MasterAddEditDto { TableData = tableData };
+
+            if (includeMetaData.GetValueOrDefault(true))
+            {
                 var metadata = dataAccess.GetInputFormSchema(masterConfig.SchemaName, masterConfig.TableName);
-                toReturn = new MasterAddEditDto();
                 toReturn.MetaData = metadata;
-
-                var primaryKeys = new Dictionary<string, object>()
-                {
-                    [masterConfig.PKColumnName] = id
-                };
-                var tableData = dataAccess.GetOneData(masterConfig.SchemaName, masterConfig.TableName, primaryKeys);
-                toReturn.TableData = tableData;
-                return Ok(toReturn);
             }
-            
+
+            return Ok(toReturn);
         }
 
         // POST api/<MasterViewController>

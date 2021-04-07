@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
 
 namespace ERP_API.Entities
 {
@@ -25,6 +26,7 @@ namespace ERP_API.Entities
         public string Mark { get; set; }
     }
 
+    [Keyless]
     public class BaseNewCodeEntity
     {
         public string Value { get; set; }

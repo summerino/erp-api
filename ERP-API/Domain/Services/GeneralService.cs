@@ -89,7 +89,7 @@ namespace ERP_API.Domain.Services
         public string GetNewCode(string code, DateTime? date = null)
         {
             return Db.NewCodes
-                .FromSqlInterpolated($"exec sp_generate_autono {code}, {date}").ToList()
+                .FromSqlInterpolated($"EXEC sp_generate_autono {code}, {date}").ToList()
                 .FirstOrDefault()?.Value;
         }
     }

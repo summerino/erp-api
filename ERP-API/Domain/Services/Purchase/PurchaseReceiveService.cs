@@ -1,15 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.EntityFrameworkCore;
 using ERP_API.Domain.Entities;
 using ERP_API.Domain.Entities.Purchase;
 using ERP_API.Domain.Interfaces.Purchase;
 using ERP_API.Domain.Models;
-using ERP_API.Extensions;
-using ERP_API.Model;
 using ERP_API.Model.Purchase;
-using Swift.Framework.Model;
+using Microsoft.EntityFrameworkCore;
 
 namespace ERP_API.Domain.Services.Purchase
 {
@@ -19,25 +16,17 @@ namespace ERP_API.Domain.Services.Purchase
             : base(db)
         {
         }
-
-        public DataSourceResult GetData(int take, int skip, IEnumerable<Filter> filter, IEnumerable<Sort> sort)
+        
+        public IEnumerable<VwPurchaseReceiveDetail> GetDetailData(string code)
         {
-            var data = Db.VwPurchaseOrderHeaders;
-
-            return data.ToDataSourceResult(take, skip, filter, sort);
+            return Db.VwPurchaseReceiveDetails.Where(x => x.Code == code).OrderBy(x => x.LineNo);
         }
 
-        public IEnumerable<VwPurchaseOrderDetail> GetDetailData(string code)
-        {
-            return Db.VwPurchaseOrderDetails.Where(x => x.Code == code).OrderBy(x => x.LineNo);
-        }
-
-        public SaveResult Insert(PurchaseOrderRequest data)
+        public SaveResult Insert(PurchaseReceiveRequest data)
         {
             var result = new SaveResult(false);
 
             using var transaction = Db.Database.BeginTransaction();
-
             try
             {
                 // Get new code
@@ -45,46 +34,46 @@ namespace ERP_API.Domain.Services.Purchase
                     
                 // Insert header data
                 data.Code = newCode;
-                Db.PurchaseOrderHeaders.Add(data);
+                Db.PurchaseReceiveHeaders.Add(data);
 
                 // Insert detail data
                 short i = 0;
                 foreach (var item in data.ItemDetails)
                 {
-                    Db.PurchaseOrderDetails.Add(new PurchaseOrderDetail
+                    Db.PurchaseReceiveDetails.Add(new PurchaseReceiveDetail
                     {
                         Code = newCode,
                         LineNo = ++i,
                         ItemId = item.ItemId,
+                        OrderQty = item.OrderQty,
+                        OutstandingQty = item.OutstandingQty,
+                        Qty = item.Qty,
                         UomId = item.UomId,
                         UnitId = item.UnitId,
-                        Qty = item.Qty,
                         Length = item.Length,
                         Width = item.Width,
                         Height = item.Height,
                         Weight = item.Weight,
                         DimensionMeasurement = item.DimensionMeasurement,
                         WeightMeasurement = item.WeightMeasurement,
-                        QtyRcv = 0,
                         UnitPrice = item.UnitPrice,
                         Disc = item.Disc,
-                        NettPrice = item.NettPrice,
-                        IncludeTax = item.IncludeTax,
                         TaxId = item.TaxId,
                         TaxAmount = item.TaxAmount,
+                        NettPrice = item.NettPrice,
                         Total = item.Total,
                         Dpp = item.Dpp,
-                        Notes = item.Notes,
-                        CoaInventory = item.CoaInventory,
-                        CoaCogs = item.CoaCogs,
-                        CoaPurc = item.CoaPurc,
-                        CoaPurcDisc = item.CoaPurcDisc,
-                        CoaPurcReturn = item.CoaPurcReturn,
-                        Type = 0
+                        WarehouseCode = item.WarehouseCode,
+                        Type = item.Type
                     });
                 }
 
+                // Save changes
                 Db.SaveChanges();
+
+                // Execute sp_update_po_mark
+                Db.Database.ExecuteSqlRaw("EXEC sp_update_po_mark {0}", data.PoCode);
+
                 transaction.Commit();
             }
             catch (Exception ex)
@@ -95,39 +84,38 @@ namespace ERP_API.Domain.Services.Purchase
 
             result.Success = true;
             result.Data = data.Code;
-            result.Message = "Success insert purchase order.";
+            result.Message = "Success insert purchase receive.";
             return result;
         }
 
-        public SaveResult Update(PurchaseOrderRequest data)
+        public SaveResult Update(PurchaseReceiveRequest data)
         {
             var result = new SaveResult(false);
 
             using var transaction = Db.Database.BeginTransaction();
-
             try
             {
                 // Checking mark header data
-                if (Db.PurchaseOrderHeaders.Any(x => x.Code == data.Code & x.Mark == "V"))
+                if (Db.PurchaseReceiveHeaders.Any(x => x.Code == data.Code & x.Mark == "V"))
                 {
-                    result.Message = "Can't update purchase order because data already mark as void.";
+                    result.Message = "Can't update purchase receive because data already mark as void.";
                     return result;
                 }
 
                 // Update header data
-                Db.PurchaseOrderHeaders.Update(data);
+                Db.PurchaseReceiveHeaders.Update(data);
                 Db.Entry(data).Property(e => e.Code).IsModified = false;
                 Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
                 Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
 
                 // Delete detail data that doesn't have in data item details
-                var delDetails = Db.PurchaseOrderDetails
+                var delDetails = Db.PurchaseReceiveDetails
                     .Where(d => d.Code == data.Code & !data.ItemDetails.Select(x => x.Id).Contains(d.Id))
                     .ToList();
 
                 foreach (var item in delDetails)
                 {
-                    Db.PurchaseOrderDetails.Remove(item);
+                    Db.PurchaseReceiveDetails.Remove(item);
                 }
 
                 // Update detail data
@@ -136,48 +124,48 @@ namespace ERP_API.Domain.Services.Purchase
                 {
                     if (item.Id == 0)
                     {
-                        Db.PurchaseOrderDetails.Add(new PurchaseOrderDetail
+                        Db.PurchaseReceiveDetails.Add(new PurchaseReceiveDetail
                         {
                             Code = item.Code,
                             LineNo = ++i,
                             ItemId = item.ItemId,
+                            OrderQty = item.OrderQty,
+                            OutstandingQty = item.OutstandingQty,
+                            Qty = item.Qty,
                             UomId = item.UomId,
                             UnitId = item.UnitId,
-                            Qty = item.Qty,
                             Length = item.Length,
                             Width = item.Width,
                             Height = item.Height,
                             Weight = item.Weight,
                             DimensionMeasurement = item.DimensionMeasurement,
                             WeightMeasurement = item.WeightMeasurement,
-                            QtyRcv = 0,
                             UnitPrice = item.UnitPrice,
                             Disc = item.Disc,
-                            NettPrice = item.NettPrice,
-                            IncludeTax = item.IncludeTax,
                             TaxId = item.TaxId,
                             TaxAmount = item.TaxAmount,
+                            NettPrice = item.NettPrice,
                             Total = item.Total,
                             Dpp = item.Dpp,
-                            Notes = item.Notes,
-                            CoaInventory = item.CoaInventory,
-                            CoaCogs = item.CoaCogs,
-                            CoaPurc = item.CoaPurc,
-                            CoaPurcDisc = item.CoaPurcDisc,
-                            CoaPurcReturn = item.CoaPurcReturn,
-                            Type = 0
+                            WarehouseCode = item.WarehouseCode,
+                            Type = item.Type
                         });
                     }
                     else
                     {
                         item.LineNo = ++i;
 
-                        Db.PurchaseOrderDetails.Update(item);
+                        Db.PurchaseReceiveDetails.Update(item);
                         Db.Entry(item).Property(e => e.Code).IsModified = false;
                     }
                 }
 
+                // Save changes
                 Db.SaveChanges();
+
+                // Execute sp_update_po_mark
+                Db.Database.ExecuteSqlRaw("EXEC sp_update_po_mark {0}", data.PoCode);
+
                 transaction.Commit();
             }
             catch (Exception ex)
@@ -188,7 +176,7 @@ namespace ERP_API.Domain.Services.Purchase
 
             result.Success = true;
             result.Data = data.Code;
-            result.Message = "Success update purchase order.";
+            result.Message = "Success update purchase receive.";
             return result;
         }
 
@@ -196,26 +184,41 @@ namespace ERP_API.Domain.Services.Purchase
         {
             var result = new SaveResult(false);
 
-            var data = Db.PurchaseOrderHeaders.Find(code);
+            var data = Db.PurchaseReceiveHeaders.Find(code);
             if (data != null)
             {
                 // Checking mark header data
                 if (data.Mark == "V")
                 {
-                    result.Message = "Can't void purchase order because data already mark as void.";
+                    result.Message = "Can't void purchase receive because data already mark as void.";
                     return result;
                 }
 
-                // Update header data
-                data.Mark = "V";
-                data.UpdatedBy = userId;
-                data.UpdatedDate = DateTime.Now;
+                using var transaction = Db.Database.BeginTransaction();
+                try
+                {
+                    // Update header data
+                    data.Mark = "V";
+                    data.UpdatedBy = userId;
+                    data.UpdatedDate = DateTime.Now;
 
-                Db.SaveChanges();
+                    // Save changes
+                    Db.SaveChanges();
+
+                    // Execute sp_update_po_mark
+                    Db.Database.ExecuteSqlRaw("EXEC sp_update_po_mark {0}", data.PoCode);
+
+                    transaction.Commit();
+                }
+                catch (Exception ex)
+                {
+                    result.Message = ex.InnerException?.Message ?? ex.Message;
+                    return result;
+                }
             }
 
             result.Success = true;
-            result.Message = "Success void purchase order.";
+            result.Message = "Success void purchase receive.";
             return result;
         }
     }

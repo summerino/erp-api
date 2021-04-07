@@ -40,7 +40,9 @@ namespace ERP_API.Domain.Entities
         public DbSet<PurchaseOrderDetail> PurchaseOrderDetails { get; set; }
         public DbSet<VwPurchaseOrderDetail> VwPurchaseOrderDetails { get; set; }
         public DbSet<PurchaseReceiveHeader> PurchaseReceiveHeaders { get; set; }
+        public DbSet<VwPurchaseReceiveHeader> VwPurchaseReceiveHeaders { get; set; }
         public DbSet<PurchaseReceiveDetail> PurchaseReceiveDetails { get; set; }
+        public DbSet<VwPurchaseReceiveDetail> VwPurchaseReceiveDetails { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -65,21 +67,37 @@ namespace ERP_API.Domain.Entities
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // Core Entities
-            modelBuilder.Entity<BaseNewCodeEntity>().HasNoKey();
-
             // Inventory entities
-            modelBuilder.Entity<VwItem>().HasNoKey();
+            modelBuilder.Entity<VwItem>()
+                .HasNoKey()
+                .ToView("vw_items", "dbo");
 
             // Purchase entities
-            modelBuilder.Entity<VwPurchaseOrderHeader>().HasNoKey();
+            modelBuilder.Entity<VwPurchaseOrderHeader>()
+                .HasNoKey()
+                .ToView("vw_po_h", "dbo");
 
             modelBuilder.Entity<PurchaseOrderDetail>(entity =>
                 entity.Property(e => e.Code)
                     .IsRequired()
             );
 
-            modelBuilder.Entity<VwPurchaseOrderDetail>().HasNoKey();
+            modelBuilder.Entity<VwPurchaseOrderDetail>()
+                .HasNoKey()
+                .ToView("vw_po_d", "dbo");
+
+            modelBuilder.Entity<VwPurchaseReceiveHeader>()
+                .HasNoKey()
+                .ToView("vw_pr_h", "dbo");
+
+            modelBuilder.Entity<PurchaseReceiveDetail>(entity =>
+                entity.Property(e => e.Code)
+                    .IsRequired()
+            );
+
+            modelBuilder.Entity<VwPurchaseReceiveDetail>()
+                .HasNoKey()
+                .ToView("vw_pr_d", "dbo");
         }
     }
 }
