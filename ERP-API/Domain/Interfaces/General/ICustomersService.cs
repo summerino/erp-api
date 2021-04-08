@@ -11,10 +11,6 @@ namespace ERP_API.Domain.Interfaces.General
     {
         Customer GetCustomers(string code);
 
-        IEnumerable<Customer> GetAllCustomer();
-
         SaveResult Delete(string code, int userId);
-
-        SaveResult Update(Customer data, int userId);
     }
 }

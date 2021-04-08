@@ -71,7 +71,7 @@ namespace ERP_API.Controllers.General
             data.UpdatedBy = 1;
             data.UpdatedDate = DateTime.Now;
 
-            var result = _cs.Update(data, 1);
+            var result = _cs.Update(data);
 
             return Ok(result);
         }
