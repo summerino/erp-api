@@ -31,7 +31,7 @@ namespace ERP_API.Controllers.Inventory
                     JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
                     JsonConvert.DeserializeObject<List<int>>(!string.IsNullOrWhiteSpace(category) ? category : "[]"));
 
-            return Ok(new MasterViewDto
+            return Ok(new ApiResponse
             {
                 RowCount = data.Total,
                 TableData = data.Data.ToDynamicList()

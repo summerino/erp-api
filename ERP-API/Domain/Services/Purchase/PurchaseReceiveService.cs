@@ -3,10 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using ERP_API.Domain.Entities;
 using ERP_API.Domain.Entities.Purchase;
+using ERP_API.Domain.Extensions;
 using ERP_API.Domain.Interfaces.Purchase;
 using ERP_API.Domain.Models;
+using ERP_API.Model;
 using ERP_API.Model.Purchase;
 using Microsoft.EntityFrameworkCore;
+using Swift.Framework.Model;
 
 namespace ERP_API.Domain.Services.Purchase
 {
@@ -16,7 +19,24 @@ namespace ERP_API.Domain.Services.Purchase
             : base(db)
         {
         }
-        
+
+        public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
+            string search)
+        {
+            var data = Db.VwPurchaseReceiveHeaders.AsQueryable();
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                data = DateTime.TryParse(search, out var searchDate)
+                    ? data.Where(x => x.Date == searchDate)
+                    : data.Where(x =>
+                        x.Code.Contains(search) || x.SupName.Contains(search) || x.PoCode == search ||
+                        x.ReceiveInitial.Contains(search) || x.RefNo.StartsWith(search));
+            }
+
+            return data.ToDataSourceResult(skip, take, filter, sort);
+        }
+
         public IEnumerable<VwPurchaseReceiveDetail> GetDetailData(string code)
         {
             return Db.VwPurchaseReceiveDetails.Where(x => x.Code == code).OrderBy(x => x.LineNo);

@@ -1,11 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Dynamic.Core;
 using ERP_API.Domain.Entities;
 using ERP_API.Domain.Entities.Purchase;
+using ERP_API.Domain.Extensions;
 using ERP_API.Domain.Interfaces.Purchase;
 using ERP_API.Domain.Models;
+using ERP_API.Model;
 using ERP_API.Model.Purchase;
+using Swift.Framework.Model;
 
 namespace ERP_API.Domain.Services.Purchase
 {
@@ -14,6 +18,23 @@ namespace ERP_API.Domain.Services.Purchase
         public PurchaseOrderService(TenantContext db)
             : base(db)
         {
+        }
+
+        public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
+            string search)
+        {
+            var data = Db.VwPurchaseOrderHeaders.AsQueryable();
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                data = DateTime.TryParse(search, out var searchDate)
+                    ? data.Where(x => x.Date == searchDate)
+                    : data.Where(x =>
+                        x.Code.Contains(search) || x.RequestInitial.Contains(search) || x.SupName.Contains(search) ||
+                        x.CurrCode == search);
+            }
+
+            return data.ToDataSourceResult(skip, take, filter, sort);
         }
 
         public IEnumerable<VwPurchaseOrderDetail> GetDetailData(string code, bool? fullReceived)
@@ -28,6 +49,15 @@ namespace ERP_API.Domain.Services.Purchase
             }
 
             return data.OrderBy(x => x.LineNo);
+        }
+
+        public List<dynamic> GetRelatedTransactions(string code)
+        {
+            var data = from pr in Db.PurchaseReceiveHeaders
+                       where pr.PoCode == code && pr.Mark == "A"
+                       select new { pr.Code, pr.Date, pr.Mark };
+
+            return data.ToDynamicList();
         }
 
         public SaveResult Insert(PurchaseOrderRequest data)

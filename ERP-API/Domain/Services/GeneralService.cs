@@ -4,9 +4,9 @@ using System.Linq;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using ERP_API.Domain.Entities;
+using ERP_API.Domain.Extensions;
 using ERP_API.Domain.Interfaces;
 using ERP_API.Domain.Models;
-using ERP_API.Extensions;
 using ERP_API.Model;
 using Swift.Framework.Model;
 

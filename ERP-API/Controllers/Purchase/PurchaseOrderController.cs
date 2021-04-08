@@ -3,11 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 using Microsoft.AspNetCore.Mvc;
-using ERP_API.Domain.Entities.Purchase;
 using ERP_API.Domain.Interfaces.Inventory;
 using ERP_API.Domain.Interfaces.Purchase;
 using ERP_API.Domain.Models;
-using ERP_API.Dtos;
 using ERP_API.Model;
 using ERP_API.Model.Purchase;
 using Newtonsoft.Json;
@@ -30,15 +28,16 @@ namespace ERP_API.Controllers.Purchase
         }
 
         [HttpGet]
-        public IActionResult GetData(string filters, string sorts, int skip, int take)
+        public IActionResult GetData(string search, string filters, string sorts, int skip, int take)
         {
-            var data =
-                _po.GetData<VwPurchaseOrderHeader>(
+            var data = 
+                _po.GetData(
                     skip, take,
                     JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
-                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"));
-            
-            return Ok(new MasterViewDto
+                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
+                    search);
+
+            return Ok(new ApiResponse
             {
                 RowCount = data.Total,
                 TableData = data.Data.ToDynamicList()
@@ -75,13 +74,25 @@ namespace ERP_API.Controllers.Purchase
                 })
                 .ToList<dynamic>();
 
-            return Ok(new MasterViewDto
+            return Ok(new ApiResponse
             {
                 RowCount = data.Count,
                 TableData = data
             });
         }
-        
+
+        [HttpGet("related-trans")]
+        public IActionResult GetRelatedTransactions(string code)
+        {
+            var data = _po.GetRelatedTransactions(code);
+            
+            return Ok(new ApiResponse
+            {
+                RowCount = data.Count,
+                TableData = data
+            });
+        }
+
         [HttpPost]
         public IActionResult OnPost(PurchaseOrderRequest data)
         {
@@ -96,7 +107,7 @@ namespace ERP_API.Controllers.Purchase
             data.CreatedDate = DateTime.Now;
             data.UpdatedBy = data.CreatedBy;
             data.UpdatedDate = data.CreatedDate;
-
+            
             var result = _po.Insert(data);
 
             return Ok(result);

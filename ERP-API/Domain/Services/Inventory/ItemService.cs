@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using ERP_API.Domain.Entities;
+using ERP_API.Domain.Extensions;
 using ERP_API.Domain.Interfaces.Inventory;
-using ERP_API.Extensions;
+using ERP_API.Domain.Models;
 using ERP_API.Model;
 using Swift.Framework.Model;
 
@@ -17,7 +18,8 @@ namespace ERP_API.Domain.Services.Inventory
             _tenantCtx = tenantCtx;
         }
 
-        public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, List<int> category)
+        public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
+            List<int> category)
         {
             var data = _tenantCtx.VwItems.Where(x => x.IsActive);
 
