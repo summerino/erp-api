@@ -9,9 +9,11 @@ using Microsoft.EntityFrameworkCore;
 using ERP_API.Domain.Entities;
 using ERP_API.Domain.Interfaces.Inventory;
 using ERP_API.Domain.Interfaces.Purchase;
+using ERP_API.Domain.Interfaces.General;
 using ERP_API.Domain.Services;
 using ERP_API.Domain.Services.Inventory;
 using ERP_API.Domain.Services.Purchase;
+using ERP_API.Domain.Services.General;
 using ERP_API.Utils;
 using Newtonsoft.Json.Serialization;
 using Swift.Framework;
@@ -71,6 +73,9 @@ namespace ERP_API
             // Purchase services
             services.AddScoped<IPurchaseOrderService, PurchaseOrderService>();
             services.AddScoped<IPurchaseReceiveService, PurchaseReceiveService>();
+
+            // General services
+            services.AddScoped<ICustomersService, CustomersService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -27,6 +27,8 @@ namespace ERP_API.Domain.Entities
         // General entities
         public DbSet<Supplier> Suppliers { get; set; }
         public DbSet<SystemParameter> SystemParameters { get; set; }
+        public DbSet<Customer> Customers { get; set; }
+
 
         // Inventory entities
         public DbSet<Item> Items { get; set; }
