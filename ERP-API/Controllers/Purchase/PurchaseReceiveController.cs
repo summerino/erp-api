@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Mvc;
 using ERP_API.Domain.Interfaces.Inventory;
 using ERP_API.Domain.Interfaces.Purchase;
 using ERP_API.Domain.Models;
-using ERP_API.Dtos;
 using ERP_API.Model;
 using ERP_API.Model.Purchase;
 using Newtonsoft.Json;
@@ -51,7 +50,7 @@ namespace ERP_API.Controllers.Purchase
             var data = _rcv.GetDetailData(code)
                 .Select(x => new
                 {
-                    x.Id, x.Code, x.LineNo, x.ItemId, x.ItemName, x.OrderQty, x.OutstandingQty, x.Qty,
+                    x.Id, x.Code, x.LineNo, x.PoDetailId, x.ItemId, x.ItemName, x.OrderQty, x.OutstandingQty, x.Qty,
                     x.UomId, x.UnitId, x.UnitName,
                     x.Length, x.Width, x.Height, x.Weight, x.DimensionMeasurement, x.WeightMeasurement,
                     x.UnitPrice, x.Disc, x.TaxId, x.TaxAmount, x.NettPrice, x.Total, x.Dpp,
@@ -61,11 +60,12 @@ namespace ERP_API.Controllers.Purchase
                     OldUnitPrice = x.ItemBuyPrice,
                     TotTax = x.Qty * x.TaxAmount,
                     TotDPP = x.Qty * x.Dpp,
+                    TypeName = x.Type == 0 ? "Normal" : "Bonus",
                     State = ""
                 })
                 .ToList<dynamic>();
 
-            return Ok(new MasterViewDto
+            return Ok(new ApiResponse
             {
                 RowCount = data.Count,
                 TableData = data

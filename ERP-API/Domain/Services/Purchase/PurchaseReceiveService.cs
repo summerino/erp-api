@@ -64,9 +64,8 @@ namespace ERP_API.Domain.Services.Purchase
                     {
                         Code = newCode,
                         LineNo = ++i,
+                        PoDetailId = item.PoDetailId,
                         ItemId = item.ItemId,
-                        OrderQty = item.OrderQty,
-                        OutstandingQty = item.OutstandingQty,
                         Qty = item.Qty,
                         UomId = item.UomId,
                         UnitId = item.UnitId,
@@ -91,8 +90,8 @@ namespace ERP_API.Domain.Services.Purchase
                 // Save changes
                 Db.SaveChanges();
 
-                // Execute sp_update_po_mark
-                Db.Database.ExecuteSqlRaw("EXEC sp_update_po_mark {0}", data.PoCode);
+                // Execute sp_update_po_rcv_qty
+                Db.Database.ExecuteSqlRaw("EXEC sp_update_po_rcv_qty {0}", data.PoCode);
 
                 transaction.Commit();
             }
@@ -148,9 +147,8 @@ namespace ERP_API.Domain.Services.Purchase
                         {
                             Code = item.Code,
                             LineNo = ++i,
+                            PoDetailId = item.PoDetailId,
                             ItemId = item.ItemId,
-                            OrderQty = item.OrderQty,
-                            OutstandingQty = item.OutstandingQty,
                             Qty = item.Qty,
                             UomId = item.UomId,
                             UnitId = item.UnitId,
@@ -183,8 +181,8 @@ namespace ERP_API.Domain.Services.Purchase
                 // Save changes
                 Db.SaveChanges();
 
-                // Execute sp_update_po_mark
-                Db.Database.ExecuteSqlRaw("EXEC sp_update_po_mark {0}", data.PoCode);
+                // Execute sp_update_po_rcv_qty
+                Db.Database.ExecuteSqlRaw("EXEC sp_update_po_rcv_qty {0}", data.PoCode);
 
                 transaction.Commit();
             }
@@ -225,8 +223,8 @@ namespace ERP_API.Domain.Services.Purchase
                     // Save changes
                     Db.SaveChanges();
 
-                    // Execute sp_update_po_mark
-                    Db.Database.ExecuteSqlRaw("EXEC sp_update_po_mark {0}", data.PoCode);
+                    // Execute sp_update_po_rcv_qty
+                    Db.Database.ExecuteSqlRaw("EXEC sp_update_po_rcv_qty {0}", data.PoCode);
 
                     transaction.Commit();
                 }
