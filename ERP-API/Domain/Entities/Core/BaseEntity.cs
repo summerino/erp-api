@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
 
-namespace ERP_API.Entities
+namespace ERP_API.Domain.Entities.Core
 {
     public class BaseEntity
     {

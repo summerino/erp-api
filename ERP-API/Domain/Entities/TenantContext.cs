@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using ERP_API.Domain.Entities.Accounting;
+using ERP_API.Domain.Entities.Core;
 using ERP_API.Domain.Entities.General;
 using ERP_API.Domain.Entities.Inventory;
 using ERP_API.Domain.Entities.Purchase;
@@ -24,8 +26,15 @@ namespace ERP_API.Domain.Entities
         // Core Entities
         public DbSet<BaseNewCodeEntity> NewCodes { get; set; }
 
+        // Accounting Entities
+        public DbSet<Coa> Coas { get; set; }
+        public DbSet<CoaType> CoaTypes { get; set; }
+
         // General entities
+        public DbSet<Customer> Customers { get; set; }
+        public DbSet<CustomerType> CustomerTypes { get; set; }
         public DbSet<Supplier> Suppliers { get; set; }
+        public DbSet<SupplierType> SupplierTypes { get; set; }
         public DbSet<SystemParameter> SystemParameters { get; set; }
 
         // Inventory entities

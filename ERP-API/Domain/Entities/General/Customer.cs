@@ -4,8 +4,8 @@ using ERP_API.Domain.Entities.Core;
 
 namespace ERP_API.Domain.Entities.General
 {
-    [Table("msSuppliers", Schema = "dbo")]
-    public class Supplier : BaseEntityWithActive
+    [Table("msCustomers", Schema = "dbo")]
+    public class Customer : BaseEntityWithActive
     {
         [Key]
         [StringLength(8)]
@@ -38,12 +38,23 @@ namespace ERP_API.Domain.Entities.General
         [StringLength(50)]
         public string Email { get; set; }
 
+        [StringLength(50)]
+        public string Website { get; set; }
+
+        public short CreditTerm { get; set; }
+
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal CreditLimit { get; set; }
+
         [StringLength(30)]
         public string RefNo { get; set; }
+
+        [StringLength(256)]
+        public string Notes { get; set; }
     }
 
-    [Table("msSupplierTypes", Schema = "dbo")]
-    public class SupplierType : BaseEntityWithActive
+    [Table("msCustomerTypes", Schema = "dbo")]
+    public class CustomerType : BaseEntityWithActive
     {
         public int Id { get; set; }
 
