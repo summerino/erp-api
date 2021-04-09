@@ -1,0 +1,24 @@
+﻿using System;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using ERP_API.Domain.Entities.Core;
+
+namespace ERP_API.Domain.Entities.Inventory
+{
+    [Table("msUoMs", Schema = "dbo")]
+    public class UoM : BaseEntityWithActive
+    {
+        public int Id { get; set; }
+
+        [Required]
+        [StringLength(20)]
+        public string Initial { get; set; }
+
+        [StringLength(100)]
+        public string Description { get; set; }
+
+        [Required]
+        [StringLength(20)]
+        public string BaseUnit { get; set; }
+    }
+}

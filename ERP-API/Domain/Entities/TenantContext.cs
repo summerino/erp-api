@@ -7,7 +7,6 @@ using ERP_API.Domain.Entities.General;
 using ERP_API.Domain.Entities.Inventory;
 using ERP_API.Domain.Entities.Purchase;
 using ERP_API.Domain.Services;
-using ERP_API.Entities;
 
 namespace ERP_API.Domain.Entities
 {
@@ -25,6 +24,8 @@ namespace ERP_API.Domain.Entities
 
         // Core Entities
         public DbSet<BaseNewCodeEntity> NewCodes { get; set; }
+        public DbSet<SequenceNumber> SequenceNumbers { get; set; }
+        public DbSet<SystemParameter> SystemParameters { get; set; }
 
         // Accounting Entities
         public DbSet<Coa> Coas { get; set; }
@@ -35,13 +36,15 @@ namespace ERP_API.Domain.Entities
         public DbSet<CustomerType> CustomerTypes { get; set; }
         public DbSet<Supplier> Suppliers { get; set; }
         public DbSet<SupplierType> SupplierTypes { get; set; }
-        public DbSet<SystemParameter> SystemParameters { get; set; }
+        public DbSet<Tax> Taxes { get; set; }
 
         // Inventory entities
         public DbSet<Item> Items { get; set; }
         public DbSet<VwItem> VwItems { get; set; }
         public DbSet<ItemCategory> ItemCategories { get; set; }
+        public DbSet<UoM> UoMs { get; set; }
         public DbSet<UoMConversion> UoMConversions { get; set; }
+        public DbSet<Warehouse> Warehouses { get; set; }
 
         // Purchase entities
         public DbSet<PurchaseOrderHeader> PurchaseOrderHeaders { get; set; }
