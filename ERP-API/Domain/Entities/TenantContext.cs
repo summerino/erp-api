@@ -79,12 +79,32 @@ namespace ERP_API.Domain.Entities
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // Set database collation
+            modelBuilder.HasAnnotation("Relational:Collation", "SQL_Latin1_General_CP1_CI_AS");
+
+            // Force all string-based columns to non-unicode equivalent when no column type is explicitly set
+            foreach (
+                var property in modelBuilder.Model
+                    .GetEntityTypes()
+                    .SelectMany(t => t.GetProperties())
+                    .Where(p => p.ClrType == typeof(string) &&  // Entity is a string
+                                p.GetColumnType() == null &&    // No column type is set
+                                !p.DeclaringEntityType.GetTableName().StartsWith("AspNet")))
+            {
+                property.SetIsUnicode(false);
+            }
+
             // Inventory entities
             modelBuilder.Entity<VwItem>()
                 .HasNoKey()
                 .ToView("vw_items", "dbo");
 
             // Purchase entities
+            modelBuilder.Entity<PurchaseOrderHeader>(entity =>
+                entity.Property(e => e.Mark)
+                    .IsRequired()
+            );
+
             modelBuilder.Entity<VwPurchaseOrderHeader>()
                 .HasNoKey()
                 .ToView("vw_po_h", "dbo");
@@ -97,6 +117,12 @@ namespace ERP_API.Domain.Entities
             modelBuilder.Entity<VwPurchaseOrderDetail>()
                 .HasNoKey()
                 .ToView("vw_po_d", "dbo");
+
+
+            modelBuilder.Entity<PurchaseReceiveHeader>(entity =>
+                entity.Property(e => e.Mark)
+                    .IsRequired()
+            );
 
             modelBuilder.Entity<VwPurchaseReceiveHeader>()
                 .HasNoKey()

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
 namespace ERP_API.Domain.Entities.Core
@@ -8,10 +9,12 @@ namespace ERP_API.Domain.Entities.Core
     {
         public int CreatedBy { get; set; }
 
+        [Column(TypeName = "datetime")]
         public DateTime CreatedDate { get; set; }
 
         public int UpdatedBy { get; set; }
 
+        [Column(TypeName = "datetime")]
         public DateTime UpdatedDate { get; set; }
     }
 

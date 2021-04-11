@@ -9,9 +9,11 @@ namespace ERP_API.Domain.Entities.Accounting
     {
         public int Id { get; set; }
 
+        [Required]
         [StringLength(6)]
         public string Code { get; set; }
 
+        [Required]
         [StringLength(50)]
         public string Name { get; set; }
 
@@ -40,9 +42,6 @@ namespace ERP_API.Domain.Entities.Accounting
 
         [StringLength(4)]
         public string IsDetCode { get; set; }
-
-        [StringLength(4)]
-        public string CfCode { get; set; }
     }
 
     [Table("msCOATypes", Schema = "dbo")]
@@ -50,9 +49,11 @@ namespace ERP_API.Domain.Entities.Accounting
     {
         public int Id { get; set; }
 
+        [Required]
         [StringLength(20)]
         public string Initial { get; set; }
 
+        [Required]
         [StringLength(50)]
         public string Name { get; set; }
     }

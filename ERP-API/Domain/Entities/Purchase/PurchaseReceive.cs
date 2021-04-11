@@ -165,7 +165,7 @@ namespace ERP_API.Domain.Entities.Purchase
 
         public int? TaxId { get; set; }
 
-        [Column(TypeName = "decimal(19, 6)")]
+        [Column(TypeName = "decimal(18, 2)")]
         public decimal TaxAmount { get; set; }
 
         [Column(TypeName = "decimal(19, 6)")]

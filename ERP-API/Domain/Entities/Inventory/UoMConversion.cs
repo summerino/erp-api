@@ -19,6 +19,7 @@ namespace ERP_API.Domain.Entities.Inventory
         [StringLength(20)]
         public string UnitEquivalent { get; set; }
 
+        [Column(TypeName = "decimal(19, 6)")]
         public decimal Conversion { get; set; }
 
         public bool IsBaseUnit { get; set; }

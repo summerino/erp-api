@@ -24,6 +24,7 @@ namespace ERP_API.Domain.Entities.Inventory
 
         public short TypeId { get; set; }
 
+        [Column(TypeName = "decimal(19, 6)")]
         public decimal? CostOfGoodSold { get; set; }
 
         public short? ValuationMethod { get; set; }
@@ -78,6 +79,7 @@ namespace ERP_API.Domain.Entities.Inventory
         public string CoaInventory { get; set; }
 
         [StringLength(6)]
+        [Column("CoaCOGS")]
         public string CoaCogs { get; set; }
 
         [StringLength(6)]
@@ -106,6 +108,24 @@ namespace ERP_API.Domain.Entities.Inventory
 
         [StringLength(6)]
         public string CoaExpense { get; set; }
+
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal? Length { get; set; }
+
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal? Width { get; set; }
+
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal? Height { get; set; }
+
+        [StringLength(10)]
+        public string DimensionMeasurement { get; set; }
+
+        [Column(TypeName = "decimal(18, 3)")]
+        public decimal? Weight { get; set; }
+
+        [StringLength(10)]
+        public string WeightMeasurement { get; set; }
     }
 
     public class VwItem : BaseEntityWithActive
@@ -209,6 +229,24 @@ namespace ERP_API.Domain.Entities.Inventory
 
         [StringLength(6)]
         public string CoaExpense { get; set; }
+
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal? Length { get; set; }
+
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal? Width { get; set; }
+
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal? Height { get; set; }
+
+        [StringLength(10)]
+        public string DimensionMeasurement { get; set; }
+
+        [Column(TypeName = "decimal(18, 3)")]
+        public decimal? Weight { get; set; }
+
+        [StringLength(10)]
+        public string WeightMeasurement { get; set; }
 
 
         public string TypeName { get; set; }
