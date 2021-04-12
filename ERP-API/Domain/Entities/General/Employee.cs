@@ -1,0 +1,54 @@
+﻿using System;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using ERP_API.Domain.Entities.Core;
+
+namespace ERP_API.Domain.Entities.General
+{
+    [Table("msEmployees", Schema = "dbo")]
+    public class Employee : BaseEntityWithActive
+    {
+        public long Id { get; set; }
+
+        [Required]
+        [StringLength(20)]
+        public string Initial { get; set; }
+
+        public short Type { get; set; }
+
+        [Required]
+        [StringLength(50)]
+        public string FirstName { get; set; }
+
+        [StringLength(50)]
+        public string LastName { get; set; }
+
+        public bool Sex { get; set; }
+
+        [Column(TypeName = "date")]
+        public DateTime? BirthDate { get; set; }
+
+        [StringLength(50)]
+        public string BirthPlace { get; set; }
+
+        public byte? MaritalStatus { get; set; }
+
+        [StringLength(20)]
+        public string IdentityCardNo { get; set; }
+
+        public byte Religion { get; set; }
+
+        [StringLength(100)]
+        public string Address1 { get; set; }
+
+        [StringLength(100)]
+        public string Address2 { get; set; }
+
+        [StringLength(30)]
+        public string Phone { get; set; }
+
+        [StringLength(50)]
+        [Column(TypeName = "nvarchar")]
+        public string Username { get; set; }
+    }
+}

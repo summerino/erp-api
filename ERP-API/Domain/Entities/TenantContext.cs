@@ -32,8 +32,10 @@ namespace ERP_API.Domain.Entities
         public DbSet<CoaType> CoaTypes { get; set; }
 
         // General entities
+        public DbSet<Currency> Currencies { get; set; }
         public DbSet<Customer> Customers { get; set; }
         public DbSet<CustomerType> CustomerTypes { get; set; }
+        public DbSet<Employee> Employees { get; set; }
         public DbSet<Supplier> Suppliers { get; set; }
         public DbSet<SupplierType> SupplierTypes { get; set; }
         public DbSet<Tax> Taxes { get; set; }
@@ -93,6 +95,11 @@ namespace ERP_API.Domain.Entities
             {
                 property.SetIsUnicode(false);
             }
+
+            // Core entities
+            modelBuilder.Entity<BaseNewCodeEntity>()
+                .HasNoKey()
+                .ToView(null);
 
             // Inventory entities
             modelBuilder.Entity<VwItem>()

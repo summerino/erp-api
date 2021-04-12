@@ -69,6 +69,7 @@ namespace ERP_API.Domain.Entities.Purchase
         [StringLength(17)]
         public string Code { get; set; }
 
+        [Column(TypeName = "date")]
         public DateTime Date { get; set; }
 
         [Required]

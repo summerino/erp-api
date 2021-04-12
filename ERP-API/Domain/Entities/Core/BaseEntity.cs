@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Threading.Tasks.Dataflow;
 using Microsoft.EntityFrameworkCore;
 
 namespace ERP_API.Domain.Entities.Core
@@ -29,7 +30,6 @@ namespace ERP_API.Domain.Entities.Core
         public string Mark { get; set; }
     }
 
-    [Keyless]
     public class BaseNewCodeEntity
     {
         public string Value { get; set; }
