@@ -199,13 +199,13 @@ END CATCH";
         protected override void Down(MigrationBuilder migrationBuilder)
         {
 			// Drop store procedure sp_generate_autono
-			migrationBuilder.Sql(@"DROP VIEW [dbo].[sp_generate_autono]");
+			migrationBuilder.Sql(@"DROP PROCEDURE [dbo].[sp_generate_autono]");
 
 			// Drop store procedure sp_raiseerror
-			migrationBuilder.Sql(@"DROP VIEW [dbo].[sp_raiseerror]");
+			migrationBuilder.Sql(@"DROP PROCEDURE [dbo].[sp_raiseerror]");
 
 			// Drop store procedure sp_update_po_rcv_qty
-			migrationBuilder.Sql(@"DROP VIEW [dbo].[sp_update_po_rcv_qty]");
+			migrationBuilder.Sql(@"DROP PROCEDURE [dbo].[sp_update_po_rcv_qty]");
 		}
     }
 }

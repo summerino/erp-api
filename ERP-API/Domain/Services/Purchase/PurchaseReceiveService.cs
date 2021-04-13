@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using ERP_API.Domain.Entities;
+using ERP_API.Domain.Entities.Inventory;
 using ERP_API.Domain.Entities.Purchase;
 using ERP_API.Domain.Extensions;
 using ERP_API.Domain.Interfaces.Purchase;
 using ERP_API.Domain.Models;
+using ERP_API.Extensions;
 using ERP_API.Model;
 using ERP_API.Model.Purchase;
 using Swift.Framework.Model;
@@ -167,11 +169,13 @@ namespace ERP_API.Domain.Services.Purchase
 
                 // Update detail data
                 short i = 0;
+                var newRcvDetails = new List<PurchaseReceiveDetail>();
                 foreach (var item in data.ItemDetails)
                 {
-                    if (item.Id == 0)
+                    if (item.Id <= 0)
                     {
-                        Db.PurchaseReceiveDetails.Add(new PurchaseReceiveDetail
+                        newRcvDetails.Add(new PurchaseReceiveDetail
+                        //Db.PurchaseReceiveDetails.Add(new PurchaseReceiveDetail
                         {
                             Code = item.Code,
                             LineNo = ++i,
@@ -206,8 +210,17 @@ namespace ERP_API.Domain.Services.Purchase
                     }
                 }
 
+                // Insert detail if new data exists
+                if (newRcvDetails.Any())
+                    Db.PurchaseReceiveDetails.AddRange(newRcvDetails);
+
                 // Save changes
                 Db.SaveChanges();
+
+                // Execute sp_update_stock_mutation_from_rcv
+                Db.Database.ExecuteSqlRaw(
+                    "EXEC sp_update_stock_mutation_from_rcv {0}, {1}, {2}",
+                    data.Code, data.Date, data.PoCode);
 
                 // Execute sp_update_po_rcv_qty
                 Db.Database.ExecuteSqlRaw("EXEC sp_update_po_rcv_qty {0}", data.PoCode);

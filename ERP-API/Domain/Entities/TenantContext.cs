@@ -44,6 +44,7 @@ namespace ERP_API.Domain.Entities
         public DbSet<Item> Items { get; set; }
         public DbSet<VwItem> VwItems { get; set; }
         public DbSet<ItemCategory> ItemCategories { get; set; }
+        public DbSet<StockMutation> StockMutations { get; set; }
         public DbSet<UoM> UoMs { get; set; }
         public DbSet<UoMConversion> UoMConversions { get; set; }
         public DbSet<Warehouse> Warehouses { get; set; }
