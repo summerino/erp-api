@@ -174,7 +174,6 @@ namespace ERP_API.Domain.Services.Purchase
                     if (item.Id <= 0)
                     {
                         newRcvDetails.Add(new PurchaseReceiveDetail
-                        //Db.PurchaseReceiveDetails.Add(new PurchaseReceiveDetail
                         {
                             Code = data.Code,
                             LineNo = ++i,
