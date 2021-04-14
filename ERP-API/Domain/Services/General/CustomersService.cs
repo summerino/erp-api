@@ -46,5 +46,38 @@ namespace ERP_API.Domain.Services.General
         {
             return Db.Customers.Where(x => x.Code == code).FirstOrDefault();
         }
+
+        public override SaveResult Insert(Customer data)
+        {
+            var result = new SaveResult(false);
+
+            using var transaction = Db.Database.BeginTransaction();
+            try
+            {
+                if (Db.Customers.Any(x => x.Initial.Contains(data.Initial)) == false)
+                {
+                    var newCode = GetNewCode("CUST_NUM_FMT", data.CreatedDate);
+                    data.Code = newCode;
+                    Db.Add(data);
+                    Db.SaveChanges();
+                    transaction.Commit();
+                }
+                else
+                {
+                    result.Message = "Initial code is already in the database";
+                    return result;
+                }
+            }
+            catch (Exception ex)
+            {
+                result.Message = ex.InnerException?.Message ?? ex.Message;
+                return result;
+            }
+
+            result.Success = true;
+            result.Data = data.Code;
+            result.Message = "Success insert customer data.";
+            return result;
+        }
     }
 }
