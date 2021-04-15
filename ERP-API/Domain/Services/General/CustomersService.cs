@@ -89,7 +89,12 @@ namespace ERP_API.Domain.Services.General
             Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
             Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
 
-            return base.Update(data);
+            Db.SaveChanges();
+
+            result.Success = true;
+            result.Data = data.Code;
+            result.Message = "Success update customer data.";
+            return result;
         }
 
         public SaveResult Delete(string code, int userId)
