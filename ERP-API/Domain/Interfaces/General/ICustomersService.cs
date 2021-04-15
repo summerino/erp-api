@@ -8,8 +8,6 @@ namespace ERP_API.Domain.Interfaces.General
 {
     public interface ICustomersService : IGeneralService<Customer>
     {
-        Customer FindByCode(string code);
-
         DataSourceResult GetViewData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
             string search);
 

@@ -33,10 +33,6 @@ namespace ERP_API.Domain.Services.General
             return data.ToDataSourceResult(skip, take, filter, sort);
         }
  
-        public Customer FindByCode(string code)
-        {
-            return Db.Customers.Find(code);
-        }
 
         public override SaveResult Insert(Customer data)
         {

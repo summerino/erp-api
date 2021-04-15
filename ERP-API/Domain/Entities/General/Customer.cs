@@ -50,7 +50,7 @@ namespace ERP_API.Domain.Entities.General
         public string RefNo { get; set; }
 
         [StringLength(256)]
-        public string Notes { get; set; }
+        public string Note { get; set; }
     }
 
     public class VwCustomer : BaseEntityWithActive
@@ -81,7 +81,7 @@ namespace ERP_API.Domain.Entities.General
 
         public string RefNo { get; set; }
 
-        public string Notes { get; set; }
+        public string Note { get; set; }
 
 
         public string TypeName { get; set; }
