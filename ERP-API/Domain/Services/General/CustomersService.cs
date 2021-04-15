@@ -32,7 +32,7 @@ namespace ERP_API.Domain.Services.General
 
             return data.ToDataSourceResult(skip, take, filter, sort);
         }
- 
+
 
         public override SaveResult Insert(Customer data)
         {
@@ -69,14 +69,17 @@ namespace ERP_API.Domain.Services.General
             return result;
         }
 
-        public override SaveResult Update(Customer data)
+        public SaveResult Update(Customer data, string method)
         {
             var result = new SaveResult(false);
 
-            if (IsInitialExists(data.Initial))
+            if (method == "edit")
             {
-                result.Message = "Initial code is already in the database.";
-                return result;
+                if (IsInitialExists(data.Initial))
+                {
+                    result.Message = "Initial code is already in the database.";
+                    return result;
+                }
             }
 
             // Update data
