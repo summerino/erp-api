@@ -1,26 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using ERP_API.Domain.Entities.General;
 using ERP_API.Domain.Entities;
+using ERP_API.Domain.Entities.General;
+using ERP_API.Domain.Extensions;
 using ERP_API.Domain.Interfaces.General;
 using ERP_API.Domain.Models;
 using ERP_API.Model;
 using Swift.Framework.Model;
-using System.Linq.Expressions;
-using ERP_API.Domain.Extensions;
 
 namespace ERP_API.Domain.Services.General
 {
     public class CustomersService : GeneralService<Customer>, ICustomersService
     {
-        public CustomersService(TenantContext db) : base(db)
+        public CustomersService(TenantContext db)
+            : base(db)
         {
-
         }
 
-        public DataSourceResult GetDataView(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
+        public DataSourceResult GetViewData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
             string search)
         {
             var data = Db.VwCustomers.AsQueryable();
@@ -34,33 +32,10 @@ namespace ERP_API.Domain.Services.General
 
             return data.ToDataSourceResult(skip, take, filter, sort);
         }
-
-        public SaveResult Delete(string code,int userId)
-        {
-            var result = new SaveResult(false);
-            var data = Db.Customers.Where(x => x.Code == code).FirstOrDefault();
-
-            if(data != null)
-            {
-                if(data.IsActive == false)
-                {
-                    result.Message = "Can't remove customer because customer already inactive.";
-                    return result;
-                }
-                data.IsActive = false;
-                data.UpdatedBy = userId;
-                data.UpdatedDate = DateTime.Now;
-                Db.SaveChanges();
-            }
-
-            result.Success = true;
-            result.Message = "Remove customer success.";
-            return result;
-        }
  
-        public Customer GetCustomers(string code)
+        public Customer FindByCode(string code)
         {
-            return Db.Customers.Where(x => x.Code == code).FirstOrDefault();
+            return Db.Customers.Find(code);
         }
 
         public override SaveResult Insert(Customer data)
@@ -70,19 +45,21 @@ namespace ERP_API.Domain.Services.General
             using var transaction = Db.Database.BeginTransaction();
             try
             {
-                if (Db.Customers.Any(x => x.Initial.Contains(data.Initial)) == false)
+                if (IsInitialExists(data.Initial))
                 {
-                    var newCode = GetNewCode("CUST_NUM_FMT", data.CreatedDate);
-                    data.Code = newCode;
-                    Db.Add(data);
-                    Db.SaveChanges();
-                    transaction.Commit();
-                }
-                else
-                {
-                    result.Message = "Initial code is already in the database";
+                    result.Message = "Initial code is already in the database.";
                     return result;
                 }
+
+                // Get new code
+                var newCode = GetNewCode("CUST_NUM_FMT", data.CreatedDate);
+
+                // Insert data
+                data.Code = newCode;
+                Db.Add(data);
+
+                Db.SaveChanges();
+                transaction.Commit();
             }
             catch (Exception ex)
             {
@@ -94,6 +71,56 @@ namespace ERP_API.Domain.Services.General
             result.Data = data.Code;
             result.Message = "Success insert customer data.";
             return result;
+        }
+
+        public override SaveResult Update(Customer data)
+        {
+            var result = new SaveResult(false);
+
+            if (IsInitialExists(data.Initial))
+            {
+                result.Message = "Initial code is already in the database.";
+                return result;
+            }
+
+            // Update data
+            Db.Customers.Update(data);
+            Db.Entry(data).Property(e => e.Code).IsModified = false;
+            Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
+            Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
+
+            return base.Update(data);
+        }
+
+        public SaveResult Delete(string code, int userId)
+        {
+            var result = new SaveResult(false);
+
+            var data = Db.Customers.Find(code);
+            if (data != null)
+            {
+                // Checking active
+                if (data.IsActive == false)
+                {
+                    result.Message = "Can't remove customer because data already inactive.";
+                    return result;
+                }
+
+                data.IsActive = false;
+                data.UpdatedBy = userId;
+                data.UpdatedDate = DateTime.Now;
+
+                Db.SaveChanges();
+            }
+
+            result.Success = true;
+            result.Message = "Success remove customer.";
+            return result;
+        }
+
+        public bool IsInitialExists(string initial)
+        {
+            return Db.Customers.Any(x => x.Initial == initial);
         }
     }
 }

@@ -1,40 +1,38 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Dynamic.Core;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using ERP_API.Domain.Entities.General;
 using ERP_API.Domain.Interfaces.General;
-using ERP_API.Domain.Models;
-using ERP_API.Dtos;
 using ERP_API.Model;
 using Newtonsoft.Json;
-using ERP_API.Domain.Entities.General;
 using Swift.Framework.Model;
 
 namespace ERP_API.Controllers.General
 {   
     [Route("api/v1/customer")]
+    //[Authorize]
     [ApiController]
     public class CustomerController : ControllerBase
     {
-        private readonly ICustomersService _cs;
-        public CustomerController(ICustomersService customersService)
+        private readonly ICustomersService _cust;
+
+        public CustomerController(ICustomersService cust)
         {
-            _cs = customersService;
+            _cust = cust;
         }
 
         [HttpGet]
         public IActionResult GetData(string search,string filters, string sorts, int skip, int take)
         {
             var data =
-                _cs.GetDataView(
+                _cust.GetViewData(
                     skip, take,
                     JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
                     JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
                     search);
 
-            return Ok(new MasterViewDto
+            return Ok(new ApiResponse
             {
                 RowCount = data.Total,
                 TableData = data.Data.ToDynamicList()
@@ -44,11 +42,7 @@ namespace ERP_API.Controllers.General
         [HttpGet("{code}")]
         public IActionResult GetCustomerDetail(string code)
         {
-            var data = _cs.GetCustomers(code);
-            return Ok(new MasterAddEditDto
-            {
-                TableData = data
-            });
+            return Ok(_cust.FindByCode(code));
         }
 
         [HttpPost]
@@ -60,19 +54,18 @@ namespace ERP_API.Controllers.General
             data.UpdatedBy = data.CreatedBy;
             data.UpdatedDate = data.CreatedDate;
 
-            var result = _cs.Insert(data);
+            var result = _cust.Insert(data);
 
             return Ok(result);
         }
 
         [HttpPut("{code}")]
-        public IActionResult OnPut(string code,[FromBody]Customer data)
+        public IActionResult OnPut(string code, Customer data)
         {
-
             data.UpdatedBy = 1;
             data.UpdatedDate = DateTime.Now;
 
-            var result = _cs.Update(data);
+            var result = _cust.Update(data);
 
             return Ok(result);
         }
@@ -80,7 +73,7 @@ namespace ERP_API.Controllers.General
         [HttpDelete("{code}")]
         public IActionResult OnDelete(string code)
         {
-            var result = _cs.Delete(code, 1);
+            var result = _cust.Delete(code, 1);
 
             return Ok(result);
         }

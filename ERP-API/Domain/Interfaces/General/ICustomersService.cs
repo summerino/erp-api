@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using ERP_API.Domain.Entities.General;
 using ERP_API.Domain.Models;
 using ERP_API.Model;
@@ -11,8 +8,9 @@ namespace ERP_API.Domain.Interfaces.General
 {
     public interface ICustomersService : IGeneralService<Customer>
     {
-        Customer GetCustomers(string code);
-        DataSourceResult GetDataView(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
+        Customer FindByCode(string code);
+
+        DataSourceResult GetViewData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
             string search);
 
         SaveResult Delete(string code, int userId);

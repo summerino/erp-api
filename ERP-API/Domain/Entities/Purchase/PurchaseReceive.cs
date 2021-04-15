@@ -27,7 +27,6 @@ namespace ERP_API.Domain.Entities.Purchase
         [StringLength(8)]
         public string SupCode { get; set; }
 
-        [Required]
         public long ReceiveBy { get; set; }
 
         public long? ApproveBy { get; set; }
@@ -83,7 +82,6 @@ namespace ERP_API.Domain.Entities.Purchase
         [StringLength(8)]
         public string SupCode { get; set; }
 
-        [Required]
         public long ReceiveBy { get; set; }
 
         public long? ApproveBy { get; set; }

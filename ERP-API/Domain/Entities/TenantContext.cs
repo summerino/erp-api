@@ -34,11 +34,12 @@ namespace ERP_API.Domain.Entities
         // General entities
         public DbSet<Currency> Currencies { get; set; }
         public DbSet<Customer> Customers { get; set; }
+        public DbSet<VwCustomer> VwCustomers { get; set; }
+        public DbSet<CustomerType> CustomerTypes { get; set; }
         public DbSet<Employee> Employees { get; set; }
         public DbSet<Supplier> Suppliers { get; set; }
         public DbSet<SupplierType> SupplierTypes { get; set; }
         public DbSet<Tax> Taxes { get; set; }
-        public DbSet<VwCustomer> VwCustomers { get; set; }
 
         // Inventory entities
         public DbSet<Item> Items { get; set; }
@@ -50,6 +51,8 @@ namespace ERP_API.Domain.Entities
         public DbSet<Warehouse> Warehouses { get; set; }
 
         // Purchase entities
+        public DbSet<PurchaseInvoiceHeader> PurchaseInvoiceHeaders { get; set; }
+        public DbSet<VwPurchaseInvoiceHeader> VwPurchaseInvoiceHeaders { get; set; }
         public DbSet<PurchaseOrderHeader> PurchaseOrderHeaders { get; set; }
         public DbSet<VwPurchaseOrderHeader> VwPurchaseOrderHeaders { get; set; }
         public DbSet<PurchaseOrderDetail> PurchaseOrderDetails { get; set; }
@@ -102,6 +105,7 @@ namespace ERP_API.Domain.Entities
                 .HasNoKey()
                 .ToView(null);
 
+            // General entities
             modelBuilder.Entity<VwCustomer>()
                 .HasNoKey()
                 .ToView("vw_customers", "dbo");
@@ -112,6 +116,15 @@ namespace ERP_API.Domain.Entities
                 .ToView("vw_items", "dbo");
 
             // Purchase entities
+            modelBuilder.Entity<PurchaseInvoiceHeader>(entity =>
+                entity.Property(e => e.Mark)
+                    .IsRequired()
+            );
+
+            modelBuilder.Entity<VwPurchaseInvoiceHeader>()
+                .HasNoKey()
+                .ToView("vwPurchaseOrderHeader", Schema.Purchasing);
+
             modelBuilder.Entity<PurchaseOrderHeader>(entity =>
                 entity.Property(e => e.Mark)
                     .IsRequired()

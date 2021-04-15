@@ -64,17 +64,18 @@ namespace ERP_API
             services.AddScoped<IShardingService, ShardingService>();
             services.AddScoped<IClaimService, ClaimService>();
 
+            // General services
+            services.AddScoped<ICustomersService, CustomersService>();
+
             // Inventory services
             services.AddScoped<IItemCategoryService, ItemCategoryService>();
             services.AddScoped<IItemService, ItemService>();
             services.AddScoped<IUoMConversionService, UoMConversionService>();
 
             // Purchase services
+            services.AddScoped<IPurchaseInvoiceService, PurchaseInvoiceService>();
             services.AddScoped<IPurchaseOrderService, PurchaseOrderService>();
             services.AddScoped<IPurchaseReceiveService, PurchaseReceiveService>();
-
-            // General services
-            services.AddScoped<ICustomersService, CustomersService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
