@@ -9,14 +9,30 @@ using ERP_API.Domain.Models;
 using ERP_API.Model;
 using Swift.Framework.Model;
 using System.Linq.Expressions;
+using ERP_API.Domain.Extensions;
 
 namespace ERP_API.Domain.Services.General
 {
-    public class CustomersService : GeneralService<CustomersService>, ICustomersService
+    public class CustomersService : GeneralService<Customer>, ICustomersService
     {
         public CustomersService(TenantContext db) : base(db)
         {
 
+        }
+
+        public DataSourceResult GetDataView(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
+            string search)
+        {
+            var data = Db.VwCustomers.AsQueryable();
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                data = data.Where(x =>
+                        x.Code.Contains(search) || x.Name.Contains(search) || x.TypeName.Contains(search) ||
+                        x.Address1.Contains(search) || x.Phone.Contains(search) || x.CreditTerm.ToString() == search);
+            }
+
+            return data.ToDataSourceResult(skip, take, filter, sort);
         }
 
         public SaveResult Delete(string code,int userId)
@@ -41,59 +57,35 @@ namespace ERP_API.Domain.Services.General
             result.Message = "Remove customer success.";
             return result;
         }
-
-        public IEnumerable<Customer> GetAllCustomer()
-        {
-            List<Customer> result = new List<Customer>();
-
-            result = Db.Customers.ToList();
-
-            return result;
-        }
-
+ 
         public Customer GetCustomers(string code)
         {
             return Db.Customers.Where(x => x.Code == code).FirstOrDefault();
         }
 
-        public SaveResult Insert(Customer data)
+        public override SaveResult Insert(Customer data)
         {
             var result = new SaveResult(false);
 
             using var transaction = Db.Database.BeginTransaction();
             try
             {
-                Db.Add(new Customer
+                if (Db.Customers.Any(x => x.Initial.Contains(data.Initial)) == false)
                 {
-                    Code = data.Code,
-                    Initial = data.Initial,
-                    Name = data.Name,
-                    TypeId = data.TypeId,
-                    Address1 = data.Address1,
-                    Address2 = data.Address2,
-                    Phone = data.Phone,
-                    Fax = data.Fax,
-                    Email = data.Email,
-                    Website = data.Website,
-                    CreditTerm = data.CreditTerm,
-                    CreditLimit = data.CreditLimit,
-                    RefNo = data.RefNo,
-                    Note = data.Note,
-                    IsActive = data.IsActive,
-                    CreatedBy = data.CreatedBy,
-                    CreatedDate = data.CreatedDate,
-                    UpdatedBy = data.UpdatedBy,
-                    UpdatedDate = data.UpdatedDate
+                    var newCode = GetNewCode("CUST_NUM_FMT", data.CreatedDate);
+                    data.Code = newCode;
+                    Db.Add(data);
+                    Db.SaveChanges();
+                    transaction.Commit();
                 }
-                );
-
-                Db.SaveChanges();
-                transaction.Commit();
-
+                else
+                {
+                    result.Message = "Initial code is already in the database";
+                    return result;
+                }
             }
             catch (Exception ex)
             {
-
                 result.Message = ex.InnerException?.Message ?? ex.Message;
                 return result;
             }
@@ -101,57 +93,6 @@ namespace ERP_API.Domain.Services.General
             result.Success = true;
             result.Data = data.Code;
             result.Message = "Success insert customer data.";
-            return result;
-        }
-
-        public SaveResult ReverseUpdate(Customer data, params Expression<Func<Customer, object>>[] properties)
-        {
-            throw new NotImplementedException();
-        }
-
-        public SaveResult Update(Customer data)
-        {
-            throw new NotImplementedException();
-        }
-
-        public SaveResult Update(Customer data, params Expression<Func<Customer, object>>[] properties)
-        {
-            throw new NotImplementedException();
-        }
-
-        public SaveResult Update(Customer data, int userId)
-        {
-            var result = new SaveResult(false);
-
-            var tdata = Db.Customers.Where(x => x.Code == data.Code).FirstOrDefault();
-
-            if (tdata != null)
-            {
-                tdata.Name = data.Name;
-                tdata.TypeId = data.TypeId;
-                tdata.Address1 = data.Address1;
-                tdata.Address2 = data.Address2;
-                tdata.Phone = data.Phone;
-                tdata.Fax = data.Fax;
-                tdata.Email = data.Email;
-                tdata.Website = data.Website;
-                tdata.CreditTerm = data.CreditTerm;
-                tdata.CreditLimit = data.CreditLimit;
-                tdata.RefNo = data.RefNo;
-                tdata.Note = data.Note;
-                tdata.IsActive = data.IsActive;
-                tdata.UpdatedBy = userId;
-                tdata.UpdatedDate = DateTime.Now;
-
-                Db.Customers.Update(tdata);
-
-                Db.SaveChanges();
-
-            }
-
-            result.Success = true;
-            result.Data = data.Code;
-            result.Message = "Success update customer data.";
             return result;
         }
     }
