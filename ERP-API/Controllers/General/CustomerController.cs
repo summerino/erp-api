@@ -25,13 +25,14 @@ namespace ERP_API.Controllers.General
         }
 
         [HttpGet]
-        public IActionResult GetData(string filters, string sorts, int skip, int take)
+        public IActionResult GetData(string search,string filters, string sorts, int skip, int take)
         {
             var data =
-                _cs.GetData<Customer>(
+                _cs.GetDataView(
                     skip, take,
                     JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
-                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"));
+                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
+                    search);
 
             return Ok(new MasterViewDto
             {
