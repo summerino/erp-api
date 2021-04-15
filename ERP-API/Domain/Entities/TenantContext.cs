@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using ERP_API.Domain.Entities.Accounting;
+using ERP_API.Domain.Entities.Core;
 using ERP_API.Domain.Entities.General;
 using ERP_API.Domain.Entities.Inventory;
 using ERP_API.Domain.Entities.Purchase;
 using ERP_API.Domain.Services;
-using ERP_API.Entities;
 
 namespace ERP_API.Domain.Entities
 {
@@ -23,18 +24,30 @@ namespace ERP_API.Domain.Entities
 
         // Core Entities
         public DbSet<BaseNewCodeEntity> NewCodes { get; set; }
+        public DbSet<SequenceNumber> SequenceNumbers { get; set; }
+        public DbSet<SystemParameter> SystemParameters { get; set; }
+
+        // Accounting Entities
+        public DbSet<Coa> Coas { get; set; }
+        public DbSet<CoaType> CoaTypes { get; set; }
 
         // General entities
-        public DbSet<Supplier> Suppliers { get; set; }
-        public DbSet<SystemParameter> SystemParameters { get; set; }
+        public DbSet<Currency> Currencies { get; set; }
         public DbSet<Customer> Customers { get; set; }
-
+        public DbSet<CustomerType> CustomerTypes { get; set; }
+        public DbSet<Employee> Employees { get; set; }
+        public DbSet<Supplier> Suppliers { get; set; }
+        public DbSet<SupplierType> SupplierTypes { get; set; }
+        public DbSet<Tax> Taxes { get; set; }
 
         // Inventory entities
         public DbSet<Item> Items { get; set; }
         public DbSet<VwItem> VwItems { get; set; }
         public DbSet<ItemCategory> ItemCategories { get; set; }
+        public DbSet<StockMutation> StockMutations { get; set; }
+        public DbSet<UoM> UoMs { get; set; }
         public DbSet<UoMConversion> UoMConversions { get; set; }
+        public DbSet<Warehouse> Warehouses { get; set; }
 
         // Purchase entities
         public DbSet<PurchaseOrderHeader> PurchaseOrderHeaders { get; set; }
@@ -69,12 +82,37 @@ namespace ERP_API.Domain.Entities
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // Set database collation
+            modelBuilder.HasAnnotation("Relational:Collation", "SQL_Latin1_General_CP1_CI_AS");
+
+            // Force all string-based columns to non-unicode equivalent when no column type is explicitly set
+            foreach (
+                var property in modelBuilder.Model
+                    .GetEntityTypes()
+                    .SelectMany(t => t.GetProperties())
+                    .Where(p => p.ClrType == typeof(string) &&  // Entity is a string
+                                p.GetColumnType() == null &&    // No column type is set
+                                !p.DeclaringEntityType.GetTableName().StartsWith("AspNet")))
+            {
+                property.SetIsUnicode(false);
+            }
+
+            // Core entities
+            modelBuilder.Entity<BaseNewCodeEntity>()
+                .HasNoKey()
+                .ToView(null);
+
             // Inventory entities
             modelBuilder.Entity<VwItem>()
                 .HasNoKey()
                 .ToView("vw_items", "dbo");
 
             // Purchase entities
+            modelBuilder.Entity<PurchaseOrderHeader>(entity =>
+                entity.Property(e => e.Mark)
+                    .IsRequired()
+            );
+
             modelBuilder.Entity<VwPurchaseOrderHeader>()
                 .HasNoKey()
                 .ToView("vw_po_h", "dbo");
@@ -87,6 +125,12 @@ namespace ERP_API.Domain.Entities
             modelBuilder.Entity<VwPurchaseOrderDetail>()
                 .HasNoKey()
                 .ToView("vw_po_d", "dbo");
+
+
+            modelBuilder.Entity<PurchaseReceiveHeader>(entity =>
+                entity.Property(e => e.Mark)
+                    .IsRequired()
+            );
 
             modelBuilder.Entity<VwPurchaseReceiveHeader>()
                 .HasNoKey()

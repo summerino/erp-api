@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -79,13 +78,14 @@ namespace ERP_API
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ERPControlDbContext controlDbContext, IShardingService shardingService)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ERPControlDbContext controlDbContext,
+            IShardingService shardingService, IServiceProvider service­Provider)
         {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
-
+            
             //app.UseHttpsRedirection();
             app.UseRouting();
             app.UseCors();
@@ -107,7 +107,8 @@ namespace ERP_API
             services.AddDbContext<TenantContext>();
         }
 
-        public virtual void EnsureDatabaseCreated(ERPControlDbContext controlDbContext, IShardingService shardingService)
+        public virtual void EnsureDatabaseCreated(ERPControlDbContext controlDbContext,
+            IShardingService shardingService)
         {
             if (!DatabaseUtility.DatabaseExists(ControlDbConnectionString))
             {
@@ -115,12 +116,7 @@ namespace ERP_API
             }
 
             controlDbContext.Database.Migrate();
-
-            var shardList = controlDbContext.ShardTable.Select((s) => s.Shard).Distinct().ToList();
-            foreach (Guid shard in shardList)
-            {
-                shardingService.ApplyDatabaseMigrationAsync(ControlDbConnectionString, shard).GetAwaiter().GetResult();
-            }
+            shardingService.ApplyMigrationAsync().GetAwaiter().GetResult();
         }
     }
 }

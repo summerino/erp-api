@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
 using ERP_API.Domain.Entities;
+using ERP_API.Domain.Entities.Inventory;
 using ERP_API.Domain.Entities.Purchase;
 using ERP_API.Domain.Extensions;
 using ERP_API.Domain.Interfaces.Purchase;
 using ERP_API.Domain.Models;
 using ERP_API.Model;
 using ERP_API.Model.Purchase;
-using Microsoft.EntityFrameworkCore;
 using Swift.Framework.Model;
 
 namespace ERP_API.Domain.Services.Purchase
@@ -49,6 +50,20 @@ namespace ERP_API.Domain.Services.Purchase
             using var transaction = Db.Database.BeginTransaction();
             try
             {
+                // Checking purchase order mark
+                if (IsPurchaseOrderInvalid(data.PoCode))
+                {
+                    result.Message = "Can't update purchase receive because purchase order already mark as void or close.";
+                    return result;
+                }
+
+                // Checking receive qty is excess or not
+                if (IsQtyExcess(data.Code, data.PoCode, data.ItemDetails))
+                {
+                    result.Message = "Can't update purchase receive because receive qty bigger than outstanding qty.";
+                    return result;
+                }
+
                 // Get new code
                 var newCode = GetNewCode("RCV_NUM_FMT", data.Date);
                     
@@ -64,9 +79,8 @@ namespace ERP_API.Domain.Services.Purchase
                     {
                         Code = newCode,
                         LineNo = ++i,
+                        PoDetailId = item.PoDetailId,
                         ItemId = item.ItemId,
-                        OrderQty = item.OrderQty,
-                        OutstandingQty = item.OutstandingQty,
                         Qty = item.Qty,
                         UomId = item.UomId,
                         UnitId = item.UnitId,
@@ -91,8 +105,8 @@ namespace ERP_API.Domain.Services.Purchase
                 // Save changes
                 Db.SaveChanges();
 
-                // Execute sp_update_po_mark
-                Db.Database.ExecuteSqlRaw("EXEC sp_update_po_mark {0}", data.PoCode);
+                // Execute sp_update_po_rcv_qty
+                Db.Database.ExecuteSqlRaw("EXEC sp_update_po_rcv_qty {0}", data.PoCode);
 
                 transaction.Commit();
             }
@@ -116,9 +130,23 @@ namespace ERP_API.Domain.Services.Purchase
             try
             {
                 // Checking mark header data
-                if (Db.PurchaseReceiveHeaders.Any(x => x.Code == data.Code & x.Mark == "V"))
+                if (Db.PurchaseReceiveHeaders.Any(x => x.Code == data.Code && x.Mark == "V"))
                 {
                     result.Message = "Can't update purchase receive because data already mark as void.";
+                    return result;
+                }
+
+                // Checking purchase order mark
+                if (IsPurchaseOrderInvalid(data.PoCode))
+                {
+                    result.Message = "Can't update purchase receive because purchase order already mark as void or close.";
+                    return result;
+                }
+
+                // Checking receive qty is excess or not
+                if (IsQtyExcess(data.Code, data.PoCode, data.ItemDetails))
+                {
+                    result.Message = "Can't update purchase receive because receive qty bigger than outstanding qty.";
                     return result;
                 }
 
@@ -130,7 +158,7 @@ namespace ERP_API.Domain.Services.Purchase
 
                 // Delete detail data that doesn't have in data item details
                 var delDetails = Db.PurchaseReceiveDetails
-                    .Where(d => d.Code == data.Code & !data.ItemDetails.Select(x => x.Id).Contains(d.Id))
+                    .Where(d => d.Code == data.Code && !data.ItemDetails.Select(x => x.Id).Contains(d.Id))
                     .ToList();
 
                 foreach (var item in delDetails)
@@ -140,17 +168,17 @@ namespace ERP_API.Domain.Services.Purchase
 
                 // Update detail data
                 short i = 0;
+                var newRcvDetails = new List<PurchaseReceiveDetail>();
                 foreach (var item in data.ItemDetails)
                 {
-                    if (item.Id == 0)
+                    if (item.Id <= 0)
                     {
-                        Db.PurchaseReceiveDetails.Add(new PurchaseReceiveDetail
+                        newRcvDetails.Add(new PurchaseReceiveDetail
                         {
-                            Code = item.Code,
+                            Code = data.Code,
                             LineNo = ++i,
+                            PoDetailId = item.PoDetailId,
                             ItemId = item.ItemId,
-                            OrderQty = item.OrderQty,
-                            OutstandingQty = item.OutstandingQty,
                             Qty = item.Qty,
                             UomId = item.UomId,
                             UnitId = item.UnitId,
@@ -180,11 +208,20 @@ namespace ERP_API.Domain.Services.Purchase
                     }
                 }
 
+                // Insert detail if new data exists
+                if (newRcvDetails.Any())
+                    Db.PurchaseReceiveDetails.AddRange(newRcvDetails);
+
                 // Save changes
                 Db.SaveChanges();
 
-                // Execute sp_update_po_mark
-                Db.Database.ExecuteSqlRaw("EXEC sp_update_po_mark {0}", data.PoCode);
+                // Execute sp_update_stock_mutation_from_rcv
+                Db.Database.ExecuteSqlRaw(
+                    "EXEC sp_update_stock_mutation_from_rcv {0}, {1}, {2}",
+                    data.Code, data.Date, data.PoCode);
+
+                // Execute sp_update_po_rcv_qty
+                Db.Database.ExecuteSqlRaw("EXEC sp_update_po_rcv_qty {0}", data.PoCode);
 
                 transaction.Commit();
             }
@@ -225,8 +262,8 @@ namespace ERP_API.Domain.Services.Purchase
                     // Save changes
                     Db.SaveChanges();
 
-                    // Execute sp_update_po_mark
-                    Db.Database.ExecuteSqlRaw("EXEC sp_update_po_mark {0}", data.PoCode);
+                    // Execute sp_update_po_rcv_qty
+                    Db.Database.ExecuteSqlRaw("EXEC sp_update_po_rcv_qty {0}", data.PoCode);
 
                     transaction.Commit();
                 }
@@ -241,5 +278,56 @@ namespace ERP_API.Domain.Services.Purchase
             result.Message = "Success void purchase receive.";
             return result;
         }
+
+        private bool IsPurchaseOrderInvalid(string poCode)
+        {
+            return Db.PurchaseOrderHeaders.Any(x => x.Code == poCode && new[] { "V", "CLS" }.Contains(x.Mark));
+        }
+
+        private bool IsQtyExcess(string code, string poCode, IEnumerable<PurchaseReceiveDetail> items)
+        {
+            // Get purchase receive lists
+            var rcvCodeList = Db.PurchaseReceiveHeaders
+                .Where(x => x.PoCode == poCode && x.Mark != "V" && x.Code != code)
+                .Select(x => x.Code).ToList();
+
+            // Calculate receive qty
+            var rcvD = Db.PurchaseReceiveDetails
+                .Where(x => rcvCodeList.Contains(x.Code) && x.Type == 0)
+                .GroupBy(x => new { x.ItemId, x.UnitId })
+                .Select(x => new
+                {
+                    x.Key.ItemId, x.Key.UnitId,
+                    QtyRcv = x.Sum(r => (decimal?)r.Qty)
+                });
+
+            // Calculate outstanding qty
+            var ordD = (
+                from o in Db.PurchaseOrderDetails
+                where o.Code == poCode && o.Type == 0
+                join r in rcvD
+                    on new { o.ItemId, o.UnitId } equals new { r.ItemId, r.UnitId } into rs
+                from r in rs.DefaultIfEmpty()
+                select new
+                {
+                    o.ItemId, o.UnitId, o.Qty,
+                    Oustanding = o.Qty - (r.QtyRcv ?? 0m)
+                }).ToList();
+
+            // Checking receive qty from item details is excess or not
+            var isExcess = (
+                from o in ordD
+                join d in items.Where(x => x.Type == 0)
+                    on new { o.ItemId, o.UnitId } equals new { d.ItemId, d.UnitId } into ds
+                from d in ds.DefaultIfEmpty()
+                where o.Oustanding < d.Qty
+                select new
+                {
+                    o.ItemId, o.UnitId, o.Oustanding
+                }).Any();
+
+            return isExcess;
+        }
+
     }
 }

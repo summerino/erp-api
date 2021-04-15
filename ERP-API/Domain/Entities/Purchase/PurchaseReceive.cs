@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using ERP_API.Entities;
+using ERP_API.Domain.Entities.Core;
 
 namespace ERP_API.Domain.Entities.Purchase
 {
@@ -127,13 +127,10 @@ namespace ERP_API.Domain.Entities.Purchase
 
         public short LineNo { get; set; }
 
+        [Column("PODetailId")]
+        public long? PoDetailId { get; set; }
+
         public int ItemId { get; set; }
-
-        [Column(TypeName = "decimal(18, 2)")]
-        public decimal OrderQty { get; set; }
-
-        [Column(TypeName = "decimal(18, 2)")]
-        public decimal OutstandingQty { get; set; }
 
         [Column(TypeName = "decimal(18, 2)")]
         public decimal Qty { get; set; }
@@ -168,7 +165,7 @@ namespace ERP_API.Domain.Entities.Purchase
 
         public int? TaxId { get; set; }
 
-        [Column(TypeName = "decimal(19, 6)")]
+        [Column(TypeName = "decimal(18, 2)")]
         public decimal TaxAmount { get; set; }
 
         [Column(TypeName = "decimal(19, 6)")]
@@ -196,11 +193,9 @@ namespace ERP_API.Domain.Entities.Purchase
 
         public short LineNo { get; set; }
 
+        public long? PoDetailId { get; set; }
+
         public int ItemId { get; set; }
-
-        public decimal OrderQty { get; set; }
-
-        public decimal OutstandingQty { get; set; }
 
         public decimal Qty { get; set; }
 
@@ -242,6 +237,10 @@ namespace ERP_API.Domain.Entities.Purchase
 
         public int Type { get; set; }
 
+
+        public decimal OrderQty { get; set; }
+
+        public decimal OutstandingQty { get; set; }
 
         public string ItemName { get; set; }
 

@@ -1,9 +1,9 @@
-﻿using ERP_API.Entities;
-using ERP_API.Extensions;
+﻿using ERP_API.Extensions;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using ERP_API.Domain.Entities.Core;
 using ERP_API.Domain.Entities.General;
 
 namespace ERP_API.Database

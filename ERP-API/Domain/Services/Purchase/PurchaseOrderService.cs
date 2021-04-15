@@ -133,7 +133,7 @@ namespace ERP_API.Domain.Services.Purchase
             try
             {
                 // Checking mark header data
-                if (Db.PurchaseOrderHeaders.Any(x => x.Code == data.Code & x.Mark == "V"))
+                if (Db.PurchaseOrderHeaders.Any(x => x.Code == data.Code && x.Mark == "V"))
                 {
                     result.Message = "Can't update purchase order because data already mark as void.";
                     return result;
@@ -147,7 +147,7 @@ namespace ERP_API.Domain.Services.Purchase
 
                 // Delete detail data that doesn't have in data item details
                 var delDetails = Db.PurchaseOrderDetails
-                    .Where(d => d.Code == data.Code & !data.ItemDetails.Select(x => x.Id).Contains(d.Id))
+                    .Where(d => d.Code == data.Code && !data.ItemDetails.Select(x => x.Id).Contains(d.Id))
                     .ToList();
 
                 foreach (var item in delDetails)
