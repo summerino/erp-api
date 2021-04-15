@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using ERP_API.Entities;
+using ERP_API.Domain.Entities.Core;
 
 namespace ERP_API.Domain.Entities.General
 {
@@ -48,7 +49,7 @@ namespace ERP_API.Domain.Entities.General
 
         public short CreditTerm { get; set; }
 
-        [Column(TypeName = "decimal(19, 4)")]
+        [Column(TypeName = "decimal(18, 2)")]
         public decimal CreditLimit { get; set; }
 
         [StringLength(30)]
@@ -63,7 +64,6 @@ namespace ERP_API.Domain.Entities.General
     {
         [StringLength(8)]
         [Key]
-        [StringLength(8)]
         public string Code { get; set; }
 
         [Required]
@@ -75,10 +75,6 @@ namespace ERP_API.Domain.Entities.General
         public string Name { get; set; }
 
         public int TypeId { get; set; }
-
-        [Required]
-        [MaxLength(50)]
-        public string Name { get; set; }
 
         [Required]
         [StringLength(100)]
