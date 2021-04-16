@@ -1,17 +1,19 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
-using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations.Schema;
 
-namespace ERP_API.Entities
+namespace ERP_API.Domain.Entities.Core
 {
     public class BaseEntity
     {
         public int CreatedBy { get; set; }
 
+        [Column(TypeName = "datetime")]
         public DateTime CreatedDate { get; set; }
 
         public int UpdatedBy { get; set; }
 
+        [Column(TypeName = "datetime")]
         public DateTime UpdatedDate { get; set; }
     }
 
@@ -26,7 +28,6 @@ namespace ERP_API.Entities
         public string Mark { get; set; }
     }
 
-    [Keyless]
     public class BaseNewCodeEntity
     {
         public string Value { get; set; }

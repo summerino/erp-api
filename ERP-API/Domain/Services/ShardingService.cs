@@ -4,6 +4,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using ERP_API.Database;
+using ERP_API.Domain.Entities;
 using ERP_API.Entities.Control;
 using ERP_API.Utils;
 
@@ -12,22 +13,24 @@ namespace ERP_API.Domain.Services
     public interface IShardingService
     {
         string DbPrefix { get; }
-        //Task ApplyDatabaseMigrationAsync(string connectionString, Guid shardingKey);
         Task<Guid> CreateNewInstanceAsync(string tenantName);
         Task<Guid> RegisterNewShardAsync(string connectionString, string tenantName);
         Task ApplyDatabaseMigrationAsync(string connectionString, Guid shardingKey);
+        Task ApplyMigrationAsync();
     }
 
     public class ShardingService : IShardingService
     {
-        private readonly ERPControlDbContext _controlDbConext;
+        private readonly ERPControlDbContext _controlCtx;
+        private readonly IClaimService _claim;
         private readonly IConfiguration _configuration;
 
         public string DbPrefix { get => "ErpInstance"; }
 
-        public ShardingService(ERPControlDbContext controlDbContext, IConfiguration configuration)
+        public ShardingService(ERPControlDbContext controlCtx, IClaimService claim, IConfiguration configuration)
         {
-            _controlDbConext = controlDbContext;
+            _controlCtx = controlCtx;
+            _claim = claim;
             _configuration = configuration;
         }
 
@@ -48,8 +51,8 @@ namespace ERP_API.Domain.Services
 
             Guid tenantShard = await GetOrCreateUnclaimedShardAsync(connectionString);
 
-            _controlDbConext.TenantDetails.Add(new TenantDetails() { Shard = tenantShard, TenantName = tenantName, TenantSlug = DatabaseUtility.GetTenantSlug(tenantName) });
-            await _controlDbConext.SaveChangesAsync();
+            _controlCtx.TenantDetails.Add(new TenantDetails() { Shard = tenantShard, TenantName = tenantName, TenantSlug = DatabaseUtility.GetTenantSlug(tenantName) });
+            await _controlCtx.SaveChangesAsync();
 
             return tenantShard;
         }
@@ -76,12 +79,29 @@ namespace ERP_API.Domain.Services
             }
         }
 
-            private async Task<Guid> GetOrCreateUnclaimedShardAsync(string connectionStrung)
+        public async Task ApplyMigrationAsync()
+        {
+            foreach (var tenant in _controlCtx.TenantDetails)
+            {
+                if (!string.IsNullOrWhiteSpace(tenant.ServerName) || !string.IsNullOrWhiteSpace(tenant.DatabaseName) ||
+                    !string.IsNullOrWhiteSpace(tenant.ServerUserId) || !string.IsNullOrWhiteSpace(tenant.ServerPassword))
+                {
+                    var optionsBuilder = new DbContextOptionsBuilder<TenantContext>();
+                    optionsBuilder.UseSqlServer(
+                        $"Server={tenant.ServerName};Database={tenant.DatabaseName};User Id={tenant.ServerUserId};Password={tenant.ServerPassword}");
+
+                    var tenantContext = new TenantContext(optionsBuilder.Options, _controlCtx, _claim);
+                    await tenantContext.Database.MigrateAsync();
+                }
+            }
+        }
+        
+        private async Task<Guid> GetOrCreateUnclaimedShardAsync(string connectionStrung)
         {
             Guid tenantShard = Guid.NewGuid();
-            _controlDbConext.ShardTable.Add(new ShardTable() { Shard = tenantShard });
+            _controlCtx.ShardTable.Add(new ShardTable() { Shard = tenantShard });
 
-            await _controlDbConext.SaveChangesAsync();
+            await _controlCtx.SaveChangesAsync();
 
             return tenantShard;
         }

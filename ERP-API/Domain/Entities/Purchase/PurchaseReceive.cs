@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using ERP_API.Entities;
+using ERP_API.Domain.Entities.Core;
 
 namespace ERP_API.Domain.Entities.Purchase
 {
@@ -27,7 +27,6 @@ namespace ERP_API.Domain.Entities.Purchase
         [StringLength(8)]
         public string SupCode { get; set; }
 
-        [Required]
         public long ReceiveBy { get; set; }
 
         public long? ApproveBy { get; set; }
@@ -83,7 +82,6 @@ namespace ERP_API.Domain.Entities.Purchase
         [StringLength(8)]
         public string SupCode { get; set; }
 
-        [Required]
         public long ReceiveBy { get; set; }
 
         public long? ApproveBy { get; set; }
@@ -165,7 +163,7 @@ namespace ERP_API.Domain.Entities.Purchase
 
         public int? TaxId { get; set; }
 
-        [Column(TypeName = "decimal(19, 6)")]
+        [Column(TypeName = "decimal(18, 2)")]
         public decimal TaxAmount { get; set; }
 
         [Column(TypeName = "decimal(19, 6)")]

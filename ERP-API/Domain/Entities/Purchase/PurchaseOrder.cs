@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using ERP_API.Entities;
+using ERP_API.Domain.Entities.Core;
 
 namespace ERP_API.Domain.Entities.Purchase
 {
@@ -69,6 +69,7 @@ namespace ERP_API.Domain.Entities.Purchase
         [StringLength(17)]
         public string Code { get; set; }
 
+        [Column(TypeName = "date")]
         public DateTime Date { get; set; }
 
         [Required]
@@ -164,7 +165,7 @@ namespace ERP_API.Domain.Entities.Purchase
 
         public int? TaxId { get; set; }
 
-        [Column(TypeName = "decimal(19, 6)")]
+        [Column(TypeName = "decimal(18, 2)")]
         public decimal TaxAmount { get; set; }
 
         [Column(TypeName = "decimal(19, 6)")]

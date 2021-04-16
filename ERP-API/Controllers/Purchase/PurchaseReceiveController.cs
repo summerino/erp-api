@@ -122,7 +122,7 @@ namespace ERP_API.Controllers.Purchase
             if (!data.ItemDetails.Any())
                 return (false, "Item details can't be empty.");
 
-            return data.ItemDetails.GroupBy(x => new { x.ItemId, x.UnitId }).Any(x => x.Count() > 1)
+            return data.ItemDetails.GroupBy(x => new { x.ItemId, x.UnitId, x.Type }).Any(x => x.Count() > 1)
                 ? (false, "There are duplicate item submitted with same unit.")
                 : (true, "");
         }

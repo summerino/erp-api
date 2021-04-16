@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -9,9 +8,11 @@ using Microsoft.EntityFrameworkCore;
 using ERP_API.Domain.Entities;
 using ERP_API.Domain.Interfaces.Inventory;
 using ERP_API.Domain.Interfaces.Purchase;
+using ERP_API.Domain.Interfaces.General;
 using ERP_API.Domain.Services;
 using ERP_API.Domain.Services.Inventory;
 using ERP_API.Domain.Services.Purchase;
+using ERP_API.Domain.Services.General;
 using ERP_API.Utils;
 using Newtonsoft.Json.Serialization;
 using Swift.Framework;
@@ -63,24 +64,29 @@ namespace ERP_API
             services.AddScoped<IShardingService, ShardingService>();
             services.AddScoped<IClaimService, ClaimService>();
 
+            // General services
+            services.AddScoped<ICustomersService, CustomersService>();
+
             // Inventory services
             services.AddScoped<IItemCategoryService, ItemCategoryService>();
             services.AddScoped<IItemService, ItemService>();
             services.AddScoped<IUoMConversionService, UoMConversionService>();
 
             // Purchase services
+            services.AddScoped<IPurchaseInvoiceService, PurchaseInvoiceService>();
             services.AddScoped<IPurchaseOrderService, PurchaseOrderService>();
             services.AddScoped<IPurchaseReceiveService, PurchaseReceiveService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ERPControlDbContext controlDbContext, IShardingService shardingService)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ERPControlDbContext controlDbContext,
+            IShardingService shardingService, IServiceProvider service­Provider)
         {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
-
+            
             //app.UseHttpsRedirection();
             app.UseRouting();
             app.UseCors();
@@ -102,7 +108,8 @@ namespace ERP_API
             services.AddDbContext<TenantContext>();
         }
 
-        public virtual void EnsureDatabaseCreated(ERPControlDbContext controlDbContext, IShardingService shardingService)
+        public virtual void EnsureDatabaseCreated(ERPControlDbContext controlDbContext,
+            IShardingService shardingService)
         {
             if (!DatabaseUtility.DatabaseExists(ControlDbConnectionString))
             {
@@ -110,12 +117,7 @@ namespace ERP_API
             }
 
             controlDbContext.Database.Migrate();
-
-            var shardList = controlDbContext.ShardTable.Select((s) => s.Shard).Distinct().ToList();
-            foreach (Guid shard in shardList)
-            {
-                shardingService.ApplyDatabaseMigrationAsync(ControlDbConnectionString, shard).GetAwaiter().GetResult();
-            }
+            shardingService.ApplyMigrationAsync().GetAwaiter().GetResult();
         }
     }
 }

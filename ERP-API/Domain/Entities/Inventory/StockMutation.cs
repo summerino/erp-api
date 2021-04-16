@@ -1,0 +1,41 @@
+﻿using System;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace ERP_API.Domain.Entities.Inventory
+{
+    [Table("trStockMutations", Schema = "dbo")]
+    public class StockMutation
+    {
+        public long Id { get; set; }
+
+        [Required]
+        [StringLength(8)]
+        public string WarehouseCode { get; set; }
+
+        [Column(TypeName = "date")]
+        public DateTime Date { get; set; }
+
+        public int ItemId { get; set; }
+
+        public int UomId { get; set; }
+
+        public int UnitId { get; set; }
+
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal Qty { get; set; }
+
+        [Required]
+        [StringLength(17)]
+        public string RefCode1 { get; set; }
+
+        public long RefDetailId1 { get; set; }
+
+        [StringLength(17)]
+        public string RefCode2 { get; set; }
+
+        [Required]
+        [StringLength(5)]
+        public string Src { get; set; }
+    }
+}
