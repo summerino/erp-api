@@ -32,11 +32,7 @@ namespace ERP_API.Domain.Services.General
 
             return data.ToDataSourceResult(skip, take, filter, sort);
         }
- 
-        public Customer FindByCode(string code)
-        {
-            return Db.Customers.Find(code);
-        }
+
 
         public override SaveResult Insert(Customer data)
         {
@@ -45,7 +41,7 @@ namespace ERP_API.Domain.Services.General
             using var transaction = Db.Database.BeginTransaction();
             try
             {
-                if (IsInitialExists(data.Initial))
+                if (IsInitialExists(data.Initial,""))
                 {
                     result.Message = "Initial code is already in the database.";
                     return result;
@@ -77,11 +73,11 @@ namespace ERP_API.Domain.Services.General
         {
             var result = new SaveResult(false);
 
-            if (IsInitialExists(data.Initial))
-            {
-                result.Message = "Initial code is already in the database.";
-                return result;
-            }
+                if (IsInitialExists(data.Initial,data.Code))
+                {
+                    result.Message = "Initial code is already in the database.";
+                    return result;
+                }
 
             // Update data
             Db.Customers.Update(data);
@@ -123,9 +119,9 @@ namespace ERP_API.Domain.Services.General
             return result;
         }
 
-        public bool IsInitialExists(string initial)
+        public bool IsInitialExists(string initial, string code)
         {
-            return Db.Customers.Any(x => x.Initial == initial);
+            return Db.Customers.Any(x => x.Initial == initial && x.Code != code);
         }
     }
 }

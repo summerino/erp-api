@@ -7,9 +7,10 @@ using ERP_API.Domain.Interfaces.General;
 using ERP_API.Model;
 using Newtonsoft.Json;
 using Swift.Framework.Model;
+using ERP_API.Domain.Models;
 
 namespace ERP_API.Controllers.General
-{   
+{
     [Route("api/v1/customer")]
     //[Authorize]
     [ApiController]
@@ -23,7 +24,7 @@ namespace ERP_API.Controllers.General
         }
 
         [HttpGet]
-        public IActionResult GetData(string search,string filters, string sorts, int skip, int take)
+        public IActionResult GetData(string search, string filters, string sorts, int skip, int take)
         {
             var data =
                 _cust.GetViewData(
@@ -37,12 +38,6 @@ namespace ERP_API.Controllers.General
                 RowCount = data.Total,
                 TableData = data.Data.ToDynamicList()
             });
-        }
-
-        [HttpGet("{code}")]
-        public IActionResult GetCustomerDetail(string code)
-        {
-            return Ok(_cust.FindByCode(code));
         }
 
         [HttpPost]
