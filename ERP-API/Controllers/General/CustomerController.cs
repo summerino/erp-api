@@ -60,7 +60,7 @@ namespace ERP_API.Controllers.General
             data.UpdatedBy = 1;
             data.UpdatedDate = DateTime.Now;
 
-            var result = _cust.Update(data,code);
+            var result = _cust.Update(data);
 
             return Ok(result);
         }
