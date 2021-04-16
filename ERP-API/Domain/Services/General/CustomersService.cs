@@ -32,7 +32,6 @@ namespace ERP_API.Domain.Services.General
             return data.ToDataSourceResult(skip, take, filter, sort);
         }
 
-
         public override SaveResult Insert(Customer data)
         {
             var result = new SaveResult(false);
