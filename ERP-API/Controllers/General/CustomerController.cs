@@ -43,10 +43,6 @@ namespace ERP_API.Controllers.General
         [HttpPost]
         public IActionResult OnPost(Customer data)
         {
-            var (isValid, message) = Validate(data);
-            if (!isValid)
-                return Ok(new SaveResult(false, message));
-
             data.IsActive = true;
             data.CreatedBy = 1;
             data.CreatedDate = DateTime.Now;
@@ -61,10 +57,6 @@ namespace ERP_API.Controllers.General
         [HttpPut("{code}")]
         public IActionResult OnPut(string code, Customer data)
         {
-            var (isValid, message) = Validate(data);
-            if (!isValid)
-                return Ok(new SaveResult(false, message));
-
             data.UpdatedBy = 1;
             data.UpdatedDate = DateTime.Now;
 
@@ -79,26 +71,6 @@ namespace ERP_API.Controllers.General
             var result = _cust.Delete(code, 1);
 
             return Ok(result);
-        }
-
-        private static (bool, string) Validate(Customer data)
-        {
-            if (data.Initial == null || data.Initial == "")
-                return (false, "Initial Code cannot be empty.");
-
-            if (data.TypeId == 0)
-                return (false, "Type Id Code cannot be empty.");
-
-            if (data.Name == null || data.Name == "")
-                return (false, "Name cannot be empty.");
-
-            if (data.Address1 == null || data.Address1 == "")
-                return (false, "Address Code cannot be empty.");
-
-            if (data.Phone == null || data.Phone == "")
-                return (false, "Phone Code cannot be empty.");
-
-            return (true, "");
         }
     }
 }
