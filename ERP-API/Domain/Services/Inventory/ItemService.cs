@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Dynamic.Core;
 using ERP_API.Domain.Entities;
 using ERP_API.Domain.Entities.Inventory;
 using ERP_API.Domain.Extensions;
 using ERP_API.Domain.Interfaces.Inventory;
 using ERP_API.Domain.Models;
-using ERP_API.Model;
 using Swift.Framework.Model;
 
 namespace ERP_API.Domain.Services.Inventory
@@ -19,9 +17,15 @@ namespace ERP_API.Domain.Services.Inventory
         {
         }
 
-        public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, string search)
+        public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
+            List<int> category, string search)
         {
             var data = Db.VwItems.AsQueryable();
+
+            if (category?.Any() ?? false)
+            {
+                data = data.Where(x => category.Contains(x.CategoryId));
+            }
 
             if (!string.IsNullOrEmpty(search))
             {
@@ -41,9 +45,10 @@ namespace ERP_API.Domain.Services.Inventory
             using var transaction = Db.Database.BeginTransaction();
             try
             {
-                if (IsInitialExists(data.Initial))
+                // Checking initial already exists or not
+                if (IsInitialExists(data.Initial, 0))
                 {
-                    result.Message = "Initial is already in the database.";
+                    result.Message = "Initial is already exists. Please use another initial.";
                     return result;
                 }
 
@@ -69,20 +74,20 @@ namespace ERP_API.Domain.Services.Inventory
         {
             var result = new SaveResult(false);
 
-            using var transaction = Db.Database.BeginTransaction();
-            try
+            // Checking initial already exists or not
+            if (IsInitialExists(data.Initial, data.Id))
             {
-                // Update data
-                Db.Items.Update(data);
-
-                Db.SaveChanges();
-                transaction.Commit();
-            }
-            catch (Exception ex)
-            {
-                result.Message = ex.InnerException?.Message ?? ex.Message;
+                result.Message = "Initial is already exists. Please use another initial.";
                 return result;
             }
+
+            // Update data
+            Db.Items.Update(data);
+            Db.Entry(data).Property(e => e.Id).IsModified = false;
+            Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
+            Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
+
+            Db.SaveChanges();
 
             result.Success = true;
             result.Data = data.Initial;
@@ -90,21 +95,21 @@ namespace ERP_API.Domain.Services.Inventory
             return result;
         }
 
-        public SaveResult Delete(string Initial, int userId)
+        public SaveResult Delete(int id, int userId)
         {
             var result = new SaveResult(false);
 
-            var data = Db.Items.Find(Initial);
+            var data = Db.Items.Find(id);
             if (data != null)
             {
-                // Checking active header data
+                // Checking active
                 if (!data.IsActive)
                 {
-                    result.Message = "Can't delete the item because data already deleted.";
+                    result.Message = "Can't inactive the item because data already inactive.";
                     return result;
                 }
 
-                // Update header data
+                // Update data
                 data.IsActive = false;
                 data.UpdatedBy = userId;
                 data.UpdatedDate = DateTime.Now;
@@ -113,13 +118,13 @@ namespace ERP_API.Domain.Services.Inventory
             }
 
             result.Success = true;
-            result.Message = "Success delete item.";
+            result.Message = "Success inactive item.";
             return result;
         }
 
-        public bool IsInitialExists(string initial)
+        public bool IsInitialExists(string initial, int id)
         {
-            return Db.Items.Any(x => x.Initial == initial);
+            return Db.Items.Any(x => x.Initial == initial && x.Id != id);
         }
     }
 }
