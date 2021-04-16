@@ -4,10 +4,10 @@ using System.Linq.Dynamic.Core;
 using Microsoft.AspNetCore.Mvc;
 using ERP_API.Domain.Entities.General;
 using ERP_API.Domain.Interfaces.General;
+using ERP_API.Domain.Models;
 using ERP_API.Model;
 using Newtonsoft.Json;
 using Swift.Framework.Model;
-using ERP_API.Domain.Models;
 
 namespace ERP_API.Controllers.General
 {
@@ -16,18 +16,18 @@ namespace ERP_API.Controllers.General
     [ApiController]
     public class CustomerController : ControllerBase
     {
-        private readonly ICustomersService _cust;
+        private readonly ICustomersService _customer;
 
-        public CustomerController(ICustomersService cust)
+        public CustomerController(ICustomersService customer)
         {
-            _cust = cust;
+            _customer = customer;
         }
 
         [HttpGet]
         public IActionResult GetData(string search, string filters, string sorts, int skip, int take)
         {
             var data =
-                _cust.GetViewData(
+                _customer.GetData(
                     skip, take,
                     JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
                     JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
@@ -49,7 +49,7 @@ namespace ERP_API.Controllers.General
             data.UpdatedBy = data.CreatedBy;
             data.UpdatedDate = data.CreatedDate;
 
-            var result = _cust.Insert(data);
+            var result = _customer.Insert(data);
 
             return Ok(result);
         }
@@ -60,7 +60,7 @@ namespace ERP_API.Controllers.General
             data.UpdatedBy = 1;
             data.UpdatedDate = DateTime.Now;
 
-            var result = _cust.Update(data);
+            var result = _customer.Update(data);
 
             return Ok(result);
         }
@@ -68,7 +68,7 @@ namespace ERP_API.Controllers.General
         [HttpDelete("{code}")]
         public IActionResult OnDelete(string code)
         {
-            var result = _cust.Delete(code, 1);
+            var result = _customer.Delete(code, 1);
 
             return Ok(result);
         }

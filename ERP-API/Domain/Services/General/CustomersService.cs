@@ -6,7 +6,6 @@ using ERP_API.Domain.Entities.General;
 using ERP_API.Domain.Extensions;
 using ERP_API.Domain.Interfaces.General;
 using ERP_API.Domain.Models;
-using ERP_API.Model;
 using Swift.Framework.Model;
 
 namespace ERP_API.Domain.Services.General
@@ -18,7 +17,7 @@ namespace ERP_API.Domain.Services.General
         {
         }
 
-        public DataSourceResult GetViewData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
+        public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
             string search)
         {
             var data = Db.VwCustomers.AsQueryable();
@@ -41,9 +40,10 @@ namespace ERP_API.Domain.Services.General
             using var transaction = Db.Database.BeginTransaction();
             try
             {
-                if (IsInitialExists(data.Initial,""))
+                // Checking initial already exists or not
+                if (IsInitialExists(data.Initial, ""))
                 {
-                    result.Message = "Initial code is already in the database.";
+                    result.Message = "Initial is already exists. Please use another initial.";
                     return result;
                 }
 
@@ -73,11 +73,12 @@ namespace ERP_API.Domain.Services.General
         {
             var result = new SaveResult(false);
 
-                if (IsInitialExists(data.Initial,data.Code))
-                {
-                    result.Message = "Initial code is already in the database.";
-                    return result;
-                }
+            // Checking initial already exists or not
+            if (IsInitialExists(data.Initial, data.Code))
+            {
+                result.Message = "Initial is already exists. Please use another initial.";
+                return result;
+            }
 
             // Update data
             Db.Customers.Update(data);
