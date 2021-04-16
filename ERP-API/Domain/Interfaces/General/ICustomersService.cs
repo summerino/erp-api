@@ -12,6 +12,5 @@ namespace ERP_API.Domain.Interfaces.General
             string search);
 
         SaveResult Delete(string code, int userId);
-        SaveResult Update(Customer data, string method);
     }
 }
