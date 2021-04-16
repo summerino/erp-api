@@ -2,22 +2,33 @@
 using System.Linq;
 using ERP_API.Domain.Entities;
 using ERP_API.Domain.Entities.Inventory;
+using ERP_API.Domain.Extensions;
 using ERP_API.Domain.Interfaces.Inventory;
+using ERP_API.Domain.Models;
+using Swift.Framework.Model;
 
 namespace ERP_API.Domain.Services.Inventory
 {
-    public class ItemCategoryService: IItemCategoryService
+    public class ItemCategoryService: GeneralService<ItemCategory>, IItemCategoryService
     {
-        private readonly TenantContext _tenantCtx;
-
-        public ItemCategoryService(TenantContext tenantCtx)
+        public ItemCategoryService(TenantContext db)
+            : base(db)
         {
-            _tenantCtx = tenantCtx;
         }
 
-        public IEnumerable<ItemCategory> GetData()
+        public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
+            string search)
         {
-            return _tenantCtx.ItemCategories.Where(x => x.IsActive);
+            var data = Db.ItemCategories.AsQueryable();
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                data = 
+                    data.Where(x =>
+                        x.Initial.Contains(search) || x.Name.Contains(search) || x.GroupId.Contains(search));
+            }
+
+            return data.ToDataSourceResult(skip, take, filter, sort);
         }
 
         public object GetHierarchy()
@@ -26,7 +37,7 @@ namespace ERP_API.Domain.Services.Inventory
             {
                 Id = 0,
                 Name = "All Category",
-                Children = DefineChildNodes(_tenantCtx.ItemCategories.Where(x => x.IsActive).ToList())
+                Children = DefineChildNodes(Db.ItemCategories.Where(x => x.IsActive).ToList())
             };
         }
 

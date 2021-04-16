@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using ERP_API.Domain.Models;
-using ERP_API.Model;
 using Swift.Framework.Model;
 
 namespace ERP_API.Domain.Interfaces

@@ -1,7 +1,11 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq.Dynamic.Core;
 using Microsoft.AspNetCore.Mvc;
 using ERP_API.Domain.Interfaces.Inventory;
-using ERP_API.Dtos;
+using ERP_API.Domain.Models;
+using ERP_API.Model;
+using Newtonsoft.Json;
+using Swift.Framework.Model;
 
 namespace ERP_API.Controllers.Inventory
 {
@@ -18,14 +22,19 @@ namespace ERP_API.Controllers.Inventory
         }
 
         [HttpGet]
-        public IActionResult GetData(string search) 
+        public IActionResult GetData(string search, string filters, string sorts, int skip, int take)
         {
-            var data = _category.GetData().ToList<dynamic>();
+            var data =
+                _category.GetData(
+                    skip, take,
+                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
+                    search);
 
-            return Ok(new MasterViewDto
+            return Ok(new ApiResponse
             {
-                RowCount = data.Count,
-                TableData = data
+                RowCount = data.Total,
+                TableData = data.Data.ToDynamicList()
             });
         }
 

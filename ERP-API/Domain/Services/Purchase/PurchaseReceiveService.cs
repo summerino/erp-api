@@ -41,7 +41,7 @@ namespace ERP_API.Domain.Services.Purchase
         {
             return Db.VwPurchaseReceiveDetails.Where(x => x.Code == code).OrderBy(x => x.LineNo);
         }
-
+        
         public SaveResult Insert(PurchaseReceiveRequest data)
         {
             var result = new SaveResult(false);
@@ -327,6 +327,5 @@ namespace ERP_API.Domain.Services.Purchase
 
             return isExcess;
         }
-
     }
 }
