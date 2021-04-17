@@ -53,6 +53,7 @@ namespace ERP_API.Domain.Entities
         // Purchase entities
         public DbSet<PurchaseInvoiceHeader> PurchaseInvoiceHeaders { get; set; }
         public DbSet<VwPurchaseInvoiceHeader> VwPurchaseInvoiceHeaders { get; set; }
+        public DbSet<PurchaseInvoiceDetail> PurchaseInvoiceDetails { get; set; }
         public DbSet<PurchaseOrderHeader> PurchaseOrderHeaders { get; set; }
         public DbSet<VwPurchaseOrderHeader> VwPurchaseOrderHeaders { get; set; }
         public DbSet<PurchaseOrderDetail> PurchaseOrderDetails { get; set; }
@@ -124,6 +125,11 @@ namespace ERP_API.Domain.Entities
             modelBuilder.Entity<VwPurchaseInvoiceHeader>()
                 .HasNoKey()
                 .ToView("vwPurchaseOrderHeader", Schema.Purchasing);
+
+            modelBuilder.Entity<PurchaseInvoiceDetail>(entity =>
+                entity.Property(e => e.Code)
+                    .IsRequired()
+            );
 
             modelBuilder.Entity<PurchaseOrderHeader>(entity =>
                 entity.Property(e => e.Mark)

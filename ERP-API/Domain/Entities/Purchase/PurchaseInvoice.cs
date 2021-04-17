@@ -39,7 +39,7 @@ namespace ERP_API.Domain.Entities.Purchase
         public decimal PaidAmount { get; set; }
 
         [Column(TypeName = "decimal(18, 2)")]
-        public decimal InvoiceAmount { get; set; }
+        public decimal Total { get; set; }
 
         [StringLength(256)]
         public string Notes { get; set; }
@@ -65,7 +65,7 @@ namespace ERP_API.Domain.Entities.Purchase
 
         public decimal PaidAmount { get; set; }
 
-        public decimal InvoiceAmount { get; set; }
+        public decimal Total { get; set; }
 
         public string Notes { get; set; }
 
@@ -85,60 +85,29 @@ namespace ERP_API.Domain.Entities.Purchase
 
         public short LineNo { get; set; }
 
-        [Column("PODetailId")]
-        public long? PoDetailId { get; set; }
-
-        public int ItemId { get; set; }
-
-        [Column(TypeName = "decimal(18, 2)")]
-        public decimal Qty { get; set; }
-
-        public int UomId { get; set; }
-
-        public int UnitId { get; set; }
+        [Required]
+        [StringLength(17)]
+        public string RcvCode { get; set; }
 
         [Column(TypeName = "decimal(18, 2)")]
-        public decimal? Length { get; set; }
+        public decimal ShipmentFee { get; set; }
 
         [Column(TypeName = "decimal(18, 2)")]
-        public decimal? Width { get; set; }
+        public decimal HandlingFee { get; set; }
 
         [Column(TypeName = "decimal(18, 2)")]
-        public decimal? Height { get; set; }
+        public decimal SubTotal { get; set; }
 
-        [Column(TypeName = "decimal(18, 3)")]
-        public decimal? Weight { get; set; }
-
-        [StringLength(10)]
-        public string DimensionMeasurement { get; set; }
-
-        [StringLength(10)]
-        public string WeightMeasurement { get; set; }
-
-        [Column(TypeName = "decimal(19, 6)")]
-        public decimal UnitPrice { get; set; }
-
-        [Column(TypeName = "decimal(19, 6)")]
-        public decimal Disc { get; set; }
-
-        public int? TaxId { get; set; }
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal FinalDisc { get; set; }
 
         [Column(TypeName = "decimal(18, 2)")]
         public decimal TaxAmount { get; set; }
 
-        [Column(TypeName = "decimal(19, 6)")]
-        public decimal NettPrice { get; set; }
-
-        [Column(TypeName = "decimal(19, 6)")]
+        [Column(TypeName = "decimal(18, 2)")]
         public decimal Total { get; set; }
 
-        [Column("DPP", TypeName = "decimal(19, 6)")]
+        [Column("DPP", TypeName = "decimal(18, 2)")]
         public decimal Dpp { get; set; }
-
-        [Required]
-        [StringLength(8)]
-        public string WarehouseCode { get; set; }
-
-        public int Type { get; set; }
     }
 }
