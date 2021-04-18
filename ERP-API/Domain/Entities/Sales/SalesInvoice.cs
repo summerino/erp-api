@@ -3,10 +3,10 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using ERP_API.Domain.Entities.Core;
 
-namespace ERP_API.Domain.Entities.Purchase
+namespace ERP_API.Domain.Entities.Sales
 {
-    [Table("PurchaseInvoiceHeader", Schema = Schema.Purchasing)]
-    public class PurchaseInvoiceHeader : BaseEntityWithMark
+    [Table("SalesInvoiceHeader", Schema = Schema.Sales)]
+    public class SalesInvoiceHeader : BaseEntityWithMark
     {
         [Key]
         [StringLength(17)]
@@ -18,16 +18,13 @@ namespace ERP_API.Domain.Entities.Purchase
         [Column(TypeName = "date")]
         public DateTime DueDate { get; set; }
 
-        [Column("POCode")]
+        [Column("SOCode")]
         [StringLength(17)]
-        public string PoCode { get; set; }
-
-        [StringLength(30)]
-        public string RefNo { get; set; }
+        public string SoCode { get; set; }
 
         [Required]
         [StringLength(8)]
-        public string SupCode { get; set; }
+        public string CustCode { get; set; }
 
         public long IssuedBy { get; set; }
 
@@ -45,7 +42,7 @@ namespace ERP_API.Domain.Entities.Purchase
         public string Notes { get; set; }
     }
 
-    public class VwPurchaseInvoiceHeader : BaseEntityWithMark
+    public class VwSalesInvoiceHeader : BaseEntityWithMark
     {
         public string Code { get; set; }
 
@@ -53,11 +50,9 @@ namespace ERP_API.Domain.Entities.Purchase
 
         public DateTime DueDate { get; set; }
 
-        public string PoCode { get; set; }
+        public string SoCode { get; set; }
 
-        public string RefNo { get; set; }
-
-        public string SupCode { get; set; }
+        public string CustCode { get; set; }
 
         public long IssuedBy { get; set; }
 
@@ -70,13 +65,13 @@ namespace ERP_API.Domain.Entities.Purchase
         public string Notes { get; set; }
 
 
-        public string SupName { get; set; }
+        public string CustName { get; set; }
 
         public string IssuedInitial { get; set; }
     }
 
-    [Table("PurchaseInvoiceDetail", Schema = Schema.Purchasing)]
-    public class PurchaseInvoiceDetail
+    [Table("SalesInvoiceDetail", Schema = Schema.Sales)]
+    public class SalesInvoiceDetail
     {
         public long Id { get; set; }
 
@@ -86,8 +81,9 @@ namespace ERP_API.Domain.Entities.Purchase
         public short LineNo { get; set; }
 
         [Required]
+        [Column("DOCode")]
         [StringLength(17)]
-        public string RcvCode { get; set; }
+        public string DoCode { get; set; }
 
         [Column(TypeName = "decimal(18, 2)")]
         public decimal ShipmentFee { get; set; }

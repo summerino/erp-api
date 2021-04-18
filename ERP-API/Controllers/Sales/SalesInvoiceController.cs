@@ -3,23 +3,23 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 using Microsoft.AspNetCore.Mvc;
-using ERP_API.Domain.Interfaces.Purchase;
+using ERP_API.Domain.Interfaces.Sales;
 using ERP_API.Domain.Models;
 using ERP_API.Model;
-using ERP_API.Model.Purchase;
+using ERP_API.Model.Sales;
 using Newtonsoft.Json;
 using Swift.Framework.Model;
 
-namespace ERP_API.Controllers.Purchase
+namespace ERP_API.Controllers.Sales
 {
-    [Route("api/v1/purchase-invoice")]
+    [Route("api/v1/sales-invoice")]
     //[Authorize]
     [ApiController]
-    public class PurchaseInvoiceController : ControllerBase
+    public class SalesInvoiceController : ControllerBase
     {
-        private readonly IPurchaseInvoiceService _inv;
+        private readonly ISalesInvoiceService _inv;
 
-        public PurchaseInvoiceController(IPurchaseInvoiceService inv)
+        public SalesInvoiceController(ISalesInvoiceService inv)
         {
             _inv = inv;
         }
@@ -47,7 +47,7 @@ namespace ERP_API.Controllers.Purchase
             var data = _inv.GetDetailData(code)
                 .Select(x => new
                 {
-                    x.Id, x.Code, x.LineNo, x.RcvCode, x.ShipmentFee, x.HandlingFee,
+                    x.Id, x.Code, x.LineNo, x.DoCode, x.ShipmentFee, x.HandlingFee,
                     x.SubTotal, x.FinalDisc, x.TaxAmount, x.Total, x.Dpp,
                     State = ""
                 })
@@ -61,7 +61,7 @@ namespace ERP_API.Controllers.Purchase
         }
 
         [HttpPost]
-        public IActionResult OnPost(PurchaseInvoiceRequest data)
+        public IActionResult OnPost(SalesInvoiceRequest data)
         {
             // Validate process
             var (isValid, message) = Validate(data);
@@ -81,7 +81,7 @@ namespace ERP_API.Controllers.Purchase
         }
 
         [HttpPut("{code}")]
-        public IActionResult OnPut(string code, PurchaseInvoiceRequest data)
+        public IActionResult OnPut(string code, SalesInvoiceRequest data)
         {
             // Validate process
             var (isValid, message) = Validate(data);
@@ -105,12 +105,12 @@ namespace ERP_API.Controllers.Purchase
             return Ok(result);
         }
 
-        private static (bool, string) Validate(PurchaseInvoiceRequest data)
+        private static (bool, string) Validate(SalesInvoiceRequest data)
         {
             if (!data.Details.Any())
                 return (false, "Item details can't be empty.");
 
-            return data.Details.GroupBy(x => new { x.RcvCode }).Any(x => x.Count() > 1)
+            return data.Details.GroupBy(x => new { x.DoCode }).Any(x => x.Count() > 1)
                 ? (false, "There are duplicate receive code submitted.")
                 : (true, "");
         }

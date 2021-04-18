@@ -3,10 +3,10 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using ERP_API.Domain.Entities.Core;
 
-namespace ERP_API.Domain.Entities.Purchase
+namespace ERP_API.Domain.Entities.Sales
 {
-    [Table("trPurchaseOrderHeaders", Schema = "dbo")]
-    public class PurchaseOrderHeader : BaseEntityWithMark
+    [Table("SalesOrderHeader", Schema = Schema.Sales)]
+    public class SalesOrderHeader : BaseEntityWithMark
     {
         [Key]
         [StringLength(17)]
@@ -17,9 +17,9 @@ namespace ERP_API.Domain.Entities.Purchase
 
         [Required]
         [StringLength(8)]
-        public string SupCode { get; set; }
+        public string CustCode { get; set; }
 
-        public long RequestBy { get; set; }
+        public long SalesBy { get; set; }
 
         [StringLength(8)]
         public string WarehouseCode { get; set; }
@@ -59,30 +59,20 @@ namespace ERP_API.Domain.Entities.Purchase
 
         [StringLength(256)]
         public string Notes { get; set; }
-
-        [StringLength(20)]
-        public string RcvStatus { get; set; }
     }
 
-    public class VwPurchaseOrderHeader : BaseEntityWithMark
+    public class VwSalesOrderHeader : BaseEntityWithMark
     {
-        [StringLength(17)]
         public string Code { get; set; }
 
-        [Column(TypeName = "date")]
         public DateTime Date { get; set; }
 
-        [Required]
-        [StringLength(8)]
-        public string SupCode { get; set; }
+        public string CustCode { get; set; }
 
-        public long RequestBy { get; set; }
+        public long SalesBy { get; set; }
 
-        [StringLength(8)]
         public string WarehouseCode { get; set; }
 
-        [Required]
-        [StringLength(3)]
         public string CurrCode { get; set; }
 
         public decimal Rate { get; set; }
@@ -105,20 +95,16 @@ namespace ERP_API.Domain.Entities.Purchase
 
         public decimal Dpp { get; set; }
 
-        [StringLength(256)]
         public string Notes { get; set; }
 
-        [StringLength(20)]
-        public string RcvStatus { get; set; }
 
+        public string CustName { get; set; }
 
-        public string SupName { get; set; }
-
-        public string RequestInitial { get; set; }
+        public string SalesInitial { get; set; }
     }
 
-    [Table("trPurchaseOrderDetails", Schema = "dbo")]
-    public class PurchaseOrderDetail
+    [Table("SalesOrderDetail", Schema = Schema.Sales)]
+    public class SalesOrderDetail
     {
         public long Id { get; set; }
 
@@ -155,7 +141,7 @@ namespace ERP_API.Domain.Entities.Purchase
         public string WeightMeasurement { get; set; }
 
         [Column(TypeName = "decimal(18, 2)")]
-        public decimal? QtyRcv { get; set; }
+        public decimal? QtyDlv { get; set; }
 
         [Column(TypeName = "decimal(19, 6)")]
         public decimal UnitPrice { get; set; }
@@ -188,22 +174,19 @@ namespace ERP_API.Domain.Entities.Purchase
         public string CoaCogs { get; set; }
 
         [StringLength(6)]
-        public string CoaPurc { get; set; }
+        public string CoaSls { get; set; }
 
         [StringLength(6)]
-        public string CoaPurcDisc { get; set; }
+        public string CoaSlsDisc { get; set; }
 
         [StringLength(6)]
-        public string CoaPurcReturn { get; set; }
-
-        public int Type { get; set; }
+        public string CoaSlsReturn { get; set; }
     }
 
-    public class VwPurchaseOrderDetail
+    public class VwSalesOrderDetail
     {
         public long Id { get; set; }
 
-        [StringLength(17)]
         public string Code { get; set; }
 
         public short LineNo { get; set; }
@@ -224,13 +207,11 @@ namespace ERP_API.Domain.Entities.Purchase
 
         public decimal? Weight { get; set; }
 
-        [StringLength(10)]
         public string DimensionMeasurement { get; set; }
 
-        [StringLength(10)]
         public string WeightMeasurement { get; set; }
 
-        public decimal? QtyRcv { get; set; }
+        public decimal? QtyDlv { get; set; }
 
         public decimal UnitPrice { get; set; }
 
@@ -246,34 +227,28 @@ namespace ERP_API.Domain.Entities.Purchase
 
         public decimal Dpp { get; set; }
 
-        [StringLength(256)]
         public string Notes { get; set; }
 
-        [StringLength(6)]
         public string CoaInventory { get; set; }
 
-        [StringLength(6)]
         public string CoaCogs { get; set; }
 
-        [StringLength(6)]
-        public string CoaPurc { get; set; }
+        public string CoaSls { get; set; }
 
-        [StringLength(6)]
-        public string CoaPurcDisc { get; set; }
+        public string CoaSlsDisc { get; set; }
 
-        [StringLength(6)]
-        public string CoaPurcReturn { get; set; }
+        public string CoaSlsReturn { get; set; }
 
-        public int Type { get; set; }
 
+        public string ItemInitial { get; set; }
 
         public string ItemName { get; set; }
 
-        public int? ItemUomBuyId { get; set; }
+        public int? ItemUomSellId { get; set; }
 
-        public string ItemUomBuyName { get; set; }
+        public string ItemUomSellName { get; set; }
 
-        public decimal? ItemBuyPrice { get; set; }
+        public decimal? ItemSellPrice { get; set; }
 
         public string UomInitial { get; set; }
         

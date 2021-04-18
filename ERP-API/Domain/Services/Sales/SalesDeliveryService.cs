@@ -4,18 +4,18 @@ using System.Linq;
 using System.Linq.Dynamic.Core;
 using Microsoft.EntityFrameworkCore;
 using ERP_API.Domain.Entities;
-using ERP_API.Domain.Entities.Purchase;
+using ERP_API.Domain.Entities.Sales;
 using ERP_API.Domain.Extensions;
-using ERP_API.Domain.Interfaces.Purchase;
+using ERP_API.Domain.Interfaces.Sales;
 using ERP_API.Domain.Models;
-using ERP_API.Model.Purchase;
+using ERP_API.Model.Sales;
 using Swift.Framework.Model;
 
-namespace ERP_API.Domain.Services.Purchase
+namespace ERP_API.Domain.Services.Sales
 {
-    public class PurchaseReceiveService : GeneralService<PurchaseReceiveHeader>, IPurchaseReceiveService
+    public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesDeliveryService
     {
-        public PurchaseReceiveService(TenantContext db)
+        public SalesDeliveryService(TenantContext db)
             : base(db)
         {
         }
@@ -23,89 +23,89 @@ namespace ERP_API.Domain.Services.Purchase
         public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
             string search)
         {
-            var data = Db.VwPurchaseReceiveHeaders.AsQueryable();
+            var data = Db.VwSalesDeliveryHeaders.AsQueryable();
 
             if (!string.IsNullOrEmpty(search))
             {
                 data = DateTime.TryParse(search, out var searchDate)
                     ? data.Where(x => x.Date == searchDate)
                     : data.Where(x =>
-                        x.Code.Contains(search) || x.SupName.Contains(search) || x.PoCode == search ||
-                        x.ReceiveInitial.Contains(search) || x.RefNo.StartsWith(search));
+                        x.Code.Contains(search) || x.CustName.Contains(search) || x.SoCode == search ||
+                        x.ShippedInitial.Contains(search));
             }
 
             return data.ToDataSourceResult(skip, take, filter, sort);
         }
 
-        public IEnumerable<VwPurchaseReceiveDetail> GetDetailData(string code)
+        public IEnumerable<VwSalesDeliveryDetail> GetDetailData(string code)
         {
-            return Db.VwPurchaseReceiveDetails.Where(x => x.Code == code).OrderBy(x => x.LineNo);
+            return Db.VwSalesDeliveryDetails.Where(x => x.Code == code).OrderBy(x => x.LineNo);
         }
 
         public List<dynamic> GetRelatedTransactions(string code)
         {
-            var piD = from dt in Db.PurchaseInvoiceDetails
-                      where dt.RcvCode == code
+            var siD = from dt in Db.SalesInvoiceDetails
+                      where dt.DoCode == code
                       select dt.Code;
 
-            var data = from piH in Db.PurchaseInvoiceHeaders
-                       where piD.Contains(piH.Code) && piH.Mark == "A"
-                       select new { piH.Code, piH.Date, piH.Total };
+            var data = from siH in Db.SalesInvoiceHeaders
+                       where siD.Contains(siH.Code) && siH.Mark == "A"
+                       select new { siH.Code, siH.Date, siH.Total };
 
             return data.ToDynamicList();
         }
 
-        public IEnumerable<PurchaseReceiveHeader> GetUnInvoiceData(string poCode, string invCode)
+        public IEnumerable<SalesDeliveryHeader> GetUnInvoiceData(string soCode, string invCode)
         {
-            var data = Db.PurchaseReceiveHeaders.Where(x => x.PoCode == poCode);
+            var data = Db.SalesDeliveryHeaders.Where(x => x.SoCode == soCode);
 
             data = string.IsNullOrWhiteSpace(invCode)
                 ? data.Where(x => x.Mark == "A")
                 : data.Where(x => x.Mark == "A" ||
-                                  Db.PurchaseInvoiceDetails
+                                  Db.SalesInvoiceDetails
                                       .Where(i => i.Code == invCode)
-                                      .Select(i => i.RcvCode).Contains(x.Code));
+                                      .Select(i => i.DoCode).Contains(x.Code));
 
             return data;
         }
 
-        public SaveResult Insert(PurchaseReceiveRequest data)
+        public SaveResult Insert(SalesDeliveryRequest data)
         {
             var result = new SaveResult(false);
 
             using var transaction = Db.Database.BeginTransaction();
             try
             {
-                // Checking purchase order mark
-                if (IsPurchaseOrderInvalid(data.PoCode))
+                // Checking sales order mark
+                if (IsSalesOrderInvalid(data.SoCode))
                 {
-                    result.Message = "Can't update purchase receive because purchase order already mark as void or close.";
+                    result.Message = "Can't update sales delivery because sales order already mark as void or close.";
                     return result;
                 }
 
-                // Checking receive qty is excess or not
-                if (IsQtyExcess(data.Code, data.PoCode, data.ItemDetails))
+                // Checking deliver qty is excess or not
+                if (IsQtyExcess(data.Code, data.SoCode, data.ItemDetails))
                 {
-                    result.Message = "Can't update purchase receive because receive qty bigger than outstanding qty.";
+                    result.Message = "Can't update sales delivery because deliver qty bigger than outstanding qty.";
                     return result;
                 }
 
                 // Get new code
-                var newCode = GetNewCode("RCV_NUM_FMT", data.Date);
+                var newCode = GetNewCode("DO_NUM_FMT", data.Date);
                     
                 // Insert header data
                 data.Code = newCode;
-                Db.PurchaseReceiveHeaders.Add(data);
+                Db.SalesDeliveryHeaders.Add(data);
 
                 // Insert detail data
                 short i = 0;
                 foreach (var item in data.ItemDetails)
                 {
-                    Db.PurchaseReceiveDetails.Add(new PurchaseReceiveDetail
+                    Db.SalesDeliveryDetails.Add(new SalesDeliveryDetail
                     {
                         Code = newCode,
                         LineNo = ++i,
-                        PoDetailId = item.PoDetailId,
+                        SoDetailId = item.SoDetailId,
                         ItemId = item.ItemId,
                         Qty = item.Qty,
                         UomId = item.UomId,
@@ -122,17 +122,15 @@ namespace ERP_API.Domain.Services.Purchase
                         TaxAmount = item.TaxAmount,
                         NettPrice = item.NettPrice,
                         Total = item.Total,
-                        Dpp = item.Dpp,
-                        WarehouseCode = item.WarehouseCode,
-                        Type = item.Type
+                        Dpp = item.Dpp
                     });
                 }
 
                 // Save changes
                 Db.SaveChanges();
 
-                // Execute sp_update_po_rcv_qty
-                Db.Database.ExecuteSqlRaw("EXEC sp_update_po_rcv_qty {0}", data.PoCode);
+                // Execute sp_update_so_dlv_qty
+                Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", data.SoCode);
 
                 transaction.Commit();
             }
@@ -144,11 +142,11 @@ namespace ERP_API.Domain.Services.Purchase
 
             result.Success = true;
             result.Data = data.Code;
-            result.Message = "Success insert purchase receive.";
+            result.Message = "Success insert sales delivery.";
             return result;
         }
 
-        public SaveResult Update(PurchaseReceiveRequest data)
+        public SaveResult Update(SalesDeliveryRequest data)
         {
             var result = new SaveResult(false);
 
@@ -156,39 +154,39 @@ namespace ERP_API.Domain.Services.Purchase
             try
             {
                 // Checking mark header data
-                if (Db.PurchaseReceiveHeaders.Any(x => x.Code == data.Code && x.Mark == "V"))
+                if (Db.SalesDeliveryHeaders.Any(x => x.Code == data.Code && x.Mark == "V"))
                 {
-                    result.Message = "Can't update purchase receive because data already mark as void.";
+                    result.Message = "Can't update sales delivery because data already mark as void.";
                     return result;
                 }
 
-                // Checking purchase order mark
-                if (IsPurchaseOrderInvalid(data.PoCode))
+                // Checking sales order mark
+                if (IsSalesOrderInvalid(data.SoCode))
                 {
-                    result.Message = "Can't update purchase receive because purchase order already mark as void or close.";
+                    result.Message = "Can't update sales delivery because sales order already mark as void or close.";
                     return result;
                 }
 
-                // Checking receive qty is excess or not
-                if (IsQtyExcess(data.Code, data.PoCode, data.ItemDetails))
+                // Checking deliver qty is excess or not
+                if (IsQtyExcess(data.Code, data.SoCode, data.ItemDetails))
                 {
-                    result.Message = "Can't update purchase receive because receive qty bigger than outstanding qty.";
+                    result.Message = "Can't update sales delivery because deliver qty bigger than outstanding qty.";
                     return result;
                 }
 
                 // Update header data
-                Db.PurchaseReceiveHeaders.Update(data);
+                Db.SalesDeliveryHeaders.Update(data);
                 Db.Entry(data).Property(e => e.Code).IsModified = false;
                 Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
                 Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
 
                 // Get detail data that exists in receive before
-                var delDetails = Db.PurchaseReceiveDetails
+                var delDetails = Db.SalesDeliveryDetails
                     .Where(d => d.Code == data.Code && !data.ItemDetails.Select(x => x.Id).Contains(d.Id))
                     .ToList();
 
                 // Get detail data that exists in receive before
-                Db.PurchaseReceiveDetails.RemoveRange(delDetails);
+                Db.SalesDeliveryDetails.RemoveRange(delDetails);
 
                 // Update detail data
                 short i = 0;
@@ -196,11 +194,11 @@ namespace ERP_API.Domain.Services.Purchase
                 {
                     if (item.Id <= 0)
                     {
-                        Db.PurchaseReceiveDetails.Add(new PurchaseReceiveDetail
+                        Db.SalesDeliveryDetails.Add(new SalesDeliveryDetail
                         {
                             Code = data.Code,
                             LineNo = ++i,
-                            PoDetailId = item.PoDetailId,
+                            SoDetailId = item.SoDetailId,
                             ItemId = item.ItemId,
                             Qty = item.Qty,
                             UomId = item.UomId,
@@ -217,16 +215,14 @@ namespace ERP_API.Domain.Services.Purchase
                             TaxAmount = item.TaxAmount,
                             NettPrice = item.NettPrice,
                             Total = item.Total,
-                            Dpp = item.Dpp,
-                            WarehouseCode = item.WarehouseCode,
-                            Type = item.Type
+                            Dpp = item.Dpp
                         });
                     }
                     else
                     {
                         item.LineNo = ++i;
 
-                        Db.PurchaseReceiveDetails.Update(item);
+                        Db.SalesDeliveryDetails.Update(item);
                         Db.Entry(item).Property(e => e.Code).IsModified = false;
                     }
                 }
@@ -234,13 +230,13 @@ namespace ERP_API.Domain.Services.Purchase
                 // Save changes
                 Db.SaveChanges();
 
-                // Execute sp_update_stock_mutation_from_rcv
+                // Execute sp_update_stock_mutation_from_do
                 Db.Database.ExecuteSqlRaw(
-                    "EXEC sp_update_stock_mutation_from_rcv {0}, {1}, {2}",
-                    data.Code, data.Date, data.PoCode);
+                    "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
+                    data.Code, data.Date, data.SoCode);
 
-                // Execute sp_update_po_rcv_qty
-                Db.Database.ExecuteSqlRaw("EXEC sp_update_po_rcv_qty {0}", data.PoCode);
+                // Execute sp_update_so_dlv_qty
+                Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", data.SoCode);
 
                 transaction.Commit();
             }
@@ -252,7 +248,7 @@ namespace ERP_API.Domain.Services.Purchase
 
             result.Success = true;
             result.Data = data.Code;
-            result.Message = "Success update purchase receive.";
+            result.Message = "Success update sales delivery.";
             return result;
         }
 
@@ -260,13 +256,13 @@ namespace ERP_API.Domain.Services.Purchase
         {
             var result = new SaveResult(false);
 
-            var data = Db.PurchaseReceiveHeaders.Find(code);
+            var data = Db.SalesDeliveryHeaders.Find(code);
             if (data != null)
             {
                 // Checking mark header data
                 if (data.Mark == "V")
                 {
-                    result.Message = "Can't void purchase receive because data already mark as void.";
+                    result.Message = "Can't void sales delivery because data already mark as void.";
                     return result;
                 }
 
@@ -281,8 +277,8 @@ namespace ERP_API.Domain.Services.Purchase
                     // Save changes
                     Db.SaveChanges();
 
-                    // Execute sp_update_po_rcv_qty
-                    Db.Database.ExecuteSqlRaw("EXEC sp_update_po_rcv_qty {0}", data.PoCode);
+                    // Execute sp_update_so_dlv_qty
+                    Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", data.SoCode);
 
                     transaction.Commit();
                 }
@@ -294,49 +290,49 @@ namespace ERP_API.Domain.Services.Purchase
             }
 
             result.Success = true;
-            result.Message = "Success void purchase receive.";
+            result.Message = "Success void sales delivery.";
             return result;
         }
 
-        private bool IsPurchaseOrderInvalid(string poCode)
+        private bool IsSalesOrderInvalid(string soCode)
         {
-            return Db.PurchaseOrderHeaders.Any(x => x.Code == poCode && new[] { "V", "CLS" }.Contains(x.Mark));
+            return Db.SalesOrderHeaders.Any(x => x.Code == soCode && new[] { "V", "CLS" }.Contains(x.Mark));
         }
 
-        private bool IsQtyExcess(string code, string poCode, IEnumerable<PurchaseReceiveDetail> items)
+        private bool IsQtyExcess(string code, string soCode, IEnumerable<SalesDeliveryDetail> items)
         {
-            // Get purchase receive lists
-            var rcvCodeList = Db.PurchaseReceiveHeaders
-                .Where(x => x.PoCode == poCode && x.Mark != "V" && x.Code != code)
+            // Get sales delivery lists
+            var dlvCodeList = Db.SalesDeliveryHeaders
+                .Where(x => x.SoCode == soCode && x.Mark != "V" && x.Code != code)
                 .Select(x => x.Code).ToList();
 
-            // Calculate receive qty
-            var rcvD = Db.PurchaseReceiveDetails
-                .Where(x => rcvCodeList.Contains(x.Code) && x.Type == 0)
+            // Calculate delivery qty
+            var rcvD = Db.SalesDeliveryDetails
+                .Where(x => dlvCodeList.Contains(x.Code))
                 .GroupBy(x => new { x.ItemId, x.UnitId })
                 .Select(x => new
                 {
                     x.Key.ItemId, x.Key.UnitId,
-                    QtyRcv = x.Sum(r => (decimal?)r.Qty)
+                    QtyDlv = x.Sum(r => (decimal?)r.Qty)
                 });
 
             // Calculate outstanding qty
             var ordD = (
-                from o in Db.PurchaseOrderDetails
-                where o.Code == poCode && o.Type == 0
+                from o in Db.SalesOrderDetails
+                where o.Code == soCode
                 join r in rcvD
                     on new { o.ItemId, o.UnitId } equals new { r.ItemId, r.UnitId } into rs
                 from r in rs.DefaultIfEmpty()
                 select new
                 {
                     o.ItemId, o.UnitId, o.Qty,
-                    Oustanding = o.Qty - (r.QtyRcv ?? 0m)
+                    Oustanding = o.Qty - (r.QtyDlv ?? 0m)
                 }).ToList();
 
-            // Checking receive qty from item details is excess or not
+            // Checking deliver qty from item details is excess or not
             var isExcess = (
                 from o in ordD
-                join d in items.Where(x => x.Type == 0)
+                join d in items
                     on new { o.ItemId, o.UnitId } equals new { d.ItemId, d.UnitId } into ds
                 from d in ds.DefaultIfEmpty()
                 where o.Oustanding < d.Qty

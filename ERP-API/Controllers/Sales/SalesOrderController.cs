@@ -3,32 +3,35 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 using Microsoft.AspNetCore.Mvc;
-using ERP_API.Domain.Interfaces.Purchase;
+using ERP_API.Domain.Interfaces.Inventory;
+using ERP_API.Domain.Interfaces.Sales;
 using ERP_API.Domain.Models;
 using ERP_API.Model;
-using ERP_API.Model.Purchase;
+using ERP_API.Model.Sales;
 using Newtonsoft.Json;
 using Swift.Framework.Model;
 
-namespace ERP_API.Controllers.Purchase
+namespace ERP_API.Controllers.Sales
 {
-    [Route("api/v1/purchase-receive")]
+    [Route("api/v1/sales-order")]
     //[Authorize]
     [ApiController]
-    public class PurchaseReceiveController : ControllerBase
+    public class SalesOrderController : ControllerBase
     {
-        private readonly IPurchaseReceiveService _rcv;
+        private readonly ISalesOrderService _so;
+        private readonly IUoMConversionService _uomC;
 
-        public PurchaseReceiveController(IPurchaseReceiveService rcv)
+        public SalesOrderController(ISalesOrderService so, IUoMConversionService uomC)
         {
-            _rcv = rcv;
+            _so = so;
+            _uomC = uomC;
         }
 
         [HttpGet]
         public IActionResult GetData(string search, string filters, string sorts, int skip, int take)
         {
-            var data =
-                _rcv.GetData(
+            var data = 
+                _so.GetData(
                     skip, take,
                     JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
                     JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
@@ -42,22 +45,32 @@ namespace ERP_API.Controllers.Purchase
         }
 
         [HttpGet("item")]
-        public IActionResult GetDetailData(string code)
+        public IActionResult GetDetailData(string code, bool? fullReceived)
         {
-            var data = _rcv.GetDetailData(code)
+            var uomC =_uomC.GetData().ToList();
+
+            var data = _so.GetDetailData(code, fullReceived)
                 .Select(x => new
                 {
-                    x.Id, x.Code, x.LineNo, x.PoDetailId, x.ItemId, x.ItemName, x.OrderQty, x.OutstandingQty, x.Qty,
-                    x.UomId, x.UnitId, x.UnitName,
+                    x.Id, x.Code, x.LineNo, x.ItemId, x.ItemInitial, x.ItemName,
+                    x.UomId, x.UnitId, x.UnitName, x.Qty,
                     x.Length, x.Width, x.Height, x.Weight, x.DimensionMeasurement, x.WeightMeasurement,
-                    x.UnitPrice, x.Disc, x.TaxId, x.TaxAmount, x.NettPrice, x.Total, x.Dpp,
-                    x.WarehouseCode, x.Type,
-                    OldUnitId = x.ItemUomBuyId,
-                    OldUnitName = x.ItemUomBuyName,
-                    OldUnitPrice = x.ItemBuyPrice,
+                    x.QtyDlv, x.UnitPrice, x.Disc, x.TaxId, x.TaxAmount,
+                    x.NettPrice, x.Total, x.Dpp, x.Notes,
+                    x.CoaInventory, x.CoaCogs, x.CoaSls, x.CoaSlsDisc, x.CoaSlsReturn,
+                    Units = uomC.Where(u => u.UomId == x.UomId)
+                        .Select(u => new
+                        {
+                            u.Id, u.UomId, u.UnitToConvert, u.UnitEquivalent,
+                            u.Conversion, u.IsBaseUnit, u.Seq
+                        })
+                        .OrderBy(u => u.Seq)
+                        .ToList(),
+                    OldUnitId = x.ItemUomSellId,
+                    OldUnitName = x.ItemUomSellName,
+                    OldUnitPrice = x.ItemSellPrice,
                     TotTax = x.Qty * x.TaxAmount,
                     TotDPP = x.Qty * x.Dpp,
-                    TypeName = x.Type == 0 ? "Normal" : "Bonus",
                     State = ""
                 })
                 .ToList<dynamic>();
@@ -72,20 +85,8 @@ namespace ERP_API.Controllers.Purchase
         [HttpGet("related-trans")]
         public IActionResult GetRelatedTransactions(string code)
         {
-            var data = _rcv.GetRelatedTransactions(code);
-
-            return Ok(new ApiResponse
-            {
-                RowCount = data.Count,
-                TableData = data
-            });
-        }
-
-        [HttpGet("un-invoice")]
-        public IActionResult GetUnInvoiceData(string poCode, string invCode)
-        {
-            var data = _rcv.GetUnInvoiceData(poCode, invCode).ToList<dynamic>();
-
+            var data = _so.GetRelatedTransactions(code);
+            
             return Ok(new ApiResponse
             {
                 RowCount = data.Count,
@@ -94,7 +95,7 @@ namespace ERP_API.Controllers.Purchase
         }
 
         [HttpPost]
-        public IActionResult OnPost(PurchaseReceiveRequest data)
+        public IActionResult OnPost(SalesOrderRequest data)
         {
             // Validate process
             var (isValid, message) = Validate(data);
@@ -107,14 +108,14 @@ namespace ERP_API.Controllers.Purchase
             data.CreatedDate = DateTime.Now;
             data.UpdatedBy = data.CreatedBy;
             data.UpdatedDate = data.CreatedDate;
-
-            var result = _rcv.Insert(data);
+            
+            var result = _so.Insert(data);
 
             return Ok(result);
         }
 
         [HttpPut("{code}")]
-        public IActionResult OnPut(string code, PurchaseReceiveRequest data)
+        public IActionResult OnPut(string code, SalesOrderRequest data)
         {
             // Validate process
             var (isValid, message) = Validate(data);
@@ -125,7 +126,7 @@ namespace ERP_API.Controllers.Purchase
             data.UpdatedBy = 1;
             data.UpdatedDate = DateTime.Now;
 
-            var result = _rcv.Update(data);
+            var result = _so.Update(data);
 
             return Ok(result);
         }
@@ -133,17 +134,17 @@ namespace ERP_API.Controllers.Purchase
         [HttpDelete("{code}")]
         public IActionResult OnDelete(string code)
         {
-            var result = _rcv.Delete(code, 1);
+            var result = _so.Delete(code, 1);
 
             return Ok(result);
         }
 
-        private static (bool, string) Validate(PurchaseReceiveRequest data)
+        private static (bool, string) Validate(SalesOrderRequest data)
         {
             if (!data.ItemDetails.Any())
                 return (false, "Item details can't be empty.");
 
-            return data.ItemDetails.GroupBy(x => new { x.ItemId, x.UnitId, x.Type }).Any(x => x.Count() > 1)
+            return data.ItemDetails.GroupBy(x => new { x.ItemId, x.UnitId }).Any(x => x.Count() > 1)
                 ? (false, "There are duplicate item submitted with same unit.")
                 : (true, "");
         }

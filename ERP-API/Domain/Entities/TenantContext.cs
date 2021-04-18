@@ -6,6 +6,7 @@ using ERP_API.Domain.Entities.Core;
 using ERP_API.Domain.Entities.General;
 using ERP_API.Domain.Entities.Inventory;
 using ERP_API.Domain.Entities.Purchase;
+using ERP_API.Domain.Entities.Sales;
 using ERP_API.Domain.Services;
 
 namespace ERP_API.Domain.Entities
@@ -63,6 +64,19 @@ namespace ERP_API.Domain.Entities
         public DbSet<PurchaseReceiveDetail> PurchaseReceiveDetails { get; set; }
         public DbSet<VwPurchaseReceiveDetail> VwPurchaseReceiveDetails { get; set; }
 
+        // Sales entities
+        public DbSet<SalesDeliveryHeader> SalesDeliveryHeaders { get; set; }
+        public DbSet<VwSalesDeliveryHeader> VwSalesDeliveryHeaders { get; set; }
+        public DbSet<SalesDeliveryDetail> SalesDeliveryDetails { get; set; }
+        public DbSet<VwSalesDeliveryDetail> VwSalesDeliveryDetails { get; set; }
+        public DbSet<SalesInvoiceHeader> SalesInvoiceHeaders { get; set; }
+        public DbSet<VwSalesInvoiceHeader> VwSalesInvoiceHeaders { get; set; }
+        public DbSet<SalesInvoiceDetail> SalesInvoiceDetails { get; set; }
+        public DbSet<SalesOrderHeader> SalesOrderHeaders { get; set; }
+        public DbSet<VwSalesOrderHeader> VwSalesOrderHeaders { get; set; }
+        public DbSet<SalesOrderDetail> SalesOrderDetails { get; set; }
+        public DbSet<VwSalesOrderDetail> VwSalesOrderDetails { get; set; }
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
@@ -104,7 +118,7 @@ namespace ERP_API.Domain.Entities
             // Core entities
             modelBuilder.Entity<BaseNewCodeEntity>()
                 .HasNoKey()
-                .ToView(null);
+                .ToTable("BaseNewCodeEntity", t => t.ExcludeFromMigrations());
 
             // General entities
             modelBuilder.Entity<VwCustomer>()
@@ -124,7 +138,7 @@ namespace ERP_API.Domain.Entities
 
             modelBuilder.Entity<VwPurchaseInvoiceHeader>()
                 .HasNoKey()
-                .ToView("vwPurchaseOrderHeader", Schema.Purchasing);
+                .ToView("vwPurchaseInvoiceHeader", Schema.Purchasing);
 
             modelBuilder.Entity<PurchaseInvoiceDetail>(entity =>
                 entity.Property(e => e.Code)
@@ -148,8 +162,7 @@ namespace ERP_API.Domain.Entities
             modelBuilder.Entity<VwPurchaseOrderDetail>()
                 .HasNoKey()
                 .ToView("vw_po_d", "dbo");
-
-
+            
             modelBuilder.Entity<PurchaseReceiveHeader>(entity =>
                 entity.Property(e => e.Mark)
                     .IsRequired()
@@ -167,6 +180,58 @@ namespace ERP_API.Domain.Entities
             modelBuilder.Entity<VwPurchaseReceiveDetail>()
                 .HasNoKey()
                 .ToView("vw_pr_d", "dbo");
+
+            // Sales entities
+
+            modelBuilder.Entity<SalesDeliveryHeader>(entity =>
+                entity.Property(e => e.Mark)
+                    .IsRequired()
+            );
+
+            modelBuilder.Entity<VwSalesDeliveryHeader>()
+                .HasNoKey()
+                .ToView("VwSalesDeliveryHeader", Schema.Sales);
+
+            modelBuilder.Entity<SalesDeliveryDetail>(entity =>
+                entity.Property(e => e.Code)
+                    .IsRequired()
+            );
+
+            modelBuilder.Entity<VwSalesDeliveryDetail>()
+                .HasNoKey()
+                .ToView("VwSalesDeliveryDetail", Schema.Sales);
+
+            modelBuilder.Entity<SalesInvoiceHeader>(entity =>
+                entity.Property(e => e.Mark)
+                    .IsRequired()
+            );
+
+            modelBuilder.Entity<VwSalesInvoiceHeader>()
+                .HasNoKey()
+                .ToView("vwSalesInvoiceHeader", Schema.Sales);
+
+            modelBuilder.Entity<SalesInvoiceDetail>(entity =>
+                entity.Property(e => e.Code)
+                    .IsRequired()
+            );
+
+            modelBuilder.Entity<SalesOrderHeader>(entity =>
+                entity.Property(e => e.Mark)
+                    .IsRequired()
+            );
+
+            modelBuilder.Entity<VwSalesOrderHeader>()
+                .HasNoKey()
+                .ToView("vwSalesOrderHeader", Schema.Sales);
+
+            modelBuilder.Entity<SalesOrderDetail>(entity =>
+                entity.Property(e => e.Code)
+                    .IsRequired()
+            );
+
+            modelBuilder.Entity<VwSalesOrderDetail>()
+                .HasNoKey()
+                .ToView("VwSalesOrderDetail", Schema.Sales);
         }
     }
 }

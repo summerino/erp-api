@@ -3,32 +3,32 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 using Microsoft.AspNetCore.Mvc;
-using ERP_API.Domain.Interfaces.Purchase;
+using ERP_API.Domain.Interfaces.Sales;
 using ERP_API.Domain.Models;
 using ERP_API.Model;
-using ERP_API.Model.Purchase;
+using ERP_API.Model.Sales;
 using Newtonsoft.Json;
 using Swift.Framework.Model;
 
-namespace ERP_API.Controllers.Purchase
+namespace ERP_API.Controllers.Sales
 {
-    [Route("api/v1/purchase-invoice")]
+    [Route("api/v1/sales-delivery")]
     //[Authorize]
     [ApiController]
-    public class PurchaseInvoiceController : ControllerBase
+    public class SalesDeliveryController : ControllerBase
     {
-        private readonly IPurchaseInvoiceService _inv;
+        private readonly ISalesDeliveryService _dlv;
 
-        public PurchaseInvoiceController(IPurchaseInvoiceService inv)
+        public SalesDeliveryController(ISalesDeliveryService dlv)
         {
-            _inv = inv;
+            _dlv = dlv;
         }
 
         [HttpGet]
         public IActionResult GetData(string search, string filters, string sorts, int skip, int take)
         {
             var data =
-                _inv.GetData(
+                _dlv.GetData(
                     skip, take,
                     JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
                     JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
@@ -41,14 +41,22 @@ namespace ERP_API.Controllers.Purchase
             });
         }
 
-        [HttpGet("detail")]
+        [HttpGet("item")]
         public IActionResult GetDetailData(string code)
         {
-            var data = _inv.GetDetailData(code)
+            var data = _dlv.GetDetailData(code)
                 .Select(x => new
                 {
-                    x.Id, x.Code, x.LineNo, x.RcvCode, x.ShipmentFee, x.HandlingFee,
-                    x.SubTotal, x.FinalDisc, x.TaxAmount, x.Total, x.Dpp,
+                    x.Id, x.Code, x.LineNo, x.SoDetailId, x.ItemId, x.ItemInitial, x.ItemName,
+                    x.OrderQty, x.OutstandingQty, x.Qty,
+                    x.UomId, x.UnitId, x.UnitName,
+                    x.Length, x.Width, x.Height, x.Weight, x.DimensionMeasurement, x.WeightMeasurement,
+                    x.UnitPrice, x.Disc, x.TaxId, x.TaxAmount, x.NettPrice, x.Total, x.Dpp,
+                    OldUnitId = x.ItemUomSellId,
+                    OldUnitName = x.ItemUomSellName,
+                    OldUnitPrice = x.ItemSellPrice,
+                    TotTax = x.Qty * x.TaxAmount,
+                    TotDPP = x.Qty * x.Dpp,
                     State = ""
                 })
                 .ToList<dynamic>();
@@ -60,8 +68,32 @@ namespace ERP_API.Controllers.Purchase
             });
         }
 
+        [HttpGet("related-trans")]
+        public IActionResult GetRelatedTransactions(string code)
+        {
+            var data = _dlv.GetRelatedTransactions(code);
+
+            return Ok(new ApiResponse
+            {
+                RowCount = data.Count,
+                TableData = data
+            });
+        }
+
+        [HttpGet("un-invoice")]
+        public IActionResult GetUnInvoiceData(string soCode, string invCode)
+        {
+            var data = _dlv.GetUnInvoiceData(soCode, invCode).ToList<dynamic>();
+
+            return Ok(new ApiResponse
+            {
+                RowCount = data.Count,
+                TableData = data
+            });
+        }
+
         [HttpPost]
-        public IActionResult OnPost(PurchaseInvoiceRequest data)
+        public IActionResult OnPost(SalesDeliveryRequest data)
         {
             // Validate process
             var (isValid, message) = Validate(data);
@@ -75,13 +107,13 @@ namespace ERP_API.Controllers.Purchase
             data.UpdatedBy = data.CreatedBy;
             data.UpdatedDate = data.CreatedDate;
 
-            var result = _inv.Insert(data);
+            var result = _dlv.Insert(data);
 
             return Ok(result);
         }
 
         [HttpPut("{code}")]
-        public IActionResult OnPut(string code, PurchaseInvoiceRequest data)
+        public IActionResult OnPut(string code, SalesDeliveryRequest data)
         {
             // Validate process
             var (isValid, message) = Validate(data);
@@ -92,7 +124,7 @@ namespace ERP_API.Controllers.Purchase
             data.UpdatedBy = 1;
             data.UpdatedDate = DateTime.Now;
 
-            var result = _inv.Update(data);
+            var result = _dlv.Update(data);
 
             return Ok(result);
         }
@@ -100,18 +132,18 @@ namespace ERP_API.Controllers.Purchase
         [HttpDelete("{code}")]
         public IActionResult OnDelete(string code)
         {
-            var result = _inv.Delete(code, 1);
+            var result = _dlv.Delete(code, 1);
 
             return Ok(result);
         }
 
-        private static (bool, string) Validate(PurchaseInvoiceRequest data)
+        private static (bool, string) Validate(SalesDeliveryRequest data)
         {
-            if (!data.Details.Any())
+            if (!data.ItemDetails.Any())
                 return (false, "Item details can't be empty.");
 
-            return data.Details.GroupBy(x => new { x.RcvCode }).Any(x => x.Count() > 1)
-                ? (false, "There are duplicate receive code submitted.")
+            return data.ItemDetails.GroupBy(x => new { x.ItemId, x.UnitId }).Any(x => x.Count() > 1)
+                ? (false, "There are duplicate item submitted with same unit.")
                 : (true, "");
         }
     }
