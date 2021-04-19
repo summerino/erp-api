@@ -4,7 +4,7 @@ using ERP_API.Domain.Entities.Core;
 
 namespace ERP_API.Domain.Entities.General
 {
-    [Table("msTaxes", Schema = "dbo")]
+    [Table("Tax", Schema = Schema.General)]
     public class Tax : BaseEntityWithActive
     {
         public int Id { get; set; }

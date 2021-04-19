@@ -1,10 +1,11 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using ERP_API.Domain.Entities.Core;
 
 namespace ERP_API.Domain.Entities.Inventory
 {
-    [Table("trStockMutations", Schema = "dbo")]
+    [Table("StockMutation", Schema = Schema.Inventory)]
     public class StockMutation
     {
         public long Id { get; set; }

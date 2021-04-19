@@ -4,7 +4,7 @@ using ERP_API.Domain.Entities.Core;
 
 namespace ERP_API.Domain.Entities.Inventory
 {
-    [Table("msWarehouses", Schema = "dbo")]
+    [Table("Warehouse", Schema = Schema.Inventory)]
     public class Warehouse : BaseEntityWithActive
     {
         [Key]

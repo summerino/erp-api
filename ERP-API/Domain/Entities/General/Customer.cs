@@ -4,7 +4,7 @@ using ERP_API.Domain.Entities.Core;
 
 namespace ERP_API.Domain.Entities.General
 {
-    [Table("msCustomers", Schema = "dbo")]
+    [Table("Customer", Schema = Schema.General)]
     public class Customer : BaseEntityWithActive
     {
         [Key]
@@ -87,7 +87,7 @@ namespace ERP_API.Domain.Entities.General
         public string TypeName { get; set; }
     }
 
-    [Table("msCustomerTypes", Schema = "dbo")]
+    [Table("CustomerType", Schema = Schema.General)]
     public class CustomerType : BaseEntityWithActive
     {
         public int Id { get; set; }

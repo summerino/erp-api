@@ -4,7 +4,7 @@ using ERP_API.Domain.Entities.Core;
 
 namespace ERP_API.Domain.Entities.Accounting
 {
-    [Table("msCOAs", Schema = "dbo")]
+    [Table("COA", Schema = Schema.Accounting)]
     public class Coa : BaseEntityWithActive
     {
         public int Id { get; set; }
@@ -44,7 +44,7 @@ namespace ERP_API.Domain.Entities.Accounting
         public string IsDetCode { get; set; }
     }
 
-    [Table("msCOATypes", Schema = "dbo")]
+    [Table("COAType", Schema = Schema.Accounting)]
     public class CoaType : BaseEntityWithActive
     {
         public int Id { get; set; }

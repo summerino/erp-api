@@ -39,6 +39,7 @@ namespace ERP_API.Domain.Entities
         public DbSet<CustomerType> CustomerTypes { get; set; }
         public DbSet<Employee> Employees { get; set; }
         public DbSet<Supplier> Suppliers { get; set; }
+        public DbSet<VwSupplier> VwSuppliers { get; set; }
         public DbSet<SupplierType> SupplierTypes { get; set; }
         public DbSet<Tax> Taxes { get; set; }
 
@@ -123,12 +124,16 @@ namespace ERP_API.Domain.Entities
             // General entities
             modelBuilder.Entity<VwCustomer>()
                 .HasNoKey()
-                .ToView("vw_customers", "dbo");
+                .ToView("vwCustomer", Schema.General);
+
+            modelBuilder.Entity<VwSupplier>()
+                .HasNoKey()
+                .ToView("VwSupplier", Schema.General);
 
             // Inventory entities
             modelBuilder.Entity<VwItem>()
                 .HasNoKey()
-                .ToView("vw_items", "dbo");
+                .ToView("vwItem", Schema.Inventory);
 
             // Purchase entities
             modelBuilder.Entity<PurchaseInvoiceHeader>(entity =>
@@ -152,7 +157,7 @@ namespace ERP_API.Domain.Entities
 
             modelBuilder.Entity<VwPurchaseOrderHeader>()
                 .HasNoKey()
-                .ToView("vw_po_h", "dbo");
+                .ToView("VwPurchaseOrderHeader", Schema.Purchasing);
 
             modelBuilder.Entity<PurchaseOrderDetail>(entity =>
                 entity.Property(e => e.Code)
@@ -161,7 +166,7 @@ namespace ERP_API.Domain.Entities
 
             modelBuilder.Entity<VwPurchaseOrderDetail>()
                 .HasNoKey()
-                .ToView("vw_po_d", "dbo");
+                .ToView("VwPurchaseOrderDetail", Schema.Purchasing);
             
             modelBuilder.Entity<PurchaseReceiveHeader>(entity =>
                 entity.Property(e => e.Mark)
@@ -170,7 +175,7 @@ namespace ERP_API.Domain.Entities
 
             modelBuilder.Entity<VwPurchaseReceiveHeader>()
                 .HasNoKey()
-                .ToView("vw_pr_h", "dbo");
+                .ToView("VwPurchaseReceiveHeader", Schema.Purchasing);
 
             modelBuilder.Entity<PurchaseReceiveDetail>(entity =>
                 entity.Property(e => e.Code)
@@ -179,7 +184,7 @@ namespace ERP_API.Domain.Entities
 
             modelBuilder.Entity<VwPurchaseReceiveDetail>()
                 .HasNoKey()
-                .ToView("vw_pr_d", "dbo");
+                .ToView("VwPurchaseReceiveDetail", Schema.Purchasing);
 
             // Sales entities
 

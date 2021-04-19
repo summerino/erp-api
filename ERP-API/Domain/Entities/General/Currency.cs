@@ -4,7 +4,7 @@ using ERP_API.Domain.Entities.Core;
 
 namespace ERP_API.Domain.Entities.General
 {
-    [Table("msCurrencies", Schema = "dbo")]
+    [Table("Currency", Schema = Schema.General)]
     public class Currency : BaseEntityWithActive
     {
         [Key]
