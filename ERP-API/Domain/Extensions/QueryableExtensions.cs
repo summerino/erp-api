@@ -107,42 +107,44 @@ namespace ERP_API.Domain.Extensions
                     item.Keyword = number;
                     continue;
                 }
+
                 // Convert datetime-string to DateTime
-                //else if (currentPropertyType == typeof(DateTime) &&
-                //    DateTime.TryParse(item.Keyword.ToString(), out var dateTime))
-                //{
-                //    item.Keyword = dateTime;
+                if (currentPropertyType == typeof(DateTime) &&
+                    DateTime.TryParse(item.Keyword.ToString(), out var dateTime))
+                {
+                    item.Keyword = dateTime;
 
-                //    // Copy the time from the filter
-                //    var localTime = dateTime.ToLocalTime();
+                    // Copy the time from the filter
+                    //var localTime = dateTime.ToLocalTime();
 
-                //    // Used when the datetime's operator value is eq and local time is 00:00:00 
-                //    if (item.Operator == "eq")
-                //    {
-                //        if (localTime.Hour != 0 || localTime.Minute != 0 || localTime.Second != 0)
-                //            return filter;
+                    // Used when the datetime's operator value is eq and local time is 00:00:00 
+                    //if (item.Operator == "eq")
+                    //{
+                    //    if (localTime.Hour != 0 || localTime.Minute != 0 || localTime.Second != 0)
+                    //        continue;
 
-                //        var newFilters = new List<Filter>
-                //        {
-                //            // Instead of comparing for exact equality, we compare as greater than the start of the day...
-                //            new Filter
-                //            {
-                //                Field = item.Field,
-                //                Operator = "gte",
-                //                Keyword = new DateTime(localTime.Year, localTime.Month, localTime.Day, 0, 0, 0)
-                //            },
-                //            // ...and less than the end of that same day (we're making an additional filter here)
-                //            new Filter
-                //            {
-                //                Field = item.Field,
-                //                Operator = "lte",
-                //                Keyword = new DateTime(localTime.Year, localTime.Month, localTime.Day, 23, 59, 59)
-                //            }
-                //        };
-                //    }
+                    //    var newFilters = new List<Filter>
+                    //    {
+                    //        // Instead of comparing for exact equality, we compare as greater than the start of the day...
+                    //        new Filter
+                    //        {
+                    //            Field = item.Field,
+                    //            Operator = "gte",
+                    //            Keyword = new DateTime(localTime.Year, localTime.Month, localTime.Day, 0, 0, 0)
+                    //        },
+                    //        // ...and less than the end of that same day (we're making an additional filter here)
+                    //        new Filter
+                    //        {
+                    //            Field = item.Field,
+                    //            Operator = "lte",
+                    //            Keyword = new DateTime(localTime.Year, localTime.Month, localTime.Day, 23, 59, 59)
+                    //        }
+                    //    };
+                    //}
 
-                //    // Convert datetime to local 
-                //    item.Keyword = new DateTime(localTime.Year, localTime.Month, localTime.Day, localTime.Hour, localTime.Minute, localTime.Second, localTime.Millisecond);
+                    // Convert datetime to local 
+                    //item.Keyword = new DateTime(localTime.Year, localTime.Month, localTime.Day, localTime.Hour, localTime.Minute, localTime.Second, localTime.Millisecond);
+                }
 
                 item.Keyword = item.Keyword switch
                 {
