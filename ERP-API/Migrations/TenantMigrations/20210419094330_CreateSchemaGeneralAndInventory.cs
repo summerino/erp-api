@@ -489,6 +489,93 @@ AS
 		ON e.Id = pi_h.IssuedBy";
             migrationBuilder.Sql(sql);
 
+            // Alter view Sales.vwSalesOrderHeader
+            sql = @"ALTER VIEW [Sales].[vwSalesOrderHeader]
+AS
+	SELECT so_h.*,
+		c.[Name] AS CustName,
+		e.Initial AS SalesInitial
+	FROM Sales.SalesOrderHeader so_h
+	LEFT JOIN General.Customer c
+		ON c.Code = so_h.CustCode
+	LEFT JOIN General.Employee e
+		ON e.Id = so_h.SalesBy";
+            migrationBuilder.Sql(sql);
+
+            // Alter view Sales.vwSalesOrderDetail
+            sql = @"ALTER VIEW [Sales].[vwSalesOrderDetail]
+AS
+	SELECT so_d.*,
+		i.Initial AS ItemInitial,
+		i.[Name] AS ItemName,
+		i.UomSellId AS ItemUomSellId,
+		uom_c_s.UnitEquivalent AS ItemUomSellName,
+		i.SellPrice AS ItemSellPrice,
+		uom.Initial AS UomInitial,
+		uom_c.UnitEquivalent AS UnitName
+	FROM Sales.SalesOrderDetail so_d
+	LEFT JOIN Inventory.Item i
+		ON i.Id = so_d.ItemId
+	LEFT JOIN Inventory.UoMConversion uom_c_s
+		ON uom_c_s.Id = i.UomSellId
+	LEFT JOIN Inventory.UoM uom
+		ON uom.Id = so_d.UomId
+	LEFT JOIN Inventory.UoMConversion uom_c
+		ON uom_c.Id = so_d.UnitId";
+            migrationBuilder.Sql(sql);
+
+            // Alter view Sales.vwSalesDeliveryHeader
+            sql = @"ALTER VIEW [Sales].[vwSalesDeliveryHeader]
+AS
+	SELECT do_h.*,
+		c.[Name] AS CustName,
+		e.Initial AS ShippedInitial
+	FROM Sales.SalesDeliveryHeader do_h
+	LEFT JOIN General.Customer c
+		ON c.Code = do_h.CustCode
+	LEFT JOIN General.Employee e
+		ON e.Id = do_h.ShippedBy";
+            migrationBuilder.Sql(sql);
+
+            // Alter view Sales.vwSalesDeliveryDetail
+            sql = @"ALTER VIEW [Sales].[vwSalesDeliveryDetail]
+AS
+	SELECT do_d.*,
+		ISNULL(so_d.Qty, 0) AS OrderQty,
+		ISNULL(so_d.Qty, 0) - ISNULL(so_d.QtyDlv, 0) AS OutstandingQty,
+		i.Initial AS ItemInitial,
+		i.[Name] AS ItemName,
+		i.UomSellId AS ItemUomSellId,
+		uom_c_s.UnitEquivalent AS ItemUomSellName,
+		i.SellPrice AS ItemSellPrice,
+		uom.Initial AS UomInitial,
+		uom_c.UnitEquivalent AS UnitName
+	FROM Sales.SalesDeliveryDetail do_d
+	LEFT JOIN Sales.SalesOrderDetail so_d
+		ON so_d.Id = do_d.SODetailId
+	LEFT JOIN Inventory.Item i
+		ON i.Id = do_d.ItemId
+	LEFT JOIN Inventory.UoMConversion uom_c_s
+		ON uom_c_s.Id = i.UomSellId
+	LEFT JOIN Inventory.UoM uom
+		ON uom.Id = do_d.UomId
+	LEFT JOIN Inventory.UoMConversion uom_c
+		ON uom_c.Id = do_d.UnitId";
+            migrationBuilder.Sql(sql);
+
+            // Alter view Sales.vwSalesInvoiceHeader
+            sql = @"ALTER VIEW [Sales].[vwSalesInvoiceHeader]
+AS
+	SELECT si_h.*,
+		c.[Name] AS CustName,
+		e.Initial AS IssuedInitial
+	FROM Sales.SalesInvoiceHeader si_h
+	LEFT JOIN General.Customer c
+		ON c.Code = si_h.CustCode
+	LEFT JOIN General.Employee e
+		ON e.Id = si_h.IssuedBy";
+            migrationBuilder.Sql(sql);
+
             // Alter store procedure dbo.sp_update_po_rcv_qty
             sql = @"ALTER PROCEDURE [dbo].[sp_update_po_rcv_qty]
 	@code varchar(17)
