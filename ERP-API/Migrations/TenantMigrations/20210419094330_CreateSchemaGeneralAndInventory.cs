@@ -531,13 +531,6 @@ BEGIN TRY
 	AND [Type] = 0
 	GROUP BY ItemId, UnitId
 
-	-- Return if purchase receive not exists
-	IF NOT EXISTS (SELECT ItemId FROM #tmp_pr)
-	BEGIN
-		DROP TABLE #tmp_pr
-		RETURN
-	END
-
 	-- Join all
 	SELECT po.Code, po.ItemId, po.UnitId, po.Qty,
 		ISNULL(pr.QtyRcv, 0) AS QtyRcv
@@ -558,7 +551,11 @@ BEGIN TRY
 
 	-- Update PO header mark
 	UPDATE Purchasing.PurchaseOrderHeader
-	SET Mark = (CASE WHEN @rcvQty >= @orderQty THEN 'CMP' ELSE 'PR' END)
+	SET Mark = (
+		CASE WHEN @rcvQty = 0 THEN 'A'
+			WHEN @rcvQty >= @orderQty THEN 'CMP'
+			ELSE 'PR' END
+	)
 	WHERE Code = @code
 	AND Mark NOT IN ('V', 'CLS')
 
@@ -580,6 +577,100 @@ BEGIN CATCH
 		DROP TABLE #tmp_po
 	IF OBJECT_ID('tempdb.dbo.#tmp_pr') IS NOT NULL
 		DROP TABLE #tmp_pr
+	IF OBJECT_ID('tempdb.dbo.#tmp_all') IS NOT NULL
+		DROP TABLE #tmp_all
+
+	-- Raise error
+	EXEC dbo.sp_raiseerror
+END CATCH";
+            migrationBuilder.Sql(sql);
+
+            // Alter store procedure dbo.sp_update_so_dlv_qty
+            sql = @"ALTER PROCEDURE [dbo].[sp_update_so_dlv_qty]
+	@code varchar(17)
+AS
+BEGIN TRY
+
+	DECLARE @orderQty decimal(18, 2), @dlvQty decimal(18, 2)
+
+	-- Get sales order data
+	SELECT Code, ItemId, UnitId, Qty
+	INTO #tmp_so
+	FROM Sales.SalesOrderDetail so_d
+	WHERE EXISTS (
+		SELECT Code
+		FROM Sales.SalesOrderHeader so_h
+		WHERE Code = @code
+		AND Mark NOT IN ('V', 'CLS')
+		AND so_h.Code = so_d.Code
+	)
+	
+	-- Return if sales order not exists
+	IF NOT EXISTS (SELECT Code FROM #tmp_so)
+	BEGIN
+		DROP TABLE #tmp_so
+		RETURN
+	END
+	
+	-- Get sales delivery data
+	SELECT ItemId, UnitId, SUM(Qty) AS QtyDlv
+	INTO #tmp_do
+	FROM Sales.SalesDeliveryDetail do_d
+	WHERE EXISTS (
+		SELECT Code
+		FROM Sales.SalesDeliveryHeader do_h
+		WHERE SOCode = @code
+		AND Mark <> 'V'
+		AND do_h.Code = do_d.Code
+	)
+	GROUP BY ItemId, UnitId
+
+	-- Join all
+	SELECT so.Code, so.ItemId, so.UnitId, so.Qty,
+		ISNULL(do.QtyDlv, 0) AS QtyDlv
+	INTO #tmp_all
+	FROM #tmp_so so
+	LEFT JOIN #tmp_do do
+		ON do.ItemId = so.ItemId
+		AND do.UnitId = so.UnitId
+
+	-- Drop temp tables
+	DROP TABLE #tmp_so
+	DROP TABLE #tmp_do
+
+	-- Calculate sum
+	SELECT @orderQty = SUM(Qty),
+		@dlvQty = SUM(QtyDlv)
+	FROM #tmp_all
+
+	-- Update SO header mark
+	UPDATE Sales.SalesOrderHeader
+	SET Mark = (
+		CASE WHEN @dlvQty = 0 THEN 'A'
+			WHEN @dlvQty >= @orderQty THEN 'CMP'
+			ELSE 'PS' END
+	)
+	WHERE Code = @code
+	AND Mark NOT IN ('V', 'CLS')
+
+	-- Update SO detail delivery qty item
+	UPDATE so_d
+	SET so_d.QtyDlv = #tmp_all.QtyDlv
+	FROM Sales.SalesOrderDetail so_d, #tmp_all
+	WHERE so_d.Code = #tmp_all.Code
+	AND so_d.ItemId = #tmp_all.ItemId
+	AND so_d.UnitId = #tmp_all.UnitId
+
+	-- Drop temp table
+	DROP TABLE #tmp_all
+
+END TRY
+BEGIN CATCH
+	-- Drop temp tables
+	IF OBJECT_ID('tempdb.dbo.#tmp_so') IS NOT NULL
+		DROP TABLE #tmp_so
+	IF OBJECT_ID('tempdb.dbo.#tmp_do') IS NOT NULL
+		DROP TABLE #tmp_do
 	IF OBJECT_ID('tempdb.dbo.#tmp_all') IS NOT NULL
 		DROP TABLE #tmp_all
 
