@@ -476,6 +476,19 @@ AS
 		ON t.Id = c.TypeId";
             migrationBuilder.Sql(sql);
 
+            // Alter view Purchasing.vwPurchaseInvoiceHeader
+            sql = @"ALTER VIEW [Purchasing].[vwPurchaseInvoiceHeader]
+AS
+	SELECT pi_h.*,
+		s.[Name] AS SupName,
+		e.Initial AS IssuedInitial
+	FROM Purchasing.PurchaseInvoiceHeader pi_h
+	LEFT JOIN General.Supplier s
+		ON s.Code = pi_h.SupCode
+	LEFT JOIN General.Employee e
+		ON e.Id = pi_h.IssuedBy";
+            migrationBuilder.Sql(sql);
+
             // Alter store procedure dbo.sp_update_po_rcv_qty
             sql = @"ALTER PROCEDURE [dbo].[sp_update_po_rcv_qty]
 	@code varchar(17)
