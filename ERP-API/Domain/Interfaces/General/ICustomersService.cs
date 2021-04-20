@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using ERP_API.Domain.Entities.General;
 using ERP_API.Domain.Models;
+using ERP_API.Model;
 using Swift.Framework.Model;
 
 namespace ERP_API.Domain.Interfaces.General
@@ -11,5 +12,13 @@ namespace ERP_API.Domain.Interfaces.General
             string search);
 
         SaveResult Delete(string code, int userId);
+    }
+
+    public interface ICustomerTypesService : IGeneralService<CustomerType>
+    {
+        DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
+            string search);
+
+        SaveResult Delete(int id, int userId);
     }
 }

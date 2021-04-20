@@ -50,7 +50,6 @@ namespace ERP_API
                 options.LowercaseQueryStrings = true;
                 options.LowercaseUrls = true;
             });
-
             services.AddControllers()
                 .AddNewtonsoftJson(options =>
                 {
@@ -66,6 +65,7 @@ namespace ERP_API
 
             // General services
             services.AddScoped<ICustomersService, CustomersService>();
+            services.AddScoped<ICustomerTypesService, CustomerTypesService>();
 
             // Inventory services
             services.AddScoped<IItemCategoryService, ItemCategoryService>();
