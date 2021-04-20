@@ -20,11 +20,11 @@ namespace ERP_API.Controllers
             _shardingService = shardingService;
         }
 
-        [HttpPost("New")]
-        public async Task<IActionResult> PostNewTenantAsync(NewTenant newTenant)
-        {
-            var shardKey = await _shardingService.CreateNewInstanceAsync(newTenant.TenantName);
-            return Ok(shardKey);
-        }
+        //[HttpPost("New")]
+        //public async Task<IActionResult> PostNewTenantAsync(NewTenant newTenant)
+        //{
+        //    var shardKey = await _shardingService.CreateNewInstanceAsync(newTenant.TenantName);
+        //    return Ok(shardKey);
+        //}
     }
 }

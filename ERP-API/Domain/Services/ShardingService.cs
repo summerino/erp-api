@@ -5,83 +5,83 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using ERP_API.Database;
 using ERP_API.Domain.Entities;
-using ERP_API.Entities.Control;
+using ERP_API.Domain.Entities.Catalog;
 using ERP_API.Utils;
 
 namespace ERP_API.Domain.Services
 {
     public interface IShardingService
     {
-        string DbPrefix { get; }
-        Task<Guid> CreateNewInstanceAsync(string tenantName);
-        Task<Guid> RegisterNewShardAsync(string connectionString, string tenantName);
-        Task ApplyDatabaseMigrationAsync(string connectionString, Guid shardingKey);
+        //string DbPrefix { get; }
+        //Task<Guid> CreateNewInstanceAsync(string tenantName);
+        //Task<Guid> RegisterNewShardAsync(string connectionString, string tenantName);
+        //Task ApplyDatabaseMigrationAsync(string connectionString, Guid shardingKey);
         Task ApplyMigrationAsync();
     }
 
     public class ShardingService : IShardingService
     {
-        private readonly ERPControlDbContext _controlCtx;
+        private readonly CatalogContext _controlCtx;
         private readonly IClaimService _claim;
         private readonly IConfiguration _configuration;
 
-        public string DbPrefix { get => "ErpInstance"; }
+        //public string DbPrefix { get => "ErpInstance"; }
 
-        public ShardingService(ERPControlDbContext controlCtx, IClaimService claim, IConfiguration configuration)
+        public ShardingService(CatalogContext controlCtx, IClaimService claim, IConfiguration configuration)
         {
             _controlCtx = controlCtx;
             _claim = claim;
             _configuration = configuration;
         }
 
-        public async Task<Guid> CreateNewInstanceAsync(string tenantName)
-        {
-            string connectionString = _configuration.GetConnectionString("controlConnectionString");
-            Guid tenantShard = await RegisterNewShardAsync(connectionString, tenantName.Trim());
+        //public async Task<Guid> CreateNewInstanceAsync(string tenantName)
+        //{
+        //    string connectionString = _configuration.GetConnectionString("controlConnectionString");
+        //    Guid tenantShard = await RegisterNewShardAsync(connectionString, tenantName.Trim());
 
-            return tenantShard;
-        }
+        //    return tenantShard;
+        //}
 
-        public async Task<Guid> RegisterNewShardAsync(string connectionString, string tenantName)
-        {
-            if (!DatabaseUtility.DatabaseExists(connectionString))
-            {
-                DatabaseUtility.CreateDatabase(connectionString);
-            }
+        //public async Task<Guid> RegisterNewShardAsync(string connectionString, string tenantName)
+        //{
+        //    if (!DatabaseUtility.DatabaseExists(connectionString))
+        //    {
+        //        DatabaseUtility.CreateDatabase(connectionString);
+        //    }
 
-            Guid tenantShard = await GetOrCreateUnclaimedShardAsync(connectionString);
+        //    Guid tenantShard = await GetOrCreateUnclaimedShardAsync(connectionString);
 
-            _controlCtx.TenantDetails.Add(new TenantDetails() { Shard = tenantShard, TenantName = tenantName, TenantSlug = DatabaseUtility.GetTenantSlug(tenantName) });
-            await _controlCtx.SaveChangesAsync();
+        //    _controlCtx.Tenants.Add(new Tenant { Name = tenantName, Initial = DatabaseUtility.GetTenantSlug(tenantName) });
+        //    await _controlCtx.SaveChangesAsync();
 
-            return tenantShard;
-        }
+        //    return tenantShard;
+        //}
 
-        public async Task ApplyDatabaseMigrationAsync(string connectionString, Guid shardingKey)
-        {
-            SqlConnectionStringBuilder connectionStringBuilder = new SqlConnectionStringBuilder(connectionString);
-            connectionStringBuilder.InitialCatalog = $"{DbPrefix}_{shardingKey}";
-            string shardConnectionString = connectionStringBuilder.ConnectionString;
+        //public async Task ApplyDatabaseMigrationAsync(string connectionString, Guid shardingKey)
+        //{
+        //    SqlConnectionStringBuilder connectionStringBuilder = new SqlConnectionStringBuilder(connectionString);
+        //    connectionStringBuilder.InitialCatalog = $"{DbPrefix}_{shardingKey}";
+        //    string shardConnectionString = connectionStringBuilder.ConnectionString;
 
-            if (!DatabaseUtility.DatabaseExists(shardConnectionString))
-            {
-                DatabaseUtility.CreateDatabase(shardConnectionString);
-            }
+        //    if (!DatabaseUtility.DatabaseExists(shardConnectionString))
+        //    {
+        //        DatabaseUtility.CreateDatabase(shardConnectionString);
+        //    }
 
-            var optionsBuilder = new DbContextOptionsBuilder<ERPDbContext>();
-            optionsBuilder.UseSqlServer(connectionStringBuilder.ConnectionString);
+        //    var optionsBuilder = new DbContextOptionsBuilder<ERPDbContext>();
+        //    optionsBuilder.UseSqlServer(connectionStringBuilder.ConnectionString);
 
-            using (ERPDbContext dbContext = new ERPDbContext(optionsBuilder.Options, _configuration, shardingKey))
-            {
-                await dbContext.Database.MigrateAsync();
-                DbInitializer dbInitializer = new DbInitializer();
-                dbInitializer.EnsureSeeded(dbContext);
-            }
-        }
+        //    using (ERPDbContext dbContext = new ERPDbContext(optionsBuilder.Options, _configuration, shardingKey))
+        //    {
+        //        await dbContext.Database.MigrateAsync();
+        //        DbInitializer dbInitializer = new DbInitializer();
+        //        dbInitializer.EnsureSeeded(dbContext);
+        //    }
+        //}
 
         public async Task ApplyMigrationAsync()
         {
-            foreach (var tenant in _controlCtx.TenantDetails)
+            foreach (var tenant in _controlCtx.Tenants)
             {
                 if (!string.IsNullOrWhiteSpace(tenant.ServerName) || !string.IsNullOrWhiteSpace(tenant.DatabaseName) ||
                     !string.IsNullOrWhiteSpace(tenant.ServerUserId) || !string.IsNullOrWhiteSpace(tenant.ServerPassword))
@@ -96,14 +96,14 @@ namespace ERP_API.Domain.Services
             }
         }
         
-        private async Task<Guid> GetOrCreateUnclaimedShardAsync(string connectionStrung)
-        {
-            Guid tenantShard = Guid.NewGuid();
-            _controlCtx.ShardTable.Add(new ShardTable() { Shard = tenantShard });
+        //private async Task<Guid> GetOrCreateUnclaimedShardAsync(string connectionStrung)
+        //{
+        //    Guid tenantShard = Guid.NewGuid();
+        //    _controlCtx.ShardTable.Add(new ShardTable() { Shard = tenantShard });
 
-            await _controlCtx.SaveChangesAsync();
+        //    await _controlCtx.SaveChangesAsync();
 
-            return tenantShard;
-        }
+        //    return tenantShard;
+        //}
     }
 }

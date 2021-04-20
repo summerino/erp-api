@@ -6,11 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Migrations\ERPControlMigrations\20201126150852_AddedShartTabeUserTabe.cs" />
-    <Compile Remove="Migrations\ERPControlMigrations\20201126150852_AddedShartTabeUserTabe.Designer.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Content Remove="Data\Supplier.json" />
   </ItemGroup>
 

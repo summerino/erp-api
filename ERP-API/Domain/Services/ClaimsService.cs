@@ -7,7 +7,7 @@ namespace ERP_API.Domain.Services
     {
         int UserId { get; }
 
-        string TenantShard { get; }
+        int TenantId { get; }
     }
 
     public class ClaimService : IClaimService
@@ -25,7 +25,10 @@ namespace ERP_API.Domain.Services
                 ? userId
                 : 0;
 
-        public string TenantShard =>
-            _accessor.HttpContext?.User?.Claims?.SingleOrDefault(x => x.Type == "TenantShard")?.Value ?? "4b279e3e-fe0f-4517-86e9-40d59821cb73";
+        public int TenantId =>
+            int.TryParse(_accessor.HttpContext?.User?.Claims?.SingleOrDefault(x => x.Type == "TenantId")?.Value,
+                out var tenantId)
+                ? tenantId
+                : 1;
     }
 }
