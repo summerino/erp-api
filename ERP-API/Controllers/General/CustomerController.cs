@@ -61,6 +61,12 @@ namespace ERP_API.Controllers.General
             });
         }
 
+        [HttpGet("{code}")]
+        public IActionResult GetDataByCode(string code) 
+        {
+            return Ok(_customer.FindByCode(code));
+        }
+
         [HttpPost]
         public IActionResult OnPost(Customer data)
         {

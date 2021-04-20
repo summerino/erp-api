@@ -39,6 +39,11 @@ namespace ERP_API.Domain.Services.General
             return data.ToDataSourceResult(-1, -1, filters, sorts);
         }
 
+        public Customer FindByCode(string code)
+        {
+            return Db.Customers.Find(code);
+        }
+
         public override SaveResult Insert(Customer data)
         {
             var result = new SaveResult(false);
@@ -132,4 +137,5 @@ namespace ERP_API.Domain.Services.General
             return Db.Customers.Any(x => x.Initial == initial && x.Code != code);
         }
     }
+
 }
