@@ -13,6 +13,10 @@ namespace ERP_API.Domain.Interfaces.Purchase
 
         IEnumerable<VwPurchaseReceiveDetail> GetDetailData(string code);
 
+        List<dynamic> GetRelatedTransactions(string code);
+
+        IEnumerable<PurchaseReceiveHeader> GetUnInvoiceData(string poCode, string invCode);
+
         SaveResult Insert(PurchaseReceiveRequest data);
 
         SaveResult Update(PurchaseReceiveRequest data);

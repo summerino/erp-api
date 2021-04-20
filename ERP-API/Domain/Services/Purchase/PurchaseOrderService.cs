@@ -144,15 +144,13 @@ namespace ERP_API.Domain.Services.Purchase
                 Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
                 Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
 
-                // Delete detail data that doesn't have in data item details
+                // Get detail data that exists in order before
                 var delDetails = Db.PurchaseOrderDetails
                     .Where(d => d.Code == data.Code && !data.ItemDetails.Select(x => x.Id).Contains(d.Id))
                     .ToList();
 
-                foreach (var item in delDetails)
-                {
-                    Db.PurchaseOrderDetails.Remove(item);
-                }
+                // Delete detail data that exists in order before
+                Db.PurchaseOrderDetails.RemoveRange(delDetails);
 
                 // Update detail data
                 short i = 0;

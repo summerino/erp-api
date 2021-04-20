@@ -5,7 +5,7 @@ using ERP_API.Domain.Entities.Core;
 
 namespace ERP_API.Domain.Entities.Purchase
 {
-    [Table("trPurchaseReceiveHeaders", Schema = "dbo")]
+    [Table("PurchaseReceiveHeader", Schema = Schema.Purchasing)]
     public class PurchaseReceiveHeader : BaseEntityWithMark
     {
         [Key]
@@ -115,7 +115,7 @@ namespace ERP_API.Domain.Entities.Purchase
         public string ReceiveInitial { get; set; }
     }
 
-    [Table("trPurchaseReceiveDetails", Schema = "dbo")]
+    [Table("PurchaseReceiveDetail", Schema = Schema.Purchasing)]
     public class PurchaseReceiveDetail
     {
         public long Id { get; set; }

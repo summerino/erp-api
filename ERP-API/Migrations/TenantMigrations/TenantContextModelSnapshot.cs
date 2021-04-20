@@ -17,7 +17,7 @@ namespace ERP_API.Migrations.TenantMigrations
             modelBuilder
                 .HasAnnotation("Relational:Collation", "SQL_Latin1_General_CP1_CI_AS")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
-                .HasAnnotation("ProductVersion", "5.0.4")
+                .HasAnnotation("ProductVersion", "5.0.5")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
             modelBuilder.Entity("ERP_API.Domain.Entities.Accounting.Coa", b =>
@@ -98,7 +98,7 @@ namespace ERP_API.Migrations.TenantMigrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("msCOAs", "dbo");
+                    b.ToTable("COA", "Accounting");
                 });
 
             modelBuilder.Entity("ERP_API.Domain.Entities.Accounting.CoaType", b =>
@@ -137,7 +137,7 @@ namespace ERP_API.Migrations.TenantMigrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("msCOATypes", "dbo");
+                    b.ToTable("COAType", "Accounting");
                 });
 
             modelBuilder.Entity("ERP_API.Domain.Entities.Core.BaseNewCodeEntity", b =>
@@ -145,6 +145,8 @@ namespace ERP_API.Migrations.TenantMigrations
                     b.Property<string>("Value")
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
+
+                    b.ToTable("BaseNewCodeEntity", t => t.ExcludeFromMigrations());
                 });
 
             modelBuilder.Entity("ERP_API.Domain.Entities.Core.SequenceNumber", b =>
@@ -243,7 +245,7 @@ namespace ERP_API.Migrations.TenantMigrations
 
                     b.HasKey("Code");
 
-                    b.ToTable("msCurrencies", "dbo");
+                    b.ToTable("Currency", "General");
                 });
 
             modelBuilder.Entity("ERP_API.Domain.Entities.General.Customer", b =>
@@ -333,7 +335,7 @@ namespace ERP_API.Migrations.TenantMigrations
 
                     b.HasKey("Code");
 
-                    b.ToTable("msCustomers", "dbo");
+                    b.ToTable("Customer", "General");
                 });
 
             modelBuilder.Entity("ERP_API.Domain.Entities.General.CustomerType", b =>
@@ -372,7 +374,7 @@ namespace ERP_API.Migrations.TenantMigrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("msCustomerTypes", "dbo");
+                    b.ToTable("CustomerType", "General");
                 });
 
             modelBuilder.Entity("ERP_API.Domain.Entities.General.Employee", b =>
@@ -460,7 +462,7 @@ namespace ERP_API.Migrations.TenantMigrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("msEmployees", "dbo");
+                    b.ToTable("Employee", "General");
                 });
 
             modelBuilder.Entity("ERP_API.Domain.Entities.General.Supplier", b =>
@@ -534,7 +536,7 @@ namespace ERP_API.Migrations.TenantMigrations
 
                     b.HasKey("Code");
 
-                    b.ToTable("msSuppliers", "dbo");
+                    b.ToTable("Supplier", "General");
                 });
 
             modelBuilder.Entity("ERP_API.Domain.Entities.General.SupplierType", b =>
@@ -573,7 +575,7 @@ namespace ERP_API.Migrations.TenantMigrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("msSupplierTypes", "dbo");
+                    b.ToTable("SupplierType", "General");
                 });
 
             modelBuilder.Entity("ERP_API.Domain.Entities.General.Tax", b =>
@@ -626,7 +628,84 @@ namespace ERP_API.Migrations.TenantMigrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("msTaxes", "dbo");
+                    b.ToTable("Tax", "General");
+                });
+
+            modelBuilder.Entity("ERP_API.Domain.Entities.General.VwCustomer", b =>
+                {
+                    b.Property<string>("Address1")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<string>("Address2")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<string>("Code")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<int>("CreatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime");
+
+                    b.Property<decimal>("CreditLimit")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<short>("CreditTerm")
+                        .HasColumnType("smallint");
+
+                    b.Property<string>("Email")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<string>("Fax")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<string>("Initial")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<string>("Notes")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<string>("Phone")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<string>("RefNo")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<int>("TypeId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TypeName")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<int>("UpdatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("Website")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.ToView("vwCustomer", "General");
                 });
 
             modelBuilder.Entity("ERP_API.Domain.Entities.Inventory.Item", b =>
@@ -834,7 +913,7 @@ namespace ERP_API.Migrations.TenantMigrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("msItems", "dbo");
+                    b.ToTable("Item", "Inventory");
                 });
 
             modelBuilder.Entity("ERP_API.Domain.Entities.Inventory.ItemCategory", b =>
@@ -893,7 +972,7 @@ namespace ERP_API.Migrations.TenantMigrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("msItemCategories", "dbo");
+                    b.ToTable("ItemCategory", "Inventory");
                 });
 
             modelBuilder.Entity("ERP_API.Domain.Entities.Inventory.StockMutation", b =>
@@ -946,7 +1025,7 @@ namespace ERP_API.Migrations.TenantMigrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("trStockMutations", "dbo");
+                    b.ToTable("StockMutation", "Inventory");
                 });
 
             modelBuilder.Entity("ERP_API.Domain.Entities.Inventory.UoM", b =>
@@ -990,7 +1069,7 @@ namespace ERP_API.Migrations.TenantMigrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("msUoMs", "dbo");
+                    b.ToTable("UoM", "Inventory");
                 });
 
             modelBuilder.Entity("ERP_API.Domain.Entities.Inventory.UoMConversion", b =>
@@ -1038,7 +1117,7 @@ namespace ERP_API.Migrations.TenantMigrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("msUoMConversions", "dbo");
+                    b.ToTable("UoMConversion", "Inventory");
                 });
 
             modelBuilder.Entity("ERP_API.Domain.Entities.Inventory.VwItem", b =>
@@ -1261,7 +1340,7 @@ namespace ERP_API.Migrations.TenantMigrations
                     b.Property<decimal?>("Width")
                         .HasColumnType("decimal(18,2)");
 
-                    b.ToView("vw_items", "dbo");
+                    b.ToView("vwItem", "Inventory");
                 });
 
             modelBuilder.Entity("ERP_API.Domain.Entities.Inventory.Warehouse", b =>
@@ -1313,7 +1392,129 @@ namespace ERP_API.Migrations.TenantMigrations
 
                     b.HasKey("Code");
 
-                    b.ToTable("msWarehouses", "dbo");
+                    b.ToTable("Warehouse", "Inventory");
+                });
+
+            modelBuilder.Entity("ERP_API.Domain.Entities.Purchase.PurchaseInvoiceDetail", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(17)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(17)");
+
+                    b.Property<decimal>("Dpp")
+                        .HasColumnType("decimal(19,6)")
+                        .HasColumnName("DPP");
+
+                    b.Property<decimal>("FinalDisc")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("HandlingFee")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<short>("LineNo")
+                        .HasColumnType("smallint");
+
+                    b.Property<string>("RcvCode")
+                        .IsRequired()
+                        .HasMaxLength(17)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(17)");
+
+                    b.Property<decimal>("ShipmentFee")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("SubTotal")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("TaxAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("Total")
+                        .HasColumnType("decimal(19,6)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PurchaseInvoiceDetail", "Purchasing");
+                });
+
+            modelBuilder.Entity("ERP_API.Domain.Entities.Purchase.PurchaseInvoiceHeader", b =>
+                {
+                    b.Property<string>("Code")
+                        .HasMaxLength(17)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(17)");
+
+                    b.Property<int>("CreatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("CurrCode")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(3)");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<DateTime>("DueDate")
+                        .HasColumnType("date");
+
+                    b.Property<long>("IssuedBy")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Mark")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(3)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(256)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(256)");
+
+                    b.Property<decimal>("PaidAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("PoCode")
+                        .HasMaxLength(17)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(17)")
+                        .HasColumnName("POCode");
+
+                    b.Property<string>("RefNo")
+                        .HasMaxLength(30)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(30)");
+
+                    b.Property<string>("SupCode")
+                        .IsRequired()
+                        .HasMaxLength(8)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(8)");
+
+                    b.Property<decimal>("Total")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("UpdatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("datetime");
+
+                    b.HasKey("Code");
+
+                    b.ToTable("PurchaseInvoiceHeader", "Purchasing");
                 });
 
             modelBuilder.Entity("ERP_API.Domain.Entities.Purchase.PurchaseOrderDetail", b =>
@@ -1326,7 +1527,8 @@ namespace ERP_API.Migrations.TenantMigrations
                     b.Property<string>("CoaCogs")
                         .HasMaxLength(6)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(6)");
+                        .HasColumnType("varchar(6)")
+                        .HasColumnName("CoaCOGS");
 
                     b.Property<string>("CoaInventory")
                         .HasMaxLength(6)
@@ -1426,7 +1628,7 @@ namespace ERP_API.Migrations.TenantMigrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("trPurchaseOrderDetails", "dbo");
+                    b.ToTable("PurchaseOrderDetail", "Purchasing");
                 });
 
             modelBuilder.Entity("ERP_API.Domain.Entities.Purchase.PurchaseOrderHeader", b =>
@@ -1520,7 +1722,7 @@ namespace ERP_API.Migrations.TenantMigrations
 
                     b.HasKey("Code");
 
-                    b.ToTable("trPurchaseOrderHeaders", "dbo");
+                    b.ToTable("PurchaseOrderHeader", "Purchasing");
                 });
 
             modelBuilder.Entity("ERP_API.Domain.Entities.Purchase.PurchaseReceiveDetail", b =>
@@ -1610,7 +1812,7 @@ namespace ERP_API.Migrations.TenantMigrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("trPurchaseReceiveDetails", "dbo");
+                    b.ToTable("PurchaseReceiveDetail", "Purchasing");
                 });
 
             modelBuilder.Entity("ERP_API.Domain.Entities.Purchase.PurchaseReceiveHeader", b =>
@@ -1704,7 +1906,76 @@ namespace ERP_API.Migrations.TenantMigrations
 
                     b.HasKey("Code");
 
-                    b.ToTable("trPurchaseReceiveHeaders", "dbo");
+                    b.ToTable("PurchaseReceiveHeader", "Purchasing");
+                });
+
+            modelBuilder.Entity("ERP_API.Domain.Entities.Purchase.VwPurchaseInvoiceHeader", b =>
+                {
+                    b.Property<string>("Code")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<int>("CreatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("CurrCode")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DueDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("IssuedBy")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("IssuedInitial")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<string>("Mark")
+                        .HasMaxLength(3)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(3)");
+
+                    b.Property<string>("Notes")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<decimal>("PaidAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("PoCode")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<string>("RefNo")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<string>("SupCode")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<string>("SupName")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<decimal>("Total")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("UpdatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("datetime");
+
+                    b.ToView("vwPurchaseInvoiceHeader", "Purchasing");
                 });
 
             modelBuilder.Entity("ERP_API.Domain.Entities.Purchase.VwPurchaseOrderDetail", b =>
@@ -1833,7 +2104,7 @@ namespace ERP_API.Migrations.TenantMigrations
                     b.Property<decimal?>("Width")
                         .HasColumnType("decimal(18,2)");
 
-                    b.ToView("vw_po_d", "dbo");
+                    b.ToView("VwPurchaseOrderDetail", "Purchasing");
                 });
 
             modelBuilder.Entity("ERP_API.Domain.Entities.Purchase.VwPurchaseOrderHeader", b =>
@@ -1931,7 +2202,7 @@ namespace ERP_API.Migrations.TenantMigrations
                         .IsUnicode(false)
                         .HasColumnType("varchar(8)");
 
-                    b.ToView("vw_po_h", "dbo");
+                    b.ToView("VwPurchaseOrderHeader", "Purchasing");
                 });
 
             modelBuilder.Entity("ERP_API.Domain.Entities.Purchase.VwPurchaseReceiveDetail", b =>
@@ -2042,7 +2313,7 @@ namespace ERP_API.Migrations.TenantMigrations
                     b.Property<decimal?>("Width")
                         .HasColumnType("decimal(18,2)");
 
-                    b.ToView("vw_pr_d", "dbo");
+                    b.ToView("VwPurchaseReceiveDetail", "Purchasing");
                 });
 
             modelBuilder.Entity("ERP_API.Domain.Entities.Purchase.VwPurchaseReceiveHeader", b =>
@@ -2136,7 +2407,974 @@ namespace ERP_API.Migrations.TenantMigrations
                     b.Property<DateTime>("UpdatedDate")
                         .HasColumnType("datetime");
 
-                    b.ToView("vw_pr_h", "dbo");
+                    b.ToView("VwPurchaseReceiveHeader", "Purchasing");
+                });
+
+            modelBuilder.Entity("ERP_API.Domain.Entities.Sales.SalesDeliveryDetail", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(17)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(17)");
+
+                    b.Property<string>("DimensionMeasurement")
+                        .HasMaxLength(10)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(10)");
+
+                    b.Property<decimal>("Disc")
+                        .HasColumnType("decimal(19,6)");
+
+                    b.Property<decimal>("Dpp")
+                        .HasColumnType("decimal(19,6)")
+                        .HasColumnName("DPP");
+
+                    b.Property<decimal?>("Height")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("ItemId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("Length")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<short>("LineNo")
+                        .HasColumnType("smallint");
+
+                    b.Property<decimal>("NettPrice")
+                        .HasColumnType("decimal(19,6)");
+
+                    b.Property<decimal>("Qty")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<long?>("SoDetailId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("SODetailId");
+
+                    b.Property<decimal>("TaxAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("TaxId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Total")
+                        .HasColumnType("decimal(19,6)");
+
+                    b.Property<int>("UnitId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasColumnType("decimal(19,6)");
+
+                    b.Property<int>("UomId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("Weight")
+                        .HasColumnType("decimal(18,3)");
+
+                    b.Property<string>("WeightMeasurement")
+                        .HasMaxLength(10)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(10)");
+
+                    b.Property<decimal?>("Width")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SalesDeliveryDetail", "Sales");
+                });
+
+            modelBuilder.Entity("ERP_API.Domain.Entities.Sales.SalesDeliveryHeader", b =>
+                {
+                    b.Property<string>("Code")
+                        .HasMaxLength(17)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(17)");
+
+                    b.Property<long?>("ApproveBy")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("CreatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("CurrCode")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(3)");
+
+                    b.Property<string>("CustCode")
+                        .IsRequired()
+                        .HasMaxLength(8)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(8)");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<decimal>("Dpp")
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("DPP");
+
+                    b.Property<decimal>("FinalDisc")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("FinalDiscPercent")
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<decimal>("HandlingFee")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<bool>("IncludeTax")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Mark")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(3)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(256)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(256)");
+
+                    b.Property<decimal>("Rate")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("ShipmentFee")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<long>("ShippedBy")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("SoCode")
+                        .IsRequired()
+                        .HasMaxLength(17)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(17)")
+                        .HasColumnName("SOCode");
+
+                    b.Property<decimal>("SubTotal")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("TaxAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("Total")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("UpdatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("WarehouseCode")
+                        .IsRequired()
+                        .HasMaxLength(8)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(8)");
+
+                    b.HasKey("Code");
+
+                    b.ToTable("SalesDeliveryHeader", "Sales");
+                });
+
+            modelBuilder.Entity("ERP_API.Domain.Entities.Sales.SalesInvoiceDetail", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(17)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(17)");
+
+                    b.Property<string>("DoCode")
+                        .IsRequired()
+                        .HasMaxLength(17)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(17)")
+                        .HasColumnName("DOCode");
+
+                    b.Property<decimal>("Dpp")
+                        .HasColumnType("decimal(19,6)")
+                        .HasColumnName("DPP");
+
+                    b.Property<decimal>("FinalDisc")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("HandlingFee")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<short>("LineNo")
+                        .HasColumnType("smallint");
+
+                    b.Property<decimal>("ShipmentFee")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("SubTotal")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("TaxAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("Total")
+                        .HasColumnType("decimal(19,6)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SalesInvoiceDetail", "Sales");
+                });
+
+            modelBuilder.Entity("ERP_API.Domain.Entities.Sales.SalesInvoiceHeader", b =>
+                {
+                    b.Property<string>("Code")
+                        .HasMaxLength(17)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(17)");
+
+                    b.Property<int>("CreatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("CurrCode")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(3)");
+
+                    b.Property<string>("CustCode")
+                        .IsRequired()
+                        .HasMaxLength(8)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(8)");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<DateTime>("DueDate")
+                        .HasColumnType("date");
+
+                    b.Property<long>("IssuedBy")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Mark")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(3)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(256)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(256)");
+
+                    b.Property<decimal>("PaidAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("SoCode")
+                        .HasMaxLength(17)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(17)")
+                        .HasColumnName("SOCode");
+
+                    b.Property<decimal>("Total")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("UpdatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("datetime");
+
+                    b.HasKey("Code");
+
+                    b.ToTable("SalesInvoiceHeader", "Sales");
+                });
+
+            modelBuilder.Entity("ERP_API.Domain.Entities.Sales.SalesOrderDetail", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("CoaCogs")
+                        .HasMaxLength(6)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(6)")
+                        .HasColumnName("CoaCOGS");
+
+                    b.Property<string>("CoaInventory")
+                        .HasMaxLength(6)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(6)");
+
+                    b.Property<string>("CoaSls")
+                        .HasMaxLength(6)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(6)");
+
+                    b.Property<string>("CoaSlsDisc")
+                        .HasMaxLength(6)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(6)");
+
+                    b.Property<string>("CoaSlsReturn")
+                        .HasMaxLength(6)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(6)");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(17)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(17)");
+
+                    b.Property<string>("DimensionMeasurement")
+                        .HasMaxLength(10)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(10)");
+
+                    b.Property<decimal>("Disc")
+                        .HasColumnType("decimal(19,6)");
+
+                    b.Property<decimal>("Dpp")
+                        .HasColumnType("decimal(19,6)")
+                        .HasColumnName("DPP");
+
+                    b.Property<decimal?>("Height")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("ItemId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("Length")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<short>("LineNo")
+                        .HasColumnType("smallint");
+
+                    b.Property<decimal>("NettPrice")
+                        .HasColumnType("decimal(19,6)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(256)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(256)");
+
+                    b.Property<decimal>("Qty")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("QtyDlv")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("TaxAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("TaxId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Total")
+                        .HasColumnType("decimal(19,6)");
+
+                    b.Property<int>("UnitId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasColumnType("decimal(19,6)");
+
+                    b.Property<int>("UomId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("Weight")
+                        .HasColumnType("decimal(18,3)");
+
+                    b.Property<string>("WeightMeasurement")
+                        .HasMaxLength(10)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(10)");
+
+                    b.Property<decimal?>("Width")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SalesOrderDetail", "Sales");
+                });
+
+            modelBuilder.Entity("ERP_API.Domain.Entities.Sales.SalesOrderHeader", b =>
+                {
+                    b.Property<string>("Code")
+                        .HasMaxLength(17)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(17)");
+
+                    b.Property<int>("CreatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("CurrCode")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(3)");
+
+                    b.Property<string>("CustCode")
+                        .IsRequired()
+                        .HasMaxLength(8)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(8)");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<decimal>("Dpp")
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("DPP");
+
+                    b.Property<decimal>("FinalDisc")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("FinalDiscPercent")
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<decimal>("HandlingFee")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<bool>("IncludeTax")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Mark")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(3)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(256)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(256)");
+
+                    b.Property<decimal>("Rate")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<long>("SalesBy")
+                        .HasColumnType("bigint");
+
+                    b.Property<decimal>("ShipmentFee")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("SubTotal")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("TaxAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("Total")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("UpdatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("WarehouseCode")
+                        .HasMaxLength(8)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(8)");
+
+                    b.HasKey("Code");
+
+                    b.ToTable("SalesOrderHeader", "Sales");
+                });
+
+            modelBuilder.Entity("ERP_API.Domain.Entities.Sales.VwSalesDeliveryDetail", b =>
+                {
+                    b.Property<string>("Code")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<string>("DimensionMeasurement")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<decimal>("Disc")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("Dpp")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("Height")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<long>("Id")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("ItemId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ItemInitial")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<string>("ItemName")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<decimal?>("ItemSellPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("ItemUomSellId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ItemUomSellName")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<decimal?>("Length")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<short>("LineNo")
+                        .HasColumnType("smallint");
+
+                    b.Property<decimal>("NettPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("OrderQty")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("OutstandingQty")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("Qty")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<long?>("SoDetailId")
+                        .HasColumnType("bigint");
+
+                    b.Property<decimal>("TaxAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("TaxId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Total")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("UnitId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UnitName")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("UomId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UomInitial")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<decimal?>("Weight")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("WeightMeasurement")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<decimal?>("Width")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.ToView("VwSalesDeliveryDetail", "Sales");
+                });
+
+            modelBuilder.Entity("ERP_API.Domain.Entities.Sales.VwSalesDeliveryHeader", b =>
+                {
+                    b.Property<long?>("ApproveBy")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Code")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<int>("CreatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("CurrCode")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<string>("CustCode")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<string>("CustName")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("Dpp")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("FinalDisc")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("FinalDiscPercent")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("HandlingFee")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<bool>("IncludeTax")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Mark")
+                        .HasMaxLength(3)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(3)");
+
+                    b.Property<string>("Notes")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<decimal>("Rate")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("ShipmentFee")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<long>("ShippedBy")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("ShippedInitial")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<string>("SoCode")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<decimal>("SubTotal")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("TaxAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("Total")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("UpdatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("WarehouseCode")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.ToView("VwSalesDeliveryHeader", "Sales");
+                });
+
+            modelBuilder.Entity("ERP_API.Domain.Entities.Sales.VwSalesInvoiceHeader", b =>
+                {
+                    b.Property<string>("Code")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<int>("CreatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("CurrCode")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<string>("CustCode")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<string>("CustName")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DueDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("IssuedBy")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("IssuedInitial")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<string>("Mark")
+                        .HasMaxLength(3)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(3)");
+
+                    b.Property<string>("Notes")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<decimal>("PaidAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("SoCode")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<decimal>("Total")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("UpdatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("datetime");
+
+                    b.ToView("vwSalesInvoiceHeader", "Sales");
+                });
+
+            modelBuilder.Entity("ERP_API.Domain.Entities.Sales.VwSalesOrderDetail", b =>
+                {
+                    b.Property<string>("CoaCogs")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<string>("CoaInventory")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<string>("CoaSls")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<string>("CoaSlsDisc")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<string>("CoaSlsReturn")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<string>("Code")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<string>("DimensionMeasurement")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<decimal>("Disc")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("Dpp")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("Height")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<long>("Id")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("ItemId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ItemInitial")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<string>("ItemName")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<decimal?>("ItemSellPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("ItemUomSellId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ItemUomSellName")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<decimal?>("Length")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<short>("LineNo")
+                        .HasColumnType("smallint");
+
+                    b.Property<decimal>("NettPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Notes")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<decimal>("Qty")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("QtyDlv")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("TaxAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("TaxId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Total")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("UnitId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UnitName")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("UomId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UomInitial")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<decimal?>("Weight")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("WeightMeasurement")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<decimal?>("Width")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.ToView("VwSalesOrderDetail", "Sales");
+                });
+
+            modelBuilder.Entity("ERP_API.Domain.Entities.Sales.VwSalesOrderHeader", b =>
+                {
+                    b.Property<string>("Code")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<int>("CreatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("CurrCode")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<string>("CustCode")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<string>("CustName")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("Dpp")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("FinalDisc")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("FinalDiscPercent")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("HandlingFee")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<bool>("IncludeTax")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Mark")
+                        .HasMaxLength(3)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(3)");
+
+                    b.Property<string>("Notes")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<decimal>("Rate")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<long>("SalesBy")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("SalesInitial")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<decimal>("ShipmentFee")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("SubTotal")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("TaxAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("Total")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("UpdatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("WarehouseCode")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.ToView("vwSalesOrderHeader", "Sales");
                 });
 #pragma warning restore 612, 618
         }

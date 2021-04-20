@@ -4,7 +4,7 @@ using ERP_API.Domain.Entities.Core;
 
 namespace ERP_API.Domain.Entities.General
 {
-    [Table("msSuppliers", Schema = "dbo")]
+    [Table("Supplier", Schema = Schema.General)]
     public class Supplier : BaseEntityWithActive
     {
         [Key]
@@ -42,7 +42,32 @@ namespace ERP_API.Domain.Entities.General
         public string RefNo { get; set; }
     }
 
-    [Table("msSupplierTypes", Schema = "dbo")]
+    public class VwSupplier : BaseEntityWithActive
+    {
+        public string Code { get; set; }
+
+        public string Initial { get; set; }
+
+        public string Name { get; set; }
+
+        public int TypeId { get; set; }
+
+        public string Address1 { get; set; }
+
+        public string Address2 { get; set; }
+
+        public string Phone { get; set; }
+
+        public string Fax { get; set; }
+
+        public string Email { get; set; }
+
+        public string RefNo { get; set; }
+
+        public string TypeName { get; set; }
+    }
+
+    [Table("SupplierType", Schema = Schema.General)]
     public class SupplierType : BaseEntityWithActive
     {
         public int Id { get; set; }

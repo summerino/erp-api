@@ -1,34 +1,130 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using ERP_API.Domain.Entities;
+using ERP_API.Domain.Entities.Inventory;
 using ERP_API.Domain.Extensions;
 using ERP_API.Domain.Interfaces.Inventory;
 using ERP_API.Domain.Models;
-using ERP_API.Model;
 using Swift.Framework.Model;
 
 namespace ERP_API.Domain.Services.Inventory
 {
-    public class ItemService : IItemService
+    public class ItemService : GeneralService<Item>, IItemService
     {
-        private readonly TenantContext _tenantCtx;
-
-        public ItemService(TenantContext tenantCtx)
+        public ItemService(TenantContext db)
+            : base(db)
         {
-            _tenantCtx = tenantCtx;
         }
 
         public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
-            List<int> category)
+            List<int> category, string search)
         {
-            var data = _tenantCtx.VwItems.Where(x => x.IsActive);
+            var data = Db.VwItems.AsQueryable();
 
             if (category?.Any() ?? false)
             {
                 data = data.Where(x => category.Contains(x.CategoryId));
             }
 
+            if (!string.IsNullOrEmpty(search))
+            {
+                data = data.Where(x =>
+                            x.Initial.Contains(search) || x.Name.Contains(search) || 
+                            x.UomInitial.Contains(search) || x.UomSellName.Contains(search) ||
+                            x.UomBuyName.Contains(search) || x.CategoryName.Contains(search));
+            }
+
             return data.ToDataSourceResult(skip, take, filter, sort);
+        }
+
+        public override SaveResult Insert(Item data)
+        {
+            var result = new SaveResult(false);
+
+            using var transaction = Db.Database.BeginTransaction();
+            try
+            {
+                // Checking initial already exists or not
+                if (IsInitialExists(data.Initial, 0))
+                {
+                    result.Message = "Initial is already exists. Please use another initial.";
+                    return result;
+                }
+
+                // Insert data
+                Db.Items.Add(data);
+
+                Db.SaveChanges();
+                transaction.Commit();
+            }
+            catch (Exception ex)
+            {
+                result.Message = ex.InnerException?.Message ?? ex.Message;
+                return result;
+            }
+
+            result.Success = true;
+            result.Data = data.Initial;
+            result.Message = "Success insert item.";
+            return result;
+        }
+
+        public override SaveResult Update(Item data)
+        {
+            var result = new SaveResult(false);
+
+            // Checking initial already exists or not
+            if (IsInitialExists(data.Initial, data.Id))
+            {
+                result.Message = "Initial is already exists. Please use another initial.";
+                return result;
+            }
+
+            // Update data
+            Db.Items.Update(data);
+            Db.Entry(data).Property(e => e.Id).IsModified = false;
+            Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
+            Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
+
+            Db.SaveChanges();
+
+            result.Success = true;
+            result.Data = data.Initial;
+            result.Message = "Success update item.";
+            return result;
+        }
+
+        public SaveResult Delete(int id, int userId)
+        {
+            var result = new SaveResult(false);
+
+            var data = Db.Items.Find(id);
+            if (data != null)
+            {
+                // Checking active
+                if (!data.IsActive)
+                {
+                    result.Message = "Can't inactive the item because data already inactive.";
+                    return result;
+                }
+
+                // Update data
+                data.IsActive = false;
+                data.UpdatedBy = userId;
+                data.UpdatedDate = DateTime.Now;
+
+                Db.SaveChanges();
+            }
+
+            result.Success = true;
+            result.Message = "Success inactive item.";
+            return result;
+        }
+
+        public bool IsInitialExists(string initial, int id)
+        {
+            return Db.Items.Any(x => x.Initial == initial && x.Id != id);
         }
     }
 }

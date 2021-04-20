@@ -32,7 +32,6 @@ namespace ERP_API.Domain.Services.General
             return data.ToDataSourceResult(skip, take, filter, sort);
         }
 
-
         public override SaveResult Insert(Customer data)
         {
             var result = new SaveResult(false);
@@ -65,7 +64,7 @@ namespace ERP_API.Domain.Services.General
 
             result.Success = true;
             result.Data = data.Code;
-            result.Message = "Success insert customer data.";
+            result.Message = "Success insert customer.";
             return result;
         }
 
@@ -90,7 +89,7 @@ namespace ERP_API.Domain.Services.General
 
             result.Success = true;
             result.Data = data.Code;
-            result.Message = "Success update customer data.";
+            result.Message = "Success update customer.";
             return result;
         }
 
@@ -104,10 +103,11 @@ namespace ERP_API.Domain.Services.General
                 // Checking active
                 if (data.IsActive == false)
                 {
-                    result.Message = "Can't remove customer because data already inactive.";
+                    result.Message = "Can't inactive customer because data already inactive.";
                     return result;
                 }
 
+                // Update data
                 data.IsActive = false;
                 data.UpdatedBy = userId;
                 data.UpdatedDate = DateTime.Now;
@@ -116,7 +116,7 @@ namespace ERP_API.Domain.Services.General
             }
 
             result.Success = true;
-            result.Message = "Success remove customer.";
+            result.Message = "Success inactive customer.";
             return result;
         }
 

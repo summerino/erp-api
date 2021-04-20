@@ -5,7 +5,7 @@ using ERP_API.Domain.Entities.Core;
 
 namespace ERP_API.Domain.Entities.General
 {
-    [Table("msEmployees", Schema = "dbo")]
+    [Table("Employee", Schema = Schema.General)]
     public class Employee : BaseEntityWithActive
     {
         public long Id { get; set; }

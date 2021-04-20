@@ -1,0 +1,109 @@
+﻿using System;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using ERP_API.Domain.Entities.Core;
+
+namespace ERP_API.Domain.Entities.Sales
+{
+    [Table("SalesInvoiceHeader", Schema = Schema.Sales)]
+    public class SalesInvoiceHeader : BaseEntityWithMark
+    {
+        [Key]
+        [StringLength(17)]
+        public string Code { get; set; }
+
+        [Column(TypeName = "date")]
+        public DateTime Date { get; set; }
+
+        [Column(TypeName = "date")]
+        public DateTime DueDate { get; set; }
+
+        [Column("SOCode")]
+        [StringLength(17)]
+        public string SoCode { get; set; }
+
+        [Required]
+        [StringLength(8)]
+        public string CustCode { get; set; }
+
+        public long IssuedBy { get; set; }
+
+        [Required]
+        [StringLength(3)]
+        public string CurrCode { get; set; }
+
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal PaidAmount { get; set; }
+
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal Total { get; set; }
+
+        [StringLength(256)]
+        public string Notes { get; set; }
+    }
+
+    public class VwSalesInvoiceHeader : BaseEntityWithMark
+    {
+        public string Code { get; set; }
+
+        public DateTime Date { get; set; }
+
+        public DateTime DueDate { get; set; }
+
+        public string SoCode { get; set; }
+
+        public string CustCode { get; set; }
+
+        public long IssuedBy { get; set; }
+
+        public string CurrCode { get; set; }
+
+        public decimal PaidAmount { get; set; }
+
+        public decimal Total { get; set; }
+
+        public string Notes { get; set; }
+
+
+        public string CustName { get; set; }
+
+        public string IssuedInitial { get; set; }
+    }
+
+    [Table("SalesInvoiceDetail", Schema = Schema.Sales)]
+    public class SalesInvoiceDetail
+    {
+        public long Id { get; set; }
+
+        [StringLength(17)]
+        public string Code { get; set; }
+
+        public short LineNo { get; set; }
+
+        [Required]
+        [Column("DOCode")]
+        [StringLength(17)]
+        public string DoCode { get; set; }
+
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal ShipmentFee { get; set; }
+
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal HandlingFee { get; set; }
+
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal SubTotal { get; set; }
+
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal FinalDisc { get; set; }
+
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal TaxAmount { get; set; }
+
+        [Column(TypeName = "decimal(19, 6)")]
+        public decimal Total { get; set; }
+
+        [Column("DPP", TypeName = "decimal(19, 6)")]
+        public decimal Dpp { get; set; }
+    }
+}

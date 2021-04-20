@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Dynamic.Core;
 using Microsoft.EntityFrameworkCore;
 using ERP_API.Domain.Entities;
 using ERP_API.Domain.Entities.Purchase;
 using ERP_API.Domain.Extensions;
 using ERP_API.Domain.Interfaces.Purchase;
 using ERP_API.Domain.Models;
-using ERP_API.Model;
 using ERP_API.Model.Purchase;
 using Swift.Framework.Model;
 
@@ -41,7 +41,34 @@ namespace ERP_API.Domain.Services.Purchase
         {
             return Db.VwPurchaseReceiveDetails.Where(x => x.Code == code).OrderBy(x => x.LineNo);
         }
-        
+
+        public List<dynamic> GetRelatedTransactions(string code)
+        {
+            var piD = from dt in Db.PurchaseInvoiceDetails
+                      where dt.RcvCode == code
+                      select dt.Code;
+
+            var data = from piH in Db.PurchaseInvoiceHeaders
+                       where piD.Contains(piH.Code) && piH.Mark == "A"
+                       select new { piH.Code, piH.Date, piH.Total };
+
+            return data.ToDynamicList();
+        }
+
+        public IEnumerable<PurchaseReceiveHeader> GetUnInvoiceData(string poCode, string invCode)
+        {
+            var data = Db.PurchaseReceiveHeaders.Where(x => x.PoCode == poCode);
+
+            data = string.IsNullOrWhiteSpace(invCode)
+                ? data.Where(x => x.Mark == "A")
+                : data.Where(x => x.Mark == "A" ||
+                                  Db.PurchaseInvoiceDetails
+                                      .Where(i => i.Code == invCode)
+                                      .Select(i => i.RcvCode).Contains(x.Code));
+
+            return data;
+        }
+
         public SaveResult Insert(PurchaseReceiveRequest data)
         {
             var result = new SaveResult(false);
@@ -155,24 +182,21 @@ namespace ERP_API.Domain.Services.Purchase
                 Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
                 Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
 
-                // Delete detail data that doesn't have in data item details
+                // Get detail data that exists in receive before
                 var delDetails = Db.PurchaseReceiveDetails
                     .Where(d => d.Code == data.Code && !data.ItemDetails.Select(x => x.Id).Contains(d.Id))
                     .ToList();
 
-                foreach (var item in delDetails)
-                {
-                    Db.PurchaseReceiveDetails.Remove(item);
-                }
+                // Get detail data that exists in receive before
+                Db.PurchaseReceiveDetails.RemoveRange(delDetails);
 
                 // Update detail data
                 short i = 0;
-                var newRcvDetails = new List<PurchaseReceiveDetail>();
                 foreach (var item in data.ItemDetails)
                 {
                     if (item.Id <= 0)
                     {
-                        newRcvDetails.Add(new PurchaseReceiveDetail
+                        Db.PurchaseReceiveDetails.Add(new PurchaseReceiveDetail
                         {
                             Code = data.Code,
                             LineNo = ++i,
@@ -206,10 +230,6 @@ namespace ERP_API.Domain.Services.Purchase
                         Db.Entry(item).Property(e => e.Code).IsModified = false;
                     }
                 }
-
-                // Insert detail if new data exists
-                if (newRcvDetails.Any())
-                    Db.PurchaseReceiveDetails.AddRange(newRcvDetails);
 
                 // Save changes
                 Db.SaveChanges();

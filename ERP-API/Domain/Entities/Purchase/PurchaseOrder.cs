@@ -5,7 +5,7 @@ using ERP_API.Domain.Entities.Core;
 
 namespace ERP_API.Domain.Entities.Purchase
 {
-    [Table("trPurchaseOrderHeaders", Schema = "dbo")]
+    [Table("PurchaseOrderHeader", Schema = Schema.Purchasing)]
     public class PurchaseOrderHeader : BaseEntityWithMark
     {
         [Key]
@@ -117,7 +117,7 @@ namespace ERP_API.Domain.Entities.Purchase
         public string RequestInitial { get; set; }
     }
 
-    [Table("trPurchaseOrderDetails", Schema = "dbo")]
+    [Table("PurchaseOrderDetail", Schema = Schema.Purchasing)]
     public class PurchaseOrderDetail
     {
         public long Id { get; set; }
@@ -183,6 +183,7 @@ namespace ERP_API.Domain.Entities.Purchase
         [StringLength(6)]
         public string CoaInventory { get; set; }
 
+        [Column("CoaCOGS")]
         [StringLength(6)]
         public string CoaCogs { get; set; }
 

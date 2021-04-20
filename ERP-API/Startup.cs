@@ -9,10 +9,12 @@ using ERP_API.Domain.Entities;
 using ERP_API.Domain.Interfaces.Inventory;
 using ERP_API.Domain.Interfaces.Purchase;
 using ERP_API.Domain.Interfaces.General;
+using ERP_API.Domain.Interfaces.Sales;
 using ERP_API.Domain.Services;
 using ERP_API.Domain.Services.Inventory;
 using ERP_API.Domain.Services.Purchase;
 using ERP_API.Domain.Services.General;
+using ERP_API.Domain.Services.Sales;
 using ERP_API.Utils;
 using Newtonsoft.Json.Serialization;
 using Swift.Framework;
@@ -76,6 +78,11 @@ namespace ERP_API
             services.AddScoped<IPurchaseInvoiceService, PurchaseInvoiceService>();
             services.AddScoped<IPurchaseOrderService, PurchaseOrderService>();
             services.AddScoped<IPurchaseReceiveService, PurchaseReceiveService>();
+
+            // Sales services
+            services.AddScoped<ISalesDeliveryService, SalesDeliveryService>();
+            services.AddScoped<ISalesInvoiceService, SalesInvoiceService>();
+            services.AddScoped<ISalesOrderService, SalesOrderService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -104,7 +111,7 @@ namespace ERP_API
         public virtual void SetupDatabase(IServiceCollection services)
         {
             services.AddDbContextPool<ERPControlDbContext>(options => options.UseSqlServer(ControlDbConnectionString));
-            services.AddDbContext<ERPDbContext>(options => options.EnableSensitiveDataLogging());
+            //services.AddDbContext<ERPDbContext>(options => options.EnableSensitiveDataLogging());
             services.AddDbContext<TenantContext>();
         }
 

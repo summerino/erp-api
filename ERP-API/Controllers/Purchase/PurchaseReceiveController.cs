@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 using Microsoft.AspNetCore.Mvc;
-using ERP_API.Domain.Interfaces.Inventory;
 using ERP_API.Domain.Interfaces.Purchase;
 using ERP_API.Domain.Models;
 using ERP_API.Model;
@@ -19,12 +18,10 @@ namespace ERP_API.Controllers.Purchase
     public class PurchaseReceiveController : ControllerBase
     {
         private readonly IPurchaseReceiveService _rcv;
-        private readonly IUoMConversionService _uomC;
 
-        public PurchaseReceiveController(IPurchaseReceiveService rcv, IUoMConversionService uomC)
+        public PurchaseReceiveController(IPurchaseReceiveService rcv)
         {
             _rcv = rcv;
-            _uomC = uomC;
         }
 
         [HttpGet]
@@ -64,6 +61,30 @@ namespace ERP_API.Controllers.Purchase
                     State = ""
                 })
                 .ToList<dynamic>();
+
+            return Ok(new ApiResponse
+            {
+                RowCount = data.Count,
+                TableData = data
+            });
+        }
+
+        [HttpGet("related-trans")]
+        public IActionResult GetRelatedTransactions(string code)
+        {
+            var data = _rcv.GetRelatedTransactions(code);
+
+            return Ok(new ApiResponse
+            {
+                RowCount = data.Count,
+                TableData = data
+            });
+        }
+
+        [HttpGet("un-invoice")]
+        public IActionResult GetUnInvoiceData(string poCode, string invCode)
+        {
+            var data = _rcv.GetUnInvoiceData(poCode, invCode).ToList<dynamic>();
 
             return Ok(new ApiResponse
             {
