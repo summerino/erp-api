@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Dynamic.Core;
 using Microsoft.AspNetCore.Mvc;
 using ERP_API.Domain.Entities.General;
@@ -16,9 +17,9 @@ namespace ERP_API.Controllers.General
     [ApiController]
     public class SupplierController : ControllerBase
     {
-        private readonly ISuppliersService _supplier;
+        private readonly ISupplierService _supplier;
 
-        public SupplierController(ISuppliersService supplier)
+        public SupplierController(ISupplierService supplier)
         {
             _supplier = supplier;
         }
@@ -37,6 +38,27 @@ namespace ERP_API.Controllers.General
             {
                 RowCount = data.Total,
                 TableData = data.Data.ToDynamicList()
+            });
+        }
+
+        [HttpGet("lists")]
+        public IActionResult GetList(string sorts) 
+        {
+            var data =
+                _supplier.GetLists(
+                    null,
+                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]")).Data
+                    .ToDynamicList()
+                    .Select(x => new
+                    {
+                        x.Code, x.Initial, x.Name, x.Address1, x.Phone, x.Fax
+                    })
+                    .ToList<dynamic>();
+
+            return Ok(new ApiResponse
+            {
+                RowCount = data.Count,
+                TableData = data
             });
         }
 
