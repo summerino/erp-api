@@ -111,7 +111,7 @@ namespace ERP_API
         public virtual void SetupDatabase(IServiceCollection services)
         {
             services.AddDbContextPool<ERPControlDbContext>(options => options.UseSqlServer(ControlDbConnectionString));
-            services.AddDbContext<ERPDbContext>(options => options.EnableSensitiveDataLogging());
+            //services.AddDbContext<ERPDbContext>(options => options.EnableSensitiveDataLogging());
             services.AddDbContext<TenantContext>();
         }
 
