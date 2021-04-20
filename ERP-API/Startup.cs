@@ -66,8 +66,8 @@ namespace ERP_API
             services.AddScoped<IClaimService, ClaimService>();
 
             // General services
-            services.AddScoped<ICustomersService, CustomersService>();
-            services.AddScoped<ICustomerTypesService, CustomerTypesService>();
+            services.AddScoped<ICustomerService, CustomerService>();
+            services.AddScoped<ISupplierService, SupplierService>();
 
             // Inventory services
             services.AddScoped<IItemCategoryService, ItemCategoryService>();
@@ -118,11 +118,10 @@ namespace ERP_API
         public virtual void EnsureDatabaseCreated(ERPControlDbContext controlDbContext,
             IShardingService shardingService)
         {
-            if (!DatabaseUtility.DatabaseExists(ControlDbConnectionString))
-            {
-                DatabaseUtility.CreateDatabase(ControlDbConnectionString);
-            }
-
+            //if (!DatabaseUtility.DatabaseExists(ControlDbConnectionString))
+            //{
+            //    DatabaseUtility.CreateDatabase(ControlDbConnectionString);
+            //}
             controlDbContext.Database.Migrate();
             shardingService.ApplyMigrationAsync().GetAwaiter().GetResult();
         }

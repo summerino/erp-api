@@ -6,10 +6,14 @@ using Swift.Framework.Model;
 
 namespace ERP_API.Domain.Interfaces.General
 {
-    public interface ICustomersService : IGeneralService<Customer>
+    public interface ICustomerService : IGeneralService<Customer>
     {
         DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
             string search);
+
+        DataSourceResult GetLists(IEnumerable<Filter> filters, IEnumerable<Sort> sorts);
+
+        Customer FindByCode(string code);
 
         SaveResult Delete(string code, int userId);
     }
