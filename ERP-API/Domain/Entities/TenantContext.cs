@@ -80,6 +80,7 @@ namespace ERP_API.Domain.Entities
         public DbSet<VwSalesOrderDetail> VwSalesOrderDetails { get; set; }
 
         // System Management
+        public DbSet<Menu> Menus { get; set; }
         public DbSet<Role> Roles { get; set; }
         public DbSet<User> Users { get; set; }
 

@@ -113,6 +113,8 @@ namespace ERP_API.Domain.Entities.Sales
         public string CustName { get; set; }
 
         public string ShippedInitial { get; set; }
+
+        public string Status { get; set; }
     }
 
     [Table("SalesDeliveryDetail", Schema = Schema.Sales)]

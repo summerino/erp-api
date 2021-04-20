@@ -101,6 +101,8 @@ namespace ERP_API.Domain.Entities.Sales
         public string CustName { get; set; }
 
         public string SalesInitial { get; set; }
+
+        public string Status { get; set; }
     }
 
     [Table("SalesOrderDetail", Schema = Schema.Sales)]
