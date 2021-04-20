@@ -137,5 +137,4 @@ namespace ERP_API.Domain.Services.General
             return Db.Customers.Any(x => x.Initial == initial && x.Code != code);
         }
     }
-
 }

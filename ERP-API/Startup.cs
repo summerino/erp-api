@@ -15,7 +15,6 @@ using ERP_API.Domain.Services.Inventory;
 using ERP_API.Domain.Services.Purchase;
 using ERP_API.Domain.Services.General;
 using ERP_API.Domain.Services.Sales;
-using ERP_API.Utils;
 using Newtonsoft.Json.Serialization;
 using Swift.Framework;
 
@@ -57,6 +56,7 @@ namespace ERP_API
                 options.LowercaseQueryStrings = true;
                 options.LowercaseUrls = true;
             });
+
             services.AddControllers()
                 .AddNewtonsoftJson(options =>
                 {
@@ -72,7 +72,7 @@ namespace ERP_API
 
             // General services
             services.AddScoped<ICustomerService, CustomerService>();
-            services.AddScoped<ICustomerTypeService, CustomerTypesService>();
+            services.AddScoped<ICustomerTypeService, CustomerTypeService>();
             services.AddScoped<ISupplierService, SupplierService>();
 
             // Inventory services

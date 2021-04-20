@@ -1,22 +1,20 @@
-﻿using ERP_API.Domain.Entities;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using ERP_API.Domain.Entities;
 using ERP_API.Domain.Entities.General;
 using ERP_API.Domain.Extensions;
 using ERP_API.Domain.Interfaces.General;
 using ERP_API.Domain.Models;
 using Swift.Framework.Model;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace ERP_API.Domain.Services.General
 {
-    public class CustomerTypesService : GeneralService<CustomerType>, ICustomerTypeService
+    public class CustomerTypeService : GeneralService<CustomerType>, ICustomerTypeService
     {
-        public CustomerTypesService(TenantContext db)
+        public CustomerTypeService(TenantContext db)
             : base(db)
         {
-
         }
 
         public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string search)
@@ -125,6 +123,5 @@ namespace ERP_API.Domain.Services.General
         {
             return Db.CustomerTypes.Any(x => x.Initial == initial && x.Id != id);
         }
-
     }
 }
