@@ -10,6 +10,8 @@ namespace ERP_API.Domain.Interfaces.General
         DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
             string search);
 
+        DataSourceResult GetLists(IEnumerable<Filter> filters, IEnumerable<Sort> sorts);
+
         SaveResult Delete(string code, int userId);
     }
 }

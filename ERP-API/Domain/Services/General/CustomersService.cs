@@ -32,6 +32,13 @@ namespace ERP_API.Domain.Services.General
             return data.ToDataSourceResult(skip, take, filter, sort);
         }
 
+        public DataSourceResult GetLists(IEnumerable<Filter> filters, IEnumerable<Sort> sorts)
+        {
+            var data = Db.Customers.Where(x => x.IsActive);
+
+            return data.ToDataSourceResult(-1, -1, filters, sorts);
+        }
+
         public override SaveResult Insert(Customer data)
         {
             var result = new SaveResult(false);

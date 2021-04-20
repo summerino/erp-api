@@ -118,11 +118,10 @@ namespace ERP_API
         public virtual void EnsureDatabaseCreated(ERPControlDbContext controlDbContext,
             IShardingService shardingService)
         {
-            if (!DatabaseUtility.DatabaseExists(ControlDbConnectionString))
-            {
-                DatabaseUtility.CreateDatabase(ControlDbConnectionString);
-            }
-
+            //if (!DatabaseUtility.DatabaseExists(ControlDbConnectionString))
+            //{
+            //    DatabaseUtility.CreateDatabase(ControlDbConnectionString);
+            //}
             controlDbContext.Database.Migrate();
             shardingService.ApplyMigrationAsync().GetAwaiter().GetResult();
         }
