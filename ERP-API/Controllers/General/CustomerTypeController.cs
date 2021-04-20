@@ -12,7 +12,7 @@ using Swift.Framework.Model;
 
 namespace ERP_API.Controllers.General
 {
-    [Route("api/v1/customertype")]
+    [Route("api/v1/customer-type")]
     //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [ApiController]
     public class CustomerTypesController : ControllerBase
