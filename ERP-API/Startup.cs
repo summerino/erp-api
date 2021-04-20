@@ -68,6 +68,7 @@ namespace ERP_API
 
             // General services
             services.AddScoped<ICustomersService, CustomersService>();
+            services.AddScoped<ISuppliersService, SuppliersService>();
 
             // Inventory services
             services.AddScoped<IItemCategoryService, ItemCategoryService>();
