@@ -17,9 +17,9 @@ namespace ERP_API.Controllers.General
     [ApiController]
     public class CustomerController : ControllerBase
     {
-        private readonly ICustomersService _customer;
+        private readonly ICustomerService _customer;
 
-        public CustomerController(ICustomersService customer)
+        public CustomerController(ICustomerService customer)
         {
             _customer = customer;
         }
@@ -60,6 +60,12 @@ namespace ERP_API.Controllers.General
                 RowCount = data.Count,
                 TableData = data
             });
+        }
+
+        [HttpGet("{code}")]
+        public IActionResult GetDataByCode(string code) 
+        {
+            return Ok(_customer.FindByCode(code));
         }
 
         [HttpPost]

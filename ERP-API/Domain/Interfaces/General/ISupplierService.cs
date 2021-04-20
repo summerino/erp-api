@@ -12,6 +12,8 @@ namespace ERP_API.Domain.Interfaces.General
 
         DataSourceResult GetLists(IEnumerable<Filter> filters, IEnumerable<Sort> sorts);
 
+        Supplier FindByCode(string code);
+
         SaveResult Delete(string code, int userId);
     }
 }

@@ -39,6 +39,11 @@ namespace ERP_API.Domain.Services.General
             return data.ToDataSourceResult(-1, -1, filters, sorts);
         }
 
+        public Supplier FindByCode(string code)
+        {
+            return Db.Suppliers.Find(code);
+        }
+
         public override SaveResult Insert(Supplier data)
         {
             var result = new SaveResult(false);
