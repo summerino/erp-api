@@ -7,6 +7,7 @@ using ERP_API.Domain.Entities.General;
 using ERP_API.Domain.Entities.Inventory;
 using ERP_API.Domain.Entities.Purchase;
 using ERP_API.Domain.Entities.Sales;
+using ERP_API.Domain.Entities.SystemManagement;
 using ERP_API.Domain.Services;
 
 namespace ERP_API.Domain.Entities
@@ -77,6 +78,10 @@ namespace ERP_API.Domain.Entities
         public DbSet<VwSalesOrderHeader> VwSalesOrderHeaders { get; set; }
         public DbSet<SalesOrderDetail> SalesOrderDetails { get; set; }
         public DbSet<VwSalesOrderDetail> VwSalesOrderDetails { get; set; }
+
+        // System Management
+        public DbSet<Role> Roles { get; set; }
+        public DbSet<User> Users { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
