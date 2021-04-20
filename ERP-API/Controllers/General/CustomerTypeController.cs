@@ -12,22 +12,22 @@ using Swift.Framework.Model;
 
 namespace ERP_API.Controllers.General
 {
-    [Route("api/v1/customer")]
+    [Route("api/v1/customertype")]
+    //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [ApiController]
-    public class CustomerController : ControllerBase
+    public class CustomerTypesController : ControllerBase
     {
-        private readonly ICustomerService _customer;
-
-        public CustomerController(ICustomerService customer)
+        private readonly ICustomerTypeService _customerType;
+        public CustomerTypesController(ICustomerTypeService customerType)
         {
-            _customer = customer;
+            _customerType = customerType;
         }
 
         [HttpGet]
         public IActionResult GetData(string search, string filters, string sorts, int skip, int take)
         {
             var data =
-                _customer.GetData(
+                _customerType.GetData(
                     skip, take,
                     JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
                     JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
@@ -41,16 +41,18 @@ namespace ERP_API.Controllers.General
         }
 
         [HttpGet("lists")]
-        public IActionResult GetList(string sorts) 
+        public IActionResult GetList(string sorts)
         {
             var data =
-                _customer.GetLists(
+                _customerType.GetLists(
                     null,
                     JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]")).Data
                     .ToDynamicList()
                     .Select(x => new
                     {
-                        x.Code, x.Initial, x.Name, x.Address1, x.Phone, x.Fax
+                        x.Id,
+                        x.Initial,
+                        x.Name
                     })
                     .ToList<dynamic>();
 
@@ -61,14 +63,8 @@ namespace ERP_API.Controllers.General
             });
         }
 
-        [HttpGet("{code}")]
-        public IActionResult GetDataByCode(string code) 
-        {
-            return Ok(_customer.FindByCode(code));
-        }
-
         [HttpPost]
-        public IActionResult OnPost(Customer data)
+        public IActionResult OnPost(CustomerType data)
         {
             data.IsActive = true;
             data.CreatedBy = 1;
@@ -76,26 +72,26 @@ namespace ERP_API.Controllers.General
             data.UpdatedBy = data.CreatedBy;
             data.UpdatedDate = data.CreatedDate;
 
-            var result = _customer.Insert(data);
+            var result = _customerType.Insert(data);
 
             return Ok(result);
         }
 
-        [HttpPut("{code}")]
-        public IActionResult OnPut(string code, Customer data)
+        [HttpPut("{id}")]
+        public IActionResult OnPut(string id, CustomerType data)
         {
             data.UpdatedBy = 1;
             data.UpdatedDate = DateTime.Now;
 
-            var result = _customer.Update(data);
+            var result = _customerType.Update(data);
 
             return Ok(result);
         }
 
-        [HttpDelete("{code}")]
-        public IActionResult OnDelete(string code)
+        [HttpDelete("{id}")]
+        public IActionResult OnDelete(int id)
         {
-            var result = _customer.Delete(code, 1);
+            var result = _customerType.Delete(id, 1);
 
             return Ok(result);
         }

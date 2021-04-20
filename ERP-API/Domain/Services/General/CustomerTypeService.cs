@@ -1,50 +1,45 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using ERP_API.Domain.Entities;
+﻿using ERP_API.Domain.Entities;
 using ERP_API.Domain.Entities.General;
 using ERP_API.Domain.Extensions;
 using ERP_API.Domain.Interfaces.General;
 using ERP_API.Domain.Models;
 using Swift.Framework.Model;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace ERP_API.Domain.Services.General
 {
-    public class CustomerService : GeneralService<Customer>, ICustomerService
+    public class CustomerTypesService : GeneralService<CustomerType>, ICustomerTypeService
     {
-        public CustomerService(TenantContext db)
+        public CustomerTypesService(TenantContext db)
             : base(db)
         {
+
         }
 
-        public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
-            string search)
+        public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string search)
         {
-            var data = Db.VwCustomers.AsQueryable();
+            var data = Db.CustomerTypes.AsQueryable();
 
             if (!string.IsNullOrEmpty(search))
             {
                 data = data.Where(x =>
-                        x.Code.Contains(search) || x.Name.Contains(search) || x.TypeName.Contains(search) ||
-                        x.Address1.Contains(search) || x.Phone.Contains(search) || x.CreditTerm.ToString() == search);
+                        x.Initial.Contains(search) || x.Name.Contains(search));
             }
 
-            return data.ToDataSourceResult(skip, take, filter, sort);
+            return data.ToDataSourceResult(skip, take, filters, sorts);
         }
 
         public DataSourceResult GetLists(IEnumerable<Filter> filters, IEnumerable<Sort> sorts)
         {
-            var data = Db.Customers.Where(x => x.IsActive);
+            var data = Db.CustomerTypes.Where(x => x.IsActive);
 
             return data.ToDataSourceResult(-1, -1, filters, sorts);
         }
 
-        public Customer FindByCode(string code)
-        {
-            return Db.Customers.Find(code);
-        }
-
-        public override SaveResult Insert(Customer data)
+        public override SaveResult Insert(CustomerType data)
         {
             var result = new SaveResult(false);
 
@@ -52,17 +47,12 @@ namespace ERP_API.Domain.Services.General
             try
             {
                 // Checking initial already exists or not
-                if (IsInitialExists(data.Initial, ""))
+                if (IsInitialExists(data.Initial, 0))
                 {
                     result.Message = "Initial is already exists. Please use another initial.";
                     return result;
                 }
 
-                // Get new code
-                var newCode = GetNewCode("CUST_NUM_FMT", data.CreatedDate);
-
-                // Insert data
-                data.Code = newCode;
                 Db.Add(data);
 
                 Db.SaveChanges();
@@ -75,51 +65,50 @@ namespace ERP_API.Domain.Services.General
             }
 
             result.Success = true;
-            result.Data = data.Code;
-            result.Message = "Success insert customer.";
+            result.Data = data.Id;
+            result.Message = "Success insert customer type data.";
             return result;
         }
 
-        public override SaveResult Update(Customer data)
+        public override SaveResult Update(CustomerType data)
         {
             var result = new SaveResult(false);
 
             // Checking initial already exists or not
-            if (IsInitialExists(data.Initial, data.Code))
+            if (IsInitialExists(data.Initial, data.Id))
             {
                 result.Message = "Initial is already exists. Please use another initial.";
                 return result;
             }
 
             // Update data
-            Db.Customers.Update(data);
-            Db.Entry(data).Property(e => e.Code).IsModified = false;
+            Db.CustomerTypes.Update(data);
+            Db.Entry(data).Property(e => e.Id).IsModified = false;
             Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
             Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
 
             Db.SaveChanges();
 
             result.Success = true;
-            result.Data = data.Code;
-            result.Message = "Success update customer.";
+            result.Data = data.Id;
+            result.Message = "Success update customer type data.";
             return result;
         }
 
-        public SaveResult Delete(string code, int userId)
+        public SaveResult Delete(int id, int userId)
         {
             var result = new SaveResult(false);
 
-            var data = Db.Customers.Find(code);
+            var data = Db.CustomerTypes.Find(id);
             if (data != null)
             {
                 // Checking active
                 if (data.IsActive == false)
                 {
-                    result.Message = "Can't inactive customer because data already inactive.";
+                    result.Message = "Can't remove customer type because data already inactive.";
                     return result;
                 }
 
-                // Update data
                 data.IsActive = false;
                 data.UpdatedBy = userId;
                 data.UpdatedDate = DateTime.Now;
@@ -128,14 +117,14 @@ namespace ERP_API.Domain.Services.General
             }
 
             result.Success = true;
-            result.Message = "Success inactive customer.";
+            result.Message = "Success remove customer type.";
             return result;
         }
 
-        private bool IsInitialExists(string initial, string code)
+        private bool IsInitialExists(string initial, int id)
         {
-            return Db.Customers.Any(x => x.Initial == initial && x.Code != code);
+            return Db.CustomerTypes.Any(x => x.Initial == initial && x.Id != id);
         }
-    }
 
+    }
 }
