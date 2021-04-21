@@ -7,8 +7,6 @@ using ERP_API.Domain.Entities;
 using ERP_API.Domain.Extensions;
 using ERP_API.Domain.Interfaces;
 using ERP_API.Domain.Models;
-using ERP_API.Model;
-using Swift.Framework.Model;
 
 namespace ERP_API.Domain.Services
 {

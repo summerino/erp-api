@@ -8,11 +8,10 @@ using ERP_API.Domain.Interfaces.General;
 using ERP_API.Domain.Models;
 using ERP_API.Model;
 using Newtonsoft.Json;
-using Swift.Framework.Model;
 
 namespace ERP_API.Controllers.General
 {
-    [Route("api/v1/worker")]
+    [Route("api/v1/employee")]
     [ApiController]
     public class EmployeeController : ControllerBase
     {
@@ -37,6 +36,27 @@ namespace ERP_API.Controllers.General
             {
                 RowCount = data.Total,
                 TableData = data.Data.ToDynamicList()
+            });
+        }
+
+        [HttpGet("lists")]
+        public IActionResult GetList(string filters, string sorts) 
+        {
+            var data =
+                _employee.GetLists(
+                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]")).Data
+                    .ToDynamicList()
+                    .Select(x => new
+                    {
+                        x.Id, x.Initial, x.FirstName
+                    })
+                    .ToList<dynamic>();
+
+            return Ok(new ApiResponse
+            {
+                RowCount = data.Count,
+                TableData = data
             });
         }
 

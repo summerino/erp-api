@@ -5,7 +5,6 @@ using ERP_API.Domain.Entities.Inventory;
 using ERP_API.Domain.Extensions;
 using ERP_API.Domain.Interfaces.Inventory;
 using ERP_API.Domain.Models;
-using Swift.Framework.Model;
 
 namespace ERP_API.Domain.Services.Inventory
 {

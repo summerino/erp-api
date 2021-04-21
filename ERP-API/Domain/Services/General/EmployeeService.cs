@@ -6,7 +6,6 @@ using ERP_API.Domain.Entities.General;
 using ERP_API.Domain.Extensions;
 using ERP_API.Domain.Interfaces.General;
 using ERP_API.Domain.Models;
-using Swift.Framework.Model;
 
 namespace ERP_API.Domain.Services.General
 {
@@ -24,20 +23,14 @@ namespace ERP_API.Domain.Services.General
 
             if (!string.IsNullOrEmpty(search))
             {
-                if (search.ToLower() == "male")
+                data = search.ToLower() switch
                 {
-                    data = data.Where(x => x.Sex == true);
-                }
-                else if (search.ToLower() == "female")
-                {
-                    data = data.Where(x => x.Sex == false);
-                }
-                else
-                {
-                    data = data.Where(x =>
+                    "male" => data.Where(x => x.Sex),
+                    "female" => data.Where(x => !x.Sex),
+                    _ => data.Where(x =>
                         x.Initial.Contains(search) || x.FirstName.Contains(search) || x.LastName.Contains(search) ||
-                        x.Address1.Contains(search) || x.Phone.Contains(search));
-                }
+                        x.Address1.Contains(search) || x.Phone.Contains(search))
+                };
             }
 
             return data.ToDataSourceResult(skip, take, filter, sort);
@@ -47,7 +40,7 @@ namespace ERP_API.Domain.Services.General
         {
             var data = Db.Employees.Where(x => x.IsActive);
 
-            return data.ToDataSourceResult(-1, -1, filters, sorts);
+            return data.ToDataSourceResult(0, -1, filters, sorts);
         }
 
         public override SaveResult Insert(Employee data)
