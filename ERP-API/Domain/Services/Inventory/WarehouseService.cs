@@ -32,6 +32,13 @@ namespace ERP_API.Domain.Services.Inventory
             return data.ToDataSourceResult(skip, take, filter, sort);
         }
 
+        public DataSourceResult GetLists(IEnumerable<Filter> filters, IEnumerable<Sort> sorts)
+        {
+            var data = Db.Warehouses.Where(x => x.IsActive);
+
+            return data.ToDataSourceResult(0, -1, filters, sorts);
+        }
+
         public override SaveResult Insert(Warehouse data)
         {
             var result = new SaveResult(false);

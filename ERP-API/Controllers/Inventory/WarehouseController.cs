@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Dynamic.Core;
 using Microsoft.AspNetCore.Mvc;
 using ERP_API.Domain.Interfaces.Inventory;
@@ -38,6 +39,27 @@ namespace ERP_API.Controllers.Inventory
             {
                 RowCount = data.Total,
                 TableData = data.Data.ToDynamicList()
+            });
+        }
+
+        [HttpGet("lists")]
+        public IActionResult GetList(string sorts) 
+        {
+            var data =
+                _warehouse.GetLists(
+                    null,
+                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]")).Data
+                    .ToDynamicList()
+                    .Select(x => new
+                    {
+                        x.Code, x.Initial, x.Name, x.IsDefault
+                    })
+                    .ToList<dynamic>();
+
+            return Ok(new ApiResponse
+            {
+                RowCount = data.Count,
+                TableData = data
             });
         }
 
