@@ -34,7 +34,7 @@ namespace ERP_API.Domain.Services.General
         {
             var data = Db.CustomerTypes.Where(x => x.IsActive);
 
-            return data.ToDataSourceResult(-1, -1, filters, sorts);
+            return data.ToDataSourceResult(0, -1, filters, sorts);
         }
 
         public override SaveResult Insert(CustomerType data)

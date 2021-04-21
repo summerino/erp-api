@@ -35,7 +35,7 @@ namespace ERP_API.Domain.Services.General
         {
             var data = Db.SupplierTypes.Where(x => x.IsActive);
 
-            return data.ToDataSourceResult(-1, -1, filters, sorts);
+            return data.ToDataSourceResult(0, -1, filters, sorts);
         }
 
         public override SaveResult Insert(SupplierType data)
