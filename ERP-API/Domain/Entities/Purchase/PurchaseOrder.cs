@@ -115,6 +115,9 @@ namespace ERP_API.Domain.Entities.Purchase
         public string SupName { get; set; }
 
         public string RequestInitial { get; set; }
+
+        public string Status { get; set; }
+
     }
 
     [Table("PurchaseOrderDetail", Schema = Schema.Purchasing)]
