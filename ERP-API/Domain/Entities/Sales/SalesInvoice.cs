@@ -68,6 +68,8 @@ namespace ERP_API.Domain.Entities.Sales
         public string CustName { get; set; }
 
         public string IssuedInitial { get; set; }
+
+        public string Status { get; set; }
     }
 
     [Table("SalesInvoiceDetail", Schema = Schema.Sales)]

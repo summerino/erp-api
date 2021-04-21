@@ -10,9 +10,9 @@ using Swift.Framework.Model;
 
 namespace ERP_API.Domain.Services.General
 {
-    public class CustomersService : GeneralService<Customer>, ICustomersService
+    public class CustomerService : GeneralService<Customer>, ICustomerService
     {
-        public CustomersService(TenantContext db)
+        public CustomerService(TenantContext db)
             : base(db)
         {
         }
@@ -30,6 +30,18 @@ namespace ERP_API.Domain.Services.General
             }
 
             return data.ToDataSourceResult(skip, take, filter, sort);
+        }
+
+        public DataSourceResult GetLists(IEnumerable<Filter> filters, IEnumerable<Sort> sorts)
+        {
+            var data = Db.Customers.Where(x => x.IsActive);
+
+            return data.ToDataSourceResult(-1, -1, filters, sorts);
+        }
+
+        public Customer FindByCode(string code)
+        {
+            return Db.Customers.Find(code);
         }
 
         public override SaveResult Insert(Customer data)
@@ -120,7 +132,7 @@ namespace ERP_API.Domain.Services.General
             return result;
         }
 
-        public bool IsInitialExists(string initial, string code)
+        private bool IsInitialExists(string initial, string code)
         {
             return Db.Customers.Any(x => x.Initial == initial && x.Code != code);
         }

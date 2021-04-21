@@ -15,7 +15,6 @@ using ERP_API.Domain.Services.Inventory;
 using ERP_API.Domain.Services.Purchase;
 using ERP_API.Domain.Services.General;
 using ERP_API.Domain.Services.Sales;
-using ERP_API.Utils;
 using Newtonsoft.Json.Serialization;
 using Swift.Framework;
 
@@ -29,7 +28,7 @@ namespace ERP_API
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
-            ControlDbConnectionString = configuration.GetConnectionString("controlConnectionString");
+            ControlDbConnectionString = configuration.GetConnectionString("CatalogConnection");
         }
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -45,7 +44,12 @@ namespace ERP_API
                             .AllowAnyMethod();
                     });
             });
-            SetupDatabase(services);
+
+            // Add framework services
+            services.AddDbContextPool<CatalogContext>(options =>
+                options.UseSqlServer(Configuration.GetConnectionString("CatalogConnection")));
+
+            services.AddDbContext<TenantContext>();
 
             services.AddRouting(options =>
             {
@@ -67,7 +71,9 @@ namespace ERP_API
             services.AddScoped<IClaimService, ClaimService>();
 
             // General services
-            services.AddScoped<ICustomersService, CustomersService>();
+            services.AddScoped<ICustomerService, CustomerService>();
+            services.AddScoped<ICustomerTypeService, CustomerTypeService>();
+            services.AddScoped<ISupplierService, SupplierService>();
 
             // Inventory services
             services.AddScoped<IItemCategoryService, ItemCategoryService>();
@@ -87,7 +93,7 @@ namespace ERP_API
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ERPControlDbContext controlDbContext,
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, CatalogContext controlDbContext,
             IShardingService shardingService, IServiceProvider service­Provider)
         {
             if (env.IsDevelopment())
@@ -108,22 +114,14 @@ namespace ERP_API
             EnsureDatabaseCreated(controlDbContext, shardingService);
             Builder.InitConfiguration(ControlDbConnectionString);
         }
-
-        public virtual void SetupDatabase(IServiceCollection services)
-        {
-            services.AddDbContextPool<ERPControlDbContext>(options => options.UseSqlServer(ControlDbConnectionString));
-            //services.AddDbContext<ERPDbContext>(options => options.EnableSensitiveDataLogging());
-            services.AddDbContext<TenantContext>();
-        }
-
-        public virtual void EnsureDatabaseCreated(ERPControlDbContext controlDbContext,
+        
+        public virtual void EnsureDatabaseCreated(CatalogContext controlDbContext,
             IShardingService shardingService)
         {
-            if (!DatabaseUtility.DatabaseExists(ControlDbConnectionString))
-            {
-                DatabaseUtility.CreateDatabase(ControlDbConnectionString);
-            }
-
+            //if (!DatabaseUtility.DatabaseExists(ControlDbConnectionString))
+            //{
+            //    DatabaseUtility.CreateDatabase(ControlDbConnectionString);
+            //}
             controlDbContext.Database.Migrate();
             shardingService.ApplyMigrationAsync().GetAwaiter().GetResult();
         }

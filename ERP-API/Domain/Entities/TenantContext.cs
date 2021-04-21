@@ -7,19 +7,20 @@ using ERP_API.Domain.Entities.General;
 using ERP_API.Domain.Entities.Inventory;
 using ERP_API.Domain.Entities.Purchase;
 using ERP_API.Domain.Entities.Sales;
+using ERP_API.Domain.Entities.SystemManagement;
 using ERP_API.Domain.Services;
 
 namespace ERP_API.Domain.Entities
 {
     public class TenantContext : DbContext
     {
-        private readonly ERPControlDbContext _controlCtx;
+        private readonly CatalogContext _catalogCtx;
         private readonly IClaimService _claim;
 
-        public TenantContext(DbContextOptions<TenantContext> options, ERPControlDbContext controlCtx, IClaimService claim)
+        public TenantContext(DbContextOptions<TenantContext> options, CatalogContext catalogCtx, IClaimService claim)
             : base(options)
         {
-            _controlCtx = controlCtx;
+            _catalogCtx = catalogCtx;
             _claim = claim;
         }
 
@@ -79,12 +80,17 @@ namespace ERP_API.Domain.Entities
         public DbSet<SalesOrderDetail> SalesOrderDetails { get; set; }
         public DbSet<VwSalesOrderDetail> VwSalesOrderDetails { get; set; }
 
+        // System Management
+        public DbSet<Menu> Menus { get; set; }
+        public DbSet<Role> Roles { get; set; }
+        public DbSet<User> Users { get; set; }
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
             {
                 var tenant =
-                    _controlCtx.TenantDetails.SingleOrDefault(x => x.Shard == Guid.Parse(_claim.TenantShard));
+                    _catalogCtx.Tenants.SingleOrDefault(x => x.Id == _claim.TenantId);
 
                 if (tenant != null &&
                     (!string.IsNullOrWhiteSpace(tenant.ServerName) || !string.IsNullOrWhiteSpace(tenant.DatabaseName) ||

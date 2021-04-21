@@ -7,5 +7,6 @@
         public const string Inventory = "Inventory";
         public const string Purchasing = "Purchasing";
         public const string Sales = "Sales";
+        public const string SystemManagement = "SystemManagement";
     }
 }

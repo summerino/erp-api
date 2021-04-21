@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using ERP_API.Domain.Interfaces.Inventory;
-using ERP_API.Dtos;
+using ERP_API.Model;
 
 namespace ERP_API.Controllers.Inventory
 {
@@ -18,7 +18,7 @@ namespace ERP_API.Controllers.Inventory
         }
 
         [HttpGet]
-        public IActionResult GetData([FromQuery] int uomId) 
+        public IActionResult GetData(int uomId)
         {
             var data =
                 _uomC.GetData(uomId)
@@ -29,7 +29,7 @@ namespace ERP_API.Controllers.Inventory
                     })
                     .ToList<dynamic>();
 
-            return Ok(new MasterViewDto
+            return Ok(new ApiResponse
             {
                 RowCount = data.Count,
                 TableData = data

@@ -1,19 +1,20 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace ERP_API.Entities.Control
+namespace ERP_API.Domain.Entities.Catalog
 {
-    public class TenantDetails
+    [Table("Tenant")]
+    public class Tenant
     {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        [Column("TenantShard")]
-        public Guid Shard { get; set; }
+        public int Id { get; set; }
 
-        public string TenantName { get; set; }
+        [Required]
+        [StringLength(20)]
+        public string Initial { get; set; }
 
-        public string TenantSlug { get; set; }
+        [Required]
+        [StringLength(50)]
+        public string Name { get; set; }
 
         [Required]
         [StringLength(128)]
@@ -24,7 +25,8 @@ namespace ERP_API.Entities.Control
         public string DatabaseName { get; set; }
 
         [Required]
-        [StringLength(128)]
+        [Column(TypeName = "nvarchar")]
+        [StringLength(20)]
         public string ServerUserId { get; set; }
 
         [Required]
