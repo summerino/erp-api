@@ -79,6 +79,7 @@ namespace ERP_API
             services.AddScoped<IItemCategoryService, ItemCategoryService>();
             services.AddScoped<IItemService, ItemService>();
             services.AddScoped<IUoMConversionService, UoMConversionService>();
+            services.AddScoped<IWarehouseService, WarehouseService>();
 
             // Purchase services
             services.AddScoped<IPurchaseInvoiceService, PurchaseInvoiceService>();
