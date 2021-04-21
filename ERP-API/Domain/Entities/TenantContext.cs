@@ -52,7 +52,6 @@ namespace ERP_API.Domain.Entities
         public DbSet<UoM> UoMs { get; set; }
         public DbSet<UoMConversion> UoMConversions { get; set; }
         public DbSet<Warehouse> Warehouses { get; set; }
-        public DbSet<VwWarehouse> VwWarehouses { get; set; }
 
         // Purchase entities
         public DbSet<PurchaseInvoiceHeader> PurchaseInvoiceHeaders { get; set; }
@@ -141,10 +140,6 @@ namespace ERP_API.Domain.Entities
             modelBuilder.Entity<VwItem>()
                 .HasNoKey()
                 .ToView("vwItem", Schema.Inventory);
-
-            modelBuilder.Entity<VwWarehouse>()
-                .HasNoKey()
-                .ToView("vwWarehouses", Schema.Inventory);
 
             // Purchase entities
             modelBuilder.Entity<PurchaseInvoiceHeader>(entity =>
