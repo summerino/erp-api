@@ -17,6 +17,11 @@ using ERP_API.Domain.Services.General;
 using ERP_API.Domain.Services.Sales;
 using Newtonsoft.Json.Serialization;
 using Swift.Framework;
+using ERP_API.Model.Auth;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using System.Text;
+using Microsoft.IdentityModel.Tokens;
 
 namespace ERP_API
 {
@@ -34,6 +39,7 @@ namespace ERP_API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.Configure<JwtConfig>(Configuration.GetSection("JwtConfig"));
             services.AddCors(options =>
             {
                 options.AddDefaultPolicy(
@@ -57,6 +63,27 @@ namespace ERP_API
                 options.LowercaseUrls = true;
             });
 
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(jwt => {
+                var key = Encoding.ASCII.GetBytes(Configuration["JwtConfig:Secret"]);
+
+                jwt.SaveToken = true;
+                jwt.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    ValidateLifetime = true,
+                    RequireExpirationTime = true
+                };
+            });
+
             services.AddControllers()
                 .AddNewtonsoftJson(options =>
                 {
@@ -65,7 +92,16 @@ namespace ERP_API
 
             services.AddHttpContextAccessor();
 
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("Session", policy =>
+                    policy.Requirements.Add(new UserSessionRequirement()));
+
+            });
+
             // Add application service
+            // Auth Services
+            services.AddScoped<IAuthorizationHandler, UserSessionHandler>();
             // Core services
             services.AddScoped<IShardingService, ShardingService>();
             services.AddScoped<IClaimService, ClaimService>();
@@ -102,9 +138,10 @@ namespace ERP_API
             {
                 app.UseDeveloperExceptionPage();
             }
-            
+
             //app.UseHttpsRedirection();
             app.UseRouting();
+            app.UseAuthentication();
             app.UseCors();
             app.UseAuthorization();
 
@@ -116,7 +153,7 @@ namespace ERP_API
             EnsureDatabaseCreated(controlDbContext, shardingService);
             Builder.InitConfiguration(ControlDbConnectionString);
         }
-        
+
         public virtual void EnsureDatabaseCreated(CatalogContext controlDbContext,
             IShardingService shardingService)
         {
