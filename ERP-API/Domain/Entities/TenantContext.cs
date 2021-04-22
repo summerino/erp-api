@@ -32,6 +32,7 @@ namespace ERP_API.Domain.Entities
         // Accounting Entities
         public DbSet<Coa> Coas { get; set; }
         public DbSet<CoaType> CoaTypes { get; set; }
+        public DbSet<CurrencyRate> CurrencyRates { get; set; }
 
         // General entities
         public DbSet<Currency> Currencies { get; set; }
