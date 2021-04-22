@@ -3,7 +3,6 @@ using ERP_API.Domain.Interfaces.General;
 using ERP_API.Domain.Models;
 using ERP_API.Domain.Services;
 using ERP_API.Model;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System;
@@ -15,7 +14,6 @@ using System.Threading.Tasks;
 namespace ERP_API.Controllers.General
 {
     [Route("api/v1/tax")]
-    [AllowAnonymous]
     [ApiController]
     public class TaxController : ControllerBase
     {

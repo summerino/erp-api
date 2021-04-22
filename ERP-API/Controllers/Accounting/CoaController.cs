@@ -8,7 +8,6 @@ using ERP_API.Domain.Interfaces.Accounting;
 using ERP_API.Domain.Models;
 using ERP_API.Model;
 using Newtonsoft.Json;
-using Microsoft.AspNetCore.Authorization;
 
 namespace ERP_API.Controllers.Accounting
 {
@@ -40,7 +39,6 @@ namespace ERP_API.Controllers.Accounting
             });
         }
 
-        [AllowAnonymous]
         [HttpGet("lists")]
         public IActionResult GetList(string sorts) 
         {
