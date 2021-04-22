@@ -6,7 +6,9 @@ namespace ERP_API.Domain.Services
 {
     public interface IClaimService
     {
-        string UserId { get; }
+        int UserId { get; }
+
+        string CatalogUserId { get; }
 
         int TenantId { get; }
 
@@ -26,8 +28,11 @@ namespace ERP_API.Domain.Services
             _accessor = accessor;
         }
 
-        public string UserId =>
-            _accessor.HttpContext?.User?.Claims?.SingleOrDefault(x => x.Type == "UserId")?.Value;
+        public int UserId =>
+            int.TryParse(_accessor.HttpContext?.User?.Claims?.SingleOrDefault(x => x.Type == "UserId")?.Value,
+                out var userId)
+                ? userId
+                : 0;
 
         public int TenantId =>
             int.TryParse(_accessor.HttpContext?.User?.Claims?.SingleOrDefault(x => x.Type == "TenantId")?.Value,
@@ -43,5 +48,8 @@ namespace ERP_API.Domain.Services
 
         public string IpAddress =>
             _accessor.HttpContext?.Connection?.RemoteIpAddress?.ToString();
+
+        public string CatalogUserId =>
+            _accessor.HttpContext?.User?.Claims?.SingleOrDefault(x => x.Type == "CatalogUserId")?.Value.ToString();
     }
 }
