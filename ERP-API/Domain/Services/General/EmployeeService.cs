@@ -2,42 +2,48 @@
 using System.Collections.Generic;
 using System.Linq;
 using ERP_API.Domain.Entities;
-using ERP_API.Domain.Entities.Inventory;
+using ERP_API.Domain.Entities.General;
 using ERP_API.Domain.Extensions;
-using ERP_API.Domain.Interfaces.Inventory;
+using ERP_API.Domain.Interfaces.General;
 using ERP_API.Domain.Models;
 
-namespace ERP_API.Domain.Services.Inventory
+namespace ERP_API.Domain.Services.General
 {
-    public class ItemService : GeneralService<Item>, IItemService
+    public class EmployeeService : GeneralService<Employee>, IEmployeeService
     {
-        public ItemService(TenantContext db)
+        public EmployeeService(TenantContext db)
             : base(db)
         {
         }
 
         public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
-            List<int> category, string search)
+            string search)
         {
-            var data = Db.VwItems.AsQueryable();
-
-            if (category?.Any() ?? false)
-            {
-                data = data.Where(x => category.Contains(x.CategoryId));
-            }
+            var data = Db.Employees.AsQueryable();
 
             if (!string.IsNullOrEmpty(search))
             {
-                data = data.Where(x =>
-                            x.Initial.Contains(search) || x.Name.Contains(search) || 
-                            x.UomInitial.Contains(search) || x.UomSellName.Contains(search) ||
-                            x.UomBuyName.Contains(search) || x.CategoryName.Contains(search));
+                data = search.ToLower() switch
+                {
+                    "male" => data.Where(x => x.Sex),
+                    "female" => data.Where(x => !x.Sex),
+                    _ => data.Where(x =>
+                        x.Initial.Contains(search) || x.FirstName.Contains(search) || x.LastName.Contains(search) ||
+                        x.Address1.Contains(search) || x.Phone.Contains(search))
+                };
             }
 
             return data.ToDataSourceResult(skip, take, filter, sort);
         }
 
-        public override SaveResult Insert(Item data)
+        public DataSourceResult GetLists(IEnumerable<Filter> filters, IEnumerable<Sort> sorts)
+        {
+            var data = Db.Employees.Where(x => x.IsActive);
+
+            return data.ToDataSourceResult(0, -1, filters, sorts);
+        }
+
+        public override SaveResult Insert(Employee data)
         {
             var result = new SaveResult(false);
 
@@ -52,7 +58,7 @@ namespace ERP_API.Domain.Services.Inventory
                 }
 
                 // Insert data
-                Db.Items.Add(data);
+                Db.Add(data);
 
                 Db.SaveChanges();
                 transaction.Commit();
@@ -65,11 +71,11 @@ namespace ERP_API.Domain.Services.Inventory
 
             result.Success = true;
             result.Data = data.Initial;
-            result.Message = "Success insert item.";
+            result.Message = "Success insert employee.";
             return result;
         }
 
-        public override SaveResult Update(Item data)
+        public override SaveResult Update(Employee data)
         {
             var result = new SaveResult(false);
 
@@ -81,7 +87,7 @@ namespace ERP_API.Domain.Services.Inventory
             }
 
             // Update data
-            Db.Items.Update(data);
+            Db.Employees.Update(data);
             Db.Entry(data).Property(e => e.Id).IsModified = false;
             Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
             Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
@@ -90,21 +96,21 @@ namespace ERP_API.Domain.Services.Inventory
 
             result.Success = true;
             result.Data = data.Initial;
-            result.Message = "Success update item.";
+            result.Message = "Success update employee.";
             return result;
         }
 
-        public SaveResult Delete(int id, int userId)
+        public SaveResult Delete(long id, int userId)
         {
             var result = new SaveResult(false);
 
-            var data = Db.Items.Find(id);
+            var data = Db.Employees.Find(id);
             if (data != null)
             {
                 // Checking active
-                if (!data.IsActive)
+                if (data.IsActive == false)
                 {
-                    result.Message = "Can't inactive the item because data already inactive.";
+                    result.Message = "Can't inactive employee because data already inactive.";
                     return result;
                 }
 
@@ -117,13 +123,13 @@ namespace ERP_API.Domain.Services.Inventory
             }
 
             result.Success = true;
-            result.Message = "Success inactive item.";
+            result.Message = "Success inactive employee.";
             return result;
         }
 
-        public bool IsInitialExists(string initial, int id)
+        private bool IsInitialExists(string initial, long id)
         {
-            return Db.Items.Any(x => x.Initial == initial && x.Id != id);
+            return Db.Employees.Any(x => x.Initial == initial && x.Id != id);
         }
     }
 }

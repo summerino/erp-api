@@ -6,7 +6,6 @@ using ERP_API.Domain.Entities.General;
 using ERP_API.Domain.Extensions;
 using ERP_API.Domain.Interfaces.General;
 using ERP_API.Domain.Models;
-using Swift.Framework.Model;
 
 namespace ERP_API.Domain.Services.General
 {
@@ -36,7 +35,7 @@ namespace ERP_API.Domain.Services.General
         {
             var data = Db.Customers.Where(x => x.IsActive);
 
-            return data.ToDataSourceResult(-1, -1, filters, sorts);
+            return data.ToDataSourceResult(0, -1, filters, sorts);
         }
 
         public Customer FindByCode(string code)

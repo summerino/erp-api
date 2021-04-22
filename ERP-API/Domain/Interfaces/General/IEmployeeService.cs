@@ -4,13 +4,13 @@ using ERP_API.Domain.Models;
 
 namespace ERP_API.Domain.Interfaces.General
 {
-    public interface ICustomerTypeService : IGeneralService<CustomerType>
+    public interface IEmployeeService : IGeneralService<Employee>
     {
         DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
             string search);
 
         DataSourceResult GetLists(IEnumerable<Filter> filters, IEnumerable<Sort> sorts);
 
-        SaveResult Delete(int id, int userId);
+        SaveResult Delete(long id, int userId);
     }
 }

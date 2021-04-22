@@ -2,57 +2,56 @@
 using System.Collections.Generic;
 using System.Linq;
 using ERP_API.Domain.Entities;
-using ERP_API.Domain.Entities.Inventory;
+using ERP_API.Domain.Entities.Accounting;
 using ERP_API.Domain.Extensions;
-using ERP_API.Domain.Interfaces.Inventory;
+using ERP_API.Domain.Interfaces.Accounting;
 using ERP_API.Domain.Models;
 
-namespace ERP_API.Domain.Services.Inventory
+namespace ERP_API.Domain.Services.Accounting
 {
-    public class ItemService : GeneralService<Item>, IItemService
+    public class CoaService : GeneralService<Coa>, ICoaService
     {
-        public ItemService(TenantContext db)
+        public CoaService(TenantContext db)
             : base(db)
         {
         }
 
         public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
-            List<int> category, string search)
+            string search)
         {
-            var data = Db.VwItems.AsQueryable();
-
-            if (category?.Any() ?? false)
-            {
-                data = data.Where(x => category.Contains(x.CategoryId));
-            }
+            var data = Db.Coas.AsQueryable();
 
             if (!string.IsNullOrEmpty(search))
             {
-                data = data.Where(x =>
-                            x.Initial.Contains(search) || x.Name.Contains(search) || 
-                            x.UomInitial.Contains(search) || x.UomSellName.Contains(search) ||
-                            x.UomBuyName.Contains(search) || x.CategoryName.Contains(search));
+                data = data.Where(x => x.Code.Contains(search) || x.Name.Contains(search));
             }
 
             return data.ToDataSourceResult(skip, take, filter, sort);
         }
 
-        public override SaveResult Insert(Item data)
+        public DataSourceResult GetLists(IEnumerable<Filter> filters, IEnumerable<Sort> sorts)
+        {
+            var data = Db.Coas.Where(x => x.IsActive);
+
+            return data.ToDataSourceResult(0, -1, filters, sorts);
+        }
+        
+        public override SaveResult Insert(Coa data)
         {
             var result = new SaveResult(false);
 
             using var transaction = Db.Database.BeginTransaction();
             try
             {
-                // Checking initial already exists or not
-                if (IsInitialExists(data.Initial, 0))
+                // Checking code already exists or not
+                if (IsCoaExists(data.Code, 0))
                 {
-                    result.Message = "Initial is already exists. Please use another initial.";
+                    result.Message = "Code is already exists. Please use another code.";
                     return result;
                 }
 
                 // Insert data
-                Db.Items.Add(data);
+                Db.Add(data);
 
                 Db.SaveChanges();
                 transaction.Commit();
@@ -64,33 +63,33 @@ namespace ERP_API.Domain.Services.Inventory
             }
 
             result.Success = true;
-            result.Data = data.Initial;
-            result.Message = "Success insert item.";
+            result.Data = data.Code;
+            result.Message = "Success insert coa.";
             return result;
         }
 
-        public override SaveResult Update(Item data)
+        public override SaveResult Update(Coa data)
         {
             var result = new SaveResult(false);
 
-            // Checking initial already exists or not
-            if (IsInitialExists(data.Initial, data.Id))
+            // Checking code already exists or not
+            if (IsCoaExists(data.Code, data.Id))
             {
-                result.Message = "Initial is already exists. Please use another initial.";
+                result.Message = "Code is already exists. Please use another code.";
                 return result;
             }
 
             // Update data
-            Db.Items.Update(data);
-            Db.Entry(data).Property(e => e.Id).IsModified = false;
+            Db.Coas.Update(data);
+            Db.Entry(data).Property(e => e.Code).IsModified = false;
             Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
             Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
 
             Db.SaveChanges();
 
             result.Success = true;
-            result.Data = data.Initial;
-            result.Message = "Success update item.";
+            result.Data = data.Code;
+            result.Message = "Success update coa.";
             return result;
         }
 
@@ -98,13 +97,13 @@ namespace ERP_API.Domain.Services.Inventory
         {
             var result = new SaveResult(false);
 
-            var data = Db.Items.Find(id);
+            var data = Db.Coas.Find(id);
             if (data != null)
             {
                 // Checking active
-                if (!data.IsActive)
+                if (data.IsActive == false)
                 {
-                    result.Message = "Can't inactive the item because data already inactive.";
+                    result.Message = "Can't inactive coa because data already inactive.";
                     return result;
                 }
 
@@ -117,13 +116,13 @@ namespace ERP_API.Domain.Services.Inventory
             }
 
             result.Success = true;
-            result.Message = "Success inactive item.";
+            result.Message = "Success inactive coa.";
             return result;
         }
 
-        public bool IsInitialExists(string initial, int id)
+        private bool IsCoaExists(string code, int id)
         {
-            return Db.Items.Any(x => x.Initial == initial && x.Id != id);
+            return Db.Coas.Any(x => x.Code == code && x.IsActive && x.Id != id);
         }
     }
 }

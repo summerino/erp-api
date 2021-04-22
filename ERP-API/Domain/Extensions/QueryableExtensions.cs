@@ -4,7 +4,6 @@ using System.Linq;
 using System.Linq.Dynamic.Core;
 using ERP_API.Domain.Models;
 using Newtonsoft.Json.Linq;
-using Swift.Framework.Model;
 
 namespace ERP_API.Domain.Extensions
 {

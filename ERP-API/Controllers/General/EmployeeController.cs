@@ -11,22 +11,22 @@ using Newtonsoft.Json;
 
 namespace ERP_API.Controllers.General
 {
-    [Route("api/v1/customer-type")]
-    //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Route("api/v1/employee")]
     [ApiController]
-    public class CustomerTypesController : ControllerBase
+    public class EmployeeController : ControllerBase
     {
-        private readonly ICustomerTypeService _customerType;
-        public CustomerTypesController(ICustomerTypeService customerType)
+        private readonly IEmployeeService _employee;
+
+        public EmployeeController(IEmployeeService employee)
         {
-            _customerType = customerType;
+            _employee = employee;
         }
 
         [HttpGet]
         public IActionResult GetData(string search, string filters, string sorts, int skip, int take)
         {
             var data =
-                _customerType.GetData(
+                _employee.GetData(
                     skip, take,
                     JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
                     JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
@@ -40,18 +40,16 @@ namespace ERP_API.Controllers.General
         }
 
         [HttpGet("lists")]
-        public IActionResult GetList(string sorts)
+        public IActionResult GetList(string filters, string sorts) 
         {
             var data =
-                _customerType.GetLists(
-                    null,
+                _employee.GetLists(
+                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
                     JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]")).Data
                     .ToDynamicList()
                     .Select(x => new
                     {
-                        x.Id,
-                        x.Initial,
-                        x.Name
+                        x.Id, x.Initial, x.FirstName
                     })
                     .ToList<dynamic>();
 
@@ -63,7 +61,7 @@ namespace ERP_API.Controllers.General
         }
 
         [HttpPost]
-        public IActionResult OnPost(CustomerType data)
+        public IActionResult OnPost(Employee data)
         {
             data.IsActive = true;
             data.CreatedBy = 1;
@@ -71,26 +69,26 @@ namespace ERP_API.Controllers.General
             data.UpdatedBy = data.CreatedBy;
             data.UpdatedDate = data.CreatedDate;
 
-            var result = _customerType.Insert(data);
+            var result = _employee.Insert(data);
 
             return Ok(result);
         }
 
         [HttpPut("{id}")]
-        public IActionResult OnPut(string id, CustomerType data)
+        public IActionResult OnPut(string id, Employee data)
         {
             data.UpdatedBy = 1;
             data.UpdatedDate = DateTime.Now;
 
-            var result = _customerType.Update(data);
+            var result = _employee.Update(data);
 
             return Ok(result);
         }
 
         [HttpDelete("{id}")]
-        public IActionResult OnDelete(int id)
+        public IActionResult OnDelete(long id)
         {
-            var result = _customerType.Delete(id, 1);
+            var result = _employee.Delete(id, 1);
 
             return Ok(result);
         }

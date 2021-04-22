@@ -1,10 +1,14 @@
 using System;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using ERP_API.Domain.Entities;
 using ERP_API.Domain.Interfaces.Inventory;
 using ERP_API.Domain.Interfaces.Purchase;
@@ -17,6 +21,7 @@ using ERP_API.Domain.Services.General;
 using ERP_API.Domain.Services.Sales;
 using Newtonsoft.Json.Serialization;
 using Swift.Framework;
+using ERP_API.Model.Auth;
 
 namespace ERP_API
 {
@@ -34,6 +39,10 @@ namespace ERP_API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            // Configure JwtSetting
+            services.Configure<JwtConfig>(Configuration.GetSection("JwtConfig"));
+
+            // Configure CORS options
             services.AddCors(options =>
             {
                 options.AddDefaultPolicy(
@@ -45,34 +54,71 @@ namespace ERP_API
                     });
             });
 
-            // Add framework services
+            // Add database service
             services.AddDbContextPool<CatalogContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("CatalogConnection")));
 
             services.AddDbContext<TenantContext>();
 
+            // Configure routing options
             services.AddRouting(options =>
             {
                 options.LowercaseQueryStrings = true;
                 options.LowercaseUrls = true;
             });
 
+            // Configure controller options
             services.AddControllers()
                 .AddNewtonsoftJson(options =>
                 {
                     options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
                 });
 
+            // Add http context accessor service
             services.AddHttpContextAccessor();
+
+            // Add authorization service
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("Session", policy =>
+                    policy.Requirements.Add(new UserSessionRequirement()));
+
+            });
+
+            // Add authentication service
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(jwt => {
+                var key = Encoding.ASCII.GetBytes(Configuration["JwtConfig:Secret"]);
+
+                jwt.SaveToken = true;
+                jwt.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    ValidateLifetime = true,
+                    RequireExpirationTime = true
+                };
+            });
+
+            
 
             // Add application service
             // Core services
+            services.AddScoped<IAuthorizationHandler, UserSessionHandler>();
             services.AddScoped<IShardingService, ShardingService>();
             services.AddScoped<IClaimService, ClaimService>();
 
             // General services
             services.AddScoped<ICustomerService, CustomerService>();
             services.AddScoped<ICustomerTypeService, CustomerTypeService>();
+            services.AddScoped<IEmployeeService, EmployeeService>();
             services.AddScoped<ISupplierService, SupplierService>();
             services.AddScoped<ISupplierTypeService, SupplierTypeService>();
 
@@ -102,10 +148,11 @@ namespace ERP_API
             {
                 app.UseDeveloperExceptionPage();
             }
-            
+
             //app.UseHttpsRedirection();
             app.UseRouting();
             app.UseCors();
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
@@ -116,7 +163,7 @@ namespace ERP_API
             EnsureDatabaseCreated(controlDbContext, shardingService);
             Builder.InitConfiguration(ControlDbConnectionString);
         }
-        
+
         public virtual void EnsureDatabaseCreated(CatalogContext controlDbContext,
             IShardingService shardingService)
         {

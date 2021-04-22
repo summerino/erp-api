@@ -6,7 +6,6 @@ using ERP_API.Domain.Entities.Inventory;
 using ERP_API.Domain.Extensions;
 using ERP_API.Domain.Interfaces.Inventory;
 using ERP_API.Domain.Models;
-using Swift.Framework.Model;
 
 namespace ERP_API.Domain.Services.Inventory
 {
@@ -20,7 +19,7 @@ namespace ERP_API.Domain.Services.Inventory
         public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
             List<int> category, string search)
         {
-            var data = Db.VwWarehouses.AsQueryable();
+            var data = Db.Warehouses.AsQueryable();
 
             if (!string.IsNullOrEmpty(search))
             {
@@ -30,6 +29,13 @@ namespace ERP_API.Domain.Services.Inventory
             }
 
             return data.ToDataSourceResult(skip, take, filter, sort);
+        }
+
+        public DataSourceResult GetLists(IEnumerable<Filter> filters, IEnumerable<Sort> sorts)
+        {
+            var data = Db.Warehouses.Where(x => x.IsActive);
+
+            return data.ToDataSourceResult(0, -1, filters, sorts);
         }
 
         public override SaveResult Insert(Warehouse data)

@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using ERP_API.Domain.Entities.General;
 using ERP_API.Domain.Models;
-using Swift.Framework.Model;
 
 namespace ERP_API.Domain.Interfaces.General
 {

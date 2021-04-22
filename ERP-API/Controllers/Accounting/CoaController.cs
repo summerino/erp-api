@@ -3,30 +3,30 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 using Microsoft.AspNetCore.Mvc;
-using ERP_API.Domain.Entities.General;
-using ERP_API.Domain.Interfaces.General;
+using ERP_API.Domain.Entities.Accounting;
+using ERP_API.Domain.Interfaces.Accounting;
 using ERP_API.Domain.Models;
 using ERP_API.Model;
 using Newtonsoft.Json;
 
-namespace ERP_API.Controllers.General
+namespace ERP_API.Controllers.Accounting
 {
-    [Route("api/v1/customer-type")]
-    //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Route("api/v1/coa")]
     [ApiController]
-    public class CustomerTypesController : ControllerBase
+    public class CoaController : ControllerBase
     {
-        private readonly ICustomerTypeService _customerType;
-        public CustomerTypesController(ICustomerTypeService customerType)
+        private readonly ICoaService _coa;
+
+        public CoaController(ICoaService coa)
         {
-            _customerType = customerType;
+            _coa = coa;
         }
 
         [HttpGet]
         public IActionResult GetData(string search, string filters, string sorts, int skip, int take)
         {
             var data =
-                _customerType.GetData(
+                _coa.GetData(
                     skip, take,
                     JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
                     JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
@@ -40,18 +40,16 @@ namespace ERP_API.Controllers.General
         }
 
         [HttpGet("lists")]
-        public IActionResult GetList(string sorts)
+        public IActionResult GetList(string sorts) 
         {
             var data =
-                _customerType.GetLists(
+                _coa.GetLists(
                     null,
                     JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]")).Data
                     .ToDynamicList()
                     .Select(x => new
                     {
-                        x.Id,
-                        x.Initial,
-                        x.Name
+                        x.Id, x.Code, x.Name
                     })
                     .ToList<dynamic>();
 
@@ -63,7 +61,7 @@ namespace ERP_API.Controllers.General
         }
 
         [HttpPost]
-        public IActionResult OnPost(CustomerType data)
+        public IActionResult OnPost(Coa data)
         {
             data.IsActive = true;
             data.CreatedBy = 1;
@@ -71,18 +69,18 @@ namespace ERP_API.Controllers.General
             data.UpdatedBy = data.CreatedBy;
             data.UpdatedDate = data.CreatedDate;
 
-            var result = _customerType.Insert(data);
+            var result = _coa.Insert(data);
 
             return Ok(result);
         }
 
         [HttpPut("{id}")]
-        public IActionResult OnPut(string id, CustomerType data)
+        public IActionResult OnPut(string id, Coa data)
         {
             data.UpdatedBy = 1;
             data.UpdatedDate = DateTime.Now;
 
-            var result = _customerType.Update(data);
+            var result = _coa.Update(data);
 
             return Ok(result);
         }
@@ -90,7 +88,7 @@ namespace ERP_API.Controllers.General
         [HttpDelete("{id}")]
         public IActionResult OnDelete(int id)
         {
-            var result = _customerType.Delete(id, 1);
+            var result = _coa.Delete(id, 1);
 
             return Ok(result);
         }
