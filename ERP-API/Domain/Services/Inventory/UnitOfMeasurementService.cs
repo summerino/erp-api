@@ -7,7 +7,6 @@ using ERP_API.Domain.Extensions;
 using ERP_API.Domain.Interfaces.Inventory;
 using ERP_API.Domain.Models;
 using ERP_API.Model.Inventory;
-using Swift.Framework.Model;
 
 namespace ERP_API.Domain.Services.Inventory
 {
@@ -188,7 +187,7 @@ namespace ERP_API.Domain.Services.Inventory
             return data.OrderBy(x => x.Seq);
         }
 
-        public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Models.Sort> sort, string search)
+        public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, string search)
         {
             var data = Db.UoMs.Where(x => x.IsActive).AsQueryable();
 

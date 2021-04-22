@@ -8,6 +8,7 @@ using ERP_API.Domain.Entities.Inventory;
 using ERP_API.Domain.Models;
 using ERP_API.Model;
 using Newtonsoft.Json;
+using ERP_API.Domain.Services;
 
 namespace ERP_API.Controllers.Inventory
 {
@@ -17,10 +18,13 @@ namespace ERP_API.Controllers.Inventory
     public class WarehouseController : ControllerBase
     {
         private readonly IWarehouseService _warehouse;
-
-        public WarehouseController(IWarehouseService warehouse)
+        private readonly IClaimService _claim;
+        private readonly int _userId;
+        public WarehouseController(IWarehouseService warehouse, IClaimService claim)
         {
             _warehouse = warehouse;
+            _claim = claim;
+            int.TryParse(claim.UserId, out _userId);
         }
 
         [HttpGet]
@@ -66,7 +70,7 @@ namespace ERP_API.Controllers.Inventory
         public IActionResult OnPost(Warehouse data)
         {
             data.IsActive = true;
-            data.CreatedBy = 1;
+            data.CreatedBy = _userId;
             data.CreatedDate = DateTime.Now;
             data.UpdatedBy = data.CreatedBy;
             data.UpdatedDate = data.CreatedDate;
@@ -79,7 +83,7 @@ namespace ERP_API.Controllers.Inventory
         [HttpPut("{code}")]
         public IActionResult OnPut(string code, Warehouse data)
         {
-            data.UpdatedBy = 1;
+            data.UpdatedBy = _userId;
             data.UpdatedDate = DateTime.Now;
 
             var result = _warehouse.Update(data);
@@ -90,8 +94,7 @@ namespace ERP_API.Controllers.Inventory
         [HttpDelete("{code}")]
         public IActionResult OnDelete(string code)
         {
-            var result = _warehouse.Delete(code, 1);
-
+            var result = _warehouse.Delete(code, _userId);
             return Ok(result);
         }
     }

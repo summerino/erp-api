@@ -5,7 +5,6 @@ using ERP_API.Domain.Interfaces.Inventory;
 using ERP_API.Domain.Models;
 using ERP_API.Model;
 using Newtonsoft.Json;
-using Swift.Framework.Model;
 using ERP_API.Model.Inventory;
 using System.Linq;
 using ERP_API.Domain.Services;
@@ -35,7 +34,7 @@ namespace ERP_API.Controllers.Inventory
                 _uom.GetData(
                     skip, take,
                     JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
-                    JsonConvert.DeserializeObject<List<Domain.Models.Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
+                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
                     search);
 
             return Ok(new ApiResponse
