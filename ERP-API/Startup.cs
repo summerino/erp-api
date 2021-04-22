@@ -25,6 +25,8 @@ using ERP_API.Model.Auth;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using ERP_API.Domain.Interfaces;
 using ERP_API.Domain.Services.Auth;
+using ERP_API.Domain.Interfaces.Accounting;
+using ERP_API.Domain.Services.Accounting;
 
 namespace ERP_API
 {
@@ -117,9 +119,11 @@ namespace ERP_API
                 };
             });
 
-            
+
 
             // Add application service
+            // Accounting services
+            services.AddScoped<ICoaService, CoaService>();
             // Core services
             services.AddScoped<IAuthorizationHandler, UserSessionHandler>();
             services.AddScoped<IShardingService, ShardingService>();
@@ -132,6 +136,7 @@ namespace ERP_API
             services.AddScoped<IEmployeeService, EmployeeService>();
             services.AddScoped<ISupplierService, SupplierService>();
             services.AddScoped<ISupplierTypeService, SupplierTypeService>();
+            services.AddScoped<ITaxService, TaxService>();
 
             // Inventory services
             services.AddScoped<IItemCategoryService, ItemCategoryService>();

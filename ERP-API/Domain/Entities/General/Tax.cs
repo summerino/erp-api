@@ -27,4 +27,23 @@ namespace ERP_API.Domain.Entities.General
 
         public short Seq { get; set; }
     }
+
+    public class VwTax : BaseEntityWithActive
+    {
+        public int Id { get; set; }
+
+        public string Initial { get; set; }
+
+        public string Name { get; set; }
+
+        public short TypeId { get; set; }
+
+        public decimal Rate { get; set; }
+
+        public string CoaCode { get; set; }
+
+        public short Seq { get; set; }
+
+        public string CoaName { get; set; }
+    }
 }
