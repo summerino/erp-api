@@ -19,12 +19,12 @@ namespace ERP_API.Controllers.Sales
     public class SalesOrderController : ControllerBase
     {
         private readonly ISalesOrderService _so;
-        private readonly IUoMConversionService _uomC;
+        private readonly IUnitOfMeasurementService _uom;
 
-        public SalesOrderController(ISalesOrderService so, IUoMConversionService uomC)
+        public SalesOrderController(ISalesOrderService so, IUnitOfMeasurementService uom)
         {
             _so = so;
-            _uomC = uomC;
+            _uom = uom;
         }
 
         [HttpGet]
@@ -47,7 +47,7 @@ namespace ERP_API.Controllers.Sales
         [HttpGet("item")]
         public IActionResult GetDetailData(string code, bool? fullReceived)
         {
-            var uomC =_uomC.GetData().ToList();
+            var uomC =_uom.GetDataConversion().ToList();
 
             var data = _so.GetDetailData(code, fullReceived)
                 .Select(x => new

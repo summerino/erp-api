@@ -10,18 +10,18 @@ namespace ERP_API.Controllers.Inventory
     [ApiController]
     public class UoMConversionController : ControllerBase
     {
-        private readonly IUoMConversionService _uomC;
+        private readonly IUnitOfMeasurementService _uom;
 
-        public UoMConversionController(IUoMConversionService uomC)
+        public UoMConversionController(IUnitOfMeasurementService uom)
         {
-            _uomC = uomC;
+            _uom = uom;
         }
 
         [HttpGet]
         public IActionResult GetData(int uomId)
         {
             var data =
-                _uomC.GetData(uomId)
+                _uom.GetDataConversion(uomId)
                     .Select(x => new
                     {
                         x.Id, x.UomId, x.UnitToConvert, x.UnitEquivalent, x.Conversion,
