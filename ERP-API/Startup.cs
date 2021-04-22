@@ -76,7 +76,7 @@ namespace ERP_API
             services
                 .AddControllers(options =>
                 {
-                    options.Filters.Add(new AuthorizeFilter("Session"));
+                    options.Filters.Add(new AuthorizeFilter("ValidateToken"));
                 })
                 .AddNewtonsoftJson(options =>
                 {
@@ -89,7 +89,7 @@ namespace ERP_API
             // Add authorization service
             services.AddAuthorization(options =>
             {
-                options.AddPolicy("Session", policy =>
+                options.AddPolicy("ValidateToken", policy =>
                     policy.Requirements.Add(new UserSessionRequirement()));
 
             });
