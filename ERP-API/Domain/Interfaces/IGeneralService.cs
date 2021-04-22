@@ -7,7 +7,7 @@ namespace ERP_API.Domain.Interfaces
 {
     public interface IGeneralService<T> where T : class
     {
-        DataSourceResult GetData(int take, int skip, IEnumerable<Filter> filter, IEnumerable<Sort> sort);
+        DataSourceResult GetData(int take, int skip, IEnumerable<Filter> filter, IEnumerable<Sort> sort, List<int> list);
 
         DataSourceResult GetData<TEntity>(int take, int skip, IEnumerable<Filter> filter, IEnumerable<Sort> sort)
             where TEntity : class;

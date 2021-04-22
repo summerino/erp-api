@@ -18,12 +18,12 @@ namespace ERP_API.Controllers.Purchase
     public class PurchaseOrderController : ControllerBase
     {
         private readonly IPurchaseOrderService _po;
-        private readonly IUoMConversionService _uomC;
+        private readonly IUnitOfMeasurementService _uom;
 
-        public PurchaseOrderController(IPurchaseOrderService po, IUoMConversionService uomC)
+        public PurchaseOrderController(IPurchaseOrderService po, IUnitOfMeasurementService uom)
         {
             _po = po;
-            _uomC = uomC;
+            _uom = uom;
         }
 
         [HttpGet]
@@ -46,7 +46,7 @@ namespace ERP_API.Controllers.Purchase
         [HttpGet("item")]
         public IActionResult GetDetailData(string code, bool? fullReceived)
         {
-            var uomC =_uomC.GetData().ToList();
+            var uomC =_uom.GetDataConversion().ToList();
 
             var data = _po.GetDetailData(code, fullReceived)
                 .Select(x => new
