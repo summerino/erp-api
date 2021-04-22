@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq.Dynamic.Core;
 using Microsoft.AspNetCore.Mvc;
 using ERP_API.Domain.Interfaces.Inventory;
-using ERP_API.Domain.Entities.Inventory;
 using ERP_API.Domain.Models;
 using ERP_API.Model;
 using Newtonsoft.Json;
@@ -27,7 +25,7 @@ namespace ERP_API.Controllers.Inventory
         {
             _uom = uom;
             _claim = claim;
-            _userId = claim.UserId;
+            int.TryParse(claim.UserId, out _userId);
         }
 
         [HttpGet]
@@ -37,8 +35,7 @@ namespace ERP_API.Controllers.Inventory
                 _uom.GetData(
                     skip, take,
                     JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
-                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
-                    JsonConvert.DeserializeObject<List<int>>(!string.IsNullOrWhiteSpace(category) ? category : "[]"),
+                    JsonConvert.DeserializeObject<List<Domain.Models.Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
                     search);
 
             return Ok(new ApiResponse

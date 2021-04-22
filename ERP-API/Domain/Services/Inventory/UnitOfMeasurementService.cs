@@ -18,21 +18,6 @@ namespace ERP_API.Domain.Services.Inventory
         {
         }
 
-        public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
-            List<int> category, string search)
-        {
-            var data = Db.UoMs.Where(x=>x.IsActive).AsQueryable();
-
-            if (!string.IsNullOrEmpty(search))
-            {
-                data = data.Where(x =>
-                            x.Initial.Contains(search) || x.Description.Contains(search) || 
-                            x.BaseUnit.Contains(search));
-            }
-
-            return data.ToDataSourceResult(skip, take, filter, sort);
-        }
-
         public  SaveResult Insert(UnitOfMeasurementRequest data, int userId)
         {
             var result = new SaveResult(false);
@@ -201,6 +186,20 @@ namespace ERP_API.Domain.Services.Inventory
                 data = data.Where(x => x.UomId == uomId);
 
             return data.OrderBy(x => x.Seq);
+        }
+
+        public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Models.Sort> sort, string search)
+        {
+            var data = Db.UoMs.Where(x => x.IsActive).AsQueryable();
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                data = data.Where(x =>
+                            x.Initial.Contains(search) || x.Description.Contains(search) ||
+                            x.BaseUnit.Contains(search));
+            }
+
+            return data.ToDataSourceResult(skip, take, filter, sort);
         }
     }
 }

@@ -19,7 +19,10 @@ namespace ERP_API.Domain.Services
         {
             Db = db;
         }
-
+        public virtual DataSourceResult GetData(int take, int skip, IEnumerable<Filter> filter, IEnumerable<Sort> sort, List<int> list)
+        {
+            throw new NotImplementedException();
+        }
         public virtual DataSourceResult GetData(int take, int skip, IEnumerable<Filter> filter, IEnumerable<Sort> sort)
         {
             return GetData<T>(take, skip, filter, sort);
@@ -90,5 +93,7 @@ namespace ERP_API.Domain.Services
                 .FromSqlInterpolated($"EXEC sp_generate_autono {code}, {date}").ToList()
                 .FirstOrDefault()?.Value;
         }
+
+        
     }
 }

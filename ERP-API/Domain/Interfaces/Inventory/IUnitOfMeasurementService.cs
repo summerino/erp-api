@@ -8,8 +8,7 @@ namespace ERP_API.Domain.Interfaces.Inventory
 {
     public interface IUnitOfMeasurementService : IGeneralService<UoM>
     {
-        DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
-            List<int> category, string search);
+        DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Domain.Models.Sort> sort,string search);
         SaveResult Delete(int id, int userId);
         SaveResult Insert(UnitOfMeasurementRequest data, int userId);
         SaveResult Update(UnitOfMeasurementRequest data, int userId);
