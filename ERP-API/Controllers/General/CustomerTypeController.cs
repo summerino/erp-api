@@ -13,7 +13,6 @@ using ERP_API.Domain.Services;
 namespace ERP_API.Controllers.General
 {
     [Route("api/v1/customer-type")]
-    //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [ApiController]
     public class CustomerTypesController : ControllerBase
     {
