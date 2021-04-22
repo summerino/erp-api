@@ -28,15 +28,15 @@ namespace ERP_API.Model.Auth
         }
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, UserSessionRequirement requirement)
         {
-            string currentUserId = _claimService.UserId;
+            string currentUserId = _claimService.CatalogUserId;
             if (currentUserId != null)
             {
-                var loggedUser = _catalogcontext.Users.Where(x => x.Id.ToString() == currentUserId).FirstOrDefault();
+                var loggedUser = _catalogcontext.Users.FirstOrDefault(x => x.Id.ToString() == currentUserId);
                 if (loggedUser != null)
                 {
                     var headerToken = _claimService.KeyToken;
                     var accessIpAdd = _claimService.IpAddress;
-                    var tenantUser = _tenantContext.Users.Where(x => x.CatalogUserId == loggedUser.Id).FirstOrDefault();
+                    var tenantUser = _tenantContext.Users.FirstOrDefault(x => x.CatalogUserId == loggedUser.Id);
                     if (tenantUser.TokenId != headerToken || tenantUser.IpAddress != accessIpAdd)
                     {
                         context.Fail();

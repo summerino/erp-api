@@ -1,0 +1,17 @@
+﻿using ERP_API.Domain.Entities.General;
+using ERP_API.Domain.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace ERP_API.Domain.Interfaces.General
+{
+    public interface ITaxService : IGeneralService<Tax>
+    {
+        DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
+            string search);
+
+        SaveResult Delete(int id, int userId);
+    }
+}

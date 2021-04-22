@@ -22,6 +22,11 @@ using ERP_API.Domain.Services.Sales;
 using Newtonsoft.Json.Serialization;
 using Swift.Framework;
 using ERP_API.Model.Auth;
+using Microsoft.AspNetCore.Mvc.Authorization;
+using ERP_API.Domain.Interfaces;
+using ERP_API.Domain.Services.Auth;
+using ERP_API.Domain.Interfaces.Accounting;
+using ERP_API.Domain.Services.Accounting;
 
 namespace ERP_API
 {
@@ -68,7 +73,11 @@ namespace ERP_API
             });
 
             // Configure controller options
-            services.AddControllers()
+            services
+                .AddControllers(options =>
+                {
+                    options.Filters.Add(new AuthorizeFilter("ValidateToken"));
+                })
                 .AddNewtonsoftJson(options =>
                 {
                     options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
@@ -80,7 +89,7 @@ namespace ERP_API
             // Add authorization service
             services.AddAuthorization(options =>
             {
-                options.AddPolicy("Session", policy =>
+                options.AddPolicy("ValidateToken", policy =>
                     policy.Requirements.Add(new UserSessionRequirement()));
 
             });
@@ -93,27 +102,33 @@ namespace ERP_API
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             })
             .AddJwtBearer(jwt => {
-                var key = Encoding.ASCII.GetBytes(Configuration["JwtConfig:Secret"]);
+                var token = Configuration.GetSection("JwtConfig").Get<JwtConfig>();
 
+                jwt.RequireHttpsMetadata = false;
+                jwt.ClaimsIssuer = token.Issuer;
                 jwt.SaveToken = true;
                 jwt.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(key),
-                    ValidateIssuer = false,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(token.Secret)),
+                    ValidIssuer = token.Issuer,
+                    ValidateIssuer = true,
                     ValidateAudience = false,
                     ValidateLifetime = true,
                     RequireExpirationTime = true
                 };
             });
 
-            
+
 
             // Add application service
+            // Accounting services
+            services.AddScoped<ICoaService, CoaService>();
             // Core services
             services.AddScoped<IAuthorizationHandler, UserSessionHandler>();
             services.AddScoped<IShardingService, ShardingService>();
             services.AddScoped<IClaimService, ClaimService>();
+            services.AddScoped<IAuthService, AuthService>();
 
             // General services
             services.AddScoped<ICustomerService, CustomerService>();
@@ -121,6 +136,7 @@ namespace ERP_API
             services.AddScoped<IEmployeeService, EmployeeService>();
             services.AddScoped<ISupplierService, SupplierService>();
             services.AddScoped<ISupplierTypeService, SupplierTypeService>();
+            services.AddScoped<ITaxService, TaxService>();
 
             // Inventory services
             services.AddScoped<IItemCategoryService, ItemCategoryService>();
@@ -156,7 +172,7 @@ namespace ERP_API
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapControllers();
+                endpoints.MapControllers().RequireAuthorization();
             });
 
             EnsureDatabaseCreated(controlDbContext, shardingService);

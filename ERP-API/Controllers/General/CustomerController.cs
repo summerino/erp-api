@@ -8,6 +8,7 @@ using ERP_API.Domain.Interfaces.General;
 using ERP_API.Domain.Models;
 using ERP_API.Model;
 using Newtonsoft.Json;
+using ERP_API.Domain.Services;
 
 namespace ERP_API.Controllers.General
 {
@@ -16,10 +17,12 @@ namespace ERP_API.Controllers.General
     public class CustomerController : ControllerBase
     {
         private readonly ICustomerService _customer;
+        private readonly IClaimService _claimservice;
 
-        public CustomerController(ICustomerService customer)
+        public CustomerController(ICustomerService customer, IClaimService claimService)
         {
             _customer = customer;
+            _claimservice = claimService;
         }
 
         [HttpGet]
@@ -70,7 +73,7 @@ namespace ERP_API.Controllers.General
         public IActionResult OnPost(Customer data)
         {
             data.IsActive = true;
-            data.CreatedBy = 1;
+            data.CreatedBy = _claimservice.UserId;
             data.CreatedDate = DateTime.Now;
             data.UpdatedBy = data.CreatedBy;
             data.UpdatedDate = data.CreatedDate;
@@ -83,7 +86,7 @@ namespace ERP_API.Controllers.General
         [HttpPut("{code}")]
         public IActionResult OnPut(string code, Customer data)
         {
-            data.UpdatedBy = 1;
+            data.UpdatedBy = _claimservice.UserId;
             data.UpdatedDate = DateTime.Now;
 
             var result = _customer.Update(data);
