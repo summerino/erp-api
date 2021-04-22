@@ -6,9 +6,9 @@ using Microsoft.AspNetCore.Mvc;
 using ERP_API.Domain.Entities.General;
 using ERP_API.Domain.Interfaces.General;
 using ERP_API.Domain.Models;
+using ERP_API.Domain.Services;
 using ERP_API.Model;
 using Newtonsoft.Json;
-using ERP_API.Domain.Services;
 
 namespace ERP_API.Controllers.General
 {
@@ -17,12 +17,12 @@ namespace ERP_API.Controllers.General
     public class CustomerController : ControllerBase
     {
         private readonly ICustomerService _customer;
-        private readonly IClaimService _claimservice;
+        private readonly IClaimService _claim;
 
-        public CustomerController(ICustomerService customer, IClaimService claimService)
+        public CustomerController(ICustomerService customer, IClaimService claim)
         {
             _customer = customer;
-            _claimservice = claimService;
+            _claim = claim;
         }
 
         [HttpGet]
@@ -73,7 +73,7 @@ namespace ERP_API.Controllers.General
         public IActionResult OnPost(Customer data)
         {
             data.IsActive = true;
-            data.CreatedBy = _claimservice.UserId;
+            data.CreatedBy = _claim.UserId;
             data.CreatedDate = DateTime.Now;
             data.UpdatedBy = data.CreatedBy;
             data.UpdatedDate = data.CreatedDate;
@@ -86,7 +86,7 @@ namespace ERP_API.Controllers.General
         [HttpPut("{code}")]
         public IActionResult OnPut(string code, Customer data)
         {
-            data.UpdatedBy = _claimservice.UserId;
+            data.UpdatedBy = _claim.UserId;
             data.UpdatedDate = DateTime.Now;
 
             var result = _customer.Update(data);
@@ -97,7 +97,7 @@ namespace ERP_API.Controllers.General
         [HttpDelete("{code}")]
         public IActionResult OnDelete(string code)
         {
-            var result = _customer.Delete(code, 1);
+            var result = _customer.Delete(code, _claim.UserId);
 
             return Ok(result);
         }

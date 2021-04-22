@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using ERP_API.Domain.Entities.Accounting;
 using ERP_API.Domain.Interfaces.Accounting;
 using ERP_API.Domain.Models;
+using ERP_API.Domain.Services;
 using ERP_API.Model;
 using Newtonsoft.Json;
 
@@ -16,10 +17,12 @@ namespace ERP_API.Controllers.Accounting
     public class CoaController : ControllerBase
     {
         private readonly ICoaService _coa;
+        private readonly IClaimService _claim;
 
-        public CoaController(ICoaService coa)
+        public CoaController(ICoaService coa, IClaimService claim)
         {
             _coa = coa;
+            _claim = claim;
         }
 
         [HttpGet]
@@ -64,7 +67,7 @@ namespace ERP_API.Controllers.Accounting
         public IActionResult OnPost(Coa data)
         {
             data.IsActive = true;
-            data.CreatedBy = 1;
+            data.CreatedBy = _claim.UserId;
             data.CreatedDate = DateTime.Now;
             data.UpdatedBy = data.CreatedBy;
             data.UpdatedDate = data.CreatedDate;
@@ -77,7 +80,7 @@ namespace ERP_API.Controllers.Accounting
         [HttpPut("{id}")]
         public IActionResult OnPut(string id, Coa data)
         {
-            data.UpdatedBy = 1;
+            data.UpdatedBy = _claim.UserId;
             data.UpdatedDate = DateTime.Now;
 
             var result = _coa.Update(data);
@@ -88,7 +91,7 @@ namespace ERP_API.Controllers.Accounting
         [HttpDelete("{id}")]
         public IActionResult OnDelete(int id)
         {
-            var result = _coa.Delete(id, 1);
+            var result = _coa.Delete(id, _claim.UserId);
 
             return Ok(result);
         }

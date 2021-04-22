@@ -1,30 +1,27 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Dynamic.Core;
 using Microsoft.AspNetCore.Mvc;
 using ERP_API.Domain.Interfaces.Inventory;
 using ERP_API.Domain.Models;
-using ERP_API.Model;
-using Newtonsoft.Json;
-using ERP_API.Model.Inventory;
-using System.Linq;
 using ERP_API.Domain.Services;
+using ERP_API.Model;
+using ERP_API.Model.Inventory;
+using Newtonsoft.Json;
 
 namespace ERP_API.Controllers.Inventory
 {
     [Route("api/v1/uom")]
-    //[Authorize]
     [ApiController]
     public class UnitOfMeasurementController : ControllerBase
     {
         private readonly IUnitOfMeasurementService _uom;
         private readonly IClaimService _claim;
-        private readonly int _userId;
 
         public UnitOfMeasurementController(IUnitOfMeasurementService uom, IClaimService claim)
         {
             _uom = uom;
             _claim = claim;
-            int.TryParse(claim.UserId, out _userId);
         }
 
         [HttpGet]
@@ -52,7 +49,7 @@ namespace ERP_API.Controllers.Inventory
             var (isValid, message) = Validate(data);
             if (!isValid)
                 return Ok(new SaveResult(false, message));
-            var result = _uom.Insert(data, _userId);
+            var result = _uom.Insert(data, _claim.UserId);
             return Ok(result);
         }
 
@@ -63,14 +60,14 @@ namespace ERP_API.Controllers.Inventory
             var (isValid, message) = Validate(data);
             if (!isValid)
                 return Ok(new SaveResult(false, message));
-            var result = _uom.Update(data, _userId);
+            var result = _uom.Update(data, _claim.UserId);
             return Ok(result);
         }
 
         [HttpDelete("{id}")]
         public IActionResult OnDelete(int id)
         {
-            var result = _uom.Delete(id, _userId);
+            var result = _uom.Delete(id, _claim.UserId);
             return Ok(result);
         }
 
@@ -92,11 +89,10 @@ namespace ERP_API.Controllers.Inventory
                 return (false, "Item details can't be empty.");
 
             short index = 0;
-            bool finish = false;
             var details = data.Details.ToArray();
-            while (!finish)
+            while (true)
             {
-                if (index == details.Count())
+                if (index == details.Length)
                     break;
                 if (index > 0) 
                 {
@@ -104,7 +100,6 @@ namespace ERP_API.Controllers.Inventory
                     string lastUnitToConvert = details[index - 1].UnitEquivalent;
                     if (currentUnitToConvert != lastUnitToConvert) 
                     {
-                        finish = true;
                         return (false, $"Item Conversion {currentUnitToConvert} is not match.");
                     }
                 }
@@ -112,6 +107,5 @@ namespace ERP_API.Controllers.Inventory
             }
             return (true,"");
         }
-
     }
 }

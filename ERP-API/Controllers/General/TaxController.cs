@@ -1,15 +1,13 @@
-﻿using ERP_API.Domain.Entities.General;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq.Dynamic.Core;
+using Microsoft.AspNetCore.Mvc;
+using ERP_API.Domain.Entities.General;
 using ERP_API.Domain.Interfaces.General;
 using ERP_API.Domain.Models;
 using ERP_API.Domain.Services;
 using ERP_API.Model;
-using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Dynamic.Core;
-using System.Threading.Tasks;
 
 namespace ERP_API.Controllers.General
 {
@@ -18,11 +16,12 @@ namespace ERP_API.Controllers.General
     public class TaxController : ControllerBase
     {
         private readonly ITaxService _taxService;
-        private readonly IClaimService _claimService;
-        public TaxController(ITaxService taxService, IClaimService claimService)
+        private readonly IClaimService _claim;
+
+        public TaxController(ITaxService taxService, IClaimService claim)
         {
             _taxService = taxService;
-            _claimService = claimService;
+            _claim = claim;
         }
 
         [HttpGet]
@@ -46,7 +45,7 @@ namespace ERP_API.Controllers.General
         public IActionResult OnPost(Tax data)
         {
             data.IsActive = true;
-            data.CreatedBy = _claimService.UserId;
+            data.CreatedBy = _claim.UserId;
             data.CreatedDate = DateTime.Now;
             data.UpdatedBy = data.CreatedBy;
             data.UpdatedDate = data.CreatedDate;
@@ -59,7 +58,7 @@ namespace ERP_API.Controllers.General
         [HttpPut("{id}")]
         public IActionResult OnPut(string id, Tax data)
         {
-            data.UpdatedBy = _claimService.UserId;
+            data.UpdatedBy = _claim.UserId;
             data.UpdatedDate = DateTime.Now;
 
             var result = _taxService.Update(data);
@@ -70,7 +69,7 @@ namespace ERP_API.Controllers.General
         [HttpDelete("{id}")]
         public IActionResult OnDelete(int id)
         {
-            var result = _taxService.Delete(id, 1);
+            var result = _taxService.Delete(id, _claim.UserId);
 
             return Ok(result);
         }

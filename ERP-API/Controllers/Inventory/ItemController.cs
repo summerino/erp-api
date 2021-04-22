@@ -5,21 +5,23 @@ using Microsoft.AspNetCore.Mvc;
 using ERP_API.Domain.Interfaces.Inventory;
 using ERP_API.Domain.Entities.Inventory;
 using ERP_API.Domain.Models;
+using ERP_API.Domain.Services;
 using ERP_API.Model;
 using Newtonsoft.Json;
 
 namespace ERP_API.Controllers.Inventory
 {
     [Route("api/v1/item")]
-    //[Authorize]
     [ApiController]
     public class ItemController : ControllerBase
     {
         private readonly IItemService _item;
+        private readonly IClaimService _claim;
 
-        public ItemController(IItemService item)
+        public ItemController(IItemService item, IClaimService claim)
         {
             _item = item;
+            _claim = claim;
         }
 
         [HttpGet]
@@ -44,7 +46,7 @@ namespace ERP_API.Controllers.Inventory
         public IActionResult OnPost(Item data)
         {
             data.IsActive = true;
-            data.CreatedBy = 1;
+            data.CreatedBy = _claim.UserId;
             data.CreatedDate = DateTime.Now;
             data.UpdatedBy = data.CreatedBy;
             data.UpdatedDate = data.CreatedDate;
@@ -57,7 +59,7 @@ namespace ERP_API.Controllers.Inventory
         [HttpPut("{id}")]
         public IActionResult OnPut(string id, Item data)
         {
-            data.UpdatedBy = 1;
+            data.UpdatedBy = _claim.UserId;
             data.UpdatedDate = DateTime.Now;
 
             var result = _item.Update(data);
@@ -68,7 +70,7 @@ namespace ERP_API.Controllers.Inventory
         [HttpDelete("{id}")]
         public IActionResult OnDelete(int id)
         {
-            var result = _item.Delete(id, 1);
+            var result = _item.Delete(id, _claim.UserId);
 
             return Ok(result);
         }

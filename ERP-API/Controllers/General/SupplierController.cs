@@ -6,21 +6,23 @@ using Microsoft.AspNetCore.Mvc;
 using ERP_API.Domain.Entities.General;
 using ERP_API.Domain.Interfaces.General;
 using ERP_API.Domain.Models;
+using ERP_API.Domain.Services;
 using ERP_API.Model;
 using Newtonsoft.Json;
 
 namespace ERP_API.Controllers.General
 {
     [Route("api/v1/supplier")]
-    //[Authorize]
     [ApiController]
     public class SupplierController : ControllerBase
     {
         private readonly ISupplierService _supplier;
+        private readonly IClaimService _claim;
 
-        public SupplierController(ISupplierService supplier)
+        public SupplierController(ISupplierService supplier, IClaimService claim)
         {
             _supplier = supplier;
+            _claim = claim;
         }
 
         [HttpGet]
@@ -71,7 +73,7 @@ namespace ERP_API.Controllers.General
         public IActionResult OnPost(Supplier data)
         {
             data.IsActive = true;
-            data.CreatedBy = 1;
+            data.CreatedBy = _claim.UserId;
             data.CreatedDate = DateTime.Now;
             data.UpdatedBy = data.CreatedBy;
             data.UpdatedDate = data.CreatedDate;
@@ -84,7 +86,7 @@ namespace ERP_API.Controllers.General
         [HttpPut("{code}")]
         public IActionResult OnPut(string code, Supplier data)
         {
-            data.UpdatedBy = 1;
+            data.UpdatedBy = _claim.UserId;
             data.UpdatedDate = DateTime.Now;
 
             var result = _supplier.Update(data);
@@ -95,7 +97,7 @@ namespace ERP_API.Controllers.General
         [HttpDelete("{code}")]
         public IActionResult OnDelete(string code)
         {
-            var result = _supplier.Delete(code, 1);
+            var result = _supplier.Delete(code, _claim.UserId);
 
             return Ok(result);
         }

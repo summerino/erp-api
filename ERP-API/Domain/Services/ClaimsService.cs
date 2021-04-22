@@ -14,8 +14,6 @@ namespace ERP_API.Domain.Services
 
         string KeyToken { get; }
 
-        string UserEmail { get; }
-
         string IpAddress { get; }
     }
 
@@ -42,10 +40,7 @@ namespace ERP_API.Domain.Services
 
         public string KeyToken =>
             _accessor.HttpContext?.Request?.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
-
-        public string UserEmail =>
-            _accessor.HttpContext?.User?.FindFirst(ClaimTypes.Email)?.Value;
-
+        
         public string IpAddress =>
             _accessor.HttpContext?.Connection?.RemoteIpAddress?.ToString();
 

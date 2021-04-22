@@ -5,6 +5,7 @@ using System.Linq.Dynamic.Core;
 using Microsoft.AspNetCore.Mvc;
 using ERP_API.Domain.Interfaces.Sales;
 using ERP_API.Domain.Models;
+using ERP_API.Domain.Services;
 using ERP_API.Model;
 using ERP_API.Model.Sales;
 using Newtonsoft.Json;
@@ -12,15 +13,16 @@ using Newtonsoft.Json;
 namespace ERP_API.Controllers.Sales
 {
     [Route("api/v1/sales-invoice")]
-    //[Authorize]
     [ApiController]
     public class SalesInvoiceController : ControllerBase
     {
         private readonly ISalesInvoiceService _inv;
+        private readonly IClaimService _claim;
 
-        public SalesInvoiceController(ISalesInvoiceService inv)
+        public SalesInvoiceController(ISalesInvoiceService inv, IClaimService claim)
         {
             _inv = inv;
+            _claim = claim;
         }
 
         [HttpGet]
@@ -69,7 +71,7 @@ namespace ERP_API.Controllers.Sales
 
             // Insert process
             data.Mark = "A";
-            data.CreatedBy = 1;
+            data.CreatedBy = _claim.UserId;
             data.CreatedDate = DateTime.Now;
             data.UpdatedBy = data.CreatedBy;
             data.UpdatedDate = data.CreatedDate;
@@ -88,7 +90,7 @@ namespace ERP_API.Controllers.Sales
                 return Ok(new SaveResult(false, message));
 
             // Update process
-            data.UpdatedBy = 1;
+            data.UpdatedBy = _claim.UserId;
             data.UpdatedDate = DateTime.Now;
 
             var result = _inv.Update(data);
@@ -99,7 +101,7 @@ namespace ERP_API.Controllers.Sales
         [HttpDelete("{code}")]
         public IActionResult OnDelete(string code)
         {
-            var result = _inv.Delete(code, 1);
+            var result = _inv.Delete(code, _claim.UserId);
 
             return Ok(result);
         }

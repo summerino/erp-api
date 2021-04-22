@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using ERP_API.Domain.Entities.General;
 using ERP_API.Domain.Interfaces.General;
 using ERP_API.Domain.Models;
+using ERP_API.Domain.Services;
 using ERP_API.Model;
 using Newtonsoft.Json;
 
@@ -16,9 +17,12 @@ namespace ERP_API.Controllers.General
     public class SupplierTypeController : ControllerBase
     {
         private readonly ISupplierTypeService _supplierType;
-        public SupplierTypeController(ISupplierTypeService supplierTypes)
+        private readonly IClaimService _claim;
+
+        public SupplierTypeController(ISupplierTypeService supplierTypes, IClaimService claim)
         {
             _supplierType = supplierTypes;
+            _claim = claim;
         }
 
         [HttpGet]
@@ -65,7 +69,7 @@ namespace ERP_API.Controllers.General
         public IActionResult OnPost(SupplierType data)
         {
             data.IsActive = true;
-            data.CreatedBy = 1;
+            data.CreatedBy = _claim.UserId;
             data.CreatedDate = DateTime.Now;
             data.UpdatedBy = data.CreatedBy;
             data.UpdatedDate = data.CreatedDate;
@@ -78,7 +82,7 @@ namespace ERP_API.Controllers.General
         [HttpPut("{id}")]
         public IActionResult OnPut(string id, SupplierType data)
         {
-            data.UpdatedBy = 1;
+            data.UpdatedBy = _claim.UserId;
             data.UpdatedDate = DateTime.Now;
 
             var result = _supplierType.Update(data);
@@ -89,7 +93,7 @@ namespace ERP_API.Controllers.General
         [HttpDelete("{id}")]
         public IActionResult OnDelete(int id)
         {
-            var result = _supplierType.Delete(id, 1);
+            var result = _supplierType.Delete(id, _claim.UserId);
 
             return Ok(result);
         }

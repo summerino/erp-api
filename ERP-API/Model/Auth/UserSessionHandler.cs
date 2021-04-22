@@ -1,11 +1,8 @@
-﻿using ERP_API.Domain.Entities;
-using ERP_API.Domain.Services;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using ERP_API.Domain.Entities;
+using ERP_API.Domain.Services;
 
 namespace ERP_API.Model.Auth
 {
@@ -15,28 +12,31 @@ namespace ERP_API.Model.Auth
         {
         }
     }
+
     public class UserSessionHandler : AuthorizationHandler<UserSessionRequirement>
     {
-        private readonly IClaimService _claimService;
-        private readonly CatalogContext _catalogcontext;
-        private readonly TenantContext _tenantContext;
-        public UserSessionHandler(IClaimService claimService, CatalogContext catalogcontext, TenantContext tenantContext)
+        private readonly CatalogContext _catalogCtx;
+        private readonly TenantContext _tenantCtx;
+        private readonly IClaimService _claim;
+
+        public UserSessionHandler(CatalogContext catalogCtx, TenantContext tenantCtx, IClaimService claim)
         {
-            _claimService = claimService;
-            _catalogcontext = catalogcontext;
-            _tenantContext = tenantContext;
+            _catalogCtx = catalogCtx;
+            _tenantCtx = tenantCtx;
+            _claim = claim;
         }
+
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, UserSessionRequirement requirement)
         {
-            string currentUserId = _claimService.CatalogUserId;
+            string currentUserId = _claim.CatalogUserId;
             if (currentUserId != null)
             {
-                var loggedUser = _catalogcontext.Users.FirstOrDefault(x => x.Id.ToString() == currentUserId);
+                var loggedUser = _catalogCtx.Users.FirstOrDefault(x => x.Id.ToString() == currentUserId);
                 if (loggedUser != null)
                 {
-                    var headerToken = _claimService.KeyToken;
-                    var accessIpAdd = _claimService.IpAddress;
-                    var tenantUser = _tenantContext.Users.FirstOrDefault(x => x.CatalogUserId == loggedUser.Id);
+                    var headerToken = _claim.KeyToken;
+                    var accessIpAdd = _claim.IpAddress;
+                    var tenantUser = _tenantCtx.Users.FirstOrDefault(x => x.CatalogUserId == loggedUser.Id);
                     if (tenantUser.TokenId != headerToken || tenantUser.IpAddress != accessIpAdd)
                     {
                         context.Fail();

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using ERP_API.Domain.Entities.General;
 using ERP_API.Domain.Interfaces.General;
 using ERP_API.Domain.Models;
+using ERP_API.Domain.Services;
 using ERP_API.Model;
 using Newtonsoft.Json;
 
@@ -16,10 +17,12 @@ namespace ERP_API.Controllers.General
     public class EmployeeController : ControllerBase
     {
         private readonly IEmployeeService _employee;
+        private readonly IClaimService _claim;
 
-        public EmployeeController(IEmployeeService employee)
+        public EmployeeController(IEmployeeService employee, IClaimService claim)
         {
             _employee = employee;
+            _claim = claim;
         }
 
         [HttpGet]
@@ -64,7 +67,7 @@ namespace ERP_API.Controllers.General
         public IActionResult OnPost(Employee data)
         {
             data.IsActive = true;
-            data.CreatedBy = 1;
+            data.CreatedBy = _claim.UserId;
             data.CreatedDate = DateTime.Now;
             data.UpdatedBy = data.CreatedBy;
             data.UpdatedDate = data.CreatedDate;
@@ -77,7 +80,7 @@ namespace ERP_API.Controllers.General
         [HttpPut("{id}")]
         public IActionResult OnPut(string id, Employee data)
         {
-            data.UpdatedBy = 1;
+            data.UpdatedBy = _claim.UserId;
             data.UpdatedDate = DateTime.Now;
 
             var result = _employee.Update(data);
@@ -88,7 +91,7 @@ namespace ERP_API.Controllers.General
         [HttpDelete("{id}")]
         public IActionResult OnDelete(long id)
         {
-            var result = _employee.Delete(id, 1);
+            var result = _employee.Delete(id, _claim.UserId);
 
             return Ok(result);
         }

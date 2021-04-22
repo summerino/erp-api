@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using ERP_API.Domain.Interfaces.Inventory;
 using ERP_API.Domain.Interfaces.Purchase;
 using ERP_API.Domain.Models;
+using ERP_API.Domain.Services;
 using ERP_API.Model;
 using ERP_API.Model.Purchase;
 using Newtonsoft.Json;
@@ -13,17 +14,18 @@ using Newtonsoft.Json;
 namespace ERP_API.Controllers.Purchase
 {
     [Route("api/v1/purchase-order")]
-    //[Authorize]
     [ApiController]
     public class PurchaseOrderController : ControllerBase
     {
         private readonly IPurchaseOrderService _po;
         private readonly IUnitOfMeasurementService _uom;
+        private readonly IClaimService _claim;
 
-        public PurchaseOrderController(IPurchaseOrderService po, IUnitOfMeasurementService uom)
+        public PurchaseOrderController(IPurchaseOrderService po, IUnitOfMeasurementService uom, IClaimService claim)
         {
             _po = po;
             _uom = uom;
+            _claim = claim;
         }
 
         [HttpGet]
@@ -102,7 +104,7 @@ namespace ERP_API.Controllers.Purchase
 
             // Insert process
             data.Mark = "A";
-            data.CreatedBy = 1;
+            data.CreatedBy = _claim.UserId;
             data.CreatedDate = DateTime.Now;
             data.UpdatedBy = data.CreatedBy;
             data.UpdatedDate = data.CreatedDate;
@@ -121,7 +123,7 @@ namespace ERP_API.Controllers.Purchase
                 return Ok(new SaveResult(false, message));
 
             // Update process
-            data.UpdatedBy = 1;
+            data.UpdatedBy = _claim.UserId;
             data.UpdatedDate = DateTime.Now;
 
             var result = _po.Update(data);
@@ -132,7 +134,7 @@ namespace ERP_API.Controllers.Purchase
         [HttpDelete("{code}")]
         public IActionResult OnDelete(string code)
         {
-            var result = _po.Delete(code, 1);
+            var result = _po.Delete(code, _claim.UserId);
 
             return Ok(result);
         }

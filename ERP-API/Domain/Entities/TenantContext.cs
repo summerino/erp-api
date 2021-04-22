@@ -44,6 +44,8 @@ namespace ERP_API.Domain.Entities
         public DbSet<SupplierType> SupplierTypes { get; set; }
         public DbSet<Tax> Taxes { get; set; }
         public DbSet<VwTax> VwTaxes { get; set; }
+        public DbSet<Vehicle> Vehicles { get; set; }
+        public DbSet<VehicleType> VehicleTypes { get; set; }
 
         // Inventory entities
         public DbSet<Item> Items { get; set; }
@@ -133,13 +135,13 @@ namespace ERP_API.Domain.Entities
                 .HasNoKey()
                 .ToView("vwCustomer", Schema.General);
 
-            modelBuilder.Entity<VwTax>()
-                .HasNoKey()
-                .ToView("vwTax", Schema.General);
-
             modelBuilder.Entity<VwSupplier>()
                 .HasNoKey()
                 .ToView("VwSupplier", Schema.General);
+
+            modelBuilder.Entity<VwTax>()
+                .HasNoKey()
+                .ToView("vwTax", Schema.General);
 
             // Inventory entities
             modelBuilder.Entity<VwItem>()
