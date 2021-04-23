@@ -43,11 +43,11 @@ namespace ERP_API.Controllers.Accounting
         }
 
         [HttpGet("lists")]
-        public IActionResult GetList(string sorts) 
+        public IActionResult GetList(string filters, string sorts) 
         {
             var data =
                 _coa.GetLists(
-                    null,
+                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
                     JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]")).Data
                     .ToDynamicList()
                     .Select(x => new
