@@ -3,33 +3,31 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 using Microsoft.AspNetCore.Mvc;
-using ERP_API.Domain.Entities.Accounting;
-using ERP_API.Domain.Interfaces.Accounting;
+using ERP_API.Domain.Entities.General;
+using ERP_API.Domain.Interfaces.General;
 using ERP_API.Domain.Models;
-using ERP_API.Domain.Services;
 using ERP_API.Model;
+using ERP_API.Model.General;
 using Newtonsoft.Json;
 
-namespace ERP_API.Controllers.Accounting
+namespace ERP_API.Controllers.General
 {
-    [Route("api/v1/coa")]
+    [Route("api/v1/currency")]
     [ApiController]
-    public class CoaController : ControllerBase
+    public class CurrencyController : ControllerBase
     {
-        private readonly ICoaService _coa;
-        private readonly IClaimService _claim;
+        private readonly ICurrencyService _currency;
 
-        public CoaController(ICoaService coa, IClaimService claim)
+        public CurrencyController(ICurrencyService currency)
         {
-            _coa = coa;
-            _claim = claim;
+            _currency = currency;
         }
 
         [HttpGet]
         public IActionResult GetData(string search, string filters, string sorts, int skip, int take)
         {
             var data =
-                _coa.GetData(
+                _currency.GetData(
                     skip, take,
                     JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
                     JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
@@ -43,16 +41,18 @@ namespace ERP_API.Controllers.Accounting
         }
 
         [HttpGet("lists")]
-        public IActionResult GetList(string filters, string sorts) 
+        public IActionResult GetList(string filters, string sorts)
         {
             var data =
-                _coa.GetLists(
+                _currency.GetLists(
                     JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
                     JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]")).Data
                     .ToDynamicList()
                     .Select(x => new
                     {
-                        x.Id, x.Code, x.Name
+                        x.Code,
+                        x.Name,
+                        x.Sort,
                     })
                     .ToList<dynamic>();
 
@@ -63,35 +63,41 @@ namespace ERP_API.Controllers.Accounting
             });
         }
 
+        [HttpGet("{code}")]
+        public IActionResult GetDataByCode(string code)
+        {
+            return Ok(_currency.FindByCode(code));
+        }
+
         [HttpPost]
-        public IActionResult OnPost(Coa data)
+        public IActionResult OnPost(CurrencyRequest data)
         {
             data.IsActive = true;
-            data.CreatedBy = _claim.UserId;
+            data.CreatedBy = 1;
             data.CreatedDate = DateTime.Now;
             data.UpdatedBy = data.CreatedBy;
             data.UpdatedDate = data.CreatedDate;
 
-            var result = _coa.Insert(data);
+            var result = _currency.Insert(data);
 
             return Ok(result);
         }
 
-        [HttpPut("{id}")]
-        public IActionResult OnPut(string id, Coa data)
+        [HttpPut("{code}")]
+        public IActionResult OnPut(string code, CurrencyRequest data)
         {
-            data.UpdatedBy = _claim.UserId;
+            data.UpdatedBy = 1;
             data.UpdatedDate = DateTime.Now;
 
-            var result = _coa.Update(data);
+            var result = _currency.Update(data);
 
             return Ok(result);
         }
 
-        [HttpDelete("{id}")]
-        public IActionResult OnDelete(int id)
+        [HttpDelete("{code}")]
+        public IActionResult OnDelete(string code)
         {
-            var result = _coa.Delete(id, _claim.UserId);
+            var result = _currency.Delete(code, 1);
 
             return Ok(result);
         }
