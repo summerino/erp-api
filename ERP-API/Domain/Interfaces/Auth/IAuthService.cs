@@ -10,6 +10,6 @@ namespace ERP_API.Domain.Interfaces
     public interface IAuthService
     {
         AuthResult Login(UserCatalog data);
-        AuthResult Logout(UserCatalog data);
+        AuthResult Logout();
     }
 }

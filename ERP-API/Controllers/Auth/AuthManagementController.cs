@@ -37,11 +37,11 @@ namespace ERP_API.Controllers.Auth
 
         [HttpPost]
         [Route("Logout")]
-        public IActionResult Logout(UserCatalog data)
+        public IActionResult Logout()
         {
             if (ModelState.IsValid)
             {
-                var result = _authService.Logout(data);
+                var result = _authService.Logout();
                 return Ok(result);
             }
 
