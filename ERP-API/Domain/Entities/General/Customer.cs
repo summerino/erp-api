@@ -83,8 +83,9 @@ namespace ERP_API.Domain.Entities.General
 
         public string Notes { get; set; }
 
-
         public string TypeName { get; set; }
+
+        public string UpdatedInitial { get; set; }
     }
 
     [Table("CustomerType", Schema = Schema.General)]

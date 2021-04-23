@@ -45,5 +45,7 @@ namespace ERP_API.Domain.Entities.General
         public short Seq { get; set; }
 
         public string CoaName { get; set; }
+
+        public string UpdatedInitial { get; set; }
     }
 }
