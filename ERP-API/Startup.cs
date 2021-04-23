@@ -124,6 +124,8 @@ namespace ERP_API
             // Add application service
             // Accounting services
             services.AddScoped<ICoaService, CoaService>();
+            services.AddScoped<ICurrencyRateService, CurrencyRateService>();
+
             // Core services
             services.AddScoped<IAuthorizationHandler, UserSessionHandler>();
             services.AddScoped<IShardingService, ShardingService>();
