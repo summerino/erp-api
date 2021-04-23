@@ -9,11 +9,13 @@ using ERP_API.Domain.Models;
 using ERP_API.Domain.Services;
 using ERP_API.Model;
 using Newtonsoft.Json;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ERP_API.Controllers.Inventory
 {
     [Route("api/v1/warehouse")]
     [ApiController]
+    [AllowAnonymous]
     public class WarehouseController : ControllerBase
     {
         private readonly IWarehouseService _warehouse;

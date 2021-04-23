@@ -8,11 +8,14 @@ using ERP_API.Domain.Services;
 using ERP_API.Model;
 using ERP_API.Model.Inventory;
 using Newtonsoft.Json;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ERP_API.Controllers.Inventory
 {
     [Route("api/v1/uom")]
     [ApiController]
+    [AllowAnonymous]
+
     public class UnitOfMeasurementController : ControllerBase
     {
         private readonly IUnitOfMeasurementService _uom;
