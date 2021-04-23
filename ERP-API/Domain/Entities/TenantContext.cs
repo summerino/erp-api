@@ -53,6 +53,8 @@ namespace ERP_API.Domain.Entities
         public DbSet<Item> Items { get; set; }
         public DbSet<VwItem> VwItems { get; set; }
         public DbSet<ItemCategory> ItemCategories { get; set; }
+        public DbSet<ItemGroup> ItemGroups { get; set; }
+        public DbSet<ItemGroupSubGroup> ItemGroupSubGroups { get; set; }
         public DbSet<StockMutation> StockMutations { get; set; }
         public DbSet<UoM> UoMs { get; set; }
         public DbSet<UoMConversion> UoMConversions { get; set; }
@@ -70,6 +72,10 @@ namespace ERP_API.Domain.Entities
         public DbSet<VwPurchaseReceiveHeader> VwPurchaseReceiveHeaders { get; set; }
         public DbSet<PurchaseReceiveDetail> PurchaseReceiveDetails { get; set; }
         public DbSet<VwPurchaseReceiveDetail> VwPurchaseReceiveDetails { get; set; }
+        public DbSet<PurchaseReturnHeader> PurchaseReturnHeaders { get; set; }
+        public DbSet<VwPurchaseReturnHeader> VwPurchaseReturnHeaders { get; set; }
+        public DbSet<PurchaseReturnDetail> PurchaseReturnDetails { get; set; }
+        public DbSet<VwPurchaseReturnDetail> VwPurchaseReturnDetails { get; set; }
 
         // Sales entities
         public DbSet<SalesDeliveryHeader> SalesDeliveryHeaders { get; set; }
@@ -154,7 +160,7 @@ namespace ERP_API.Domain.Entities
                 .HasNoKey()
                 .ToView("vwItem", Schema.Inventory);
 
-            // Purchase entities
+            // Purchase Invoice entities
             modelBuilder.Entity<PurchaseInvoiceHeader>(entity =>
                 entity.Property(e => e.Mark)
                     .IsRequired()
@@ -169,6 +175,7 @@ namespace ERP_API.Domain.Entities
                     .IsRequired()
             );
 
+            // Purchase Order entities
             modelBuilder.Entity<PurchaseOrderHeader>(entity =>
                 entity.Property(e => e.Mark)
                     .IsRequired()
@@ -187,6 +194,7 @@ namespace ERP_API.Domain.Entities
                 .HasNoKey()
                 .ToView("VwPurchaseOrderDetail", Schema.Purchasing);
             
+            // Purchase Receive entities
             modelBuilder.Entity<PurchaseReceiveHeader>(entity =>
                 entity.Property(e => e.Mark)
                     .IsRequired()
@@ -205,7 +213,26 @@ namespace ERP_API.Domain.Entities
                 .HasNoKey()
                 .ToView("VwPurchaseReceiveDetail", Schema.Purchasing);
 
-            // Sales entities
+            modelBuilder.Entity<PurchaseReturnHeader>(entity =>
+                entity.Property(e => e.Mark)
+                    .IsRequired()
+            );
+
+            // Purchase Return entities
+            modelBuilder.Entity<VwPurchaseReturnHeader>()
+                .HasNoKey()
+                .ToView("VwPurchaseReturnHeader", Schema.Purchasing);
+
+            modelBuilder.Entity<PurchaseReturnDetail>(entity =>
+                entity.Property(e => e.Code)
+                    .IsRequired()
+            );
+
+            modelBuilder.Entity<VwPurchaseReturnDetail>()
+                .HasNoKey()
+                .ToView("VwPurchaseReturnDetail", Schema.Purchasing);
+
+            // Sales Delivery entities
 
             modelBuilder.Entity<SalesDeliveryHeader>(entity =>
                 entity.Property(e => e.Mark)
@@ -225,6 +252,7 @@ namespace ERP_API.Domain.Entities
                 .HasNoKey()
                 .ToView("VwSalesDeliveryDetail", Schema.Sales);
 
+            // Sales Invoice entities
             modelBuilder.Entity<SalesInvoiceHeader>(entity =>
                 entity.Property(e => e.Mark)
                     .IsRequired()
@@ -239,6 +267,7 @@ namespace ERP_API.Domain.Entities
                     .IsRequired()
             );
 
+            // Sales Order entities
             modelBuilder.Entity<SalesOrderHeader>(entity =>
                 entity.Property(e => e.Mark)
                     .IsRequired()

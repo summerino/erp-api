@@ -1,5 +1,4 @@
-﻿using ERP_API.Extensions;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
@@ -15,7 +14,7 @@ namespace ERP_API.Database
         {
             var resourceString = "ERP_API.Data.{0}.json";
 
-            SeedEntity<Supplier>(string.Format(resourceString, "Supplier"), dbContext);
+            //SeedEntity<Supplier>(string.Format(resourceString, "Supplier"), dbContext);
         }
 
         public void SeedEntity<T>(string resource, TenantContext dbContext, bool overrideValues = true) where T : BaseEntity

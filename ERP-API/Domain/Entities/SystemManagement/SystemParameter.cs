@@ -1,9 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using ERP_API.Domain.Entities.Core;
 
-namespace ERP_API.Domain.Entities.Core
+namespace ERP_API.Domain.Entities.SystemManagement
 {
-    [Table("msSystemParameters", Schema = "dbo")]
+    [Table("SystemParameter", Schema = Schema.SystemManagement)]
     public class SystemParameter
     {
         public int Id { get; set; }

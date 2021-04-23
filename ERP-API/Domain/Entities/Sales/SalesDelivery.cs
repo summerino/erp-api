@@ -114,6 +114,8 @@ namespace ERP_API.Domain.Entities.Sales
 
         public string ShippedInitial { get; set; }
 
+        public string UpdatedInitial { get; set; }
+
         public string Status { get; set; }
     }
 

@@ -1,7 +1,7 @@
 ﻿using ERP_API.Model.Auth;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UserCatalog = ERP_API.Domain.Entities.Catalog.User;
-using Microsoft.AspNetCore.Authorization;
 using ERP_API.Domain.Interfaces;
 
 namespace ERP_API.Controllers.Auth
@@ -28,7 +28,7 @@ namespace ERP_API.Controllers.Auth
                 return Ok(result) ;
             }
 
-            return BadRequest(new AuthResult()
+            return BadRequest(new AuthResult
             {
                 Message = "Invalid request.",
                 Success = false
@@ -45,7 +45,7 @@ namespace ERP_API.Controllers.Auth
                 return Ok(result);
             }
 
-            return BadRequest(new AuthResult()
+            return BadRequest(new AuthResult
             {
                 Message = "Invalid request.",
                 Success = false

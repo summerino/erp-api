@@ -102,6 +102,8 @@ namespace ERP_API.Domain.Entities.Sales
 
         public string SalesInitial { get; set; }
 
+        public string UpdatedInitial { get; set; }
+
         public string Status { get; set; }
     }
 

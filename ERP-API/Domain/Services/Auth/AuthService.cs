@@ -9,6 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 using ERP_API.Domain.Entities;
 using ERP_API.Domain.Interfaces;
 using ERP_API.Model.Auth;
+using Microsoft.EntityFrameworkCore;
 using UserTenant = ERP_API.Domain.Entities.SystemManagement.User;
 using UserCatalog = ERP_API.Domain.Entities.Catalog.User;
 
@@ -17,17 +18,14 @@ namespace ERP_API.Domain.Services.Auth
     public class AuthService : IAuthService
     {
         private readonly CatalogContext _catalogCtx;
-        private readonly TenantContext _tenantCtx;
         private readonly IClaimService _claim;
         private readonly JwtConfig _jwtConfig;
 
         public AuthService(CatalogContext catalogCtx, 
-            TenantContext tenantCtx, 
             IClaimService claim,
             IOptionsMonitor<JwtConfig> optionsMonitor)
         {
             _catalogCtx = catalogCtx;
-            _tenantCtx = tenantCtx;
             _claim = claim;
             _jwtConfig = optionsMonitor.CurrentValue;
         }
@@ -56,7 +54,24 @@ namespace ERP_API.Domain.Services.Auth
                 };
             }
 
-            var tenantUser = _tenantCtx.Users.FirstOrDefault(x => x.CatalogUserId == catalogUser.Id);
+            var tenant = _catalogCtx.Tenants.FirstOrDefault(x => x.Id == catalogUser.TenantId);
+            if (tenant == null)
+            {
+                return new AuthResult
+                {
+                    Message = "Username & Password incorrect.",
+                    Success = false
+                };
+            }
+
+            // Configure tenant context db
+            var contextOptions = new DbContextOptionsBuilder<TenantContext>()
+                .UseSqlServer($"Server={tenant.ServerName};Database={tenant.DatabaseName};User Id={tenant.ServerUserId};Password={tenant.ServerPassword}")
+                .Options;
+            var tenantCtx = new TenantContext(contextOptions, _catalogCtx, _claim);
+
+            // Get user information details
+            var tenantUser = tenantCtx.Users.FirstOrDefault(x => x.CatalogUserId == catalogUser.Id);
             if (tenantUser.IsLoggedIn)
             {
                 return new AuthResult
@@ -67,7 +82,7 @@ namespace ERP_API.Domain.Services.Auth
             }
 
             var accessIpAdd = _claim.KeyToken;
-            var jwtToken = GenerateJwtToken(tenantUser);
+            var jwtToken = GenerateJwtToken(tenantUser, catalogUser.TenantId);
 
             tenantUser.IsLoggedIn = true;
             tenantUser.LastLogin = DateTime.Now;
@@ -75,19 +90,19 @@ namespace ERP_API.Domain.Services.Auth
             tenantUser.TokenId = jwtToken;
             tenantUser.SessionId = _claim.UserId.ToString();
 
-            _tenantCtx.Users.Update(tenantUser);
-            _tenantCtx.Entry(tenantUser).Property(e => e.CatalogUserId).IsModified = false;
-            _tenantCtx.Entry(tenantUser).Property(e => e.Username).IsModified = false;
-            _tenantCtx.Entry(tenantUser).Property(e => e.Initial).IsModified = false;
-            _tenantCtx.Entry(tenantUser).Property(e => e.Name).IsModified = false;
-            _tenantCtx.Entry(tenantUser).Property(e => e.RoleId).IsModified = false;
-            _tenantCtx.Entry(tenantUser).Property(e => e.EmployeeId).IsModified = false;
-            _tenantCtx.Entry(tenantUser).Property(e => e.IsActive).IsModified = false;
-            _tenantCtx.Entry(tenantUser).Property(e => e.CreatedBy).IsModified = false;
-            _tenantCtx.Entry(tenantUser).Property(e => e.CreatedDate).IsModified = false;
-            _tenantCtx.Entry(tenantUser).Property(e => e.UpdatedBy).IsModified = false;
-            _tenantCtx.Entry(tenantUser).Property(e => e.UpdatedDate).IsModified = false;
-            _tenantCtx.SaveChanges();
+            tenantCtx.Users.Update(tenantUser);
+            tenantCtx.Entry(tenantUser).Property(e => e.CatalogUserId).IsModified = false;
+            tenantCtx.Entry(tenantUser).Property(e => e.Username).IsModified = false;
+            tenantCtx.Entry(tenantUser).Property(e => e.Initial).IsModified = false;
+            tenantCtx.Entry(tenantUser).Property(e => e.Name).IsModified = false;
+            tenantCtx.Entry(tenantUser).Property(e => e.RoleId).IsModified = false;
+            tenantCtx.Entry(tenantUser).Property(e => e.EmployeeId).IsModified = false;
+            tenantCtx.Entry(tenantUser).Property(e => e.IsActive).IsModified = false;
+            tenantCtx.Entry(tenantUser).Property(e => e.CreatedBy).IsModified = false;
+            tenantCtx.Entry(tenantUser).Property(e => e.CreatedDate).IsModified = false;
+            tenantCtx.Entry(tenantUser).Property(e => e.UpdatedBy).IsModified = false;
+            tenantCtx.Entry(tenantUser).Property(e => e.UpdatedDate).IsModified = false;
+            tenantCtx.SaveChanges();
 
             return new AuthResult
             {
@@ -111,7 +126,12 @@ namespace ERP_API.Domain.Services.Auth
                 };
             }
 
-            var tenantUser = _tenantCtx.Users.FirstOrDefault(x => x.CatalogUserId == catalogUser.Id);
+             // Configure tenant context db
+            var contextOptions = new DbContextOptionsBuilder<TenantContext>().Options;
+            var tenantCtx = new TenantContext(contextOptions, _catalogCtx, _claim);
+
+            // Get user information details
+            var tenantUser = tenantCtx.Users.FirstOrDefault(x => x.CatalogUserId == catalogUser.Id);
             if (tenantUser == null)
             {
                 return new AuthResult
@@ -126,19 +146,19 @@ namespace ERP_API.Domain.Services.Auth
             tenantUser.TokenId = null;
             tenantUser.SessionId = null;
 
-            _tenantCtx.Users.Update(tenantUser);
-            _tenantCtx.Entry(tenantUser).Property(e => e.CatalogUserId).IsModified = false;
-            _tenantCtx.Entry(tenantUser).Property(e => e.Username).IsModified = false;
-            _tenantCtx.Entry(tenantUser).Property(e => e.Initial).IsModified = false;
-            _tenantCtx.Entry(tenantUser).Property(e => e.Name).IsModified = false;
-            _tenantCtx.Entry(tenantUser).Property(e => e.RoleId).IsModified = false;
-            _tenantCtx.Entry(tenantUser).Property(e => e.EmployeeId).IsModified = false;
-            _tenantCtx.Entry(tenantUser).Property(e => e.IsActive).IsModified = false;
-            _tenantCtx.Entry(tenantUser).Property(e => e.CreatedBy).IsModified = false;
-            _tenantCtx.Entry(tenantUser).Property(e => e.CreatedDate).IsModified = false;
-            _tenantCtx.Entry(tenantUser).Property(e => e.UpdatedBy).IsModified = false;
-            _tenantCtx.Entry(tenantUser).Property(e => e.UpdatedDate).IsModified = false;
-            _tenantCtx.SaveChanges();
+            tenantCtx.Users.Update(tenantUser);
+            tenantCtx.Entry(tenantUser).Property(e => e.CatalogUserId).IsModified = false;
+            tenantCtx.Entry(tenantUser).Property(e => e.Username).IsModified = false;
+            tenantCtx.Entry(tenantUser).Property(e => e.Initial).IsModified = false;
+            tenantCtx.Entry(tenantUser).Property(e => e.Name).IsModified = false;
+            tenantCtx.Entry(tenantUser).Property(e => e.RoleId).IsModified = false;
+            tenantCtx.Entry(tenantUser).Property(e => e.EmployeeId).IsModified = false;
+            tenantCtx.Entry(tenantUser).Property(e => e.IsActive).IsModified = false;
+            tenantCtx.Entry(tenantUser).Property(e => e.CreatedBy).IsModified = false;
+            tenantCtx.Entry(tenantUser).Property(e => e.CreatedDate).IsModified = false;
+            tenantCtx.Entry(tenantUser).Property(e => e.UpdatedBy).IsModified = false;
+            tenantCtx.Entry(tenantUser).Property(e => e.UpdatedDate).IsModified = false;
+            tenantCtx.SaveChanges();
 
             return new AuthResult
             {
@@ -148,7 +168,7 @@ namespace ERP_API.Domain.Services.Auth
             };
         }
 
-        private string GenerateJwtToken(UserTenant data)
+        private string GenerateJwtToken(UserTenant data, int tenantId)
         {
             var jwtTokenHandler = new JwtSecurityTokenHandler();
 
@@ -163,6 +183,7 @@ namespace ERP_API.Domain.Services.Auth
                     new Claim("UserId", data.Id.ToString()),
                     new Claim("RoleId", data.RoleId.ToString()),
                     new Claim("CatalogUserId", data.CatalogUserId.ToString()),
+                    new Claim("TenantId", tenantId.ToString()),
                     new Claim(JwtRegisteredClaimNames.Sub, data.Username),
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                     new Claim(JwtRegisteredClaimNames.GivenName, data.Initial)

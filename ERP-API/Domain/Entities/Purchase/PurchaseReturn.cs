@@ -5,8 +5,8 @@ using ERP_API.Domain.Entities.Core;
 
 namespace ERP_API.Domain.Entities.Purchase
 {
-    [Table("PurchaseReceiveHeader", Schema = Schema.Purchasing)]
-    public class PurchaseReceiveHeader : BaseEntityWithMark
+    [Table("PurchaseReturnHeader", Schema = Schema.Purchasing)]
+    public class PurchaseReturnHeader : BaseEntityWithMark
     {
         [Key]
         [StringLength(17)]
@@ -16,18 +16,19 @@ namespace ERP_API.Domain.Entities.Purchase
         public DateTime Date { get; set; }
 
         [Required]
-        [Column("POCode")]
         [StringLength(17)]
-        public string PoCode { get; set; }
+        public string RcvCode { get; set; }
 
         [StringLength(30)]
         public string RefNo { get; set; }
 
+        public short Type { get; set; }
+
         [Required]
         [StringLength(8)]
         public string SupCode { get; set; }
-
-        public long ReceiveBy { get; set; }
+        
+        public long ShippedBy { get; set; }
 
         public long? ApproveBy { get; set; }
 
@@ -46,15 +47,10 @@ namespace ERP_API.Domain.Entities.Purchase
 
         [Column(TypeName = "decimal(18, 2)")]
         public decimal SubTotal { get; set; }
-
-        [Column(TypeName = "decimal(5, 2)")]
-        public decimal FinalDiscPercent { get; set; }
-
+        
         [Column(TypeName = "decimal(18, 2)")]
         public decimal FinalDisc { get; set; }
-
-        public bool IncludeTax { get; set; }
-
+        
         [Column(TypeName = "decimal(18, 2)")]
         public decimal TaxAmount { get; set; }
 
@@ -63,30 +59,29 @@ namespace ERP_API.Domain.Entities.Purchase
 
         [Column("DPP", TypeName = "decimal(18, 2)")]
         public decimal Dpp { get; set; }
+
+        [StringLength(256)]
+        public string Notes { get; set; }
     }
 
-    public class VwPurchaseReceiveHeader : BaseEntityWithMark
+    public class VwPurchaseReturnHeader : BaseEntityWithMark
     {
-        [StringLength(17)]
         public string Code { get; set; }
 
-        [Column(TypeName = "date")]
         public DateTime Date { get; set; }
 
-        [StringLength(17)]
-        public string PoCode { get; set; }
+        public string RcvCode { get; set; }
 
-        [StringLength(30)]
         public string RefNo { get; set; }
 
-        [StringLength(8)]
+        public short Type { get; set; }
+
         public string SupCode { get; set; }
 
-        public long ReceiveBy { get; set; }
+        public long ShippedBy { get; set; }
 
         public long? ApproveBy { get; set; }
 
-        [StringLength(3)]
         public string CurrCode { get; set; }
 
         public decimal Rate { get; set; }
@@ -97,11 +92,7 @@ namespace ERP_API.Domain.Entities.Purchase
 
         public decimal SubTotal { get; set; }
 
-        public decimal FinalDiscPercent { get; set; }
-
         public decimal FinalDisc { get; set; }
-
-        public bool IncludeTax { get; set; }
 
         public decimal TaxAmount { get; set; }
 
@@ -109,18 +100,20 @@ namespace ERP_API.Domain.Entities.Purchase
 
         public decimal Dpp { get; set; }
 
+        public string Notes { get; set; }
+
 
         public string SupName { get; set; }
 
-        public string ReceiveInitial { get; set; }
+        public string ShippedInitial { get; set; }
 
         public string UpdatedInitial { get; set; }
 
         public string Status { get; set; }
     }
 
-    [Table("PurchaseReceiveDetail", Schema = Schema.Purchasing)]
-    public class PurchaseReceiveDetail
+    [Table("PurchaseReturnDetail", Schema = Schema.Purchasing)]
+    public class PurchaseReturnDetail
     {
         public long Id { get; set; }
 
@@ -129,17 +122,26 @@ namespace ERP_API.Domain.Entities.Purchase
 
         public short LineNo { get; set; }
 
-        [Column("PODetailId")]
-        public long? PoDetailId { get; set; }
+        public long? RcvDetailId { get; set; }
 
         public int ItemId { get; set; }
-
-        [Column(TypeName = "decimal(18, 2)")]
-        public decimal Qty { get; set; }
 
         public int UomId { get; set; }
 
         public int UnitId { get; set; }
+
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal Qty { get; set; }
+
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal RcvQty { get; set; }
+
+        [Required]
+        [StringLength(8)]
+        public string WarehouseCode { get; set; }
+
+        [StringLength(8)]
+        public string WarehouseCodeIn { get; set; }
 
         [Column(TypeName = "decimal(18, 2)")]
         public decimal? Length { get; set; }
@@ -178,32 +180,31 @@ namespace ERP_API.Domain.Entities.Purchase
 
         [Column("DPP", TypeName = "decimal(19, 6)")]
         public decimal Dpp { get; set; }
-
-        [Required]
-        [StringLength(8)]
-        public string WarehouseCode { get; set; }
-
-        public int Type { get; set; }
     }
 
-    public class VwPurchaseReceiveDetail
+    public class VwPurchaseReturnDetail
     {
         public long Id { get; set; }
 
-        [StringLength(17)]
         public string Code { get; set; }
 
         public short LineNo { get; set; }
 
-        public long? PoDetailId { get; set; }
+        public long? RcvDetailId { get; set; }
 
         public int ItemId { get; set; }
-
-        public decimal Qty { get; set; }
 
         public int UomId { get; set; }
 
         public int UnitId { get; set; }
+
+        public decimal Qty { get; set; }
+
+        public decimal RcvQty { get; set; }
+
+        public string WarehouseCode { get; set; }
+
+        public string WarehouseCodeIn { get; set; }
 
         public decimal? Length { get; set; }
 
@@ -213,10 +214,8 @@ namespace ERP_API.Domain.Entities.Purchase
 
         public decimal? Weight { get; set; }
 
-        [StringLength(10)]
         public string DimensionMeasurement { get; set; }
 
-        [StringLength(10)]
         public string WeightMeasurement { get; set; }
 
         public decimal UnitPrice { get; set; }
@@ -232,12 +231,6 @@ namespace ERP_API.Domain.Entities.Purchase
         public decimal Total { get; set; }
 
         public decimal Dpp { get; set; }
-
-        [Required]
-        [StringLength(8)]
-        public string WarehouseCode { get; set; }
-
-        public int Type { get; set; }
 
 
         public decimal OrderQty { get; set; }

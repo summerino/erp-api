@@ -80,8 +80,18 @@ namespace ERP_API.Migrations.TenantMigrations
                 columns: new[] { "Date", "CurrCode" },
                 unique: true);
 
+            // Create view General.vwTax
+            var sql = @"CREATE VIEW [General].[vwTax]
+AS
+    SELECT c.*,
+        x.[Name] AS CoaName
+    FROM General.Tax c
+    LEFT JOIN Accounting.COA x
+        ON x.Code = c.CoaCode";
+            migrationBuilder.Sql(sql);
+
             // Create store procedure dbo.sp_insert_curr_rate
-            var sql = @"CREATE PROCEDURE [dbo].[sp_insert_curr_rate]
+            sql = @"CREATE PROCEDURE [dbo].[sp_insert_curr_rate]
 	@dateFrom date,
 	@dateTo date,
 	@currCode varchar(3),
@@ -139,9 +149,13 @@ END";
             migrationBuilder.DropTable(
                 name: "VehicleType",
                 schema: "General");
-            
+
+            // Drop view General.vwTax
+            var sql = @"DROP VIEW [General].[vwTax]";
+            migrationBuilder.Sql(sql);
+
             // Drop store procedure dbo.sp_insert_curr_rate
-            var sql = @"DROP PROCEDURE [dbo].[sp_insert_curr_rate]";
+            sql = @"DROP PROCEDURE [dbo].[sp_insert_curr_rate]";
             migrationBuilder.Sql(sql);
         }
     }
