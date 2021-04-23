@@ -39,7 +39,7 @@ namespace ERP_API.Domain.Services.Auth
             {
                 return new AuthResult
                 {
-                    Message = "User not registered.",
+                    Message = "Username & Password incorrect.",
                     Success = false
                 };
             }
@@ -51,12 +51,21 @@ namespace ERP_API.Domain.Services.Auth
             {
                 return new AuthResult
                 {
-                    Message = "Password incorrect.",
+                    Message = "Username & Password incorrect.",
                     Success = false
                 };
             }
 
             var tenantUser = _tenantCtx.Users.FirstOrDefault(x => x.CatalogUserId == catalogUser.Id);
+            if (tenantUser.IsLoggedIn)
+            {
+                return new AuthResult
+                {
+                    Message = "User already logged in.",
+                    Success = false
+                };
+            }
+
             var accessIpAdd = _claim.KeyToken;
             var jwtToken = GenerateJwtToken(tenantUser);
 
@@ -90,9 +99,9 @@ namespace ERP_API.Domain.Services.Auth
             };
         }
 
-        public AuthResult Logout(UserCatalog data)
+        public AuthResult Logout()
         {
-            var catalogUser = _catalogCtx.Users.FirstOrDefault(x => x.Username == data.Username);
+            var catalogUser = _catalogCtx.Users.FirstOrDefault(x => x.Id.ToString() == _claim.CatalogUserId);
             if (catalogUser == null)
             {
                 return new AuthResult

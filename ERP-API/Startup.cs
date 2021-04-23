@@ -115,7 +115,8 @@ namespace ERP_API
                     ValidateIssuer = true,
                     ValidateAudience = false,
                     ValidateLifetime = true,
-                    RequireExpirationTime = true
+                    RequireExpirationTime = true,
+                    ClockSkew = TimeSpan.Zero
                 };
             });
 
@@ -137,6 +138,8 @@ namespace ERP_API
             services.AddScoped<ISupplierService, SupplierService>();
             services.AddScoped<ISupplierTypeService, SupplierTypeService>();
             services.AddScoped<ITaxService, TaxService>();
+            services.AddScoped<IVehicleService, VehicleService>();
+            services.AddScoped<IVehicleTypeService, VehicleTypeService>();
 
             // Inventory services
             services.AddScoped<IItemCategoryService, ItemCategoryService>();
