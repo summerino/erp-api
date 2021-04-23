@@ -44,4 +44,27 @@ namespace ERP_API.Domain.Entities.General
         [StringLength(50)]
         public string Name { get; set; }
     }
+
+    public class VwVehicle : BaseEntityWithActive
+    {
+        public int Id { get; set; }
+
+        public string VehicleNo { get; set; }
+
+        public int TypeId { get; set; }
+
+        public decimal MaxLoadVolume { get; set; }
+
+        public decimal MaxLoadWeight { get; set; }
+
+        public long DriverId { get; set; }
+
+        public long? HelperId1 { get; set; }
+
+        public long? HelperId2 { get; set; }
+
+        public string Notes { get; set; }
+
+        public string TypeName { get; set; }
+    }
 }
