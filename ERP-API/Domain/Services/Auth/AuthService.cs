@@ -74,11 +74,15 @@ namespace ERP_API.Domain.Services.Auth
             var tenantUser = tenantCtx.Users.FirstOrDefault(x => x.CatalogUserId == catalogUser.Id);
             if (tenantUser.IsLoggedIn)
             {
-                return new AuthResult
+                DateTime lastLoggedin = (DateTime)tenantUser.LastLogin;
+                if (!(DateTime.Now - lastLoggedin > TimeSpan.FromHours(4)))
                 {
-                    Message = "User already logged in.",
-                    Success = false
-                };
+                    return new AuthResult
+                    {
+                        Message = "User already logged in.",
+                        Success = false
+                    };
+                }
             }
 
             var accessIpAdd = _claim.KeyToken;
