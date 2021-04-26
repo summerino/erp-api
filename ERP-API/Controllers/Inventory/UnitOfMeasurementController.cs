@@ -14,7 +14,7 @@ namespace ERP_API.Controllers.Inventory
 {
     [Route("api/v1/uom")]
     [ApiController]
-    [AllowAnonymous]
+    //[AllowAnonymous]
 
     public class UnitOfMeasurementController : ControllerBase
     {
@@ -88,9 +88,11 @@ namespace ERP_API.Controllers.Inventory
 
         private static (bool, string) Validate(UnitOfMeasurementRequest data)
         {
+            //validate if items empty
             if (!data.Details.Any())
                 return (false, "Item details can't be empty.");
-
+            
+            //validate if items rules is not match
             short index = 0;
             var details = data.Details.ToArray();
             while (true)
@@ -107,6 +109,19 @@ namespace ERP_API.Controllers.Inventory
                     }
                 }
                 index++;
+            }
+
+            //validate duplicate item
+            index = 0;
+            while (true) {
+                if (index == details.Length)
+                    break;
+
+                var currentItem = details[index];
+                var listToCompare = details.Where(x => x.Seq != currentItem.Seq).ToList();
+                if (listToCompare.Any(x=>x.UnitToConvert == currentItem.UnitToConvert && x.Conversion == currentItem.Conversion)) { 
+                    return (false, $"Cannot add duplicate item.");
+                }
             }
             return (true,"");
         }

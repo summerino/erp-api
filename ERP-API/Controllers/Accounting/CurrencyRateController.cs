@@ -16,8 +16,9 @@ using ERP_API.Model.Accounting;
 namespace ERP_API.Controllers.Accounting
 {
     [Route("api/v1/currency-rate")]
-    [AllowAnonymous]
     [ApiController]
+    //[AllowAnonymous]
+
     public class CurrencyRateController : ControllerBase
     {
         private readonly ICurrencyRateService _currencyRate;
@@ -65,15 +66,6 @@ namespace ERP_API.Controllers.Accounting
             data.UpdatedBy = _claim.UserId;
             data.UpdatedDate = DateTime.Now;
             var result = _currencyRate.Update(data);
-            return Ok(result);
-        }
-
-        [HttpGet]
-        [Route("getlistcurrencies")]
-        public IActionResult GetListCurrencies() 
-        {
-            var result = new List<Currency>();
-            result.Add(new Currency { Code = "USD", Name = "US Dollar", Sort = 2, IsActive = true });
             return Ok(result);
         }
     }
