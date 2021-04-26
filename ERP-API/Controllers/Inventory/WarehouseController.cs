@@ -15,7 +15,7 @@ namespace ERP_API.Controllers.Inventory
 {
     [Route("api/v1/warehouse")]
     [ApiController]
-    [AllowAnonymous]
+    //[AllowAnonymous]
     public class WarehouseController : ControllerBase
     {
         private readonly IWarehouseService _warehouse;
