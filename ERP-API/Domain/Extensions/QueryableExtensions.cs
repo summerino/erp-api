@@ -145,11 +145,30 @@ namespace ERP_API.Domain.Extensions
                     //item.Keyword = new DateTime(localTime.Year, localTime.Month, localTime.Day, localTime.Hour, localTime.Minute, localTime.Second, localTime.Millisecond);
                 }
 
-                item.Keyword = item.Keyword switch
+                switch (item.Keyword)
                 {
-                    JArray v => v.Select(x => Convert.ChangeType(x, currentPropertyType)).ToArray(),
-                    _ => item.Keyword
-                };
+                    case JArray v:
+                        if (currentPropertyType == typeof(int))
+                        {
+                            item.Keyword = v.Select(x => Convert.ChangeType(x, currentPropertyType)).Cast<int>().ToArray();
+                        }
+                        else if (currentPropertyType == typeof(long))
+                        {
+                            item.Keyword = v.Select(x => Convert.ChangeType(x, currentPropertyType)).Cast<long>().ToArray();
+                        }
+                        else if (currentPropertyType == typeof(short))
+                        {
+                            item.Keyword = v.Select(x => Convert.ChangeType(x, currentPropertyType)).Cast<short>().ToArray();
+                        }
+                        else
+                        {
+                            item.Keyword = v.Select(x => Convert.ChangeType(x, currentPropertyType)).ToArray();
+                        }
+                        break;
+                    default:
+                        item.Keyword = item.Keyword;
+                        break;
+                }
             }
 
             return filter;
