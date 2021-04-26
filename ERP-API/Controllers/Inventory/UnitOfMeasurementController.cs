@@ -119,9 +119,10 @@ namespace ERP_API.Controllers.Inventory
 
                 var currentItem = details[index];
                 var listToCompare = details.Where(x => x.Seq != currentItem.Seq).ToList();
-                if (listToCompare.Any(x=>x.UnitToConvert == currentItem.UnitToConvert && x.Conversion == currentItem.Conversion)) { 
+                if (listToCompare.Any(x=>x.UnitEquivalent == currentItem.UnitEquivalent && x.Conversion == currentItem.Conversion)) { 
                     return (false, $"Cannot add duplicate item.");
                 }
+                index++;
             }
             return (true,"");
         }
