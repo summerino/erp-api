@@ -1,12 +1,11 @@
-﻿using ERP_API.Domain.Entities;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using ERP_API.Domain.Entities;
 using ERP_API.Domain.Entities.General;
 using ERP_API.Domain.Extensions;
 using ERP_API.Domain.Interfaces.General;
 using ERP_API.Domain.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
 
 namespace ERP_API.Domain.Services.General
 {
@@ -56,6 +55,13 @@ namespace ERP_API.Domain.Services.General
             }
 
             return data.ToDataSourceResult(skip, take, filters, sorts);
+        }
+
+        public DataSourceResult GetLists(IEnumerable<Filter> filters, IEnumerable<Sort> sorts)
+        {
+            var data = Db.Taxes.Where(x => x.IsActive).OrderBy(x => x.Seq);
+
+            return data.ToDataSourceResult(0, -1, filters, sorts);
         }
 
         public override SaveResult Insert(Tax data)

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Dynamic.Core;
 using Microsoft.AspNetCore.Mvc;
 using ERP_API.Domain.Entities.General;
@@ -15,12 +16,12 @@ namespace ERP_API.Controllers.General
     [ApiController]
     public class TaxController : ControllerBase
     {
-        private readonly ITaxService _taxService;
+        private readonly ITaxService _tax;
         private readonly IClaimService _claim;
 
-        public TaxController(ITaxService taxService, IClaimService claim)
+        public TaxController(ITaxService tax, IClaimService claim)
         {
-            _taxService = taxService;
+            _tax = tax;
             _claim = claim;
         }
 
@@ -28,7 +29,7 @@ namespace ERP_API.Controllers.General
         public IActionResult GetData(string search, string filters, string sorts, int skip, int take)
         {
             var data =
-                _taxService.GetData(
+                _tax.GetData(
                     skip, take,
                     JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
                     JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
@@ -41,6 +42,27 @@ namespace ERP_API.Controllers.General
             });
         }
 
+        [HttpGet("lists")]
+        public IActionResult GetList(string filters, string sorts) 
+        {
+            var data =
+                _tax.GetLists(
+                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]")).Data
+                    .ToDynamicList()
+                    .Select(x => new
+                    {
+                        x.id, x.Initial, x.Name, x.Rate
+                    })
+                    .ToList<dynamic>();
+
+            return Ok(new ApiResponse
+            {
+                RowCount = data.Count,
+                TableData = data
+            });
+        }
+
         [HttpPost]
         public IActionResult OnPost(Tax data)
         {
@@ -50,7 +72,7 @@ namespace ERP_API.Controllers.General
             data.UpdatedBy = data.CreatedBy;
             data.UpdatedDate = data.CreatedDate;
 
-            var result = _taxService.Insert(data);
+            var result = _tax.Insert(data);
 
             return Ok(result);
         }
@@ -61,7 +83,7 @@ namespace ERP_API.Controllers.General
             data.UpdatedBy = _claim.UserId;
             data.UpdatedDate = DateTime.Now;
 
-            var result = _taxService.Update(data);
+            var result = _tax.Update(data);
 
             return Ok(result);
         }
@@ -69,7 +91,7 @@ namespace ERP_API.Controllers.General
         [HttpDelete("{id}")]
         public IActionResult OnDelete(int id)
         {
-            var result = _taxService.Delete(id, _claim.UserId);
+            var result = _tax.Delete(id, _claim.UserId);
 
             return Ok(result);
         }

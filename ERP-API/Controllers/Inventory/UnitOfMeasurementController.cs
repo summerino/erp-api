@@ -8,13 +8,11 @@ using ERP_API.Domain.Services;
 using ERP_API.Model;
 using ERP_API.Model.Inventory;
 using Newtonsoft.Json;
-using Microsoft.AspNetCore.Authorization;
 
 namespace ERP_API.Controllers.Inventory
 {
     [Route("api/v1/uom")]
     [ApiController]
-    //[AllowAnonymous]
 
     public class UnitOfMeasurementController : ControllerBase
     {
@@ -41,6 +39,18 @@ namespace ERP_API.Controllers.Inventory
             {
                 RowCount = data.Total,
                 TableData = data.Data.ToDynamicList()
+            });
+        }
+
+        [HttpGet("item")]
+        public IActionResult GetDetail(int uomId)
+        {
+            var uomC = _uom.GetDataConversion(uomId);
+            var data = uomC.ToList<dynamic>();
+            return Ok(new ApiResponse
+            {
+                RowCount = data.Count,
+                TableData = data
             });
         }
 
@@ -72,18 +82,6 @@ namespace ERP_API.Controllers.Inventory
         {
             var result = _uom.Delete(id, _claim.UserId);
             return Ok(result);
-        }
-
-        [HttpGet("item")]
-        public IActionResult GetDetail(int id)
-        {
-            var uomC = _uom.GetDataConversion(id);
-            var data = uomC.ToList<dynamic>();
-            return Ok(new ApiResponse
-            {
-                RowCount = data.Count,
-                TableData = data
-            });
         }
 
         private static (bool, string) Validate(UnitOfMeasurementRequest data)
