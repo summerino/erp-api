@@ -26,6 +26,11 @@ namespace ERP_API.Domain.Entities.Inventory
         [Column(TypeName = "decimal(18, 2)")]
         public decimal Qty { get; set; }
 
+        public int BaseUnit { get; set; }
+
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal BaseQty { get; set; }
+
         [Required]
         [StringLength(17)]
         public string RefCode1 { get; set; }
