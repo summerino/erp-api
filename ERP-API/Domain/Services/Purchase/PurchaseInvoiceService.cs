@@ -85,7 +85,7 @@ namespace ERP_API.Domain.Services.Purchase
 
                 // Update purchase receive to invoiced
                 Db.Database.ExecuteSqlRaw(
-                    $@"UPDATE trPurchaseReceiveHeaders
+                    $@"UPDATE Purchasing.PurchaseReceiveHeader
                     SET Mark='INV'
                     WHERE Code IN ('{string.Join("','", data.Details.Select(x => x.RcvCode.Replace("'", "''")))}')");
 
@@ -95,7 +95,7 @@ namespace ERP_API.Domain.Services.Purchase
                         .Any(x => x.PoCode == data.PoCode && x.Mark != "INV"))
                 {
                     Db.Database.ExecuteSqlRaw(
-                        "UPDATE trPurchaseOrderHeaders SET Mark='CLS' WHERE Code={0} AND Mark='CMP'", data.PoCode);
+                        "UPDATE Purchasing.PurchaseOrderHeader SET Mark='CLS' WHERE Code={0} AND Mark='CMP'", data.PoCode);
                 }
 
                 transaction.Commit();
@@ -147,7 +147,7 @@ namespace ERP_API.Domain.Services.Purchase
 
                 // Update purchase receive mark that exists in invoice before
                 Db.Database.ExecuteSqlRaw(
-                    $@"UPDATE trPurchaseReceiveHeaders
+                    $@"UPDATE Purchasing.PurchaseReceiveHeader
                     SET Mark='A'
                     WHERE Code IN ('{string.Join("','", rcvCodeList)}')");
 
@@ -198,7 +198,7 @@ namespace ERP_API.Domain.Services.Purchase
 
                 // Update purchase receive to invoiced
                 Db.Database.ExecuteSqlRaw(
-                    $@"UPDATE trPurchaseReceiveHeaders
+                    $@"UPDATE Purchasing.PurchaseReceiveHeader
                     SET Mark='INV'
                     WHERE Code IN ('{string.Join("','", data.Details.Select(x => x.RcvCode.Replace("'", "''")))}')");
 
@@ -209,7 +209,7 @@ namespace ERP_API.Domain.Services.Purchase
                 {
                     // Update purchase order to closed
                     Db.Database.ExecuteSqlRaw(
-                        "UPDATE trPurchaseOrderHeaders SET Mark='CLS' WHERE Code={0} AND Mark='CMP'", data.PoCode);
+                        "UPDATE Purchasing.PurchaseOrderHeader SET Mark='CLS' WHERE Code={0} AND Mark='CMP'", data.PoCode);
                 }
                 else
                 {
@@ -219,7 +219,7 @@ namespace ERP_API.Domain.Services.Purchase
                         : "CMP";
 
                     Db.Database.ExecuteSqlRaw(
-                        "UPDATE trPurchaseOrderHeaders SET Mark={0} WHERE Code={1}", poMark, data.PoCode);
+                        "UPDATE Purchasing.PurchaseOrderHeader SET Mark={0} WHERE Code={1}", poMark, data.PoCode);
                 }
 
                 transaction.Commit();
@@ -269,7 +269,7 @@ namespace ERP_API.Domain.Services.Purchase
 
                     // Update purchase receive to active
                     Db.Database.ExecuteSqlRaw(
-                        $"UPDATE trPurchaseReceiveHeaders SET Mark='A' WHERE Code IN ('{rcvCodeJoin}')");
+                        $"UPDATE Purchasing.PurchaseReceiveHeader SET Mark='A' WHERE Code IN ('{rcvCodeJoin}')");
 
                     // Update purchase order to partial receive or completed
                     var poMark = Db.PurchaseOrderDetails.Any(x => x.Code == data.PoCode && x.Qty > x.QtyRcv)
@@ -277,7 +277,7 @@ namespace ERP_API.Domain.Services.Purchase
                         : "CMP";
 
                     Db.Database.ExecuteSqlRaw(
-                        "UPDATE trPurchaseOrderHeaders SET Mark={0} WHERE Code={1}", poMark, data.PoCode);
+                        "UPDATE Purchasing.PurchaseOrderHeader SET Mark={0} WHERE Code={1}", poMark, data.PoCode);
 
                     transaction.Commit();
                 }
