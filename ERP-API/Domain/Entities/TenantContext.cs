@@ -94,6 +94,7 @@ namespace ERP_API.Domain.Entities
         public DbSet<Menu> Menus { get; set; }
         public DbSet<Role> Roles { get; set; }
         public DbSet<User> Users { get; set; }
+        public DbSet<VwUser> VwUsers { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -285,6 +286,11 @@ namespace ERP_API.Domain.Entities
             modelBuilder.Entity<VwSalesOrderDetail>()
                 .HasNoKey()
                 .ToView("VwSalesOrderDetail", Schema.Sales);
+
+            // System Management entities
+            modelBuilder.Entity<VwUser>()
+                .HasNoKey()
+                .ToView("vwUser", Schema.SystemManagement);
         }
     }
 }
