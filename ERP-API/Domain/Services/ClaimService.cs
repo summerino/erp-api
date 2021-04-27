@@ -49,6 +49,6 @@ namespace ERP_API.Domain.Services
             _accessor.HttpContext?.User?.Claims?.SingleOrDefault(x => x.Type == "CatalogUserId")?.Value.ToString();
 
         public string ExpiredTime =>
-            _accessor.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "exp").Value;
+            _accessor.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "exp")?.Value.ToString();
     }
 }
