@@ -111,13 +111,15 @@ namespace ERP_API.Controllers.Inventory
 
             //validate duplicate item
             index = 0;
-            while (true) {
+            while (true)
+            {
                 if (index == details.Length)
                     break;
 
                 var currentItem = details[index];
                 var listToCompare = details.Where(x => x.Seq != currentItem.Seq).ToList();
-                if (listToCompare.Any(x=>x.UnitEquivalent == currentItem.UnitEquivalent && x.Conversion == currentItem.Conversion)) { 
+                if (listToCompare.Any(x => x.UnitEquivalent.Equals(currentItem.UnitEquivalent, System.StringComparison.OrdinalIgnoreCase) && x.Conversion == currentItem.Conversion))
+                {
                     return (false, $"Cannot add duplicate item.");
                 }
                 index++;
