@@ -244,6 +244,8 @@ namespace ERP_API.Domain.Entities.Purchase
 
         public decimal OutstandingQty { get; set; }
 
+        public string ItemInitial { get; set; }
+
         public string ItemName { get; set; }
 
         public int? ItemUomBuyId { get; set; }

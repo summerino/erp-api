@@ -48,7 +48,8 @@ namespace ERP_API.Controllers.Purchase
             var data = _rcv.GetDetailData(code)
                 .Select(x => new
                 {
-                    x.Id, x.Code, x.LineNo, x.PoDetailId, x.ItemId, x.ItemName, x.OrderQty, x.OutstandingQty, x.Qty,
+                    x.Id, x.Code, x.LineNo, x.PoDetailId, x.ItemId, x.ItemInitial, x.ItemName,
+                    x.OrderQty, x.OutstandingQty, x.Qty,
                     x.UomId, x.UnitId, x.UnitName,
                     x.Length, x.Width, x.Height, x.Weight, x.DimensionMeasurement, x.WeightMeasurement,
                     x.UnitPrice, x.Disc, x.TaxId, x.TaxAmount, x.NettPrice, x.Total, x.Dpp,
