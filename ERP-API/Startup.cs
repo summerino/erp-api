@@ -27,6 +27,8 @@ using ERP_API.Domain.Services.Sales;
 using ERP_API.Model.Auth;
 using Newtonsoft.Json.Serialization;
 using Swift.Framework;
+using ERP_API.Domain.Interfaces.SystemManagement;
+using ERP_API.Domain.Services.SystemManagement;
 
 namespace ERP_API
 {
@@ -161,6 +163,9 @@ namespace ERP_API
             services.AddScoped<ISalesDeliveryService, SalesDeliveryService>();
             services.AddScoped<ISalesInvoiceService, SalesInvoiceService>();
             services.AddScoped<ISalesOrderService, SalesOrderService>();
+
+            // System Management services
+            services.AddScoped<IUserService, UserService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
