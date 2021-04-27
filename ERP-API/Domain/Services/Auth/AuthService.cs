@@ -74,8 +74,10 @@ namespace ERP_API.Domain.Services.Auth
             var tenantUser = tenantCtx.Users.FirstOrDefault(x => x.CatalogUserId == catalogUser.Id);
             if (tenantUser.IsLoggedIn)
             {
-                DateTime lastLoggedin = (DateTime)tenantUser.LastLogin;
-                if (!(DateTime.Now - lastLoggedin > TimeSpan.FromHours(4)))
+                var jwtExpValue = long.Parse(_claim.ExpiredTime);
+                DateTime expirationDate = DateTimeOffset.FromUnixTimeSeconds(jwtExpValue).DateTime;
+                DateTime localExpirationDate = expirationDate.ToLocalTime();
+                if (!(DateTime.Now > localExpirationDate))
                 {
                     return new AuthResult
                     {
