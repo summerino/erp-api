@@ -142,6 +142,8 @@ namespace ERP_API
             services.AddScoped<ITaxService, TaxService>();
             services.AddScoped<IVehicleService, VehicleService>();
             services.AddScoped<IVehicleTypeService, VehicleTypeService>();
+            services.AddScoped<ICurrencyService, CurrencyService>();
+            services.AddScoped<IItemGroupService, ItemGroupService>();
 
             // Inventory services
             services.AddScoped<IItemCategoryService, ItemCategoryService>();
