@@ -50,7 +50,9 @@ namespace ERP_API.Domain.Entities.Purchase
         
         [Column(TypeName = "decimal(18, 2)")]
         public decimal FinalDisc { get; set; }
-        
+
+        public bool IncludeTax { get; set; }
+
         [Column(TypeName = "decimal(18, 2)")]
         public decimal TaxAmount { get; set; }
 
@@ -94,6 +96,8 @@ namespace ERP_API.Domain.Entities.Purchase
 
         public decimal FinalDisc { get; set; }
 
+        public bool IncludeTax { get; set; }
+
         public decimal TaxAmount { get; set; }
 
         public decimal Total { get; set; }
@@ -134,7 +138,7 @@ namespace ERP_API.Domain.Entities.Purchase
         public decimal Qty { get; set; }
 
         [Column(TypeName = "decimal(18, 2)")]
-        public decimal RcvQty { get; set; }
+        public decimal QtyRcv { get; set; }
 
         [Required]
         [StringLength(8)]
@@ -200,7 +204,7 @@ namespace ERP_API.Domain.Entities.Purchase
 
         public decimal Qty { get; set; }
 
-        public decimal RcvQty { get; set; }
+        public decimal QtyRcv { get; set; }
 
         public string WarehouseCode { get; set; }
 

@@ -70,6 +70,7 @@ namespace ERP_API.Domain.Entities.SystemManagement
 
         public string IpAddress { get; set; }
 
+
         public string RoleName { get; set; }
 
         public string EmployeeUsername { get; set; }
