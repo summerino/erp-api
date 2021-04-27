@@ -21,7 +21,7 @@ namespace ERP_API.Domain.Services.Auth
         private readonly IClaimService _claim;
         private readonly JwtConfig _jwtConfig;
 
-        public AuthService(CatalogContext catalogCtx, 
+        public AuthService(CatalogContext catalogCtx,
             IClaimService claim,
             IOptionsMonitor<JwtConfig> optionsMonitor)
         {
@@ -74,16 +74,19 @@ namespace ERP_API.Domain.Services.Auth
             var tenantUser = tenantCtx.Users.FirstOrDefault(x => x.CatalogUserId == catalogUser.Id);
             if (tenantUser.IsLoggedIn)
             {
-                var jwtExpValue = long.Parse(_claim.ExpiredTime);
-                DateTime expirationDate = DateTimeOffset.FromUnixTimeSeconds(jwtExpValue).DateTime;
-                DateTime localExpirationDate = expirationDate.ToLocalTime();
-                if (!(DateTime.Now > localExpirationDate))
+                if (_claim.ExpiredTime != null)
                 {
-                    return new AuthResult
+                    var jwtExpValue = long.Parse(_claim.ExpiredTime);
+                    DateTime expirationDate = DateTimeOffset.FromUnixTimeSeconds(jwtExpValue).DateTime;
+                    DateTime localExpirationDate = expirationDate.ToLocalTime();
+                    if (!(DateTime.Now > localExpirationDate))
                     {
-                        Message = "User already logged in.",
-                        Success = false
-                    };
+                        return new AuthResult
+                        {
+                            Message = "User already logged in.",
+                            Success = false
+                        };
+                    }
                 }
             }
 
@@ -132,7 +135,7 @@ namespace ERP_API.Domain.Services.Auth
                 };
             }
 
-             // Configure tenant context db
+            // Configure tenant context db
             var contextOptions = new DbContextOptionsBuilder<TenantContext>().Options;
             var tenantCtx = new TenantContext(contextOptions, _catalogCtx, _claim);
 
