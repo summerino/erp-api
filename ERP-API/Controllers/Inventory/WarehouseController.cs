@@ -44,11 +44,11 @@ namespace ERP_API.Controllers.Inventory
         }
 
         [HttpGet("lists")]
-        public IActionResult GetList(string sorts) 
+        public IActionResult GetList(string filters, string sorts) 
         {
             var data =
                 _warehouse.GetLists(
-                    null,
+                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
                     JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]")).Data
                     .ToDynamicList()
                     .Select(x => new

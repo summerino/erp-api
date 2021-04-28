@@ -15,7 +15,6 @@ namespace ERP_API.Domain.Entities.Purchase
         [Column(TypeName = "date")]
         public DateTime Date { get; set; }
 
-        [Required]
         [StringLength(17)]
         public string RcvCode { get; set; }
 
