@@ -48,7 +48,8 @@ namespace ERP_API.Controllers.Purchase
             var data = _rcv.GetDetailData(code)
                 .Select(x => new
                 {
-                    x.Id, x.Code, x.LineNo, x.PoDetailId, x.ItemId, x.ItemInitial, x.ItemName,
+                    x.Id, x.Code, x.LineNo,
+                    PoDetailId = x.TransDetailId, x.ItemId, x.ItemInitial, x.ItemName,
                     x.OrderQty, x.OutstandingQty, x.Qty,
                     x.UomId, x.UnitId, x.UnitName,
                     x.Length, x.Width, x.Height, x.Weight, x.DimensionMeasurement, x.WeightMeasurement,
@@ -145,8 +146,11 @@ namespace ERP_API.Controllers.Purchase
             if (!data.ItemDetails.Any())
                 return (false, "Item details can't be empty.");
 
-            return data.ItemDetails.GroupBy(x => new { x.ItemId, x.UnitId, x.Type }).Any(x => x.Count() > 1)
-                ? (false, "There are duplicate item submitted with same unit.")
+            if (data.ItemDetails.GroupBy(x => new { x.ItemId, x.UnitId, x.Type }).Any(x => x.Count() > 1))
+                return (false, "There are duplicate item submitted with same unit.");
+
+            return data.ItemDetails.Where(x => x.Type == 0).Sum(x => x.Qty) <= 0
+                ? (false, "Total receive qty can't be 0.")
                 : (true, "");
         }
     }

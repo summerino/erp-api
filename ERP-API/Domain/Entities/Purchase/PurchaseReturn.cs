@@ -110,6 +110,8 @@ namespace ERP_API.Domain.Entities.Purchase
 
         public string ShippedInitial { get; set; }
 
+        public string CreatedInitial { get; set; }
+
         public string UpdatedInitial { get; set; }
 
         public string Status { get; set; }
@@ -235,10 +237,6 @@ namespace ERP_API.Domain.Entities.Purchase
 
         public decimal Dpp { get; set; }
 
-
-        public decimal OrderQty { get; set; }
-
-        public decimal OutstandingQty { get; set; }
 
         public string ItemName { get; set; }
 

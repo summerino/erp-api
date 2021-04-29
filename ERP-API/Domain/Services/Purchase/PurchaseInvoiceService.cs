@@ -92,7 +92,7 @@ namespace ERP_API.Domain.Services.Purchase
                 // Update purchase order to closed if all purchase receive are invoiced
                 if (
                     !Db.PurchaseReceiveHeaders
-                        .Any(x => x.PoCode == data.PoCode && x.Mark != "INV"))
+                        .Any(x => x.TransCode == data.PoCode && x.Mark != "INV"))
                 {
                     Db.Database.ExecuteSqlRaw(
                         "UPDATE Purchasing.PurchaseOrderHeader SET Mark='CLS' WHERE Code={0} AND Mark='CMP'", data.PoCode);
@@ -205,7 +205,7 @@ namespace ERP_API.Domain.Services.Purchase
                 // Check all purchase receive are invoiced
                 if (
                     !Db.PurchaseReceiveHeaders
-                        .Any(x => x.PoCode == data.PoCode && x.Mark != "INV"))
+                        .Any(x => x.TransCode == data.PoCode && x.Mark != "INV"))
                 {
                     // Update purchase order to closed
                     Db.Database.ExecuteSqlRaw(

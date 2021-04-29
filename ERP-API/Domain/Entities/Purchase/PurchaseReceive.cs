@@ -16,12 +16,13 @@ namespace ERP_API.Domain.Entities.Purchase
         public DateTime Date { get; set; }
 
         [Required]
-        [Column("POCode")]
         [StringLength(17)]
-        public string PoCode { get; set; }
+        public string TransCode { get; set; }
 
         [StringLength(30)]
         public string RefNo { get; set; }
+
+        public short SrcTrans { get; set; }
 
         [Required]
         [StringLength(8)]
@@ -67,26 +68,22 @@ namespace ERP_API.Domain.Entities.Purchase
 
     public class VwPurchaseReceiveHeader : BaseEntityWithMark
     {
-        [StringLength(17)]
         public string Code { get; set; }
 
-        [Column(TypeName = "date")]
         public DateTime Date { get; set; }
 
-        [StringLength(17)]
-        public string PoCode { get; set; }
+        public string TransCode { get; set; }
 
-        [StringLength(30)]
         public string RefNo { get; set; }
 
-        [StringLength(8)]
+        public short SrcTrans { get; set; }
+
         public string SupCode { get; set; }
 
         public long ReceiveBy { get; set; }
 
         public long? ApproveBy { get; set; }
 
-        [StringLength(3)]
         public string CurrCode { get; set; }
 
         public decimal Rate { get; set; }
@@ -114,6 +111,8 @@ namespace ERP_API.Domain.Entities.Purchase
 
         public string ReceiveInitial { get; set; }
 
+        public string CreatedInitial { get; set; }
+        
         public string UpdatedInitial { get; set; }
 
         public string Status { get; set; }
@@ -129,8 +128,7 @@ namespace ERP_API.Domain.Entities.Purchase
 
         public short LineNo { get; set; }
 
-        [Column("PODetailId")]
-        public long? PoDetailId { get; set; }
+        public long? TransDetailId { get; set; }
 
         public int ItemId { get; set; }
 
@@ -190,12 +188,11 @@ namespace ERP_API.Domain.Entities.Purchase
     {
         public long Id { get; set; }
 
-        [StringLength(17)]
         public string Code { get; set; }
 
         public short LineNo { get; set; }
 
-        public long? PoDetailId { get; set; }
+        public long? TransDetailId { get; set; }
 
         public int ItemId { get; set; }
 
@@ -213,10 +210,8 @@ namespace ERP_API.Domain.Entities.Purchase
 
         public decimal? Weight { get; set; }
 
-        [StringLength(10)]
         public string DimensionMeasurement { get; set; }
 
-        [StringLength(10)]
         public string WeightMeasurement { get; set; }
 
         public decimal UnitPrice { get; set; }
@@ -233,8 +228,6 @@ namespace ERP_API.Domain.Entities.Purchase
 
         public decimal Dpp { get; set; }
 
-        [Required]
-        [StringLength(8)]
         public string WarehouseCode { get; set; }
 
         public int Type { get; set; }

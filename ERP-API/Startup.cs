@@ -122,20 +122,19 @@ namespace ERP_API
                 };
             });
 
-
-
             // Add application service
-            // Accounting services
-            services.AddScoped<ICoaService, CoaService>();
-            services.AddScoped<ICurrencyRateService, CurrencyRateService>();
-
             // Core services
             services.AddScoped<IAuthorizationHandler, UserSessionHandler>();
             services.AddScoped<IShardingService, ShardingService>();
             services.AddScoped<IClaimService, ClaimService>();
             services.AddScoped<IAuthService, AuthService>();
+            
+            // Accounting services
+            services.AddScoped<ICoaService, CoaService>();
+            services.AddScoped<ICurrencyRateService, CurrencyRateService>();
 
             // General services
+            services.AddScoped<ICurrencyService, CurrencyService>();
             services.AddScoped<ICustomerService, CustomerService>();
             services.AddScoped<ICustomerTypeService, CustomerTypeService>();
             services.AddScoped<IEmployeeService, EmployeeService>();
@@ -150,14 +149,15 @@ namespace ERP_API
             // Inventory services
             services.AddScoped<IItemCategoryService, ItemCategoryService>();
             services.AddScoped<IItemService, ItemService>();
+            services.AddScoped<IUnitOfMeasurementService, UnitOfMeasurementService>();
             services.AddScoped<IUoMConversionService, UoMConversionService>();
             services.AddScoped<IWarehouseService, WarehouseService>();
-            services.AddScoped<IUnitOfMeasurementService, UnitOfMeasurementService>();
 
             // Purchase services
             services.AddScoped<IPurchaseInvoiceService, PurchaseInvoiceService>();
             services.AddScoped<IPurchaseOrderService, PurchaseOrderService>();
             services.AddScoped<IPurchaseReceiveService, PurchaseReceiveService>();
+            services.AddScoped<IPurchaseReturnService, PurchaseReturnService>();
 
             // Sales services
             services.AddScoped<ISalesDeliveryService, SalesDeliveryService>();
@@ -185,7 +185,8 @@ namespace ERP_API
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapControllers().RequireAuthorization();
+                //endpoints.MapControllers().RequireAuthorization();
+                endpoints.MapControllers().AllowAnonymous();
             });
 
             EnsureDatabaseCreated(controlDbContext, shardingService);

@@ -12,9 +12,9 @@ using ERP_API.Model.Purchase;
 
 namespace ERP_API.Domain.Services.Purchase
 {
-    public class PurchaseReceiveService : GeneralService<PurchaseReceiveHeader>, IPurchaseReceiveService
+    public class PurchaseReturnService : GeneralService<PurchaseReturnHeader>, IPurchaseReturnService
     {
-        public PurchaseReceiveService(TenantContext db)
+        public PurchaseReturnService(TenantContext db)
             : base(db)
         {
         }
@@ -22,23 +22,32 @@ namespace ERP_API.Domain.Services.Purchase
         public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
             string search)
         {
-            var data = Db.VwPurchaseReceiveHeaders.AsQueryable();
+            var data = Db.VwPurchaseReturnHeaders.AsQueryable();
 
             if (!string.IsNullOrEmpty(search))
             {
                 data = DateTime.TryParse(search, out var searchDate)
                     ? data.Where(x => x.Date == searchDate)
                     : data.Where(x =>
-                        x.Code.Contains(search) || x.SupName.Contains(search) || x.TransCode == search ||
-                        x.ReceiveInitial.Contains(search) || x.RefNo.StartsWith(search));
+                        x.Code.Contains(search) || x.SupName.Contains(search) || x.RcvCode == search ||
+                        x.ShippedInitial.Contains(search) || x.RefNo.StartsWith(search));
             }
 
             return data.ToDataSourceResult(skip, take, filter, sort);
         }
 
-        public IEnumerable<VwPurchaseReceiveDetail> GetDetailData(string code)
+        public IEnumerable<VwPurchaseReturnDetail> GetDetailData(string code, bool? fullReceived)
         {
-            return Db.VwPurchaseReceiveDetails.Where(x => x.Code == code).OrderBy(x => x.LineNo);
+            var data = Db.VwPurchaseReturnDetails.Where(x => x.Code == code);
+
+            if (fullReceived.HasValue)
+            {
+                data = (bool) fullReceived
+                    ? data.Where(x => x.Qty <= x.QtyRcv)
+                    : data.Where(x => x.Qty > x.QtyRcv);
+            }
+
+            return data.OrderBy(x => x.LineNo);
         }
 
         public List<dynamic> GetRelatedTransactions(string code)
@@ -78,14 +87,14 @@ namespace ERP_API.Domain.Services.Purchase
                 // Checking purchase order mark
                 if (IsPurchaseOrderInvalid(data.TransCode))
                 {
-                    result.Message = "Can't update purchase receive because purchase order already mark as void or close.";
+                    result.Message = "Can't update purchase return because purchase order already mark as void or close.";
                     return result;
                 }
 
                 // Checking receive qty is excess or not
                 if (IsQtyExcess(data.Code, data.TransCode, data.ItemDetails))
                 {
-                    result.Message = "Can't update purchase receive because receive qty bigger than outstanding qty.";
+                    result.Message = "Can't update purchase return because receive qty bigger than outstanding qty.";
                     return result;
                 }
 
@@ -143,7 +152,7 @@ namespace ERP_API.Domain.Services.Purchase
 
             result.Success = true;
             result.Data = data.Code;
-            result.Message = "Success insert purchase receive.";
+            result.Message = "Success insert purchase return.";
             return result;
         }
 
@@ -157,21 +166,21 @@ namespace ERP_API.Domain.Services.Purchase
                 // Checking mark header data
                 if (Db.PurchaseReceiveHeaders.Any(x => x.Code == data.Code && x.Mark == "V"))
                 {
-                    result.Message = "Can't update purchase receive because data already mark as void.";
+                    result.Message = "Can't update purchase return because data already mark as void.";
                     return result;
                 }
 
                 // Checking purchase order mark
                 if (IsPurchaseOrderInvalid(data.TransCode))
                 {
-                    result.Message = "Can't update purchase receive because purchase order already mark as void or close.";
+                    result.Message = "Can't update purchase return because purchase order already mark as void or close.";
                     return result;
                 }
 
                 // Checking receive qty is excess or not
                 if (IsQtyExcess(data.Code, data.TransCode, data.ItemDetails))
                 {
-                    result.Message = "Can't update purchase receive because receive qty bigger than outstanding qty.";
+                    result.Message = "Can't update purchase return because receive qty bigger than outstanding qty.";
                     return result;
                 }
 
@@ -251,7 +260,7 @@ namespace ERP_API.Domain.Services.Purchase
 
             result.Success = true;
             result.Data = data.Code;
-            result.Message = "Success update purchase receive.";
+            result.Message = "Success update purchase return.";
             return result;
         }
 
@@ -259,13 +268,13 @@ namespace ERP_API.Domain.Services.Purchase
         {
             var result = new SaveResult(false);
 
-            var data = Db.PurchaseReceiveHeaders.Find(code);
+            var data = Db.PurchaseReturnHeaders.Find(code);
             if (data != null)
             {
                 // Checking mark header data
                 if (data.Mark == "V")
                 {
-                    result.Message = "Can't void purchase receive because data already mark as void.";
+                    result.Message = "Can't void purchase return because data already mark as void.";
                     return result;
                 }
 
@@ -280,9 +289,6 @@ namespace ERP_API.Domain.Services.Purchase
                     // Save changes
                     Db.SaveChanges();
 
-                    // Execute sp_update_po_rcv_qty
-                    Db.Database.ExecuteSqlRaw("EXEC sp_update_po_rcv_qty {0}", data.TransCode);
-
                     transaction.Commit();
                 }
                 catch (Exception ex)
@@ -293,7 +299,7 @@ namespace ERP_API.Domain.Services.Purchase
             }
 
             result.Success = true;
-            result.Message = "Success void purchase receive.";
+            result.Message = "Success void purchase return.";
             return result;
         }
 
@@ -304,7 +310,7 @@ namespace ERP_API.Domain.Services.Purchase
 
         private bool IsQtyExcess(string code, string poCode, IEnumerable<PurchaseReceiveDetail> items)
         {
-            // Get purchase receive lists
+            // Get purchase return lists
             var rcvCodeList = Db.PurchaseReceiveHeaders
                 .Where(x => x.TransCode == poCode && x.Mark != "V" && x.Code != code)
                 .Select(x => x.Code).ToList();
