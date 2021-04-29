@@ -80,6 +80,14 @@ namespace ERP_API.Domain.Services.Inventory
             using var transaction = Db.Database.BeginTransaction();
             try
             {
+
+                // Checking initial already exists or not
+                if (IsInitialExists(data.Initial, data.Id))
+                {
+                    result.Message = "Initial is already exists. Please use another initial.";
+                    return result;
+                }
+
                 DateTime updateDate = DateTime.Now;
                 data.UpdatedBy = userId;
                 data.UpdatedDate = updateDate;
@@ -174,7 +182,8 @@ namespace ERP_API.Domain.Services.Inventory
 
         public bool IsInitialExists(string initial, int id)
         {
-            return Db.Items.Any(x => x.Initial == initial && x.Id != id);
+            var result = Db.UoMs.Any(x => x.Initial.ToLower().Equals(initial.ToLower()) && x.Id != id);
+            return result;
         }
 
         public IEnumerable<UoMConversion> GetDataConversion(int? uomId)
