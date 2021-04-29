@@ -317,8 +317,8 @@ BEGIN CATCH
 END CATCH";
             migrationBuilder.Sql(sql);
 
-			// Reordering column in table Inventory.StockMutation
-			sql = @"BEGIN TRANSACTION
+            // Reordering column in table Inventory.StockMutation
+            sql = @"BEGIN TRANSACTION
 SET QUOTED_IDENTIFIER ON
 SET ARITHABORT ON
 SET NUMERIC_ROUNDABORT OFF
@@ -328,12 +328,6 @@ SET ANSI_PADDING ON
 SET ANSI_WARNINGS ON
 COMMIT
 BEGIN TRANSACTION
-GO
-ALTER TABLE Inventory.StockMutation
-	DROP CONSTRAINT DF__StockMuta__BaseU__0C85DE4D
-GO
-ALTER TABLE Inventory.StockMutation
-	DROP CONSTRAINT DF__StockMuta__BaseQ__0B91BA14
 GO
 CREATE TABLE Inventory.Tmp_StockMutation
 	(
@@ -353,12 +347,6 @@ CREATE TABLE Inventory.Tmp_StockMutation
 	)  ON [PRIMARY]
 GO
 ALTER TABLE Inventory.Tmp_StockMutation SET (LOCK_ESCALATION = TABLE)
-GO
-ALTER TABLE Inventory.Tmp_StockMutation ADD CONSTRAINT
-	DF__StockMuta__BaseU__0C85DE4D DEFAULT ((0)) FOR BaseUnit
-GO
-ALTER TABLE Inventory.Tmp_StockMutation ADD CONSTRAINT
-	DF__StockMuta__BaseQ__0B91BA14 DEFAULT ((0.0)) FOR BaseQty
 GO
 SET IDENTITY_INSERT Inventory.Tmp_StockMutation ON
 GO
