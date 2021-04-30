@@ -8,6 +8,7 @@ using ERP_API.Domain.Interfaces.General;
 using ERP_API.Domain.Models;
 using ERP_API.Domain.Services;
 using ERP_API.Model;
+using ERP_API.Model.General;
 using Newtonsoft.Json;
 
 namespace ERP_API.Controllers.General
@@ -63,6 +64,32 @@ namespace ERP_API.Controllers.General
             });
         }
 
+        [HttpGet("addresses")]
+        public IActionResult GetAddress(string code)
+        {
+            var data =
+                _customer.GetAddress(code)
+                    .Select(x => new
+                    {
+                        x.Id,
+                        x.Code,
+                        x.Initial,
+                        x.Address1,
+                        x.Address2,
+                        x.ContactPerson,
+                        x.Phone,
+                        x.Fax,
+                        x.IsDefault
+                    })
+                    .ToList<dynamic>();
+
+            return Ok(new ApiResponse
+            {
+                RowCount = data.Count,
+                TableData = data
+            });
+        }
+
         [HttpGet("{code}")]
         public IActionResult GetDataByCode(string code) 
         {
@@ -70,7 +97,7 @@ namespace ERP_API.Controllers.General
         }
 
         [HttpPost]
-        public IActionResult OnPost(Customer data)
+        public IActionResult OnPost(CustomerRequest data)
         {
             data.IsActive = true;
             data.CreatedBy = _claim.UserId;
@@ -84,7 +111,7 @@ namespace ERP_API.Controllers.General
         }
 
         [HttpPut("{code}")]
-        public IActionResult OnPut(string code, Customer data)
+        public IActionResult OnPut(string code, CustomerRequest data)
         {
             data.UpdatedBy = _claim.UserId;
             data.UpdatedDate = DateTime.Now;

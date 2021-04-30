@@ -38,6 +38,7 @@ namespace ERP_API.Domain.Entities
         public DbSet<Currency> Currencies { get; set; }
         public DbSet<Customer> Customers { get; set; }
         public DbSet<VwCustomer> VwCustomers { get; set; }
+        public DbSet<CustomerAddress> CustomerAddress { get; set; }
         public DbSet<CustomerType> CustomerTypes { get; set; }
         public DbSet<Employee> Employees { get; set; }
         public DbSet<Supplier> Suppliers { get; set; }
@@ -143,6 +144,11 @@ namespace ERP_API.Domain.Entities
             modelBuilder.Entity<VwCustomer>()
                 .HasNoKey()
                 .ToView("vwCustomer", Schema.General);
+
+            modelBuilder.Entity<CustomerAddress>(entity =>
+                entity.Property(e => e.Code)
+                    .IsRequired()
+            );
 
             modelBuilder.Entity<VwSupplier>()
                 .HasNoKey()

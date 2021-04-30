@@ -21,20 +21,6 @@ namespace ERP_API.Domain.Entities.General
 
         public int TypeId { get; set; }
 
-        [Required]
-        [StringLength(100)]
-        public string Address1 { get; set; }
-
-        [StringLength(100)]
-        public string Address2 { get; set; }
-
-        [Required]
-        [StringLength(30)]
-        public string Phone { get; set; }
-
-        [StringLength(15)]
-        public string Fax { get; set; }
-
         [StringLength(50)]
         public string Email { get; set; }
 
@@ -51,6 +37,10 @@ namespace ERP_API.Domain.Entities.General
 
         [StringLength(256)]
         public string Notes { get; set; }
+
+        public int? BillingAddressId { get; set; }
+
+        public int? ShippingAddressId { get; set; }
     }
 
     public class VwCustomer : BaseEntityWithActive
@@ -63,9 +53,13 @@ namespace ERP_API.Domain.Entities.General
 
         public int TypeId { get; set; }
 
+        public string InitialAddress { get; set; }
+
         public string Address1 { get; set; }
 
         public string Address2 { get; set; }
+
+        public string ContactPerson { get; set; }
 
         public string Phone { get; set; }
 
@@ -82,6 +76,10 @@ namespace ERP_API.Domain.Entities.General
         public string RefNo { get; set; }
 
         public string Notes { get; set; }
+
+        public int? BillingAddressId { get; set; }
+
+        public int? ShippingAddressId { get; set; }
 
         public string TypeName { get; set; }
 
@@ -100,5 +98,36 @@ namespace ERP_API.Domain.Entities.General
         [Required]
         [StringLength(50)]
         public string Name { get; set; }
+    }
+
+    [Table("CustomerAddress", Schema = Schema.General)]
+    public class CustomerAddress
+    {
+        public int Id { get; set; }
+
+        [StringLength(8)]
+        public string Code { get; set; }
+
+        [Required]
+        [StringLength(20)]
+        public string Initial { get; set; }
+
+        [Required]
+        [StringLength(100)]
+        public string Address1 { get; set; }
+
+        [StringLength(100)]
+        public string Address2 { get; set; }
+
+        [StringLength(50)]
+        public string ContactPerson { get; set; }
+
+        [StringLength(30)]
+        public string Phone { get; set; }
+
+        [StringLength(15)]
+        public string Fax { get; set; }
+
+        public bool IsDefault { get; set; }
     }
 }
