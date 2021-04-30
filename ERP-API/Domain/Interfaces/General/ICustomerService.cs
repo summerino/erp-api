@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using ERP_API.Domain.Entities.General;
 using ERP_API.Domain.Models;
+using ERP_API.Model.General;
 
 namespace ERP_API.Domain.Interfaces.General
 {
@@ -11,7 +12,13 @@ namespace ERP_API.Domain.Interfaces.General
 
         DataSourceResult GetLists(IEnumerable<Filter> filters, IEnumerable<Sort> sorts);
 
+        IEnumerable<CustomerAddress> GetAddress(string code);
+
         Customer FindByCode(string code);
+
+        SaveResult Insert(CustomerRequest data);
+
+        SaveResult Update(CustomerRequest data);
 
         SaveResult Delete(string code, int userId);
     }
