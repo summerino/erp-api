@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Threading.Tasks;
-using UserTenant = ERP_API.Domain.Entities.SystemManagement.VMUser;
+using ERP_API.Model.SystemManagement;
 
 namespace ERP_API.Controllers.SystemManagement
 {
@@ -45,7 +45,7 @@ namespace ERP_API.Controllers.SystemManagement
         }
 
         [HttpPost]
-        public IActionResult OnPost(UserTenant data)
+        public IActionResult OnPost(UserRequest data)
         {
             data.IsActive = true;
             data.CreatedBy = _claim.UserId;
@@ -53,17 +53,17 @@ namespace ERP_API.Controllers.SystemManagement
             data.UpdatedBy = data.CreatedBy;
             data.UpdatedDate = data.CreatedDate;
 
-            var result = _userService.Insert(data, data.Password);
+            var result = _userService.Insert(data);
 
             return Ok(result);
         }
 
         [HttpPut("{id}")]
-        public IActionResult OnPut(UserTenant data)
+        public IActionResult OnPut(UserRequest data)
         {
             data.UpdatedBy = _claim.UserId;
             data.UpdatedDate = DateTime.Now;
-            var result = _userService.Update(data, data.Password);
+            var result = _userService.Update(data);
 
             return Ok(result);
         }
