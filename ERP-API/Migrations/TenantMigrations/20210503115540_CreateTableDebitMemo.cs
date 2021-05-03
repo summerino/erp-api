@@ -75,6 +75,22 @@ AS
 		ON u_u.Id = pr_h.UpdatedBy";
             migrationBuilder.Sql(sql);
 
+            // Alter view SystemManagement.vwUser
+            sql = @"ALTER VIEW [SystemManagement].[vwUser]
+AS
+    SELECT a.*,
+        r.[Name] As RoleName,
+        e.Initial As EmployeeInitial,
+        u.Initial AS UpdatedInitial
+    FROM SystemManagement.[User] a
+    LEFT JOIN SystemManagement.[User] u
+        ON u.Id = a.UpdatedBy
+    LEFT JOIN General.Employee e
+        ON u.EmployeeId = e.Id
+    LEFT JOIN SystemManagement.[Role] r
+        ON u.RoleId = r.Id";
+            migrationBuilder.Sql(sql);
+
             // Reordering column in table General.Customer
             sql = @"BEGIN TRANSACTION
 SET QUOTED_IDENTIFIER ON
