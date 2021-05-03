@@ -52,6 +52,29 @@ AS
 		ON s.Code = m.SupCode";
             migrationBuilder.Sql(sql);
 
+			// Alter view Purchasing.vwPurchaseReceiveHeader
+			sql = @"ALTER VIEW [Purchasing].[vwPurchaseReceiveHeader]
+AS
+	SELECT pr_h.*,
+		s.[Name] AS SupName,
+		e.Initial AS ReceiveInitial,
+		u_c.Initial AS CreatedInitial,
+		u_u.Initial AS UpdatedInitial,
+		CASE pr_h.Mark
+			WHEN 'A' THEN 'Active'
+			WHEN 'V' THEN 'Void'
+			WHEN 'INV' THEN 'Invoiced' END AS [Status]
+	FROM Purchasing.PurchaseReceiveHeader pr_h
+	LEFT JOIN General.Supplier s
+		ON s.Code = pr_h.SupCode
+	LEFT JOIN General.Employee e
+		ON e.Id = pr_h.ReceiveBy
+	LEFT JOIN SystemManagement.[User] u_c
+		ON u_c.Id = pr_h.CreatedBy
+	LEFT JOIN SystemManagement.[User] u_u
+		ON u_u.Id = pr_h.UpdatedBy";
+            migrationBuilder.Sql(sql);
+
             // Reordering column in table General.Customer
             sql = @"BEGIN TRANSACTION
 SET QUOTED_IDENTIFIER ON
