@@ -230,17 +230,6 @@ namespace ERP_API.Migrations.TenantMigrations
                         .IsUnicode(false)
                         .HasColumnType("varchar(8)");
 
-                    b.Property<string>("Address1")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(100)");
-
-                    b.Property<string>("Address2")
-                        .HasMaxLength(100)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(100)");
-
                     b.Property<int>("CreatedBy")
                         .HasColumnType("int");
 
@@ -257,11 +246,6 @@ namespace ERP_API.Migrations.TenantMigrations
                         .HasMaxLength(50)
                         .IsUnicode(false)
                         .HasColumnType("varchar(50)");
-
-                    b.Property<string>("Fax")
-                        .HasMaxLength(15)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(15)");
 
                     b.Property<string>("Initial")
                         .IsRequired()
@@ -281,13 +265,7 @@ namespace ERP_API.Migrations.TenantMigrations
                     b.Property<string>("Notes")
                         .HasMaxLength(256)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(256)");
-
-                    b.Property<string>("Phone")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(30)");
+                        .HasColumnType("varchar(256)");                    
 
                     b.Property<string>("RefNo")
                         .HasMaxLength(30)
@@ -307,6 +285,12 @@ namespace ERP_API.Migrations.TenantMigrations
                         .HasMaxLength(50)
                         .IsUnicode(false)
                         .HasColumnType("varchar(50)");
+
+                    b.Property<int>("BillingAddressId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ShippingAddressId")
+                        .HasColumnType("int");
 
                     b.HasKey("Code");
 
@@ -351,6 +335,60 @@ namespace ERP_API.Migrations.TenantMigrations
 
                     b.ToTable("CustomerType", "General");
                 });
+
+            modelBuilder.Entity("ERP_API.Domain.Entities.General.CustomerAddress", b =>
+            {
+                b.Property<int>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("int")
+                    .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                b.Property<string>("Code")
+                    .HasMaxLength(8)
+                    .IsUnicode(false)
+                    .HasColumnType("varchar(8)");
+
+                b.Property<string>("Initial")
+                    .IsRequired()
+                    .HasMaxLength(20)
+                    .IsUnicode(false)
+                    .HasColumnType("varchar(20)");
+
+                b.Property<string>("Address1")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(100)");
+
+                b.Property<string>("Address2")
+                    .HasMaxLength(100)
+                    .IsUnicode(false)
+                    .HasColumnType("varchar(100)");
+
+                b.Property<string>("ContactPerson")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(50)");
+
+                b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(30)");
+
+                b.Property<string>("Fax")
+                        .HasMaxLength(15)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(15)");
+
+                b.Property<bool>("IsDefault")
+                    .HasColumnType("bit");
+
+                b.HasKey("Id");
+
+                b.ToTable("CustomerAddress", "General");
+            });
 
             modelBuilder.Entity("ERP_API.Domain.Entities.General.Employee", b =>
                 {
@@ -778,6 +816,23 @@ namespace ERP_API.Migrations.TenantMigrations
                     b.Property<string>("Website")
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
+
+                    b.Property<int>("BillingAddressId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ShippingAddressId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ContactPerson")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<string>("InitialAddress")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("bit");
 
                     b.ToView("vwCustomer", "General");
                 });
