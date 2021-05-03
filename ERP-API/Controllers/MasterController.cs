@@ -16,7 +16,6 @@ using ERP_API.Domain.Models;
 using Sort = Swift.Framework.Model.Sort;
 using ERP_API.Domain.Entities.Accounting;
 using ERP_API.Domain.Services;
-using ERP_API.Domain.Interfaces.Master;
 using Microsoft.EntityFrameworkCore;
 
 namespace ERP_API.Controllers
@@ -201,8 +200,8 @@ namespace ERP_API.Controllers
                 var date = DateTime.Now;
                 
                 dynamic model = JsonConvert.DeserializeObject<dynamic>(jsonData.ToString());
-                model.UpdatedBy = _claim.UserId;
-                model.UpdatedDate = date;
+                model.updatedBy = _claim.UserId;
+                model.updatedDate = date;
 
                 var validation = Validate(masterConfig, param, model);
                 if (!validation.Success)
