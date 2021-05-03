@@ -14,8 +14,6 @@ namespace ERP_API.Domain.Services
         string KeyToken { get; }
 
         string IpAddress { get; }
-
-        string ExpiredTime { get; }
     }
 
     public class ClaimService : IClaimService
@@ -47,8 +45,5 @@ namespace ERP_API.Domain.Services
 
         public string CatalogUserId =>
             _accessor.HttpContext?.User?.Claims?.SingleOrDefault(x => x.Type == "CatalogUserId")?.Value.ToString();
-
-        public string ExpiredTime =>
-            _accessor.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "exp")?.Value.ToString();
     }
 }
