@@ -193,6 +193,12 @@ namespace ERP_API.Domain.Entities
                 .HasNoKey()
                 .ToView("vwWarehouse", Schema.Inventory);
 
+            // Debit Memo entities
+            modelBuilder.Entity<DebitMemo>(entity =>
+                entity.Property(e => e.Mark)
+                    .IsRequired()
+            );
+
             // Purchase Invoice entities
             modelBuilder.Entity<PurchaseInvoiceHeader>(entity =>
                 entity.Property(e => e.Mark)
