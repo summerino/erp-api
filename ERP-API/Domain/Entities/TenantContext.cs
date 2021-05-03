@@ -67,6 +67,7 @@ namespace ERP_API.Domain.Entities
         public DbSet<VwWarehouse> VwWarehouses { get; set; }
 
         // Purchase entities
+        public DbSet<DebitMemo> DebitMemos { get; set; }
         public DbSet<PurchaseInvoiceHeader> PurchaseInvoiceHeaders { get; set; }
         public DbSet<VwPurchaseInvoiceHeader> VwPurchaseInvoiceHeaders { get; set; }
         public DbSet<PurchaseInvoiceDetail> PurchaseInvoiceDetails { get; set; }
