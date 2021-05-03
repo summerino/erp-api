@@ -74,19 +74,14 @@ namespace ERP_API.Domain.Services.Auth
             var tenantUser = tenantCtx.Users.FirstOrDefault(x => x.CatalogUserId == catalogUser.Id);
             if (tenantUser.IsLoggedIn)
             {
-                if (_claim.ExpiredTime != null)
+                DateTime lastLoggedin = (DateTime)tenantUser.LastLogin;
+                if (!(DateTime.Now - lastLoggedin > TimeSpan.FromMinutes(_jwtConfig.TimeInMinute)))
                 {
-                    var jwtExpValue = long.Parse(_claim.ExpiredTime);
-                    DateTime expirationDate = DateTimeOffset.FromUnixTimeSeconds(jwtExpValue).DateTime;
-                    DateTime localExpirationDate = expirationDate.ToLocalTime();
-                    if (!(DateTime.Now > localExpirationDate))
+                    return new AuthResult
                     {
-                        return new AuthResult
-                        {
-                            Message = "User already logged in.",
-                            Success = false
-                        };
-                    }
+                        Message = "User already logged in.",
+                        Success = false
+                    };
                 }
             }
 
