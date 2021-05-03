@@ -40,4 +40,34 @@ namespace ERP_API.Domain.Entities.Purchase
         [StringLength(256)]
         public string Notes { get; set; }
     }
+
+    public class VwDebitMemo : BaseEntityWithMark
+    {
+        public string Code { get; set; }
+
+        public DateTime Date { get; set; }
+
+        public short SrcTrans { get; set; }
+
+        public string SupCode { get; set; }
+
+        public string TransCode { get; set; }
+
+        public string CurrCode { get; set; }
+
+        public decimal Rate { get; set; }
+
+        public decimal Amount { get; set; }
+
+        public decimal Used { get; set; }
+
+        public string Notes { get; set; }
+
+
+        public string SupName { get; set; }
+
+        public string SrcTransName { get; set; }
+
+        public string Status { get; set; }
+    }
 }

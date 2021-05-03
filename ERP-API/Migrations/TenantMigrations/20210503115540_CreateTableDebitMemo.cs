@@ -33,8 +33,27 @@ namespace ERP_API.Migrations.TenantMigrations
                     table.PrimaryKey("PK_DebitMemo", x => x.Code);
                 });
 
+            // Create view General.Customer
+            var sql = @"CREATE VIEW [Purchasing].[vwDebitMemo]
+AS
+	SELECT m.*,
+		s.[Name] AS SupName,
+		CASE m.SrcTrans
+			WHEN 1 THEN 'Deposit'
+			WHEN 2 THEN 'Return'
+			WHEN 3 THEN 'Return (Same Item)' END AS SrcTransName,
+		CASE m.Mark
+			WHEN 'A' THEN 'Active'
+			WHEN 'V' THEN 'Void'
+			WHEN 'PU' THEN 'Partial Used'
+			WHEN 'FU' THEN 'Full Used' END AS [Status]
+	FROM Purchasing.DebitMemo m
+	LEFT JOIN General.Supplier s
+		ON s.Code = m.SupCode";
+            migrationBuilder.Sql(sql);
+
             // Reordering column in table General.Customer
-            var sql = @"BEGIN TRANSACTION
+            sql = @"BEGIN TRANSACTION
 SET QUOTED_IDENTIFIER ON
 SET ARITHABORT ON
 SET NUMERIC_ROUNDABORT OFF
@@ -92,6 +111,10 @@ COMMIT";
             migrationBuilder.DropTable(
                 name: "DebitMemo",
                 schema: "Purchasing");
+
+            // DROP view General.Customer
+            var sql = @"DROP VIEW [Purchasing].[vwDebitMemo]";
+            migrationBuilder.Sql(sql);
         }
     }
 }

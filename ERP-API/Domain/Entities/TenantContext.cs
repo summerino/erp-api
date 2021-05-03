@@ -68,6 +68,7 @@ namespace ERP_API.Domain.Entities
 
         // Purchase entities
         public DbSet<DebitMemo> DebitMemos { get; set; }
+        public DbSet<VwDebitMemo> VwDebitMemos { get; set; }
         public DbSet<PurchaseInvoiceHeader> PurchaseInvoiceHeaders { get; set; }
         public DbSet<VwPurchaseInvoiceHeader> VwPurchaseInvoiceHeaders { get; set; }
         public DbSet<PurchaseInvoiceDetail> PurchaseInvoiceDetails { get; set; }
@@ -198,6 +199,10 @@ namespace ERP_API.Domain.Entities
                 entity.Property(e => e.Mark)
                     .IsRequired()
             );
+
+            modelBuilder.Entity<VwDebitMemo>()
+                .HasNoKey()
+                .ToView("vwDebitMemo", Schema.Purchasing);
 
             // Purchase Invoice entities
             modelBuilder.Entity<PurchaseInvoiceHeader>(entity =>
