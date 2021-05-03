@@ -90,6 +90,15 @@ namespace ERP_API.Domain.Services.Auth
                 }
             }
 
+            if (!tenantUser.IsActive)
+            {
+                return new AuthResult
+                {
+                    Message = "User is inactive.",
+                    Success = false
+                };
+            }
+
             var accessIpAdd = _claim.KeyToken;
             var jwtToken = GenerateJwtToken(tenantUser, catalogUser.TenantId);
 
