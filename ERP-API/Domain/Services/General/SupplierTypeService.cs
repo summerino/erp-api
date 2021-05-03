@@ -19,7 +19,7 @@ namespace ERP_API.Domain.Services.General
 
         public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string search)
         {
-            var data = Db.SupplierTypes.AsQueryable();
+            var data = Db.VwSupplierTypes.AsQueryable();
 
             if (!string.IsNullOrEmpty(search))
             {

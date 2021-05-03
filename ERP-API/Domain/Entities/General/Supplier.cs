@@ -64,7 +64,10 @@ namespace ERP_API.Domain.Entities.General
 
         public string RefNo { get; set; }
 
+
         public string TypeName { get; set; }
+
+        public string UpdatedInitial { get; set; }
     }
 
     [Table("SupplierType", Schema = Schema.General)]
@@ -79,5 +82,17 @@ namespace ERP_API.Domain.Entities.General
         [Required]
         [StringLength(50)]
         public string Name { get; set; }
+    }
+
+    public class VwSupplierType : BaseEntityWithActive
+    {
+        public int Id { get; set; }
+
+        public string Initial { get; set; }
+
+        public string Name { get; set; }
+
+
+        public string UpdatedInitial { get; set; }
     }
 }

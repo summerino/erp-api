@@ -81,6 +81,7 @@ namespace ERP_API.Domain.Entities.General
 
         public int? ShippingAddressId { get; set; }
 
+
         public string TypeName { get; set; }
 
         public string UpdatedInitial { get; set; }
@@ -98,6 +99,18 @@ namespace ERP_API.Domain.Entities.General
         [Required]
         [StringLength(50)]
         public string Name { get; set; }
+    }
+
+    public class VwCustomerType : BaseEntityWithActive
+    {
+        public int Id { get; set; }
+
+        public string Initial { get; set; }
+
+        public string Name { get; set; }
+
+
+        public string UpdatedInitial { get; set; }
     }
 
     [Table("CustomerAddress", Schema = Schema.General)]

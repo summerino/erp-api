@@ -51,4 +51,40 @@ namespace ERP_API.Domain.Entities.General
         [Column(TypeName = "nvarchar")]
         public string Username { get; set; }
     }
+
+    public class VwEmployee : BaseEntityWithActive
+    {
+        public long Id { get; set; }
+
+        public string Initial { get; set; }
+
+        public short Type { get; set; }
+
+        public string FirstName { get; set; }
+
+        public string LastName { get; set; }
+
+        public bool Sex { get; set; }
+
+        public DateTime? BirthDate { get; set; }
+
+        public string BirthPlace { get; set; }
+
+        public byte? MaritalStatus { get; set; }
+
+        public string IdentityCardNo { get; set; }
+
+        public byte Religion { get; set; }
+
+        public string Address1 { get; set; }
+
+        public string Address2 { get; set; }
+
+        public string Phone { get; set; }
+
+        public string Username { get; set; }
+
+
+        public string UpdatedInitial { get; set; }
+    }
 }

@@ -1,9 +1,6 @@
-﻿using ERP_API.Domain.Entities.General;
+﻿using System.Collections.Generic;
+using ERP_API.Domain.Entities.General;
 using ERP_API.Domain.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace ERP_API.Domain.Interfaces.General
 {

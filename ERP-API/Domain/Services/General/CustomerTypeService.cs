@@ -18,7 +18,7 @@ namespace ERP_API.Domain.Services.General
 
         public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string search)
         {
-            var data = Db.CustomerTypes.AsQueryable();
+            var data = Db.VwCustomerTypes.AsQueryable();
 
             if (!string.IsNullOrEmpty(search))
             {

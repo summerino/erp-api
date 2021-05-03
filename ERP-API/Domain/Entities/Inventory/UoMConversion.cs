@@ -5,7 +5,7 @@ using ERP_API.Domain.Entities.Core;
 namespace ERP_API.Domain.Entities.Inventory
 {
     [Table("UoMConversion", Schema = Schema.Inventory)]
-    public class UoMConversion : BaseEntity
+    public class UoMConversion
     {
         public int Id { get; set; }
 

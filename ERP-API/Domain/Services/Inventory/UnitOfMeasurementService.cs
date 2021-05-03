@@ -50,11 +50,7 @@ namespace ERP_API.Domain.Services.Inventory
                         IsBaseUnit = item.IsBaseUnit,
                         Seq = item.Seq,
                         UnitEquivalent = item.UnitEquivalent,
-                        UnitToConvert = item.UnitToConvert,
-                        CreatedBy = userId,
-                        CreatedDate = insertDate,
-                        UpdatedBy = userId,
-                        UpdatedDate = insertDate
+                        UnitToConvert = item.UnitToConvert
                     });
                 }
 
@@ -119,22 +115,14 @@ namespace ERP_API.Domain.Services.Inventory
                             IsBaseUnit = item.IsBaseUnit,
                             Seq = item.Seq,
                             UnitEquivalent = item.UnitEquivalent,
-                            UnitToConvert = item.UnitToConvert,
-                            CreatedBy = userId,
-                            CreatedDate = updateDate,
-                            UpdatedBy = userId,
-                            UpdatedDate = updateDate
+                            UnitToConvert = item.UnitToConvert
                         });
                     }
                     else
                     {
-                        item.UpdatedBy = userId;
-                        item.UpdatedDate = updateDate;
                         Db.UoMConversions.Update(item);
                         Db.Entry(item).Property(e => e.Id).IsModified = false;
                         Db.Entry(item).Property(e => e.UomId).IsModified = false;
-                        Db.Entry(item).Property(e => e.CreatedBy).IsModified = false;
-                        Db.Entry(item).Property(e => e.CreatedDate).IsModified = false;
                     }
                 }
 

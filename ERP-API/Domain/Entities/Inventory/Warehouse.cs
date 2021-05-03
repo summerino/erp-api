@@ -27,4 +27,22 @@ namespace ERP_API.Domain.Entities.Inventory
 
         public bool IsDefault { get; set; }
     }
+
+    public class VwWarehouse : BaseEntityWithActive
+    {
+        public string Code { get; set; }
+
+        public string Initial { get; set; }
+
+        public string Name { get; set; }
+
+        public string Address { get; set; }
+
+        public string Phone { get; set; }
+
+        public bool IsDefault { get; set; }
+
+
+        public string UpdatedInitial { get; set; }
+    }
 }

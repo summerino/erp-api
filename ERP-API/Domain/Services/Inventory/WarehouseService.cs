@@ -19,7 +19,7 @@ namespace ERP_API.Domain.Services.Inventory
         public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
             List<int> category, string search)
         {
-            var data = Db.Warehouses.AsQueryable();
+            var data = Db.VwWarehouses.AsQueryable();
 
             if (!string.IsNullOrEmpty(search))
             {

@@ -1,12 +1,11 @@
-﻿using ERP_API.Domain.Entities;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using ERP_API.Domain.Entities;
 using ERP_API.Domain.Entities.General;
 using ERP_API.Domain.Extensions;
 using ERP_API.Domain.Interfaces.General;
 using ERP_API.Domain.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace ERP_API.Domain.Services.General
 {
@@ -15,38 +14,11 @@ namespace ERP_API.Domain.Services.General
         public VehicleTypeService(TenantContext db)
             :base(db)
         {
-                
-        }
-        public SaveResult Delete(int id, int userId)
-        {
-            var result = new SaveResult(false);
-
-            var data = Db.VehicleTypes.Find(id);
-            if (data != null)
-            {
-                // Checking active
-                if (data.IsActive == false)
-                {
-                    result.Message = "Can't inactive vehicle type data because data already inactive.";
-                    return result;
-                }
-
-                // Update data
-                data.IsActive = false;
-                data.UpdatedBy = userId;
-                data.UpdatedDate = DateTime.Now;
-
-                Db.SaveChanges();
-            }
-
-            result.Success = true;
-            result.Message = "Success inactive vehicle type data.";
-            return result;
         }
 
         public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string search)
         {
-            var data = Db.VehicleTypes.AsQueryable();
+            var data = Db.VwVehicleTypes.AsQueryable();
 
             if (!string.IsNullOrEmpty(search))
             {
@@ -117,6 +89,32 @@ namespace ERP_API.Domain.Services.General
             result.Success = true;
             result.Data = data.Id;
             result.Message = "Success update vehicle type data.";
+            return result;
+        }
+        public SaveResult Delete(int id, int userId)
+        {
+            var result = new SaveResult(false);
+
+            var data = Db.VehicleTypes.Find(id);
+            if (data != null)
+            {
+                // Checking active
+                if (data.IsActive == false)
+                {
+                    result.Message = "Can't inactive vehicle type data because data already inactive.";
+                    return result;
+                }
+
+                // Update data
+                data.IsActive = false;
+                data.UpdatedBy = userId;
+                data.UpdatedDate = DateTime.Now;
+
+                Db.SaveChanges();
+            }
+
+            result.Success = true;
+            result.Message = "Success inactive vehicle type data.";
             return result;
         }
 

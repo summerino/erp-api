@@ -30,20 +30,6 @@ namespace ERP_API.Domain.Entities.General
         [StringLength(256)]
         public string Notes { get; set; }
     }
-    
-    [Table("VehicleType", Schema = Schema.General)]
-    public class VehicleType : BaseEntityWithActive
-    {
-        public int Id { get; set; }
-
-        [Required]
-        [StringLength(20)]
-        public string Initial { get; set; }
-
-        [Required]
-        [StringLength(50)]
-        public string Name { get; set; }
-    }
 
     public class VwVehicle : BaseEntityWithActive
     {
@@ -65,7 +51,34 @@ namespace ERP_API.Domain.Entities.General
 
         public string Notes { get; set; }
 
+
         public string TypeName { get; set; }
+
+        public string UpdatedInitial { get; set; }
+    }
+
+    [Table("VehicleType", Schema = Schema.General)]
+    public class VehicleType : BaseEntityWithActive
+    {
+        public int Id { get; set; }
+
+        [Required]
+        [StringLength(20)]
+        public string Initial { get; set; }
+
+        [Required]
+        [StringLength(50)]
+        public string Name { get; set; }
+    }
+
+    public class VwVehicleType : BaseEntityWithActive
+    {
+        public int Id { get; set; }
+
+        public string Initial { get; set; }
+
+        public string Name { get; set; }
+
 
         public string UpdatedInitial { get; set; }
     }
