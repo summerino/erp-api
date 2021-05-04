@@ -48,10 +48,32 @@ namespace ERP_API.Controllers.Purchase
             var data = _rtn.GetDetailData(code, fullReceived)
                 .Select(x => new
                 {
-                    x.Id, x.Code, x.LineNo, x.RcvDetailId, x.ItemId, x.ItemName,
-                    x.UomId, x.UnitId, x.UnitName, x.Qty, x.QtyRcv, x.WarehouseCode, x.WarehouseCodeIn,
-                    x.Length, x.Width, x.Height, x.Weight, x.DimensionMeasurement, x.WeightMeasurement,
-                    x.UnitPrice, x.Disc, x.TaxId, x.TaxAmount, x.NettPrice, x.Total, x.Dpp,
+                    x.Id,
+                    x.Code,
+                    x.LineNo,
+                    x.RcvDetailId,
+                    x.ItemId,
+                    x.ItemName,
+                    x.UomId,
+                    x.UnitId,
+                    x.UnitName,
+                    x.Qty,
+                    x.QtyRcv,
+                    x.WarehouseCode,
+                    x.WarehouseCodeIn,
+                    x.Length,
+                    x.Width,
+                    x.Height,
+                    x.Weight,
+                    x.DimensionMeasurement,
+                    x.WeightMeasurement,
+                    x.UnitPrice,
+                    x.Disc,
+                    x.TaxId,
+                    x.TaxAmount,
+                    x.NettPrice,
+                    x.Total,
+                    x.Dpp,
                     OldUnitId = x.ItemUomBuyId,
                     OldUnitName = x.ItemUomBuyName,
                     OldUnitPrice = x.ItemBuyPrice,
@@ -93,7 +115,7 @@ namespace ERP_API.Controllers.Purchase
         }
 
         [HttpPost]
-        public IActionResult OnPost(PurchaseReceiveRequest data)
+        public IActionResult OnPost(PurchaseReturnRequest data)
         {
             // Validate process
             var (isValid, message) = Validate(data);
@@ -113,7 +135,7 @@ namespace ERP_API.Controllers.Purchase
         }
 
         [HttpPut("{code}")]
-        public IActionResult OnPut(string code, PurchaseReceiveRequest data)
+        public IActionResult OnPut(string code, PurchaseReturnRequest data)
         {
             // Validate process
             var (isValid, message) = Validate(data);
@@ -137,15 +159,15 @@ namespace ERP_API.Controllers.Purchase
             return Ok(result);
         }
 
-        private static (bool, string) Validate(PurchaseReceiveRequest data)
+        private static (bool, string) Validate(PurchaseReturnRequest data)
         {
             if (!data.ItemDetails.Any())
                 return (false, "Item details can't be empty.");
 
-            if (data.ItemDetails.GroupBy(x => new { x.ItemId, x.UnitId, x.Type }).Any(x => x.Count() > 1))
+            if (data.ItemDetails.GroupBy(x => new { x.ItemId, x.UnitId }).Any(x => x.Count() > 1))
                 return (false, "There are duplicate item submitted with same unit.");
 
-            return data.ItemDetails.Where(x => x.Type == 0).Sum(x => x.Qty) <= 0
+            return data.ItemDetails.Sum(x => x.Qty) <= 0
                 ? (false, "Total receive qty can't be 0.")
                 : (true, "");
         }
