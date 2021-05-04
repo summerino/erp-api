@@ -364,10 +364,10 @@ namespace ERP_API.Domain.Services.Purchase
             foreach (var item in items)
             {
                 var uom = Db.UoMConversions.FirstOrDefault(x => x.Id == item.UnitId);
-                var stock = Db.StockMutations.Where(x => x.WarehouseCode == item.WarehouseCode && x.UomId == item.UomId).Sum(x => x.BaseQty);
+                var stock = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == item.WarehouseCode && x.ItemId == item.ItemId);
                 if (uom.IsBaseUnit)
                 {
-                    if (item.Qty > stock)
+                    if (item.Qty > stock.QtyOnHand)
                     {
                         result = true;
                     }
@@ -377,7 +377,7 @@ namespace ERP_API.Domain.Services.Purchase
                     var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= uom.Seq).Select(x => x.Conversion).ToList();
                     var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
                     var baseQty = item.Qty * multipliedQty;
-                    if (baseQty > stock)
+                    if (baseQty > stock.QtyOnHand)
                     {
                         result = true;
                     }
