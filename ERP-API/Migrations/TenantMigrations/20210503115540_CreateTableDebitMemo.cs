@@ -52,28 +52,6 @@ AS
 		ON s.Code = m.SupCode";
             migrationBuilder.Sql(sql);
 
-			// Alter view General.vwCustomer
-			sql = @"ALTER VIEW [General].[vwCustomer]
-AS
-	SELECT c.*, 
-		ca.Initial AS InitialAddress, 
-		ca.Address1, 
-		ca.Address2, 
-		ca.ContactPerson,
-		ca.Phone,
-		ca.Fax,
-		ISNULL(ca.IsDefault, 0) AS IsDefault,
-		t.[Name] AS TypeName,
-		u.Initial AS UpdatedInitial
-	FROM General.Customer c
-	LEFT JOIN General.CustomerType t
-		ON t.Id = c.TypeId
-	LEFT JOIN General.CustomerAddress ca
-		ON c.Code = ca.Code AND ca.IsDefault = 1
-	LEFT JOIN SystemManagement.[User] u
-		ON u.Id = c.UpdatedBy";
-            migrationBuilder.Sql(sql);
-
             // Alter view Purchasing.vwPurchaseReceiveHeader
             sql = @"ALTER VIEW [Purchasing].[vwPurchaseReceiveHeader]
 AS
@@ -165,7 +143,29 @@ ALTER TABLE General.Customer ADD CONSTRAINT
 GO
 COMMIT";
             migrationBuilder.Sql(sql);
-        }
+
+            // Alter view General.vwCustomer
+            sql = @"ALTER VIEW [General].[vwCustomer]
+AS
+	SELECT c.*, 
+		ca.Initial AS InitialAddress, 
+		ca.Address1, 
+		ca.Address2, 
+		ca.ContactPerson,
+		ca.Phone,
+		ca.Fax,
+		ISNULL(ca.IsDefault, 0) AS IsDefault,
+		t.[Name] AS TypeName,
+		u.Initial AS UpdatedInitial
+	FROM General.Customer c
+	LEFT JOIN General.CustomerType t
+		ON t.Id = c.TypeId
+	LEFT JOIN General.CustomerAddress ca
+		ON c.Code = ca.Code AND ca.IsDefault = 1
+	LEFT JOIN SystemManagement.[User] u
+		ON u.Id = c.UpdatedBy";
+            migrationBuilder.Sql(sql);
+		}
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
