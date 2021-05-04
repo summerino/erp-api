@@ -74,10 +74,8 @@ namespace ERP_API.Domain.Entities.Inventory
         public int UomId { get; set; }
         public int UnitId { get; set; }
         public decimal QtyOnHand { get; set; }
-        public decimal QtyOnTransfer { get; set; }
         public decimal QtyAdjust { get; set; }
         public decimal BaseQtyOnHand { get; set; }
-        public decimal BaseQtyOnTransfer { get; set; }
         public decimal COGS { get; set; }
         public string Notes { get; set; }
     }

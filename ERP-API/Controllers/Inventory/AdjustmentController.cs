@@ -61,9 +61,7 @@ namespace ERP_API.Controllers.Inventory
                     x.Notes,
                     x.QtyAdjust,
                     x.QtyOnHand,
-                    x.QtyOnTransfer,
                     x.BaseQtyOnHand,
-                    x.BaseQtyOnTransfer,
                     Units = uomC.Where(u => u.UomId == x.UomId)
                         .Select(u => new
                         {
