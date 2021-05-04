@@ -12,6 +12,8 @@ namespace ERP_API.Domain.Interfaces.Inventory
 
         IEnumerable<ItemGroupSubGroup> GetDetailData(int id);
 
+        IEnumerable<ItemGroup> GetItemGroup();
+
         SaveResult Insert(ItemGroupRequest data);
 
         SaveResult Update(ItemGroupRequest data);

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using ERP_API.Domain.Entities;
 using ERP_API.Domain.Entities.Inventory;
@@ -30,12 +31,55 @@ namespace ERP_API.Domain.Services.Inventory
             return data.ToDataSourceResult(skip, take, filter, sort);
         }
 
+        public IEnumerable<ItemCategory> GetParent()
+        {
+            var data = Db.ItemCategories.Where(x => x.IsActive);
+
+            return data.OrderBy(x => x.Name);
+        }
+
+        public object GetListHierarchy(string search)
+        {
+            var data = Db.ItemCategories.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                data = data.Where(x => x.IsActive && x.Name == search);
+            } else
+            {
+                data = data.Where(x => x.IsActive);
+            }
+
+            return new
+            {
+                Id = 0,
+                Initial = "",
+                Name = "All Category",
+                ParentId = 0,
+                IsLowestLevel = 0,
+                GroupId = "",
+                Deep = 0,
+                Seq = 0,
+                Lineage = "",
+                IsActive = 1,
+                Children = DefineChildNodes(data.ToList())
+            };
+        }
+
         public object GetHierarchy()
         {
             return new
             {
                 Id = 0,
+                Initial = "",
                 Name = "All Category",
+                ParentId = 0,
+                IsLowestLevel = 0,
+                GroupId = "",
+                Deep = 0,
+                Seq = 0,
+                Lineage = "",
+                IsActive = 1,
                 Children = DefineChildNodes(Db.ItemCategories.Where(x => x.IsActive).ToList())
             };
         }
@@ -48,11 +92,187 @@ namespace ERP_API.Domain.Services.Inventory
                 .Select(x => new
                 {
                     x.Id,
+                    x.Initial,
                     x.Name,
+                    x.ParentId,
+                    x.IsLowestLevel,
+                    x.GroupId,
+                    x.Deep,
+                    x.Seq,
+                    x.Lineage,
+                    x.IsActive,
                     Children = DefineChildNodes(data, x.Id)
                 });
 
             return nodes;
+        }
+
+        public override SaveResult Insert(ItemCategory data)
+        {
+            var result = new SaveResult(false);
+
+            using var transaction = Db.Database.BeginTransaction();
+            try
+            {
+                // Checking initial already exists or not
+                if (IsInitialExists(data.Initial, 0))
+                {
+                    result.Message = "Initial is already exists. Please use another initial.";
+                    return result;
+                }
+
+                // Checking max seq & update Seq
+                int? seq = getSequence(data.ParentId);
+                if (seq.HasValue)
+                {
+                    seq += 1;
+                    data.Seq = seq;
+                } else
+                {
+                    data.Seq = 1;
+                }
+
+                Db.ItemCategories.Add(data);
+                Db.SaveChanges();
+
+                // Checking & Update IsLowestLevel
+                if (IsParent(data.Id))
+                {
+                    data.IsLowestLevel = false;
+                }
+                else
+                {
+                    data.IsLowestLevel = true;
+                }
+
+                // Update data
+                Db.ItemCategories.Update(data);
+                Db.Entry(data).Property(e => e.Id).IsModified = false;
+                Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
+                Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
+
+                Db.SaveChanges();
+
+                // Check & Update Parent line data.ParentId status IsLowestLevel
+                var dataParent = Db.ItemCategories.Find(data.ParentId);
+
+                if (dataParent != null)
+                {
+                    if (dataParent.IsLowestLevel)
+                    {
+                        dataParent.IsLowestLevel = false;
+                        Db.ItemCategories.Update(dataParent);
+                        Db.Entry(dataParent).Property(e => e.Id).IsModified = false;
+                        Db.Entry(dataParent).Property(e => e.CreatedBy).IsModified = false;
+                        Db.Entry(dataParent).Property(e => e.CreatedDate).IsModified = false;
+
+                        Db.SaveChanges();
+                    }
+                }
+
+                transaction.Commit();
+            }
+            catch (Exception ex)
+            {
+                result.Message = ex.InnerException?.Message ?? ex.Message;
+                return result;
+            }
+
+            result.Success = true;
+            result.Data = data.Initial;
+            result.Message = "Success insert item category.";
+            return result;
+        }
+
+        public override SaveResult Update(ItemCategory data)
+        {
+            var result = new SaveResult(false);
+
+            using var transaction = Db.Database.BeginTransaction();
+            try
+            {
+                // Checking initial already exists or not
+                if (IsInitialExists(data.Initial, data.Id))
+                {
+                    result.Message = "Initial is already exists. Please use another initial.";
+                    return result;
+                }
+
+                // Update data
+                Db.ItemCategories.Update(data);
+                Db.Entry(data).Property(e => e.Id).IsModified = false;
+                Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
+                Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
+
+                Db.SaveChanges();
+
+                transaction.Commit();
+            }
+            catch (Exception ex)
+            {
+                result.Message = ex.InnerException?.Message ?? ex.Message;
+                return result;
+            }
+
+            result.Success = true;
+            result.Data = data.Initial;
+            result.Message = "Success update item category.";
+            return result;
+        }
+
+        public SaveResult Delete(int id, int userId)
+        {
+            var result = new SaveResult(false);
+
+            var data = Db.ItemCategories.Find(id);
+            if (data != null)
+            {
+                // Checking active
+                if (!data.IsActive)
+                {
+                    result.Message = "Can't inactive the item category because data already inactive.";
+                    return result;
+                }
+
+                // Update data
+                data.IsActive = false;
+                data.UpdatedBy = userId;
+                data.UpdatedDate = DateTime.Now;
+
+                Db.SaveChanges();
+            }
+
+            result.Success = true;
+            result.Message = "Success inactive item category.";
+            return result;
+        }
+
+        private bool IsInitialExists(string initial, int id)
+        {
+            return Db.ItemCategories.Any(x => x.Initial == initial && x.Id != id);
+        }
+
+        private bool IsParent(int id)
+        {
+            return Db.ItemCategories.Any(x => x.ParentId == id);
+        }
+
+        private int? getSequence(int? id)
+        {
+            if (id.HasValue)
+            {
+                if (Db.ItemCategories.Any(x => x.ParentId == id))
+                {
+                    int? value = Db.ItemCategories.Where(x => x.ParentId == id).OrderByDescending(x => x.Seq).First().Seq;
+                    return (value.HasValue) ? value : null;
+                } else
+                {
+                    return null;
+                }
+            } else
+            {
+                return null;
+            }
         }
     }
 }
