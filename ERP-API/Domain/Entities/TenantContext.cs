@@ -65,6 +65,7 @@ namespace ERP_API.Domain.Entities
         public DbSet<UoMConversion> UoMConversions { get; set; }
         public DbSet<Warehouse> Warehouses { get; set; }
         public DbSet<VwWarehouse> VwWarehouses { get; set; }
+        public DbSet<WarehouseQuantity> WarehouseQuantities { get; set; }
 
         // Purchase entities
         public DbSet<DebitMemo> DebitMemos { get; set; }
