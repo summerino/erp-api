@@ -166,8 +166,6 @@ namespace ERP_API.Domain.Services.Purchase
                     "EXEC sp_update_stock_mutation_from_rtn {0}, {1}, {2}",
                     data.Code, data.Date, data.RcvCode);
 
-                UpdateWarehouseQty();
-
                 transaction.Commit();
             }
             catch (Exception ex)
@@ -289,8 +287,6 @@ namespace ERP_API.Domain.Services.Purchase
                 Db.Database.ExecuteSqlRaw(
                     "EXEC sp_update_stock_mutation_from_rtn {0}, {1}, {2}",
                     data.Code, data.Date, data.RcvCode);
-                
-                UpdateWarehouseQty();
 
                 transaction.Commit();
             }
@@ -337,7 +333,9 @@ namespace ERP_API.Domain.Services.Purchase
                     // Save changes
                     Db.SaveChanges();
 
-                    UpdateWarehouseQty();
+                    Db.Database.ExecuteSqlRaw(
+                    "EXEC sp_update_stock_mutation_from_rtn {0}, {1}, {2}",
+                    data.Code, data.Date, data.RcvCode);
 
                     transaction.Commit();
                 }
@@ -384,47 +382,6 @@ namespace ERP_API.Domain.Services.Purchase
                 }
             }
             return result;
-        }
-
-        private void UpdateWarehouseQty()
-        {
-            var totalQty = Db.StockMutations.Where(x => x.Src != "RTN")
-                .GroupBy(x => new { x.WarehouseCode, x.ItemId })
-                .Select(g => new { g.Key.WarehouseCode, g.Key.ItemId, Qty = g.Sum(x => x.BaseQty)}).ToList();
-
-            var rtnQty = Db.StockMutations.Where(x => x.Src == "RTN")
-                .GroupBy(x => new { x.WarehouseCode, x.ItemId })
-                .Select(g => new { g.Key.WarehouseCode, g.Key.ItemId, Qty = g.Sum(x => x.BaseQty)}).ToList();
-
-            foreach (var item in totalQty)
-            {
-                var itemQty = item.Qty;
-                var itemRtn = rtnQty.FirstOrDefault(x => x.WarehouseCode == item.WarehouseCode && x.ItemId == item.ItemId);
-                if(itemRtn != null)
-                {
-                    itemQty = item.Qty - itemRtn.Qty;
-                }
-
-                var checkWQ = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == item.WarehouseCode && x.ItemId == item.ItemId);
-                if(checkWQ == null)
-                {
-                    var newWQ = new WarehouseQuantity
-                    {
-                        WarehouseCode = item.WarehouseCode,
-                        ItemId = item.ItemId,
-                        QtyOnHand = itemQty,
-                        UpdatedDate = DateTime.Now
-                    };
-                    Db.WarehouseQuantities.Add(newWQ);
-                    Db.SaveChanges();
-                }
-                else
-                {
-                    checkWQ.QtyOnHand = itemQty;
-                    Db.WarehouseQuantities.Update(checkWQ);
-                    Db.SaveChanges();
-                }
-            }
         }
     }
 }
