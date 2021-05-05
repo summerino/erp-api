@@ -16,9 +16,9 @@ namespace ERP_API.Domain.Interfaces.Purchase
 
         IEnumerable<PurchaseReceiveHeader> GetUnInvoiceData(string poCode, string invCode);
 
-        SaveResult Insert(PurchaseReceiveRequest data);
+        SaveResult Insert(PurchaseReturnRequest data);
 
-        SaveResult Update(PurchaseReceiveRequest data);
+        SaveResult Update(PurchaseReturnRequest data);
 
         SaveResult Delete(string code, int userId);
     }
