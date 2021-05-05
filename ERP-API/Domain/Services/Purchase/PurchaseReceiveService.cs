@@ -126,6 +126,45 @@ namespace ERP_API.Domain.Services.Purchase
                         Type = item.Type
                     });
                 }
+                
+                if(data.SrcTrans == 2)
+                {
+                    // Update Debit Memo
+                    var dbtMemo = Db.DebitMemos.FirstOrDefault(x => x.TransCode == data.TransCode);
+                    var availableAmount = dbtMemo.Amount - dbtMemo.Used;
+                    if(data.Total > availableAmount)
+                    {
+                        result.Message = "Can't insert purchase receive because total amount bigger than total amount debit memo.";
+                        return result;
+                    }
+                    availableAmount -= data.Total;
+                    dbtMemo.Used += data.Total;
+                    dbtMemo.Mark = availableAmount == 0 ? "FU" : "PU";
+                    dbtMemo.UpdatedBy = data.UpdatedBy;
+                    dbtMemo.UpdatedDate = data.UpdatedDate;
+                    Db.DebitMemos.Update(dbtMemo);
+
+                    // Update Purchase Return Detail
+                    var prData = Db.PurchaseReturnDetails.Where(x => x.Code == data.TransCode).ToList();
+                    foreach (var item in data.ItemDetails)
+                    {
+                        var itemPr = prData.FirstOrDefault(x => x.ItemId == item.ItemId);
+                        var availableQty = itemPr.Qty - itemPr.QtyRcv;
+                        if (item.Qty > availableQty)
+                        {
+                            result.Message = "Can't insert purchase receive because qty bigger than outstanding qty.";
+                            return result;
+                        }
+
+                        itemPr.QtyRcv += item.Qty;
+                        Db.PurchaseReturnDetails.Update(itemPr);
+                    }
+
+                    // Update Purchase Return Header
+                    var prhData = Db.PurchaseReturnHeaders.FirstOrDefault(x => x.Code == data.TransCode);
+                    prhData.Mark = dbtMemo.Mark == "A" ? "A" : (dbtMemo.Mark == "PU" ? "PR" : "CMP");
+                    Db.PurchaseReturnHeaders.Update(prhData);
+                }
 
                 // Save changes
                 Db.SaveChanges();
@@ -230,6 +269,72 @@ namespace ERP_API.Domain.Services.Purchase
                     }
                 }
 
+                if (data.SrcTrans == 2)
+                {
+                    // Update Debit Memo
+                    var dbtMemo = Db.DebitMemos.FirstOrDefault(x => x.TransCode == data.TransCode);
+
+                    var oldTotal = Db.PurchaseReceiveHeaders.Where(x => x.TransCode == data.TransCode && x.Mark == "A")
+                        .GroupBy(x => new {x.TransCode})
+                        .Select(g => new { g.Key.TransCode, SumTotal = g.Sum(x => x.Total) });
+
+                    decimal valueTotal = 0;
+                    if (oldTotal.FirstOrDefault().SumTotal > data.Total)
+                    {
+                        valueTotal = oldTotal.FirstOrDefault().SumTotal - data.Total;
+                        dbtMemo.Used -= valueTotal;
+                    }
+                    else
+                    {
+                        valueTotal = data.Total - oldTotal.FirstOrDefault().SumTotal;
+                        dbtMemo.Used += valueTotal;
+                    }
+                    
+                    if (dbtMemo.Used > dbtMemo.Amount)
+                    {
+                        result.Message = "Can't insert purchase receive because total amount bigger than total amount debit memo.";
+                        return result;
+                    }
+
+                    dbtMemo.Mark = dbtMemo.Used == 0 ? "A" : ((dbtMemo.Amount - dbtMemo.Used) == 0 ? "FU" : "PU");
+                    dbtMemo.UpdatedBy = data.UpdatedBy;
+                    dbtMemo.UpdatedDate = data.UpdatedDate;
+                    Db.DebitMemos.Update(dbtMemo);
+
+                    // Update Purchase Return Detail
+                    var prData = Db.PurchaseReturnDetails.Where(x => x.Code == data.TransCode).ToList();
+                    foreach (var item in data.ItemDetails)
+                    {
+                        var itemPrcv = Db.PurchaseReceiveDetails.FirstOrDefault(x => x.Id == item.Id);
+                        var itemPr = prData.FirstOrDefault(x => x.ItemId == item.ItemId);
+
+                        decimal valueQty = 0;
+                        if (itemPr.QtyRcv > item.Qty)
+                        {
+                            valueQty = itemPr.QtyRcv - item.Qty;
+                            itemPr.QtyRcv -= valueQty;
+                        }
+                        else
+                        {
+                            valueQty = item.Qty - itemPr.QtyRcv;
+                            itemPr.QtyRcv += valueQty;
+                        }
+
+                        if (itemPr.QtyRcv > itemPr.Qty)
+                        {
+                            result.Message = "Can't insert purchase receive because qty bigger than outstanding qty.";
+                            return result;
+                        }
+
+                        Db.PurchaseReturnDetails.Update(itemPr);
+                    }
+
+                    // Update Purchase Return Header
+                    var prhData = Db.PurchaseReturnHeaders.FirstOrDefault(x => x.Code == data.TransCode);
+                    prhData.Mark = dbtMemo.Mark == "A" ? "A" : (dbtMemo.Mark == "PU" ? "PR" : "CMP");
+                    Db.PurchaseReturnHeaders.Update(prhData);
+                }
+
                 // Save changes
                 Db.SaveChanges();
 
@@ -276,6 +381,33 @@ namespace ERP_API.Domain.Services.Purchase
                     data.Mark = "V";
                     data.UpdatedBy = userId;
                     data.UpdatedDate = DateTime.Now;
+
+                    if (data.SrcTrans == 2)
+                    {
+                        // Update Debit Memo
+                        var dbtMemo = Db.DebitMemos.FirstOrDefault(x => x.TransCode == data.TransCode);
+
+                        dbtMemo.Used -= data.Total;
+                        dbtMemo.Mark = dbtMemo.Used == 0 ? "A" : ((dbtMemo.Amount - dbtMemo.Used) == 0 ? "FU" : "PU");
+                        dbtMemo.UpdatedBy = data.UpdatedBy;
+                        dbtMemo.UpdatedDate = data.UpdatedDate;
+                        Db.DebitMemos.Update(dbtMemo);
+
+                        // Update Purchase Return Detail
+                        var prData = Db.PurchaseReturnDetails.Where(x => x.Code == data.TransCode).ToList();
+                        var prcvData = Db.PurchaseReceiveDetails.Where(x => x.Code == data.Code).ToList();
+                        foreach (var item in prcvData)
+                        {
+                            var itemPr = prData.FirstOrDefault(x => x.ItemId == item.ItemId);
+                            itemPr.QtyRcv -= item.Qty;
+                            Db.PurchaseReturnDetails.Update(itemPr);
+                        }
+
+                        // Update Purchase Return Header
+                        var prhData = Db.PurchaseReturnHeaders.FirstOrDefault(x => x.Code == data.TransCode);
+                        prhData.Mark = dbtMemo.Mark == "A" ? "A" : (dbtMemo.Mark == "PU" ? "PR" : "CMP");
+                        Db.PurchaseReturnHeaders.Update(prhData);
+                    }
 
                     // Save changes
                     Db.SaveChanges();
