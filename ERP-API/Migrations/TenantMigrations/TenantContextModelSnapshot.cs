@@ -1768,6 +1768,9 @@ namespace ERP_API.Migrations.TenantMigrations
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
 
+                    b.Property<decimal>("Different")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<long>("Id")
                         .HasColumnType("bigint");
 
@@ -1789,6 +1792,9 @@ namespace ERP_API.Migrations.TenantMigrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("QtyOnHand")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("QtyOpname")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("UnitId")
@@ -1986,7 +1992,7 @@ namespace ERP_API.Migrations.TenantMigrations
                     b.Property<int?>("PurchaseTaxId")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("QtyOnHand")
+                    b.Property<decimal>("QtyOnhand")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int?>("SalesTaxId")

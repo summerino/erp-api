@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ERP_API.Migrations.TenantMigrations
 {
     [DbContext(typeof(TenantContext))]
-    [Migration("20210504092024_CreateTableAdjustment")]
-    partial class CreateTableAdjustment
+    [Migration("20210505104159_CreateTableAdjustmentAndOther")]
+    partial class CreateTableAdjustmentAndOther
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -1219,7 +1219,6 @@ namespace ERP_API.Migrations.TenantMigrations
                         .HasColumnType("smallint");
 
                     b.Property<string>("Notes")
-                        .IsRequired()
                         .HasMaxLength(256)
                         .IsUnicode(false)
                         .HasColumnType("varchar(256)");
@@ -1759,56 +1758,9 @@ namespace ERP_API.Migrations.TenantMigrations
                     b.ToTable("UoMConversion", "Inventory");
                 });
 
-            modelBuilder.Entity("ERP_API.Domain.Entities.Inventory.VwAdjustment", b =>
-                {
-                    b.Property<string>("Code")
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
-
-                    b.Property<int>("CreatedBy")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime");
-
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Mark")
-                        .HasMaxLength(3)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(3)");
-
-                    b.Property<string>("Notes")
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
-
-                    b.Property<short>("Type")
-                        .HasColumnType("smallint");
-
-                    b.Property<int>("UpdatedBy")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("datetime");
-
-                    b.Property<string>("Warehouse")
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
-
-                    b.Property<string>("WarehouseCode")
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
-
-                    b.ToView("vwAdjustment", "Inventory");
-                });
-
             modelBuilder.Entity("ERP_API.Domain.Entities.Inventory.VwAdjustmentDetail", b =>
                 {
                     b.Property<decimal>("BaseQtyOnHand")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("BaseQtyOnTransfer")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("COGS")
@@ -1817,6 +1769,9 @@ namespace ERP_API.Migrations.TenantMigrations
                     b.Property<string>("Code")
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
+
+                    b.Property<decimal>("Different")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<long>("Id")
                         .HasColumnType("bigint");
@@ -1841,7 +1796,7 @@ namespace ERP_API.Migrations.TenantMigrations
                     b.Property<decimal>("QtyOnHand")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<decimal>("QtyOnTransfer")
+                    b.Property<decimal>("QtyOpname")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("UnitId")
@@ -1851,6 +1806,54 @@ namespace ERP_API.Migrations.TenantMigrations
                         .HasColumnType("int");
 
                     b.ToView("VwAdjustmentDetail", "Inventory");
+                });
+
+            modelBuilder.Entity("ERP_API.Domain.Entities.Inventory.VwAdjustmentHeader", b =>
+                {
+                    b.Property<string>("Code")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<int>("CreatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Mark")
+                        .HasMaxLength(3)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(3)");
+
+                    b.Property<string>("Notes")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<string>("Status")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<short>("Type")
+                        .HasColumnType("smallint");
+
+                    b.Property<int>("UpdatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("Warehouse")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<string>("WarehouseCode")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.ToView("VwAdjustmentHeader", "Inventory");
                 });
 
             modelBuilder.Entity("ERP_API.Domain.Entities.Inventory.VwItem", b =>
@@ -1991,6 +1994,9 @@ namespace ERP_API.Migrations.TenantMigrations
                     b.Property<int?>("PurchaseTaxId")
                         .HasColumnType("int");
 
+                    b.Property<decimal>("QtyOnhand")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<int?>("SalesTaxId")
                         .HasColumnType("int");
 
@@ -2061,6 +2067,10 @@ namespace ERP_API.Migrations.TenantMigrations
 
                     b.Property<short?>("ValuationMethod")
                         .HasColumnType("smallint");
+
+                    b.Property<string>("WarehouseCode")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
 
                     b.Property<decimal?>("Weight")
                         .HasColumnType("decimal(18,3)");
@@ -2173,6 +2183,112 @@ namespace ERP_API.Migrations.TenantMigrations
                     b.HasKey("Code");
 
                     b.ToTable("Warehouse", "Inventory");
+                });
+
+            modelBuilder.Entity("ERP_API.Domain.Entities.Inventory.WarehouseQuantity", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("ItemId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("QtyOnHand")
+                        .HasColumnType("decimal(19,6)");
+
+                    b.Property<decimal>("QtyOnIndent")
+                        .HasColumnType("decimal(19,6)");
+
+                    b.Property<decimal>("QtyOnOrder")
+                        .HasColumnType("decimal(19,6)");
+
+                    b.Property<decimal>("QtyOnTransfer")
+                        .HasColumnType("decimal(19,6)");
+
+                    b.Property<decimal>("QtyReorderPoint")
+                        .HasColumnType("decimal(19,6)");
+
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("WarehouseCode")
+                        .IsRequired()
+                        .HasMaxLength(8)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(8)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("WarehouseQuantity", "Inventory");
+                });
+
+            modelBuilder.Entity("ERP_API.Domain.Entities.Purchase.DebitMemo", b =>
+                {
+                    b.Property<string>("Code")
+                        .HasMaxLength(17)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(17)");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("CreatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("CurrCode")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(3)");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Mark")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(3)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(256)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(256)");
+
+                    b.Property<decimal>("Rate")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<short>("SrcTrans")
+                        .HasColumnType("smallint");
+
+                    b.Property<string>("SupCode")
+                        .IsRequired()
+                        .HasMaxLength(8)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(8)");
+
+                    b.Property<string>("TransCode")
+                        .HasMaxLength(17)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(17)");
+
+                    b.Property<int>("UpdatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("datetime");
+
+                    b.Property<decimal>("Used")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Code");
+
+                    b.ToTable("DebitMemo", "Purchasing");
                 });
 
             modelBuilder.Entity("ERP_API.Domain.Entities.Purchase.PurchaseInvoiceDetail", b =>
@@ -2879,6 +2995,75 @@ namespace ERP_API.Migrations.TenantMigrations
                     b.HasKey("Code");
 
                     b.ToTable("PurchaseReturnHeader", "Purchasing");
+                });
+
+            modelBuilder.Entity("ERP_API.Domain.Entities.Purchase.VwDebitMemo", b =>
+                {
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Code")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<int>("CreatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("CurrCode")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Mark")
+                        .HasMaxLength(3)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(3)");
+
+                    b.Property<string>("Notes")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<decimal>("Rate")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<short>("SrcTrans")
+                        .HasColumnType("smallint");
+
+                    b.Property<string>("SrcTransName")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<string>("Status")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<string>("SupCode")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<string>("SupName")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<string>("TransCode")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<int>("UpdatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("datetime");
+
+                    b.Property<decimal>("Used")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.ToView("vwDebitMemo", "Purchasing");
                 });
 
             modelBuilder.Entity("ERP_API.Domain.Entities.Purchase.VwPurchaseInvoiceHeader", b =>
@@ -4850,7 +5035,7 @@ namespace ERP_API.Migrations.TenantMigrations
                     b.Property<long?>("EmployeeId")
                         .HasColumnType("bigint");
 
-                    b.Property<string>("EmployeeUsername")
+                    b.Property<string>("EmployeeInitial")
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
 
