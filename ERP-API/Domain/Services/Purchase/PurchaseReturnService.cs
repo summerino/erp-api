@@ -163,7 +163,7 @@ namespace ERP_API.Domain.Services.Purchase
                 Db.SaveChanges();
 
                 Db.Database.ExecuteSqlRaw(
-                    "EXEC sp_update_stock_mutation_from_rtn {0}, {1}, {2}",
+                    "EXEC sp_update_stock_mutation_from_pr {0}, {1}, {2}",
                     data.Code, data.Date, data.RcvCode);
 
                 transaction.Commit();
@@ -285,7 +285,7 @@ namespace ERP_API.Domain.Services.Purchase
                 Db.SaveChanges();
 
                 Db.Database.ExecuteSqlRaw(
-                    "EXEC sp_update_stock_mutation_from_rtn {0}, {1}, {2}",
+                    "EXEC sp_update_stock_mutation_from_pr {0}, {1}, {2}",
                     data.Code, data.Date, data.RcvCode);
 
                 transaction.Commit();
@@ -334,7 +334,7 @@ namespace ERP_API.Domain.Services.Purchase
                     Db.SaveChanges();
 
                     Db.Database.ExecuteSqlRaw(
-                    "EXEC sp_update_stock_mutation_from_rtn {0}, {1}, {2}",
+                    "EXEC sp_update_stock_mutation_from_pr {0}, {1}, {2}",
                     data.Code, data.Date, data.RcvCode);
 
                     transaction.Commit();
