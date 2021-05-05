@@ -81,6 +81,26 @@ namespace ERP_API.Controllers.Inventory
             });
         }
 
+        [HttpGet("item-by-initial")]
+        public IActionResult GetDetailByInitial(string initial)
+        {
+            var data = _itemGroup.GetDetailByInitial(initial)
+                .Select(x => new
+                {
+                    x.Id,
+                    x.ItemGroupId,
+                    x.Name,
+                    x.Value
+                })
+                .ToList<dynamic>();
+
+            return Ok(new ApiResponse
+            {
+                RowCount = data.Count,
+                TableData = data
+            });
+        }
+
         [HttpPost]
         public IActionResult OnPost(ItemGroupRequest data)
         {
