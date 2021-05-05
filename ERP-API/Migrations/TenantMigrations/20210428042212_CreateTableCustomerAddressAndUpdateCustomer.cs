@@ -33,16 +33,14 @@ namespace ERP_API.Migrations.TenantMigrations
                 schema: "General",
                 table: "Customer",
                 type: "int",
-                nullable: true,
-                defaultValue: 0);
+                nullable: true);
 
             migrationBuilder.AddColumn<int>(
                 name: "ShippingAddressId",
                 schema: "General",
                 table: "Customer",
                 type: "int",
-                nullable: true,
-                defaultValue: 0);
+                nullable: true);
 
             migrationBuilder.DropColumn(
                 name: "Address1",

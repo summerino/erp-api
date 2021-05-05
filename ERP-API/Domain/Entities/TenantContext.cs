@@ -66,11 +66,14 @@ namespace ERP_API.Domain.Entities
         public DbSet<Warehouse> Warehouses { get; set; }
         public DbSet<VwWarehouse> VwWarehouses { get; set; }
         public DbSet<AdjustmentHeader> AdjustmentHeaders { get; set; }
-        public DbSet<VwAdjustment> VwAdjustments { get; set; }
+        public DbSet<VwAdjustmentHeader> VwAdjustmentHeaders { get; set; }
         public DbSet<AdjustmentDetail> AdjustmentDetails { get; set; }
         public DbSet<VwAdjustmentDetail> VwAdjustmentDetails { get; set; }
+        public DbSet<WarehouseQuantity> WarehouseQuantities { get; set; }
 
         // Purchase entities
+        public DbSet<DebitMemo> DebitMemos { get; set; }
+        public DbSet<VwDebitMemo> VwDebitMemos { get; set; }
         public DbSet<PurchaseInvoiceHeader> PurchaseInvoiceHeaders { get; set; }
         public DbSet<VwPurchaseInvoiceHeader> VwPurchaseInvoiceHeaders { get; set; }
         public DbSet<PurchaseInvoiceDetail> PurchaseInvoiceDetails { get; set; }
@@ -196,12 +199,22 @@ namespace ERP_API.Domain.Entities
             modelBuilder.Entity<VwWarehouse>()
                 .HasNoKey()
                 .ToView("vwWarehouse", Schema.Inventory);
-            modelBuilder.Entity<VwAdjustment>()
+            modelBuilder.Entity<VwAdjustmentHeader>()
                 .HasNoKey()
-                .ToView("vwAdjustment", Schema.Inventory);
+                .ToView("VwAdjustmentHeader", Schema.Inventory);
             modelBuilder.Entity<VwAdjustmentDetail>()
                 .HasNoKey()
                 .ToView("VwAdjustmentDetail", Schema.Inventory);
+
+            // Debit Memo entities
+            modelBuilder.Entity<DebitMemo>(entity =>
+                entity.Property(e => e.Mark)
+                    .IsRequired()
+            );
+
+            modelBuilder.Entity<VwDebitMemo>()
+                .HasNoKey()
+                .ToView("vwDebitMemo", Schema.Purchasing);
 
             // Purchase Invoice entities
             modelBuilder.Entity<PurchaseInvoiceHeader>(entity =>

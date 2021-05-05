@@ -43,7 +43,7 @@ namespace ERP_API.Controllers.Inventory
         }
 
         [HttpGet("item")]
-        public IActionResult GetDetail(int uomId)
+        public IActionResult GetDetail(int? uomId)
         {
             var uomC = _uom.GetDataConversion(uomId);
             var data = uomC.ToList<dynamic>();

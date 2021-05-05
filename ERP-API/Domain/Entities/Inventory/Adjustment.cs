@@ -21,7 +21,7 @@ namespace ERP_API.Domain.Entities.Inventory
         [StringLength(256)]
         public string Notes { get; set; }
     }
-    public class VwAdjustment : BaseEntityWithMark
+    public class VwAdjustmentHeader : BaseEntityWithMark
     {
         public string Code { get; set; }
         public DateTime Date { get; set; }
@@ -29,6 +29,7 @@ namespace ERP_API.Domain.Entities.Inventory
         public string Warehouse { get; set; }
         public string WarehouseCode { get; set; }
         public string Notes { get; set; }
+        public string Status { get; set; }
     }
 
     
@@ -57,7 +58,6 @@ namespace ERP_API.Domain.Entities.Inventory
         //public decimal BaseQtyOnTransfer { get; set; }
         [Column(TypeName = "decimal(19, 6)")]
         public decimal COGS { get; set; }
-        [Required]
         [StringLength(256)]
         public string Notes { get; set; }
 
@@ -75,6 +75,8 @@ namespace ERP_API.Domain.Entities.Inventory
         public int UnitId { get; set; }
         public decimal QtyOnHand { get; set; }
         public decimal QtyAdjust { get; set; }
+        public decimal QtyOpname { get; set; }
+        public decimal Different { get; set; }
         public decimal BaseQtyOnHand { get; set; }
         public decimal COGS { get; set; }
         public string Notes { get; set; }

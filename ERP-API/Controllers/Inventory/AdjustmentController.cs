@@ -60,6 +60,8 @@ namespace ERP_API.Controllers.Inventory
                     x.ItemName,
                     x.Notes,
                     x.QtyAdjust,
+                    x.QtyOpname,
+                    x.Different,
                     x.QtyOnHand,
                     x.BaseQtyOnHand,
                     Units = uomC.Where(u => u.UomId == x.UomId)
@@ -76,6 +78,7 @@ namespace ERP_API.Controllers.Inventory
                         .OrderBy(u => u.Seq)
                         .ToList(),
                     x.UnitId,
+                    OldUnitId = x.UnitId,
                     x.UomId,
                     State = ""
                 })

@@ -16,8 +16,28 @@ namespace ERP_API.Domain.Services.Inventory
             : base(db)
         {
         }
+        public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, string search)
+        {
+            var data = Db.UoMs.Where(x => x.IsActive).AsQueryable();
 
-        public  SaveResult Insert(UnitOfMeasurementRequest data, int userId)
+            if (!string.IsNullOrEmpty(search))
+            {
+                data = data.Where(x =>
+                            x.Initial.Contains(search) || x.Description.Contains(search) ||
+                            x.BaseUnit.Contains(search));
+            }
+
+            return data.ToDataSourceResult(skip, take, filter, sort);
+        }
+        public IEnumerable<UoMConversion> GetDataConversion(int? uomId)
+        {
+            var data = Db.UoMConversions.AsQueryable();
+
+            if (uomId.HasValue)
+                data = data.Where(x => x.UomId == uomId);
+            return data.OrderBy(x => x.UomId).ThenBy(x => x.Seq);
+        }
+        public SaveResult Insert(UnitOfMeasurementRequest data, int userId)
         {
             var result = new SaveResult(false);
 
@@ -68,7 +88,6 @@ namespace ERP_API.Domain.Services.Inventory
             result.Message = "Success insert item.";
             return result;
         }
-
         public SaveResult Update(UnitOfMeasurementRequest data, int userId)
         {
             var result = new SaveResult(false);
@@ -140,7 +159,6 @@ namespace ERP_API.Domain.Services.Inventory
             result.Message = "Success update unit of measurement.";
             return result;
         }
-
         public SaveResult Delete(int id, int userId)
         {
             var result = new SaveResult(false);
@@ -167,35 +185,10 @@ namespace ERP_API.Domain.Services.Inventory
             result.Message = "Success inactive item.";
             return result;
         }
-
-        public bool IsInitialExists(string initial, int id)
+        private bool IsInitialExists(string initial, int id)
         {
             var result = Db.UoMs.Any(x => x.Initial.ToLower().Equals(initial.ToLower()) && x.Id != id);
             return result;
-        }
-
-        public IEnumerable<UoMConversion> GetDataConversion(int? uomId)
-        {
-            var data = Db.UoMConversions.AsQueryable();
-
-            if (uomId.HasValue)
-                data = data.Where(x => x.UomId == uomId);
-
-            return data.OrderBy(x => x.Seq);
-        }
-
-        public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, string search)
-        {
-            var data = Db.UoMs.Where(x => x.IsActive).AsQueryable();
-
-            if (!string.IsNullOrEmpty(search))
-            {
-                data = data.Where(x =>
-                            x.Initial.Contains(search) || x.Description.Contains(search) ||
-                            x.BaseUnit.Contains(search));
-            }
-
-            return data.ToDataSourceResult(skip, take, filter, sort);
         }
     }
 }

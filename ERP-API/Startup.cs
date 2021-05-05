@@ -155,6 +155,7 @@ namespace ERP_API
             services.AddScoped<IAdjustmentService, AdjustmentService>();
 
             // Purchase services
+            services.AddScoped<IDebitMemoService, DebitMemoService>();
             services.AddScoped<IPurchaseInvoiceService, PurchaseInvoiceService>();
             services.AddScoped<IPurchaseOrderService, PurchaseOrderService>();
             services.AddScoped<IPurchaseReceiveService, PurchaseReceiveService>();

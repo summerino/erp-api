@@ -21,7 +21,7 @@ namespace ERP_API.Domain.Services.Inventory
         public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
             string search)
         {
-            var data = Db.VwAdjustments.AsQueryable();
+            var data = Db.VwAdjustmentHeaders.AsQueryable();
 
             if (!string.IsNullOrEmpty(search))
             {
