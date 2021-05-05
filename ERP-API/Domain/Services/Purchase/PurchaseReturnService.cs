@@ -9,6 +9,7 @@ using ERP_API.Domain.Extensions;
 using ERP_API.Domain.Interfaces.Purchase;
 using ERP_API.Domain.Models;
 using ERP_API.Model.Purchase;
+using ERP_API.Domain.Entities.Inventory;
 
 namespace ERP_API.Domain.Services.Purchase
 {
@@ -42,7 +43,7 @@ namespace ERP_API.Domain.Services.Purchase
 
             if (fullReceived.HasValue)
             {
-                data = (bool) fullReceived
+                data = (bool)fullReceived
                     ? data.Where(x => x.Qty <= x.QtyRcv)
                     : data.Where(x => x.Qty > x.QtyRcv);
             }
@@ -77,43 +78,43 @@ namespace ERP_API.Domain.Services.Purchase
             return data;
         }
 
-        public SaveResult Insert(PurchaseReceiveRequest data)
+        public SaveResult Insert(PurchaseReturnRequest data)
         {
             var result = new SaveResult(false);
-
+            var dbtMemo = new DebitMemo();
             using var transaction = Db.Database.BeginTransaction();
             try
             {
-                // Checking purchase order mark
-                if (IsPurchaseOrderInvalid(data.TransCode))
+                // Checking purchase receive mark
+                if (IsPurchaseReceiveInvalid(data.RcvCode))
                 {
-                    result.Message = "Can't update purchase return because purchase order already mark as void or close.";
+                    result.Message = "Can't insert purchase return because purchase receive already mark as void or close.";
                     return result;
                 }
 
                 // Checking receive qty is excess or not
-                if (IsQtyExcess(data.Code, data.TransCode, data.ItemDetails))
+                if (IsQtyExcess(data.ItemDetails))
                 {
-                    result.Message = "Can't update purchase return because receive qty bigger than outstanding qty.";
+                    result.Message = "Can't insert purchase return because return qty bigger than outstanding qty.";
                     return result;
                 }
 
                 // Get new code
-                var newCode = GetNewCode("RCV_NUM_FMT", data.Date);
-                    
+                var newCode = GetNewCode("PR_NUM_FMT", data.Date);
+
                 // Insert header data
                 data.Code = newCode;
-                Db.PurchaseReceiveHeaders.Add(data);
+                Db.PurchaseReturnHeaders.Add(data);
 
                 // Insert detail data
                 short i = 0;
                 foreach (var item in data.ItemDetails)
                 {
-                    Db.PurchaseReceiveDetails.Add(new PurchaseReceiveDetail
+                    Db.PurchaseReturnDetails.Add(new PurchaseReturnDetail
                     {
                         Code = newCode,
                         LineNo = ++i,
-                        TransDetailId = item.TransDetailId,
+                        RcvDetailId = item.RcvDetailId,
                         ItemId = item.ItemId,
                         Qty = item.Qty,
                         UomId = item.UomId,
@@ -132,15 +133,38 @@ namespace ERP_API.Domain.Services.Purchase
                         Total = item.Total,
                         Dpp = item.Dpp,
                         WarehouseCode = item.WarehouseCode,
-                        Type = item.Type
+                        QtyRcv = item.QtyRcv,
+                        WarehouseCodeIn = item.WarehouseCodeIn
                     });
                 }
 
-                // Save changes
+                var dbtCode = GetNewCode("DM_NUM_FMT", data.Date);
+
+                dbtMemo = new DebitMemo {
+                    Code = dbtCode,
+                    Date = data.Date,
+                    SrcTrans = (short)(data.Type == 1 ? 2 : 3),
+                    SupCode = data.SupCode,
+                    TransCode = data.Code,
+                    CurrCode = data.CurrCode,
+                    Rate = data.Rate,
+                    Amount = data.Total,
+                    Used = 0,
+                    Notes = data.RcvCode != null ? "Automatically created by Purchase Return " + newCode : "Automatically created by Purchase Return W/O Doc. " + newCode,
+                    Mark = "A",
+                    CreatedBy = data.CreatedBy,
+                    CreatedDate = data.CreatedDate,
+                    UpdatedBy = data.UpdatedBy,
+                    UpdatedDate = data.UpdatedDate
+                };
+
+                Db.DebitMemos.Add(dbtMemo);
+
                 Db.SaveChanges();
 
-                // Execute sp_update_po_rcv_qty
-                Db.Database.ExecuteSqlRaw("EXEC sp_update_po_rcv_qty {0}", data.TransCode);
+                Db.Database.ExecuteSqlRaw(
+                    "EXEC sp_update_stock_mutation_from_pr {0}, {1}, {2}",
+                    data.Code, data.Date, data.RcvCode);
 
                 transaction.Commit();
             }
@@ -151,52 +175,53 @@ namespace ERP_API.Domain.Services.Purchase
             }
 
             result.Success = true;
-            result.Data = data.Code;
+            result.Data = dbtMemo;
             result.Message = "Success insert purchase return.";
             return result;
         }
 
-        public SaveResult Update(PurchaseReceiveRequest data)
+        public SaveResult Update(PurchaseReturnRequest data)
         {
             var result = new SaveResult(false);
+            var dbtMemo = new DebitMemo();
 
             using var transaction = Db.Database.BeginTransaction();
             try
             {
                 // Checking mark header data
-                if (Db.PurchaseReceiveHeaders.Any(x => x.Code == data.Code && x.Mark == "V"))
+                if (Db.PurchaseReturnHeaders.Any(x => x.Code == data.Code && x.Mark == "V"))
                 {
                     result.Message = "Can't update purchase return because data already mark as void.";
                     return result;
                 }
 
                 // Checking purchase order mark
-                if (IsPurchaseOrderInvalid(data.TransCode))
+                if (IsPurchaseReceiveInvalid(data.RcvCode))
                 {
-                    result.Message = "Can't update purchase return because purchase order already mark as void or close.";
+                    result.Message = "Can't update purchase return because purchase receive already mark as void or close.";
                     return result;
                 }
 
                 // Checking receive qty is excess or not
-                if (IsQtyExcess(data.Code, data.TransCode, data.ItemDetails))
+                if (IsQtyExcess(data.ItemDetails))
                 {
-                    result.Message = "Can't update purchase return because receive qty bigger than outstanding qty.";
+                    result.Message = "Can't update purchase return because return qty bigger than outstanding qty.";
                     return result;
                 }
 
                 // Update header data
-                Db.PurchaseReceiveHeaders.Update(data);
+                Db.PurchaseReturnHeaders.Update(data);
                 Db.Entry(data).Property(e => e.Code).IsModified = false;
                 Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
                 Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
 
-                // Get detail data that exists in receive before
-                var delDetails = Db.PurchaseReceiveDetails
+                // Get detail data that exists in return before
+                var delDetails = Db.PurchaseReturnDetails
                     .Where(d => d.Code == data.Code && !data.ItemDetails.Select(x => x.Id).Contains(d.Id))
                     .ToList();
 
-                // Get detail data that exists in receive before
-                Db.PurchaseReceiveDetails.RemoveRange(delDetails);
+                // Get detail data that exists in return before
+                Db.PurchaseReturnDetails.RemoveRange(delDetails);
 
                 // Update detail data
                 short i = 0;
@@ -204,11 +229,11 @@ namespace ERP_API.Domain.Services.Purchase
                 {
                     if (item.Id <= 0)
                     {
-                        Db.PurchaseReceiveDetails.Add(new PurchaseReceiveDetail
+                        Db.PurchaseReturnDetails.Add(new PurchaseReturnDetail
                         {
                             Code = data.Code,
                             LineNo = ++i,
-                            TransDetailId = item.TransDetailId,
+                            RcvDetailId = item.RcvDetailId,
                             ItemId = item.ItemId,
                             Qty = item.Qty,
                             UomId = item.UomId,
@@ -227,28 +252,41 @@ namespace ERP_API.Domain.Services.Purchase
                             Total = item.Total,
                             Dpp = item.Dpp,
                             WarehouseCode = item.WarehouseCode,
-                            Type = item.Type
+                            QtyRcv = item.QtyRcv,
+                            WarehouseCodeIn = item.WarehouseCodeIn
                         });
                     }
                     else
                     {
                         item.LineNo = ++i;
 
-                        Db.PurchaseReceiveDetails.Update(item);
+                        Db.PurchaseReturnDetails.Update(item);
                         Db.Entry(item).Property(e => e.Code).IsModified = false;
                     }
                 }
 
+                dbtMemo = Db.DebitMemos.FirstOrDefault(x => x.TransCode == data.Code);
+                dbtMemo.SrcTrans = (short)(data.Type == 1 ? 2 : 3);
+                dbtMemo.SupCode = data.SupCode;
+                dbtMemo.CurrCode = data.CurrCode;
+                dbtMemo.Rate = data.Rate;
+                dbtMemo.Amount = data.Total;
+                dbtMemo.UpdatedBy = data.UpdatedBy;
+                dbtMemo.UpdatedDate = data.UpdatedDate;
+                Db.DebitMemos.Update(dbtMemo);
+                Db.Entry(dbtMemo).Property(e => e.Code).IsModified = false;
+                Db.Entry(dbtMemo).Property(e => e.TransCode).IsModified = false;
+                Db.Entry(dbtMemo).Property(e => e.Notes).IsModified = false;
+                Db.Entry(dbtMemo).Property(e => e.CreatedBy).IsModified = false;
+                Db.Entry(dbtMemo).Property(e => e.CreatedDate).IsModified = false;
+
+
                 // Save changes
                 Db.SaveChanges();
 
-                // Execute sp_update_stock_mutation_from_rcv
                 Db.Database.ExecuteSqlRaw(
-                    "EXEC sp_update_stock_mutation_from_rcv {0}, {1}, {2}",
-                    data.Code, data.Date, data.TransCode);
-
-                // Execute sp_update_po_rcv_qty
-                Db.Database.ExecuteSqlRaw("EXEC sp_update_po_rcv_qty {0}", data.TransCode);
+                    "EXEC sp_update_stock_mutation_from_pr {0}, {1}, {2}",
+                    data.Code, data.Date, data.RcvCode);
 
                 transaction.Commit();
             }
@@ -259,7 +297,7 @@ namespace ERP_API.Domain.Services.Purchase
             }
 
             result.Success = true;
-            result.Data = data.Code;
+            result.Data = dbtMemo;
             result.Message = "Success update purchase return.";
             return result;
         }
@@ -286,8 +324,18 @@ namespace ERP_API.Domain.Services.Purchase
                     data.UpdatedBy = userId;
                     data.UpdatedDate = DateTime.Now;
 
+                    var stockPR = Db.StockMutations.Where(x => x.RefCode1 == data.Code);
+                    if(stockPR != null)
+                    {
+                        Db.StockMutations.RemoveRange(stockPR);
+                    }
+
                     // Save changes
                     Db.SaveChanges();
+
+                    Db.Database.ExecuteSqlRaw(
+                    "EXEC sp_update_stock_mutation_from_pr {0}, {1}, {2}",
+                    data.Code, data.Date, data.RcvCode);
 
                     transaction.Commit();
                 }
@@ -303,54 +351,37 @@ namespace ERP_API.Domain.Services.Purchase
             return result;
         }
 
-        private bool IsPurchaseOrderInvalid(string poCode)
+        private bool IsPurchaseReceiveInvalid(string rcvCode)
         {
-            return Db.PurchaseOrderHeaders.Any(x => x.Code == poCode && new[] { "V", "CLS" }.Contains(x.Mark));
+            return Db.PurchaseReceiveHeaders.Any(x => x.Code == rcvCode && new[] { "V", "CLS" }.Contains(x.Mark));
         }
 
-        private bool IsQtyExcess(string code, string poCode, IEnumerable<PurchaseReceiveDetail> items)
+        private bool IsQtyExcess(IEnumerable<PurchaseReturnDetail> items)
         {
-            // Get purchase return lists
-            var rcvCodeList = Db.PurchaseReceiveHeaders
-                .Where(x => x.TransCode == poCode && x.Mark != "V" && x.Code != code)
-                .Select(x => x.Code).ToList();
-
-            // Calculate receive qty
-            var rcvD = Db.PurchaseReceiveDetails
-                .Where(x => rcvCodeList.Contains(x.Code) && x.Type == 0)
-                .GroupBy(x => new { x.ItemId, x.UnitId })
-                .Select(x => new
+            var result = false;
+            foreach (var item in items)
+            {
+                var uom = Db.UoMConversions.FirstOrDefault(x => x.Id == item.UnitId);
+                var stock = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == item.WarehouseCode && x.ItemId == item.ItemId);
+                if (uom.IsBaseUnit)
                 {
-                    x.Key.ItemId, x.Key.UnitId,
-                    QtyRcv = x.Sum(r => (decimal?)r.Qty)
-                });
-
-            // Calculate outstanding qty
-            var ordD = (
-                from o in Db.PurchaseOrderDetails
-                where o.Code == poCode && o.Type == 0
-                join r in rcvD
-                    on new { o.ItemId, o.UnitId } equals new { r.ItemId, r.UnitId } into rs
-                from r in rs.DefaultIfEmpty()
-                select new
+                    if (item.Qty > stock.QtyOnHand)
+                    {
+                        result = true;
+                    }
+                }
+                else
                 {
-                    o.ItemId, o.UnitId, o.Qty,
-                    Oustanding = o.Qty - (r.QtyRcv ?? 0m)
-                }).ToList();
-
-            // Checking receive qty from item details is excess or not
-            var isExcess = (
-                from o in ordD
-                join d in items.Where(x => x.Type == 0)
-                    on new { o.ItemId, o.UnitId } equals new { d.ItemId, d.UnitId } into ds
-                from d in ds.DefaultIfEmpty()
-                where o.Oustanding < d.Qty
-                select new
-                {
-                    o.ItemId, o.UnitId, o.Oustanding
-                }).Any();
-
-            return isExcess;
+                    var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= uom.Seq).Select(x => x.Conversion).ToList();
+                    var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
+                    var baseQty = item.Qty * multipliedQty;
+                    if (baseQty > stock.QtyOnHand)
+                    {
+                        result = true;
+                    }
+                }
+            }
+            return result;
         }
     }
 }

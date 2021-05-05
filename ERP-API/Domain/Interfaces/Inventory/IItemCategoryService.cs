@@ -9,6 +9,10 @@ namespace ERP_API.Domain.Interfaces.Inventory
         DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
             string search);
 
+        IEnumerable<ItemCategory> GetLists();
+
         object GetHierarchy();
+
+        SaveResult Delete(int id, int userId);
     }
 }
