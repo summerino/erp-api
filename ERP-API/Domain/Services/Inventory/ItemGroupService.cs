@@ -45,6 +45,21 @@ namespace ERP_API.Domain.Services.Inventory
             return data.OrderBy(x => x.Id);
         }
 
+        public IEnumerable<ItemGroupSubGroup> GetDetailByInitial(string initial)
+        {
+            var data = Db.ItemGroups.Where(x => x.Initial == initial).ToList();
+
+            if (data != null && data.Count > 0)
+            {
+                var detailData = Db.ItemGroupSubGroups.Where(x => x.ItemGroupId == data[0].Id);
+
+                return detailData.OrderBy(x => x.Id);
+            } else
+            {
+                return Db.ItemGroupSubGroups.Where(x => x.Id == 0);
+            }
+        }
+
         public SaveResult Insert(ItemGroupRequest data)
         {
             var result = new SaveResult(false);

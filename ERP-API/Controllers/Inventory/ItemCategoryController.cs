@@ -58,6 +58,7 @@ namespace ERP_API.Controllers.Inventory
                     x.Initial,
                     x.Name,
                     x.ParentId,
+                    x.GroupId,
                     x.Seq,
                     x.Deep,
                     x.Lineage
