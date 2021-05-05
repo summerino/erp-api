@@ -48,16 +48,10 @@ namespace ERP_API.Controllers.Inventory
             return Ok(_category.GetHierarchy());
         }
 
-        [HttpGet("list-hierarchy")]
-        public IActionResult GetListHierarchy(string search)
+        [HttpGet("lists")]
+        public IActionResult GetLists()
         {
-            return Ok(_category.GetListHierarchy(search));
-        }
-
-        [HttpGet("parent")]
-        public IActionResult GetParent()
-        {
-            var data = _category.GetParent()
+            var data = _category.GetLists()
                 .Select(x => new
                 {
                     x.Id,

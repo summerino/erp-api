@@ -62,10 +62,10 @@ namespace ERP_API.Controllers.Inventory
             });
         }
 
-        [HttpGet("groups")]
-        public IActionResult GetItemGroup()
+        [HttpGet("lists")]
+        public IActionResult GetList()
         {
-            var data = _itemGroup.GetItemGroup()
+            var data = _itemGroup.GetLists()
                 .Select(x => new
                 {
                     x.Id,

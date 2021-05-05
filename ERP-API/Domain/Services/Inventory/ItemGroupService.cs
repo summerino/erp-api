@@ -38,7 +38,7 @@ namespace ERP_API.Domain.Services.Inventory
             return data.OrderBy(x => x.Id);
         }
 
-        public IEnumerable<ItemGroup> GetItemGroup()
+        public IEnumerable<ItemGroup> GetLists()
         {
             var data = Db.ItemGroups.Where(x => x.IsActive);
 

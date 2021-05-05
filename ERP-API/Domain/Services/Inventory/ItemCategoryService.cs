@@ -31,39 +31,11 @@ namespace ERP_API.Domain.Services.Inventory
             return data.ToDataSourceResult(skip, take, filter, sort);
         }
 
-        public IEnumerable<ItemCategory> GetParent()
+        public IEnumerable<ItemCategory> GetLists()
         {
             var data = Db.ItemCategories.Where(x => x.IsActive);
 
             return data.OrderBy(x => x.Name);
-        }
-
-        public object GetListHierarchy(string search)
-        {
-            var data = Db.ItemCategories.AsQueryable();
-
-            if (!string.IsNullOrWhiteSpace(search))
-            {
-                data = data.Where(x => x.IsActive && x.Name == search);
-            } else
-            {
-                data = data.Where(x => x.IsActive);
-            }
-
-            return new
-            {
-                Id = 0,
-                Initial = "",
-                Name = "All Category",
-                ParentId = 0,
-                IsLowestLevel = 0,
-                GroupId = "",
-                Deep = 0,
-                Seq = 0,
-                Lineage = "",
-                IsActive = 1,
-                Children = DefineChildNodes(data.ToList())
-            };
         }
 
         public object GetHierarchy()
@@ -79,7 +51,6 @@ namespace ERP_API.Domain.Services.Inventory
                 Deep = 0,
                 Seq = 0,
                 Lineage = "",
-                IsActive = 1,
                 Children = DefineChildNodes(Db.ItemCategories.Where(x => x.IsActive).ToList())
             };
         }
@@ -100,7 +71,6 @@ namespace ERP_API.Domain.Services.Inventory
                     x.Deep,
                     x.Seq,
                     x.Lineage,
-                    x.IsActive,
                     Children = DefineChildNodes(data, x.Id)
                 });
 
@@ -205,7 +175,7 @@ namespace ERP_API.Domain.Services.Inventory
                 Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
 
                 Db.SaveChanges();
-
+                    
                 transaction.Commit();
             }
             catch (Exception ex)
