@@ -1,8 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Dynamic.Core;
 using Microsoft.AspNetCore.Mvc;
 using ERP_API.Domain.Interfaces.Inventory;
 using ERP_API.Domain.Models;
+using ERP_API.Domain.Services;
+using ERP_API.Domain.Entities.Inventory;
 using ERP_API.Model;
 using Newtonsoft.Json;
 
@@ -14,6 +18,7 @@ namespace ERP_API.Controllers.Inventory
     public class ItemCategoryController : ControllerBase
     {
         private readonly IItemCategoryService _category;
+        private readonly IClaimService _claim;
 
         public ItemCategoryController(IItemCategoryService category)
         {
@@ -41,6 +46,62 @@ namespace ERP_API.Controllers.Inventory
         public IActionResult GetHierarchy()
         {
             return Ok(_category.GetHierarchy());
+        }
+
+        [HttpGet("lists")]
+        public IActionResult GetLists()
+        {
+            var data = _category.GetLists()
+                .Select(x => new
+                {
+                    x.Id,
+                    x.Initial,
+                    x.Name,
+                    x.ParentId,
+                    x.Seq,
+                    x.Deep,
+                    x.Lineage
+                })
+                .ToList<dynamic>();
+
+            return Ok(new ApiResponse
+            {
+                RowCount = data.Count,
+                TableData = data
+            });
+        }
+
+        [HttpPost]
+        public IActionResult OnPost(ItemCategory data)
+        {
+            data.IsActive = true;
+            data.CreatedBy = 1;
+            data.CreatedDate = DateTime.Now;
+            data.UpdatedBy = data.CreatedBy;
+            data.UpdatedDate = data.CreatedDate;
+
+            var result = _category.Insert(data);
+
+            return Ok(result);
+        }
+
+        [HttpPut("{id}")]
+        public IActionResult OnPut(int id, ItemCategory data)
+        {
+            data.UpdatedBy = 1;
+            data.UpdatedDate = DateTime.Now;
+
+            var result = _category.Update(data);
+
+            return Ok(result);
+        }
+
+        [HttpDelete("{id}")]
+        public IActionResult OnDelete(int id)
+        {
+            var result = _category.Delete(id, 1);
+
+            return Ok(result);
         }
     }
 }
