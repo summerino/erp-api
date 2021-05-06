@@ -562,6 +562,34 @@ AS
 	LEFT JOIN Inventory.Item i
 		ON i.Id = adj_d.ItemId";
             migrationBuilder.Sql(sql);
+
+            // Execute sp_refreshview Purchasing.VwPurchaseOrderHeader
+            sql = @"execute sp_refreshview 'Purchasing.VwPurchaseOrderHeader'";
+            migrationBuilder.Sql(sql);
+
+            // Execute sp_refreshview Purchasing.vwPurchaseReceiveHeader
+            sql = @"execute sp_refreshview 'Purchasing.vwPurchaseReceiveHeader'";
+            migrationBuilder.Sql(sql);
+
+            // Execute sp_refreshview Purchasing.vwPurchaseReturnHeader
+            sql = @"execute sp_refreshview 'Purchasing.vwPurchaseReturnHeader'";
+            migrationBuilder.Sql(sql);
+
+            // Execute sp_refreshview Purchasing.vwPurchaseInvoiceHeader
+            sql = @"execute sp_refreshview 'Purchasing.vwPurchaseInvoiceHeader'";
+            migrationBuilder.Sql(sql);
+
+            // Execute sp_refreshview Sales.vwSalesOrderHeader
+            sql = @"execute sp_refreshview 'Sales.vwSalesOrderHeader'";
+            migrationBuilder.Sql(sql);
+
+            // Execute sp_refreshview Sales.vwSalesDeliveryHeader
+            sql = @"execute sp_refreshview 'Sales.vwSalesDeliveryHeader'";
+            migrationBuilder.Sql(sql);
+
+            // Execute sp_refreshview Sales.vwSalesInvoiceHeader
+            sql = @"execute sp_refreshview 'Sales.vwSalesInvoiceHeader'";
+            migrationBuilder.Sql(sql);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
