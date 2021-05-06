@@ -139,6 +139,14 @@ namespace ERP_API.Controllers.Purchase
             return Ok(result);
         }
 
+        [HttpPut("close/{code}")]
+        public IActionResult OnClose(string code)
+        {
+            var result = _po.Close(code, _claim.UserId);
+
+            return Ok(result);
+        }
+
         private static (bool, string) Validate(PurchaseOrderRequest data)
         {
             if (!data.ItemDetails.Any())

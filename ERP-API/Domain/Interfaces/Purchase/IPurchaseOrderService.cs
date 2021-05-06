@@ -19,5 +19,7 @@ namespace ERP_API.Domain.Interfaces.Purchase
         SaveResult Update(PurchaseOrderRequest data);
 
         SaveResult Delete(string code, int userId);
+
+        SaveResult Close(string code, int userId);
     }
 }
