@@ -139,7 +139,7 @@ namespace ERP_API.Controllers.Purchase
             return Ok(result);
         }
 
-        [HttpDelete("close/{code}")]
+        [HttpPut("close/{code}")]
         public IActionResult OnClose(string code)
         {
             var result = _po.Close(code, _claim.UserId);
