@@ -8,6 +8,7 @@ using ERP_API.Domain.Extensions;
 using ERP_API.Domain.Interfaces.Purchase;
 using ERP_API.Domain.Models;
 using ERP_API.Model.Purchase;
+using Microsoft.EntityFrameworkCore;
 
 namespace ERP_API.Domain.Services.Purchase
 {
@@ -108,7 +109,76 @@ namespace ERP_API.Domain.Services.Purchase
                     });
                 }
 
+                if (data.IsPoRcv)
+                {
+                    var newRcvCode = GetNewCode("RCV_NUM_FMT", data.RcvDate);
+
+                    var newPrcvData = new PurchaseReceiveHeader
+                    {
+                        Code = newRcvCode,
+                        Date = data.RcvDate,
+                        TransCode = newCode,
+                        RefNo = data.RcvRefNo,
+                        SupCode = data.SupCode,
+                        ReceiveBy = data.RequestBy,
+                        CurrCode = data.CurrCode,
+                        Rate = data.Rate,
+                        ShipmentFee = data.ShipmentFee,
+                        HandlingFee = data.HandlingFee,
+                        SubTotal = data.SubTotal,
+                        FinalDiscPercent = data.FinalDiscPercent,
+                        FinalDisc = data.FinalDisc,
+                        IncludeTax = data.IncludeTax,
+                        TaxAmount = data.TaxAmount,
+                        Total = data.Total,
+                        Dpp = data.Dpp,
+                        Mark = data.Mark,
+                        CreatedBy = data.CreatedBy,
+                        CreatedDate = data.CreatedDate,
+                        UpdatedBy = data.UpdatedBy,
+                        UpdatedDate = data.UpdatedDate
+                    };
+
+                    Db.PurchaseReceiveHeaders.Add(newPrcvData);
+
+                    short j = 0;
+                    foreach (var item in data.ItemDetails)
+                    {
+                        Db.PurchaseReceiveDetails.Add(new PurchaseReceiveDetail
+                        {
+                            Code = newRcvCode,
+                            LineNo = ++j,
+                            ItemId = item.ItemId,
+                            UomId = item.UomId,
+                            UnitId = item.UnitId,
+                            Qty = item.Qty,
+                            Length = item.Length,
+                            Width = item.Width,
+                            Height = item.Height,
+                            Weight = item.Weight,
+                            DimensionMeasurement = item.DimensionMeasurement,
+                            WeightMeasurement = item.WeightMeasurement,
+                            UnitPrice = item.UnitPrice,
+                            Disc = item.Disc,
+                            TaxId = item.TaxId,
+                            TaxAmount = item.TaxAmount,
+                            NettPrice = item.NettPrice,
+                            Total = item.Total,
+                            Dpp = item.Dpp,
+                            WarehouseCode = data.WarehouseCode,
+                            Type = 0
+                        });
+                    }
+                }
+
                 Db.SaveChanges();
+
+                if (data.IsPoRcv)
+                {
+                    // Execute sp_update_po_rcv_qty
+                    Db.Database.ExecuteSqlRaw("EXEC sp_update_po_rcv_qty {0}", newCode);
+                }
+
                 transaction.Commit();
             }
             catch (Exception ex)
@@ -197,7 +267,76 @@ namespace ERP_API.Domain.Services.Purchase
                     }
                 }
 
+                if (data.IsPoRcv)
+                {
+                    var newRcvCode = GetNewCode("RCV_NUM_FMT", data.RcvDate);
+
+                    var newPrcvData = new PurchaseReceiveHeader
+                    {
+                        Code = newRcvCode,
+                        Date = data.RcvDate,
+                        TransCode = data.Code,
+                        RefNo = data.RcvRefNo,
+                        SupCode = data.SupCode,
+                        ReceiveBy = data.RequestBy,
+                        CurrCode = data.CurrCode,
+                        Rate = data.Rate,
+                        ShipmentFee = data.ShipmentFee,
+                        HandlingFee = data.HandlingFee,
+                        SubTotal = data.SubTotal,
+                        FinalDiscPercent = data.FinalDiscPercent,
+                        FinalDisc = data.FinalDisc,
+                        IncludeTax = data.IncludeTax,
+                        TaxAmount = data.TaxAmount,
+                        Total = data.Total,
+                        Dpp = data.Dpp,
+                        Mark = data.Mark,
+                        CreatedBy = data.CreatedBy,
+                        CreatedDate = data.CreatedDate,
+                        UpdatedBy = data.UpdatedBy,
+                        UpdatedDate = data.UpdatedDate
+                    };
+
+                    Db.PurchaseReceiveHeaders.Add(newPrcvData);
+
+                    short j = 0;
+                    foreach (var item in data.ItemDetails)
+                    {
+                        Db.PurchaseReceiveDetails.Add(new PurchaseReceiveDetail
+                        {
+                            Code = newRcvCode,
+                            LineNo = ++j,
+                            ItemId = item.ItemId,
+                            UomId = item.UomId,
+                            UnitId = item.UnitId,
+                            Qty = item.Qty,
+                            Length = item.Length,
+                            Width = item.Width,
+                            Height = item.Height,
+                            Weight = item.Weight,
+                            DimensionMeasurement = item.DimensionMeasurement,
+                            WeightMeasurement = item.WeightMeasurement,
+                            UnitPrice = item.UnitPrice,
+                            Disc = item.Disc,
+                            TaxId = item.TaxId,
+                            TaxAmount = item.TaxAmount,
+                            NettPrice = item.NettPrice,
+                            Total = item.Total,
+                            Dpp = item.Dpp,
+                            WarehouseCode = data.WarehouseCode,
+                            Type = 0
+                        });
+                    }
+                }
+
                 Db.SaveChanges();
+
+                if (data.IsPoRcv)
+                {
+                    // Execute sp_update_po_rcv_qty
+                    Db.Database.ExecuteSqlRaw("EXEC sp_update_po_rcv_qty {0}", data.Code);
+                }
+
                 transaction.Commit();
             }
             catch (Exception ex)
