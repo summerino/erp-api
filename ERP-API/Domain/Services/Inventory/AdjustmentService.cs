@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
 using ERP_API.Domain.Entities;
 using ERP_API.Domain.Entities.Inventory;
 using ERP_API.Domain.Extensions;
 using ERP_API.Domain.Interfaces.Inventory;
 using ERP_API.Domain.Models;
 using ERP_API.Model.Inventory;
-using Microsoft.EntityFrameworkCore;
 
 namespace ERP_API.Domain.Services.Inventory
 {
@@ -28,16 +28,18 @@ namespace ERP_API.Domain.Services.Inventory
                 data = DateTime.TryParse(search, out var searchDate)
                     ? data.Where(x => x.Date == searchDate)
                     : data.Where(x =>
-                        x.Code.Contains(search) || x.Warehouse.Contains(search) || x.Notes.Contains(search));
+                        x.Code.Contains(search) || x.WarehouseInitial.Contains(search) || x.Notes.Contains(search));
             }
 
             return data.ToDataSourceResult(skip, take, filter, sort);
         }
+
         public IEnumerable<VwAdjustmentDetail> GetDetailData(string code)
         {
             var data = Db.VwAdjustmentDetails.Where(x => x.Code == code);
             return data.OrderBy(x => x.LineNo);
         }
+
         public SaveResult Insert(AdjustmentRequest data)
         {
             var result = new SaveResult(false);
@@ -218,6 +220,5 @@ namespace ERP_API.Domain.Services.Inventory
                 UomId = item.UomId,
             };
         }
-
     }
 }

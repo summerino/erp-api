@@ -1,7 +1,7 @@
-﻿using ERP_API.Domain.Entities.Inventory;
+﻿using System.Collections.Generic;
+using ERP_API.Domain.Entities.Inventory;
 using ERP_API.Domain.Models;
 using ERP_API.Model.Inventory;
-using System.Collections.Generic;
 
 namespace ERP_API.Domain.Interfaces.Inventory
 {

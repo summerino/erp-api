@@ -6,7 +6,7 @@ using ERP_API.Domain.Entities.Core;
 namespace ERP_API.Domain.Entities.Sales
 {
     [Table("SalesDeliveryHeader", Schema = Schema.Sales)]
-    public class SalesDeliveryHeader : BaseEntityWithMark
+    public class SalesDeliveryHeader : BaseEntityWithMarkAndApproved
     {
         [Key]
         [StringLength(17)]
@@ -29,8 +29,6 @@ namespace ERP_API.Domain.Entities.Sales
         public string WarehouseCode { get; set; }
 
         public long ShippedBy { get; set; }
-
-        public long? ApproveBy { get; set; }
 
         [Required]
         [StringLength(3)]
@@ -69,7 +67,7 @@ namespace ERP_API.Domain.Entities.Sales
         public string Notes { get; set; }
     }
 
-    public class VwSalesDeliveryHeader : BaseEntityWithMark
+    public class VwSalesDeliveryHeader : BaseEntityWithMarkAndApproved
     {
         public string Code { get; set; }
 
@@ -82,8 +80,6 @@ namespace ERP_API.Domain.Entities.Sales
         public string WarehouseCode { get; set; }
 
         public long ShippedBy { get; set; }
-
-        public long? ApproveBy { get; set; }
 
         public string CurrCode { get; set; }
 

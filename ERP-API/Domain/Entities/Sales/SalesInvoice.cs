@@ -6,7 +6,7 @@ using ERP_API.Domain.Entities.Core;
 namespace ERP_API.Domain.Entities.Sales
 {
     [Table("SalesInvoiceHeader", Schema = Schema.Sales)]
-    public class SalesInvoiceHeader : BaseEntityWithMark
+    public class SalesInvoiceHeader : BaseEntityWithMarkAndApproved
     {
         [Key]
         [StringLength(17)]
@@ -42,7 +42,7 @@ namespace ERP_API.Domain.Entities.Sales
         public string Notes { get; set; }
     }
 
-    public class VwSalesInvoiceHeader : BaseEntityWithMark
+    public class VwSalesInvoiceHeader : BaseEntityWithMarkAndApproved
     {
         public string Code { get; set; }
 
