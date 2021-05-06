@@ -66,7 +66,6 @@ namespace ERP_API.Domain.Services.Inventory
                     x.Initial,
                     x.Name,
                     x.ParentId,
-                    x.IsLowestLevel,
                     x.GroupId,
                     x.Deep,
                     x.Seq,
@@ -104,17 +103,7 @@ namespace ERP_API.Domain.Services.Inventory
 
                 Db.ItemCategories.Add(data);
                 Db.SaveChanges();
-
-                // Checking & Update IsLowestLevel
-                if (IsParent(data.Id))
-                {
-                    data.IsLowestLevel = false;
-                }
-                else
-                {
-                    data.IsLowestLevel = true;
-                }
-
+                
                 // Update data
                 Db.ItemCategories.Update(data);
                 Db.Entry(data).Property(e => e.Id).IsModified = false;
@@ -122,23 +111,6 @@ namespace ERP_API.Domain.Services.Inventory
                 Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
 
                 Db.SaveChanges();
-
-                // Check & Update Parent line data.ParentId status IsLowestLevel
-                var dataParent = Db.ItemCategories.Find(data.ParentId);
-
-                if (dataParent != null)
-                {
-                    if (dataParent.IsLowestLevel)
-                    {
-                        dataParent.IsLowestLevel = false;
-                        Db.ItemCategories.Update(dataParent);
-                        Db.Entry(dataParent).Property(e => e.Id).IsModified = false;
-                        Db.Entry(dataParent).Property(e => e.CreatedBy).IsModified = false;
-                        Db.Entry(dataParent).Property(e => e.CreatedDate).IsModified = false;
-
-                        Db.SaveChanges();
-                    }
-                }
 
                 transaction.Commit();
             }

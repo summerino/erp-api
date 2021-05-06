@@ -6,7 +6,7 @@ using ERP_API.Domain.Entities.Core;
 namespace ERP_API.Domain.Entities.Purchase
 {
     [Table("PurchaseReturnHeader", Schema = Schema.Purchasing)]
-    public class PurchaseReturnHeader : BaseEntityWithMark
+    public class PurchaseReturnHeader : BaseEntityWithMarkAndApproved
     {
         [Key]
         [StringLength(17)]
@@ -28,8 +28,6 @@ namespace ERP_API.Domain.Entities.Purchase
         public string SupCode { get; set; }
         
         public long ShippedBy { get; set; }
-
-        public long? ApproveBy { get; set; }
 
         [Required]
         [StringLength(3)]
@@ -65,7 +63,7 @@ namespace ERP_API.Domain.Entities.Purchase
         public string Notes { get; set; }
     }
 
-    public class VwPurchaseReturnHeader : BaseEntityWithMark
+    public class VwPurchaseReturnHeader : BaseEntityWithMarkAndApproved
     {
         public string Code { get; set; }
 
@@ -80,8 +78,6 @@ namespace ERP_API.Domain.Entities.Purchase
         public string SupCode { get; set; }
 
         public long ShippedBy { get; set; }
-
-        public long? ApproveBy { get; set; }
 
         public string CurrCode { get; set; }
 

@@ -36,6 +36,22 @@ namespace ERP_API.Domain.Entities.Core
     {
         [StringLength(3)]
         public string Mark { get; set; }
+
+        public int CreatedBy { get; set; }
+
+        [Column(TypeName = "datetime")]
+        public DateTime CreatedDate { get; set; }
+
+        public int UpdatedBy { get; set; }
+
+        [Column(TypeName = "datetime")]
+        public DateTime UpdatedDate { get; set; }
+    }
+
+    public class BaseEntityWithMarkAndApproved
+    {
+        [StringLength(3)]
+        public string Mark { get; set; }
         
         public int CreatedBy { get; set; }
 
@@ -46,6 +62,11 @@ namespace ERP_API.Domain.Entities.Core
 
         [Column(TypeName = "datetime")]
         public DateTime UpdatedDate { get; set; }
+
+        public int? ApprovedBy { get; set; }
+
+        [Column(TypeName = "datetime")]
+        public DateTime? ApprovedDate { get; set; }
     }
 
     public class BaseNewCodeEntity

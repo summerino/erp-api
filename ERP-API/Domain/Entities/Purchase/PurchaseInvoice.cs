@@ -6,7 +6,7 @@ using ERP_API.Domain.Entities.Core;
 namespace ERP_API.Domain.Entities.Purchase
 {
     [Table("PurchaseInvoiceHeader", Schema = Schema.Purchasing)]
-    public class PurchaseInvoiceHeader : BaseEntityWithMark
+    public class PurchaseInvoiceHeader : BaseEntityWithMarkAndApproved
     {
         [Key]
         [StringLength(17)]
@@ -45,7 +45,7 @@ namespace ERP_API.Domain.Entities.Purchase
         public string Notes { get; set; }
     }
 
-    public class VwPurchaseInvoiceHeader : BaseEntityWithMark
+    public class VwPurchaseInvoiceHeader : BaseEntityWithMarkAndApproved
     {
         public string Code { get; set; }
 

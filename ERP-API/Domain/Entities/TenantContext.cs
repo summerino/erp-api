@@ -91,6 +91,7 @@ namespace ERP_API.Domain.Entities
         public DbSet<VwPurchaseReturnDetail> VwPurchaseReturnDetails { get; set; }
 
         // Sales entities
+        public DbSet<Area> Areas { get; set; }
         public DbSet<SalesDeliveryHeader> SalesDeliveryHeaders { get; set; }
         public DbSet<VwSalesDeliveryHeader> VwSalesDeliveryHeaders { get; set; }
         public DbSet<SalesDeliveryDetail> SalesDeliveryDetails { get; set; }
@@ -102,6 +103,10 @@ namespace ERP_API.Domain.Entities
         public DbSet<VwSalesOrderHeader> VwSalesOrderHeaders { get; set; }
         public DbSet<SalesOrderDetail> SalesOrderDetails { get; set; }
         public DbSet<VwSalesOrderDetail> VwSalesOrderDetails { get; set; }
+        public DbSet<SalesReturnHeader> SalesReturnHeaders { get; set; }
+        public DbSet<VwSalesReturnHeader> VwSalesReturnHeaders { get; set; }
+        public DbSet<SalesReturnDetail> SalesReturnDetails { get; set; }
+        public DbSet<SalesReturnDetailExchDiffItem> SalesReturnDetailExchDiffItems { get; set; }
 
         // System Management
         public DbSet<Menu> Menus { get; set; }
@@ -114,8 +119,7 @@ namespace ERP_API.Domain.Entities
             if (!optionsBuilder.IsConfigured)
             {
                 var tenant =
-                    //_catalogCtx.Tenants.SingleOrDefault(x => x.Id == _claim.TenantId);
-                    _catalogCtx.Tenants.FirstOrDefault();
+                    _catalogCtx.Tenants.SingleOrDefault(x => x.Id == _claim.TenantId);
 
                 if (tenant != null &&
                     (!string.IsNullOrWhiteSpace(tenant.ServerName) || !string.IsNullOrWhiteSpace(tenant.DatabaseName) ||
@@ -199,9 +203,23 @@ namespace ERP_API.Domain.Entities
             modelBuilder.Entity<VwWarehouse>()
                 .HasNoKey()
                 .ToView("vwWarehouse", Schema.Inventory);
+
+
+            // Adjustment entities
+            modelBuilder.Entity<AdjustmentHeader>(entity =>
+                entity.Property(e => e.Mark)
+                    .IsRequired()
+            );
+
             modelBuilder.Entity<VwAdjustmentHeader>()
                 .HasNoKey()
                 .ToView("VwAdjustmentHeader", Schema.Inventory);
+
+            modelBuilder.Entity<AdjustmentDetail>(entity =>
+                entity.Property(e => e.Code)
+                    .IsRequired()
+            );
+
             modelBuilder.Entity<VwAdjustmentDetail>()
                 .HasNoKey()
                 .ToView("VwAdjustmentDetail", Schema.Inventory);
@@ -341,6 +359,30 @@ namespace ERP_API.Domain.Entities
             modelBuilder.Entity<VwSalesOrderDetail>()
                 .HasNoKey()
                 .ToView("vwSalesOrderDetail", Schema.Sales);
+
+            // Sales Return entities
+            modelBuilder.Entity<SalesReturnHeader>(entity =>
+                entity.Property(e => e.Mark)
+                    .IsRequired()
+            );
+
+            modelBuilder.Entity<VwSalesReturnHeader>()
+                .HasNoKey()
+                .ToView("VwSalesReturnHeader", Schema.Sales);
+
+            modelBuilder.Entity<SalesReturnDetail>(entity =>
+                entity.Property(e => e.Code)
+                    .IsRequired()
+            );
+
+            modelBuilder.Entity<VwSalesReturnDetail>()
+                .HasNoKey()
+                .ToView("VwSalesReturnDetail", Schema.Sales);
+
+            modelBuilder.Entity<SalesReturnDetailExchDiffItem>(entity =>
+                entity.Property(e => e.Code)
+                    .IsRequired()
+            );
 
             // System Management entities
             modelBuilder.Entity<VwUser>()
