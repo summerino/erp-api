@@ -53,13 +53,9 @@ namespace ERP_API.Domain.Services.Purchase
 
         public List<dynamic> GetRelatedTransactions(string code)
         {
-            var piD = from dt in Db.PurchaseInvoiceDetails
-                      where dt.RcvCode == code
-                      select dt.Code;
-
-            var data = from piH in Db.PurchaseInvoiceHeaders
-                       where piD.Contains(piH.Code) && piH.Mark == "A"
-                       select new { piH.Code, piH.Date, piH.Total };
+            var data = from dt in Db.VwDebitMemos
+                      where dt.TransCode == code
+                      select dt;
 
             return data.ToDynamicList();
         }

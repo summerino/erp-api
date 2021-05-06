@@ -2,10 +2,10 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using ERP_API.Domain.Entities.Core;
 
-namespace ERP_API.Domain.Entities.Inventory
+namespace ERP_API.Domain.Entities.Sales
 {
-    [Table("ItemCategory", Schema = Schema.Inventory)]
-    public class ItemCategory : BaseEntityWithActive
+    [Table("Area", Schema = Schema.Sales)]
+    public class Area : BaseEntityWithActive
     {
         public int Id { get; set; }
 
@@ -19,12 +19,7 @@ namespace ERP_API.Domain.Entities.Inventory
 
         public int? ParentId { get; set; }
 
-        [StringLength(50)]
-        public string GroupId { get; set; }
-
         public int? Deep { get; set; }
-
-        public int? Seq { get; set; }
 
         public string Lineage { get; set; }
     }
