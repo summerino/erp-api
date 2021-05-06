@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using ERP_API.Model.SystemManagement;
+using UserTenant = ERP_API.Domain.Entities.SystemManagement.VMUser;
 
 namespace ERP_API.Domain.Interfaces.SystemManagement
 {
@@ -13,12 +13,10 @@ namespace ERP_API.Domain.Interfaces.SystemManagement
         DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
            string search);
 
-        SaveResult Insert(UserRequest data);
-
-        SaveResult Update(UserRequest data);
-
         SaveResult Delete(int id);
 
+        SaveResult Update(UserTenant dataTenant, string password);
 
+        SaveResult Insert(UserTenant dataTenant, string password);
     }
 }

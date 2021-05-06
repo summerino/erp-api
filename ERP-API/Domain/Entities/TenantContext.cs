@@ -65,6 +65,10 @@ namespace ERP_API.Domain.Entities
         public DbSet<UoMConversion> UoMConversions { get; set; }
         public DbSet<Warehouse> Warehouses { get; set; }
         public DbSet<VwWarehouse> VwWarehouses { get; set; }
+        public DbSet<AdjustmentHeader> AdjustmentHeaders { get; set; }
+        public DbSet<VwAdjustmentHeader> VwAdjustmentHeaders { get; set; }
+        public DbSet<AdjustmentDetail> AdjustmentDetails { get; set; }
+        public DbSet<VwAdjustmentDetail> VwAdjustmentDetails { get; set; }
         public DbSet<WarehouseQuantity> WarehouseQuantities { get; set; }
 
         // Purchase entities
@@ -110,7 +114,8 @@ namespace ERP_API.Domain.Entities
             if (!optionsBuilder.IsConfigured)
             {
                 var tenant =
-                    _catalogCtx.Tenants.SingleOrDefault(x => x.Id == _claim.TenantId);
+                    //_catalogCtx.Tenants.SingleOrDefault(x => x.Id == _claim.TenantId);
+                    _catalogCtx.Tenants.FirstOrDefault();
 
                 if (tenant != null &&
                     (!string.IsNullOrWhiteSpace(tenant.ServerName) || !string.IsNullOrWhiteSpace(tenant.DatabaseName) ||
@@ -194,6 +199,12 @@ namespace ERP_API.Domain.Entities
             modelBuilder.Entity<VwWarehouse>()
                 .HasNoKey()
                 .ToView("vwWarehouse", Schema.Inventory);
+            modelBuilder.Entity<VwAdjustmentHeader>()
+                .HasNoKey()
+                .ToView("VwAdjustmentHeader", Schema.Inventory);
+            modelBuilder.Entity<VwAdjustmentDetail>()
+                .HasNoKey()
+                .ToView("VwAdjustmentDetail", Schema.Inventory);
 
             // Debit Memo entities
             modelBuilder.Entity<DebitMemo>(entity =>

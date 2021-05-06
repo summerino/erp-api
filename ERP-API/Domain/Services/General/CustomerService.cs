@@ -34,7 +34,7 @@ namespace ERP_API.Domain.Services.General
 
         public DataSourceResult GetLists(IEnumerable<Filter> filters, IEnumerable<Sort> sorts)
         {
-            var data = Db.VwCustomers.Where(x => x.IsActive);
+            var data = Db.Customers.Where(x => x.IsActive);
 
             return data.ToDataSourceResult(0, -1, filters, sorts);
         }

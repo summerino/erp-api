@@ -258,5 +258,7 @@ namespace ERP_API.Domain.Entities.Inventory
         public string UomSellName { get; set; }
 
         public string UomBuyName { get; set; }
+        public string WarehouseCode { get; set; }
+        public decimal QtyOnHand { get; set; }
     }
 }

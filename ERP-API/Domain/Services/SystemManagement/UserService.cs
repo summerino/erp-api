@@ -6,7 +6,7 @@ using ERP_API.Domain.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ERP_API.Model.SystemManagement;
+using VMUserTenant = ERP_API.Domain.Entities.SystemManagement.VMUser;
 using UserTenant = ERP_API.Domain.Entities.SystemManagement.User;
 using UserCatalog = ERP_API.Domain.Entities.Catalog.User;
 using Microsoft.EntityFrameworkCore;
@@ -19,168 +19,12 @@ namespace ERP_API.Domain.Services.SystemManagement
     {
         private readonly CatalogContext _catalogCtx;
         private readonly IClaimService _claim;
-        private readonly TenantContext _tenantCtx;
 
-        public UserService(CatalogContext catalogContext, TenantContext tenantContext, IClaimService claim)
+        public UserService(CatalogContext catalogContext, IClaimService claim)
         {
             _catalogCtx = catalogContext;
             _claim = claim;
-            _tenantCtx = tenantContext;
         }
-
-        public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string search)
-        {
-            var tenant = _catalogCtx.Tenants.FirstOrDefault(x => x.Id == _claim.TenantId);
-            if (tenant == null)
-            {
-                return new DataSourceResult
-                {
-                    Total = 0
-                };
-            }
-
-            var data = _tenantCtx.VwUsers.AsQueryable();
-
-            if (!string.IsNullOrEmpty(search))
-            {
-                data = data.Where(x =>
-                        x.Username.Contains(search) || x.Name.Contains(search) || x.RoleName.Contains(search) ||
-                        x.EmployeeInitial.Contains(search) || x.Initial.Contains(search));
-            }
-
-            return data.ToDataSourceResult(skip, take, filters, sorts);
-        }
-
-        public SaveResult Insert(UserRequest data)
-        {
-            var result = new SaveResult(false);
-
-            using var transaction = _catalogCtx.Database.BeginTransaction();
-            try
-            {
-                var tenant = _catalogCtx.Tenants.FirstOrDefault(x => x.Id == _claim.TenantId);
-                if (tenant == null)
-                {
-                    result.Message = "Tenant did not exists.";
-                    return result;
-                }
-                
-                var userCtg = _catalogCtx.Users.FirstOrDefault(x => x.Username == data.Username);
-                if(userCtg != null)
-                {
-                    result.Message = "Username already exists.";
-                    return result;
-                }
-
-                var pwh = new PasswordHasher<UserCatalog>();
-                var newCatalogUser = new UserCatalog()
-                {
-                    Id = new Guid(),
-                    TenantId = _claim.TenantId,
-                    Username = data.Username
-                };
-                var hashPwd = pwh.HashPassword(newCatalogUser, data.Password);
-                newCatalogUser.Password = hashPwd;
-
-                _catalogCtx.Add(newCatalogUser);
-                _catalogCtx.SaveChanges();
-
-                var newTenantUser = new UserTenant()
-                {
-                    CatalogUserId = newCatalogUser.Id,
-                    Username = newCatalogUser.Username,
-                    Initial = data.Initial,
-                    Name = data.Username,
-                    RoleId = data.RoleId,
-                    EmployeeId = data.EmployeeId,
-                    IsActive = data.IsActive,
-                    CreatedBy = data.CreatedBy,
-                    CreatedDate = data.CreatedDate,
-                    UpdatedBy = data.UpdatedBy,
-                    UpdatedDate = data.UpdatedDate
-
-                };
-
-                _tenantCtx.Add(newTenantUser);
-                _tenantCtx.SaveChanges();
-
-                transaction.Commit();
-            }
-            catch (Exception ex)
-            {
-                result.Message = ex.InnerException?.Message ?? ex.Message;
-                return result;
-            }
-
-            result.Success = true;
-            result.Data = data.CatalogUserId;
-            result.Message = "Insert new user succeed.";
-            return result;
-        }
-
-        public SaveResult Update(UserRequest data)
-        {
-            var result = new SaveResult(false);
-
-            using var transaction = _catalogCtx.Database.BeginTransaction();
-            try
-            {
-                var tenant = _catalogCtx.Tenants.FirstOrDefault(x => x.Id == _claim.TenantId);
-                if (tenant == null)
-                {
-                    result.Message = "Tenant did not exists.";
-                    return result;
-                }
-
-                var userCtg = _catalogCtx.Users.FirstOrDefault(x => x.Username == data.Username && x.Id != data.CatalogUserId);
-                if (userCtg != null)
-                {
-                    result.Message = "Username already exists.";
-                    return result;
-                }
-
-                var dataCatalog = _catalogCtx.Users.FirstOrDefault(x => x.Id == data.CatalogUserId);
-                dataCatalog.Username = data.Username;
-                if (data.Password != null)
-                {
-                    var pwh = new PasswordHasher<UserCatalog>();
-                    dataCatalog.Password = pwh.HashPassword(dataCatalog, data.Password);
-                }
-                _catalogCtx.Update(dataCatalog);
-                _catalogCtx.SaveChanges();
-
-                var userTenant = _tenantCtx.Users.FirstOrDefault(x => x.Id == data.Id);
-               
-                userTenant.Username = data.Username;
-                userTenant.Initial = data.Initial;
-                userTenant.Name = data.Name;
-                userTenant.RoleId = data.RoleId;
-                userTenant.EmployeeId = data.EmployeeId;
-                userTenant.IsActive = data.IsActive;
-                userTenant.UpdatedBy = data.UpdatedBy;
-                userTenant.UpdatedDate = data.UpdatedDate;
-
-                _tenantCtx.Update(userTenant);
-                _tenantCtx.Entry(userTenant).Property(e => e.Id).IsModified = false;
-                _tenantCtx.Entry(userTenant).Property(e => e.CatalogUserId).IsModified = false;
-                _tenantCtx.Entry(userTenant).Property(e => e.CreatedBy).IsModified = false;
-                _tenantCtx.Entry(userTenant).Property(e => e.CreatedDate).IsModified = false;
-                _tenantCtx.SaveChanges();
-
-                transaction.Commit();
-            }
-            catch (Exception ex)
-            {
-                result.Message = ex.InnerException?.Message ?? ex.Message;
-                return result;
-            }
-
-            result.Success = true;
-            result.Data = data.CatalogUserId;
-            result.Message = "Update user succeed.";
-            return result;
-        }
-
         public SaveResult Delete(int Id)
         {
             var result = new SaveResult(false);
@@ -192,7 +36,12 @@ namespace ERP_API.Domain.Services.SystemManagement
                 return result;
             }
 
-            var data = _tenantCtx.Users.Find(Id);
+            var contextOptions = new DbContextOptionsBuilder<TenantContext>()
+            .UseSqlServer($"Server={tenant.ServerName};Database={tenant.DatabaseName};User Id={tenant.ServerUserId};Password={tenant.ServerPassword}")
+            .Options;
+            var tenantCtx = new TenantContext(contextOptions, _catalogCtx, _claim);
+
+            var data = tenantCtx.Users.Find(Id);
 
             if (data != null)
             {
@@ -208,11 +57,169 @@ namespace ERP_API.Domain.Services.SystemManagement
                 data.UpdatedBy = _claim.UserId;
                 data.UpdatedDate = DateTime.Now;
 
-                _tenantCtx.SaveChanges();
+                tenantCtx.SaveChanges();
             }
 
             result.Success = true;
             result.Message = "Success inactive customer.";
+            return result;
+        }
+
+        public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string search)
+        {
+            var tenant = _catalogCtx.Tenants.FirstOrDefault(x => x.Id == _claim.TenantId);
+            if (tenant == null)
+            {
+                return new DataSourceResult{
+                    Total = 0
+                };
+            }
+
+            var contextOptions = new DbContextOptionsBuilder<TenantContext>()
+            .UseSqlServer($"Server={tenant.ServerName};Database={tenant.DatabaseName};User Id={tenant.ServerUserId};Password={tenant.ServerPassword}")
+            .Options;
+            var tenantCtx = new TenantContext(contextOptions, _catalogCtx, _claim);
+
+            var data = tenantCtx.VwUsers.AsQueryable();
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                data = data.Where(x =>
+                        x.Username.Contains(search) || x.Name.Contains(search) || x.RoleName.Contains(search) ||
+                        x.EmployeeUsername.Contains(search) || x.Initial.Contains(search));
+            }
+
+            return data.ToDataSourceResult(skip, take, filters, sorts);
+        }
+
+        public SaveResult Insert(VMUserTenant dataTenant, string password)
+        {
+            var result = new SaveResult(false);
+
+            using var transaction = _catalogCtx.Database.BeginTransaction();
+            try
+            {
+                var tenant = _catalogCtx.Tenants.FirstOrDefault(x => x.Id == _claim.TenantId);
+                if (tenant == null)
+                {
+                    result.Message = "Tenant did not exists.";
+                    return result;
+                }
+
+                var contextOptions = new DbContextOptionsBuilder<TenantContext>()
+                .UseSqlServer($"Server={tenant.ServerName};Database={tenant.DatabaseName};User Id={tenant.ServerUserId};Password={tenant.ServerPassword}")
+                .Options;
+                var tenantCtx = new TenantContext(contextOptions, _catalogCtx, _claim);
+
+                var existingUser = tenantCtx.Users.Where(x => x.Username == dataTenant.Username).FirstOrDefault();
+                if (existingUser != null)
+                {
+                    result.Message = "Username is already exists. Please use another username.";
+                    return result;
+                }
+
+
+                var pwh = new PasswordHasher<UserCatalog>();
+                var newCatalogUser = new UserCatalog()
+                {
+                    Id = new Guid(),
+                    TenantId = _claim.TenantId,
+                    Username = dataTenant.Username
+                };
+                var hashPwd = pwh.HashPassword(newCatalogUser, password);
+                newCatalogUser.Password = hashPwd;
+
+                _catalogCtx.Add(newCatalogUser);
+                _catalogCtx.SaveChanges();
+
+                var newTenantUser = new UserTenant()
+                {
+                    CatalogUserId = newCatalogUser.Id,
+                    Username = newCatalogUser.Username,
+                    Initial = dataTenant.Initial,
+                    Name = dataTenant.Username,
+                    RoleId = dataTenant.RoleId,
+                    EmployeeId = dataTenant.EmployeeId,
+                    IsActive = dataTenant.IsActive,
+                    CreatedBy = dataTenant.CreatedBy,
+                    CreatedDate = dataTenant.CreatedDate,
+                    UpdatedBy = dataTenant.UpdatedBy,
+                    UpdatedDate = dataTenant.UpdatedDate
+
+                };
+
+                tenantCtx.Add(newTenantUser);
+                tenantCtx.SaveChanges();
+
+                transaction.Commit();
+            }
+            catch (Exception ex)
+            {
+                result.Message = ex.InnerException?.Message ?? ex.Message;
+                return result;
+            }
+
+            result.Success = true;
+            result.Data = dataTenant.CatalogUserId;
+            result.Message = "Insert new user succeed.";
+            return result;
+        }
+
+        public SaveResult Update(VMUserTenant dataTenant, string password)
+        {
+            var result = new SaveResult(false);
+
+            using var transaction = _catalogCtx.Database.BeginTransaction();
+            try
+            {
+                var tenant = _catalogCtx.Tenants.FirstOrDefault(x => x.Id == _claim.TenantId);
+                if (tenant == null)
+                {
+                    result.Message = "Tenant did not exists.";
+                    return result;
+                }
+
+                var contextOptions = new DbContextOptionsBuilder<TenantContext>()
+                .UseSqlServer($"Server={tenant.ServerName};Database={tenant.DatabaseName};User Id={tenant.ServerUserId};Password={tenant.ServerPassword}")
+                .Options;
+                var tenantCtx = new TenantContext(contextOptions, _catalogCtx, _claim);
+
+                if (password != null)
+                {
+                    var dataCatalog = _catalogCtx.Users.FirstOrDefault(x => x.Id == dataTenant.CatalogUserId);
+                    var pwh = new PasswordHasher<UserCatalog>();
+                    dataCatalog.Password = pwh.HashPassword(dataCatalog, password);
+                    _catalogCtx.Update(dataCatalog);
+                    _catalogCtx.SaveChanges();
+                }
+
+                var userTenant = tenantCtx.Users.FirstOrDefault(x => x.Id == dataTenant.Id);
+               
+                userTenant.Username = dataTenant.Username;
+                userTenant.Initial = dataTenant.Initial;
+                userTenant.Name = dataTenant.Name;
+                userTenant.RoleId = dataTenant.RoleId;
+                userTenant.EmployeeId = dataTenant.EmployeeId;
+                userTenant.IsActive = dataTenant.IsActive;
+                userTenant.UpdatedBy = dataTenant.UpdatedBy;
+                userTenant.UpdatedDate = dataTenant.UpdatedDate;
+
+                tenantCtx.Update(userTenant);
+                tenantCtx.Entry(userTenant).Property(e => e.Id).IsModified = false;
+                tenantCtx.Entry(userTenant).Property(e => e.CatalogUserId).IsModified = false;
+                tenantCtx.Entry(userTenant).Property(e => e.CreatedBy).IsModified = false;
+                tenantCtx.Entry(userTenant).Property(e => e.CreatedDate).IsModified = false;
+                tenantCtx.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                result.Message = ex.InnerException?.Message ?? ex.Message;
+                return result;
+            }
+
+            result.Success = true;
+            result.Data = dataTenant.CatalogUserId;
+            result.Message = "Update user succeed.";
             return result;
         }
     }

@@ -261,18 +261,14 @@ namespace ERP_API.Controllers
             string query = @$"SELECT 1 as result
                                 FROM [{schema}].[{table}]
                                 WHERE {uniqueColumn} = '{value}'";
-            using (var command = _db.Database.GetDbConnection().CreateCommand())
+            using var command = _db.Database.GetDbConnection().CreateCommand();
+            command.CommandText = query;
+            _db.Database.OpenConnection();
+            using var reader = command.ExecuteReader();
+            if (reader.HasRows)
             {
-                command.CommandText = query;
-                _db.Database.OpenConnection();
-                using (var reader = command.ExecuteReader())
-                {
-                    if (reader.HasRows)
-                    {
-                        result.Success = false;
-                        result.Message = $"Data {uniqueColumn} already exist.";
-                    }
-                }
+                result.Success = false;
+                result.Message = $"Data {uniqueColumn} already exist.";
             }
             return result;
         }
