@@ -8,6 +8,7 @@ using ERP_API.Domain.Extensions;
 using ERP_API.Domain.Interfaces.Sales;
 using ERP_API.Domain.Models;
 using ERP_API.Model.Sales;
+using Microsoft.EntityFrameworkCore;
 
 namespace ERP_API.Domain.Services.Sales
 {
@@ -107,7 +108,80 @@ namespace ERP_API.Domain.Services.Sales
                     });
                 }
 
+                if (data.IsSoDlv)
+                {
+                    var newDlvCode = GetNewCode("DO_NUM_FMT", data.Date);
+
+                    var newSdlvData = new SalesDeliveryHeader
+                    {
+                        Code = newDlvCode,
+                        Date = data.DlvDate,
+                        SoCode = newCode,
+                        CustCode = data.CustCode,
+                        WarehouseCode = data.WarehouseCode,
+                        ShippedBy = data.SalesBy,
+                        CurrCode = data.CurrCode,
+                        Rate = data.Rate,
+                        ShipmentFee = data.ShipmentFee,
+                        HandlingFee = data.HandlingFee,
+                        SubTotal = data.SubTotal,
+                        FinalDiscPercent = data.FinalDiscPercent,
+                        FinalDisc = data.FinalDisc,
+                        IncludeTax = data.IncludeTax,
+                        TaxAmount = data.TaxAmount,
+                        Total = data.Total,
+                        Dpp = data.Dpp,
+                        Mark = data.Mark,
+                        CreatedBy = data.CreatedBy,
+                        CreatedDate = data.CreatedDate,
+                        UpdatedBy = data.UpdatedBy,
+                        UpdatedDate = data.UpdatedDate
+                    };
+
+                    Db.SalesDeliveryHeaders.Add(newSdlvData);
+
+                    short j = 0;
+                    foreach (var item in data.ItemDetails)
+                    {
+                        Db.SalesDeliveryDetails.Add(new SalesDeliveryDetail
+                        {
+                            Code = newDlvCode,
+                            LineNo = ++j,
+                            ItemId = item.ItemId,
+                            UomId = item.UomId,
+                            UnitId = item.UnitId,
+                            Qty = item.Qty,
+                            Length = item.Length,
+                            Width = item.Width,
+                            Height = item.Height,
+                            Weight = item.Weight,
+                            DimensionMeasurement = item.DimensionMeasurement,
+                            WeightMeasurement = item.WeightMeasurement,
+                            UnitPrice = item.UnitPrice,
+                            Disc = item.Disc,
+                            TaxId = item.TaxId,
+                            TaxAmount = item.TaxAmount,
+                            NettPrice = item.NettPrice,
+                            Total = item.Total,
+                            Dpp = item.Dpp
+                        });
+                    }
+                }
+
                 Db.SaveChanges();
+
+                if (data.IsSoDlv)
+                {
+                    var DlvData = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.SoCode == newCode);
+                    // Execute sp_update_stock_mutation_from_rcv
+                    Db.Database.ExecuteSqlRaw(
+                        "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
+                        DlvData.Code, data.Date, newCode);
+
+                    // Execute sp_update_po_rcv_qty
+                    Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", newCode);
+                }
+
                 transaction.Commit();
             }
             catch (Exception ex)
@@ -195,7 +269,80 @@ namespace ERP_API.Domain.Services.Sales
                     }
                 }
 
+                if (data.IsSoDlv)
+                {
+                    var newDlvCode = GetNewCode("DO_NUM_FMT", data.Date);
+
+                    var newSdlvData = new SalesDeliveryHeader
+                    {
+                        Code = newDlvCode,
+                        Date = data.DlvDate,
+                        SoCode = data.Code,
+                        CustCode = data.CustCode,
+                        WarehouseCode = data.WarehouseCode,
+                        ShippedBy = data.SalesBy,
+                        CurrCode = data.CurrCode,
+                        Rate = data.Rate,
+                        ShipmentFee = data.ShipmentFee,
+                        HandlingFee = data.HandlingFee,
+                        SubTotal = data.SubTotal,
+                        FinalDiscPercent = data.FinalDiscPercent,
+                        FinalDisc = data.FinalDisc,
+                        IncludeTax = data.IncludeTax,
+                        TaxAmount = data.TaxAmount,
+                        Total = data.Total,
+                        Dpp = data.Dpp,
+                        Mark = data.Mark,
+                        CreatedBy = data.CreatedBy,
+                        CreatedDate = data.CreatedDate,
+                        UpdatedBy = data.UpdatedBy,
+                        UpdatedDate = data.UpdatedDate
+                    };
+
+                    Db.SalesDeliveryHeaders.Add(newSdlvData);
+
+                    short j = 0;
+                    foreach (var item in data.ItemDetails)
+                    {
+                        Db.SalesDeliveryDetails.Add(new SalesDeliveryDetail
+                        {
+                            Code = newDlvCode,
+                            LineNo = ++j,
+                            ItemId = item.ItemId,
+                            UomId = item.UomId,
+                            UnitId = item.UnitId,
+                            Qty = item.Qty,
+                            Length = item.Length,
+                            Width = item.Width,
+                            Height = item.Height,
+                            Weight = item.Weight,
+                            DimensionMeasurement = item.DimensionMeasurement,
+                            WeightMeasurement = item.WeightMeasurement,
+                            UnitPrice = item.UnitPrice,
+                            Disc = item.Disc,
+                            TaxId = item.TaxId,
+                            TaxAmount = item.TaxAmount,
+                            NettPrice = item.NettPrice,
+                            Total = item.Total,
+                            Dpp = item.Dpp
+                        });
+                    }
+                }
+
                 Db.SaveChanges();
+
+                if (data.IsSoDlv)
+                {
+                    var DlvData = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.SoCode == data.Code);
+                    // Execute sp_update_stock_mutation_from_rcv
+                    Db.Database.ExecuteSqlRaw(
+                        "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
+                        DlvData.Code, data.Date, data.Code);
+
+                    // Execute sp_update_po_rcv_qty
+                    Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", data.Code);
+                }
+
                 transaction.Commit();
             }
             catch (Exception ex)
