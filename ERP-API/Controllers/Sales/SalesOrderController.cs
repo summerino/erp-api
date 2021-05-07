@@ -140,6 +140,15 @@ namespace ERP_API.Controllers.Sales
             return Ok(result);
         }
 
+        [HttpPut("close/{code}")]
+
+        public IActionResult OnClose(string code)
+        {
+            var result = _so.Close(code, _claim.UserId);
+            return Ok(result);
+        }
+
+
         private static (bool, string) Validate(SalesOrderRequest data)
         {
             if (!data.ItemDetails.Any())
