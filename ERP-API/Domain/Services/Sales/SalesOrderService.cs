@@ -236,5 +236,28 @@ namespace ERP_API.Domain.Services.Sales
             result.Message = "Success void sales order.";
             return result;
         }
+
+        public SaveResult Close(string code, int userId)
+        {
+            var result = new SaveResult(false);
+            var data = Db.SalesOrderHeaders.Find(code);
+            if (data != null)
+            {
+                // Checking mark header data
+                if (data.Mark == "CLS")
+                {
+                    result.Message = "Can't close sales order because data already mark as closed.";
+                    return result;
+                }
+                // Update header data
+                data.Mark = "CLS";
+                data.UpdatedBy = userId;
+                data.UpdatedDate = DateTime.Now;
+                Db.SaveChanges();
+            }
+            result.Success = true;
+            result.Message = "Success closed purchase order.";
+            return result;
+        }
     }
 }
