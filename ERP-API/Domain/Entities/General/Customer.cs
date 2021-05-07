@@ -41,6 +41,16 @@ namespace ERP_API.Domain.Entities.General
         public int? BillingAddressId { get; set; }
 
         public int? ShippingAddressId { get; set; }
+
+        public int? AreaId1 { get; set; }
+
+        public int? AreaId2 { get; set; }
+
+        public int? AreaId3 { get; set; }
+
+        public int? AreaId4 { get; set; }
+
+        public int? AreaId5 { get; set; }
     }
 
     public class VwCustomer : BaseEntityWithActive
@@ -80,6 +90,16 @@ namespace ERP_API.Domain.Entities.General
         public int? BillingAddressId { get; set; }
 
         public int? ShippingAddressId { get; set; }
+
+        public int? AreaId1 { get; set; }
+
+        public int? AreaId2 { get; set; }
+
+        public int? AreaId3 { get; set; }
+        
+        public int? AreaId4 { get; set; }
+        
+        public int? AreaId5 { get; set; }
 
 
         public string TypeName { get; set; }

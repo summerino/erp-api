@@ -162,6 +162,7 @@ namespace ERP_API
             services.AddScoped<IPurchaseReturnService, PurchaseReturnService>();
 
             // Sales services
+            services.AddScoped<ICreditMemoService, CreditMemoService>();
             services.AddScoped<ISalesDeliveryService, SalesDeliveryService>();
             services.AddScoped<ISalesInvoiceService, SalesInvoiceService>();
             services.AddScoped<ISalesOrderService, SalesOrderService>();

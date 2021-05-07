@@ -92,6 +92,8 @@ namespace ERP_API.Domain.Entities
 
         // Sales entities
         public DbSet<Area> Areas { get; set; }
+        public DbSet<CreditMemo> CreditMemos { get; set; }
+        public DbSet<VwCreditMemo> VwCreditMemos { get; set; }
         public DbSet<SalesDeliveryHeader> SalesDeliveryHeaders { get; set; }
         public DbSet<VwSalesDeliveryHeader> VwSalesDeliveryHeaders { get; set; }
         public DbSet<SalesDeliveryDetail> SalesDeliveryDetails { get; set; }
@@ -305,6 +307,16 @@ namespace ERP_API.Domain.Entities
             modelBuilder.Entity<VwPurchaseReturnDetail>()
                 .HasNoKey()
                 .ToView("vwPurchaseReturnDetail", Schema.Purchasing);
+
+            // Credit Memo entities
+            modelBuilder.Entity<CreditMemo>(entity =>
+                entity.Property(e => e.Mark)
+                    .IsRequired()
+            );
+
+            modelBuilder.Entity<VwCreditMemo>()
+                .HasNoKey()
+                .ToView("VwCreditMemo", Schema.Sales);
 
             // Sales Delivery entities
 
