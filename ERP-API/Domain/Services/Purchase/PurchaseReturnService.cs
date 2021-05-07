@@ -359,21 +359,45 @@ namespace ERP_API.Domain.Services.Purchase
             {
                 var uom = Db.UoMConversions.FirstOrDefault(x => x.Id == item.UnitId);
                 var stock = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == item.WarehouseCode && x.ItemId == item.ItemId);
-                if (uom.IsBaseUnit)
+                var stockM = Db.StockMutations.Where(x => x.WarehouseCode == item.WarehouseCode && x.UomId == item.UomId).Sum(x => x.BaseQty);
+                if (stock != null)
                 {
-                    if (item.Qty > stock.QtyOnHand)
+                    if (uom.IsBaseUnit)
                     {
-                        result = true;
+                        if (item.Qty > stock.QtyOnHand)
+                        {
+                            result = true;
+                        }
+                    }
+                    else
+                    {
+                        var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= uom.Seq).Select(x => x.Conversion).ToList();
+                        var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
+                        var baseQty = item.Qty * multipliedQty;
+                        if (baseQty > stock.QtyOnHand)
+                        {
+                            result = true;
+                        }
                     }
                 }
-                else
+                else if(!stockM.Equals(null)) // check to stock mutation if warehouse quantites not available
                 {
-                    var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= uom.Seq).Select(x => x.Conversion).ToList();
-                    var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
-                    var baseQty = item.Qty * multipliedQty;
-                    if (baseQty > stock.QtyOnHand)
+                    if (uom.IsBaseUnit)
                     {
-                        result = true;
+                        if (item.Qty > stockM)
+                        {
+                            result = true;
+                        }
+                    }
+                    else
+                    {
+                        var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= uom.Seq).Select(x => x.Conversion).ToList();
+                        var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
+                        var baseQty = item.Qty * multipliedQty;
+                        if (baseQty > stockM)
+                        {
+                            result = true;
+                        }
                     }
                 }
             }
