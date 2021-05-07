@@ -165,6 +165,7 @@ namespace ERP_API
             services.AddScoped<ISalesDeliveryService, SalesDeliveryService>();
             services.AddScoped<ISalesInvoiceService, SalesInvoiceService>();
             services.AddScoped<ISalesOrderService, SalesOrderService>();
+            services.AddScoped<IAreaService, AreaService>();
 
             // System Management services
             services.AddScoped<IUserService, UserService>();
