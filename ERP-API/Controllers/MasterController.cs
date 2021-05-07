@@ -25,11 +25,9 @@ namespace ERP_API.Controllers
     [ApiController]
     public class MasterController : ControllerBase
     {
-        private readonly TenantContext _db;
         private readonly IClaimService _claim;
-        public MasterController(TenantContext db, IClaimService claim)
+        public MasterController(IClaimService claim)
         {
-            _db = db;
             _claim = claim;
         }
         [HttpGet]
@@ -176,8 +174,17 @@ namespace ERP_API.Controllers
                 jsonData = JsonConvert.SerializeObject(model);
                 jsonData = "{ tableData: " + jsonData + " }";
                 var jToken = (JToken)JObject.Parse(string.Join(Environment.NewLine, jsonData));
-                dataAccess.SaveData(masterConfig.SchemaName, masterConfig.TableName, jToken);
-                result.Message = $"Success insert {param}.";
+
+                var (uniqueColumns, failedValidationMessage) = GetUniqueColumns(masterConfig);
+                var saveResult = dataAccess.SaveData(masterConfig.SchemaName, masterConfig.TableName, jToken, uniqueColumns);
+
+                if (saveResult.Result == Swift.Framework.Dtos.PageAddEdit.ResultType.Success)
+                    result.Message = $"Success insert {param}.";
+                else 
+                {
+                    result.Success = false;
+                    result.Message = uniqueColumns == null ? result.Message : failedValidationMessage;
+                }
                 return Ok(result);
             }
         }
@@ -251,31 +258,6 @@ namespace ERP_API.Controllers
             data.Add("currencyrate", typeof(CurrencyRate));
             return data;
         }
-        private SaveResult ValidateDuplicateData(Swift.Framework.Dtos.MasterConfig.ParameterDto parameterDto, object model) 
-        {
-            var result = new SaveResult(true);
-            string uniqueColumn = parameterDto.UniqueColumnName;
-            string schema = parameterDto.SchemaName;
-            string table = parameterDto.TableName;
-            var value = ReflectPropertyValue(model, uniqueColumn);
-            string query = @$"SELECT 1 as result
-                                FROM [{schema}].[{table}]
-                                WHERE {uniqueColumn} = '{value}'";
-            using var command = _db.Database.GetDbConnection().CreateCommand();
-            command.CommandText = query;
-            _db.Database.OpenConnection();
-            using var reader = command.ExecuteReader();
-            if (reader.HasRows)
-            {
-                result.Success = false;
-                result.Message = $"Data {uniqueColumn} already exist.";
-            }
-            return result;
-        }
-        private object ReflectPropertyValue(object source, string property)
-        {
-            return source.GetType().GetProperty(property).GetValue(source, null);
-        }
         private SaveResult Validate(Swift.Framework.Dtos.MasterConfig.ParameterDto parameterDto, string param, object obj)
         {
 
@@ -302,10 +284,22 @@ namespace ERP_API.Controllers
                 result.Message = "Please kindly check mandatory fields or fields that have an error.";
             }
             if (!string.IsNullOrEmpty(parameterDto.UniqueColumnName)) { 
-                result = ValidateDuplicateData(parameterDto, model);
+                //result = ValidateDuplicateData(parameterDto, model);
             }
             return result;
         }
+
+        private (string[]? value, string message) GetUniqueColumns(Swift.Framework.Dtos.MasterConfig.ParameterDto parameterDto) 
+        {
+            if (!string.IsNullOrEmpty(parameterDto.UniqueColumnName))
+            {
+                var uniqueColumns = parameterDto.UniqueColumnName.Split(",");
+                string failedValidationMessage = "Data " + string.Join(" and ", uniqueColumns.Select((s) => $"{s}")) + " already exist. Please change the values and try again.";
+                return (uniqueColumns, failedValidationMessage);
+            }
+            return (null, "");
+        }
+
         #endregion
     }
 }
