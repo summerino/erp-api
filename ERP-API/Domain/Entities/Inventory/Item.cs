@@ -75,16 +75,6 @@ namespace ERP_API.Domain.Entities.Inventory
         [StringLength(50)]
         public string SubGroup5 { get; set; }
 
-        public int? AreaId1 { get; set; }
-
-        public int? AreaId2 { get; set; }
-
-        public int? AreaId3 { get; set; }
-
-        public int? AreaId4 { get; set; }
-
-        public int? AreaId5 { get; set; }
-
         [StringLength(6)]
         public string CoaInventory { get; set; }
 

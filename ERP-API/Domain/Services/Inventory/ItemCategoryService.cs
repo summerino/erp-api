@@ -22,11 +22,7 @@ namespace ERP_API.Domain.Services.Inventory
             var data = Db.ItemCategories.AsQueryable();
 
             if (!string.IsNullOrEmpty(search))
-            {
-                data = 
-                    data.Where(x =>
-                        x.Initial.Contains(search) || x.Name.Contains(search) || x.GroupId.Contains(search));
-            }
+                data = data.Where(x => x.Initial.Contains(search) || x.Name.Contains(search));
 
             return data.ToDataSourceResult(skip, take, filter, sort);
         }

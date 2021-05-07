@@ -7,7 +7,19 @@ namespace ERP_API.Migrations.TenantMigrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<int>(
+            migrationBuilder.AlterColumn<int>(
+                name: "GroupId",
+                schema: "Inventory",
+                table: "ItemCategory",
+                type: "int",
+                nullable: true,
+                oldClrType: typeof(string),
+                oldType: "varchar(50)",
+                oldUnicode: false,
+                oldMaxLength: 50,
+                oldNullable: true);
+			
+			migrationBuilder.AddColumn<int>(
                 name: "AreaId1",
                 schema: "General",
                 table: "Customer",
@@ -472,8 +484,20 @@ END CATCH";
                 schema: "General",
                 table: "Customer");
 
-            // Drop view in Sales.vwCreditMemo
-            var sql = @"DROP VIEW [Sales].[vwCreditMemo]";
+            migrationBuilder.AlterColumn<string>(
+                name: "GroupId",
+                schema: "Inventory",
+                table: "ItemCategory",
+                type: "varchar(50)",
+                unicode: false,
+                maxLength: 50,
+                nullable: true,
+                oldClrType: typeof(int),
+                oldType: "int",
+                oldNullable: true);
+
+			// Drop view in Sales.vwCreditMemo
+			var sql = @"DROP VIEW [Sales].[vwCreditMemo]";
             migrationBuilder.Sql(sql);
         }
     }

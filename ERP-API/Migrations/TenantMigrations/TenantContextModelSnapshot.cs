@@ -1553,9 +1553,7 @@ namespace ERP_API.Migrations.TenantMigrations
                         .HasColumnType("int");
 
                     b.Property<string>("GroupId")
-                        .HasMaxLength(50)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(50)");
+                        .HasColumnType("int");
 
                     b.Property<string>("Initial")
                         .IsRequired()

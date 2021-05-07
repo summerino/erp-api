@@ -19,8 +19,7 @@ namespace ERP_API.Domain.Entities.Inventory
 
         public int? ParentId { get; set; }
 
-        [StringLength(50)]
-        public string GroupId { get; set; }
+        public int? GroupId { get; set; }
 
         public int? Deep { get; set; }
 
