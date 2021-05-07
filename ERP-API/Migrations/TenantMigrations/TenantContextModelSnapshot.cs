@@ -1552,7 +1552,7 @@ namespace ERP_API.Migrations.TenantMigrations
                     b.Property<int?>("Deep")
                         .HasColumnType("int");
 
-                    b.Property<string>("GroupId")
+                    b.Property<int?>("GroupId")
                         .HasColumnType("int");
 
                     b.Property<string>("Initial")
