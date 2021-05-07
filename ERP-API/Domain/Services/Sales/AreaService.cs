@@ -2,16 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using ERP_API.Domain.Entities;
-using ERP_API.Domain.Entities.Inventory;
+using ERP_API.Domain.Entities.Sales;
 using ERP_API.Domain.Extensions;
-using ERP_API.Domain.Interfaces.Inventory;
+using ERP_API.Domain.Interfaces.Sales;
 using ERP_API.Domain.Models;
 
-namespace ERP_API.Domain.Services.Inventory
+namespace ERP_API.Domain.Services.Sales
 {
-    public class ItemCategoryService: GeneralService<ItemCategory>, IItemCategoryService
+    public class AreaService : GeneralService<Area>, IAreaService
     {
-        public ItemCategoryService(TenantContext db)
+        public AreaService(TenantContext db)
             : base(db)
         {
         }
@@ -19,21 +19,21 @@ namespace ERP_API.Domain.Services.Inventory
         public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
             string search)
         {
-            var data = Db.ItemCategories.AsQueryable();
+            var data = Db.Areas.AsQueryable();
 
             if (!string.IsNullOrEmpty(search))
             {
-                data = 
+                data =
                     data.Where(x =>
-                        x.Initial.Contains(search) || x.Name.Contains(search) || x.GroupId.Contains(search));
+                        x.Initial.Contains(search) || x.Name.Contains(search));
             }
 
             return data.ToDataSourceResult(skip, take, filter, sort);
         }
 
-        public IEnumerable<ItemCategory> GetLists()
+        public IEnumerable<Area> GetLists()
         {
-            var data = Db.ItemCategories.Where(x => x.IsActive);
+            var data = Db.Areas.Where(x => x.IsActive);
 
             return data.OrderBy(x => x.Name);
         }
@@ -44,30 +44,26 @@ namespace ERP_API.Domain.Services.Inventory
             {
                 Id = 0,
                 Initial = "",
-                Name = "All Category",
+                Name = "Office",
                 ParentId = 0,
-                GroupId = "",
                 Deep = 0,
-                Seq = 0,
                 Lineage = "",
-                Children = DefineChildNodes(Db.ItemCategories.Where(x => x.IsActive).ToList())
+                Children = DefineChildNodes(Db.Areas.Where(x => x.IsActive).ToList())
             };
         }
 
-        private static object DefineChildNodes(List<ItemCategory> data, int? parentId = null)
+        private static object DefineChildNodes(List<Area> data, int? parentId = null)
         {
             var nodes = data
                 .Where(x => x.ParentId == parentId)
-                .OrderBy(x => x.Seq)
+                .OrderBy(x => x.Id)
                 .Select(x => new
                 {
                     x.Id,
                     x.Initial,
                     x.Name,
                     x.ParentId,
-                    x.GroupId,
                     x.Deep,
-                    x.Seq,
                     x.Lineage,
                     Children = DefineChildNodes(data, x.Id)
                 });
@@ -75,7 +71,7 @@ namespace ERP_API.Domain.Services.Inventory
             return nodes;
         }
 
-        public override SaveResult Insert(ItemCategory data)
+        public override SaveResult Insert(Area data)
         {
             var result = new SaveResult(false);
 
@@ -89,18 +85,7 @@ namespace ERP_API.Domain.Services.Inventory
                     return result;
                 }
 
-                // Checking max seq & update Seq
-                int? seq = getSequence(data.ParentId);
-                if (seq.HasValue)
-                {
-                    seq += 1;
-                    data.Seq = seq;
-                } else
-                {
-                    data.Seq = 1;
-                }
-
-                Db.ItemCategories.Add(data);
+                Db.Areas.Add(data);
                 Db.SaveChanges();
 
                 transaction.Commit();
@@ -113,11 +98,11 @@ namespace ERP_API.Domain.Services.Inventory
 
             result.Success = true;
             result.Data = data.Initial;
-            result.Message = "Success insert item category.";
+            result.Message = "Success insert area.";
             return result;
         }
 
-        public override SaveResult Update(ItemCategory data)
+        public override SaveResult Update(Area data)
         {
             var result = new SaveResult(false);
 
@@ -132,14 +117,14 @@ namespace ERP_API.Domain.Services.Inventory
                 }
 
                 // Update data
-                Db.ItemCategories.Update(data);
+                Db.Areas.Update(data);
                 Db.Entry(data).Property(e => e.Id).IsModified = false;
                 Db.Entry(data).Property(e => e.IsActive).IsModified = false;
                 Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
                 Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
 
                 Db.SaveChanges();
-                    
+
                 transaction.Commit();
             }
             catch (Exception ex)
@@ -150,7 +135,7 @@ namespace ERP_API.Domain.Services.Inventory
 
             result.Success = true;
             result.Data = data.Initial;
-            result.Message = "Success update item category.";
+            result.Message = "Success update area.";
             return result;
         }
 
@@ -158,7 +143,7 @@ namespace ERP_API.Domain.Services.Inventory
         {
             var result = new SaveResult(false);
 
-            var data = Db.ItemCategories.Find(id);
+            var data = Db.Areas.Find(id);
             if (data != null)
             {
                 // Checking active
@@ -177,36 +162,18 @@ namespace ERP_API.Domain.Services.Inventory
             }
 
             result.Success = true;
-            result.Message = "Success inactive item category.";
+            result.Message = "Success inactive area.";
             return result;
         }
 
         private bool IsInitialExists(string initial, int id)
         {
-            return Db.ItemCategories.Any(x => x.Initial == initial && x.Id != id);
+            return Db.Areas.Any(x => x.Initial == initial && x.Id != id);
         }
 
         private bool IsParent(int id)
         {
-            return Db.ItemCategories.Any(x => x.ParentId == id);
-        }
-
-        private int? getSequence(int? id)
-        {
-            if (id.HasValue)
-            {
-                if (Db.ItemCategories.Any(x => x.ParentId == id))
-                {
-                    int? value = Db.ItemCategories.Where(x => x.ParentId == id).OrderByDescending(x => x.Seq).First().Seq;
-                    return (value.HasValue) ? value : null;
-                } else
-                {
-                    return null;
-                }
-            } else
-            {
-                return null;
-            }
+            return Db.Areas.Any(x => x.ParentId == id);
         }
     }
 }
