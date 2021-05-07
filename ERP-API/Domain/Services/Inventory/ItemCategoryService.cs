@@ -46,7 +46,6 @@ namespace ERP_API.Domain.Services.Inventory
                 Initial = "",
                 Name = "All Category",
                 ParentId = 0,
-                IsLowestLevel = 0,
                 GroupId = "",
                 Deep = 0,
                 Seq = 0,
@@ -103,14 +102,6 @@ namespace ERP_API.Domain.Services.Inventory
 
                 Db.ItemCategories.Add(data);
                 Db.SaveChanges();
-                
-                // Update data
-                Db.ItemCategories.Update(data);
-                Db.Entry(data).Property(e => e.Id).IsModified = false;
-                Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
-                Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
-
-                Db.SaveChanges();
 
                 transaction.Commit();
             }
@@ -143,6 +134,7 @@ namespace ERP_API.Domain.Services.Inventory
                 // Update data
                 Db.ItemCategories.Update(data);
                 Db.Entry(data).Property(e => e.Id).IsModified = false;
+                Db.Entry(data).Property(e => e.IsActive).IsModified = false;
                 Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
                 Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
 
