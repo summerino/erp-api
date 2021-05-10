@@ -268,7 +268,7 @@ namespace ERP_API.Domain.Entities.Sales
 
         public short LineNo { get; set; }
 
-        public long ReturnDetailId { get; set; }
+        public long? ReturnDetailId { get; set; }
 
         public int ItemId { get; set; }
 
