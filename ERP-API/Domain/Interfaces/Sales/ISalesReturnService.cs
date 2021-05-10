@@ -1,0 +1,27 @@
+﻿using ERP_API.Domain.Entities.Sales;
+using ERP_API.Domain.Models;
+using ERP_API.Model.Sales;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace ERP_API.Domain.Interfaces.Sales
+{
+    public interface ISalesReturnService : IGeneralService<SalesReturnHeader>
+    {
+        DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
+            string search);
+
+        IEnumerable<VwSalesReturnDetail> GetDetailData(string code, bool? fullDelivered = null);
+
+
+        List<dynamic> GetRelatedTransactions(string code);
+
+        SaveResult Insert(SalesReturnRequest data);
+
+        SaveResult Update(SalesReturnRequest data);
+
+        SaveResult Delete(string code, int userId);
+    }
+}

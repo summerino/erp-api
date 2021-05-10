@@ -108,6 +108,7 @@ namespace ERP_API.Domain.Entities
         public DbSet<SalesReturnHeader> SalesReturnHeaders { get; set; }
         public DbSet<VwSalesReturnHeader> VwSalesReturnHeaders { get; set; }
         public DbSet<SalesReturnDetail> SalesReturnDetails { get; set; }
+        public DbSet<VwSalesReturnDetail> VwSalesReturnDetails { get; set; }
         public DbSet<SalesReturnDetailExchDiffItem> SalesReturnDetailExchDiffItems { get; set; }
 
         // System Management
