@@ -48,6 +48,7 @@ namespace ERP_API.Domain.Services.Sales
                 ParentId = 0,
                 Deep = 0,
                 Lineage = "",
+                IsParent = true,
                 Children = DefineChildNodes(Db.Areas.Where(x => x.IsActive).ToList())
             };
         }
@@ -65,6 +66,7 @@ namespace ERP_API.Domain.Services.Sales
                     x.ParentId,
                     x.Deep,
                     x.Lineage,
+                    IsParent = IsParent(data, x.Id),
                     Children = DefineChildNodes(data, x.Id)
                 });
 
@@ -171,9 +173,9 @@ namespace ERP_API.Domain.Services.Sales
             return Db.Areas.Any(x => x.Initial == initial && x.Id != id);
         }
 
-        private bool IsParent(int id)
+        private static bool IsParent(List<Area> data, int? id = null)
         {
-            return Db.Areas.Any(x => x.ParentId == id);
+            return data.Any(x => x.ParentId == id);
         }
     }
 }
