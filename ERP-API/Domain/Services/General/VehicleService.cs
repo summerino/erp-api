@@ -28,7 +28,7 @@ namespace ERP_API.Domain.Services.General
                 // Checking active
                 if (data.IsActive == false)
                 {
-                    result.Message = "Can't inactive vehicle because data already inactive.";
+                    result.Message = "Tidak bisa menonaktifkan data kendaraan karena data sudah nonaktif.";
                     return result;
                 }
 
@@ -41,7 +41,7 @@ namespace ERP_API.Domain.Services.General
             }
 
             result.Success = true;
-            result.Message = "Success inactive vehicle.";
+            result.Message = "Data kendaraan berhasil dinonaktifkan.";
             return result;
         }
 
@@ -70,7 +70,7 @@ namespace ERP_API.Domain.Services.General
                 // Checking vehicle no already exists or not
                 if (IsVehicleNoExists(data.VehicleNo, 0))
                 {
-                    result.Message = "VehicleNo is already exists. Please use another VehicleNo.";
+                    result.Message = "No. kendaraan sudah terdaftar. Tolong gunakan No. kendaraan lain.";
                     return result;
                 }
 
@@ -87,7 +87,7 @@ namespace ERP_API.Domain.Services.General
 
             result.Success = true;
             result.Data = data.Id;
-            result.Message = "Success insert vehicle data.";
+            result.Message = "Data kendaraan berhasil disimpan.";
             return result;
         }
 
@@ -98,7 +98,7 @@ namespace ERP_API.Domain.Services.General
             // Checking VehicleNo already exists or not
             if (IsVehicleNoExists(data.VehicleNo, data.Id))
             {
-                result.Message = "VehicleNo is already exists. Please use another VehicleNo.";
+                result.Message = "No. kendaraan sudah terdaftar. Tolong gunakan No. kendaraan lain.";
                 return result;
             }
 
@@ -112,7 +112,7 @@ namespace ERP_API.Domain.Services.General
 
             result.Success = true;
             result.Data = data.Id;
-            result.Message = "Success update vehicle data.";
+            result.Message = "Data kendaraan berhasil diperbarui.";
             return result;
         }
 
