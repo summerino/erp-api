@@ -46,7 +46,7 @@ namespace ERP_API.Domain.Services.General
                 // Checking initial already exists or not
                 if (IsInitialExists(data.Initial, 0))
                 {
-                    result.Message = "Initial is already exists. Please use another initial.";
+                    result.Message = "Inisial sudah terdaftar. Tolong gunakan inisial lain.";
                     return result;
                 }
 
@@ -63,7 +63,7 @@ namespace ERP_API.Domain.Services.General
 
             result.Success = true;
             result.Data = data.Id;
-            result.Message = "Success insert customer type data.";
+            result.Message = "Data tipe pelanggan berhasil disimpan.";
             return result;
         }
 
@@ -74,7 +74,7 @@ namespace ERP_API.Domain.Services.General
             // Checking initial already exists or not
             if (IsInitialExists(data.Initial, data.Id))
             {
-                result.Message = "Initial is already exists. Please use another initial.";
+                result.Message = "Inisial sudah terdaftar. Tolong gunakan inisial lain.";
                 return result;
             }
 
@@ -88,7 +88,7 @@ namespace ERP_API.Domain.Services.General
 
             result.Success = true;
             result.Data = data.Id;
-            result.Message = "Success update customer type data.";
+            result.Message = "Data tipe pelanggan berhasil diperbarui.";
             return result;
         }
 
@@ -102,7 +102,7 @@ namespace ERP_API.Domain.Services.General
                 // Checking active
                 if (data.IsActive == false)
                 {
-                    result.Message = "Can't remove customer type because data already inactive.";
+                    result.Message = "Tidak bisa menonaktifkan data tipe pelanggan karena data sudah nonaktif.";
                     return result;
                 }
 
@@ -114,7 +114,7 @@ namespace ERP_API.Domain.Services.General
             }
 
             result.Success = true;
-            result.Message = "Success remove customer type.";
+            result.Message = "Data tipe pelanggan berhasil dinonaktifkan.";
             return result;
         }
 
