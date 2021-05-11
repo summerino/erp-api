@@ -42,10 +42,11 @@ namespace ERP_API.Domain.Services.Inventory
                 Initial = "",
                 Name = "All Category",
                 ParentId = 0,
-                GroupId = "",
+                GroupId = 0,
                 Deep = 0,
                 Seq = 0,
                 Lineage = "",
+                IsParent = true,
                 Children = DefineChildNodes(Db.ItemCategories.Where(x => x.IsActive).ToList())
             };
         }
@@ -65,6 +66,7 @@ namespace ERP_API.Domain.Services.Inventory
                     x.Deep,
                     x.Seq,
                     x.Lineage,
+                    IsParent = IsParent(data, x.Id),
                     Children = DefineChildNodes(data, x.Id)
                 });
 
@@ -182,9 +184,9 @@ namespace ERP_API.Domain.Services.Inventory
             return Db.ItemCategories.Any(x => x.Initial == initial && x.Id != id);
         }
 
-        private bool IsParent(int id)
+        private static bool IsParent(List<ItemCategory> data, int? id = null)
         {
-            return Db.ItemCategories.Any(x => x.ParentId == id);
+            return data.Any(x => x.ParentId == id);
         }
 
         private int? getSequence(int? id)

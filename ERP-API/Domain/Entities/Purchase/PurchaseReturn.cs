@@ -59,6 +59,7 @@ namespace ERP_API.Domain.Entities.Purchase
         [Column("DPP", TypeName = "decimal(18, 2)")]
         public decimal Dpp { get; set; }
 
+        [Required]
         [StringLength(256)]
         public string Notes { get; set; }
     }
@@ -245,5 +246,47 @@ namespace ERP_API.Domain.Entities.Purchase
         public string UomInitial { get; set; }
 
         public string UnitName { get; set; }
+    }
+
+    [Table("PurchaseReturnDetailExchDiffItem", Schema = Schema.Purchasing)]
+    public class PurchaseReturnDetailExchDiffItem
+    {
+        public long Id { get; set; }
+
+        [StringLength(17)]
+        public string Code { get; set; }
+
+        public short LineNo { get; set; }
+
+        public long? ReturnDetailId { get; set; }
+
+        public int ItemId { get; set; }
+
+        public int UomId { get; set; }
+
+        public int UnitId { get; set; }
+
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal Qty { get; set; }
+
+        [StringLength(8)]
+        public string WarehouseCode { get; set; }
+
+        [Column(TypeName = "decimal(19, 6)")]
+        public decimal UnitPrice { get; set; }
+
+        public int? TaxId { get; set; }
+
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal TaxAmount { get; set; }
+
+        [Column(TypeName = "decimal(19, 6)")]
+        public decimal NettPrice { get; set; }
+
+        [Column(TypeName = "decimal(19, 6)")]
+        public decimal Total { get; set; }
+
+        [Column("DPP", TypeName = "decimal(19, 6)")]
+        public decimal Dpp { get; set; }
     }
 }

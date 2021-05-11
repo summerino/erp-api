@@ -89,6 +89,7 @@ namespace ERP_API.Domain.Entities
         public DbSet<VwPurchaseReturnHeader> VwPurchaseReturnHeaders { get; set; }
         public DbSet<PurchaseReturnDetail> PurchaseReturnDetails { get; set; }
         public DbSet<VwPurchaseReturnDetail> VwPurchaseReturnDetails { get; set; }
+        public DbSet<PurchaseReturnDetailExchDiffItem> PurchaseReturnDetailExchDiffItems { get; set; }
 
         // Sales entities
         public DbSet<Area> Areas { get; set; }
@@ -108,6 +109,7 @@ namespace ERP_API.Domain.Entities
         public DbSet<SalesReturnHeader> SalesReturnHeaders { get; set; }
         public DbSet<VwSalesReturnHeader> VwSalesReturnHeaders { get; set; }
         public DbSet<SalesReturnDetail> SalesReturnDetails { get; set; }
+        public DbSet<VwSalesReturnDetail> VwSalesReturnDetails { get; set; }
         public DbSet<SalesReturnDetailExchDiffItem> SalesReturnDetailExchDiffItems { get; set; }
 
         // System Management
@@ -289,17 +291,22 @@ namespace ERP_API.Domain.Entities
                 .HasNoKey()
                 .ToView("vwPurchaseReceiveDetail", Schema.Purchasing);
 
+            // Purchase Return entities
             modelBuilder.Entity<PurchaseReturnHeader>(entity =>
                 entity.Property(e => e.Mark)
                     .IsRequired()
             );
 
-            // Purchase Return entities
             modelBuilder.Entity<VwPurchaseReturnHeader>()
                 .HasNoKey()
                 .ToView("vwPurchaseReturnHeader", Schema.Purchasing);
 
             modelBuilder.Entity<PurchaseReturnDetail>(entity =>
+                entity.Property(e => e.Code)
+                    .IsRequired()
+            );
+
+            modelBuilder.Entity<PurchaseReturnDetailExchDiffItem>(entity =>
                 entity.Property(e => e.Code)
                     .IsRequired()
             );
