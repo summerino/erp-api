@@ -53,7 +53,7 @@ namespace ERP_API.Domain.Services.General
                 // Checking initial already exists or not
                 if (IsInitialExists(data.Initial, ""))
                 {
-                    result.Message = "Initial is already exists. Please use another initial.";
+                    result.Message = "Inisial sudah terdaftar. Tolong gunakan inisial lain.";
                     return result;
                 }
 
@@ -75,7 +75,7 @@ namespace ERP_API.Domain.Services.General
 
             result.Success = true;
             result.Data = data.Code;
-            result.Message = "Success insert supplier.";
+            result.Message = "Data pemasok berhasil disimpan.";
             return result;
         }
 
@@ -86,7 +86,7 @@ namespace ERP_API.Domain.Services.General
             // Checking initial already exists or not
             if (IsInitialExists(data.Initial, data.Code))
             {
-                result.Message = "Initial is already exists. Please use another initial.";
+                result.Message = "Inisial sudah terdaftar. Tolong gunakan inisial lain.";
                 return result;
             }
 
@@ -100,7 +100,7 @@ namespace ERP_API.Domain.Services.General
 
             result.Success = true;
             result.Data = data.Code;
-            result.Message = "Success update supplier.";
+            result.Message = "Data pemasok berhasil diperbarui.";
             return result;
         }
 
@@ -114,7 +114,7 @@ namespace ERP_API.Domain.Services.General
                 // Checking active
                 if (data.IsActive == false)
                 {
-                    result.Message = "Can't inactive supplier because data already inactive.";
+                    result.Message = "Tidak bisa menonaktifkan data pemasok karena data sudah nonaktif.";
                     return result;
                 }
 
@@ -127,7 +127,7 @@ namespace ERP_API.Domain.Services.General
             }
 
             result.Success = true;
-            result.Message = "Success inactive supplier.";
+            result.Message = "Data pemasok berhasil dinonaktifkan.";
             return result;
         }
 
