@@ -90,6 +90,24 @@ namespace ERP_API.Controllers.Inventory
                 TableData = data
             });
         }
+
+        [HttpGet("item-list")]
+        public IActionResult GetItemForAdjustment(string search, string category, string filters, string sorts, int skip, int take) 
+        {
+            var data =
+                _adjustment.GetAdjustmentItem(
+                    skip, take,
+                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
+                    JsonConvert.DeserializeObject<List<int>>(!string.IsNullOrWhiteSpace(category) ? category : "[]"),
+                    search);
+
+            return Ok(new ApiResponse
+            {
+                RowCount = data.Total,
+                TableData = data.Data.ToDynamicList()
+            });
+        }
         [HttpPost]
         public IActionResult OnPost(AdjustmentRequest data)
         {
@@ -138,7 +156,10 @@ namespace ERP_API.Controllers.Inventory
         private static (bool, string) Validate(AdjustmentRequest data)
         {
             if (!data.ItemDetails.Any())
-                return (false, "Item details can't be empty.");
+                return (false, "Rincian satuan ukur tidak boleh kosong.");
+
+            if (data.ItemDetails.GroupBy(x => new { x.ItemId, x.UnitId }).Any(x => x.Count() > 1))
+                return (false, "Rincian satuan ukur terdapat unit yang sama.");
 
             return (true, "");
         }

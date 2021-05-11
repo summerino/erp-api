@@ -69,6 +69,7 @@ namespace ERP_API.Domain.Entities
         public DbSet<VwAdjustmentHeader> VwAdjustmentHeaders { get; set; }
         public DbSet<AdjustmentDetail> AdjustmentDetails { get; set; }
         public DbSet<VwAdjustmentDetail> VwAdjustmentDetails { get; set; }
+        public DbSet<VwAdjustmentItem> VwAdjustmentItems { get; set; }
         public DbSet<WarehouseQuantity> WarehouseQuantities { get; set; }
 
         // Purchase entities
@@ -228,6 +229,9 @@ namespace ERP_API.Domain.Entities
                 .HasNoKey()
                 .ToView("VwAdjustmentDetail", Schema.Inventory);
 
+            modelBuilder.Entity<VwAdjustmentItem>()
+                .HasNoKey()
+                .ToView("VwAdjustmentItem", Schema.Inventory);
             // Debit Memo entities
             modelBuilder.Entity<DebitMemo>(entity =>
                 entity.Property(e => e.Mark)
