@@ -40,7 +40,7 @@ namespace ERP_API.Domain.Services.Inventory
             {
                 Id = 0,
                 Initial = "",
-                Name = "All Category",
+                Name = "Semua Kategori",
                 ParentId = 0,
                 GroupId = 0,
                 Deep = 0,
