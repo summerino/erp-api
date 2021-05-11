@@ -9,6 +9,7 @@ using ERP_API.Domain.Services;
 using ERP_API.Model;
 using ERP_API.Model.Purchase;
 using Newtonsoft.Json;
+using ERP_API.Domain.Interfaces.Inventory;
 
 namespace ERP_API.Controllers.Purchase
 {
@@ -18,11 +19,13 @@ namespace ERP_API.Controllers.Purchase
     {
         private readonly IPurchaseReturnService _rtn;
         private readonly IClaimService _claim;
+        private readonly IUnitOfMeasurementService _uom;
 
-        public PurchaseReturnController(IPurchaseReturnService rtn, IClaimService claim)
+        public PurchaseReturnController(IPurchaseReturnService rtn, IClaimService claim, IUnitOfMeasurementService uom)
         {
             _rtn = rtn;
             _claim = claim;
+            _uom = uom;
         }
 
         [HttpGet]
@@ -45,6 +48,7 @@ namespace ERP_API.Controllers.Purchase
         [HttpGet("item")]
         public IActionResult GetDetailData(string code, bool? fullReceived)
         {
+            var uomC = _uom.GetDataConversion().ToList();
             var data = _rtn.GetDetailData(code, fullReceived)
                 .Select(x => new
                 {
@@ -77,6 +81,19 @@ namespace ERP_API.Controllers.Purchase
                     OldUnitId = x.ItemUomBuyId,
                     OldUnitName = x.ItemUomBuyName,
                     OldUnitPrice = x.ItemBuyPrice,
+                    Units = uomC.Where(u => u.UomId == x.UomId)
+                        .Select(u => new
+                        {
+                            u.Id,
+                            u.UomId,
+                            u.UnitToConvert,
+                            u.UnitEquivalent,
+                            u.Conversion,
+                            u.IsBaseUnit,
+                            u.Seq
+                        })
+                        .OrderBy(u => u.Seq)
+                        .ToList(),
                     TotTax = x.Qty * x.TaxAmount,
                     TotDPP = x.Qty * x.Dpp,
                     State = ""
