@@ -81,10 +81,10 @@ namespace ERP_API.Controllers.Inventory
             });
         }
 
-        [HttpGet("item-by-initial")]
-        public IActionResult GetDetailByInitial(string initial)
+        [HttpGet("item-by-id")]
+        public IActionResult GetDetailById(int id)
         {
-            var data = _itemGroup.GetDetailByInitial(initial)
+            var data = _itemGroup.GetDetailById(id)
                 .Select(x => new
                 {
                     x.Id,

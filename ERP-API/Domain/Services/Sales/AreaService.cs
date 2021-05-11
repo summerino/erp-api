@@ -44,7 +44,7 @@ namespace ERP_API.Domain.Services.Sales
             {
                 Id = 0,
                 Initial = "",
-                Name = "Office",
+                Name = "Wilayah",
                 ParentId = 0,
                 Deep = 0,
                 Lineage = "",

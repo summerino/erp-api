@@ -12,7 +12,7 @@ namespace ERP_API.Domain.Interfaces.Inventory
 
         IEnumerable<ItemGroupSubGroup> GetDetailData(int id);
 
-        IEnumerable<ItemGroupSubGroup> GetDetailByInitial(string initial);
+        IEnumerable<ItemGroupSubGroup> GetDetailById(int id);
 
         IEnumerable<ItemGroup> GetLists();
 
