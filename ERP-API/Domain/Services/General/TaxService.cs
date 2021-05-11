@@ -26,7 +26,7 @@ namespace ERP_API.Domain.Services.General
                 // Checking active
                 if (data.IsActive == false)
                 {
-                    result.Message = "Can't inactive tax data because data already inactive.";
+                    result.Message = "Tidak bisa menonaktifkan data pajak karena data sudah nonaktif.";
                     return result;
                 }
 
@@ -39,7 +39,7 @@ namespace ERP_API.Domain.Services.General
             }
 
             result.Success = true;
-            result.Message = "Success inactive tax data.";
+            result.Message = "Data pajak berhasil dinonaktifkan.";
             return result;
         }
 
@@ -74,7 +74,7 @@ namespace ERP_API.Domain.Services.General
                 // Checking initial already exists or not
                 if (IsInitialExists(data.Initial, 0))
                 {
-                    result.Message = "Initial is already exists. Please use another initial.";
+                    result.Message = "Inisial sudah terdaftar. Tolong gunakan inisial lain.";
                     return result;
                 }
 
@@ -91,7 +91,7 @@ namespace ERP_API.Domain.Services.General
 
             result.Success = true;
             result.Data = data.Id;
-            result.Message = "Success insert tax data.";
+            result.Message = "Data pajak berhasil disimpan.";
             return result;
         }
 
@@ -102,7 +102,7 @@ namespace ERP_API.Domain.Services.General
             // Checking initial already exists or not
             if (IsInitialExists(data.Initial, data.Id))
             {
-                result.Message = "Initial is already exists. Please use another initial.";
+                result.Message = "Inisial sudah terdaftar. Tolong gunakan inisial lain.";
                 return result;
             }
 
@@ -116,7 +116,7 @@ namespace ERP_API.Domain.Services.General
 
             result.Success = true;
             result.Data = data.Id;
-            result.Message = "Success update tax data.";
+            result.Message = "Data pajak berhasil diperbarui.";
             return result;
         }
 
