@@ -61,7 +61,7 @@ namespace ERP_API.Domain.Services.General
                 // Checking initial already exists or not
                 if (IsInitialExists(data.Initial, ""))
                 {
-                    result.Message = "Initial is already exists. Please use another initial.";
+                    result.Message = "Inisial sudah terdaftar. Tolong gunakan inisial lain.";
                     return result;
                 }
 
@@ -84,7 +84,7 @@ namespace ERP_API.Domain.Services.General
                     // Checking initial already exists or not
                     if (IsInitialAddressExists(item.Initial, ""))
                     {
-                        result.Message = "Initial address is already exists. Please use another initial on address list.";
+                        result.Message = "Alamat inisial sudah terdaftar. Tolong gunakan alamat inisial lain pada daftar alamat.";
                         return result;
                     }
 
@@ -134,7 +134,7 @@ namespace ERP_API.Domain.Services.General
 
             result.Success = true;
             result.Data = data.Code;
-            result.Message = "Success insert customer.";
+            result.Message = "Data pelanggan berhasil disimpan.";
             return result;
         }
 
@@ -145,7 +145,7 @@ namespace ERP_API.Domain.Services.General
             // Checking initial already exists or not
             if (IsInitialExists(data.Initial, data.Code))
             {
-                result.Message = "Initial is already exists. Please use another initial.";
+                result.Message = "Inisial sudah terdaftar. Tolong gunakan inisial lain.";
                 return result;
             }
 
@@ -174,7 +174,7 @@ namespace ERP_API.Domain.Services.General
                 // Checking initial already exists or not
                 if (IsInitialAddressExists(item.Initial, item.Code))
                 {
-                    result.Message = "Initial address is already exists. Please use another initial on address list.";
+                    result.Message = "Alamat inisial sudah terdaftar. Tolong gunakan alamat inisial lain pada daftar alamat.";
                     return result;
                 }
 
@@ -233,7 +233,7 @@ namespace ERP_API.Domain.Services.General
 
             result.Success = true;
             result.Data = data.Code;
-            result.Message = "Success update customer.";
+            result.Message = "Data pelanggan berhasil diperbarui.";
             return result;
         }
 
@@ -247,7 +247,7 @@ namespace ERP_API.Domain.Services.General
                 // Checking active
                 if (data.IsActive == false)
                 {
-                    result.Message = "Can't inactive customer because data already inactive.";
+                    result.Message = "Tidak bisa menonaktifkan data pelanggan karena data sudah nonaktif.";
                     return result;
                 }
 
@@ -260,7 +260,7 @@ namespace ERP_API.Domain.Services.General
             }
 
             result.Success = true;
-            result.Message = "Success inactive customer.";
+            result.Message = "Data pelanggan berhasil dinonaktifkan.";
             return result;
         }
 
