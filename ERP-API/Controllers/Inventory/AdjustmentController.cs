@@ -156,7 +156,10 @@ namespace ERP_API.Controllers.Inventory
         private static (bool, string) Validate(AdjustmentRequest data)
         {
             if (!data.ItemDetails.Any())
-                return (false, "Item details can't be empty.");
+                return (false, "Rincian satuan ukur tidak boleh kosong.");
+
+            if (data.ItemDetails.GroupBy(x => new { x.ItemId, x.UnitId }).Any(x => x.Count() > 1))
+                return (false, "Rincian satuan ukur terdapat unit yang sama.");
 
             return (true, "");
         }
