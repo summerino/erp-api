@@ -46,7 +46,7 @@ namespace ERP_API.Domain.Services.General
                 // Checking initial already exists or not
                 if (IsInitialExists(data.Initial, 0))
                 {
-                    result.Message = "Initial is already exists. Please use another initial.";
+                    result.Message = "Inisial sudah terdaftar. Tolong gunakan inisial lain.";
                     return result;
                 }
 
@@ -63,7 +63,7 @@ namespace ERP_API.Domain.Services.General
 
             result.Success = true;
             result.Data = data.Id;
-            result.Message = "Success insert vehicle type data.";
+            result.Message = "Data tipe kendaraan berhasil disimpan.";
             return result;
         }
 
@@ -74,7 +74,7 @@ namespace ERP_API.Domain.Services.General
             // Checking initial already exists or not
             if (IsInitialExists(data.Initial, data.Id))
             {
-                result.Message = "Initial is already exists. Please use another initial.";
+                result.Message = "Inisial sudah terdaftar. Tolong gunakan inisial lain.";
                 return result;
             }
 
@@ -88,7 +88,7 @@ namespace ERP_API.Domain.Services.General
 
             result.Success = true;
             result.Data = data.Id;
-            result.Message = "Success update vehicle type data.";
+            result.Message = "Data tipe kendaraan berhasil diperbarui.";
             return result;
         }
         public SaveResult Delete(int id, int userId)
@@ -101,7 +101,7 @@ namespace ERP_API.Domain.Services.General
                 // Checking active
                 if (data.IsActive == false)
                 {
-                    result.Message = "Can't inactive vehicle type data because data already inactive.";
+                    result.Message = "Tidak bisa menonaktifkan data tipe kendaraan karena data sudah nonaktif.";
                     return result;
                 }
 
@@ -114,7 +114,7 @@ namespace ERP_API.Domain.Services.General
             }
 
             result.Success = true;
-            result.Message = "Success inactive vehicle type data.";
+            result.Message = "Data tipe kendaraan berhasil dinonaktifkan.";
             return result;
         }
 
