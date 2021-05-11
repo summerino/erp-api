@@ -32,7 +32,7 @@ namespace ERP_API.Domain.Services.SystemManagement
             var tenant = _catalogCtx.Tenants.FirstOrDefault(x => x.Id == _claim.TenantId);
             if (tenant == null)
             {
-                result.Message = "Tenant did not exists.";
+                result.Message = "Tenant tidak terdaftar.";
                 return result;
             }
 
@@ -48,7 +48,7 @@ namespace ERP_API.Domain.Services.SystemManagement
                 // Checking active
                 if (data.IsActive == false)
                 {
-                    result.Message = "Can't inactive user because data already inactive.";
+                    result.Message = "Tidak bisa menonaktifkan data pengguna karena data sudah nonaktif.";
                     return result;
                 }
 
@@ -61,7 +61,7 @@ namespace ERP_API.Domain.Services.SystemManagement
             }
 
             result.Success = true;
-            result.Message = "Success inactive customer.";
+            result.Message = "Data pengguna berhasil dinonaktifkan.";
             return result;
         }
 
@@ -102,7 +102,7 @@ namespace ERP_API.Domain.Services.SystemManagement
                 var tenant = _catalogCtx.Tenants.FirstOrDefault(x => x.Id == _claim.TenantId);
                 if (tenant == null)
                 {
-                    result.Message = "Tenant did not exists.";
+                    result.Message = "Tenant tidak terdaftar.";
                     return result;
                 }
 
@@ -114,7 +114,7 @@ namespace ERP_API.Domain.Services.SystemManagement
                 var existingUser = tenantCtx.Users.Where(x => x.Username == dataTenant.Username).FirstOrDefault();
                 if (existingUser != null)
                 {
-                    result.Message = "Username is already exists. Please use another username.";
+                    result.Message = "Nama pengguna sudah terdaftar. Tolong gunakan nama pengguna lain.";
                     return result;
                 }
 
@@ -161,7 +161,7 @@ namespace ERP_API.Domain.Services.SystemManagement
 
             result.Success = true;
             result.Data = dataTenant.CatalogUserId;
-            result.Message = "Insert new user succeed.";
+            result.Message = "Data pengguna berhasil disimpan.";
             return result;
         }
 
@@ -175,7 +175,7 @@ namespace ERP_API.Domain.Services.SystemManagement
                 var tenant = _catalogCtx.Tenants.FirstOrDefault(x => x.Id == _claim.TenantId);
                 if (tenant == null)
                 {
-                    result.Message = "Tenant did not exists.";
+                    result.Message = "Tenant tidak terdaftar.";
                     return result;
                 }
 
@@ -219,7 +219,7 @@ namespace ERP_API.Domain.Services.SystemManagement
 
             result.Success = true;
             result.Data = dataTenant.CatalogUserId;
-            result.Message = "Update user succeed.";
+            result.Message = "Data pengguna berhasil diperbarui.";
             return result;
         }
     }
