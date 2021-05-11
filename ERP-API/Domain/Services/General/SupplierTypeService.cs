@@ -47,7 +47,7 @@ namespace ERP_API.Domain.Services.General
                 // Checking initial already exists or not
                 if (IsInitialExists(data.Initial, 0))
                 {
-                    result.Message = "Initial is already exists. Please use another initial.";
+                    result.Message = "Inisial sudah terdaftar. Tolong gunakan inisial lain.";
                     return result;
                 }
 
@@ -64,7 +64,7 @@ namespace ERP_API.Domain.Services.General
 
             result.Success = true;
             result.Data = data.Id;
-            result.Message = "Success insert supplier type data.";
+            result.Message = "Data tipe pemasok berhasil disimpan.";
             return result;
         }
 
@@ -75,7 +75,7 @@ namespace ERP_API.Domain.Services.General
             // Checking initial already exists or not
             if (IsInitialExists(data.Initial, data.Id))
             {
-                result.Message = "Initial is already exists. Please use another initial.";
+                result.Message = "Inisial sudah terdaftar. Tolong gunakan inisial lain.";
                 return result;
             }
 
@@ -89,7 +89,7 @@ namespace ERP_API.Domain.Services.General
 
             result.Success = true;
             result.Data = data.Id;
-            result.Message = "Success update supplier type data.";
+            result.Message = "Data tipe pemasok berhasil diperbarui.";
             return result;
         }
 
@@ -103,7 +103,7 @@ namespace ERP_API.Domain.Services.General
                 // Checking active
                 if (data.IsActive == false)
                 {
-                    result.Message = "Can't remove supplier type because data already inactive.";
+                    result.Message = "Tidak bisa menonaktifkan data tipe pemasok karena data sudah nonaktif.";
                     return result;
                 }
 
@@ -115,7 +115,7 @@ namespace ERP_API.Domain.Services.General
             }
 
             result.Success = true;
-            result.Message = "Success remove supplier type.";
+            result.Message = "Data tipe pemasok berhasil dinonaktifkan.";
             return result;
         }
 
