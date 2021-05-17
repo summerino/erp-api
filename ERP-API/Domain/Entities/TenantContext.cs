@@ -55,6 +55,11 @@ namespace ERP_API.Domain.Entities
         public DbSet<VwVehicleType> VwVehicleTypes { get; set; }
 
         // Inventory entities
+        public DbSet<AdjustmentHeader> AdjustmentHeaders { get; set; }
+        public DbSet<VwAdjustmentHeader> VwAdjustmentHeaders { get; set; }
+        public DbSet<AdjustmentDetail> AdjustmentDetails { get; set; }
+        public DbSet<VwAdjustmentDetail> VwAdjustmentDetails { get; set; }
+        public DbSet<VwAdjustmentItem> VwAdjustmentItems { get; set; }
         public DbSet<Item> Items { get; set; }
         public DbSet<VwItem> VwItems { get; set; }
         public DbSet<ItemCategory> ItemCategories { get; set; }
@@ -63,15 +68,14 @@ namespace ERP_API.Domain.Entities
         public DbSet<VwItemGroup> VwItemGroups { get; set; }
         public DbSet<ItemGroupSubGroup> ItemGroupSubGroups { get; set; }
         public DbSet<StockMutation> StockMutations { get; set; }
+        public DbSet<TransferStockHeader> TransferStockHeaders { get; set; }
+        public DbSet<VwTransferStockHeader> VwTransferStockHeaders { get; set; }
+        public DbSet<TransferStockDetail> TransferStockDetails { get; set; }
+        public DbSet<VwTransferStockDetail> VwTransferStockDetails { get; set; }
         public DbSet<UoM> UoMs { get; set; }
         public DbSet<UoMConversion> UoMConversions { get; set; }
         public DbSet<Warehouse> Warehouses { get; set; }
         public DbSet<VwWarehouse> VwWarehouses { get; set; }
-        public DbSet<AdjustmentHeader> AdjustmentHeaders { get; set; }
-        public DbSet<VwAdjustmentHeader> VwAdjustmentHeaders { get; set; }
-        public DbSet<AdjustmentDetail> AdjustmentDetails { get; set; }
-        public DbSet<VwAdjustmentDetail> VwAdjustmentDetails { get; set; }
-        public DbSet<VwAdjustmentItem> VwAdjustmentItems { get; set; }
         public DbSet<WarehouseQuantity> WarehouseQuantities { get; set; }
 
         // Purchase entities
@@ -100,6 +104,10 @@ namespace ERP_API.Domain.Entities
         public DbSet<VwArea> VwAreas { get; set; }
         public DbSet<CreditMemo> CreditMemos { get; set; }
         public DbSet<VwCreditMemo> VwCreditMemos { get; set; }
+        public DbSet<DeliveryPlanHeader> DeliveryPlanHeaders { get; set; }
+        public DbSet<VwDeliveryPlanHeader> VwDeliveryPlanHeaders { get; set; }
+        public DbSet<DeliveryPlanDetail> DeliveryPlanDetails { get; set; }
+        public DbSet<DeliveryPlanUndeliveredItem> DeliveryPlanUndeliveredItems { get; set; }
         public DbSet<SalesDeliveryHeader> SalesDeliveryHeaders { get; set; }
         public DbSet<VwSalesDeliveryHeader> VwSalesDeliveryHeaders { get; set; }
         public DbSet<SalesDeliveryDetail> SalesDeliveryDetails { get; set; }
@@ -222,7 +230,6 @@ namespace ERP_API.Domain.Entities
                 .HasNoKey()
                 .ToView("vwWarehouse", Schema.Inventory);
 
-
             // Adjustment entities
             modelBuilder.Entity<AdjustmentHeader>(entity =>
                 entity.Property(e => e.Mark)
@@ -231,7 +238,7 @@ namespace ERP_API.Domain.Entities
 
             modelBuilder.Entity<VwAdjustmentHeader>()
                 .HasNoKey()
-                .ToView("VwAdjustmentHeader", Schema.Inventory);
+                .ToView("vwAdjustmentHeader", Schema.Inventory);
 
             modelBuilder.Entity<AdjustmentDetail>(entity =>
                 entity.Property(e => e.Code)
@@ -240,11 +247,31 @@ namespace ERP_API.Domain.Entities
 
             modelBuilder.Entity<VwAdjustmentDetail>()
                 .HasNoKey()
-                .ToView("VwAdjustmentDetail", Schema.Inventory);
+                .ToView("vwAdjustmentDetail", Schema.Inventory);
 
             modelBuilder.Entity<VwAdjustmentItem>()
                 .HasNoKey()
-                .ToView("VwAdjustmentItem", Schema.Inventory);
+                .ToView("vwAdjustmentItem", Schema.Inventory);
+
+            // Transfer Stock entities
+            modelBuilder.Entity<TransferStockHeader> (entity =>
+                entity.Property(e => e.Mark)
+                    .IsRequired()
+            );
+
+            modelBuilder.Entity<VwTransferStockHeader>()
+                .HasNoKey()
+                .ToView("vwTransferStockHeader", Schema.Inventory);
+
+            modelBuilder.Entity<TransferStockDetail>(entity =>
+                entity.Property(e => e.Code)
+                    .IsRequired()
+            );
+
+            modelBuilder.Entity<VwTransferStockDetail>()
+                .HasNoKey()
+                .ToView("vwTransferStockDetail", Schema.Inventory);
+
             // Debit Memo entities
             modelBuilder.Entity<DebitMemo>(entity =>
                 entity.Property(e => e.Mark)
@@ -329,11 +356,16 @@ namespace ERP_API.Domain.Entities
             );
             modelBuilder.Entity<VwPurchaseReturnDetailExchDiffItem>()
                 .HasNoKey()
-                .ToView("VwPurchaseReturnDetailExchDiffItem", Schema.Purchasing);
+                .ToView("vwPurchaseReturnDetailExchDiffItem", Schema.Purchasing);
 
             modelBuilder.Entity<VwPurchaseReturnDetail>()
                 .HasNoKey()
                 .ToView("vwPurchaseReturnDetail", Schema.Purchasing);
+
+            // Area entities
+            modelBuilder.Entity<VwArea>()
+                .HasNoKey()
+                .ToView("vwArea", Schema.Sales);
 
             // Credit Memo entities
             modelBuilder.Entity<CreditMemo>(entity =>
@@ -343,15 +375,29 @@ namespace ERP_API.Domain.Entities
 
             modelBuilder.Entity<VwCreditMemo>()
                 .HasNoKey()
-                .ToView("VwCreditMemo", Schema.Sales);
+                .ToView("vwCreditMemo", Schema.Sales);
 
-            // Sales Area entities
-            modelBuilder.Entity<VwArea>()
+            // Delivery Plan entities
+            modelBuilder.Entity<DeliveryPlanHeader>(entity =>
+                entity.Property(e => e.Mark)
+                    .IsRequired()
+            );
+
+            modelBuilder.Entity<VwDeliveryPlanHeader>()
                 .HasNoKey()
-                .ToView("VwArea", Schema.Sales);
+                .ToView("vwDeliveryPlanHeader", Schema.Sales);
+
+            modelBuilder.Entity<DeliveryPlanDetail>(entity =>
+                entity.Property(e => e.Code)
+                    .IsRequired()
+            );
+
+            modelBuilder.Entity<DeliveryPlanUndeliveredItem>(entity =>
+                entity.Property(e => e.Code)
+                    .IsRequired()
+            );
 
             // Sales Delivery entities
-
             modelBuilder.Entity<SalesDeliveryHeader>(entity =>
                 entity.Property(e => e.Mark)
                     .IsRequired()
@@ -412,7 +458,7 @@ namespace ERP_API.Domain.Entities
 
             modelBuilder.Entity<VwSalesReturnHeader>()
                 .HasNoKey()
-                .ToView("VwSalesReturnHeader", Schema.Sales);
+                .ToView("vwSalesReturnHeader", Schema.Sales);
 
             modelBuilder.Entity<SalesReturnDetail>(entity =>
                 entity.Property(e => e.Code)
@@ -421,11 +467,11 @@ namespace ERP_API.Domain.Entities
 
             modelBuilder.Entity<VwSalesReturnDetail>()
                 .HasNoKey()
-                .ToView("VwSalesReturnDetail", Schema.Sales);
+                .ToView("vwSalesReturnDetail", Schema.Sales);
 
             modelBuilder.Entity<VwSalesReturnDetailExchDiffItem>()
                 .HasNoKey()
-                .ToView("VwSalesReturnDetailExchDiffItem", Schema.Sales);
+                .ToView("vwSalesReturnDetailExchDiffItem", Schema.Sales);
             
             modelBuilder.Entity<SalesReturnDetailExchDiffItem>(entity =>
                 entity.Property(e => e.Code)

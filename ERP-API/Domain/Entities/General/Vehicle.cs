@@ -45,6 +45,8 @@ namespace ERP_API.Domain.Entities.General
 
         public long DriverId { get; set; }
 
+        public string DriverInitial { get; set; }
+
         public long? HelperId1 { get; set; }
 
         public long? HelperId2 { get; set; }

@@ -1,10 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 using ERP_API.Domain.Entities.Core;
 
 namespace ERP_API.Domain.Entities.SystemManagement
 {
     [Table("SystemParameter", Schema = Schema.SystemManagement)]
+    [Index(nameof(Code), IsUnique = true)]
     public class SystemParameter
     {
         public int Id { get; set; }

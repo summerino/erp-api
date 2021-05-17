@@ -48,6 +48,8 @@ namespace ERP_API.Domain.Entities.Purchase
         [Column(TypeName = "decimal(18, 2)")]
         public decimal FinalDisc { get; set; }
 
+        public bool NoTax { get; set; }
+
         public bool IncludeTax { get; set; }
 
         [Column(TypeName = "decimal(18, 2)")]
@@ -58,6 +60,12 @@ namespace ERP_API.Domain.Entities.Purchase
 
         [Column("DPP", TypeName = "decimal(18, 2)")]
         public decimal Dpp { get; set; }
+
+        [StringLength(50)]
+        public string TaxInvoiceNo { get; set; }
+
+        [Column(TypeName = "date")]
+        public DateTime? TaxInvoiceDate { get; set; }
 
         [Required]
         [StringLength(256)]
@@ -92,6 +100,8 @@ namespace ERP_API.Domain.Entities.Purchase
 
         public decimal FinalDisc { get; set; }
 
+        public bool NoTax { get; set; }
+
         public bool IncludeTax { get; set; }
 
         public decimal TaxAmount { get; set; }
@@ -99,6 +109,10 @@ namespace ERP_API.Domain.Entities.Purchase
         public decimal Total { get; set; }
 
         public decimal Dpp { get; set; }
+
+        public string TaxInvoiceNo { get; set; }
+
+        public DateTime? TaxInvoiceDate { get; set; }
 
         public string Notes { get; set; }
 
