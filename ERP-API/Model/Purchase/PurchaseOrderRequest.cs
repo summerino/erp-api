@@ -13,5 +13,13 @@ namespace ERP_API.Model.Purchase
         public DateTime RcvDate { get; set; }
 
         public bool IsPoRcv { get; set; }
+
+        public string InvRefNo { get; set; }
+
+        public DateTime InvDate { get; set; }
+
+        public DateTime InvDueDate { get; set; }
+
+        public bool IsPoInv { get; set; }
     }
 }
