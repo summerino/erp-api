@@ -10,11 +10,11 @@ namespace ERP_API.Domain.Entities.Inventory
         public int Id { get; set; }
 
         [Required]
-        [StringLength(20)]
+        [StringLength(50)]
         public string Initial { get; set; }
 
         [Required]
-        [StringLength(50)]
+        [StringLength(100)]
         public string Name { get; set; }
     }
 
@@ -32,5 +32,20 @@ namespace ERP_API.Domain.Entities.Inventory
         [Required]
         [StringLength(1000)]
         public string Value { get; set; }
+    }
+
+    public class VwItemGroup : BaseEntityWithActive
+    {
+        public int Id { get; set; }
+
+        [StringLength(50)]
+        public string Initial { get; set; }
+
+        [StringLength(100)]
+        public string Name { get; set; }
+
+        public string CreatedInitial { get; set; }
+
+        public string UpdatedInitial { get; set; }
     }
 }

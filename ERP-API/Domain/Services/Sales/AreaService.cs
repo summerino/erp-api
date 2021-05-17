@@ -19,7 +19,7 @@ namespace ERP_API.Domain.Services.Sales
         public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
             string search)
         {
-            var data = Db.Areas.AsQueryable();
+            var data = Db.VwAreas.AsQueryable();
 
             if (!string.IsNullOrEmpty(search))
             {
@@ -49,11 +49,11 @@ namespace ERP_API.Domain.Services.Sales
                 Deep = 0,
                 Lineage = "",
                 IsParent = true,
-                Children = DefineChildNodes(Db.Areas.Where(x => x.IsActive).ToList())
+                Children = DefineChildNodes(Db.VwAreas.Where(x => x.IsActive).ToList())
             };
         }
 
-        private static object DefineChildNodes(List<Area> data, int? parentId = null)
+        private static object DefineChildNodes(List<VwArea> data, int? parentId = null)
         {
             var nodes = data
                 .Where(x => x.ParentId == parentId)
@@ -66,6 +66,10 @@ namespace ERP_API.Domain.Services.Sales
                     x.ParentId,
                     x.Deep,
                     x.Lineage,
+                    x.CreatedInitial,
+                    x.CreatedDate,
+                    x.UpdatedInitial,
+                    x.UpdatedDate,
                     IsParent = IsParent(data, x.Id),
                     Children = DefineChildNodes(data, x.Id)
                 });
@@ -173,7 +177,7 @@ namespace ERP_API.Domain.Services.Sales
             return Db.Areas.Any(x => x.Initial == initial && x.Id != id);
         }
 
-        private static bool IsParent(List<Area> data, int? id = null)
+        private static bool IsParent(List<VwArea> data, int? id = null)
         {
             return data.Any(x => x.ParentId == id);
         }
