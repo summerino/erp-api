@@ -69,7 +69,7 @@ namespace ERP_API.Domain.Services.Sales
                 // Checking receive qty is excess or not
                 if (IsQtyExcess(data.WarehouseCode,data.ItemDetails))
                 {
-                    result.Message = "Can't insert sales return because return qty bigger than outstanding qty.";
+                    result.Message = "Data pengembalian penjualan tidak bisa disimpan karena qty yg dikembalikan lebih besar dari qty yang tersedia.";
                     return result;
                 }
 
@@ -183,7 +183,7 @@ namespace ERP_API.Domain.Services.Sales
 
             result.Success = true;
             result.Data = cdtMemo;
-            result.Message = "Success insert sales return.";
+            result.Message = "Data pengembalian penjualan berhasil disimpan.";
             return result;
         }
 
@@ -198,14 +198,14 @@ namespace ERP_API.Domain.Services.Sales
                 // Checking mark header data
                 if (Db.SalesReturnHeaders.Any(x => x.Code == data.Code && x.Mark == "V"))
                 {
-                    result.Message = "Can't update sales return because data already mark as void.";
+                    result.Message = "Data pengembalian penjualan tidak bisa diubah karena data sudah ditandai sebagai void.";
                     return result;
                 }
 
                 // Checking receive qty is excess or not
                 if (IsQtyExcess(data.WarehouseCode ,data.ItemDetails))
                 {
-                    result.Message = "Can't update sales return because return qty bigger than outstanding qty.";
+                    result.Message = "Data pengembalian penjualan tidak bisa diubah karena qty yg dikembalikan lebih besar dari qty yang tersedia.";
                     return result;
                 }
 
@@ -331,7 +331,7 @@ namespace ERP_API.Domain.Services.Sales
 
             result.Success = true;
             result.Data = cdtMemo;
-            result.Message = "Success update sales return.";
+            result.Message = "Data pengembalian penjualan berhasil diperbarui.";
             return result;
         }
 
@@ -345,7 +345,7 @@ namespace ERP_API.Domain.Services.Sales
                 // Checking mark header data
                 if (data.Mark == "V")
                 {
-                    result.Message = "Can't void sales return because data already mark as void.";
+                    result.Message = "Data pengembalian penjualan tidak bisa ditandai sebagai void karena sudah ditandai sebagai void.";
                     return result;
                 }
 
@@ -380,7 +380,7 @@ namespace ERP_API.Domain.Services.Sales
             }
 
             result.Success = true;
-            result.Message = "Success void sales return.";
+            result.Message = "Data pengembalian penjualan berhasil ditandai sebagai void.";
             return result;
         }
 

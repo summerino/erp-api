@@ -52,7 +52,7 @@ namespace ERP_API.Domain.Services.Accounting
 
             result.Success = true;
             result.Data = data.Id;
-            result.Message = "Success update currency rate.";
+            result.Message = "Data nilai tukar mata uang berhasil diperbarui.";
             return result;
         }
 
@@ -73,7 +73,7 @@ namespace ERP_API.Domain.Services.Accounting
             }
 
             result.Success = true;
-            result.Message = "Success insert currency rate.";
+            result.Message = "Data nilai tukar mata uang berhasil disimpan.";
             return result;
         }
     }

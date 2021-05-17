@@ -83,7 +83,7 @@ namespace ERP_API.Domain.Services.Sales
                 // Checking initial already exists or not
                 if (IsInitialExists(data.Initial, 0))
                 {
-                    result.Message = "Initial is already exists. Please use another initial.";
+                    result.Message = "Inisial sudah terdaftar. Tolong gunakan inisial lain.";
                     return result;
                 }
 
@@ -100,7 +100,7 @@ namespace ERP_API.Domain.Services.Sales
 
             result.Success = true;
             result.Data = data.Initial;
-            result.Message = "Success insert area.";
+            result.Message = "Data wilayah berhasil disimpan.";
             return result;
         }
 
@@ -114,7 +114,7 @@ namespace ERP_API.Domain.Services.Sales
                 // Checking initial already exists or not
                 if (IsInitialExists(data.Initial, data.Id))
                 {
-                    result.Message = "Initial is already exists. Please use another initial.";
+                    result.Message = "Inisial sudah terdaftar. Tolong gunakan inisial lain.";
                     return result;
                 }
 
@@ -137,7 +137,7 @@ namespace ERP_API.Domain.Services.Sales
 
             result.Success = true;
             result.Data = data.Initial;
-            result.Message = "Success update area.";
+            result.Message = "Data wilayah berhasil diperbarui.";
             return result;
         }
 
@@ -151,7 +151,7 @@ namespace ERP_API.Domain.Services.Sales
                 // Checking active
                 if (!data.IsActive)
                 {
-                    result.Message = "Can't inactive the item category because data already inactive.";
+                    result.Message = "Tidak bisa menonaktifkan data wilayah karena data sudah nonaktif.";
                     return result;
                 }
 
@@ -164,7 +164,7 @@ namespace ERP_API.Domain.Services.Sales
             }
 
             result.Success = true;
-            result.Message = "Success inactive area.";
+            result.Message = "Data wilayah berhasil dinonaktifkan.";
             return result;
         }
 

@@ -48,7 +48,7 @@ namespace ERP_API.Domain.Services.Inventory
                 // Checking initial already exists or not
                 if (IsInitialExists(data.Initial, string.Empty))
                 {
-                    result.Message = "Initial is already exists. Please use another initial.";
+                    result.Message = "Inisial sudah terdaftar. Tolong gunakan inisial lain.";
                     return result;
                 }
 
@@ -78,7 +78,7 @@ namespace ERP_API.Domain.Services.Inventory
 
             result.Success = true;
             result.Data = data.Initial;
-            result.Message = "Success insert warehouse.";
+            result.Message = "Data gudang berhasil disimpan.";
             return result;
         }
 
@@ -89,7 +89,7 @@ namespace ERP_API.Domain.Services.Inventory
             // Checking initial already exists or not
             if (IsInitialExists(data.Initial, data.Code))
             {
-                result.Message = "Initial is already exists. Please use another initial.";
+                result.Message = "Inisial sudah terdaftar. Tolong gunakan inisial lain.";
                 return result;
             }
             
@@ -111,7 +111,7 @@ namespace ERP_API.Domain.Services.Inventory
 
             result.Success = true;
             result.Data = data.Initial;
-            result.Message = "Success update warehouse.";
+            result.Message = "Data gudang berhasil diperbarui.";
             return result;
         }
 
@@ -125,7 +125,7 @@ namespace ERP_API.Domain.Services.Inventory
                 // Checking active
                 if (!data.IsActive)
                 {
-                    result.Message = "Can't inactive warehouse because data already inactive.";
+                    result.Message = "Tidak bisa menonaktifkan data gudang karena data sudah nonaktif.";
                     return result;
                 }
 
@@ -138,7 +138,7 @@ namespace ERP_API.Domain.Services.Inventory
             }
 
             result.Success = true;
-            result.Message = "Success inactive warehouse.";
+            result.Message = "Data gudang berhasil dinonaktifkan.";
             return result;
         }
 

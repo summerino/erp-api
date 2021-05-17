@@ -102,7 +102,7 @@ namespace ERP_API.Domain.Services.General
                 // Checking active
                 if (data.IsActive == false)
                 {
-                    result.Message = "Tidak bisa menonaktifkan data tipe pelanggan karena data sudah nonaktif.";
+                    result.Message = "Tidak bisa menghapus data tipe pelanggan karena data sudah dihapus.";
                     return result;
                 }
 
@@ -114,7 +114,7 @@ namespace ERP_API.Domain.Services.General
             }
 
             result.Success = true;
-            result.Message = "Data tipe pelanggan berhasil dinonaktifkan.";
+            result.Message = "Data tipe pelanggan berhasil dihapus.";
             return result;
         }
 

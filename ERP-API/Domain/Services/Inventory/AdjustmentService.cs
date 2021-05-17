@@ -96,7 +96,7 @@ namespace ERP_API.Domain.Services.Inventory
 
             result.Success = true;
             result.Data = data.Code;
-            result.Message = "Success insert adjustment.";
+            result.Message = "Data penyesuaian berhasil disimpan.";
             return result;
         }
 
@@ -110,7 +110,7 @@ namespace ERP_API.Domain.Services.Inventory
                 // Checking mark header data
                 if (Db.AdjustmentHeaders.Any(x => x.Code == data.Code && x.Mark == "V"))
                 {
-                    result.Message = "Can't update adjutment because data already mark as void.";
+                    result.Message = "Data penyesuaian tidak bisa di ubah karena sudah ditandai sebagai void.";
                     return result;
                 }
 
@@ -173,7 +173,7 @@ namespace ERP_API.Domain.Services.Inventory
 
             result.Success = true;
             result.Data = data.Code;
-            result.Message = "Success update adjustment.";
+            result.Message = "Data penyesuaian berhasil diperbarui.";
             return result;
         }
 
@@ -187,7 +187,7 @@ namespace ERP_API.Domain.Services.Inventory
                 // Checking mark header data
                 if (data.Mark == "V")
                 {
-                    result.Message = "Can't void adjustment because data already mark as void.";
+                    result.Message = "Data penyesuaian tidak bisa di ubah karena sudah ditandai sebagai void.";
                     return result;
                 }
 
@@ -200,7 +200,7 @@ namespace ERP_API.Domain.Services.Inventory
             }
 
             result.Success = true;
-            result.Message = "Success void adjustment.";
+            result.Message = "Data penyesuaian berhasil ditandai sebagai void.";
             return result;
         }
 

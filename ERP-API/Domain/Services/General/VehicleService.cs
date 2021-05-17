@@ -28,7 +28,7 @@ namespace ERP_API.Domain.Services.General
                 // Checking active
                 if (data.IsActive == false)
                 {
-                    result.Message = "Tidak bisa menonaktifkan data kendaraan karena data sudah nonaktif.";
+                    result.Message = "Tidak bisa menghapus data kendaraan karena data sudah dihapus.";
                     return result;
                 }
 
@@ -41,7 +41,7 @@ namespace ERP_API.Domain.Services.General
             }
 
             result.Success = true;
-            result.Message = "Data kendaraan berhasil dinonaktifkan.";
+            result.Message = "Data kendaraan berhasil dihapus.";
             return result;
         }
 

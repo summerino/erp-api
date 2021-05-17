@@ -196,7 +196,7 @@ namespace ERP_API.Domain.Services.Purchase
 
             result.Success = true;
             result.Data = data.Code;
-            result.Message = "Success insert purchase order.";
+            result.Message = "Data order pembelian berhasil disimpan.";
             return result;
         }
 
@@ -210,7 +210,7 @@ namespace ERP_API.Domain.Services.Purchase
                 // Checking mark header data
                 if (Db.PurchaseOrderHeaders.Any(x => x.Code == data.Code && x.Mark == "V"))
                 {
-                    result.Message = "Can't update purchase order because data already mark as void.";
+                    result.Message = "Data order pembelian tidak bisa diubah karena sudah ditandai sebagai void.";
                     return result;
                 }
 
@@ -361,7 +361,7 @@ namespace ERP_API.Domain.Services.Purchase
 
             result.Success = true;
             result.Data = data.Code;
-            result.Message = "Success update purchase order.";
+            result.Message = "Data order pembelian berhasil diperbarui.";
             return result;
         }
 
@@ -375,7 +375,7 @@ namespace ERP_API.Domain.Services.Purchase
                 // Checking mark header data
                 if (data.Mark == "V")
                 {
-                    result.Message = "Can't void purchase order because data already mark as void.";
+                    result.Message = "Data order pembelian tidak bisa ditandai sebagai void karena sudah ditandai sebagai void.";
                     return result;
                 }
 
@@ -388,7 +388,7 @@ namespace ERP_API.Domain.Services.Purchase
             }
 
             result.Success = true;
-            result.Message = "Success void purchase order.";
+            result.Message = "Data order pembelian berhasil ditandai sebagai void.";
             return result;
         }
 
@@ -402,7 +402,7 @@ namespace ERP_API.Domain.Services.Purchase
                 // Checking mark header data
                 if (data.Mark == "CLS")
                 {
-                    result.Message = "Can't close purchase order because data already mark as closed.";
+                    result.Message = "Data order pembelian tidak bisa ditutup karena sudah ditutup.";
                     return result;
                 }
 
@@ -415,7 +415,7 @@ namespace ERP_API.Domain.Services.Purchase
             }
 
             result.Success = true;
-            result.Message = "Success closed purchase order.";
+            result.Message = "Data order pembelian berhasil ditutup.";
             return result;
         }
     }

@@ -26,7 +26,7 @@ namespace ERP_API.Domain.Services.General
                 // Checking active
                 if (data.IsActive == false)
                 {
-                    result.Message = "Tidak bisa menonaktifkan data pajak karena data sudah nonaktif.";
+                    result.Message = "Tidak bisa menghapus data pajak karena data sudah dihapus.";
                     return result;
                 }
 
@@ -39,7 +39,7 @@ namespace ERP_API.Domain.Services.General
             }
 
             result.Success = true;
-            result.Message = "Data pajak berhasil dinonaktifkan.";
+            result.Message = "Data pajak berhasil dihapus.";
             return result;
         }
 

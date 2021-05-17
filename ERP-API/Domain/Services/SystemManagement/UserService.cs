@@ -86,7 +86,7 @@ namespace ERP_API.Domain.Services.SystemManagement
             {
                 data = data.Where(x =>
                         x.Username.Contains(search) || x.Name.Contains(search) || x.RoleName.Contains(search) ||
-                        x.EmployeeUsername.Contains(search) || x.Initial.Contains(search));
+                        x.EmployeeInitial.Contains(search) || x.Initial.Contains(search));
             }
 
             return data.ToDataSourceResult(skip, take, filters, sorts);

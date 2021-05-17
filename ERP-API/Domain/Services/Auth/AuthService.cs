@@ -37,7 +37,7 @@ namespace ERP_API.Domain.Services.Auth
             {
                 return new AuthResult
                 {
-                    Message = "Username & Password incorrect.",
+                    Message = "Username atau Kata Sandi tidak sesuai.",
                     Success = false
                 };
             }
@@ -49,7 +49,7 @@ namespace ERP_API.Domain.Services.Auth
             {
                 return new AuthResult
                 {
-                    Message = "Username & Password incorrect.",
+                    Message = "Username atau Kata Sandi tidak sesuai.",
                     Success = false
                 };
             }
@@ -59,7 +59,7 @@ namespace ERP_API.Domain.Services.Auth
             {
                 return new AuthResult
                 {
-                    Message = "Username & Password incorrect.",
+                    Message = "Username atau Kata Sandi tidak sesuai.",
                     Success = false
                 };
             }
@@ -83,7 +83,7 @@ namespace ERP_API.Domain.Services.Auth
                     {
                         return new AuthResult
                         {
-                            Message = "User already logged in.",
+                            Message = "Pengguna sudah masuk.",
                             Success = false
                         };
                     }
@@ -117,7 +117,7 @@ namespace ERP_API.Domain.Services.Auth
             {
                 accessToken = jwtToken,
                 Success = true,
-                Message = "Login succeeded.",
+                Message = "Berhasil Masuk.",
                 userData = catalogUser.Id.ToString()
 
             };
@@ -130,7 +130,7 @@ namespace ERP_API.Domain.Services.Auth
             {
                 return new AuthResult
                 {
-                    Message = "User not registered.",
+                    Message = "Pengguna tidak terdaftar.",
                     Success = false
                 };
             }
@@ -145,7 +145,7 @@ namespace ERP_API.Domain.Services.Auth
             {
                 return new AuthResult
                 {
-                    Message = "User not registered.",
+                    Message = "Pengguna tidak terdaftar.",
                     Success = false
                 };
             }
@@ -172,7 +172,7 @@ namespace ERP_API.Domain.Services.Auth
             return new AuthResult
             {
                 Success = true,
-                Message = "Logout succeeded"
+                Message = "Berhasil Keluar.",
 
             };
         }

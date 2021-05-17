@@ -73,7 +73,7 @@ namespace ERP_API.Domain.Entities.SystemManagement
 
         public string RoleName { get; set; }
 
-        public string EmployeeUsername { get; set; }
+        public string EmployeeInitial { get; set; }
 
         public string UpdatedInitial { get; set; }
     }
