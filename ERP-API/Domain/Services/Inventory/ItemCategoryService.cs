@@ -83,7 +83,7 @@ namespace ERP_API.Domain.Services.Inventory
                 // Checking initial already exists or not
                 if (IsInitialExists(data.Initial, 0))
                 {
-                    result.Message = "Initial is already exists. Please use another initial.";
+                    result.Message = "Inisial sudah terdaftar. Tolong gunakan inisial lain.";
                     return result;
                 }
 
@@ -111,7 +111,7 @@ namespace ERP_API.Domain.Services.Inventory
 
             result.Success = true;
             result.Data = data.Initial;
-            result.Message = "Success insert item category.";
+            result.Message = "Data kategori barang berhasil disimpan.";
             return result;
         }
 
@@ -125,7 +125,7 @@ namespace ERP_API.Domain.Services.Inventory
                 // Checking initial already exists or not
                 if (IsInitialExists(data.Initial, data.Id))
                 {
-                    result.Message = "Initial is already exists. Please use another initial.";
+                    result.Message = "Inisial sudah terdaftar. Tolong gunakan inisial lain.";
                     return result;
                 }
 
@@ -148,7 +148,7 @@ namespace ERP_API.Domain.Services.Inventory
 
             result.Success = true;
             result.Data = data.Initial;
-            result.Message = "Success update item category.";
+            result.Message = "Data kategori barang berhasil diperbarui.";
             return result;
         }
 
@@ -162,7 +162,7 @@ namespace ERP_API.Domain.Services.Inventory
                 // Checking active
                 if (!data.IsActive)
                 {
-                    result.Message = "Can't inactive the item category because data already inactive.";
+                    result.Message = "Tidak bisa menonaktifkan data kategori barang karena data sudah nonaktif.";
                     return result;
                 }
 
@@ -175,7 +175,7 @@ namespace ERP_API.Domain.Services.Inventory
             }
 
             result.Success = true;
-            result.Message = "Success inactive item category.";
+            result.Message = "Data kategori barang berhasil dinonaktifkan.";
             return result;
         }
 

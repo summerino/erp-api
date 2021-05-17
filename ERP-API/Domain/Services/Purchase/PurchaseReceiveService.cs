@@ -78,14 +78,14 @@ namespace ERP_API.Domain.Services.Purchase
                 // Checking purchase order mark
                 if (IsPurchaseOrderInvalid(data.TransCode))
                 {
-                    result.Message = "Can't update purchase receive because purchase order already mark as void or close.";
+                    result.Message = "Data penerimaan pembelian tidak bisa disimpan karena data order pembelian sudah ditandai sebagai void atau tutup.";
                     return result;
                 }
 
                 // Checking receive qty is excess or not
                 if (IsQtyExcess(data.Code, data.TransCode, data.ItemDetails))
                 {
-                    result.Message = "Can't update purchase receive because receive qty bigger than outstanding qty.";
+                    result.Message = "Data penerimaan pembelian tidak bisa disimpan karena qty yg diterima lebih besar dari qty yang tersedia.";
                     return result;
                 }
 
@@ -134,7 +134,7 @@ namespace ERP_API.Domain.Services.Purchase
                     var availableAmount = dbtMemo.Amount - dbtMemo.Used;
                     if(data.Total > availableAmount)
                     {
-                        result.Message = "Can't insert purchase receive because total amount bigger than total amount debit memo.";
+                        result.Message = "Tidak bisa disimpan karena jumlah total penerimaan pembeliam lebih besar dari jumlah total memo debit.";
                         return result;
                     }
                     availableAmount -= data.Total;
@@ -152,7 +152,7 @@ namespace ERP_API.Domain.Services.Purchase
                         var availableQty = itemPr.Qty - itemPr.QtyRcv;
                         if (item.Qty > availableQty)
                         {
-                            result.Message = "Can't insert purchase receive because qty bigger than outstanding qty.";
+                            result.Message = "Data penerimaan pembelian tidak bisa disimpan karena qty yg diterima lebih besar dari qty yang tersedia";
                             return result;
                         }
 
@@ -196,21 +196,21 @@ namespace ERP_API.Domain.Services.Purchase
                 // Checking mark header data
                 if (Db.PurchaseReceiveHeaders.Any(x => x.Code == data.Code && x.Mark == "V"))
                 {
-                    result.Message = "Can't update purchase receive because data already mark as void.";
+                    result.Message = "Data penerimaan pembelian tidak bisa diubah karena data sudah ditandai sebagai void.";
                     return result;
                 }
 
                 // Checking purchase order mark
                 if (IsPurchaseOrderInvalid(data.TransCode))
                 {
-                    result.Message = "Can't update purchase receive because purchase order already mark as void or close.";
+                    result.Message = "Data penerimaan pembelian tidak bisa diubah karena data order pembelian sudah ditandai sebagai void atau tutup.";
                     return result;
                 }
 
                 // Checking receive qty is excess or not
                 if (IsQtyExcess(data.Code, data.TransCode, data.ItemDetails))
                 {
-                    result.Message = "Can't update purchase receive because receive qty bigger than outstanding qty.";
+                    result.Message = "Data penerimaan pembelian tidak bisa diubah karena qty yg diterima lebih besar dari qty yang tersedia.";
                     return result;
                 }
 
@@ -292,7 +292,7 @@ namespace ERP_API.Domain.Services.Purchase
                     
                     if (dbtMemo.Used > dbtMemo.Amount)
                     {
-                        result.Message = "Can't insert purchase receive because total amount bigger than total amount debit memo.";
+                        result.Message = "Tidak bisa disimpan karena jumlah total penerimaan pembeliam lebih besar dari jumlah total memo debit.";
                         return result;
                     }
 
@@ -322,7 +322,7 @@ namespace ERP_API.Domain.Services.Purchase
 
                         if (itemPr.QtyRcv > itemPr.Qty)
                         {
-                            result.Message = "Can't insert purchase receive because qty bigger than outstanding qty.";
+                            result.Message = "Data penerimaan pembelian tidak bisa disimpan karena qty yg diterima lebih besar dari qty yang tersedia";
                             return result;
                         }
 
@@ -356,7 +356,7 @@ namespace ERP_API.Domain.Services.Purchase
 
             result.Success = true;
             result.Data = data.Code;
-            result.Message = "Success update purchase receive.";
+            result.Message = "Data penerimaan pembelian berhasil diperbarui.";
             return result;
         }
 
@@ -370,7 +370,7 @@ namespace ERP_API.Domain.Services.Purchase
                 // Checking mark header data
                 if (data.Mark == "V")
                 {
-                    result.Message = "Can't void purchase receive because data already mark as void.";
+                    result.Message = "Data penerimaan pembelian tidak bisa ditandai sebagai void karena sudah ditandai sebagai void.";
                     return result;
                 }
 
@@ -425,7 +425,7 @@ namespace ERP_API.Domain.Services.Purchase
             }
 
             result.Success = true;
-            result.Message = "Success void purchase receive.";
+            result.Message = "Data penerimaan pembelian berhasil ditandai sebagai void.";
             return result;
         }
 

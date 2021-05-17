@@ -46,7 +46,7 @@ namespace ERP_API.Domain.Services.Accounting
                 // Checking code already exists or not
                 if (IsCoaExists(data.Code, 0))
                 {
-                    result.Message = "Code is already exists. Please use another code.";
+                    result.Message = "Kode sudah terdaftar. Tolong gunakan kode lain.";
                     return result;
                 }
 
@@ -64,7 +64,7 @@ namespace ERP_API.Domain.Services.Accounting
 
             result.Success = true;
             result.Data = data.Code;
-            result.Message = "Success insert coa.";
+            result.Message = "Data akun berhasil disimpan.";
             return result;
         }
 
@@ -75,7 +75,7 @@ namespace ERP_API.Domain.Services.Accounting
             // Checking code already exists or not
             if (IsCoaExists(data.Code, data.Id))
             {
-                result.Message = "Code is already exists. Please use another code.";
+                result.Message = "Kode sudah terdaftar. Tolong gunakan kode lain.";
                 return result;
             }
 
@@ -89,7 +89,7 @@ namespace ERP_API.Domain.Services.Accounting
 
             result.Success = true;
             result.Data = data.Code;
-            result.Message = "Success update coa.";
+            result.Message = "Data akun berhasil diperbarui.";
             return result;
         }
 
@@ -103,7 +103,7 @@ namespace ERP_API.Domain.Services.Accounting
                 // Checking active
                 if (data.IsActive == false)
                 {
-                    result.Message = "Can't inactive coa because data already inactive.";
+                    result.Message = "Tidak bisa menonaktifkan data akun karena data sudah nonaktif.";
                     return result;
                 }
 
@@ -116,7 +116,7 @@ namespace ERP_API.Domain.Services.Accounting
             }
 
             result.Success = true;
-            result.Message = "Success inactive coa.";
+            result.Message = "Data akun berhasil dinonaktifkan.";
             return result;
         }
 

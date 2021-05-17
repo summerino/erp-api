@@ -50,7 +50,7 @@ namespace ERP_API.Domain.Services.Purchase
                 // Checking purchase order mark
                 if (IsPurchaseOrderInvalid(data.PoCode))
                 {
-                    result.Message = "Can't update purchase invoice because purchase order not marked as partial receive or complete.";
+                    result.Message = "Data faktur pembelian tidak bisa diubah karena status order pembelian bukan diterima sebagian atau selesai.";
                     return result;
                 }
                 
@@ -108,7 +108,7 @@ namespace ERP_API.Domain.Services.Purchase
 
             result.Success = true;
             result.Data = data.Code;
-            result.Message = "Success insert purchase invoice.";
+            result.Message = "Data faktur pembelian berhasil disimpan.";
             return result;
         }
 
@@ -122,14 +122,14 @@ namespace ERP_API.Domain.Services.Purchase
                 // Checking mark header data
                 if (Db.PurchaseInvoiceHeaders.Any(x => x.Code == data.Code && x.Mark == "V"))
                 {
-                    result.Message = "Can't update purchase invoice because data already mark as void.";
+                    result.Message = "Data faktur pembelian tidak bisa diubah karena sudah ditandai sebagai void.";
                     return result;
                 }
 
                 // Checking purchase order mark
                 if (IsPurchaseOrderInvalid(data.PoCode))
                 {
-                    result.Message = "Can't update purchase invoice because purchase order not marked as partial receive or complete.";
+                    result.Message = "Data faktur pembelian tidak bisa diubah karena status order pembelian bukan diterima sebagian atau selesai.";
                     return result;
                 }
                 
@@ -232,7 +232,7 @@ namespace ERP_API.Domain.Services.Purchase
 
             result.Success = true;
             result.Data = data.Code;
-            result.Message = "Success update purchase receive.";
+            result.Message = "Data faktur pembelian berhasil diperbarui.";
             return result;
         }
 
@@ -246,7 +246,7 @@ namespace ERP_API.Domain.Services.Purchase
                 // Checking mark header data
                 if (data.Mark == "V")
                 {
-                    result.Message = "Can't void purchase invoice because data already mark as void.";
+                    result.Message = "Data faktur pembelian tidak bisa ditandai sebagai void karena sudah ditandai sebagai void.";
                     return result;
                 }
 
@@ -289,7 +289,7 @@ namespace ERP_API.Domain.Services.Purchase
             }
 
             result.Success = true;
-            result.Message = "Success void purchase receive.";
+            result.Message = "Data faktur pembelian berhasil ditandai sebagai void.";
             return result;
         }
 

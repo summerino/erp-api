@@ -50,7 +50,7 @@ namespace ERP_API.Domain.Services.Sales
                 // Checking sales order mark
                 if (IsSalesOrderInvalid(data.SoCode))
                 {
-                    result.Message = "Can't update sales invoice because sales order not marked as partial receive or complete.";
+                    result.Message = "Data faktur penjualan tidak bisa diubah karena status order penjualan bukan diterima sebagian atau selesai.";
                     return result;
                 }
                 
@@ -108,7 +108,7 @@ namespace ERP_API.Domain.Services.Sales
 
             result.Success = true;
             result.Data = data.Code;
-            result.Message = "Success insert sales invoice.";
+            result.Message = "Data faktur penjualan berhasil disimpan.";
             return result;
         }
 
@@ -122,14 +122,14 @@ namespace ERP_API.Domain.Services.Sales
                 // Checking mark header data
                 if (Db.SalesInvoiceHeaders.Any(x => x.Code == data.Code && x.Mark == "V"))
                 {
-                    result.Message = "Can't update sales invoice because data already mark as void.";
+                    result.Message = "Data faktur penjualan tidak bisa diubah karena sudah ditandai sebagai void.";
                     return result;
                 }
 
                 // Checking sales order mark
                 if (IsSalesOrderInvalid(data.SoCode))
                 {
-                    result.Message = "Can't update sales invoice because sales order not marked as partial receive or complete.";
+                    result.Message = "Data faktur penjualan tidak bisa diubah karena status order penjualan bukan diterima sebagian atau selesai.";
                     return result;
                 }
                 
@@ -232,7 +232,7 @@ namespace ERP_API.Domain.Services.Sales
 
             result.Success = true;
             result.Data = data.Code;
-            result.Message = "Success update sales delivery.";
+            result.Message = "Data faktur penjualan berhasil diperbarui.";
             return result;
         }
 
@@ -246,7 +246,7 @@ namespace ERP_API.Domain.Services.Sales
                 // Checking mark header data
                 if (data.Mark == "V")
                 {
-                    result.Message = "Can't void sales invoice because data already mark as void.";
+                    result.Message = "Data faktur penjualan tidak bisa ditandai sebagai void karena sudah ditandai sebagai void.";
                     return result;
                 }
 
@@ -289,7 +289,7 @@ namespace ERP_API.Domain.Services.Sales
             }
 
             result.Success = true;
-            result.Message = "Success void sales delivery.";
+            result.Message = "Data faktur penjualan berhasil ditandai sebagai void.";
             return result;
         }
 

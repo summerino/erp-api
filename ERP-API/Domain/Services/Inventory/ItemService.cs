@@ -47,7 +47,7 @@ namespace ERP_API.Domain.Services.Inventory
                 // Checking initial already exists or not
                 if (IsInitialExists(data.Initial, 0))
                 {
-                    result.Message = "Initial is already exists. Please use another initial.";
+                    result.Message = "Inisial sudah terdaftar. Tolong gunakan inisial lain.";
                     return result;
                 }
 
@@ -65,7 +65,7 @@ namespace ERP_API.Domain.Services.Inventory
 
             result.Success = true;
             result.Data = data.Initial;
-            result.Message = "Success insert item.";
+            result.Message = "Data barang berhasil disimpan.";
             return result;
         }
 
@@ -76,7 +76,7 @@ namespace ERP_API.Domain.Services.Inventory
             // Checking initial already exists or not
             if (IsInitialExists(data.Initial, data.Id))
             {
-                result.Message = "Initial is already exists. Please use another initial.";
+                result.Message = "Inisial sudah terdaftar. Tolong gunakan inisial lain.";
                 return result;
             }
 
@@ -90,7 +90,7 @@ namespace ERP_API.Domain.Services.Inventory
 
             result.Success = true;
             result.Data = data.Initial;
-            result.Message = "Success update item.";
+            result.Message = "Data barang berhasil diperbarui.";
             return result;
         }
 
@@ -104,7 +104,7 @@ namespace ERP_API.Domain.Services.Inventory
                 // Checking active
                 if (!data.IsActive)
                 {
-                    result.Message = "Can't inactive the item because data already inactive.";
+                    result.Message = "Tidak bisa menonaktifkan data barang karena data sudah nonaktif.";
                     return result;
                 }
 
@@ -117,7 +117,7 @@ namespace ERP_API.Domain.Services.Inventory
             }
 
             result.Success = true;
-            result.Message = "Success inactive item.";
+            result.Message = "Data barang berhasil dinonaktifkan.";
             return result;
         }
 

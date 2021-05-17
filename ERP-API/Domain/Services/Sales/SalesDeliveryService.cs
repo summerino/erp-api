@@ -78,14 +78,14 @@ namespace ERP_API.Domain.Services.Sales
                 // Checking sales order mark
                 if (IsSalesOrderInvalid(data.SoCode))
                 {
-                    result.Message = "Can't update sales delivery because sales order already mark as void or close.";
+                    result.Message = "Data pengiriman penjualan tidak bisa disimpan karena data order penjualan sudah ditandai sebagai void atau tutup.";
                     return result;
                 }
 
                 // Checking deliver qty is excess or not
                 if (IsQtyExcess(data.Code, data.SoCode, data.ItemDetails))
                 {
-                    result.Message = "Can't update sales delivery because deliver qty bigger than outstanding qty.";
+                    result.Message = "Data pengiriman penjualan tidak bisa disimpan karena qty yg diterima lebih besar dari qty yang tersedia.";
                     return result;
                 }
 
@@ -141,7 +141,7 @@ namespace ERP_API.Domain.Services.Sales
 
             result.Success = true;
             result.Data = data.Code;
-            result.Message = "Success insert sales delivery.";
+            result.Message = "Data pengiriman penjualan berhasil disimpan.";
             return result;
         }
 
@@ -155,21 +155,21 @@ namespace ERP_API.Domain.Services.Sales
                 // Checking mark header data
                 if (Db.SalesDeliveryHeaders.Any(x => x.Code == data.Code && x.Mark == "V"))
                 {
-                    result.Message = "Can't update sales delivery because data already mark as void.";
+                    result.Message = "Data pengiriman penjualan tidak bisa diubah karena data sudah ditandai sebagai void.";
                     return result;
                 }
 
                 // Checking sales order mark
                 if (IsSalesOrderInvalid(data.SoCode))
                 {
-                    result.Message = "Can't update sales delivery because sales order already mark as void or close.";
+                    result.Message = "Data pengiriman penjualan tidak bisa diubah karena data order penjualan sudah ditandai sebagai void atau tutup.";
                     return result;
                 }
 
                 // Checking deliver qty is excess or not
                 if (IsQtyExcess(data.Code, data.SoCode, data.ItemDetails))
                 {
-                    result.Message = "Can't update sales delivery because deliver qty bigger than outstanding qty.";
+                    result.Message = "Data pengiriman penjualan tidak bisa disimpan karena qty yg diterima lebih besar dari qty yang tersedia.";
                     return result;
                 }
 
@@ -247,7 +247,7 @@ namespace ERP_API.Domain.Services.Sales
 
             result.Success = true;
             result.Data = data.Code;
-            result.Message = "Success update sales delivery.";
+            result.Message = "Data pengiriman penjualan berhasil diperbarui.";
             return result;
         }
 
@@ -261,7 +261,7 @@ namespace ERP_API.Domain.Services.Sales
                 // Checking mark header data
                 if (data.Mark == "V")
                 {
-                    result.Message = "Can't void sales delivery because data already mark as void.";
+                    result.Message = "Data pengiriman penjualan tidak bisa ditandai sebagai void karena sudah ditandai sebagai void.";
                     return result;
                 }
 
@@ -289,7 +289,7 @@ namespace ERP_API.Domain.Services.Sales
             }
 
             result.Success = true;
-            result.Message = "Success void sales delivery.";
+            result.Message = "Data pengiriman penjualan berhasil ditandai sebagai void.";
             return result;
         }
 

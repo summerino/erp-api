@@ -55,7 +55,7 @@ namespace ERP_API.Domain.Services.General
                 // Checking initial already exists or not
                 if (IsCodeExists(data.Code))
                 {
-                    result.Message = "Code is already exists. Please use another code.";
+                    result.Message = "Kode sudah terdaftar. Tolong gunakan kode lain.";
                     return result;
                 }
 
@@ -89,7 +89,7 @@ namespace ERP_API.Domain.Services.General
 
             result.Success = true;
             result.Data = data.Code;
-            result.Message = "Success insert currency.";
+            result.Message = "Data mata uang berhasil disimpan.";
             return result;
         }
 
@@ -113,7 +113,7 @@ namespace ERP_API.Domain.Services.General
 
             result.Success = true;
             result.Data = data.Code;
-            result.Message = "Success update currency.";
+            result.Message = "Data mata uang berhasil diperbarui.";
             return result;
         }
 
@@ -127,7 +127,7 @@ namespace ERP_API.Domain.Services.General
                 // Checking active
                 if (data.IsActive == false)
                 {
-                    result.Message = "Can't inactive Currency because data already inactive.";
+                    result.Message = "Tidak bisa menonaktifkan data mata uang karena data sudah nonaktif.";
                     return result;
                 }
 
@@ -140,7 +140,7 @@ namespace ERP_API.Domain.Services.General
             }
 
             result.Success = true;
-            result.Message = "Success inactive currency.";
+            result.Message = "Data mata uang berhasil dinonaktifkan.";
             return result;
         }
 

@@ -84,14 +84,14 @@ namespace ERP_API.Domain.Services.Purchase
                 // Checking purchase receive mark
                 if (IsPurchaseReceiveInvalid(data.RcvCode))
                 {
-                    result.Message = "Can't insert purchase return because purchase receive already mark as void or close.";
+                    result.Message = "Data pengembalian pembelian tidak bisa disimpan karena data penerimaan pembelian sudah ditandai sebagai void atau tutup.";
                     return result;
                 }
 
                 // Checking receive qty is excess or not
                 if (IsQtyExcess(data.ItemDetails))
                 {
-                    result.Message = "Can't insert purchase return because return qty bigger than outstanding qty.";
+                    result.Message = "Data pengembalian pembelian tidak bisa disimpan karena qty yg dikembalikan lebih besar dari qty yang tersedia.";
                     return result;
                 }
 
@@ -172,7 +172,7 @@ namespace ERP_API.Domain.Services.Purchase
 
             result.Success = true;
             result.Data = dbtMemo;
-            result.Message = "Success insert purchase return.";
+            result.Message = "Data pengembalian pembelian berhasil disimpan.";
             return result;
         }
 
@@ -187,21 +187,21 @@ namespace ERP_API.Domain.Services.Purchase
                 // Checking mark header data
                 if (Db.PurchaseReturnHeaders.Any(x => x.Code == data.Code && x.Mark == "V"))
                 {
-                    result.Message = "Can't update purchase return because data already mark as void.";
+                    result.Message = "Data pengembalian pembelian tidak bisa diubah karena data sudah ditandai sebagai void.";
                     return result;
                 }
 
                 // Checking purchase order mark
                 if (IsPurchaseReceiveInvalid(data.RcvCode))
                 {
-                    result.Message = "Can't update purchase return because purchase receive already mark as void or close.";
+                    result.Message = "Data pengembalian pembelian tidak bisa diubah karena data penerimaan pembelian sudah ditandai sebagai void atau tutup.";
                     return result;
                 }
 
                 // Checking receive qty is excess or not
                 if (IsQtyExcess(data.ItemDetails))
                 {
-                    result.Message = "Can't update purchase return because return qty bigger than outstanding qty.";
+                    result.Message = "Data pengembalian pembelian tidak bisa diubah karena qty yg dikembalikan lebih besar dari qty yang tersedia.";
                     return result;
                 }
 
@@ -294,7 +294,7 @@ namespace ERP_API.Domain.Services.Purchase
 
             result.Success = true;
             result.Data = dbtMemo;
-            result.Message = "Success update purchase return.";
+            result.Message = "Data pengembalian pembelian berhasil diperbarui.";
             return result;
         }
 
@@ -308,7 +308,7 @@ namespace ERP_API.Domain.Services.Purchase
                 // Checking mark header data
                 if (data.Mark == "V")
                 {
-                    result.Message = "Can't void purchase return because data already mark as void.";
+                    result.Message = "Data pengembalian pembelian tidak bisa ditandai sebagai void karena sudah ditandai sebagai void.";
                     return result;
                 }
 
@@ -343,7 +343,7 @@ namespace ERP_API.Domain.Services.Purchase
             }
 
             result.Success = true;
-            result.Message = "Success void purchase return.";
+            result.Message = "Data pengembalian pembelian berhasil ditandai sebagai void.";
             return result;
         }
 

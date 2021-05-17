@@ -192,7 +192,7 @@ namespace ERP_API.Domain.Services.Sales
 
             result.Success = true;
             result.Data = data.Code;
-            result.Message = "Success insert sales order.";
+            result.Message = "Data order penjualan berhasil disimpan.";
             return result;
         }
 
@@ -206,7 +206,7 @@ namespace ERP_API.Domain.Services.Sales
                 // Checking mark header data
                 if (Db.SalesOrderHeaders.Any(x => x.Code == data.Code && x.Mark == "V"))
                 {
-                    result.Message = "Can't update sales order because data already mark as void.";
+                    result.Message = "Data order penjualan tidak bisa diubah karena sudah ditandai sebagai void.";
                     return result;
                 }
 
@@ -353,7 +353,7 @@ namespace ERP_API.Domain.Services.Sales
 
             result.Success = true;
             result.Data = data.Code;
-            result.Message = "Success update sales order.";
+            result.Message = "Data order penjualan berhasil diperbarui.";
             return result;
         }
 
@@ -367,7 +367,7 @@ namespace ERP_API.Domain.Services.Sales
                 // Checking mark header data
                 if (data.Mark == "V")
                 {
-                    result.Message = "Can't void sales order because data already mark as void.";
+                    result.Message = "Data order penjualan tidak bisa ditandai sebagai void karena sudah ditandai sebagai void.";
                     return result;
                 }
 
@@ -380,7 +380,7 @@ namespace ERP_API.Domain.Services.Sales
             }
 
             result.Success = true;
-            result.Message = "Success void sales order.";
+            result.Message = "Data order penjualan berhasil ditandai sebagai void.";
             return result;
         }
 
@@ -393,7 +393,7 @@ namespace ERP_API.Domain.Services.Sales
                 // Checking mark header data
                 if (data.Mark == "CLS")
                 {
-                    result.Message = "Can't close sales order because data already mark as closed.";
+                    result.Message = "Data order penjualan tidak bisa ditutup karena sudah ditutup.";
                     return result;
                 }
                 // Update header data
@@ -403,7 +403,7 @@ namespace ERP_API.Domain.Services.Sales
                 Db.SaveChanges();
             }
             result.Success = true;
-            result.Message = "Success closed purchase order.";
+            result.Message = "Data order penjualan berhasil ditutup.";
             return result;
         }
     }
