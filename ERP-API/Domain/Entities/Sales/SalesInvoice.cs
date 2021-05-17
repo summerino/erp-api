@@ -69,7 +69,11 @@ namespace ERP_API.Domain.Entities.Sales
 
         public string IssuedInitial { get; set; }
 
+        public string CreatedInitial { get; set; }
+
         public string UpdatedInitial { get; set; }
+
+        public string ApprovedInitial { get; set; }
 
         public string Status { get; set; }
     }

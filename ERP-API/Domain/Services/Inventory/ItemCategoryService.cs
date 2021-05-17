@@ -19,7 +19,7 @@ namespace ERP_API.Domain.Services.Inventory
         public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
             string search)
         {
-            var data = Db.ItemCategories.AsQueryable();
+            var data = Db.VwItemCategories.AsQueryable();
 
             if (!string.IsNullOrEmpty(search))
                 data = data.Where(x => x.Initial.Contains(search) || x.Name.Contains(search));
@@ -27,9 +27,9 @@ namespace ERP_API.Domain.Services.Inventory
             return data.ToDataSourceResult(skip, take, filter, sort);
         }
 
-        public IEnumerable<ItemCategory> GetLists()
+        public IEnumerable<VwItemCategory> GetLists()
         {
-            var data = Db.ItemCategories.Where(x => x.IsActive);
+            var data = Db.VwItemCategories.Where(x => x.IsActive);
 
             return data.OrderBy(x => x.Name);
         }
@@ -47,11 +47,11 @@ namespace ERP_API.Domain.Services.Inventory
                 Seq = 0,
                 Lineage = "",
                 IsParent = true,
-                Children = DefineChildNodes(Db.ItemCategories.Where(x => x.IsActive).ToList())
+                Children = DefineChildNodes(Db.VwItemCategories.Where(x => x.IsActive).ToList())
             };
         }
 
-        private static object DefineChildNodes(List<ItemCategory> data, int? parentId = null)
+        private static object DefineChildNodes(List<VwItemCategory> data, int? parentId = null)
         {
             var nodes = data
                 .Where(x => x.ParentId == parentId)
@@ -66,6 +66,10 @@ namespace ERP_API.Domain.Services.Inventory
                     x.Deep,
                     x.Seq,
                     x.Lineage,
+                    x.CreatedInitial,
+                    x.CreatedDate,
+                    x.UpdatedInitial,
+                    x.UpdatedDate,
                     IsParent = IsParent(data, x.Id),
                     Children = DefineChildNodes(data, x.Id)
                 });
@@ -184,7 +188,7 @@ namespace ERP_API.Domain.Services.Inventory
             return Db.ItemCategories.Any(x => x.Initial == initial && x.Id != id);
         }
 
-        private static bool IsParent(List<ItemCategory> data, int? id = null)
+        private static bool IsParent(List<VwItemCategory> data, int? id = null)
         {
             return data.Any(x => x.ParentId == id);
         }

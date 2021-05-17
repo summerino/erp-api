@@ -27,4 +27,29 @@ namespace ERP_API.Domain.Entities.Inventory
 
         public string Lineage { get; set; }
     }
+
+    public class VwItemCategory : BaseEntityWithActive
+    {
+        public int Id { get; set; }
+
+        [StringLength(50)]
+        public string Initial { get; set; }
+
+        [StringLength(100)]
+        public string Name { get; set; }
+
+        public int? ParentId { get; set; }
+
+        public int? GroupId { get; set; }
+
+        public int? Deep { get; set; }
+
+        public int? Seq { get; set; }
+
+        public string Lineage { get; set; }
+
+        public string CreatedInitial { get; set; }
+
+        public string UpdatedInitial { get; set; }
+    }
 }

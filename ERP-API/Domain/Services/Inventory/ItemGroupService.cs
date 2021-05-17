@@ -20,12 +20,15 @@ namespace ERP_API.Domain.Services.Inventory
         public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
             List<int> category, string search)
         {
-            var data = Db.ItemGroups.AsQueryable();
+            var data = Db.VwItemGroups.AsQueryable();
 
             if (!string.IsNullOrEmpty(search))
             {
                 data = data.Where(x =>
-                            x.Initial.Contains(search) || x.Name.Contains(search));
+                            x.Initial.Contains(search) || x.Name.Contains(search) && x.IsActive);
+            } else
+            {
+                data = data.Where(x => x.IsActive);
             }
 
             return data.ToDataSourceResult(skip, take, filter, sort);

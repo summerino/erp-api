@@ -58,7 +58,9 @@ namespace ERP_API.Domain.Entities
         public DbSet<Item> Items { get; set; }
         public DbSet<VwItem> VwItems { get; set; }
         public DbSet<ItemCategory> ItemCategories { get; set; }
+        public DbSet<VwItemCategory> VwItemCategories { get; set; }
         public DbSet<ItemGroup> ItemGroups { get; set; }
+        public DbSet<VwItemGroup> VwItemGroups { get; set; }
         public DbSet<ItemGroupSubGroup> ItemGroupSubGroups { get; set; }
         public DbSet<StockMutation> StockMutations { get; set; }
         public DbSet<UoM> UoMs { get; set; }
@@ -94,6 +96,7 @@ namespace ERP_API.Domain.Entities
 
         // Sales entities
         public DbSet<Area> Areas { get; set; }
+        public DbSet<VwArea> VwAreas { get; set; }
         public DbSet<CreditMemo> CreditMemos { get; set; }
         public DbSet<VwCreditMemo> VwCreditMemos { get; set; }
         public DbSet<SalesDeliveryHeader> SalesDeliveryHeaders { get; set; }
@@ -204,6 +207,14 @@ namespace ERP_API.Domain.Entities
             modelBuilder.Entity<VwItem>()
                 .HasNoKey()
                 .ToView("vwItem", Schema.Inventory);
+
+            modelBuilder.Entity<VwItemCategory>()
+                .HasNoKey()
+                .ToView("vwItemCategory", Schema.Inventory);
+
+            modelBuilder.Entity<VwItemGroup>()
+                .HasNoKey()
+                .ToView("vwItemGroup", Schema.Inventory);
 
             modelBuilder.Entity<VwWarehouse>()
                 .HasNoKey()
@@ -328,6 +339,11 @@ namespace ERP_API.Domain.Entities
             modelBuilder.Entity<VwCreditMemo>()
                 .HasNoKey()
                 .ToView("VwCreditMemo", Schema.Sales);
+
+            // Sales Area entities
+            modelBuilder.Entity<VwArea>()
+                .HasNoKey()
+                .ToView("VwArea", Schema.Sales);
 
             // Sales Delivery entities
 

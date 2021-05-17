@@ -116,7 +116,11 @@ namespace ERP_API.Domain.Entities.Purchase
 
         public string RequestInitial { get; set; }
 
+        public string CreatedInitial { get; set; }
+
         public string UpdatedInitial { get; set; }
+
+        public string ApprovedInitial { get; set; }
 
         public string Status { get; set; }
 
