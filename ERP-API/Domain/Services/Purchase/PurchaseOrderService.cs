@@ -459,101 +459,154 @@ namespace ERP_API.Domain.Services.Purchase
 
                 if (data.IsPoInv)
                 {
-
                     // Purchase Receive
-                    var newRcvCode = GetNewCode("RCV_NUM_FMT", data.RcvDate);
-                    var newPrcvData = new PurchaseReceiveHeader
+                    var RcvData = Db.PurchaseReceiveHeaders.Where(x => x.TransCode == data.Code).ToList();
+                    if (RcvData == null)
                     {
-                        Code = newRcvCode,
-                        Date = data.RcvDate,
-                        TransCode = data.Code,
-                        RefNo = data.RcvRefNo,
-                        SupCode = data.SupCode,
-                        ReceiveBy = data.RequestBy,
-                        CurrCode = data.CurrCode,
-                        Rate = data.Rate,
-                        ShipmentFee = data.ShipmentFee,
-                        HandlingFee = data.HandlingFee,
-                        SubTotal = data.SubTotal,
-                        FinalDiscPercent = data.FinalDiscPercent,
-                        FinalDisc = data.FinalDisc,
-                        IncludeTax = data.IncludeTax,
-                        TaxAmount = data.TaxAmount,
-                        Total = data.Total,
-                        Dpp = data.Dpp,
-                        Mark = "INV",
-                        CreatedBy = data.CreatedBy,
-                        CreatedDate = data.CreatedDate,
-                        UpdatedBy = data.UpdatedBy,
-                        UpdatedDate = data.UpdatedDate
-                    };
-
-                    Db.PurchaseReceiveHeaders.Add(newPrcvData);
-
-                    // Purchase Invoice
-                    var newInvCode = GetNewCode("PI_NUM_FMT", data.Date);
-                    var newPinvData = new PurchaseInvoiceHeader
-                    {
-                        Code = newRcvCode,
-                        Date = data.InvDate,
-                        DueDate = data.InvDueDate,
-                        PoCode = data.Code,
-                        RefNo = data.InvRefNo,
-                        SupCode = data.SupCode,
-                        IssuedBy = data.RequestBy,
-                        CurrCode = data.CurrCode,
-                        PaidAmount = data.Total,
-                        Total = data.Total,
-                        Notes = data.Notes,
-                        Mark = data.Mark,
-                        CreatedBy = data.CreatedBy,
-                        CreatedDate = data.CreatedDate,
-                        UpdatedBy = data.UpdatedBy,
-                        UpdatedDate = data.UpdatedDate
-                    };
-
-                    Db.PurchaseInvoiceHeaders.Add(newPinvData);
-
-                    short j = 0;
-                    foreach (var item in data.ItemDetails)
-                    {
-                        Db.PurchaseReceiveDetails.Add(new PurchaseReceiveDetail
+                        var newRcvCode = GetNewCode("RCV_NUM_FMT", data.RcvDate);
+                        var newPrcvData = new PurchaseReceiveHeader
                         {
                             Code = newRcvCode,
-                            LineNo = ++j,
-                            ItemId = item.ItemId,
-                            UomId = item.UomId,
-                            UnitId = item.UnitId,
-                            Qty = item.Qty,
-                            Length = item.Length,
-                            Width = item.Width,
-                            Height = item.Height,
-                            Weight = item.Weight,
-                            DimensionMeasurement = item.DimensionMeasurement,
-                            WeightMeasurement = item.WeightMeasurement,
-                            UnitPrice = item.UnitPrice,
-                            Disc = item.Disc,
-                            TaxId = item.TaxId,
-                            TaxAmount = item.TaxAmount,
-                            NettPrice = item.NettPrice,
-                            Total = item.Total,
-                            Dpp = item.Dpp,
-                            WarehouseCode = data.WarehouseCode,
-                            Type = 0
+                            Date = data.RcvDate,
+                            TransCode = data.Code,
+                            RefNo = data.RcvRefNo,
+                            SupCode = data.SupCode,
+                            ReceiveBy = data.RequestBy,
+                            CurrCode = data.CurrCode,
+                            Rate = data.Rate,
+                            ShipmentFee = data.ShipmentFee,
+                            HandlingFee = data.HandlingFee,
+                            SubTotal = data.SubTotal,
+                            FinalDiscPercent = data.FinalDiscPercent,
+                            FinalDisc = data.FinalDisc,
+                            IncludeTax = data.IncludeTax,
+                            TaxAmount = data.TaxAmount,
+                            Total = data.Total,
+                            Dpp = data.Dpp,
+                            Mark = "INV",
+                            CreatedBy = data.CreatedBy,
+                            CreatedDate = data.CreatedDate,
+                            UpdatedBy = data.UpdatedBy,
+                            UpdatedDate = data.UpdatedDate
+                        };
+
+                        Db.PurchaseReceiveHeaders.Add(newPrcvData);
+
+                        // Purchase Invoice
+                        var newInvCode = GetNewCode("PI_NUM_FMT", data.Date);
+                        var newPinvData = new PurchaseInvoiceHeader
+                        {
+                            Code = newInvCode,
+                            Date = data.InvDate,
+                            DueDate = data.InvDueDate,
+                            PoCode = data.Code,
+                            RefNo = data.InvRefNo,
+                            SupCode = data.SupCode,
+                            IssuedBy = data.RequestBy,
+                            CurrCode = data.CurrCode,
+                            PaidAmount = data.Total,
+                            Total = data.Total,
+                            Notes = data.Notes,
+                            Mark = data.Mark,
+                            CreatedBy = data.CreatedBy,
+                            CreatedDate = data.CreatedDate,
+                            UpdatedBy = data.UpdatedBy,
+                            UpdatedDate = data.UpdatedDate
+                        };
+
+                        Db.PurchaseInvoiceHeaders.Add(newPinvData);
+
+                        short j = 0;
+                        foreach (var item in data.ItemDetails)
+                        {
+                            Db.PurchaseReceiveDetails.Add(new PurchaseReceiveDetail
+                            {
+                                Code = newRcvCode,
+                                LineNo = ++j,
+                                ItemId = item.ItemId,
+                                UomId = item.UomId,
+                                UnitId = item.UnitId,
+                                Qty = item.Qty,
+                                Length = item.Length,
+                                Width = item.Width,
+                                Height = item.Height,
+                                Weight = item.Weight,
+                                DimensionMeasurement = item.DimensionMeasurement,
+                                WeightMeasurement = item.WeightMeasurement,
+                                UnitPrice = item.UnitPrice,
+                                Disc = item.Disc,
+                                TaxId = item.TaxId,
+                                TaxAmount = item.TaxAmount,
+                                NettPrice = item.NettPrice,
+                                Total = item.Total,
+                                Dpp = item.Dpp,
+                                WarehouseCode = data.WarehouseCode,
+                                Type = 0
+                            });
+                        }
+
+                        Db.PurchaseInvoiceDetails.Add(new PurchaseInvoiceDetail
+                        {
+                            Code = newInvCode,
+                            LineNo = 1,
+                            RcvCode = newRcvCode,
+                            SubTotal = data.Total,
+                            FinalDisc = data.FinalDisc,
+                            TaxAmount = data.TaxAmount,
+                            Total = data.Total,
+                            Dpp = data.Dpp
                         });
                     }
-
-                    Db.PurchaseInvoiceDetails.Add(new PurchaseInvoiceDetail
+                    else
                     {
-                        Code = newInvCode,
-                        LineNo = 1,
-                        RcvCode = newRcvCode,
-                        SubTotal = data.Total,
-                        FinalDisc = data.FinalDisc,
-                        TaxAmount = data.TaxAmount,
-                        Total = data.Total,
-                        Dpp = data.Dpp
-                    });
+                        // Purchase Invoice
+                        var newInvCode = GetNewCode("PI_NUM_FMT", data.Date);
+                        var newPinvData = new PurchaseInvoiceHeader
+                        {
+                            Code = newInvCode,
+                            Date = data.InvDate,
+                            DueDate = data.InvDueDate,
+                            PoCode = data.Code,
+                            RefNo = data.InvRefNo,
+                            SupCode = data.SupCode,
+                            IssuedBy = data.RequestBy,
+                            CurrCode = data.CurrCode,
+                            PaidAmount = data.Total,
+                            Total = data.Total,
+                            Notes = data.Notes,
+                            Mark = data.Mark,
+                            CreatedBy = data.CreatedBy,
+                            CreatedDate = data.CreatedDate,
+                            UpdatedBy = data.UpdatedBy,
+                            UpdatedDate = data.UpdatedDate
+                        };
+
+                        Db.PurchaseInvoiceHeaders.Add(newPinvData);
+
+                        short j = 0;
+                        foreach (var RcvItem in RcvData)
+                        {
+                            RcvItem.Date = data.RcvDate;
+                            RcvItem.RefNo = data.RcvRefNo;
+                            RcvItem.Mark = "INV";
+                            RcvItem.UpdatedBy = data.UpdatedBy;
+                            RcvItem.UpdatedDate = data.UpdatedDate;
+
+                            Db.PurchaseReceiveHeaders.Update(RcvItem);
+
+                            Db.PurchaseInvoiceDetails.Add(new PurchaseInvoiceDetail
+                            {
+                                Code = newInvCode,
+                                LineNo = ++j,
+                                RcvCode = RcvItem.Code,
+                                SubTotal = data.Total,
+                                FinalDisc = data.FinalDisc,
+                                TaxAmount = data.TaxAmount,
+                                Total = data.Total,
+                                Dpp = data.Dpp
+                            });
+                        }                        
+                    }
                 }
 
                 Db.SaveChanges();
