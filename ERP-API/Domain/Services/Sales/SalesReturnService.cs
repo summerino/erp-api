@@ -49,7 +49,11 @@ namespace ERP_API.Domain.Services.Sales
 
             return data.OrderBy(x => x.LineNo);
         }
-
+        public IEnumerable<VwSalesReturnDetailExchDiffItem> GetDetailExchangeData(string code)
+        {
+            var data = Db.VwSalesReturnDetailExchDiffItems.Where(x => x.Code == code);
+            return data.OrderBy(x => x.LineNo);
+        }
         public List<dynamic> GetRelatedTransactions(string code)
         {
             var data = from dt in Db.VwCreditMemos

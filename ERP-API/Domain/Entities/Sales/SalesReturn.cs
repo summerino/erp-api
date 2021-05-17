@@ -86,6 +86,7 @@ namespace ERP_API.Domain.Entities.Sales
         public string TransCode { get; set; }
 
         public short Type { get; set; }
+        public string ReturnType { get; set; }
 
         public string CustCode { get; set; }
 
@@ -299,5 +300,32 @@ namespace ERP_API.Domain.Entities.Sales
 
         [Column("DPP", TypeName = "decimal(19, 6)")]
         public decimal Dpp { get; set; }
+    }
+
+    public class VwSalesReturnDetailExchDiffItem 
+    {
+        public long Id { get; set; }
+        public string Code { get; set; }
+        public short LineNo { get; set; }
+        public long? ReturnDetailId { get; set; }
+        public int ItemId { get; set; }
+        public string ItemName { get; set; }
+        public string ItemInitial { get; set; }
+        public int UomId { get; set; }
+        public int UnitId { get; set; }
+        public string UnitName { get; set; }
+        public decimal Qty { get; set; }
+        public string WarehouseCode { get; set; }
+        public decimal UnitPrice { get; set; }
+        public int? TaxId { get; set; }
+        public decimal TaxAmount { get; set; }
+        public decimal NettPrice { get; set; }
+        public decimal Total { get; set; }
+        public decimal Dpp { get; set; }
+        public int? ItemUomSellId { get; set; }
+        public string ItemUomSellName { get; set; }
+        public decimal? ItemSellPrice { get; set; }
+        public string UomInitial { get; set; }
+
     }
 }

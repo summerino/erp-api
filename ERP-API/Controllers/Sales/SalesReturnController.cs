@@ -1,4 +1,5 @@
-﻿using ERP_API.Domain.Interfaces.Sales;
+﻿using ERP_API.Domain.Interfaces.Inventory;
+using ERP_API.Domain.Interfaces.Sales;
 using ERP_API.Domain.Models;
 using ERP_API.Domain.Services;
 using ERP_API.Model;
@@ -18,10 +19,12 @@ namespace ERP_API.Controllers.Sales
     public class SalesReturnController : ControllerBase
     {
         private readonly ISalesReturnService _rtn;
+        private readonly IUnitOfMeasurementService _uom;
         private readonly IClaimService _claim;
 
-        public SalesReturnController(ISalesReturnService rtn, IClaimService claim)
+        public SalesReturnController(ISalesReturnService rtn, IUnitOfMeasurementService uom, IClaimService claim)
         {
+            _uom = uom;
             _rtn = rtn;
             _claim = claim;
         }
@@ -46,6 +49,8 @@ namespace ERP_API.Controllers.Sales
         [HttpGet("item")]
         public IActionResult GetDetailData(string code, bool? fullDelivered)
         {
+            var uomC = _uom.GetDataConversion().ToList();
+
             var data = _rtn.GetDetailData(code, fullDelivered)
                 .Select(x => new
                 {
@@ -79,6 +84,72 @@ namespace ERP_API.Controllers.Sales
                     OldUnitPrice = x.ItemSellPrice,
                     TotTax = x.Qty * x.TaxAmount,
                     TotDPP = x.Qty * x.Dpp,
+                    Units = uomC.Where(u => u.UomId == x.UomId)
+                        .Select(u => new
+                        {
+                            u.Id,
+                            u.UomId,
+                            u.UnitToConvert,
+                            u.UnitEquivalent,
+                            u.Conversion,
+                            u.IsBaseUnit,
+                            u.Seq
+                        })
+                        .OrderBy(u => u.Seq)
+                        .ToList(),
+                    State = ""
+                })
+                .ToList<dynamic>();
+
+            return Ok(new ApiResponse
+            {
+                RowCount = data.Count,
+                TableData = data
+            });
+        }
+        [HttpGet("diff-item")]
+        public IActionResult GetDiffItem(string code)
+        {
+            var uomC = _uom.GetDataConversion().ToList();
+
+            var data = _rtn.GetDetailExchangeData(code)
+                .Select(x => new
+                {
+                    x.Id,
+                    x.Code,
+                    x.LineNo,
+                    x.ReturnDetailId,
+                    x.ItemId,
+                    x.ItemInitial,
+                    x.ItemName,
+                    x.UomId,
+                    x.UnitId,
+                    x.UnitName,
+                    x.Qty,
+                    x.UnitPrice,
+                    x.TaxId,
+                    x.TaxAmount,
+                    x.NettPrice,
+                    x.Total,
+                    x.Dpp,
+                    OldUnitId = x.ItemUomSellId,
+                    OldUnitName = x.ItemUomSellName,
+                    OldUnitPrice = x.ItemSellPrice,
+                    TotTax = x.Qty * x.TaxAmount,
+                    TotDPP = x.Qty * x.Dpp,
+                    Units = uomC.Where(u => u.UomId == x.UomId)
+                        .Select(u => new
+                        {
+                            u.Id,
+                            u.UomId,
+                            u.UnitToConvert,
+                            u.UnitEquivalent,
+                            u.Conversion,
+                            u.IsBaseUnit,
+                            u.Seq
+                        })
+                        .OrderBy(u => u.Seq)
+                        .ToList(),
                     State = ""
                 })
                 .ToList<dynamic>();

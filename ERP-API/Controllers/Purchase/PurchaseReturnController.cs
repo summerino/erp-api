@@ -107,6 +107,60 @@ namespace ERP_API.Controllers.Purchase
             });
         }
 
+        [HttpGet("diff-item")]
+        public IActionResult GetDiffItem(string code)
+        {
+            var uomC = _uom.GetDataConversion().ToList();
+
+            var data = _rtn.GetDetailExchangeData(code)
+                .Select(x => new
+                {
+                    x.Id,
+                    x.Code,
+                    x.LineNo,
+                    x.ReturnDetailId,
+                    x.ItemId,
+                    x.ItemInitial,
+                    x.ItemName,
+                    x.UomId,
+                    x.UnitId,
+                    x.UnitName,
+                    x.Qty,
+                    x.UnitPrice,
+                    x.TaxId,
+                    x.TaxAmount,
+                    x.NettPrice,
+                    x.Total,
+                    x.Dpp,
+                    OldUnitId = x.ItemUomBuyId,
+                    OldUnitName = x.ItemUomBuyName,
+                    OldUnitPrice = x.ItemBuyPrice,
+                    TotTax = x.Qty * x.TaxAmount,
+                    TotDPP = x.Qty * x.Dpp,
+                    Units = uomC.Where(u => u.UomId == x.UomId)
+                        .Select(u => new
+                        {
+                            u.Id,
+                            u.UomId,
+                            u.UnitToConvert,
+                            u.UnitEquivalent,
+                            u.Conversion,
+                            u.IsBaseUnit,
+                            u.Seq
+                        })
+                        .OrderBy(u => u.Seq)
+                        .ToList(),
+                    State = ""
+                })
+                .ToList<dynamic>();
+
+            return Ok(new ApiResponse
+            {
+                RowCount = data.Count,
+                TableData = data
+            });
+        }
+
         [HttpGet("related-trans")]
         public IActionResult GetRelatedTransactions(string code)
         {
