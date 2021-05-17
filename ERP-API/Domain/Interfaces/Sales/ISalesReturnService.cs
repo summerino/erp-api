@@ -14,7 +14,7 @@ namespace ERP_API.Domain.Interfaces.Sales
             string search);
 
         IEnumerable<VwSalesReturnDetail> GetDetailData(string code, bool? fullDelivered = null);
-
+        IEnumerable<VwSalesReturnDetailExchDiffItem> GetDetailExchangeData(string code);
 
         List<dynamic> GetRelatedTransactions(string code);
 

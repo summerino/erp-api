@@ -50,7 +50,11 @@ namespace ERP_API.Domain.Services.Purchase
 
             return data.OrderBy(x => x.LineNo);
         }
-
+        public IEnumerable<VwPurchaseReturnDetailExchDiffItem> GetDetailExchangeData(string code)
+        {
+            var data = Db.VwPurchaseReturnDetailExchDiffItems.Where(x => x.Code == code);
+            return data.OrderBy(x => x.LineNo);
+        }
         public List<dynamic> GetRelatedTransactions(string code)
         {
             var data = from dt in Db.VwDebitMemos
@@ -403,5 +407,7 @@ namespace ERP_API.Domain.Services.Purchase
             }
             return result;
         }
+
+        
     }
 }
