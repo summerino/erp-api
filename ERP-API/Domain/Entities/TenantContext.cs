@@ -73,7 +73,7 @@ namespace ERP_API.Domain.Entities
         public DbSet<TransferStockDetail> TransferStockDetails { get; set; }
         public DbSet<VwTransferStockDetail> VwTransferStockDetails { get; set; }
         public DbSet<UoM> UoMs { get; set; }
-        public DbSet<VwUoM> VwUoms { get; set; }
+        public DbSet<VwUoM> VwUoMs { get; set; }
         public DbSet<UoMConversion> UoMConversions { get; set; }
         public DbSet<Warehouse> Warehouses { get; set; }
         public DbSet<VwWarehouse> VwWarehouses { get; set; }

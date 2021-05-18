@@ -6,14 +6,16 @@ namespace ERP_API.Migrations.TenantMigrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            var sql = @"Create View [Inventory].[vwUom]
-                        AS
-                        select uom.*, uc.initial as CreatedInitial, up.initial as UpdatedInitial
-                        from Inventory.UoM uom
-                        LEFT JOIN SystemManagement.[User] uc
-		                        ON uc.Id = uom.CreatedBy
-                        LEFT JOIN SystemManagement.[User] up
-		                        ON up.Id = uom.UpdatedBy";
+            var sql = @"CREATE VIEW [Inventory].[vwUoM]
+AS
+SELECT uom.*,
+    uc.initial AS CreatedInitial,
+    up.initial AS UpdatedInitial
+FROM Inventory.UoM uom
+LEFT JOIN SystemManagement.[User] uc
+	ON uc.Id = uom.CreatedBy
+LEFT JOIN SystemManagement.[User] up
+	ON up.Id = uom.UpdatedBy";
             migrationBuilder.Sql(sql);
         }
 

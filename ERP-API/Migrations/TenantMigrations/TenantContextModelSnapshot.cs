@@ -2701,6 +2701,49 @@ namespace ERP_API.Migrations.TenantMigrations
                     b.ToView("vwTransferStockHeader", "Inventory");
                 });
 
+            modelBuilder.Entity("ERP_API.Domain.Entities.Inventory.VwUoM", b =>
+            {
+                b.Property<string>("BaseUnit")
+                    .IsUnicode(false)
+                    .HasColumnType("varchar(max)");
+
+                b.Property<int>("CreatedBy")
+                    .HasColumnType("int");
+
+                b.Property<DateTime>("CreatedDate")
+                    .HasColumnType("datetime");
+
+                b.Property<string>("CreatedInitial")
+                    .IsUnicode(false)
+                    .HasColumnType("varchar(max)");
+
+                b.Property<string>("Description")
+                    .IsUnicode(false)
+                    .HasColumnType("varchar(max)");
+
+                b.Property<int>("Id")
+                    .HasColumnType("int");
+
+                b.Property<string>("Initial")
+                    .IsUnicode(false)
+                    .HasColumnType("varchar(max)");
+
+                b.Property<bool>("IsActive")
+                    .HasColumnType("bit");
+
+                b.Property<int>("UpdatedBy")
+                    .HasColumnType("int");
+
+                b.Property<DateTime>("UpdatedDate")
+                    .HasColumnType("datetime");
+
+                b.Property<string>("UpdatedInitial")
+                    .IsUnicode(false)
+                    .HasColumnType("varchar(max)");
+
+                b.ToView("vwUoM", "Inventory");
+            });
+
             modelBuilder.Entity("ERP_API.Domain.Entities.Inventory.VwWarehouse", b =>
                 {
                     b.Property<string>("Address")
