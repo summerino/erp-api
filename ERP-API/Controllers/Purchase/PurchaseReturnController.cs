@@ -172,19 +172,7 @@ namespace ERP_API.Controllers.Purchase
                 TableData = data
             });
         }
-
-        [HttpGet("un-invoice")]
-        public IActionResult GetUnInvoiceData(string poCode, string invCode)
-        {
-            var data = _rtn.GetUnInvoiceData(poCode, invCode).ToList<dynamic>();
-
-            return Ok(new ApiResponse
-            {
-                RowCount = data.Count,
-                TableData = data
-            });
-        }
-
+        
         [HttpPost]
         public IActionResult OnPost(PurchaseReturnRequest data)
         {
