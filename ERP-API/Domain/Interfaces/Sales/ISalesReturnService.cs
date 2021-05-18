@@ -1,10 +1,7 @@
-﻿using ERP_API.Domain.Entities.Sales;
+﻿using System.Collections.Generic;
+using ERP_API.Domain.Entities.Sales;
 using ERP_API.Domain.Models;
 using ERP_API.Model.Sales;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace ERP_API.Domain.Interfaces.Sales
 {
@@ -14,6 +11,7 @@ namespace ERP_API.Domain.Interfaces.Sales
             string search);
 
         IEnumerable<VwSalesReturnDetail> GetDetailData(string code, bool? fullDelivered = null);
+
         IEnumerable<VwSalesReturnDetailExchDiffItem> GetDetailExchangeData(string code);
 
         List<dynamic> GetRelatedTransactions(string code);

@@ -1,15 +1,14 @@
-﻿using ERP_API.Domain.Entities;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Dynamic.Core;
+using Microsoft.EntityFrameworkCore;
+using ERP_API.Domain.Entities;
 using ERP_API.Domain.Entities.Sales;
 using ERP_API.Domain.Extensions;
 using ERP_API.Domain.Interfaces.Sales;
 using ERP_API.Domain.Models;
 using ERP_API.Model.Sales;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Dynamic.Core;
-using System.Threading.Tasks;
 
 namespace ERP_API.Domain.Services.Sales
 {
@@ -18,7 +17,6 @@ namespace ERP_API.Domain.Services.Sales
         public SalesReturnService(TenantContext db)
             :base(db)
         {
-
         }
 
         public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, string search)
@@ -36,6 +34,7 @@ namespace ERP_API.Domain.Services.Sales
 
             return data.ToDataSourceResult(skip, take, filter, sort);
         }
+
         public IEnumerable<VwSalesReturnDetail> GetDetailData(string code, bool? fullDelivered)
         {
             var data = Db.VwSalesReturnDetails.Where(x => x.Code == code);
@@ -49,11 +48,13 @@ namespace ERP_API.Domain.Services.Sales
 
             return data.OrderBy(x => x.LineNo);
         }
+
         public IEnumerable<VwSalesReturnDetailExchDiffItem> GetDetailExchangeData(string code)
         {
             var data = Db.VwSalesReturnDetailExchDiffItems.Where(x => x.Code == code);
             return data.OrderBy(x => x.LineNo);
         }
+
         public List<dynamic> GetRelatedTransactions(string code)
         {
             var data = from dt in Db.VwCreditMemos

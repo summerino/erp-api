@@ -1,16 +1,15 @@
-﻿using ERP_API.Domain.Interfaces.Inventory;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Dynamic.Core;
+using Microsoft.AspNetCore.Mvc;
+using ERP_API.Domain.Interfaces.Inventory;
 using ERP_API.Domain.Interfaces.Sales;
 using ERP_API.Domain.Models;
 using ERP_API.Domain.Services;
 using ERP_API.Model;
 using ERP_API.Model.Sales;
-using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Dynamic.Core;
-using System.Threading.Tasks;
 
 namespace ERP_API.Controllers.Sales
 {
@@ -107,6 +106,7 @@ namespace ERP_API.Controllers.Sales
                 TableData = data
             });
         }
+
         [HttpGet("diff-item")]
         public IActionResult GetDiffItem(string code)
         {

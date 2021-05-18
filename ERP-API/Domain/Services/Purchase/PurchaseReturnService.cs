@@ -50,11 +50,13 @@ namespace ERP_API.Domain.Services.Purchase
 
             return data.OrderBy(x => x.LineNo);
         }
+
         public IEnumerable<VwPurchaseReturnDetailExchDiffItem> GetDetailExchangeData(string code)
         {
             var data = Db.VwPurchaseReturnDetailExchDiffItems.Where(x => x.Code == code);
             return data.OrderBy(x => x.LineNo);
         }
+
         public List<dynamic> GetRelatedTransactions(string code)
         {
             var data = from dt in Db.VwDebitMemos
@@ -63,21 +65,7 @@ namespace ERP_API.Domain.Services.Purchase
 
             return data.ToDynamicList();
         }
-
-        public IEnumerable<PurchaseReceiveHeader> GetUnInvoiceData(string poCode, string invCode)
-        {
-            var data = Db.PurchaseReceiveHeaders.Where(x => x.TransCode == poCode);
-
-            data = string.IsNullOrWhiteSpace(invCode)
-                ? data.Where(x => x.Mark == "A")
-                : data.Where(x => x.Mark == "A" ||
-                                  Db.PurchaseInvoiceDetails
-                                      .Where(i => i.Code == invCode)
-                                      .Select(i => i.RcvCode).Contains(x.Code));
-
-            return data;
-        }
-
+        
         public SaveResult Insert(PurchaseReturnRequest data)
         {
             var result = new SaveResult(false);
