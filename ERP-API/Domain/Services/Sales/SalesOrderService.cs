@@ -168,6 +168,103 @@ namespace ERP_API.Domain.Services.Sales
                     }
                 }
 
+                if (data.IsSoInv)
+                {
+                    // Sales Delivery
+                    var newDlvCode = GetNewCode("DO_NUM_FMT", data.Date);
+
+                    var newSdlvData = new SalesDeliveryHeader
+                    {
+                        Code = newDlvCode,
+                        Date = data.DlvDate,
+                        SoCode = newCode,
+                        CustCode = data.CustCode,
+                        WarehouseCode = data.WarehouseCode,
+                        ShippedBy = data.SalesBy,
+                        CurrCode = data.CurrCode,
+                        Rate = data.Rate,
+                        ShipmentFee = data.ShipmentFee,
+                        HandlingFee = data.HandlingFee,
+                        SubTotal = data.SubTotal,
+                        FinalDiscPercent = data.FinalDiscPercent,
+                        FinalDisc = data.FinalDisc,
+                        IncludeTax = data.IncludeTax,
+                        TaxAmount = data.TaxAmount,
+                        Total = data.Total,
+                        Dpp = data.Dpp,
+                        Mark = "INV",
+                        CreatedBy = data.CreatedBy,
+                        CreatedDate = data.CreatedDate,
+                        UpdatedBy = data.UpdatedBy,
+                        UpdatedDate = data.UpdatedDate
+                    };
+
+                    Db.SalesDeliveryHeaders.Add(newSdlvData);
+
+                    // Sales Invoice
+                    var newInvCode = GetNewCode("SI_NUM_FMT", data.Date);
+                    var newSinvData = new SalesInvoiceHeader
+                    {
+                        Code = newInvCode,
+                        Date = data.InvDate,
+                        DueDate = data.InvDueDate,
+                        SoCode = newCode,
+                        CustCode = data.CustCode,
+                        IssuedBy = data.SalesBy,
+                        CurrCode = data.CurrCode,
+                        Total = data.Total,
+                        Notes = data.Notes,
+                        Mark = data.Mark,
+                        CreatedBy = data.CreatedBy,
+                        CreatedDate = data.CreatedDate,
+                        UpdatedBy = data.UpdatedBy,
+                        UpdatedDate = data.UpdatedDate
+                    };
+
+                    Db.SalesInvoiceHeaders.Add(newSinvData);
+
+                    short j = 0;
+                    foreach (var item in data.ItemDetails)
+                    {
+                        Db.SalesDeliveryDetails.Add(new SalesDeliveryDetail
+                        {
+                            Code = newDlvCode,
+                            LineNo = ++j,
+                            ItemId = item.ItemId,
+                            UomId = item.UomId,
+                            UnitId = item.UnitId,
+                            Qty = item.Qty,
+                            Length = item.Length,
+                            Width = item.Width,
+                            Height = item.Height,
+                            Weight = item.Weight,
+                            DimensionMeasurement = item.DimensionMeasurement,
+                            WeightMeasurement = item.WeightMeasurement,
+                            UnitPrice = item.UnitPrice,
+                            Disc = item.Disc,
+                            TaxId = item.TaxId,
+                            TaxAmount = item.TaxAmount,
+                            NettPrice = item.NettPrice,
+                            Total = item.Total,
+                            Dpp = item.Dpp
+                        });
+                    }
+
+                    Db.SalesInvoiceDetails.Add(new SalesInvoiceDetail
+                    {
+                        Code = newInvCode,
+                        LineNo = 1,
+                        DoCode = newDlvCode,
+                        ShipmentFee = data.ShipmentFee,
+                        HandlingFee = data.HandlingFee,
+                        SubTotal = data.SubTotal,
+                        FinalDisc = data.FinalDisc,
+                        TaxAmount = data.TaxAmount,
+                        Total = data.Total,
+                        Dpp = data.Dpp
+                    });
+                }
+
                 Db.SaveChanges();
 
                 if (data.IsSoDlv)
@@ -180,6 +277,27 @@ namespace ERP_API.Domain.Services.Sales
 
                     // Execute sp_update_po_rcv_qty
                     Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", newCode);
+                }
+
+                if (data.IsSoInv)
+                {
+                    var DlvData = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.SoCode == newCode);
+                    // Execute sp_update_stock_mutation_from_rcv
+                    Db.Database.ExecuteSqlRaw(
+                        "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
+                        DlvData.Code, data.Date, newCode);
+
+                    // Execute sp_update_po_rcv_qty
+                    Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", newCode);
+
+                    // Update sales order to closed if all sales delivery are invoiced
+                    if (
+                        !Db.SalesDeliveryHeaders
+                            .Any(x => x.SoCode == newCode && x.Mark != "INV"))
+                    {
+                        Db.Database.ExecuteSqlRaw(
+                            "UPDATE Sales.SalesOrderHeader SET Mark='CLS' WHERE Code={0} AND Mark='CMP'", newCode);
+                    }
                 }
 
                 transaction.Commit();
@@ -329,6 +447,156 @@ namespace ERP_API.Domain.Services.Sales
                     }
                 }
 
+                if (data.IsSoInv)
+                {
+                    var DlvData = Db.SalesDeliveryHeaders.Where(x => x.SoCode == data.Code).ToList();
+                    if(DlvData.Count == 0)
+                    {
+                        // Sales Delivery
+                        var newDlvCode = GetNewCode("DO_NUM_FMT", data.Date);
+
+                        var newSdlvData = new SalesDeliveryHeader
+                        {
+                            Code = newDlvCode,
+                            Date = data.DlvDate,
+                            SoCode = data.Code,
+                            CustCode = data.CustCode,
+                            WarehouseCode = data.WarehouseCode,
+                            ShippedBy = data.SalesBy,
+                            CurrCode = data.CurrCode,
+                            Rate = data.Rate,
+                            ShipmentFee = data.ShipmentFee,
+                            HandlingFee = data.HandlingFee,
+                            SubTotal = data.SubTotal,
+                            FinalDiscPercent = data.FinalDiscPercent,
+                            FinalDisc = data.FinalDisc,
+                            IncludeTax = data.IncludeTax,
+                            TaxAmount = data.TaxAmount,
+                            Total = data.Total,
+                            Dpp = data.Dpp,
+                            Mark = "INV",
+                            CreatedBy = data.CreatedBy,
+                            CreatedDate = data.CreatedDate,
+                            UpdatedBy = data.UpdatedBy,
+                            UpdatedDate = data.UpdatedDate
+                        };
+
+                        Db.SalesDeliveryHeaders.Add(newSdlvData);
+
+                        // Sales Invoice
+                        var newInvCode = GetNewCode("SI_NUM_FMT", data.Date);
+                        var newSinvData = new SalesInvoiceHeader
+                        {
+                            Code = newInvCode,
+                            Date = data.InvDate,
+                            DueDate = data.InvDueDate,
+                            SoCode = data.Code,
+                            CustCode = data.CustCode,
+                            IssuedBy = data.SalesBy,
+                            CurrCode = data.CurrCode,
+                            Total = data.Total,
+                            Notes = data.Notes,
+                            Mark = data.Mark,
+                            CreatedBy = data.CreatedBy,
+                            CreatedDate = data.CreatedDate,
+                            UpdatedBy = data.UpdatedBy,
+                            UpdatedDate = data.UpdatedDate
+                        };
+
+                        Db.SalesInvoiceHeaders.Add(newSinvData);
+
+                        short j = 0;
+                        foreach (var item in data.ItemDetails)
+                        {
+                            Db.SalesDeliveryDetails.Add(new SalesDeliveryDetail
+                            {
+                                Code = newDlvCode,
+                                LineNo = ++j,
+                                ItemId = item.ItemId,
+                                UomId = item.UomId,
+                                UnitId = item.UnitId,
+                                Qty = item.Qty,
+                                Length = item.Length,
+                                Width = item.Width,
+                                Height = item.Height,
+                                Weight = item.Weight,
+                                DimensionMeasurement = item.DimensionMeasurement,
+                                WeightMeasurement = item.WeightMeasurement,
+                                UnitPrice = item.UnitPrice,
+                                Disc = item.Disc,
+                                TaxId = item.TaxId,
+                                TaxAmount = item.TaxAmount,
+                                NettPrice = item.NettPrice,
+                                Total = item.Total,
+                                Dpp = item.Dpp
+                            });
+                        }
+
+                        Db.SalesInvoiceDetails.Add(new SalesInvoiceDetail
+                        {
+                            Code = newInvCode,
+                            LineNo = 1,
+                            DoCode = newDlvCode,
+                            ShipmentFee = data.ShipmentFee,
+                            HandlingFee = data.HandlingFee,
+                            SubTotal = data.SubTotal,
+                            FinalDisc = data.FinalDisc,
+                            TaxAmount = data.TaxAmount,
+                            Total = data.Total,
+                            Dpp = data.Dpp
+                        });
+                    }
+                    else
+                    {
+                        // Sales Invoice
+                        var newInvCode = GetNewCode("SI_NUM_FMT", data.Date);
+                        var newSinvData = new SalesInvoiceHeader
+                        {
+                            Code = newInvCode,
+                            Date = data.InvDate,
+                            DueDate = data.InvDueDate,
+                            SoCode = data.Code,
+                            CustCode = data.CustCode,
+                            IssuedBy = data.SalesBy,
+                            CurrCode = data.CurrCode,
+                            Total = data.Total,
+                            Notes = data.Notes,
+                            Mark = data.Mark,
+                            CreatedBy = data.CreatedBy,
+                            CreatedDate = data.CreatedDate,
+                            UpdatedBy = data.UpdatedBy,
+                            UpdatedDate = data.UpdatedDate
+                        };
+
+                        Db.SalesInvoiceHeaders.Add(newSinvData);
+
+                        short j = 0;
+                        foreach (var Dlvitem in DlvData)
+                        {
+                            Dlvitem.Date = data.DlvDate;
+                            Dlvitem.Mark = "INV";
+                            Dlvitem.UpdatedBy = data.UpdatedBy;
+                            Dlvitem.UpdatedDate = data.UpdatedDate;
+
+                            Db.SalesDeliveryHeaders.Update(Dlvitem);
+
+                            Db.SalesInvoiceDetails.Add(new SalesInvoiceDetail
+                            {
+                                Code = newInvCode,
+                                LineNo = ++j,
+                                DoCode = Dlvitem.Code,
+                                ShipmentFee = Dlvitem.ShipmentFee,
+                                HandlingFee = Dlvitem.HandlingFee,
+                                SubTotal = Dlvitem.SubTotal,
+                                FinalDisc = Dlvitem.FinalDisc,
+                                TaxAmount = Dlvitem.TaxAmount,
+                                Total = Dlvitem.Total,
+                                Dpp = Dlvitem.Dpp
+                            });
+                        }
+                    }
+                }
+
                 Db.SaveChanges();
 
                 if (data.IsSoDlv)
@@ -341,6 +609,38 @@ namespace ERP_API.Domain.Services.Sales
 
                     // Execute sp_update_po_rcv_qty
                     Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", data.Code);
+                }
+
+                if (data.IsSoInv)
+                {
+                    var DlvData = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.SoCode == data.Code);
+                    // Execute sp_update_stock_mutation_from_rcv
+                    Db.Database.ExecuteSqlRaw(
+                        "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
+                        DlvData.Code, data.Date, data.Code);
+
+                    // Execute sp_update_po_rcv_qty
+                    Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", data.Code);
+
+                    // Check all sales delivery are invoiced
+                    if (
+                        !Db.SalesDeliveryHeaders
+                            .Any(x => x.SoCode == data.Code && x.Mark != "INV"))
+                    {
+                        // Update sales order to closed
+                        Db.Database.ExecuteSqlRaw(
+                            "UPDATE Sales.SalesOrderHeader SET Mark='CLS' WHERE Code={0} AND Mark='CMP'", data.Code);
+                    }
+                    else
+                    {
+                        // Update sales order to partial receive or completed
+                        var soMark = Db.SalesOrderDetails.Any(x => x.Code == data.Code && x.Qty > x.QtyDlv)
+                            ? "PS"
+                            : "CMP";
+
+                        Db.Database.ExecuteSqlRaw(
+                            "UPDATE Sales.SalesOrderHeader SET Mark={0} WHERE Code={1}", soMark, data.Code);
+                    }
                 }
 
                 transaction.Commit();
