@@ -126,27 +126,31 @@ namespace ERP_API.Domain.Services.Purchase
                     });
                 }
 
-                var dbtCode = GetNewCode("DM_NUM_FMT", data.Date);
+                if (data.Type == 1)
+                {
+                    var dbtCode = GetNewCode("DM_NUM_FMT", data.Date);
 
-                dbtMemo = new DebitMemo {
-                    Code = dbtCode,
-                    Date = data.Date,
-                    SrcTrans = (short)(data.Type == 1 ? 2 : 3),
-                    SupCode = data.SupCode,
-                    TransCode = data.Code,
-                    CurrCode = data.CurrCode,
-                    Rate = data.Rate,
-                    Amount = data.Total,
-                    Used = 0,
-                    Notes = data.RcvCode != null ? "Automatically created by Purchase Return " + newCode : "Automatically created by Purchase Return W/O Doc. " + newCode,
-                    Mark = "A",
-                    CreatedBy = data.CreatedBy,
-                    CreatedDate = data.CreatedDate,
-                    UpdatedBy = data.UpdatedBy,
-                    UpdatedDate = data.UpdatedDate
-                };
+                    dbtMemo = new DebitMemo
+                    {
+                        Code = dbtCode,
+                        Date = data.Date,
+                        SrcTrans = (short)(data.Type == 1 ? 2 : 3),
+                        SupCode = data.SupCode,
+                        TransCode = data.Code,
+                        CurrCode = data.CurrCode,
+                        Rate = data.Rate,
+                        Amount = data.Total,
+                        Used = 0,
+                        Notes = data.RcvCode != null ? "Automatically created by Purchase Return " + newCode : "Automatically created by Purchase Return W/O Doc. " + newCode,
+                        Mark = "A",
+                        CreatedBy = data.CreatedBy,
+                        CreatedDate = data.CreatedDate,
+                        UpdatedBy = data.UpdatedBy,
+                        UpdatedDate = data.UpdatedDate
+                    };
 
-                Db.DebitMemos.Add(dbtMemo);
+                    Db.DebitMemos.Add(dbtMemo);
+                }
 
                 Db.SaveChanges();
 
@@ -253,21 +257,23 @@ namespace ERP_API.Domain.Services.Purchase
                     }
                 }
 
-                dbtMemo = Db.DebitMemos.FirstOrDefault(x => x.TransCode == data.Code);
-                dbtMemo.SrcTrans = (short)(data.Type == 1 ? 2 : 3);
-                dbtMemo.SupCode = data.SupCode;
-                dbtMemo.CurrCode = data.CurrCode;
-                dbtMemo.Rate = data.Rate;
-                dbtMemo.Amount = data.Total;
-                dbtMemo.UpdatedBy = data.UpdatedBy;
-                dbtMemo.UpdatedDate = data.UpdatedDate;
-                Db.DebitMemos.Update(dbtMemo);
-                Db.Entry(dbtMemo).Property(e => e.Code).IsModified = false;
-                Db.Entry(dbtMemo).Property(e => e.TransCode).IsModified = false;
-                Db.Entry(dbtMemo).Property(e => e.Notes).IsModified = false;
-                Db.Entry(dbtMemo).Property(e => e.CreatedBy).IsModified = false;
-                Db.Entry(dbtMemo).Property(e => e.CreatedDate).IsModified = false;
-
+                if (data.Type == 1)
+                {
+                    dbtMemo = Db.DebitMemos.FirstOrDefault(x => x.TransCode == data.Code);
+                    dbtMemo.SrcTrans = (short)(data.Type == 1 ? 2 : 3);
+                    dbtMemo.SupCode = data.SupCode;
+                    dbtMemo.CurrCode = data.CurrCode;
+                    dbtMemo.Rate = data.Rate;
+                    dbtMemo.Amount = data.Total;
+                    dbtMemo.UpdatedBy = data.UpdatedBy;
+                    dbtMemo.UpdatedDate = data.UpdatedDate;
+                    Db.DebitMemos.Update(dbtMemo);
+                    Db.Entry(dbtMemo).Property(e => e.Code).IsModified = false;
+                    Db.Entry(dbtMemo).Property(e => e.TransCode).IsModified = false;
+                    Db.Entry(dbtMemo).Property(e => e.Notes).IsModified = false;
+                    Db.Entry(dbtMemo).Property(e => e.CreatedBy).IsModified = false;
+                    Db.Entry(dbtMemo).Property(e => e.CreatedDate).IsModified = false;
+                }
 
                 // Save changes
                 Db.SaveChanges();
