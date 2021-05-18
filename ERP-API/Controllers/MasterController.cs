@@ -210,17 +210,36 @@ namespace ERP_API.Controllers
                 model.updatedBy = _claim.UserId;
                 model.updatedDate = date;
 
+                
+
                 var validation = Validate(masterConfig, param, model);
                 if (!validation.Success)
                 {
                     return Ok(validation);
                 }
 
+                //var newModel = (JObject)model;
+                //newModel.Remove(masterConfig.PKColumnName.ToLower());
+
                 jsonData = JsonConvert.SerializeObject(model);
                 jsonData = "{ tableData: " + jsonData + " }";
                 var jToken = (JToken)JObject.Parse(string.Join(Environment.NewLine, jsonData));
-                dataAccess.UpdateData(masterConfig.SchemaName, masterConfig.TableName, jToken, new Dictionary<string, object> { { "Id", id } });
-                result.Message = $"Success update {param}.";
+                //dataAccess.UpdateData(masterConfig.SchemaName, masterConfig.TableName, jToken, new Dictionary<string, object> { { masterConfig.PKColumnName , id } });
+                //result.Message = $"Success update {param}.";
+
+                var (uniqueColumns, failedValidationMessage) = GetUniqueColumns(masterConfig);
+                var primaryKey = new Dictionary<string, object>();
+                primaryKey.Add(masterConfig.PKColumnName, id);
+                
+                var saveResult = dataAccess.UpdateData(masterConfig.SchemaName, masterConfig.TableName, jToken, primaryKey, uniqueColumns);
+                
+                if (saveResult.Result == Swift.Framework.Dtos.PageAddEdit.ResultType.Success)
+                    result.Message = $"Success update {param}.";
+                else
+                {
+                    result.Success = false;
+                    result.Message = uniqueColumns == null ? result.Message : failedValidationMessage;
+                }
                 return Ok(result);
             }
         }
@@ -282,9 +301,6 @@ namespace ERP_API.Controllers
             {
                 result.Success = false;
                 result.Message = "Please kindly check mandatory fields or fields that have an error.";
-            }
-            if (!string.IsNullOrEmpty(parameterDto.UniqueColumnName)) { 
-                //result = ValidateDuplicateData(parameterDto, model);
             }
             return result;
         }

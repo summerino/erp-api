@@ -20,4 +20,14 @@ namespace ERP_API.Domain.Entities.Inventory
         [StringLength(20)]
         public string BaseUnit { get; set; }
     }
+
+    public class VwUoM : BaseEntityWithActive
+    {
+        public int Id { get; set; }
+        public string Initial { get; set; }
+        public string Description { get; set; }
+        public string BaseUnit { get; set; }
+        public string CreatedInitial { get; set; }
+        public string UpdatedInitial { get; set; }
+    }
 }

@@ -18,7 +18,7 @@ namespace ERP_API.Domain.Services.Inventory
         }
         public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, string search)
         {
-            var data = Db.UoMs.Where(x => x.IsActive).AsQueryable();
+            var data = Db.VwUoms.Where(x => x.IsActive).AsQueryable();
 
             if (!string.IsNullOrEmpty(search))
             {

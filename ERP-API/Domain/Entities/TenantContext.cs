@@ -73,6 +73,7 @@ namespace ERP_API.Domain.Entities
         public DbSet<TransferStockDetail> TransferStockDetails { get; set; }
         public DbSet<VwTransferStockDetail> VwTransferStockDetails { get; set; }
         public DbSet<UoM> UoMs { get; set; }
+        public DbSet<VwUoM> VwUoms { get; set; }
         public DbSet<UoMConversion> UoMConversions { get; set; }
         public DbSet<Warehouse> Warehouses { get; set; }
         public DbSet<VwWarehouse> VwWarehouses { get; set; }
@@ -229,6 +230,10 @@ namespace ERP_API.Domain.Entities
             modelBuilder.Entity<VwWarehouse>()
                 .HasNoKey()
                 .ToView("vwWarehouse", Schema.Inventory);
+
+            modelBuilder.Entity<VwUoM>()
+                .HasNoKey()
+                .ToView("vwUoM", Schema.Inventory);
 
             // Adjustment entities
             modelBuilder.Entity<AdjustmentHeader>(entity =>
