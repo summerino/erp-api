@@ -461,7 +461,7 @@ namespace ERP_API.Domain.Services.Purchase
                 {
                     // Purchase Receive
                     var RcvData = Db.PurchaseReceiveHeaders.Where(x => x.TransCode == data.Code).ToList();
-                    if (RcvData == null)
+                    if (RcvData.Count == 0)
                     {
                         var newRcvCode = GetNewCode("RCV_NUM_FMT", data.RcvDate);
                         var newPrcvData = new PurchaseReceiveHeader
@@ -599,11 +599,11 @@ namespace ERP_API.Domain.Services.Purchase
                                 Code = newInvCode,
                                 LineNo = ++j,
                                 RcvCode = RcvItem.Code,
-                                SubTotal = data.Total,
-                                FinalDisc = data.FinalDisc,
-                                TaxAmount = data.TaxAmount,
-                                Total = data.Total,
-                                Dpp = data.Dpp
+                                SubTotal = RcvItem.Total,
+                                FinalDisc = RcvItem.FinalDisc,
+                                TaxAmount = RcvItem.TaxAmount,
+                                Total = RcvItem.Total,
+                                Dpp = RcvItem.Dpp
                             });
                         }                        
                     }
