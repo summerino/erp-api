@@ -461,7 +461,7 @@ namespace ERP_API.Domain.Services.Purchase
                 {
                     // Purchase Receive
                     var RcvData = Db.PurchaseReceiveHeaders.Where(x => x.TransCode == data.Code).ToList();
-                    if (RcvData == null)
+                    if (RcvData.Count == 0)
                     {
                         var newRcvCode = GetNewCode("RCV_NUM_FMT", data.RcvDate);
                         var newPrcvData = new PurchaseReceiveHeader
