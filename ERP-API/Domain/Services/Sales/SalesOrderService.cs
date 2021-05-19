@@ -53,7 +53,7 @@ namespace ERP_API.Domain.Services.Sales
         public List<dynamic> GetRelatedTransactions(string code)
         {
             var data = from dlv in Db.SalesDeliveryHeaders
-                       where dlv.SoCode == code && dlv.Mark == "A"
+                       where dlv.TransCode == code && dlv.Mark == "A"
                        select new { dlv.Code, dlv.Date, dlv.Mark };
 
             return data.ToDynamicList();
@@ -116,7 +116,7 @@ namespace ERP_API.Domain.Services.Sales
                     {
                         Code = newDlvCode,
                         Date = data.DlvDate,
-                        SoCode = newCode,
+                        TransCode = newCode,
                         CustCode = data.CustCode,
                         WarehouseCode = data.WarehouseCode,
                         ShippedBy = data.SalesBy,
@@ -177,7 +177,7 @@ namespace ERP_API.Domain.Services.Sales
                     {
                         Code = newDlvCode,
                         Date = data.DlvDate,
-                        SoCode = newCode,
+                        TransCode = newCode,
                         CustCode = data.CustCode,
                         WarehouseCode = data.WarehouseCode,
                         ShippedBy = data.SalesBy,
@@ -269,7 +269,7 @@ namespace ERP_API.Domain.Services.Sales
 
                 if (data.IsSoDlv)
                 {
-                    var DlvData = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.SoCode == newCode);
+                    var DlvData = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.TransCode == newCode);
                     // Execute sp_update_stock_mutation_from_rcv
                     Db.Database.ExecuteSqlRaw(
                         "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
@@ -281,7 +281,7 @@ namespace ERP_API.Domain.Services.Sales
 
                 if (data.IsSoInv)
                 {
-                    var DlvData = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.SoCode == newCode);
+                    var DlvData = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.TransCode == newCode);
                     // Execute sp_update_stock_mutation_from_rcv
                     Db.Database.ExecuteSqlRaw(
                         "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
@@ -293,7 +293,7 @@ namespace ERP_API.Domain.Services.Sales
                     // Update sales order to closed if all sales delivery are invoiced
                     if (
                         !Db.SalesDeliveryHeaders
-                            .Any(x => x.SoCode == newCode && x.Mark != "INV"))
+                            .Any(x => x.TransCode == newCode && x.Mark != "INV"))
                     {
                         Db.Database.ExecuteSqlRaw(
                             "UPDATE Sales.SalesOrderHeader SET Mark='CLS' WHERE Code={0} AND Mark='CMP'", newCode);
@@ -395,7 +395,7 @@ namespace ERP_API.Domain.Services.Sales
                     {
                         Code = newDlvCode,
                         Date = data.DlvDate,
-                        SoCode = data.Code,
+                        TransCode = data.Code,
                         CustCode = data.CustCode,
                         WarehouseCode = data.WarehouseCode,
                         ShippedBy = data.SalesBy,
@@ -449,7 +449,7 @@ namespace ERP_API.Domain.Services.Sales
 
                 if (data.IsSoInv)
                 {
-                    var DlvData = Db.SalesDeliveryHeaders.Where(x => x.SoCode == data.Code).ToList();
+                    var DlvData = Db.SalesDeliveryHeaders.Where(x => x.TransCode == data.Code).ToList();
                     if(DlvData.Count == 0)
                     {
                         // Sales Delivery
@@ -459,7 +459,7 @@ namespace ERP_API.Domain.Services.Sales
                         {
                             Code = newDlvCode,
                             Date = data.DlvDate,
-                            SoCode = data.Code,
+                            TransCode = data.Code,
                             CustCode = data.CustCode,
                             WarehouseCode = data.WarehouseCode,
                             ShippedBy = data.SalesBy,
@@ -601,7 +601,7 @@ namespace ERP_API.Domain.Services.Sales
 
                 if (data.IsSoDlv)
                 {
-                    var DlvData = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.SoCode == data.Code);
+                    var DlvData = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.TransCode == data.Code);
                     // Execute sp_update_stock_mutation_from_rcv
                     Db.Database.ExecuteSqlRaw(
                         "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
@@ -613,7 +613,7 @@ namespace ERP_API.Domain.Services.Sales
 
                 if (data.IsSoInv)
                 {
-                    var DlvData = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.SoCode == data.Code);
+                    var DlvData = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.TransCode == data.Code);
                     // Execute sp_update_stock_mutation_from_rcv
                     Db.Database.ExecuteSqlRaw(
                         "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
@@ -625,7 +625,7 @@ namespace ERP_API.Domain.Services.Sales
                     // Check all sales delivery are invoiced
                     if (
                         !Db.SalesDeliveryHeaders
-                            .Any(x => x.SoCode == data.Code && x.Mark != "INV"))
+                            .Any(x => x.TransCode == data.Code && x.Mark != "INV"))
                     {
                         // Update sales order to closed
                         Db.Database.ExecuteSqlRaw(

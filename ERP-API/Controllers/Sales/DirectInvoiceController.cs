@@ -12,53 +12,29 @@ using Newtonsoft.Json;
 
 namespace ERP_API.Controllers.Sales
 {
-    [Route("api/v1/sales-invoice")]
+    [Route("api/v1/direct-invoice")]
     [ApiController]
-    public class SalesInvoiceController : ControllerBase
+    public class DirectInvoiceController : ControllerBase
     {
-        private readonly ISalesInvoiceService _inv;
+        private readonly IDirectInvoiceService _inv;
         private readonly IClaimService _claim;
 
-        public SalesInvoiceController(ISalesInvoiceService inv, IClaimService claim)
+        public DirectInvoiceController(IDirectInvoiceService inv, IClaimService claim)
         {
             _inv = inv;
             _claim = claim;
         }
-
-        [HttpGet]
-        public IActionResult GetData(string search, string filters, string sorts, int skip, int take)
-        {
-            var data =
-                _inv.GetData(
-                    skip, take,
-                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
-                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
-                    search);
-
-            return Ok(new ApiResponse
-            {
-                RowCount = data.Total,
-                TableData = data.Data.ToDynamicList()
-            });
-        }
         
+        [HttpGet("{code}")]
+        public IActionResult GetDataByCode(string code)
+        {
+            throw new NotImplementedException();
+        }
+
         [HttpGet("detail")]
         public IActionResult GetDetailData(string code)
         {
-            var data = _inv.GetDetailData(code)
-                .Select(x => new
-                {
-                    x.Id, x.Code, x.LineNo, x.DoCode, x.ShipmentFee, x.HandlingFee,
-                    x.SubTotal, x.FinalDisc, x.TaxAmount, x.Total, x.Dpp,
-                    State = ""
-                })
-                .ToList<dynamic>();
-
-            return Ok(new ApiResponse
-            {
-                RowCount = data.Count,
-                TableData = data
-            });
+            throw new NotImplementedException();
         }
 
         [HttpPost]

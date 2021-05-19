@@ -92,7 +92,7 @@ namespace ERP_API.Domain.Services.Sales
                 // Update sales order to closed if all sales delivery are invoiced
                 if (
                     !Db.SalesDeliveryHeaders
-                        .Any(x => x.SoCode == data.SoCode && x.Mark != "INV"))
+                        .Any(x => x.TransCode == data.SoCode && x.Mark != "INV"))
                 {
                     Db.Database.ExecuteSqlRaw(
                         "UPDATE Sales.SalesOrderHeader SET Mark='CLS' WHERE Code={0} AND Mark='CMP'", data.SoCode);
@@ -205,7 +205,7 @@ namespace ERP_API.Domain.Services.Sales
                 // Check all sales delivery are invoiced
                 if (
                     !Db.SalesDeliveryHeaders
-                        .Any(x => x.SoCode == data.SoCode && x.Mark != "INV"))
+                        .Any(x => x.TransCode == data.SoCode && x.Mark != "INV"))
                 {
                     // Update sales order to closed
                     Db.Database.ExecuteSqlRaw(

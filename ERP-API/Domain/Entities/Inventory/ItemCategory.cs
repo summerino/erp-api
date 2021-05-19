@@ -32,10 +32,8 @@ namespace ERP_API.Domain.Entities.Inventory
     {
         public int Id { get; set; }
 
-        [StringLength(50)]
         public string Initial { get; set; }
 
-        [StringLength(100)]
         public string Name { get; set; }
 
         public int? ParentId { get; set; }
@@ -47,6 +45,7 @@ namespace ERP_API.Domain.Entities.Inventory
         public int? Seq { get; set; }
 
         public string Lineage { get; set; }
+
 
         public string CreatedInitial { get; set; }
 

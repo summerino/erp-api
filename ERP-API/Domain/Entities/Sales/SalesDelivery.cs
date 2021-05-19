@@ -15,10 +15,11 @@ namespace ERP_API.Domain.Entities.Sales
         [Column(TypeName = "date")]
         public DateTime Date { get; set; }
 
+        public short SrcTrans { get; set; }
+
         [Required]
-        [Column("SOCode")]
         [StringLength(17)]
-        public string SoCode { get; set; }
+        public string TransCode { get; set; }
 
         [Required]
         [StringLength(8)]
@@ -73,7 +74,9 @@ namespace ERP_API.Domain.Entities.Sales
 
         public DateTime Date { get; set; }
 
-        public string SoCode { get; set; }
+        public short SrcTrans { get; set; }
+
+        public string TransCode { get; set; }
 
         public string CustCode { get; set; }
 

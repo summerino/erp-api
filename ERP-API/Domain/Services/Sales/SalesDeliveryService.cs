@@ -29,7 +29,7 @@ namespace ERP_API.Domain.Services.Sales
                 data = DateTime.TryParse(search, out var searchDate)
                     ? data.Where(x => x.Date == searchDate)
                     : data.Where(x =>
-                        x.Code.Contains(search) || x.CustName.Contains(search) || x.SoCode == search ||
+                        x.Code.Contains(search) || x.CustName.Contains(search) || x.TransCode == search ||
                         x.ShippedInitial.Contains(search));
             }
 
@@ -56,7 +56,7 @@ namespace ERP_API.Domain.Services.Sales
 
         public IEnumerable<SalesDeliveryHeader> GetUnInvoiceData(string soCode, string invCode)
         {
-            var data = Db.SalesDeliveryHeaders.Where(x => x.SoCode == soCode);
+            var data = Db.SalesDeliveryHeaders.Where(x => x.TransCode == soCode);
 
             data = string.IsNullOrWhiteSpace(invCode)
                 ? data.Where(x => x.Mark == "A")
@@ -76,14 +76,14 @@ namespace ERP_API.Domain.Services.Sales
             try
             {
                 // Checking sales order mark
-                if (IsSalesOrderInvalid(data.SoCode))
+                if (IsSalesOrderInvalid(data.TransCode))
                 {
                     result.Message = "Data pengiriman penjualan tidak bisa disimpan karena data order penjualan sudah ditandai sebagai void atau tutup.";
                     return result;
                 }
 
                 // Checking deliver qty is excess or not
-                if (IsQtyExcess(data.Code, data.SoCode, data.ItemDetails))
+                if (IsQtyExcess(data.Code, data.TransCode, data.ItemDetails))
                 {
                     result.Message = "Data pengiriman penjualan tidak bisa disimpan karena qty yg diterima lebih besar dari qty yang tersedia.";
                     return result;
@@ -129,7 +129,7 @@ namespace ERP_API.Domain.Services.Sales
                 Db.SaveChanges();
 
                 // Execute sp_update_so_dlv_qty
-                Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", data.SoCode);
+                Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", data.TransCode);
 
                 transaction.Commit();
             }
@@ -160,14 +160,14 @@ namespace ERP_API.Domain.Services.Sales
                 }
 
                 // Checking sales order mark
-                if (IsSalesOrderInvalid(data.SoCode))
+                if (IsSalesOrderInvalid(data.TransCode))
                 {
                     result.Message = "Data pengiriman penjualan tidak bisa diubah karena data order penjualan sudah ditandai sebagai void atau tutup.";
                     return result;
                 }
 
                 // Checking deliver qty is excess or not
-                if (IsQtyExcess(data.Code, data.SoCode, data.ItemDetails))
+                if (IsQtyExcess(data.Code, data.TransCode, data.ItemDetails))
                 {
                     result.Message = "Data pengiriman penjualan tidak bisa disimpan karena qty yg diterima lebih besar dari qty yang tersedia.";
                     return result;
@@ -232,10 +232,10 @@ namespace ERP_API.Domain.Services.Sales
                 // Execute sp_update_stock_mutation_from_do
                 Db.Database.ExecuteSqlRaw(
                     "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
-                    data.Code, data.Date, data.SoCode);
+                    data.Code, data.Date, data.TransCode);
 
                 // Execute sp_update_so_dlv_qty
-                Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", data.SoCode);
+                Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", data.TransCode);
 
                 transaction.Commit();
             }
@@ -277,7 +277,7 @@ namespace ERP_API.Domain.Services.Sales
                     Db.SaveChanges();
 
                     // Execute sp_update_so_dlv_qty
-                    Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", data.SoCode);
+                    Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", data.TransCode);
 
                     transaction.Commit();
                 }
@@ -302,7 +302,7 @@ namespace ERP_API.Domain.Services.Sales
         {
             // Get sales delivery lists
             var dlvCodeList = Db.SalesDeliveryHeaders
-                .Where(x => x.SoCode == soCode && x.Mark != "V" && x.Code != code)
+                .Where(x => x.TransCode == soCode && x.Mark != "V" && x.Code != code)
                 .Select(x => x.Code).ToList();
 
             // Calculate delivery qty

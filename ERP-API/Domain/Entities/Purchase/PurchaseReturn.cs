@@ -283,6 +283,9 @@ namespace ERP_API.Domain.Entities.Purchase
         [Column(TypeName = "decimal(18, 2)")]
         public decimal Qty { get; set; }
 
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal QtyRcv { get; set; }
+
         [StringLength(8)]
         public string WarehouseCode { get; set; }
 
@@ -322,6 +325,8 @@ namespace ERP_API.Domain.Entities.Purchase
 
         public decimal Qty { get; set; }
 
+        public decimal QtyRcv { get; set; }
+
         public string WarehouseCode { get; set; }
 
         public decimal UnitPrice { get; set; }
@@ -335,11 +340,18 @@ namespace ERP_API.Domain.Entities.Purchase
         public decimal Total { get; set; }
 
         public decimal Dpp { get; set; }
+
+
         public string ItemInitial { get; set; }
+
         public string ItemName { get; set; }
+
         public string UnitName { get; set; }
-        public long ItemUomBuyId { get; set; }
+
+        public long? ItemUomBuyId { get; set; }
+
         public string ItemUomBuyName { get; set; }
-        public decimal ItemBuyPrice { get; set; }
+
+        public decimal? ItemBuyPrice { get; set; }
     }
 }

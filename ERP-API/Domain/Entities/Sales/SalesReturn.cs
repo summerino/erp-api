@@ -245,6 +245,7 @@ namespace ERP_API.Domain.Entities.Sales
 
         public decimal Dpp { get; set; }
 
+
         public string ItemName { get; set; }
 
         public int? ItemUomSellId { get; set; }
@@ -279,6 +280,9 @@ namespace ERP_API.Domain.Entities.Sales
         [Column(TypeName = "decimal(18, 2)")]
         public decimal Qty { get; set; }
 
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal QtyDlv { get; set; }
+
         [StringLength(8)]
         public string WarehouseCode { get; set; }
         
@@ -303,27 +307,50 @@ namespace ERP_API.Domain.Entities.Sales
     public class VwSalesReturnDetailExchDiffItem 
     {
         public long Id { get; set; }
+
         public string Code { get; set; }
+
         public short LineNo { get; set; }
+
         public long? ReturnDetailId { get; set; }
+
         public int ItemId { get; set; }
-        public string ItemName { get; set; }
-        public string ItemInitial { get; set; }
+        
         public int UomId { get; set; }
+
         public int UnitId { get; set; }
-        public string UnitName { get; set; }
+
         public decimal Qty { get; set; }
+
+        public decimal QtyDlv { get; set; }
+
         public string WarehouseCode { get; set; }
+
         public decimal UnitPrice { get; set; }
+
         public int? TaxId { get; set; }
+
         public decimal TaxAmount { get; set; }
+
         public decimal NettPrice { get; set; }
+
         public decimal Total { get; set; }
+
         public decimal Dpp { get; set; }
+
+
+        public string ItemInitial { get; set; }
+
+        public string ItemName { get; set; }
+
         public int? ItemUomSellId { get; set; }
+
         public string ItemUomSellName { get; set; }
+
         public decimal? ItemSellPrice { get; set; }
+
         public string UomInitial { get; set; }
 
+        public string UnitName { get; set; }
     }
 }
