@@ -322,9 +322,9 @@ namespace ERP_API.Domain.Services.Sales
             try
             {
                 // Checking mark header data
-                if (Db.SalesOrderHeaders.Any(x => x.Code == data.Code && x.Mark == "V"))
+                if (Db.SalesOrderHeaders.Any(x => x.Code == data.Code && new[] { "V", "CLS" }.Contains(x.Mark)))
                 {
-                    result.Message = "Data order penjualan tidak bisa diubah karena sudah ditandai sebagai void.";
+                    result.Message = "Data order penjualan tidak bisa diubah karena sudah ditandai sebagai void atau closed.";
                     return result;
                 }
 
