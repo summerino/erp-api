@@ -46,9 +46,9 @@ namespace ERP_API.Domain.Services.General
             return data.OrderBy(x => x.Id);
         }
 
-        public Customer FindByCode(string code)
+        public VwCustomer FindByCode(string code)
         {
-            return Db.Customers.Find(code);
+            return Db.VwCustomers.SingleOrDefault(x=>x.Code.Equals(code));
         }
 
         public SaveResult Insert(CustomerRequest data)

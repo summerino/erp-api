@@ -14,7 +14,7 @@ namespace ERP_API.Domain.Interfaces.General
 
         IEnumerable<CustomerAddress> GetAddress(string code);
 
-        Customer FindByCode(string code);
+        VwCustomer FindByCode(string code);
 
         SaveResult Insert(CustomerRequest data);
 
