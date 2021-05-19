@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using ERP_API.Domain.Entities;
 using ERP_API.Domain.Entities.SystemManagement;
+using ERP_API.Domain.Extensions;
 using ERP_API.Domain.Interfaces.SystemManagement;
+using ERP_API.Domain.Models;
 
 namespace ERP_API.Domain.Services.SystemManagement
 {
@@ -13,9 +14,9 @@ namespace ERP_API.Domain.Services.SystemManagement
         {
         }
 
-        public IEnumerable<SystemParameter> GetList(string[] codes)
+        public DataSourceResult GetLists(IEnumerable<Filter> filters, IEnumerable<Sort> sorts)
         {
-            return Db.SystemParameters.Where(x => codes.Contains(x.Code));
+            return Db.SystemParameters.ToDataSourceResult(0, -1, filters, sorts);
         }
     }
 }

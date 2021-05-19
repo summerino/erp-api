@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Dynamic.Core;
 using Microsoft.AspNetCore.Mvc;
 using ERP_API.Domain.Entities.Accounting;
@@ -8,16 +7,13 @@ using ERP_API.Domain.Interfaces.Accounting;
 using ERP_API.Domain.Models;
 using ERP_API.Domain.Services;
 using ERP_API.Model;
-using Newtonsoft.Json;
-using Microsoft.AspNetCore.Authorization;
-using ERP_API.Domain.Entities.General;
 using ERP_API.Model.Accounting;
+using Newtonsoft.Json;
 
 namespace ERP_API.Controllers.Accounting
 {
     [Route("api/v1/currency-rate")]
     [ApiController]
-    //[AllowAnonymous]
 
     public class CurrencyRateController : ControllerBase
     {
