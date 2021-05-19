@@ -57,6 +57,8 @@ namespace ERP_API.Domain.Entities.Inventory
 
         public string ApprovedInitial { get; set; }
 
+        public string TypeInitial { get; set; }
+
         public string Status { get; set; }
     }
     
@@ -102,7 +104,8 @@ namespace ERP_API.Domain.Entities.Inventory
 
         public string Notes { get; set; }
 
-
         public string ItemName { get; set; }
+
+        public string UnitName { get; set; }
     }
 }
