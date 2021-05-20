@@ -41,6 +41,10 @@ namespace ERP_API.Domain.Entities.Inventory
         public string RefCode2 { get; set; }
 
         [Required]
+        [StringLength(5)]
+        public string Type { get; set; }
+
+        [Required]
         [StringLength(10)]
         public string Src { get; set; }
     }

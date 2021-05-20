@@ -40,6 +40,8 @@ namespace ERP_API.Domain.Entities.Sales
 
         [StringLength(256)]
         public string Notes { get; set; }
+
+        public bool FromDirectInvoice { get; set; }
     }
 
     public class VwSalesInvoiceHeader : BaseEntityWithMarkAndApproved
@@ -63,6 +65,8 @@ namespace ERP_API.Domain.Entities.Sales
         public decimal Total { get; set; }
 
         public string Notes { get; set; }
+
+        public bool FromDirectInvoice { get; set; }
 
 
         public string CustName { get; set; }

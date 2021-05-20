@@ -73,11 +73,11 @@ namespace ERP_API.Migrations.TenantMigrations
                     Total = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     DPP = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     Notes = table.Column<string>(type: "varchar(256)", unicode: false, maxLength: 256, nullable: true),
+                    Mark = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
                     CreatedBy = table.Column<int>(type: "int", nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
                     UpdatedBy = table.Column<int>(type: "int", nullable: false),
-                    UpdatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
-                    Mark = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false)
+                    UpdatedDate = table.Column<DateTime>(type: "datetime", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -122,11 +122,11 @@ namespace ERP_API.Migrations.TenantMigrations
                     PaidAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     Total = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     Notes = table.Column<string>(type: "varchar(256)", unicode: false, maxLength: 256, nullable: true),
+                    Mark = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
                     CreatedBy = table.Column<int>(type: "int", nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
                     UpdatedBy = table.Column<int>(type: "int", nullable: false),
-                    UpdatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
-                    Mark = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false)
+                    UpdatedDate = table.Column<DateTime>(type: "datetime", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -194,11 +194,11 @@ namespace ERP_API.Migrations.TenantMigrations
                     Total = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     DPP = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     Notes = table.Column<string>(type: "varchar(256)", unicode: false, maxLength: 256, nullable: true),
+                    Mark = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
                     CreatedBy = table.Column<int>(type: "int", nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
                     UpdatedBy = table.Column<int>(type: "int", nullable: false),
-                    UpdatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
-                    Mark = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false)
+                    UpdatedDate = table.Column<DateTime>(type: "datetime", nullable: false)
                 },
                 constraints: table =>
                 {
