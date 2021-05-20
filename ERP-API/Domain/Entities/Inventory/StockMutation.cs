@@ -23,12 +23,12 @@ namespace ERP_API.Domain.Entities.Inventory
 
         public int UnitId { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Column(TypeName = "decimal(18, 6)")]
         public decimal Qty { get; set; }
 
         public int BaseUnit { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Column(TypeName = "decimal(18, 6)")]
         public decimal BaseQty { get; set; }
 
         [Required]
