@@ -49,7 +49,7 @@ namespace ERP_API.Controllers.Inventory
         public IActionResult GetDetailData(string code)
         {
             var uomC = _uom.GetDataConversion().ToList();
-            var differentUnit = _adjustment.DetDetailDiffUnit(code).ToList();
+            var differentUnit = _adjustment.GetDetailDiffUnit(code).ToList();
             var data = _adjustment.GetDetailData(code)
                 .Select(x => new
                 {
