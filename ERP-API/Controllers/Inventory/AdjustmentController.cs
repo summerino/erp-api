@@ -49,7 +49,7 @@ namespace ERP_API.Controllers.Inventory
         public IActionResult GetDetailData(string code)
         {
             var uomC = _uom.GetDataConversion().ToList();
-
+            var differentUnit = _adjustment.DetDetailDiffUnit(code).ToList();
             var data = _adjustment.GetDetailData(code)
                 .Select(x => new
                 {
@@ -64,6 +64,17 @@ namespace ERP_API.Controllers.Inventory
                     x.Different,
                     x.QtyOnHand,
                     x.BaseQtyOnHand,
+                    //DifferentUnit = differentUnit.Where(df => df.AdjustmentDetailId == x.Id)
+                    //    .GroupBy(df => df.AdjustmentDetailId)
+                    //    .Select(df => new { Name = String.Join(", ", df.Select(df => df.QtyAdjust)) })
+                    //    .SingleOrDefault()?.Name,
+                    DifferentUnit = "",
+                    DifferentUnits = differentUnit.Where(u => u.AdjustmentDetailId == x.Id)
+                        .Select(u => new { 
+                            u.Id,
+                            u.UnitId,
+                            u.QtyAdjust
+                        }).ToList(),
                     Units = uomC.Where(u => u.UomId == x.UomId)
                         .Select(u => new
                         {

@@ -4,14 +4,16 @@ using ERP_API.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ERP_API.Migrations.TenantMigrations
 {
     [DbContext(typeof(TenantContext))]
-    partial class TenantContextModelSnapshot : ModelSnapshot
+    [Migration("20210519062811_CreateTableAdjustmentDetailWithDifferentUnit")]
+    partial class CreateTableAdjustmentDetailWithDifferentUnit
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1279,7 +1281,7 @@ namespace ERP_API.Migrations.TenantMigrations
                     b.ToTable("AdjustmentDetail", "Inventory");
                 });
 
-            modelBuilder.Entity("ERP_API.Domain.Entities.Inventory.AdjustmentDetailDiffUnit", b =>
+            modelBuilder.Entity("ERP_API.Domain.Entities.Inventory.AdjustmentDetailWithDifferentUnit", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -1297,9 +1299,7 @@ namespace ERP_API.Migrations.TenantMigrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AdjustmentDetailId");
-
-                    b.ToTable("AdjustmentDetailDiffUnit", "Inventory");
+                    b.ToTable("AdjustmentDetailWithDifferentUnit", "Inventory");
                 });
 
             modelBuilder.Entity("ERP_API.Domain.Entities.Inventory.AdjustmentHeader", b =>
@@ -1722,9 +1722,9 @@ namespace ERP_API.Migrations.TenantMigrations
 
                     b.Property<string>("Src")
                         .IsRequired()
-                        .HasMaxLength(10)
+                        .HasMaxLength(5)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(10)");
+                        .HasColumnType("varchar(5)");
 
                     b.Property<int>("UnitId")
                         .HasColumnType("int");
@@ -7080,20 +7080,6 @@ namespace ERP_API.Migrations.TenantMigrations
                         .HasColumnType("varchar(max)");
 
                     b.ToView("vwUser", "SystemManagement");
-                });
-
-            modelBuilder.Entity("ERP_API.Domain.Entities.Inventory.AdjustmentDetailDiffUnit", b =>
-                {
-                    b.HasOne("ERP_API.Domain.Entities.Inventory.AdjustmentDetail", null)
-                        .WithMany("DifferentUnits")
-                        .HasForeignKey("AdjustmentDetailId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("ERP_API.Domain.Entities.Inventory.AdjustmentDetail", b =>
-                {
-                    b.Navigation("DifferentUnits");
                 });
 #pragma warning restore 612, 618
         }

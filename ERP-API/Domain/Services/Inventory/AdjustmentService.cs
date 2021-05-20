@@ -39,7 +39,36 @@ namespace ERP_API.Domain.Services.Inventory
             var data = Db.VwAdjustmentDetails.Where(x => x.Code == code);
             return data.OrderBy(x => x.LineNo);
         }
+        public DataSourceResult GetAdjustmentItem(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
+          List<int> category, string search)
+        {
+            var data = Db.VwAdjustmentItems.AsQueryable();
 
+            if (category?.Any() ?? false)
+            {
+                data = data.Where(x => category.Contains(x.CategoryId));
+            }
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                data = data.Where(x =>
+                            x.Initial.Contains(search) || x.Name.Contains(search) ||
+                            x.UomInitial.Contains(search) || x.UomSellName.Contains(search) ||
+                            x.UomBuyName.Contains(search) || x.CategoryName.Contains(search));
+            }
+
+            return data.ToDataSourceResult(skip, take, filter, sort);
+        }
+
+        public IEnumerable<AdjustmentDetailDiffUnit> GetDetailDiffUnit(string code)
+        {
+            var query = (from h in Db.AdjustmentHeaders
+                         join d in Db.AdjustmentDetails on h.Code equals d.Code
+                         join du in Db.AdjustmentDetailDiffUnits on d.Id equals du.AdjustmentDetailId
+                         where h.Code == code
+                         select du);
+            return query;
+        }
         public SaveResult Insert(AdjustmentRequest data)
         {
             var result = new SaveResult(false);
@@ -54,8 +83,9 @@ namespace ERP_API.Domain.Services.Inventory
                 data.Code = newCode;
                 Db.AdjustmentHeaders.Add(data);
 
-                // Insert detail data
+                // Insert detail data - different unit in a batch
                 short i = 0;
+                var details = new List<AdjustmentDetail>();
                 foreach (var item in data.ItemDetails)
                 {
                     var adjustmentDetail = new AdjustmentDetail() {
@@ -68,17 +98,32 @@ namespace ERP_API.Domain.Services.Inventory
                         QtyAdjust = item.QtyAdjust,
                         QtyOnHand = item.QtyOnHand,
                         UnitId = item.UnitId,
-                        UomId = item.UomId
+                        UomId = item.UomId,
+                        DifferentUnits = item.DifferentUnits
                     };
 
-                    Db.AdjustmentDetails.Add(adjustmentDetail);
-                    
-                    // klo stock opname hanya isi yang berubah, klo multiple adjustment semua record di isi
-                    if (item.QtyAdjust > 0) {
-                        Db.StockMutations.Add(GetStockMutation(data, item, adjustmentDetail.Id));
-                    } 
+                    details.Add(adjustmentDetail);
+                }
+                if (details.Any()) {
+                    Db.AdjustmentDetails.AddRange(details);
+                    Db.SaveChanges();
                 }
 
+                foreach (var item in details)
+                {
+                    foreach (var differentUnit in item.DifferentUnits)
+                    {
+                        var temp = new AdjustmentDetail
+                        {
+                            Id = differentUnit.Id,
+                            ItemId = item.ItemId,
+                            UomId = item.UomId,
+                            QtyAdjust = differentUnit.QtyAdjust,
+                            UnitId = differentUnit.UnitId
+                        };
+                    }
+                    AddStockMutation(data, item);
+                }
                 Db.SaveChanges();
 
                 //Execute sp_update_stock_mutation_from_adj
@@ -132,6 +177,7 @@ namespace ERP_API.Domain.Services.Inventory
                 short i = 0;
                 foreach (var item in data.ItemDetails)
                 {
+
                     if (item.Id <= 0)
                     {
                         var adjustmentDetail = new AdjustmentDetail()
@@ -145,15 +191,36 @@ namespace ERP_API.Domain.Services.Inventory
                             QtyAdjust = item.QtyAdjust,
                             QtyOnHand = item.QtyOnHand,
                             UnitId = item.UnitId,
-                            UomId = item.UomId
+                            UomId = item.UomId,
+                            DifferentUnits = item.DifferentUnits
                         };
-                        Db.AdjustmentDetails.Add(adjustmentDetail);                        
+                        Db.AdjustmentDetails.Add(adjustmentDetail);
                     }
                     else
                     {
                         item.LineNo = ++i;
                         Db.AdjustmentDetails.Update(item);
                         Db.Entry(item).Property(e => e.Code).IsModified = false;
+
+                        foreach (var diffUnit in item.DifferentUnits)
+                        {
+                            if (diffUnit.Id > 0)
+                            {
+                                Db.AdjustmentDetailDiffUnits.Update(diffUnit);
+                                Db.Entry(diffUnit).Property(e => e.Id).IsModified = false;
+                            }
+                        }
+
+                        //Get detail diff unit that exists in order before
+                        var delDetailDiff = Db.AdjustmentDetailDiffUnits
+                            .Where(d => d.AdjustmentDetailId == item.Id && !item.DifferentUnits.Select(x => x.Id).Contains(d.Id))
+                            .ToList();
+
+                        // Delete detail data that exists in order before
+                        if (delDetailDiff.Any())
+                        {
+                            Db.AdjustmentDetailDiffUnits.RemoveRange(delDetailDiff);
+                        }
                     }
                 }
 
@@ -204,7 +271,7 @@ namespace ERP_API.Domain.Services.Inventory
             return result;
         }
 
-        private StockMutation GetStockMutation(AdjustmentRequest data, AdjustmentDetail item, long adjustmentDetailId = 0) 
+        private StockMutation GetStockMutation(AdjustmentRequest data, AdjustmentDetail item)
         {
             return new StockMutation
             {
@@ -213,33 +280,20 @@ namespace ERP_API.Domain.Services.Inventory
                 ItemId = item.ItemId,
                 Qty = item.QtyAdjust,
                 RefCode1 = data.Code,
-                RefDetailId1 = adjustmentDetailId == 0 ? item.Id: adjustmentDetailId,
+                RefDetailId1 = item.Id,
                 Src = "ADJ",
                 RefCode2 = null,
                 UnitId = item.UnitId,
                 UomId = item.UomId,
             };
         }
-
-        public DataSourceResult GetAdjustmentItem(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
-            List<int> category, string search)
-        {
-            var data = Db.VwAdjustmentItems.AsQueryable();
-
-            if (category?.Any() ?? false)
+        private void AddStockMutation(AdjustmentRequest data, AdjustmentDetail item) {
+            if (item.QtyAdjust > 0)
             {
-                data = data.Where(x => category.Contains(x.CategoryId));
+                Db.StockMutations.Add(GetStockMutation(data, item));
             }
-
-            if (!string.IsNullOrEmpty(search))
-            {
-                data = data.Where(x =>
-                            x.Initial.Contains(search) || x.Name.Contains(search) ||
-                            x.UomInitial.Contains(search) || x.UomSellName.Contains(search) ||
-                            x.UomBuyName.Contains(search) || x.CategoryName.Contains(search));
-            }
-
-            return data.ToDataSourceResult(skip, take, filter, sort);
         }
+      
+        
     }
 }
