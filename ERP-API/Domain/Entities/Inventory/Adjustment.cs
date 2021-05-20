@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using ERP_API.Domain.Entities.Core;
@@ -28,30 +29,24 @@ namespace ERP_API.Domain.Entities.Inventory
     public class VwAdjustmentHeader : BaseEntityWithMarkAndApproved
     {
         public string Code { get; set; }
-
         public DateTime Date { get; set; }
-
         public short Type { get; set; }
-
         public string WarehouseCode { get; set; }
-
         public string Notes { get; set; }
-
-
         public string WarehouseInitial { get; set; }
-
         public string CreatedInitial { get; set; }
-
         public string UpdatedInitial { get; set; }
-
         public string ApprovedInitial { get; set; }
-
         public string Status { get; set; }
     }
     
     [Table("AdjustmentDetail", Schema = Schema.Inventory)]
     public class AdjustmentDetail
     {
+        public AdjustmentDetail()
+        {
+            DifferentUnits = new HashSet<AdjustmentDetailDiffUnit>();
+        }
         [Key]
         public long Id { get; set; }
 
@@ -86,6 +81,21 @@ namespace ERP_API.Domain.Entities.Inventory
 
         [StringLength(256)]
         public string Notes { get; set; }
+        public IEnumerable<AdjustmentDetailDiffUnit> DifferentUnits { get; set; }
+    }
+
+    [Table("AdjustmentDetailDiffUnit", Schema = Schema.Inventory)]
+    public class AdjustmentDetailDiffUnit
+    {
+        [Key]
+        public long Id { get; set; }
+
+        public long AdjustmentDetailId { get; set; }
+
+        public int UnitId { get; set; }
+
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal QtyAdjust { get; set; }
     }
 
     public class VwAdjustmentDetail

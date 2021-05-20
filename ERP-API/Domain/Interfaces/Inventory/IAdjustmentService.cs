@@ -14,6 +14,7 @@ namespace ERP_API.Domain.Interfaces.Inventory
             List<int> category, string search);
 
         IEnumerable<VwAdjustmentDetail> GetDetailData(string code);
+        IEnumerable<AdjustmentDetailDiffUnit> GetDetailDiffUnit(string code);
 
         SaveResult Insert(AdjustmentRequest data);
 

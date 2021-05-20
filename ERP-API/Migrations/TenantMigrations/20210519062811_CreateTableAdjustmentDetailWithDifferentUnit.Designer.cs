@@ -4,14 +4,16 @@ using ERP_API.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ERP_API.Migrations.TenantMigrations
 {
     [DbContext(typeof(TenantContext))]
-    partial class TenantContextModelSnapshot : ModelSnapshot
+    [Migration("20210519062811_CreateTableAdjustmentDetailWithDifferentUnit")]
+    partial class CreateTableAdjustmentDetailWithDifferentUnit
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1279,7 +1281,7 @@ namespace ERP_API.Migrations.TenantMigrations
                     b.ToTable("AdjustmentDetail", "Inventory");
                 });
 
-            modelBuilder.Entity("ERP_API.Domain.Entities.Inventory.AdjustmentDetailDiffUnit", b =>
+            modelBuilder.Entity("ERP_API.Domain.Entities.Inventory.AdjustmentDetailWithDifferentUnit", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -1297,9 +1299,7 @@ namespace ERP_API.Migrations.TenantMigrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AdjustmentDetailId");
-
-                    b.ToTable("AdjustmentDetailDiffUnit", "Inventory");
+                    b.ToTable("AdjustmentDetailWithDifferentUnit", "Inventory");
                 });
 
             modelBuilder.Entity("ERP_API.Domain.Entities.Inventory.AdjustmentHeader", b =>
@@ -1722,9 +1722,9 @@ namespace ERP_API.Migrations.TenantMigrations
 
                     b.Property<string>("Src")
                         .IsRequired()
-                        .HasMaxLength(10)
+                        .HasMaxLength(5)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(10)");
+                        .HasColumnType("varchar(5)");
 
                     b.Property<int>("UnitId")
                         .HasColumnType("int");
@@ -2281,24 +2281,29 @@ namespace ERP_API.Migrations.TenantMigrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Category1")
+                        .HasMaxLength(50)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
+                        .HasColumnType("varchar(50)");
 
                     b.Property<string>("Category2")
+                        .HasMaxLength(50)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
+                        .HasColumnType("varchar(50)");
 
                     b.Property<string>("Category3")
+                        .HasMaxLength(50)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
+                        .HasColumnType("varchar(50)");
 
                     b.Property<string>("Category4")
+                        .HasMaxLength(50)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
+                        .HasColumnType("varchar(50)");
 
                     b.Property<string>("Category5")
+                        .HasMaxLength(50)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
+                        .HasColumnType("varchar(50)");
 
                     b.Property<int>("CategoryId")
                         .HasColumnType("int");
@@ -2308,48 +2313,59 @@ namespace ERP_API.Migrations.TenantMigrations
                         .HasColumnType("varchar(max)");
 
                     b.Property<string>("CoaCogs")
+                        .HasMaxLength(6)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
+                        .HasColumnType("varchar(6)");
 
                     b.Property<string>("CoaCost")
+                        .HasMaxLength(6)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
+                        .HasColumnType("varchar(6)");
 
                     b.Property<string>("CoaExpense")
+                        .HasMaxLength(6)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
+                        .HasColumnType("varchar(6)");
 
                     b.Property<string>("CoaInventory")
+                        .HasMaxLength(6)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
+                        .HasColumnType("varchar(6)");
 
                     b.Property<string>("CoaOffSet")
+                        .HasMaxLength(6)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
+                        .HasColumnType("varchar(6)");
 
                     b.Property<string>("CoaPurc")
+                        .HasMaxLength(6)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
+                        .HasColumnType("varchar(6)");
 
                     b.Property<string>("CoaPurcDisc")
+                        .HasMaxLength(6)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
+                        .HasColumnType("varchar(6)");
 
                     b.Property<string>("CoaPurcReturn")
+                        .HasMaxLength(6)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
+                        .HasColumnType("varchar(6)");
 
                     b.Property<string>("CoaSls")
+                        .HasMaxLength(6)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
+                        .HasColumnType("varchar(6)");
 
                     b.Property<string>("CoaSlsDisc")
+                        .HasMaxLength(6)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
+                        .HasColumnType("varchar(6)");
 
                     b.Property<string>("CoaSlsReturn")
+                        .HasMaxLength(6)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
+                        .HasColumnType("varchar(6)");
 
                     b.Property<decimal?>("CostOfGoodSold")
                         .HasColumnType("decimal(18,2)");
@@ -2365,12 +2381,14 @@ namespace ERP_API.Migrations.TenantMigrations
                         .HasColumnType("varchar(max)");
 
                     b.Property<string>("Description")
+                        .HasMaxLength(100)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
+                        .HasColumnType("varchar(100)");
 
                     b.Property<string>("DimensionMeasurement")
+                        .HasMaxLength(10)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
+                        .HasColumnType("varchar(10)");
 
                     b.Property<decimal?>("Height")
                         .HasColumnType("decimal(18,2)");
@@ -2379,8 +2397,10 @@ namespace ERP_API.Migrations.TenantMigrations
                         .HasColumnType("int");
 
                     b.Property<string>("Initial")
+                        .IsRequired()
+                        .HasMaxLength(20)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
+                        .HasColumnType("varchar(20)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -2389,8 +2409,10 @@ namespace ERP_API.Migrations.TenantMigrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
+                        .HasColumnType("varchar(50)");
 
                     b.Property<int?>("PurchaseTaxId")
                         .HasColumnType("int");
@@ -2408,24 +2430,29 @@ namespace ERP_API.Migrations.TenantMigrations
                         .HasColumnType("smallint");
 
                     b.Property<string>("SubGroup1")
+                        .HasMaxLength(50)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
+                        .HasColumnType("varchar(50)");
 
                     b.Property<string>("SubGroup2")
+                        .HasMaxLength(50)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
+                        .HasColumnType("varchar(50)");
 
                     b.Property<string>("SubGroup3")
+                        .HasMaxLength(50)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
+                        .HasColumnType("varchar(50)");
 
                     b.Property<string>("SubGroup4")
+                        .HasMaxLength(50)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
+                        .HasColumnType("varchar(50)");
 
                     b.Property<string>("SubGroup5")
+                        .HasMaxLength(50)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
+                        .HasColumnType("varchar(50)");
 
                     b.Property<short>("TypeId")
                         .HasColumnType("smallint");
@@ -2473,11 +2500,12 @@ namespace ERP_API.Migrations.TenantMigrations
                         .HasColumnType("varchar(max)");
 
                     b.Property<decimal?>("Weight")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,3)");
 
                     b.Property<string>("WeightMeasurement")
+                        .HasMaxLength(10)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
+                        .HasColumnType("varchar(10)");
 
                     b.Property<decimal?>("Width")
                         .HasColumnType("decimal(18,2)");
@@ -2507,8 +2535,9 @@ namespace ERP_API.Migrations.TenantMigrations
                         .HasColumnType("int");
 
                     b.Property<string>("Initial")
+                        .HasMaxLength(50)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
+                        .HasColumnType("varchar(50)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -2518,8 +2547,9 @@ namespace ERP_API.Migrations.TenantMigrations
                         .HasColumnType("varchar(max)");
 
                     b.Property<string>("Name")
+                        .HasMaxLength(100)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
+                        .HasColumnType("varchar(100)");
 
                     b.Property<int?>("ParentId")
                         .HasColumnType("int");
@@ -2556,15 +2586,17 @@ namespace ERP_API.Migrations.TenantMigrations
                         .HasColumnType("int");
 
                     b.Property<string>("Initial")
+                        .HasMaxLength(50)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
+                        .HasColumnType("varchar(50)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
                     b.Property<string>("Name")
+                        .HasMaxLength(100)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
+                        .HasColumnType("varchar(100)");
 
                     b.Property<int>("UpdatedBy")
                         .HasColumnType("int");
@@ -2607,10 +2639,6 @@ namespace ERP_API.Migrations.TenantMigrations
 
                     b.Property<int>("UnitId")
                         .HasColumnType("int");
-
-                    b.Property<string>("UnitName")
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
 
                     b.Property<int>("UomId")
                         .HasColumnType("int");
@@ -2666,10 +2694,6 @@ namespace ERP_API.Migrations.TenantMigrations
 
                     b.Property<short>("Type")
                         .HasColumnType("smallint");
-
-                    b.Property<string>("TypeInitial")
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
 
                     b.Property<int>("UpdatedBy")
                         .HasColumnType("int");
@@ -3601,9 +3625,6 @@ namespace ERP_API.Migrations.TenantMigrations
                     b.Property<decimal>("Qty")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<decimal>("QtyRcv")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<long?>("ReturnDetailId")
                         .HasColumnType("bigint");
 
@@ -4489,7 +4510,7 @@ namespace ERP_API.Migrations.TenantMigrations
                     b.Property<long>("Id")
                         .HasColumnType("bigint");
 
-                    b.Property<decimal?>("ItemBuyPrice")
+                    b.Property<decimal>("ItemBuyPrice")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("ItemId")
@@ -4503,7 +4524,7 @@ namespace ERP_API.Migrations.TenantMigrations
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
 
-                    b.Property<long?>("ItemUomBuyId")
+                    b.Property<long>("ItemUomBuyId")
                         .HasColumnType("bigint");
 
                     b.Property<string>("ItemUomBuyName")
@@ -4517,9 +4538,6 @@ namespace ERP_API.Migrations.TenantMigrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("Qty")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("QtyRcv")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<long?>("ReturnDetailId")
@@ -5098,8 +5116,12 @@ namespace ERP_API.Migrations.TenantMigrations
                     b.Property<long>("ShippedBy")
                         .HasColumnType("bigint");
 
-                    b.Property<short>("SrcTrans")
-                        .HasColumnType("smallint");
+                    b.Property<string>("SoCode")
+                        .IsRequired()
+                        .HasMaxLength(17)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(17)")
+                        .HasColumnName("SOCode");
 
                     b.Property<decimal>("SubTotal")
                         .HasColumnType("decimal(18,2)");
@@ -5109,12 +5131,6 @@ namespace ERP_API.Migrations.TenantMigrations
 
                     b.Property<decimal>("Total")
                         .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("TransCode")
-                        .IsRequired()
-                        .HasMaxLength(17)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(17)");
 
                     b.Property<int>("UpdatedBy")
                         .HasColumnType("int");
@@ -5573,9 +5589,6 @@ namespace ERP_API.Migrations.TenantMigrations
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<decimal>("Qty")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("QtyDlv")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<long?>("ReturnDetailId")
@@ -6110,8 +6123,9 @@ namespace ERP_API.Migrations.TenantMigrations
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
 
-                    b.Property<short>("SrcTrans")
-                        .HasColumnType("smallint");
+                    b.Property<string>("SoCode")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
 
                     b.Property<string>("Status")
                         .IsUnicode(false)
@@ -6125,10 +6139,6 @@ namespace ERP_API.Migrations.TenantMigrations
 
                     b.Property<decimal>("Total")
                         .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("TransCode")
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
 
                     b.Property<int>("UpdatedBy")
                         .HasColumnType("int");
@@ -6601,9 +6611,6 @@ namespace ERP_API.Migrations.TenantMigrations
                     b.Property<decimal>("Qty")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<decimal>("QtyDlv")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<long?>("ReturnDetailId")
                         .HasColumnType("bigint");
 
@@ -7073,20 +7080,6 @@ namespace ERP_API.Migrations.TenantMigrations
                         .HasColumnType("varchar(max)");
 
                     b.ToView("vwUser", "SystemManagement");
-                });
-
-            modelBuilder.Entity("ERP_API.Domain.Entities.Inventory.AdjustmentDetailDiffUnit", b =>
-                {
-                    b.HasOne("ERP_API.Domain.Entities.Inventory.AdjustmentDetail", null)
-                        .WithMany("DifferentUnits")
-                        .HasForeignKey("AdjustmentDetailId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("ERP_API.Domain.Entities.Inventory.AdjustmentDetail", b =>
-                {
-                    b.Navigation("DifferentUnits");
                 });
 #pragma warning restore 612, 618
         }

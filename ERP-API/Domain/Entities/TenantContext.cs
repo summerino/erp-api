@@ -59,6 +59,7 @@ namespace ERP_API.Domain.Entities
         public DbSet<VwAdjustmentHeader> VwAdjustmentHeaders { get; set; }
         public DbSet<AdjustmentDetail> AdjustmentDetails { get; set; }
         public DbSet<VwAdjustmentDetail> VwAdjustmentDetails { get; set; }
+        public DbSet<AdjustmentDetailDiffUnit> AdjustmentDetailDiffUnits { get; set; }
         public DbSet<VwAdjustmentItem> VwAdjustmentItems { get; set; }
         public DbSet<Item> Items { get; set; }
         public DbSet<VwItem> VwItems { get; set; }
