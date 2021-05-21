@@ -28,15 +28,9 @@ namespace ERP_API.Controllers.Sales
         [HttpGet("{code}")]
         public IActionResult GetDataByCode(string code)
         {
-            throw new NotImplementedException();
+            return Ok(_inv.FindByCode(code));
         }
-
-        [HttpGet("detail")]
-        public IActionResult GetDetailData(string code)
-        {
-            throw new NotImplementedException();
-        }
-
+        
         [HttpPost]
         public IActionResult OnPost(SalesInvoiceRequest data)
         {
