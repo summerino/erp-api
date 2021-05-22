@@ -71,6 +71,7 @@ namespace ERP_API.Domain.Services.General
                 // Insert data
                 data.Code = newCode;
                 Db.Customers.Add(data);
+                Db.SaveChanges();
 
                 // Get temporary billing & shipping
                 var tempBillingId = data.BillingAddressId;
@@ -82,7 +83,7 @@ namespace ERP_API.Domain.Services.General
                 foreach (var item in data.ItemDetails)
                 {
                     // Checking initial already exists or not
-                    if (IsInitialAddressExists(item.Initial, ""))
+                    if (IsInitialAddressExists(data, data.Initial))
                     {
                         result.Message = "Alamat inisial sudah terdaftar. Tolong gunakan alamat inisial lain pada daftar alamat.";
                         return result;
@@ -172,7 +173,7 @@ namespace ERP_API.Domain.Services.General
             foreach (var item in data.ItemDetails)
             {
                 // Checking initial already exists or not
-                if (IsInitialAddressExists(item.Initial, item.Code))
+                if (IsInitialAddressExists(data, item.Initial))
                 {
                     result.Message = "Alamat inisial sudah terdaftar. Tolong gunakan alamat inisial lain pada daftar alamat.";
                     return result;
@@ -269,9 +270,25 @@ namespace ERP_API.Domain.Services.General
             return Db.Customers.Any(x => x.Initial == initial && x.Code != code);
         }
 
-        private bool IsInitialAddressExists(string initial, string code)
+        private bool IsInitialAddressExists(CustomerRequest data, string initial)
         {
-            return Db.CustomerAddress.Any(x => x.Initial == initial && x.Code != code);
+            var result = 0;
+
+            foreach (var row in data.ItemDetails)
+            {
+                if (row.Initial == initial)
+                {
+                    if (result == 0)
+                    {
+                        result += 1;
+                    } else
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
 
         private int GetIdAddress(string initial, string code)
