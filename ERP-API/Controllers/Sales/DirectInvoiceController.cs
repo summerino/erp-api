@@ -78,10 +78,10 @@ namespace ERP_API.Controllers.Sales
 
         private static (bool, string) Validate(SalesInvoiceRequest data)
         {
-            if (!data.Details.Any())
+            if (!data.ItemDetails.Any())
                 return (false, "Item details can't be empty.");
 
-            return data.Details.GroupBy(x => new { x.DoCode }).Any(x => x.Count() > 1)
+            return data.ItemDetails.GroupBy(x => new { x.ItemId }).Any(x => x.Count() > 1)
                 ? (false, "There are duplicate receive code submitted.")
                 : (true, "");
         }
