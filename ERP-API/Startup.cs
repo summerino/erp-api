@@ -147,13 +147,13 @@ namespace ERP_API
             services.AddScoped<IItemGroupService, ItemGroupService>();
 
             // Inventory services
+            services.AddScoped<IAdjustmentService, AdjustmentService>();
             services.AddScoped<IItemCategoryService, ItemCategoryService>();
             services.AddScoped<IItemService, ItemService>();
+            services.AddScoped<ITransferStockService, TransferStockService>();
             services.AddScoped<IUnitOfMeasurementService, UnitOfMeasurementService>();
             services.AddScoped<IUoMConversionService, UoMConversionService>();
             services.AddScoped<IWarehouseService, WarehouseService>();
-            services.AddScoped<IAdjustmentService, AdjustmentService>();
-            services.AddScoped<ITransferStockService, TransferStockService>();
 
             // Purchase services
             services.AddScoped<IDebitMemoService, DebitMemoService>();

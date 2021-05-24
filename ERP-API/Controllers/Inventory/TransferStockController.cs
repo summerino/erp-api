@@ -142,14 +142,6 @@ namespace ERP_API.Controllers.Inventory
             return Ok(result);
         }
 
-        [HttpPut("close/{code}")]
-        public IActionResult OnClose(string code)
-        {
-            var result = _ts.Close(code, _claim.UserId);
-
-            return Ok(result);
-        }
-
         private static (bool, string) Validate(TransferStockRequest data)
         {
             if (!data.ItemDetails.Any())
