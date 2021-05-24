@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using ERP_API.Domain.Entities.Core;
+using Microsoft.EntityFrameworkCore;
 
 namespace ERP_API.Domain.Entities.SystemManagement
 {
@@ -24,5 +25,19 @@ namespace ERP_API.Domain.Entities.SystemManagement
 
         [StringLength(50)]
         public string Icon { get; set; }
+
+        [StringLength(100)]
+        public string Regex { get; set; }
+    }
+
+    [Table("MenuAction", Schema = Schema.SystemManagement)]
+    [Index(nameof(MenuId), nameof(ActionId), IsUnique = true)]
+    public class MenuAction
+    {
+        public long Id { get; set; }
+
+        public int MenuId { get; set; }
+
+        public int ActionId { get; set; }
     }
 }

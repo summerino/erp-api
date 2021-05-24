@@ -26,8 +26,6 @@ namespace ERP_API.Domain.Entities
 
         // Core Entities
         public DbSet<BaseNewCodeEntity> NewCodes { get; set; }
-        public DbSet<SequenceNumber> SequenceNumbers { get; set; }
-        public DbSet<SystemParameter> SystemParameters { get; set; }
 
         // Accounting Entities
         public DbSet<Coa> Coas { get; set; }
@@ -128,9 +126,14 @@ namespace ERP_API.Domain.Entities
         public DbSet<SalesReturnDetailExchDiffItem> SalesReturnDetailExchDiffItems { get; set; }
         public DbSet<VwSalesReturnDetailExchDiffItem> VwSalesReturnDetailExchDiffItems { get; set; }
 
-        // System Management
+        // System Management Entities
+        public DbSet<SystemManagement.Action> Actions { get; set; }
         public DbSet<Menu> Menus { get; set; }
+        public DbSet<MenuAction> MenuActions { get; set; }
         public DbSet<Role> Roles { get; set; }
+        public DbSet<RoleMenuAction> RoleMenuActions { get; set; }
+        public DbSet<SequenceNumber> SequenceNumbers { get; set; }
+        public DbSet<SystemParameter> SystemParameters { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<VwUser> VwUsers { get; set; }
 
