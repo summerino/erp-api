@@ -186,15 +186,9 @@ namespace ERP_API.Domain.Services.Inventory
 
                 Db.SaveChanges();
 
-                var isComplete = false;
-                if (data.ApprovedBy != null)
-                {
-                    isComplete = true;
-                }
-
                 // Execute sp_update_transfer_stock
                 Db.Database.ExecuteSqlRaw("EXEC sp_update_transfer_stock {0},{1},{2},{3},{4},{5}",
-                    data.Code, data.Date, data.Type, data.WarehouseCodeFrom, data.WarehouseCodeTo, isComplete);
+                    data.Code, data.Date, data.Type, data.WarehouseCodeFrom, data.WarehouseCodeTo, 0);
 
                 transaction.Commit();
             }
