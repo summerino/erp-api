@@ -70,6 +70,20 @@ namespace ERP_API.Domain.Services.Inventory
                 short i = 0;
                 foreach (var item in data.ItemDetails)
                 {
+                    // Checking qty
+                    if (item.Qty < 0)
+                    {
+                        result.Message = "Qty tidak boleh negative.";
+                        return result;
+                    }
+
+                    // Checking qty and item existing on source warehouse
+                    if (!IsWarehouseItemExists(data.WarehouseCodeFrom, item.ItemId))
+                    {
+                        result.Message = "Barang tidak tersedia.";
+                        return result;
+                    }
+
                     Db.TransferStockDetails.Add(new TransferStockDetail
                     {
                         Code = newCode,
@@ -83,6 +97,11 @@ namespace ERP_API.Domain.Services.Inventory
                 }
 
                 Db.SaveChanges();
+
+                // Execute sp_update_transfer_stock
+                Db.Database.ExecuteSqlRaw("EXEC sp_update_transfer_stock {0},{1},{2},{3},{4},{5}", 
+                    data.Code, data.Date, data.Type, data.WarehouseCodeFrom, data.WarehouseCodeTo, 0);
+
                 transaction.Commit();
             }
             catch (Exception ex)
@@ -129,6 +148,20 @@ namespace ERP_API.Domain.Services.Inventory
                 short i = 0;
                 foreach (var item in data.ItemDetails)
                 {
+                    // Checking qty
+                    if (item.Qty < 0)
+                    {
+                        result.Message = "Qty tidak boleh negative.";
+                        return result;
+                    }
+
+                    // Checking qty and item existing on source warehouse
+                    if (!IsWarehouseItemExists(data.WarehouseCodeFrom, item.ItemId))
+                    {
+                        result.Message = "Barang tidak tersedia.";
+                        return result;
+                    }
+
                     if (item.Id == 0)
                     {
                         Db.TransferStockDetails.Add(new TransferStockDetail
@@ -152,6 +185,17 @@ namespace ERP_API.Domain.Services.Inventory
                 }
 
                 Db.SaveChanges();
+
+                var isComplete = false;
+                if (data.ApprovedBy != null)
+                {
+                    isComplete = true;
+                }
+
+                // Execute sp_update_transfer_stock
+                Db.Database.ExecuteSqlRaw("EXEC sp_update_transfer_stock {0},{1},{2},{3},{4},{5}",
+                    data.Code, data.Date, data.Type, data.WarehouseCodeFrom, data.WarehouseCodeTo, isComplete);
+
                 transaction.Commit();
             }
             catch (Exception ex)
@@ -193,31 +237,9 @@ namespace ERP_API.Domain.Services.Inventory
             return result;
         }
 
-        public SaveResult Close(string code, int userId)
+        private bool IsWarehouseItemExists(string warehouseCode, int itemId)
         {
-            var result = new SaveResult(false);
-
-            var data = Db.TransferStockHeaders.Find(code);
-            if (data != null)
-            {
-                // Checking mark header data
-                if (data.Mark == "CLS")
-                {
-                    result.Message = "Data transfer stok tidak bisa ditutup karena sudah ditutup.";
-                    return result;
-                }
-
-                // Update header data
-                data.Mark = "CLS";
-                data.UpdatedBy = userId;
-                data.UpdatedDate = DateTime.Now;
-
-                Db.SaveChanges();
-            }
-
-            result.Success = true;
-            result.Message = "Data transfer stok berhasil ditutup.";
-            return result;
+            return Db.WarehouseQuantities.Any(x => x.WarehouseCode == warehouseCode && x.ItemId == itemId && x.QtyOnHand > 0);
         }
     }
 }

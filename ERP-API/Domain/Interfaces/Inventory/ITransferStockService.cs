@@ -19,7 +19,5 @@ namespace ERP_API.Domain.Interfaces.Inventory
         SaveResult Update(TransferStockRequest data);
 
         SaveResult Delete(string code, int userId);
-
-        SaveResult Close(string code, int userId);
     }
 }
