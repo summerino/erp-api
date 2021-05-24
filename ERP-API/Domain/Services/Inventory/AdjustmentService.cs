@@ -285,6 +285,7 @@ namespace ERP_API.Domain.Services.Inventory
                 RefCode2 = null,
                 UnitId = item.UnitId,
                 UomId = item.UomId,
+                Type = "OH"                 
             };
         }
         private void AddStockMutation(AdjustmentRequest data, AdjustmentDetail item) {
