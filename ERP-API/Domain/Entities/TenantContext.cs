@@ -131,6 +131,7 @@ namespace ERP_API.Domain.Entities
         public DbSet<Menu> Menus { get; set; }
         public DbSet<MenuAction> MenuActions { get; set; }
         public DbSet<Role> Roles { get; set; }
+        public DbSet<RoleMenu> RoleMenus { get; set; }
         public DbSet<RoleMenuAction> RoleMenuActions { get; set; }
         public DbSet<SequenceNumber> SequenceNumbers { get; set; }
         public DbSet<SystemParameter> SystemParameters { get; set; }

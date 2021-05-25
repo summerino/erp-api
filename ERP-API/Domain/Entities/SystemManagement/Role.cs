@@ -20,6 +20,24 @@ namespace ERP_API.Domain.Entities.SystemManagement
         public string Name { get; set; }
     }
 
+    [Table("RoleMenu", Schema = Schema.SystemManagement)]
+    [Index(nameof(RoleId), nameof(MenuId), IsUnique = true)]
+    public class RoleMenu
+    {
+        public long Id { get; set; }
+
+        public int RoleId { get; set; }
+
+        public int MenuId { get; set; }
+
+        public bool IsActive { get; set; }
+
+        public int UpdatedBy { get; set; }
+
+        [Column(TypeName = "datetime")]
+        public DateTime UpdatedDate { get; set; }
+    }
+
     [Table("RoleMenuAction", Schema = Schema.SystemManagement)]
     [Index(nameof(RoleId), nameof(MenuId), nameof(ActionId), IsUnique = true)]
     public class RoleMenuAction
@@ -32,9 +50,9 @@ namespace ERP_API.Domain.Entities.SystemManagement
 
         public int ActionId { get; set; }
 
-        public int CreatedBy { get; set; }
+        public int UpdatedBy { get; set; }
 
         [Column(TypeName = "datetime")]
-        public DateTime CreatedDate { get; set; }
+        public DateTime UpdatedDate { get; set; }
     }
 }
