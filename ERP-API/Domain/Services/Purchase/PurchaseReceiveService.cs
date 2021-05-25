@@ -182,7 +182,7 @@ namespace ERP_API.Domain.Services.Purchase
 
             result.Success = true;
             result.Data = data.Code;
-            result.Message = "Success insert purchase receive.";
+            result.Message = "Data penerimaan pembelian berhasil disimpan.";
             return result;
         }
 
