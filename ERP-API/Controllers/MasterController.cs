@@ -11,12 +11,10 @@ using ERP_API.Domain.Extensions;
 using ERP_API.Domain.Entities.General;
 using System;
 using System.ComponentModel.DataAnnotations;
-using ERP_API.Domain.Entities;
 using ERP_API.Domain.Models;
 using Sort = Swift.Framework.Model.Sort;
 using ERP_API.Domain.Entities.Accounting;
 using ERP_API.Domain.Services;
-using Microsoft.EntityFrameworkCore;
 
 namespace ERP_API.Controllers
 {
@@ -38,7 +36,8 @@ namespace ERP_API.Controllers
             bool? includeMetaData = true)
         {
             var builder = new Builder();
-            var masterConfig = builder.GetActiveConfiguration(param);
+            var allConfig = builder.GetAllConfiguration();
+            var masterConfig = allConfig.SingleOrDefault(x=>x.TableName.Equals(param, StringComparison.OrdinalIgnoreCase));
             if (masterConfig is null || masterConfig.IsActive == false)
             {
                 //invalid - master belum di setup utk table ini atau inactive, return 404?
@@ -64,7 +63,7 @@ namespace ERP_API.Controllers
             var tableData =
                 dataAccess.GetData(
                     masterConfig.SchemaName, masterConfig.TableName,
-                    fieldNames?.Split(','), whFilter, sortLists, -1, -1);
+                    fieldNames?.Split(','), whFilter, sortLists, -1, -1, allConfig);
 
             var toReturn = new MasterViewDto
             {
@@ -75,10 +74,8 @@ namespace ERP_API.Controllers
 
             if (includeMetaData.GetValueOrDefault(true))
             {
-                var metadata = dataAccess.GetGridViewSchema(masterConfig.SchemaName, masterConfig.TableName);
-                var hiddenColumns = masterConfig.HiddenColumns.ToLower().Split(',').Select(p => p.Trim());
-                metadata = metadata.Where((v, i) => v.Value.ToLower() != masterConfig.PKColumnName.ToLower() && !hiddenColumns.Contains(v.Value.ToLower())).ToList();
-                toReturn.MetaData = metadata;
+                var metadata = dataAccess.GetGridViewSchema(masterConfig.SchemaName, masterConfig.TableName,masterConfig.HiddenColumns,null, allConfig);
+                 toReturn.MetaData = metadata;
             }
 
             return Ok(toReturn);
@@ -89,7 +86,8 @@ namespace ERP_API.Controllers
         {
             var builder = new Builder();
             var toReturn = default(MasterAddEditDto);
-            var masterConfig = builder.GetActiveConfiguration(param);
+            var allConfig = builder.GetAllConfiguration();
+            var masterConfig = allConfig.SingleOrDefault(x => x.TableName.Equals(param, StringComparison.OrdinalIgnoreCase));
             if (masterConfig is null || masterConfig.IsActive == false)
             {
                 //invalid - master belum di setup utk table ini atau inactive, return 404?
@@ -98,10 +96,7 @@ namespace ERP_API.Controllers
             else
             {
                 using var dataAccess = builder.CreateDataAccess(masterConfig.ConnectionString);
-                var metadata = dataAccess.GetInputFormSchema(masterConfig.SchemaName, masterConfig.TableName);
-                var hiddenColumns = masterConfig.HiddenColumns.ToLower().Split(',').Select(p => p.Trim());
-                metadata = metadata.Where((v, i) => v.Name.ToLower() != masterConfig.PKColumnName.ToLower() && !hiddenColumns.Contains(v.Name.ToLower())).ToList();
-                toReturn = new MasterAddEditDto();
+                var metadata = dataAccess.GetInputFormSchema(masterConfig.SchemaName, masterConfig.TableName, masterConfig.HiddenColumns, allConfig);
                 toReturn.MetaData = metadata;
                 return Ok(toReturn);
             }
@@ -112,7 +107,8 @@ namespace ERP_API.Controllers
         public IActionResult GetOneData(string id, string param, string fieldNames, bool? includeMetaData)
         {
             var builder = new Builder();
-            var masterConfig = builder.GetActiveConfiguration(param);
+            var allConfig = builder.GetAllConfiguration();
+            var masterConfig = allConfig.SingleOrDefault(x=>x.TableName.Equals(param, StringComparison.OrdinalIgnoreCase));
             if (masterConfig is null || masterConfig.IsActive == false)
             {
                 //invalid - master belum di setup utk table ini atau inactive, return 404?
@@ -134,9 +130,7 @@ namespace ERP_API.Controllers
 
             if (includeMetaData.GetValueOrDefault(true))
             {
-                var metadata = dataAccess.GetInputFormSchema(masterConfig.SchemaName, masterConfig.TableName);
-                var hiddenColumns = masterConfig.HiddenColumns.ToLower().Split(',').Select(p => p.Trim());
-                metadata = metadata.Where((v, i) => v.Name.ToLower() != masterConfig.PKColumnName.ToLower() && !hiddenColumns.Contains(v.Name.ToLower())).ToList();
+                var metadata = dataAccess.GetInputFormSchema(masterConfig.SchemaName, masterConfig.TableName, masterConfig.HiddenColumns, allConfig);
                 toReturn.MetaData = metadata;
             }
 
@@ -275,6 +269,7 @@ namespace ERP_API.Controllers
             data.Add("customertype", typeof(CustomerType));
             data.Add("currency", typeof(Currency));
             data.Add("currencyrate", typeof(CurrencyRate));
+            data.Add("vehicle", typeof(Vehicle));
             return data;
         }
         private SaveResult Validate(Swift.Framework.Dtos.MasterConfig.ParameterDto parameterDto, string param, object obj)
