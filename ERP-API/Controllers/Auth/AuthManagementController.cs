@@ -6,7 +6,7 @@ using ERP_API.Domain.Interfaces;
 
 namespace ERP_API.Controllers.Auth
 {
-    [Route("api/v1/auth")] // api/v1/auth
+    [Route("api/v1/auth")]
     [ApiController]
     public class AuthManagementController : ControllerBase
     {
