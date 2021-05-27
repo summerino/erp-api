@@ -154,6 +154,7 @@ namespace ERP_API
             services.AddScoped<IUnitOfMeasurementService, UnitOfMeasurementService>();
             services.AddScoped<IUoMConversionService, UoMConversionService>();
             services.AddScoped<IWarehouseService, WarehouseService>();
+            services.AddScoped<IWarehouseQuantityService, WarehouseQuantityService>();
 
             // Purchase services
             services.AddScoped<IDebitMemoService, DebitMemoService>();

@@ -77,6 +77,7 @@ namespace ERP_API.Domain.Entities
         public DbSet<Warehouse> Warehouses { get; set; }
         public DbSet<VwWarehouse> VwWarehouses { get; set; }
         public DbSet<WarehouseQuantity> WarehouseQuantities { get; set; }
+        public DbSet<VwWarehouseQuantity> VwWarehouseQuantities { get; set; }
 
         // Purchase entities
         public DbSet<DebitMemo> DebitMemos { get; set; }
@@ -235,6 +236,10 @@ namespace ERP_API.Domain.Entities
             modelBuilder.Entity<VwWarehouse>()
                 .HasNoKey()
                 .ToView("vwWarehouse", Schema.Inventory);
+
+            modelBuilder.Entity<VwWarehouse>()
+                .HasNoKey()
+                .ToView("vwWarehouseQuantity", Schema.Inventory);
 
             modelBuilder.Entity<VwUoM>()
                 .HasNoKey()
