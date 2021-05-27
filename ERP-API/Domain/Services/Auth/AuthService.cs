@@ -74,20 +74,24 @@ namespace ERP_API.Domain.Services.Auth
             var tenantUser = tenantCtx.Users.FirstOrDefault(x => x.CatalogUserId == catalogUser.Id);
             if (tenantUser.IsLoggedIn)
             {
-                if (_claim.ExpiredTime != null)
+                DateTime lastLoggedin = (DateTime)tenantUser.LastLogin;
+                if (!(DateTime.Now - lastLoggedin > TimeSpan.FromMinutes(_jwtConfig.TimeInMinute)))
                 {
-                    var jwtExpValue = long.Parse(_claim.ExpiredTime);
-                    DateTime expirationDate = DateTimeOffset.FromUnixTimeSeconds(jwtExpValue).DateTime;
-                    DateTime localExpirationDate = expirationDate.ToLocalTime();
-                    if (!(DateTime.Now > localExpirationDate))
+                    return new AuthResult
                     {
-                        return new AuthResult
-                        {
-                            Message = "Pengguna sudah masuk.",
-                            Success = false
-                        };
-                    }
+                        Message = "Pengguna sudah masuk.",
+                        Success = false
+                    };
                 }
+            }
+
+            if (!tenantUser.IsActive)
+            {
+                return new AuthResult
+                {
+                    Message = "Pengguna tidak aktif.",
+                    Success = false
+                };
             }
 
             var accessIpAdd = _claim.KeyToken;
@@ -172,7 +176,7 @@ namespace ERP_API.Domain.Services.Auth
             return new AuthResult
             {
                 Success = true,
-                Message = "Berhasil Keluar.",
+                Message = "Berhasil Keluar."
 
             };
         }

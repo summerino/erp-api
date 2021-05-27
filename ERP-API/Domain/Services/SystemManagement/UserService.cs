@@ -6,7 +6,7 @@ using ERP_API.Domain.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using VMUserTenant = ERP_API.Domain.Entities.SystemManagement.VMUser;
+using ERP_API.Model.SystemManagement;
 using UserTenant = ERP_API.Domain.Entities.SystemManagement.User;
 using UserCatalog = ERP_API.Domain.Entities.Catalog.User;
 using Microsoft.EntityFrameworkCore;
@@ -19,50 +19,13 @@ namespace ERP_API.Domain.Services.SystemManagement
     {
         private readonly CatalogContext _catalogCtx;
         private readonly IClaimService _claim;
+        private readonly TenantContext _tenantCtx;
 
-        public UserService(CatalogContext catalogContext, IClaimService claim)
+        public UserService(CatalogContext catalogContext, TenantContext tenantContext, IClaimService claim)
         {
             _catalogCtx = catalogContext;
             _claim = claim;
-        }
-        public SaveResult Delete(int Id)
-        {
-            var result = new SaveResult(false);
-
-            var tenant = _catalogCtx.Tenants.FirstOrDefault(x => x.Id == _claim.TenantId);
-            if (tenant == null)
-            {
-                result.Message = "Tenant tidak terdaftar.";
-                return result;
-            }
-
-            var contextOptions = new DbContextOptionsBuilder<TenantContext>()
-            .UseSqlServer($"Server={tenant.ServerName};Database={tenant.DatabaseName};User Id={tenant.ServerUserId};Password={tenant.ServerPassword}")
-            .Options;
-            var tenantCtx = new TenantContext(contextOptions, _catalogCtx, _claim);
-
-            var data = tenantCtx.Users.Find(Id);
-
-            if (data != null)
-            {
-                // Checking active
-                if (data.IsActive == false)
-                {
-                    result.Message = "Tidak bisa menonaktifkan data pengguna karena data sudah nonaktif.";
-                    return result;
-                }
-
-                // Update data
-                data.IsActive = false;
-                data.UpdatedBy = _claim.UserId;
-                data.UpdatedDate = DateTime.Now;
-
-                tenantCtx.SaveChanges();
-            }
-
-            result.Success = true;
-            result.Message = "Data pengguna berhasil dinonaktifkan.";
-            return result;
+            _tenantCtx = tenantContext;
         }
 
         public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string search)
@@ -70,17 +33,13 @@ namespace ERP_API.Domain.Services.SystemManagement
             var tenant = _catalogCtx.Tenants.FirstOrDefault(x => x.Id == _claim.TenantId);
             if (tenant == null)
             {
-                return new DataSourceResult{
+                return new DataSourceResult
+                {
                     Total = 0
                 };
             }
 
-            var contextOptions = new DbContextOptionsBuilder<TenantContext>()
-            .UseSqlServer($"Server={tenant.ServerName};Database={tenant.DatabaseName};User Id={tenant.ServerUserId};Password={tenant.ServerPassword}")
-            .Options;
-            var tenantCtx = new TenantContext(contextOptions, _catalogCtx, _claim);
-
-            var data = tenantCtx.VwUsers.AsQueryable();
+            var data = _tenantCtx.VwUsers.AsQueryable();
 
             if (!string.IsNullOrEmpty(search))
             {
@@ -92,7 +51,7 @@ namespace ERP_API.Domain.Services.SystemManagement
             return data.ToDataSourceResult(skip, take, filters, sorts);
         }
 
-        public SaveResult Insert(VMUserTenant dataTenant, string password)
+        public SaveResult Insert(UserRequest data)
         {
             var result = new SaveResult(false);
 
@@ -106,27 +65,21 @@ namespace ERP_API.Domain.Services.SystemManagement
                     return result;
                 }
 
-                var contextOptions = new DbContextOptionsBuilder<TenantContext>()
-                .UseSqlServer($"Server={tenant.ServerName};Database={tenant.DatabaseName};User Id={tenant.ServerUserId};Password={tenant.ServerPassword}")
-                .Options;
-                var tenantCtx = new TenantContext(contextOptions, _catalogCtx, _claim);
-
-                var existingUser = tenantCtx.Users.Where(x => x.Username == dataTenant.Username).FirstOrDefault();
-                if (existingUser != null)
+                var userCtg = _catalogCtx.Users.FirstOrDefault(x => x.Username == data.Username);
+                if (userCtg != null)
                 {
-                    result.Message = "Nama pengguna sudah terdaftar. Tolong gunakan nama pengguna lain.";
+                    result.Message = "Username sudah terdaftar.";
                     return result;
                 }
-
 
                 var pwh = new PasswordHasher<UserCatalog>();
                 var newCatalogUser = new UserCatalog()
                 {
                     Id = new Guid(),
                     TenantId = _claim.TenantId,
-                    Username = dataTenant.Username
+                    Username = data.Username
                 };
-                var hashPwd = pwh.HashPassword(newCatalogUser, password);
+                var hashPwd = pwh.HashPassword(newCatalogUser, data.Password);
                 newCatalogUser.Password = hashPwd;
 
                 _catalogCtx.Add(newCatalogUser);
@@ -136,20 +89,20 @@ namespace ERP_API.Domain.Services.SystemManagement
                 {
                     CatalogUserId = newCatalogUser.Id,
                     Username = newCatalogUser.Username,
-                    Initial = dataTenant.Initial,
-                    Name = dataTenant.Username,
-                    RoleId = dataTenant.RoleId,
-                    EmployeeId = dataTenant.EmployeeId,
-                    IsActive = dataTenant.IsActive,
-                    CreatedBy = dataTenant.CreatedBy,
-                    CreatedDate = dataTenant.CreatedDate,
-                    UpdatedBy = dataTenant.UpdatedBy,
-                    UpdatedDate = dataTenant.UpdatedDate
+                    Initial = data.Initial,
+                    Name = data.Username,
+                    RoleId = data.RoleId,
+                    EmployeeId = data.EmployeeId,
+                    IsActive = data.IsActive,
+                    CreatedBy = data.CreatedBy,
+                    CreatedDate = data.CreatedDate,
+                    UpdatedBy = data.UpdatedBy,
+                    UpdatedDate = data.UpdatedDate
 
                 };
 
-                tenantCtx.Add(newTenantUser);
-                tenantCtx.SaveChanges();
+                _tenantCtx.Add(newTenantUser);
+                _tenantCtx.SaveChanges();
 
                 transaction.Commit();
             }
@@ -160,12 +113,12 @@ namespace ERP_API.Domain.Services.SystemManagement
             }
 
             result.Success = true;
-            result.Data = dataTenant.CatalogUserId;
+            result.Data = data.CatalogUserId;
             result.Message = "Data pengguna berhasil disimpan.";
             return result;
         }
 
-        public SaveResult Update(VMUserTenant dataTenant, string password)
+        public SaveResult Update(UserRequest data)
         {
             var result = new SaveResult(false);
 
@@ -179,38 +132,40 @@ namespace ERP_API.Domain.Services.SystemManagement
                     return result;
                 }
 
-                var contextOptions = new DbContextOptionsBuilder<TenantContext>()
-                .UseSqlServer($"Server={tenant.ServerName};Database={tenant.DatabaseName};User Id={tenant.ServerUserId};Password={tenant.ServerPassword}")
-                .Options;
-                var tenantCtx = new TenantContext(contextOptions, _catalogCtx, _claim);
+                var userCtg = _catalogCtx.Users.FirstOrDefault(x => x.Username == data.Username && x.Id != data.CatalogUserId);
+                if (userCtg != null)
+                {
+                    result.Message = "Username sudah terdaftar.";
+                    return result;
+                }
 
-                var dataCatalog = _catalogCtx.Users.FirstOrDefault(x => x.Id == dataTenant.CatalogUserId);
-                dataCatalog.Username = dataTenant.Username;
-                if (password != null)
+                var dataCatalog = _catalogCtx.Users.FirstOrDefault(x => x.Id == data.CatalogUserId);
+                dataCatalog.Username = data.Username;
+                if (data.Password != null)
                 {
                     var pwh = new PasswordHasher<UserCatalog>();
-                    dataCatalog.Password = pwh.HashPassword(dataCatalog, password);
+                    dataCatalog.Password = pwh.HashPassword(dataCatalog, data.Password);
                 }
                 _catalogCtx.Update(dataCatalog);
                 _catalogCtx.SaveChanges();
 
-                var userTenant = tenantCtx.Users.FirstOrDefault(x => x.Id == dataTenant.Id);
-               
-                userTenant.Username = dataTenant.Username;
-                userTenant.Initial = dataTenant.Initial;
-                userTenant.Name = dataTenant.Name;
-                userTenant.RoleId = dataTenant.RoleId;
-                userTenant.EmployeeId = dataTenant.EmployeeId;
-                userTenant.IsActive = dataTenant.IsActive;
-                userTenant.UpdatedBy = dataTenant.UpdatedBy;
-                userTenant.UpdatedDate = dataTenant.UpdatedDate;
+                var userTenant = _tenantCtx.Users.FirstOrDefault(x => x.Id == data.Id);
 
-                tenantCtx.Update(userTenant);
-                tenantCtx.Entry(userTenant).Property(e => e.Id).IsModified = false;
-                tenantCtx.Entry(userTenant).Property(e => e.CatalogUserId).IsModified = false;
-                tenantCtx.Entry(userTenant).Property(e => e.CreatedBy).IsModified = false;
-                tenantCtx.Entry(userTenant).Property(e => e.CreatedDate).IsModified = false;
-                tenantCtx.SaveChanges();
+                userTenant.Username = data.Username;
+                userTenant.Initial = data.Initial;
+                userTenant.Name = data.Name;
+                userTenant.RoleId = data.RoleId;
+                userTenant.EmployeeId = data.EmployeeId;
+                userTenant.IsActive = data.IsActive;
+                userTenant.UpdatedBy = data.UpdatedBy;
+                userTenant.UpdatedDate = data.UpdatedDate;
+
+                _tenantCtx.Update(userTenant);
+                _tenantCtx.Entry(userTenant).Property(e => e.Id).IsModified = false;
+                _tenantCtx.Entry(userTenant).Property(e => e.CatalogUserId).IsModified = false;
+                _tenantCtx.Entry(userTenant).Property(e => e.CreatedBy).IsModified = false;
+                _tenantCtx.Entry(userTenant).Property(e => e.CreatedDate).IsModified = false;
+                _tenantCtx.SaveChanges();
 
                 transaction.Commit();
             }
@@ -221,8 +176,43 @@ namespace ERP_API.Domain.Services.SystemManagement
             }
 
             result.Success = true;
-            result.Data = dataTenant.CatalogUserId;
-            result.Message = "Data pengguna berhasil diperbarui.";
+            result.Data = data.CatalogUserId;
+            result.Message = "Data pengguna berhasil diubah.";
+            return result;
+        }
+
+        public SaveResult Delete(int Id)
+        {
+            var result = new SaveResult(false);
+
+            var tenant = _catalogCtx.Tenants.FirstOrDefault(x => x.Id == _claim.TenantId);
+            if (tenant == null)
+            {
+                result.Message = "Tenant tidak terdaftar.";
+                return result;
+            }
+
+            var data = _tenantCtx.Users.Find(Id);
+
+            if (data != null)
+            {
+                // Checking active
+                if (data.IsActive == false)
+                {
+                    result.Message = "Pengguna tidak bisa dinonaktifkan karena sudah tidak aktif.";
+                    return result;
+                }
+
+                // Update data
+                data.IsActive = false;
+                data.UpdatedBy = _claim.UserId;
+                data.UpdatedDate = DateTime.Now;
+
+                _tenantCtx.SaveChanges();
+            }
+
+            result.Success = true;
+            result.Message = "Data pengguna berhasil dinonaktifkan.";
             return result;
         }
     }
