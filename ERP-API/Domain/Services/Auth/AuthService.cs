@@ -74,12 +74,11 @@ namespace ERP_API.Domain.Services.Auth
             var tenantUser = tenantCtx.Users.FirstOrDefault(x => x.CatalogUserId == catalogUser.Id);
             if (tenantUser.IsLoggedIn)
             {
-                DateTime lastLoggedin = (DateTime)tenantUser.LastLogin;
-                if (!(DateTime.Now - lastLoggedin > TimeSpan.FromMinutes(_jwtConfig.TimeInMinute)))
+                if ((DateTime.Now - tenantUser.LastLogin.GetValueOrDefault()).TotalMinutes < _jwtConfig.TimeInMinute)
                 {
                     return new AuthResult
                     {
-                        Message = "Pengguna sudah masuk.",
+                        Message = "Pengguna sedang digunakan.",
                         Success = false
                     };
                 }
