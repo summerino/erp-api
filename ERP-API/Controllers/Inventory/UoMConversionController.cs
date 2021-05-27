@@ -6,7 +6,6 @@ using ERP_API.Model;
 namespace ERP_API.Controllers.Inventory
 {
     [Route("api/v1/uom-conversion")]
-    //[Authorize]
     [ApiController]
     public class UoMConversionController : ControllerBase
     {

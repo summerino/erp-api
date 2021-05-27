@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using ERP_API.Domain.Entities;
 using ERP_API.Domain.Entities.General;
@@ -14,33 +15,6 @@ namespace ERP_API.Domain.Services.General
         public TaxService(TenantContext db)
             :base(db)
         {
-                
-        }
-        public SaveResult Delete(int id, int userId)
-        {
-            var result = new SaveResult(false);
-
-            var data = Db.Taxes.Find(id);
-            if (data != null)
-            {
-                // Checking active
-                if (data.IsActive == false)
-                {
-                    result.Message = "Tidak bisa menghapus data pajak karena data sudah dihapus.";
-                    return result;
-                }
-
-                // Update data
-                data.IsActive = false;
-                data.UpdatedBy = userId;
-                data.UpdatedDate = DateTime.Now;
-
-                Db.SaveChanges();
-            }
-
-            result.Success = true;
-            result.Message = "Data pajak berhasil dihapus.";
-            return result;
         }
 
         public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string search)
@@ -51,7 +25,7 @@ namespace ERP_API.Domain.Services.General
             {
                 data = data.Where(x =>
                         x.Initial.Contains(search) || x.Name.Contains(search) || x.CoaCode.Contains(search) ||
-                        x.CoaName.Contains(search) || x.Rate.ToString() == search || x.Seq.ToString() == search);
+                        x.CoaName.Contains(search) || x.Rate.ToString(CultureInfo.InvariantCulture).StartsWith(search));
             }
 
             return data.ToDataSourceResult(skip, take, filters, sorts);
@@ -59,7 +33,7 @@ namespace ERP_API.Domain.Services.General
 
         public DataSourceResult GetLists(IEnumerable<Filter> filters, IEnumerable<Sort> sorts)
         {
-            var data = Db.Taxes.Where(x => x.IsActive).OrderBy(x => x.Seq);
+            var data = Db.Taxes.Where(x => x.IsActive);
 
             return data.ToDataSourceResult(0, -1, filters, sorts);
         }
@@ -117,6 +91,33 @@ namespace ERP_API.Domain.Services.General
             result.Success = true;
             result.Data = data.Id;
             result.Message = "Data pajak berhasil diperbarui.";
+            return result;
+        }
+
+        public SaveResult Delete(int id, int userId)
+        {
+            var result = new SaveResult(false);
+
+            var data = Db.Taxes.Find(id);
+            if (data != null)
+            {
+                // Checking active
+                if (data.IsActive == false)
+                {
+                    result.Message = "Tidak bisa menghapus data pajak karena data sudah dihapus.";
+                    return result;
+                }
+
+                // Update data
+                data.IsActive = false;
+                data.UpdatedBy = userId;
+                data.UpdatedDate = DateTime.Now;
+
+                Db.SaveChanges();
+            }
+
+            result.Success = true;
+            result.Message = "Data pajak berhasil dihapus.";
             return result;
         }
 

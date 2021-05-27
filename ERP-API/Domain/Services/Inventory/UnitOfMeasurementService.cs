@@ -16,6 +16,7 @@ namespace ERP_API.Domain.Services.Inventory
             : base(db)
         {
         }
+
         public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, string search)
         {
             var data = Db.VwUoMs.Where(x => x.IsActive).AsQueryable();
@@ -29,14 +30,24 @@ namespace ERP_API.Domain.Services.Inventory
 
             return data.ToDataSourceResult(skip, take, filter, sort);
         }
+
+        public DataSourceResult GetLists(IEnumerable<Filter> filters, IEnumerable<Sort> sorts)
+        {
+            var data = Db.UoMs.Where(x => x.IsActive);
+
+            return data.ToDataSourceResult(0, -1, filters, sorts);
+        }
+
         public IEnumerable<UoMConversion> GetDataConversion(int? uomId)
         {
             var data = Db.UoMConversions.AsQueryable();
 
             if (uomId.HasValue)
                 data = data.Where(x => x.UomId == uomId);
+
             return data.OrderBy(x => x.UomId).ThenBy(x => x.Seq);
         }
+
         public SaveResult Insert(UnitOfMeasurementRequest data, int userId)
         {
             var result = new SaveResult(false);
@@ -88,6 +99,7 @@ namespace ERP_API.Domain.Services.Inventory
             result.Message = "Data satuan pengukuran berhasil disimpan.";
             return result;
         }
+
         public SaveResult Update(UnitOfMeasurementRequest data, int userId)
         {
             var result = new SaveResult(false);
@@ -159,6 +171,7 @@ namespace ERP_API.Domain.Services.Inventory
             result.Message = "Data satuan pengukuran berhasil diperbarui.";
             return result;
         }
+
         public SaveResult Delete(int id, int userId)
         {
             var result = new SaveResult(false);
@@ -185,6 +198,7 @@ namespace ERP_API.Domain.Services.Inventory
             result.Message = "Data satuan pengukuran berhasil dinonaktifkan.";
             return result;
         }
+
         private bool IsInitialExists(string initial, int id)
         {
             var result = Db.UoMs.Any(x => x.Initial.ToLower().Equals(initial.ToLower()) && x.Id != id);

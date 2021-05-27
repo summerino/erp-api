@@ -26,7 +26,7 @@ namespace ERP_API.Controllers.Inventory
         }
 
         [HttpGet]
-        public IActionResult GetData(string search, string category, string filters, string sorts, int skip, int take)
+        public IActionResult GetData(string search, string filters, string sorts, int skip, int take)
         {
             var data =
                 _uom.GetData(
@@ -42,11 +42,32 @@ namespace ERP_API.Controllers.Inventory
             });
         }
 
-        [HttpGet("item")]
-        public IActionResult GetDetail(int? uomId)
+        [HttpGet("lists")]
+        public IActionResult GetList(string sorts) 
         {
-            var uomC = _uom.GetDataConversion(uomId);
-            var data = uomC.ToList<dynamic>();
+            var data =
+                _uom.GetLists(
+                    null,
+                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]")).Data
+                    .ToDynamicList()
+                    .Select(x => new
+                    {
+                        x.Id, x.Initial, x.BaseUnit
+                    })
+                    .ToList<dynamic>();
+
+            return Ok(new ApiResponse
+            {
+                RowCount = data.Count,
+                TableData = data
+            });
+        }
+
+        [HttpGet("item")]
+        public IActionResult GetDetailData(int? uomId)
+        {
+            var data = _uom.GetDataConversion(uomId).ToList<dynamic>();
+
             return Ok(new ApiResponse
             {
                 RowCount = data.Count,
