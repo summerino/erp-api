@@ -83,7 +83,7 @@ namespace ERP_API.Domain.Services.Purchase
                 }
 
                 // Checking receive qty is excess or not
-                if (IsQtyExcess(data.ItemDetails))
+                if (IsQtyExcess(data.Code, data.TransCode, data.ItemDetails))
                 {
                     result.Message = "Data penerimaan pembelian tidak bisa disimpan karena qty yg diterima lebih besar dari qty yang tersedia.";
                     return result;
@@ -213,7 +213,7 @@ namespace ERP_API.Domain.Services.Purchase
                 }
 
                 // Checking receive qty is excess or not
-                if (IsQtyExcess(data.ItemDetails))
+                if (IsQtyExcess(data.Code, data.TransCode, data.ItemDetails))
                 {
                     result.Message = "Data penerimaan pembelian tidak bisa diubah karena qty yg diterima lebih besar dari qty yang tersedia.";
                     return result;
@@ -439,56 +439,54 @@ namespace ERP_API.Domain.Services.Purchase
             return Db.PurchaseOrderHeaders.Any(x => x.Code == poCode && new[] { "V", "CLS" }.Contains(x.Mark));
         }
 
-        private bool IsQtyExcess(IEnumerable<PurchaseReceiveDetail> items)
+        private bool IsQtyExcess(string code, string poCode, IEnumerable<PurchaseReceiveDetail> items)
         {
-            var result = false;
-            foreach (var item in items)
-            {
-                var uom = Db.UoMConversions.FirstOrDefault(x => x.Id == item.UnitId);
-                var stock = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == item.WarehouseCode && x.ItemId == item.ItemId);
-                var stockM = Db.StockMutations.Where(x => x.WarehouseCode == item.WarehouseCode && x.UomId == item.UomId).Sum(x => x.BaseQty);
-                if (stock != null)
+            // Get purchase receive lists
+            var rcvCodeList = Db.PurchaseReceiveHeaders
+                .Where(x => x.TransCode == poCode && x.Mark != "V" && x.Code != code)
+                .Select(x => x.Code).ToList();
+
+            // Calculate receive qty
+            var rcvD = Db.PurchaseReceiveDetails
+                .Where(x => rcvCodeList.Contains(x.Code) && x.Type == 0)
+                .GroupBy(x => new { x.ItemId, x.UnitId })
+                .Select(x => new
                 {
-                    if (uom.IsBaseUnit)
-                    {
-                        if (item.Qty > stock.QtyOnHand)
-                        {
-                            result = true;
-                        }
-                    }
-                    else
-                    {
-                        var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= uom.Seq).Select(x => x.Conversion).ToList();
-                        var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
-                        var baseQty = item.Qty * multipliedQty;
-                        if (baseQty > stock.QtyOnHand)
-                        {
-                            result = true;
-                        }
-                    }
-                }
-                else if (!stockM.Equals(null)) // check to stock mutation if warehouse quantites not available
+                    x.Key.ItemId,
+                    x.Key.UnitId,
+                    QtyRcv = x.Sum(r => (decimal?)r.Qty)
+                });
+
+            // Calculate outstanding qty
+            var ordD = (
+                from o in Db.PurchaseOrderDetails
+                where o.Code == poCode && o.Type == 0
+                join r in rcvD
+                    on new { o.ItemId, o.UnitId } equals new { r.ItemId, r.UnitId } into rs
+                from r in rs.DefaultIfEmpty()
+                select new
                 {
-                    if (uom.IsBaseUnit)
-                    {
-                        if (item.Qty > stockM)
-                        {
-                            result = true;
-                        }
-                    }
-                    else
-                    {
-                        var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= uom.Seq).Select(x => x.Conversion).ToList();
-                        var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
-                        var baseQty = item.Qty * multipliedQty;
-                        if (baseQty > stockM)
-                        {
-                            result = true;
-                        }
-                    }
-                }
-            }
-            return result;
+                    o.ItemId,
+                    o.UnitId,
+                    o.Qty,
+                    Oustanding = o.Qty - (r.QtyRcv ?? 0m)
+                }).ToList();
+
+            // Checking receive qty from item details is excess or not
+            var isExcess = (
+                from o in ordD
+                join d in items.Where(x => x.Type == 0)
+                    on new { o.ItemId, o.UnitId } equals new { d.ItemId, d.UnitId } into ds
+                from d in ds.DefaultIfEmpty()
+                where o.Oustanding < d.Qty
+                select new
+                {
+                    o.ItemId,
+                    o.UnitId,
+                    o.Oustanding
+                }).Any();
+
+            return isExcess;
         }
     }
 }
