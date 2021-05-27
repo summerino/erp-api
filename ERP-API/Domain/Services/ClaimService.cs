@@ -35,7 +35,7 @@ namespace ERP_API.Domain.Services
             int.TryParse(_accessor.HttpContext?.User?.Claims?.SingleOrDefault(x => x.Type == "TenantId")?.Value,
                 out var tenantId)
                 ? tenantId
-                : 0;
+                : 1;
 
         public string KeyToken =>
             _accessor.HttpContext?.Request?.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();

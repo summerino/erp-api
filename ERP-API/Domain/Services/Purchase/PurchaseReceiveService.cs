@@ -439,11 +439,11 @@ namespace ERP_API.Domain.Services.Purchase
             return Db.PurchaseOrderHeaders.Any(x => x.Code == poCode && new[] { "V", "CLS" }.Contains(x.Mark));
         }
 
-        private bool IsQtyExcess(string code, string poCode, IEnumerable<PurchaseReceiveDetail> items)
+        private bool IsQtyExcess(string code, string transCode, IEnumerable<PurchaseReceiveDetail> items)
         {
             // Get purchase receive lists
             var rcvCodeList = Db.PurchaseReceiveHeaders
-                .Where(x => x.TransCode == poCode && x.Mark != "V" && x.Code != code)
+                .Where(x => x.TransCode == transCode && x.Mark != "V" && x.Code != code)
                 .Select(x => x.Code).ToList();
 
             // Calculate receive qty
@@ -452,23 +452,20 @@ namespace ERP_API.Domain.Services.Purchase
                 .GroupBy(x => new { x.ItemId, x.UnitId })
                 .Select(x => new
                 {
-                    x.Key.ItemId,
-                    x.Key.UnitId,
+                    x.Key.ItemId, x.Key.UnitId,
                     QtyRcv = x.Sum(r => (decimal?)r.Qty)
                 });
 
             // Calculate outstanding qty
             var ordD = (
                 from o in Db.PurchaseOrderDetails
-                where o.Code == poCode && o.Type == 0
+                where o.Code == transCode && o.Type == 0
                 join r in rcvD
                     on new { o.ItemId, o.UnitId } equals new { r.ItemId, r.UnitId } into rs
                 from r in rs.DefaultIfEmpty()
                 select new
                 {
-                    o.ItemId,
-                    o.UnitId,
-                    o.Qty,
+                    o.ItemId, o.UnitId, o.Qty,
                     Oustanding = o.Qty - (r.QtyRcv ?? 0m)
                 }).ToList();
 
@@ -481,9 +478,7 @@ namespace ERP_API.Domain.Services.Purchase
                 where o.Oustanding < d.Qty
                 select new
                 {
-                    o.ItemId,
-                    o.UnitId,
-                    o.Oustanding
+                    o.ItemId, o.UnitId, o.Oustanding
                 }).Any();
 
             return isExcess;

@@ -39,28 +39,22 @@ namespace ERP_API.Domain.Entities.Inventory
     {
         public long Id { get; set; }
 
-        [StringLength(8)]
         public string WarehouseCode { get; set; }
 
         public int ItemId { get; set; }
 
-        [Column(TypeName = "decimal(19, 6)")]
         public decimal QtyOnHand { get; set; }
 
-        [Column(TypeName = "decimal(19, 6)")]
         public decimal QtyOnOrder { get; set; }
 
-        [Column(TypeName = "decimal(19, 6)")]
         public decimal QtyOnIndent { get; set; }
 
-        [Column(TypeName = "decimal(19, 6)")]
         public decimal QtyReorderPoint { get; set; }
 
-        [Column(TypeName = "decimal(19, 6)")]
         public decimal QtyOnTransfer { get; set; }
 
-        [Column(TypeName = "datetime")]
         public DateTime UpdatedDate { get; set; }
+
 
         public string WarehouseInitial { get; set; }
     }

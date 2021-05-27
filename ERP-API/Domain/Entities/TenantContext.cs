@@ -237,7 +237,7 @@ namespace ERP_API.Domain.Entities
                 .HasNoKey()
                 .ToView("vwWarehouse", Schema.Inventory);
 
-            modelBuilder.Entity<VwWarehouse>()
+            modelBuilder.Entity<VwWarehouseQuantity>()
                 .HasNoKey()
                 .ToView("vwWarehouseQuantity", Schema.Inventory);
 

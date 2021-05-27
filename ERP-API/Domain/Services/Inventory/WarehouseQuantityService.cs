@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using ERP_API.Domain.Entities;
 using ERP_API.Domain.Entities.Inventory;
 using ERP_API.Domain.Extensions;
@@ -19,9 +17,7 @@ namespace ERP_API.Domain.Services.Inventory
         public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
             List<int> category, string search)
         {
-            var data = Db.VwWarehouseQuantities.AsQueryable();
-
-            return data.ToDataSourceResult(skip, take, filter, sort);
+            return Db.VwWarehouseQuantities.ToDataSourceResult(skip, take, filter, sort);
         }
     }
 }
