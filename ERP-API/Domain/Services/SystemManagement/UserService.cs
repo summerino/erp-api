@@ -184,14 +184,15 @@ namespace ERP_API.Domain.Services.SystemManagement
                 .Options;
                 var tenantCtx = new TenantContext(contextOptions, _catalogCtx, _claim);
 
+                var dataCatalog = _catalogCtx.Users.FirstOrDefault(x => x.Id == dataTenant.CatalogUserId);
+                dataCatalog.Username = dataTenant.Username;
                 if (password != null)
                 {
-                    var dataCatalog = _catalogCtx.Users.FirstOrDefault(x => x.Id == dataTenant.CatalogUserId);
                     var pwh = new PasswordHasher<UserCatalog>();
                     dataCatalog.Password = pwh.HashPassword(dataCatalog, password);
-                    _catalogCtx.Update(dataCatalog);
-                    _catalogCtx.SaveChanges();
                 }
+                _catalogCtx.Update(dataCatalog);
+                _catalogCtx.SaveChanges();
 
                 var userTenant = tenantCtx.Users.FirstOrDefault(x => x.Id == dataTenant.Id);
                
@@ -210,6 +211,8 @@ namespace ERP_API.Domain.Services.SystemManagement
                 tenantCtx.Entry(userTenant).Property(e => e.CreatedBy).IsModified = false;
                 tenantCtx.Entry(userTenant).Property(e => e.CreatedDate).IsModified = false;
                 tenantCtx.SaveChanges();
+
+                transaction.Commit();
             }
             catch (Exception ex)
             {
