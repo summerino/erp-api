@@ -128,11 +128,6 @@ namespace ERP_API.Domain.Services.Sales
                 // Save changes
                 Db.SaveChanges();
 
-                // Execute sp_update_stock_mutation_from_do
-                Db.Database.ExecuteSqlRaw(
-                    "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
-                    data.Code, data.Date, data.TransCode);
-
                 // Execute sp_update_so_dlv_qty
                 Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", data.TransCode);
 
