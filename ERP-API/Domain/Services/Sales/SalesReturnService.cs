@@ -157,7 +157,7 @@ namespace ERP_API.Domain.Services.Sales
                     {
                         Db.SalesReturnDetailExchDiffItems.Add(new SalesReturnDetailExchDiffItem
                         {
-                            Code = item.Code,
+                            Code = newCode,
                             LineNo = ++i,
                             //ReturnDetailId = item.Id,
                             ItemId = item.ItemId,
@@ -165,7 +165,7 @@ namespace ERP_API.Domain.Services.Sales
                             UnitId = item.UnitId,
                             Qty = item.Qty,
                             QtyDlv = item.QtyDlv,
-                            WarehouseCode = data.WarehouseCode,
+                            WarehouseCode = item.WarehouseCode,
                             UnitPrice = item.UnitPrice,
                             TaxId = item.TaxId,
                             TaxAmount = item.TaxAmount,
@@ -297,7 +297,7 @@ namespace ERP_API.Domain.Services.Sales
 
                 if (data.Type == 3)
                 {
-                    var delExchange = Db.SalesReturnDetailExchDiffItems.Where(d => d.Code == data.Code && !data.ItemDetails.Select(x => x.Id).Contains(d.Id))
+                    var delExchange = Db.SalesReturnDetailExchDiffItems.Where(d => d.Code == data.Code && !data.DiffItemDetails.Select(x => x.Id).Contains(d.Id))
                     .ToList();
 
                     Db.SalesReturnDetailExchDiffItems.RemoveRange(delExchange);
@@ -316,7 +316,7 @@ namespace ERP_API.Domain.Services.Sales
                             UnitId = item.UnitId,
                             Qty = item.Qty,
                             QtyDlv = item.QtyDlv,
-                            WarehouseCode = data.WarehouseCode,
+                            WarehouseCode = item.WarehouseCode,
                             UnitPrice = item.UnitPrice,
                             TaxId = item.TaxId,
                             TaxAmount = item.TaxAmount,
