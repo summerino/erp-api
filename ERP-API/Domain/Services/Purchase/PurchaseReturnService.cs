@@ -165,6 +165,35 @@ namespace ERP_API.Domain.Services.Purchase
                     "EXEC sp_update_stock_mutation_from_pr {0}, {1}, {2}",
                     data.Code, data.Date, data.RcvCode);
 
+                if (data.Type == 3)
+                {
+                    var exchangeDetail = data.DiffItemDetails;
+
+                    foreach (var item in exchangeDetail)
+                    {
+                        Db.PurchaseReturnDetailExchDiffItems.Add(new PurchaseReturnDetailExchDiffItem
+                        {
+                            Code = newCode,
+                            LineNo = ++i,
+                            //ReturnDetailId = item.Id,
+                            ItemId = item.ItemId,
+                            UomId = item.UomId,
+                            UnitId = item.UnitId,
+                            Qty = item.Qty,
+                            QtyRcv = item.QtyRcv,
+                            WarehouseCode = item.WarehouseCode,
+                            UnitPrice = item.UnitPrice,
+                            TaxId = item.TaxId,
+                            TaxAmount = item.TaxAmount,
+                            NettPrice = item.NettPrice,
+                            Total = item.Total,
+                            Dpp = item.Dpp
+                        });
+                    }
+
+                    Db.SaveChanges();
+                }
+
                 transaction.Commit();
             }
             catch (Exception ex)
@@ -288,6 +317,40 @@ namespace ERP_API.Domain.Services.Purchase
                 Db.Database.ExecuteSqlRaw(
                     "EXEC sp_update_stock_mutation_from_pr {0}, {1}, {2}",
                     data.Code, data.Date, data.RcvCode);
+
+                if (data.Type == 3)
+                {
+                    var delExchange = Db.PurchaseReturnDetailExchDiffItems.Where(d => d.Code == data.Code && !data.DiffItemDetails.Select(x => x.Id).Contains(d.Id))
+                    .ToList();
+
+                    Db.PurchaseReturnDetailExchDiffItems.RemoveRange(delExchange);
+
+                    var exchangeDetail = data.DiffItemDetails;
+
+                    foreach (var item in exchangeDetail)
+                    {
+                        Db.PurchaseReturnDetailExchDiffItems.Add(new PurchaseReturnDetailExchDiffItem
+                        {
+                            Code = data.Code,
+                            LineNo = ++i,
+                            //ReturnDetailId = (long)item.TransDetailId,
+                            ItemId = item.ItemId,
+                            UomId = item.UomId,
+                            UnitId = item.UnitId,
+                            Qty = item.Qty,
+                            QtyRcv = item.QtyRcv,
+                            WarehouseCode = item.WarehouseCode,
+                            UnitPrice = item.UnitPrice,
+                            TaxId = item.TaxId,
+                            TaxAmount = item.TaxAmount,
+                            NettPrice = item.NettPrice,
+                            Total = item.Total,
+                            Dpp = item.Dpp
+                        });
+                    }
+
+                    Db.SaveChanges();
+                }
 
                 transaction.Commit();
             }

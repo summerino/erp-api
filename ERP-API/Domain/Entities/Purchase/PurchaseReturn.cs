@@ -348,7 +348,7 @@ namespace ERP_API.Domain.Entities.Purchase
 
         public string UnitName { get; set; }
 
-        public long? ItemUomBuyId { get; set; }
+        public int? ItemUomBuyId { get; set; }
 
         public string ItemUomBuyName { get; set; }
 
