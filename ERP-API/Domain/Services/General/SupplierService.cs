@@ -24,7 +24,7 @@ namespace ERP_API.Domain.Services.General
             if (!string.IsNullOrEmpty(search))
             {
                 data = data.Where(x =>
-                        x.Code.Contains(search) || x.Name.Contains(search) || x.TypeName.Contains(search) ||
+                        x.Code.Contains(search) || x.Initial.Contains(search) || x.Name.Contains(search) || x.TypeName.Contains(search) ||
                         x.Address1.Contains(search) || x.Phone.Contains(search) || x.Email.Contains(search));
             }
 

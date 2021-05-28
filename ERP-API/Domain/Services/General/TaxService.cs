@@ -25,7 +25,7 @@ namespace ERP_API.Domain.Services.General
             {
                 data = data.Where(x =>
                         x.Initial.Contains(search) || x.Name.Contains(search) || x.CoaCode.Contains(search) ||
-                        x.CoaName.Contains(search) || x.Rate.ToString(CultureInfo.InvariantCulture).StartsWith(search));
+                        x.CoaName.Contains(search) || x.Rate.Equals(search));
             }
 
             return data.ToDataSourceResult(skip, take, filters, sorts);
