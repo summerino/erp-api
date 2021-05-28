@@ -151,7 +151,7 @@ namespace ERP_API.Domain.Services.Sales
 
                 if (data.Type == 3)
                 {
-                    var exchangeDetail = Db.SalesReturnDetails.Where(x => x.Code == data.Code).ToList();
+                    var exchangeDetail = data.DiffItemDetails;
 
                     foreach (var item in exchangeDetail)
                     {
@@ -159,12 +159,13 @@ namespace ERP_API.Domain.Services.Sales
                         {
                             Code = newCode,
                             LineNo = ++i,
-                            ReturnDetailId = item.Id,
+                            //ReturnDetailId = item.Id,
                             ItemId = item.ItemId,
-                            Qty = item.Qty,
                             UomId = item.UomId,
                             UnitId = item.UnitId,
-                            WarehouseCode = data.WarehouseCode,
+                            Qty = item.Qty,
+                            QtyDlv = item.QtyDlv,
+                            WarehouseCode = item.WarehouseCode,
                             UnitPrice = item.UnitPrice,
                             TaxId = item.TaxId,
                             TaxAmount = item.TaxAmount,
@@ -296,11 +297,12 @@ namespace ERP_API.Domain.Services.Sales
 
                 if (data.Type == 3)
                 {
-                    var delExchange = Db.SalesReturnDetailExchDiffItems.Where(d => d.Code == data.Code).ToList();
+                    var delExchange = Db.SalesReturnDetailExchDiffItems.Where(d => d.Code == data.Code && !data.DiffItemDetails.Select(x => x.Id).Contains(d.Id))
+                    .ToList();
 
                     Db.SalesReturnDetailExchDiffItems.RemoveRange(delExchange);
 
-                    var exchangeDetail = Db.SalesReturnDetails.Where(x => x.Code == data.Code).ToList();
+                    var exchangeDetail = data.DiffItemDetails;
 
                     foreach (var item in exchangeDetail)
                     {
@@ -308,12 +310,13 @@ namespace ERP_API.Domain.Services.Sales
                         {
                             Code = data.Code,
                             LineNo = ++i,
-                            ReturnDetailId = (long)item.TransDetailId,
+                            //ReturnDetailId = (long)item.TransDetailId,
                             ItemId = item.ItemId,
-                            Qty = item.Qty,
                             UomId = item.UomId,
                             UnitId = item.UnitId,
-                            WarehouseCode = data.WarehouseCode,
+                            Qty = item.Qty,
+                            QtyDlv = item.QtyDlv,
+                            WarehouseCode = item.WarehouseCode,
                             UnitPrice = item.UnitPrice,
                             TaxId = item.TaxId,
                             TaxAmount = item.TaxAmount,
