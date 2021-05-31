@@ -272,6 +272,11 @@ namespace ERP_API.Domain.Services.Purchase
 
                 Db.SaveChanges();
 
+                // Execute sp_update_stock_mutation_from_po
+                Db.Database.ExecuteSqlRaw(
+                    "EXEC sp_update_stock_mutation_from_po {0}, {1}",
+                    data.Code, data.Date);
+
                 if (data.IsPoRcv)
                 {
                     var RcvData = Db.PurchaseReceiveHeaders.FirstOrDefault(x => x.TransCode == newCode);
@@ -610,6 +615,11 @@ namespace ERP_API.Domain.Services.Purchase
                 }
 
                 Db.SaveChanges();
+
+                // Execute sp_update_stock_mutation_from_po
+                Db.Database.ExecuteSqlRaw(
+                    "EXEC sp_update_stock_mutation_from_po {0}, {1}",
+                    data.Code, data.Date);
 
                 if (data.IsPoRcv)
                 {
