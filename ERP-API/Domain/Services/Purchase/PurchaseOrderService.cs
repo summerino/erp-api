@@ -62,6 +62,7 @@ namespace ERP_API.Domain.Services.Purchase
         public SaveResult Insert(PurchaseOrderRequest data)
         {
             var result = new SaveResult(false);
+            var listIdDetail = new List<long>();
 
             using var transaction = Db.Database.BeginTransaction();
             try
@@ -77,7 +78,7 @@ namespace ERP_API.Domain.Services.Purchase
                 short i = 0;
                 foreach (var item in data.ItemDetails)
                 {
-                    Db.PurchaseOrderDetails.Add(new PurchaseOrderDetail
+                    var orderDetail = new PurchaseOrderDetail
                     {
                         Code = newCode,
                         LineNo = ++i,
@@ -106,7 +107,15 @@ namespace ERP_API.Domain.Services.Purchase
                         CoaPurcDisc = item.CoaPurcDisc,
                         CoaPurcReturn = item.CoaPurcReturn,
                         Type = 0
-                    });
+                    };
+
+                    Db.PurchaseOrderDetails.Add(orderDetail);
+
+                    if (data.IsPoInv || data.IsPoRcv)
+                    {
+                        Db.SaveChanges();
+                        listIdDetail.Add(orderDetail.Id);
+                    }
                 }
 
                 if (data.IsPoRcv)
@@ -149,6 +158,7 @@ namespace ERP_API.Domain.Services.Purchase
                         {
                             Code = newRcvCode,
                             LineNo = ++j,
+                            TransDetailId = listIdDetail[j-1],
                             ItemId = item.ItemId,
                             UomId = item.UomId,
                             UnitId = item.UnitId,
@@ -237,6 +247,7 @@ namespace ERP_API.Domain.Services.Purchase
                         {
                             Code = newRcvCode,
                             LineNo = ++j,
+                            TransDetailId = listIdDetail[j-1],
                             ItemId = item.ItemId,
                             UomId = item.UomId,
                             UnitId = item.UnitId,
@@ -331,6 +342,7 @@ namespace ERP_API.Domain.Services.Purchase
         public SaveResult Update(PurchaseOrderRequest data)
         {
             var result = new SaveResult(false);
+            var listIdDetail = new List<long>();
 
             using var transaction = Db.Database.BeginTransaction();
             try
@@ -362,7 +374,7 @@ namespace ERP_API.Domain.Services.Purchase
                 {
                     if (item.Id == 0)
                     {
-                        Db.PurchaseOrderDetails.Add(new PurchaseOrderDetail
+                        var orderDetail = new PurchaseOrderDetail
                         {
                             Code = item.Code,
                             LineNo = ++i,
@@ -391,7 +403,15 @@ namespace ERP_API.Domain.Services.Purchase
                             CoaPurcDisc = item.CoaPurcDisc,
                             CoaPurcReturn = item.CoaPurcReturn,
                             Type = 0
-                        });
+                        };
+
+                        Db.PurchaseOrderDetails.Add(orderDetail);
+
+                        if (data.IsPoInv || data.IsPoRcv)
+                        {
+                            Db.SaveChanges();
+                            listIdDetail.Add(orderDetail.Id);
+                        }
                     }
                     else
                     {
@@ -399,6 +419,11 @@ namespace ERP_API.Domain.Services.Purchase
 
                         Db.PurchaseOrderDetails.Update(item);
                         Db.Entry(item).Property(e => e.Code).IsModified = false;
+
+                        if (data.IsPoInv || data.IsPoRcv)
+                        {
+                            listIdDetail.Add(item.Id);
+                        }
                     }
                 }
 
@@ -442,6 +467,7 @@ namespace ERP_API.Domain.Services.Purchase
                         {
                             Code = newRcvCode,
                             LineNo = ++j,
+                            TransDetailId = listIdDetail[j-1],
                             ItemId = item.ItemId,
                             UomId = item.UomId,
                             UnitId = item.UnitId,
@@ -532,6 +558,7 @@ namespace ERP_API.Domain.Services.Purchase
                             {
                                 Code = newRcvCode,
                                 LineNo = ++j,
+                                TransDetailId = listIdDetail[j - 1],
                                 ItemId = item.ItemId,
                                 UomId = item.UomId,
                                 UnitId = item.UnitId,
