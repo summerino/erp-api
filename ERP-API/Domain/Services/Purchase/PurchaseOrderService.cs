@@ -119,6 +119,7 @@ namespace ERP_API.Domain.Services.Purchase
                         Date = data.RcvDate,
                         TransCode = newCode,
                         RefNo = data.RcvRefNo,
+                        SrcTrans = 1,
                         SupCode = data.SupCode,
                         ReceiveBy = data.RequestBy,
                         CurrCode = data.CurrCode,
@@ -182,6 +183,7 @@ namespace ERP_API.Domain.Services.Purchase
                         Date = data.RcvDate,
                         TransCode = newCode,
                         RefNo = data.RcvRefNo,
+                        SrcTrans = 1,
                         SupCode = data.SupCode,
                         ReceiveBy = data.RequestBy,
                         CurrCode = data.CurrCode,
@@ -271,6 +273,11 @@ namespace ERP_API.Domain.Services.Purchase
                 }
 
                 Db.SaveChanges();
+
+                // Execute sp_update_stock_mutation_from_po
+                Db.Database.ExecuteSqlRaw(
+                    "EXEC sp_update_stock_mutation_from_po {0}, {1}",
+                    data.Code, data.Date);
 
                 if (data.IsPoRcv)
                 {
@@ -405,6 +412,7 @@ namespace ERP_API.Domain.Services.Purchase
                         Date = data.RcvDate,
                         TransCode = data.Code,
                         RefNo = data.RcvRefNo,
+                        SrcTrans = 1,
                         SupCode = data.SupCode,
                         ReceiveBy = data.RequestBy,
                         CurrCode = data.CurrCode,
@@ -470,6 +478,7 @@ namespace ERP_API.Domain.Services.Purchase
                             Date = data.RcvDate,
                             TransCode = data.Code,
                             RefNo = data.RcvRefNo,
+                            SrcTrans = 1,
                             SupCode = data.SupCode,
                             ReceiveBy = data.RequestBy,
                             CurrCode = data.CurrCode,
@@ -610,6 +619,11 @@ namespace ERP_API.Domain.Services.Purchase
                 }
 
                 Db.SaveChanges();
+
+                // Execute sp_update_stock_mutation_from_po
+                Db.Database.ExecuteSqlRaw(
+                    "EXEC sp_update_stock_mutation_from_po {0}, {1}",
+                    data.Code, data.Date);
 
                 if (data.IsPoRcv)
                 {

@@ -66,6 +66,13 @@ namespace ERP_API.Domain.Services.Sales
             using var transaction = Db.Database.BeginTransaction();
             try
             {
+                // Checking deliver qty is excess or not
+                if (IsQtyExcess(data.WarehouseCode, data.ItemDetails))
+                {
+                    result.Message = "Data order penjualan tidak bisa disimpan karena qty yg diterima lebih besar dari qty yang tersedia.";
+                    return result;
+                }
+
                 // Get new code
                 var newCode = GetNewCode("SO_NUM_FMT", data.Date);
 
@@ -116,6 +123,7 @@ namespace ERP_API.Domain.Services.Sales
                     {
                         Code = newDlvCode,
                         Date = data.DlvDate,
+                        SrcTrans = 1,
                         TransCode = newCode,
                         CustCode = data.CustCode,
                         WarehouseCode = data.WarehouseCode,
@@ -177,6 +185,7 @@ namespace ERP_API.Domain.Services.Sales
                     {
                         Code = newDlvCode,
                         Date = data.DlvDate,
+                        SrcTrans = 1,
                         TransCode = newCode,
                         CustCode = data.CustCode,
                         WarehouseCode = data.WarehouseCode,
@@ -267,6 +276,11 @@ namespace ERP_API.Domain.Services.Sales
 
                 Db.SaveChanges();
 
+                // Execute sp_update_stock_mutation_from_so
+                Db.Database.ExecuteSqlRaw(
+                    "EXEC sp_update_stock_mutation_from_so {0}, {1}",
+                    data.Code, data.Date);
+
                 if (data.IsSoDlv)
                 {
                     var DlvData = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.TransCode == newCode);
@@ -325,6 +339,13 @@ namespace ERP_API.Domain.Services.Sales
                 if (Db.SalesOrderHeaders.Any(x => x.Code == data.Code && new[] { "V", "CLS" }.Contains(x.Mark)))
                 {
                     result.Message = "Data order penjualan tidak bisa diubah karena sudah ditandai sebagai void atau closed.";
+                    return result;
+                }
+
+                // Checking deliver qty is excess or not
+                if (IsQtyExcess(data.WarehouseCode, data.ItemDetails))
+                {
+                    result.Message = "Data order penjualan tidak bisa disimpan karena qty yg diterima lebih besar dari qty yang tersedia.";
                     return result;
                 }
 
@@ -395,6 +416,7 @@ namespace ERP_API.Domain.Services.Sales
                     {
                         Code = newDlvCode,
                         Date = data.DlvDate,
+                        SrcTrans = 1,
                         TransCode = data.Code,
                         CustCode = data.CustCode,
                         WarehouseCode = data.WarehouseCode,
@@ -459,6 +481,7 @@ namespace ERP_API.Domain.Services.Sales
                         {
                             Code = newDlvCode,
                             Date = data.DlvDate,
+                            SrcTrans = 1,
                             TransCode = data.Code,
                             CustCode = data.CustCode,
                             WarehouseCode = data.WarehouseCode,
@@ -599,6 +622,11 @@ namespace ERP_API.Domain.Services.Sales
 
                 Db.SaveChanges();
 
+                // Execute sp_update_stock_mutation_from_so
+                Db.Database.ExecuteSqlRaw(
+                    "EXEC sp_update_stock_mutation_from_so {0}, {1}",
+                    data.Code, data.Date);
+
                 if (data.IsSoDlv)
                 {
                     var DlvData = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.TransCode == data.Code);
@@ -704,6 +732,59 @@ namespace ERP_API.Domain.Services.Sales
             }
             result.Success = true;
             result.Message = "Data order penjualan berhasil ditutup.";
+            return result;
+        }
+
+        private bool IsQtyExcess(string warehouseCode, IEnumerable<SalesOrderDetail> items)
+        {
+            var result = false;
+            foreach (var item in items)
+            {
+                var uom = Db.UoMConversions.FirstOrDefault(x => x.Id == item.UnitId);
+                var stock = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == warehouseCode && x.ItemId == item.ItemId);
+                var stockMOO = Db.StockMutations.Where(x => x.WarehouseCode == warehouseCode && x.UomId == item.UomId && x.Type == "OO").Sum(x => x.BaseQty);
+                var stockMOH = Db.StockMutations.Where(x => x.WarehouseCode == warehouseCode && x.UomId == item.UomId && x.Type == "OH").Sum(x => x.BaseQty);
+                if (stock != null)
+                {
+                    if (uom.IsBaseUnit)
+                    {
+                        if (item.Qty > (stock.QtyOnHand - stock.QtyOnOrder))
+                        {
+                            result = true;
+                        }
+                    }
+                    else
+                    {
+                        var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= uom.Seq).Select(x => x.Conversion).ToList();
+                        var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
+                        var baseQty = item.Qty * multipliedQty;
+                        if (baseQty > (stock.QtyOnHand - stock.QtyOnOrder))
+                        {
+                            result = true;
+                        }
+                    }
+                }
+                else if (!stockMOH.Equals(null)) // check to stock mutation if warehouse quantites not available
+                {
+                    if (uom.IsBaseUnit)
+                    {
+                        if (item.Qty > (stockMOH - stockMOO))
+                        {
+                            result = true;
+                        }
+                    }
+                    else
+                    {
+                        var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= uom.Seq).Select(x => x.Conversion).ToList();
+                        var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
+                        var baseQty = item.Qty * multipliedQty;
+                        if (baseQty > (stockMOH - stockMOO))
+                        {
+                            result = true;
+                        }
+                    }
+                }
+            }
             return result;
         }
     }
