@@ -123,6 +123,7 @@ namespace ERP_API.Domain.Services.Sales
                     {
                         Code = newDlvCode,
                         Date = data.DlvDate,
+                        SrcTrans = 1,
                         TransCode = newCode,
                         CustCode = data.CustCode,
                         WarehouseCode = data.WarehouseCode,
@@ -184,6 +185,7 @@ namespace ERP_API.Domain.Services.Sales
                     {
                         Code = newDlvCode,
                         Date = data.DlvDate,
+                        SrcTrans = 1,
                         TransCode = newCode,
                         CustCode = data.CustCode,
                         WarehouseCode = data.WarehouseCode,
@@ -414,6 +416,7 @@ namespace ERP_API.Domain.Services.Sales
                     {
                         Code = newDlvCode,
                         Date = data.DlvDate,
+                        SrcTrans = 1,
                         TransCode = data.Code,
                         CustCode = data.CustCode,
                         WarehouseCode = data.WarehouseCode,
@@ -478,6 +481,7 @@ namespace ERP_API.Domain.Services.Sales
                         {
                             Code = newDlvCode,
                             Date = data.DlvDate,
+                            SrcTrans = 1,
                             TransCode = data.Code,
                             CustCode = data.CustCode,
                             WarehouseCode = data.WarehouseCode,
