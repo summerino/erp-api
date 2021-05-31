@@ -1,6 +1,8 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using ERP_API.Domain.Entities.Core;
+using ERP_API.Domain.Entities.General;
 
 namespace ERP_API.Domain.Entities.Sales
 {
@@ -22,6 +24,18 @@ namespace ERP_API.Domain.Entities.Sales
         public int? Deep { get; set; }
 
         public string Lineage { get; set; }
+
+
+        //[InverseProperty("Area1")]
+        //public List<Customer> CustomerAreaId1Navigations { get; set; }
+
+        //public List<Customer> CustomerAreaId2Navigations { get; set; }
+
+        //public List<Customer> CustomerAreaId3Navigations { get; set; }
+
+        //public List<Customer> CustomerAreaId4Navigations { get; set; }
+
+        //public List<Customer> CustomerAreaId5Navigations { get; set; }
     }
 
     public class VwArea : BaseEntityWithActive

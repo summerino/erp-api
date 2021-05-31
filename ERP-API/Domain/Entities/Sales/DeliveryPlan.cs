@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using ERP_API.Domain.Entities.Core;
+using Microsoft.EntityFrameworkCore;
 
 namespace ERP_API.Domain.Entities.Sales
 {
@@ -82,6 +83,7 @@ namespace ERP_API.Domain.Entities.Sales
     }
 
     [Table("DeliveryPlanDetail", Schema = Schema.Sales)]
+    [Index(nameof(TransCode))]
     public class DeliveryPlanDetail
     {
         public long Id { get; set; }

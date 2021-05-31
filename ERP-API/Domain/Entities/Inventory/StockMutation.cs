@@ -1,11 +1,17 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 using ERP_API.Domain.Entities.Core;
 
 namespace ERP_API.Domain.Entities.Inventory
 {
     [Table("StockMutation", Schema = Schema.Inventory)]
+    [Index(nameof(RefCode1))]
+    [Index(nameof(RefDetailId1))]
+    [Index(nameof(RefCode2))]
+    [Index(nameof(Type))]
+    [Index(nameof(Src))]
     public class StockMutation
     {
         public long Id { get; set; }

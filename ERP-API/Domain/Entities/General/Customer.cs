@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using ERP_API.Domain.Entities.Core;
+using ERP_API.Domain.Entities.Sales;
 
 namespace ERP_API.Domain.Entities.General
 {
@@ -51,6 +52,31 @@ namespace ERP_API.Domain.Entities.General
         public int? AreaId4 { get; set; }
 
         public int? AreaId5 { get; set; }
+
+
+        //[ForeignKey(nameof(TypeId))]
+        //public CustomerType CustomerType { get; set; }
+
+        ////[ForeignKey(nameof(BillingAddressId))]
+        //public CustomerAddress BillingAddress { get; set; }
+
+        ////[ForeignKey(nameof(ShippingAddressId))]
+        //public CustomerAddress ShippingAddress { get; set; }
+        
+        ////[ForeignKey(nameof(AreaId1))]
+        //public Area Area1 { get; set; }
+
+        ////[ForeignKey(nameof(AreaId2))]
+        //public Area Area2 { get; set; }
+
+        ////[ForeignKey(nameof(AreaId3))]
+        //public Area Area3 { get; set; }
+
+        ////[ForeignKey(nameof(AreaId4))]
+        //public Area Area4 { get; set; }
+
+        ////[ForeignKey(nameof(AreaId5))]
+        //public Area Area5 { get; set; }
     }
 
     public class VwCustomer : BaseEntityWithActive
