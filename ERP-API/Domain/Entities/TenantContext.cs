@@ -116,6 +116,8 @@ namespace ERP_API.Domain.Entities
         public DbSet<SalesInvoiceHeader> SalesInvoiceHeaders { get; set; }
         public DbSet<VwSalesInvoiceHeader> VwSalesInvoiceHeaders { get; set; }
         public DbSet<SalesInvoiceDetail> SalesInvoiceDetails { get; set; }
+        public DbSet<SalesmanGroup> SalesmanGroups { get; set; }
+        public DbSet<VwSalesmanGroup> VwSalesmanGroups { get; set; }
         public DbSet<SalesOrderHeader> SalesOrderHeaders { get; set; }
         public DbSet<VwSalesOrderHeader> VwSalesOrderHeaders { get; set; }
         public DbSet<SalesOrderDetail> SalesOrderDetails { get; set; }
@@ -182,7 +184,35 @@ namespace ERP_API.Domain.Entities
                 .HasNoKey()
                 .ToTable("BaseNewCodeEntity", t => t.ExcludeFromMigrations());
 
-            // General entities
+            // Customer entities
+            //modelBuilder.Entity<Customer>(entity =>
+            //{
+            //    entity.HasOne(d => d.Area1)
+            //        .WithMany(p => p.CustomerAreaId1Navigations)
+            //        .HasForeignKey(d => d.AreaId1)
+            //        .OnDelete(DeleteBehavior.NoAction);
+
+            //    entity.HasOne(d => d.Area2)
+            //        .WithMany(p => p.CustomerAreaId2Navigations)
+            //        .HasForeignKey(d => d.AreaId2)
+            //        .OnDelete(DeleteBehavior.NoAction);
+
+            //    entity.HasOne(d => d.Area3)
+            //        .WithMany(p => p.CustomerAreaId3Navigations)
+            //        .HasForeignKey(d => d.AreaId3)
+            //        .OnDelete(DeleteBehavior.NoAction);
+
+            //    entity.HasOne(d => d.Area4)
+            //        .WithMany(p => p.CustomerAreaId4Navigations)
+            //        .HasForeignKey(d => d.AreaId4)
+            //        .OnDelete(DeleteBehavior.NoAction);
+
+            //    entity.HasOne(d => d.Area5)
+            //        .WithMany(p => p.CustomerAreaId5Navigations)
+            //        .HasForeignKey(d => d.AreaId5)
+            //        .OnDelete(DeleteBehavior.NoAction);
+            //});
+
             modelBuilder.Entity<VwCustomer>()
                 .HasNoKey()
                 .ToView("vwCustomer", Schema.General);
@@ -196,9 +226,17 @@ namespace ERP_API.Domain.Entities
                 .HasNoKey()
                 .ToView("vwCustomerType", Schema.General);
 
+            // General entities
             modelBuilder.Entity<VwEmployee>()
                 .HasNoKey()
                 .ToView("vwEmployee", Schema.General);
+
+            // Supplier entities
+            //modelBuilder.Entity<Supplier>(entity =>
+            //    entity.HasOne<SupplierType>()
+            //        .WithMany()
+            //        .HasForeignKey(d => d.TypeId)
+            //);
 
             modelBuilder.Entity<VwSupplier>()
                 .HasNoKey()
@@ -445,6 +483,11 @@ namespace ERP_API.Domain.Entities
                 entity.Property(e => e.Code)
                     .IsRequired()
             );
+
+            // Salesman Group entities
+            modelBuilder.Entity<VwSalesmanGroup>()
+                .HasNoKey()
+                .ToView("vwSalesmanGroup", Schema.Sales);
 
             // Sales Order entities
             modelBuilder.Entity<SalesOrderHeader>(entity =>

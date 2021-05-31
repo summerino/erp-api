@@ -1,11 +1,13 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 using ERP_API.Domain.Entities.Core;
 
 namespace ERP_API.Domain.Entities.Sales
 {
     [Table("CreditMemo", Schema = Schema.Sales)]
+    [Index(nameof(TransCode))]
     public class CreditMemo : BaseEntityWithMark
     {
         [Key]

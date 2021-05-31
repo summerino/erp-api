@@ -1,11 +1,13 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 using ERP_API.Domain.Entities.Core;
 
 namespace ERP_API.Domain.Entities.Purchase
 {
     [Table("DebitMemo", Schema = Schema.Purchasing)]
+    [Index(nameof(TransCode))]
     public class DebitMemo : BaseEntityWithMark
     {
         [Key]
