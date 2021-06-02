@@ -367,7 +367,7 @@ namespace ERP_API.Domain.Services.Sales
                 short i = 0;
                 foreach (var item in data.ItemDetails)
                 {
-                    if (item.Id == 0)
+                    if (item.Id <= 0)
                     {
                         Db.SalesOrderDetails.Add(new SalesOrderDetail
                         {
