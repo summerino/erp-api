@@ -167,10 +167,6 @@ namespace ERP_API.Domain.Services.Purchase
 
                 Db.SaveChanges();
 
-                Db.Database.ExecuteSqlRaw(
-                    "EXEC sp_update_stock_mutation_from_pr {0}, {1}, {2}",
-                    data.Code, data.Date, data.RcvCode);
-
                 if (data.Type == 3)
                 {
                     var exchangeDetail = data.DiffItemDetails;
@@ -199,6 +195,10 @@ namespace ERP_API.Domain.Services.Purchase
 
                     Db.SaveChanges();
                 }
+
+                Db.Database.ExecuteSqlRaw(
+                    "EXEC sp_update_stock_mutation_from_pr {0}, {1}, {2}",
+                    data.Code, data.Date, data.RcvCode);
 
                 transaction.Commit();
             }
@@ -327,10 +327,6 @@ namespace ERP_API.Domain.Services.Purchase
                 // Save changes
                 Db.SaveChanges();
 
-                Db.Database.ExecuteSqlRaw(
-                    "EXEC sp_update_stock_mutation_from_pr {0}, {1}, {2}",
-                    data.Code, data.Date, data.RcvCode);
-
                 if (data.Type == 3)
                 {
                     var delExchange = Db.PurchaseReturnDetailExchDiffItems.Where(d => d.Code == data.Code && !data.DiffItemDetails.Select(x => x.Id).Contains(d.Id))
@@ -374,6 +370,10 @@ namespace ERP_API.Domain.Services.Purchase
 
                     Db.SaveChanges();
                 }
+
+                Db.Database.ExecuteSqlRaw(
+                   "EXEC sp_update_stock_mutation_from_pr {0}, {1}, {2}",
+                   data.Code, data.Date, data.RcvCode);
 
                 transaction.Commit();
             }
