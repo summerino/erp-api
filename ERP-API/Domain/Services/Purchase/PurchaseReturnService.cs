@@ -77,6 +77,8 @@ namespace ERP_API.Domain.Services.Purchase
         {
             var result = new SaveResult(false);
             var dbtMemo = new DebitMemo();
+            var listItemDetails = new List<PurchaseReturnDetail>();
+
             using var transaction = Db.Database.BeginTransaction();
             try
             {
@@ -105,7 +107,7 @@ namespace ERP_API.Domain.Services.Purchase
                 short i = 0;
                 foreach (var item in data.ItemDetails)
                 {
-                    Db.PurchaseReturnDetails.Add(new PurchaseReturnDetail
+                    var prd = new PurchaseReturnDetail
                     {
                         Code = newCode,
                         LineNo = ++i,
@@ -130,7 +132,11 @@ namespace ERP_API.Domain.Services.Purchase
                         WarehouseCode = item.WarehouseCode,
                         QtyRcv = item.QtyRcv,
                         WarehouseCodeIn = item.WarehouseCodeIn
-                    });
+                    };
+                    Db.PurchaseReturnDetails.Add(prd);
+
+                    Db.SaveChanges();
+                    listItemDetails.Add(prd);
                 }
 
                 if (data.Type == 1)
@@ -161,27 +167,23 @@ namespace ERP_API.Domain.Services.Purchase
 
                 Db.SaveChanges();
 
-                Db.Database.ExecuteSqlRaw(
-                    "EXEC sp_update_stock_mutation_from_pr {0}, {1}, {2}",
-                    data.Code, data.Date, data.RcvCode);
-
                 if (data.Type == 3)
                 {
                     var exchangeDetail = data.DiffItemDetails;
-
+                    short j = 0;
                     foreach (var item in exchangeDetail)
                     {
                         Db.PurchaseReturnDetailExchDiffItems.Add(new PurchaseReturnDetailExchDiffItem
                         {
                             Code = newCode,
-                            LineNo = ++i,
-                            //ReturnDetailId = item.Id,
+                            LineNo = ++j,
+                            ReturnDetailId = listItemDetails[j-1].Id,
                             ItemId = item.ItemId,
                             UomId = item.UomId,
                             UnitId = item.UnitId,
                             Qty = item.Qty,
                             QtyRcv = item.QtyRcv,
-                            WarehouseCode = item.WarehouseCode,
+                            WarehouseCode = listItemDetails[j-1].WarehouseCode,
                             UnitPrice = item.UnitPrice,
                             TaxId = item.TaxId,
                             TaxAmount = item.TaxAmount,
@@ -193,6 +195,10 @@ namespace ERP_API.Domain.Services.Purchase
 
                     Db.SaveChanges();
                 }
+
+                Db.Database.ExecuteSqlRaw(
+                    "EXEC sp_update_stock_mutation_from_pr {0}, {1}, {2}",
+                    data.Code, data.Date, data.RcvCode);
 
                 transaction.Commit();
             }
@@ -212,6 +218,7 @@ namespace ERP_API.Domain.Services.Purchase
         {
             var result = new SaveResult(false);
             var dbtMemo = new DebitMemo();
+            var listItemDetails = new List<PurchaseReturnDetail>();
 
             using var transaction = Db.Database.BeginTransaction();
             try
@@ -257,7 +264,7 @@ namespace ERP_API.Domain.Services.Purchase
                 {
                     if (item.Id <= 0)
                     {
-                        Db.PurchaseReturnDetails.Add(new PurchaseReturnDetail
+                        var prd = new PurchaseReturnDetail
                         {
                             Code = data.Code,
                             LineNo = ++i,
@@ -282,7 +289,11 @@ namespace ERP_API.Domain.Services.Purchase
                             WarehouseCode = item.WarehouseCode,
                             QtyRcv = item.QtyRcv,
                             WarehouseCodeIn = item.WarehouseCodeIn
-                        });
+                        };
+                        Db.PurchaseReturnDetails.Add(prd);
+
+                        Db.SaveChanges();
+                        listItemDetails.Add(prd);
                     }
                     else
                     {
@@ -290,6 +301,8 @@ namespace ERP_API.Domain.Services.Purchase
 
                         Db.PurchaseReturnDetails.Update(item);
                         Db.Entry(item).Property(e => e.Code).IsModified = false;
+
+                        listItemDetails.Add(item);
                     }
                 }
 
@@ -314,10 +327,6 @@ namespace ERP_API.Domain.Services.Purchase
                 // Save changes
                 Db.SaveChanges();
 
-                Db.Database.ExecuteSqlRaw(
-                    "EXEC sp_update_stock_mutation_from_pr {0}, {1}, {2}",
-                    data.Code, data.Date, data.RcvCode);
-
                 if (data.Type == 3)
                 {
                     var delExchange = Db.PurchaseReturnDetailExchDiffItems.Where(d => d.Code == data.Code && !data.DiffItemDetails.Select(x => x.Id).Contains(d.Id))
@@ -326,31 +335,45 @@ namespace ERP_API.Domain.Services.Purchase
                     Db.PurchaseReturnDetailExchDiffItems.RemoveRange(delExchange);
 
                     var exchangeDetail = data.DiffItemDetails;
-
+                    short j = 0;
                     foreach (var item in exchangeDetail)
                     {
-                        Db.PurchaseReturnDetailExchDiffItems.Add(new PurchaseReturnDetailExchDiffItem
+                        if (item.Id <= 0)
                         {
-                            Code = data.Code,
-                            LineNo = ++i,
-                            //ReturnDetailId = (long)item.TransDetailId,
-                            ItemId = item.ItemId,
-                            UomId = item.UomId,
-                            UnitId = item.UnitId,
-                            Qty = item.Qty,
-                            QtyRcv = item.QtyRcv,
-                            WarehouseCode = item.WarehouseCode,
-                            UnitPrice = item.UnitPrice,
-                            TaxId = item.TaxId,
-                            TaxAmount = item.TaxAmount,
-                            NettPrice = item.NettPrice,
-                            Total = item.Total,
-                            Dpp = item.Dpp
-                        });
+                            Db.PurchaseReturnDetailExchDiffItems.Add(new PurchaseReturnDetailExchDiffItem
+                            {
+                                Code = data.Code,
+                                LineNo = ++j,
+                                ReturnDetailId = listItemDetails[j - 1].Id,
+                                ItemId = item.ItemId,
+                                UomId = item.UomId,
+                                UnitId = item.UnitId,
+                                Qty = item.Qty,
+                                QtyRcv = item.QtyRcv,
+                                WarehouseCode = listItemDetails[j - 1].WarehouseCode,
+                                UnitPrice = item.UnitPrice,
+                                TaxId = item.TaxId,
+                                TaxAmount = item.TaxAmount,
+                                NettPrice = item.NettPrice,
+                                Total = item.Total,
+                                Dpp = item.Dpp
+                            });
+                        }
+                        else
+                        {
+                            item.LineNo = ++j;
+                            item.WarehouseCode = listItemDetails[j - 1].WarehouseCode;
+                            Db.PurchaseReturnDetailExchDiffItems.Update(item);
+                            Db.Entry(item).Property(e => e.Code).IsModified = false;
+                        }
                     }
 
                     Db.SaveChanges();
                 }
+
+                Db.Database.ExecuteSqlRaw(
+                   "EXEC sp_update_stock_mutation_from_pr {0}, {1}, {2}",
+                   data.Code, data.Date, data.RcvCode);
 
                 transaction.Commit();
             }
