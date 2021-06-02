@@ -225,7 +225,12 @@ namespace ERP_API.Domain.Services.Sales
                 Db.SaveChanges();
 
                 var DlvData = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.TransCode == newOrderCode);
-                // Execute sp_update_stock_mutation_from_rcv
+                // Execute sp_update_stock_mutation_from_so
+                Db.Database.ExecuteSqlRaw(
+                    "EXEC sp_update_stock_mutation_from_so {0}, {1}",
+                    newOrderCode, data.Date);
+
+                // Execute sp_update_stock_mutation_from_do
                 Db.Database.ExecuteSqlRaw(
                     "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
                     DlvData.Code, data.Date, newOrderCode);
@@ -268,74 +273,174 @@ namespace ERP_API.Domain.Services.Sales
                     return result;
                 }
 
-                // Update header data
+                // Update Invoice header data
                 Db.SalesInvoiceHeaders.Update(data);
                 Db.Entry(data).Property(e => e.Code).IsModified = false;
                 Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
                 Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
 
-                // Get delivery code that exists in invoice before
-                var doCodeList = Db.SalesInvoiceDetails
-                    .Where(d => d.Code == data.Code && !data.Details.Select(x => x.DoCode).Contains(d.DoCode))
-                    .Select(x => x.DoCode)
+                //Update Order header data
+                var OrderData = Db.SalesOrderHeaders.FirstOrDefault(x => x.Code == data.SoCode);
+                OrderData.Date = data.Date;
+                OrderData.CustCode = data.CustCode;
+                OrderData.SalesBy = data.SalesBy;
+                OrderData.WarehouseCode = data.WarehouseCode;
+                OrderData.CurrCode = data.CurrCode;
+                OrderData.Rate = data.Rate;
+                OrderData.SubTotal = data.SubTotal;
+                OrderData.FinalDiscPercent = data.FinalDiscPercent;
+                OrderData.FinalDisc = data.FinalDisc;
+                OrderData.IncludeTax = data.IncludeTax;
+                OrderData.TaxAmount = data.TaxAmount;
+                OrderData.Total = data.Total;
+                OrderData.Dpp = data.Dpp;
+                OrderData.Notes = data.Notes;
+                OrderData.Mark = data.Mark;
+                OrderData.UpdatedBy = data.UpdatedBy;
+                OrderData.UpdatedDate = data.UpdatedDate;
+                Db.SalesOrderHeaders.Update(OrderData);
+                Db.Entry(OrderData).Property(e => e.Code).IsModified = false;
+                Db.Entry(OrderData).Property(e => e.CreatedBy).IsModified = false;
+                Db.Entry(OrderData).Property(e => e.CreatedDate).IsModified = false;
+
+                //update Delivery header data
+                var invDetail = Db.SalesInvoiceDetails.FirstOrDefault(x => x.Code == data.Code);
+                var DeliveryData = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.Code == invDetail.DoCode);
+                DeliveryData.Date = data.Date;
+                DeliveryData.TransCode = OrderData.Code;
+                DeliveryData.CustCode = data.CustCode;
+                DeliveryData.WarehouseCode = data.WarehouseCode;
+                DeliveryData.ShippedBy = data.SalesBy;
+                DeliveryData.CurrCode = data.CurrCode;
+                DeliveryData.Rate = data.Rate;
+                DeliveryData.SubTotal = data.SubTotal;
+                DeliveryData.FinalDiscPercent = data.FinalDiscPercent;
+                DeliveryData.FinalDisc = data.FinalDisc;
+                DeliveryData.IncludeTax = data.IncludeTax;
+                DeliveryData.TaxAmount = data.TaxAmount;
+                DeliveryData.Total = data.Total;
+                DeliveryData.Dpp = data.Dpp;
+                DeliveryData.Mark = "INV";
+                DeliveryData.Notes = data.Notes;
+                DeliveryData.UpdatedBy = data.UpdatedBy;
+                DeliveryData.UpdatedDate = data.UpdatedDate;
+                Db.SalesDeliveryHeaders.Update(DeliveryData);
+                Db.Entry(DeliveryData).Property(e => e.Code).IsModified = false;
+                Db.Entry(DeliveryData).Property(e => e.CreatedBy).IsModified = false;
+                Db.Entry(DeliveryData).Property(e => e.CreatedDate).IsModified = false;
+
+                //Update Invoice detail data
+                var InvoiceDetailData = Db.SalesInvoiceDetails.FirstOrDefault(x => x.Code == data.Code);
+                InvoiceDetailData.SubTotal = data.SubTotal;
+                InvoiceDetailData.FinalDisc = data.FinalDisc;
+                InvoiceDetailData.TaxAmount = data.TaxAmount;
+                InvoiceDetailData.Total = data.Total;
+                InvoiceDetailData.Dpp = data.Dpp;
+                Db.SalesInvoiceDetails.Update(InvoiceDetailData);
+                Db.Entry(InvoiceDetailData).Property(e => e.Code).IsModified = false;
+
+                //Update Order Detail data
+                    // Get detail data that exists in order before
+                var delOrderDetails = Db.SalesOrderDetails
+                    .Where(d => d.Code == data.SoCode && !data.ItemDetails.Select(x => x.Id).Contains(d.Id))
                     .ToList();
 
-                // Update sales delivery mark that exists in invoice before
-                Db.Database.ExecuteSqlRaw(
-                    $@"UPDATE Sales.SalesDeliveryHeader
-                    SET Mark='A'
-                    WHERE Code IN ('{string.Join("','", doCodeList)}')");
+                    // Delete detail data that exists in order before
+                Db.SalesOrderDetails.RemoveRange(delOrderDetails);
 
-                // Get detail data that exists in invoice before
-                var delDetails = Db.SalesInvoiceDetails
-                    .Where(d => d.Code == data.Code && !data.Details.Select(x => x.Id).Contains(d.Id))
-                    .ToList();
-
-                // Delete detail data that exists in invoice before
-                Db.SalesInvoiceDetails.RemoveRange(delDetails);
-
-                // Update detail data
                 short i = 0;
-                var newInvDetails = new List<SalesInvoiceDetail>();
-                foreach (var item in data.Details)
+                foreach (var item in data.ItemDetails)
                 {
-                    if (item.Id <= 0)
+                    if (item.Id == 0)
                     {
-                        newInvDetails.Add(new SalesInvoiceDetail
+                        Db.SalesOrderDetails.Add(new SalesOrderDetail
                         {
-                            Code = data.Code,
+                            Code = item.Code,
                             LineNo = ++i,
-                            DoCode = item.DoCode,
-                            ShipmentFee = item.ShipmentFee,
-                            HandlingFee = item.HandlingFee,
-                            SubTotal = item.SubTotal,
-                            FinalDisc = item.FinalDisc,
+                            ItemId = item.ItemId,
+                            UomId = item.UomId,
+                            UnitId = item.UnitId,
+                            Qty = item.Qty,
+                            Length = item.Length,
+                            Width = item.Width,
+                            Height = item.Height,
+                            Weight = item.Weight,
+                            DimensionMeasurement = item.DimensionMeasurement,
+                            WeightMeasurement = item.WeightMeasurement,
+                            QtyDlv = 0,
+                            UnitPrice = item.UnitPrice,
+                            Disc = item.Disc,
+                            TaxId = item.TaxId,
                             TaxAmount = item.TaxAmount,
+                            NettPrice = item.NettPrice,
                             Total = item.Total,
-                            Dpp = item.Dpp
+                            Dpp = item.Dpp,
+                            Notes = item.Notes,
+                            CoaInventory = item.CoaInventory,
+                            CoaCogs = item.CoaCogs,
+                            CoaSls = item.CoaSls,
+                            CoaSlsDisc = item.CoaSlsDisc,
+                            CoaSlsReturn = item.CoaSlsReturn
                         });
                     }
                     else
                     {
                         item.LineNo = ++i;
 
-                        Db.SalesInvoiceDetails.Update(item);
+                        Db.SalesOrderDetails.Update(item);
                         Db.Entry(item).Property(e => e.Code).IsModified = false;
                     }
                 }
 
-                // Insert detail if new data exists
-                if (newInvDetails.Any())
-                    Db.SalesInvoiceDetails.AddRange(newInvDetails);
+                //Update Delivery detail data
+                    // Get detail data that exists in order before
+                var delDetails = Db.SalesDeliveryDetails
+                    .Where(d => d.Code == InvoiceDetailData.DoCode)
+                    .ToList();
+
+                    // Get detail data that exists in receive before
+                Db.SalesDeliveryDetails.RemoveRange(delDetails);
+
+                short j = 0;
+                foreach (var item in data.ItemDetails)
+                {
+                    Db.SalesDeliveryDetails.Add(new SalesDeliveryDetail
+                    {
+                        Code = InvoiceDetailData.DoCode,
+                        LineNo = ++j,
+                        ItemId = item.ItemId,
+                        UomId = item.UomId,
+                        UnitId = item.UnitId,
+                        Qty = item.Qty,
+                        Length = item.Length,
+                        Width = item.Width,
+                        Height = item.Height,
+                        Weight = item.Weight,
+                        DimensionMeasurement = item.DimensionMeasurement,
+                        WeightMeasurement = item.WeightMeasurement,
+                        UnitPrice = item.UnitPrice,
+                        Disc = item.Disc,
+                        TaxId = item.TaxId,
+                        TaxAmount = item.TaxAmount,
+                        NettPrice = item.NettPrice,
+                        Total = item.Total,
+                        Dpp = item.Dpp
+                    });
+                }
+
 
                 // Save changes
                 Db.SaveChanges();
 
-                // Update sales delivery to invoiced
+                // Execute sp_update_stock_mutation_from_so
                 Db.Database.ExecuteSqlRaw(
-                    $@"UPDATE Sales.SalesDeliveryHeader
-                    SET Mark='INV'
-                    WHERE Code IN ('{string.Join("','", data.Details.Select(x => x.DoCode.Replace("'", "''")))}')");
+                    "EXEC sp_update_stock_mutation_from_so {0}, {1}",
+                    data.SoCode, data.Date);
+
+                // Execute sp_update_stock_mutation_from_do
+                Db.Database.ExecuteSqlRaw(
+                    "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
+                    InvoiceDetailData.DoCode, data.Date, data.SoCode);
 
                 // Check all sales delivery are invoiced
                 if (
