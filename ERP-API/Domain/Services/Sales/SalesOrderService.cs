@@ -62,6 +62,8 @@ namespace ERP_API.Domain.Services.Sales
         public SaveResult Insert(SalesOrderRequest data)
         {
             var result = new SaveResult(false);
+            var listIdDetail = new List<long>();
+
 
             using var transaction = Db.Database.BeginTransaction();
             try
@@ -84,7 +86,7 @@ namespace ERP_API.Domain.Services.Sales
                 short i = 0;
                 foreach (var item in data.ItemDetails)
                 {
-                    Db.SalesOrderDetails.Add(new SalesOrderDetail
+                    var orderDetail = new SalesOrderDetail
                     {
                         Code = newCode,
                         LineNo = ++i,
@@ -112,7 +114,15 @@ namespace ERP_API.Domain.Services.Sales
                         CoaSls = item.CoaSls,
                         CoaSlsDisc = item.CoaSlsDisc,
                         CoaSlsReturn = item.CoaSlsReturn
-                    });
+                    };
+
+                    Db.SalesOrderDetails.Add(orderDetail);
+
+                    if (data.IsSoDlv || data.IsSoInv)
+                    {
+                        Db.SaveChanges();
+                        listIdDetail.Add(orderDetail.Id);
+                    }
                 }
 
                 if (data.IsSoDlv)
@@ -155,6 +165,7 @@ namespace ERP_API.Domain.Services.Sales
                         {
                             Code = newDlvCode,
                             LineNo = ++j,
+                            SoDetailId = listIdDetail[j - 1],
                             ItemId = item.ItemId,
                             UomId = item.UomId,
                             UnitId = item.UnitId,
@@ -239,6 +250,7 @@ namespace ERP_API.Domain.Services.Sales
                         {
                             Code = newDlvCode,
                             LineNo = ++j,
+                            SoDetailId = listIdDetail[j - 1],
                             ItemId = item.ItemId,
                             UomId = item.UomId,
                             UnitId = item.UnitId,
@@ -331,6 +343,8 @@ namespace ERP_API.Domain.Services.Sales
         public SaveResult Update(SalesOrderRequest data)
         {
             var result = new SaveResult(false);
+            var listIdDetail = new List<long>();
+
 
             using var transaction = Db.Database.BeginTransaction();
             try
@@ -369,7 +383,7 @@ namespace ERP_API.Domain.Services.Sales
                 {
                     if (item.Id == 0)
                     {
-                        Db.SalesOrderDetails.Add(new SalesOrderDetail
+                        var orderDetail = new SalesOrderDetail
                         {
                             Code = item.Code,
                             LineNo = ++i,
@@ -397,7 +411,15 @@ namespace ERP_API.Domain.Services.Sales
                             CoaSls = item.CoaSls,
                             CoaSlsDisc = item.CoaSlsDisc,
                             CoaSlsReturn = item.CoaSlsReturn
-                        });
+                        };
+
+                        Db.SalesOrderDetails.Add(orderDetail);
+
+                        if (data.IsSoDlv || data.IsSoInv)
+                        {
+                            Db.SaveChanges();
+                            listIdDetail.Add(orderDetail.Id);
+                        }
                     }
                     else
                     {
@@ -405,6 +427,11 @@ namespace ERP_API.Domain.Services.Sales
 
                         Db.SalesOrderDetails.Update(item);
                         Db.Entry(item).Property(e => e.Code).IsModified = false;
+
+                        if (data.IsSoDlv || data.IsSoInv)
+                        {
+                            listIdDetail.Add(item.Id);
+                        }
                     }
                 }
 
@@ -448,6 +475,7 @@ namespace ERP_API.Domain.Services.Sales
                         {
                             Code = newDlvCode,
                             LineNo = ++j,
+                            SoDetailId = listIdDetail[j - 1],
                             ItemId = item.ItemId,
                             UomId = item.UomId,
                             UnitId = item.UnitId,
@@ -535,6 +563,7 @@ namespace ERP_API.Domain.Services.Sales
                             {
                                 Code = newDlvCode,
                                 LineNo = ++j,
+                                SoDetailId = listIdDetail[j - 1],
                                 ItemId = item.ItemId,
                                 UomId = item.UomId,
                                 UnitId = item.UnitId,
