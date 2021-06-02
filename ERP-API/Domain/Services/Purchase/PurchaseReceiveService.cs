@@ -271,6 +271,7 @@ namespace ERP_API.Domain.Services.Purchase
 
                         Db.PurchaseReceiveDetails.Update(item);
                         Db.Entry(item).Property(e => e.Code).IsModified = false;
+                        Db.Entry(item).Property(e => e.TransDetailId).IsModified = false;
                     }
                 }
 
