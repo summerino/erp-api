@@ -1,0 +1,133 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using ERP_API.Domain.Entities.Core;
+using ERP_API.Domain.Entities.General;
+
+namespace ERP_API.Domain.Entities.Sales
+{
+    [Table("PromoHeader", Schema = Schema.Sales)]
+    public class PromoHeader : BaseEntityWithMarkAndApproved
+    {
+        [Key]
+        [StringLength(17)]
+        public string Code { get; set; }
+
+        [Required]
+        [StringLength(50)]
+        public string Name { get; set; }
+
+        [Column(TypeName = "date")]
+        public DateTime StartDate { get; set; }
+
+        [Column(TypeName = "date")]
+        public DateTime EndDate { get; set; }
+
+        [Required]
+        [StringLength(6)]
+        public string CoaCost { get; set; }
+    }
+
+    public class VwPromoHeader : BaseEntityWithMarkAndApproved
+    {
+        public string Code { get; set; }
+
+        public string Name { get; set; }
+
+        public DateTime StartDate { get; set; }
+
+        public DateTime EndDate { get; set; }
+
+        public string CoaCost { get; set; }
+
+
+        public string CreatedInitial { get; set; }
+
+        public string UpdatedInitial { get; set; }
+
+        public string ApprovedInitial { get; set; }
+
+        public string Status { get; set; }
+    }
+
+    [Table("PromoDetail", Schema = Schema.Sales)]
+    public class PromoDetail
+    {
+        public long Id { get; set; }
+
+        [StringLength(17)]
+        public string Code { get; set; }
+
+        public short LineNo { get; set; }
+
+        public short ApplyTo { get; set; }
+
+        public int? ItemId { get; set; }
+
+        public short PromoType { get; set; }
+
+        public bool IsPercentage { get; set; }
+
+        [Column(TypeName = "decimal(5, 2)")]
+        public decimal ValuePercentage { get; set; }
+
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal ValueAmount { get; set; }
+
+        public bool IsPromoWithBudget { get; set; }
+
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal BudgetMaximumValue { get; set; }
+
+        public short OverBudgetAction { get; set; }
+
+        [StringLength(50)]
+        public string SubGroup1 { get; set; }
+
+        [StringLength(50)]
+        public string SubGroup2 { get; set; }
+
+        [StringLength(50)]
+        public string SubGroup3 { get; set; }
+
+        [StringLength(50)]
+        public string SubGroup4 { get; set; }
+
+        [StringLength(50)]
+        public string SubGroup5 { get; set; }
+    }
+
+    [Table("PromoDetailTier", Schema = Schema.Sales)]
+    public class PromoDetailTier
+    {
+        public long Id { get; set; }
+
+        public long PromoDetailId { get; set; }
+
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal FromQty { get; set; }
+
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal? ToQty { get; set; }
+
+        public bool IsPercentage { get; set; }
+
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal Value { get; set; }
+
+        [StringLength(20)]
+        public string SaleUnit { get; set; }
+
+        public bool ApplyToAllUnit { get; set; }
+
+        public int? FreeGoodItemId { get; set; }
+
+        [StringLength(20)]
+        public string UnitFreeGood { get; set; }
+
+        public bool IsMultiple { get; set; }
+
+        public int? PaymentTermId { get; set; }
+    }
+}

@@ -109,6 +109,10 @@ namespace ERP_API.Domain.Entities
         public DbSet<VwDeliveryPlanHeader> VwDeliveryPlanHeaders { get; set; }
         public DbSet<DeliveryPlanDetail> DeliveryPlanDetails { get; set; }
         public DbSet<DeliveryPlanUndeliveredItem> DeliveryPlanUndeliveredItems { get; set; }
+        public DbSet<PromoHeader> PromoHeaders { get; set; }
+        public DbSet<VwPromoHeader> VwPromoHeaders { get; set; }
+        public DbSet<PromoDetail> PromoDetails { get; set; }
+        public DbSet<PromoDetailTier> PromoDetailTiers { get; set; }
         public DbSet<SalesDeliveryHeader> SalesDeliveryHeaders { get; set; }
         public DbSet<VwSalesDeliveryHeader> VwSalesDeliveryHeaders { get; set; }
         public DbSet<SalesDeliveryDetail> SalesDeliveryDetails { get; set; }
@@ -446,6 +450,21 @@ namespace ERP_API.Domain.Entities
             );
 
             modelBuilder.Entity<DeliveryPlanUndeliveredItem>(entity =>
+                entity.Property(e => e.Code)
+                    .IsRequired()
+            );
+
+            // Promo entities
+            modelBuilder.Entity<PromoHeader>(entity =>
+                entity.Property(e => e.Mark)
+                    .IsRequired()
+            );
+
+            modelBuilder.Entity<VwPromoHeader>()
+                .HasNoKey()
+                .ToView("vwPromoHeader", Schema.Sales);
+
+            modelBuilder.Entity<PromoDetail>(entity =>
                 entity.Property(e => e.Code)
                     .IsRequired()
             );
