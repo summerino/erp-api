@@ -58,6 +58,7 @@ namespace ERP_API.Controllers.Sales
                     x.LineNo,
                     x.TransDetailId,
                     x.ItemId,
+                    x.ItemInitial,
                     x.ItemName,
                     x.UomId,
                     x.UnitId,
