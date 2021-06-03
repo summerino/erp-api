@@ -79,52 +79,58 @@ namespace ERP_API.Domain.Services.General
                 var tempBillingInitial = "";
                 var tempShippingInitial = "";
 
-                // Insert detail data
-                foreach (var item in data.ItemDetails)
+                if (data.ItemDetails.Any())
                 {
-                    // Checking initial already exists or not
-                    if (IsInitialAddressExists(data, data.Initial))
+                    // Insert detail data
+                    foreach (var item in data.ItemDetails)
                     {
-                        result.Message = "Alamat inisial sudah terdaftar. Tolong gunakan alamat inisial lain pada daftar alamat.";
-                        return result;
-                    }
+                        // Checking initial already exists or not
+                        if (IsInitialAddressExists(data, data.Initial))
+                        {
+                            result.Message = "Alamat inisial sudah terdaftar. Tolong gunakan alamat inisial lain pada daftar alamat.";
+                            return result;
+                        }
 
-                    // Check user's choice
-                    if (tempBillingId == item.Id)
-                    {
-                        tempBillingInitial = item.Initial;
-                    }
+                        // Check user's choice
+                        if (tempBillingId == item.Id)
+                        {
+                            tempBillingInitial = item.Initial;
+                        }
 
-                    if (tempShippingId == item.Id)
-                    {
-                        tempShippingInitial = item.Initial;
-                    }
+                        if (tempShippingId == item.Id)
+                        {
+                            tempShippingInitial = item.Initial;
+                        }
 
-                    Db.CustomerAddress.Add(new CustomerAddress
-                    {
-                        Code = newCode,
-                        Initial = item.Initial,
-                        Address1 = item.Address1,
-                        Address2 = item.Address2,
-                        ContactPerson = item.ContactPerson,
-                        Phone = item.Phone,
-                        Fax = item.Fax,
-                        IsDefault = item.IsDefault
-                    });
+                        Db.CustomerAddress.Add(new CustomerAddress
+                        {
+                            Code = newCode,
+                            Initial = item.Initial,
+                            Address1 = item.Address1,
+                            Address2 = item.Address2,
+                            ContactPerson = item.ContactPerson,
+                            Phone = item.Phone,
+                            Fax = item.Fax,
+                            IsDefault = item.IsDefault
+                        });
+                    }
                 }
+                
 
                 Db.SaveChanges();
 
-                // Update billing & shipping address id
-                data.BillingAddressId = GetIdAddress(tempBillingInitial, newCode);
-                data.ShippingAddressId = GetIdAddress(tempShippingInitial, newCode);
+                if (data.ItemDetails.Any())
+                {
+                    // Update billing & shipping address id
+                    data.BillingAddressId = GetIdAddress(tempBillingInitial, newCode);
+                    data.ShippingAddressId = GetIdAddress(tempShippingInitial, newCode);
 
-                Db.Customers.Update(data);
-                Db.Entry(data).Property(e => e.Code).IsModified = false;
-                Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
-                Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
-                Db.SaveChanges();
-
+                    Db.Customers.Update(data);
+                    Db.Entry(data).Property(e => e.Code).IsModified = false;
+                    Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
+                    Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
+                    Db.SaveChanges();
+                }
                 transaction.Commit();
             }
             catch (Exception ex)
@@ -169,68 +175,74 @@ namespace ERP_API.Domain.Services.General
             var tempBillingInitial = "";
             var tempShippingInitial = "";
 
-            // Update detail data
-            foreach (var item in data.ItemDetails)
+            if (data.ItemDetails.Any())
             {
-                // Checking initial already exists or not
-                if (IsInitialAddressExists(data, item.Initial))
+                // Update detail data
+                foreach (var item in data.ItemDetails)
                 {
-                    result.Message = "Alamat inisial sudah terdaftar. Tolong gunakan alamat inisial lain pada daftar alamat.";
-                    return result;
-                }
-
-                if (item.Id < 0)
-                {
-                    // Check user's choice
-                    if (tempBillingId == item.Id)
+                    // Checking initial already exists or not
+                    if (IsInitialAddressExists(data, item.Initial))
                     {
-                        tempBillingInitial = item.Initial;
+                        result.Message = "Alamat inisial sudah terdaftar. Tolong gunakan alamat inisial lain pada daftar alamat.";
+                        return result;
                     }
 
-                    if (tempShippingId == item.Id)
+                    if (item.Id < 0)
                     {
-                        tempShippingInitial = item.Initial;
-                    }
+                        // Check user's choice
+                        if (tempBillingId == item.Id)
+                        {
+                            tempBillingInitial = item.Initial;
+                        }
 
-                    Db.CustomerAddress.Add(new CustomerAddress
+                        if (tempShippingId == item.Id)
+                        {
+                            tempShippingInitial = item.Initial;
+                        }
+
+                        Db.CustomerAddress.Add(new CustomerAddress
+                        {
+                            Code = data.Code,
+                            Initial = item.Initial,
+                            Address1 = item.Address1,
+                            Address2 = item.Address2,
+                            ContactPerson = item.ContactPerson,
+                            Phone = item.Phone,
+                            Fax = item.Fax,
+                            IsDefault = item.IsDefault
+                        });
+                    }
+                    else
                     {
-                        Code = data.Code,
-                        Initial = item.Initial,
-                        Address1 = item.Address1,
-                        Address2 = item.Address2,
-                        ContactPerson = item.ContactPerson,
-                        Phone = item.Phone,
-                        Fax = item.Fax,
-                        IsDefault = item.IsDefault
-                    });
-                }
-                else
-                {
-                    Db.CustomerAddress.Update(item);
-                    Db.Entry(item).Property(e => e.Id).IsModified = false;
-                    Db.Entry(item).Property(e => e.Code).IsModified = false;
+                        Db.CustomerAddress.Update(item);
+                        Db.Entry(item).Property(e => e.Id).IsModified = false;
+                        Db.Entry(item).Property(e => e.Code).IsModified = false;
+                    }
                 }
             }
 
             Db.SaveChanges();
 
-            // Update billing & shipping address id
-            if (data.BillingAddressId < 0)
+            if (data.ItemDetails.Any())
             {
-                data.BillingAddressId = GetIdAddress(tempBillingInitial, data.Code);
-            }
+                // Update billing & shipping address id
+                if (data.BillingAddressId < 0)
+                {
+                    data.BillingAddressId = GetIdAddress(tempBillingInitial, data.Code);
+                }
 
-            if (data.ShippingAddressId < 0)
-            {
-                data.ShippingAddressId = GetIdAddress(tempShippingInitial, data.Code);
-            }
+                if (data.ShippingAddressId < 0)
+                {
+                    data.ShippingAddressId = GetIdAddress(tempShippingInitial, data.Code);
+                }
 
-            // Update data
-            Db.Customers.Update(data);
-            Db.Entry(data).Property(e => e.Code).IsModified = false;
-            Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
-            Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
-            Db.SaveChanges();
+                // Update data
+                Db.Customers.Update(data);
+                Db.Entry(data).Property(e => e.Code).IsModified = false;
+                Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
+                Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
+                Db.SaveChanges();
+            }
 
             result.Success = true;
             result.Data = data.Code;
