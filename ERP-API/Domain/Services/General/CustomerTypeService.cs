@@ -120,7 +120,7 @@ namespace ERP_API.Domain.Services.General
 
         private bool IsInitialExists(string initial, int id)
         {
-            return Db.CustomerTypes.Any(x => x.Initial == initial && x.Id != id);
+            return Db.CustomerTypes.Any(x => x.Initial == initial && x.Id != id && x.IsActive == true);
         }
     }
 }
