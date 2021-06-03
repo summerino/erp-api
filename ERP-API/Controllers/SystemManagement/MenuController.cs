@@ -1,0 +1,90 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Dynamic.Core;
+using Microsoft.AspNetCore.Mvc;
+using ERP_API.Domain.Interfaces.SystemManagement;
+using ERP_API.Domain.Models;
+using ERP_API.Domain.Services;
+using ERP_API.Domain.Entities.SystemManagement;
+using ERP_API.Model;
+using Newtonsoft.Json;
+
+namespace ERP_API.Controllers.SystemManagement
+{
+    [Route("api/v1/menu")]
+    //[Authorize]
+    [ApiController]
+    public class MenuController : ControllerBase
+    {
+        private readonly IMenuService _menu;
+        private readonly IClaimService _claim;
+
+        public MenuController(IMenuService menu)
+        {
+            _menu = menu;
+        }
+
+        [HttpGet]
+        public IActionResult GetData(string search, string filters, string sorts, int skip, int take)
+        {
+            var data =
+                _menu.GetData(
+                    skip, take,
+                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
+                    search);
+
+            return Ok(new ApiResponse
+            {
+                RowCount = data.Total,
+                TableData = data.Data.ToDynamicList()
+            });
+        }
+
+        [HttpGet("hierarchy")]
+        public IActionResult GetHierarchy()
+        {
+            return Ok(_menu.GetHierarchy());
+        }
+
+        [HttpGet("lists")]
+        public IActionResult GetLists(int id)
+        {
+            var data = _menu.GetLists(id)
+                .Select(x => new
+                {
+                    x.Id,
+                    x.MenuId,
+                    x.ActionId
+                })
+                .ToList<dynamic>();
+
+            return Ok(new ApiResponse
+            {
+                RowCount = data.Count,
+                TableData = data
+            });
+        }
+
+        [HttpGet("menu/actions")]
+        public IActionResult GetActions()
+        {
+            var data = _menu.GetActions()
+                .Select(x => new
+                {
+                    x.Id,
+                    x.Name,
+                    IsActive = false,
+                    IsChecked = false
+                })
+                .ToList<dynamic>();
+
+            return Ok(new ApiResponse
+            {
+                RowCount = data.Count,
+                TableData = data
+            });
+        }
+    }
+}
