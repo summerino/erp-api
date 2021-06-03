@@ -55,4 +55,18 @@ namespace ERP_API.Domain.Entities.SystemManagement
         [Column(TypeName = "datetime")]
         public DateTime UpdatedDate { get; set; }
     }
+
+    public class VwRole : BaseEntityWithActive
+    {
+        public int Id { get; set; }
+
+        public string Initial { get; set; }
+
+        public string Name { get; set; }
+
+
+        public string CreatedInitial { get; set; }
+
+        public string UpdatedInitial { get; set; }
+    }
 }
