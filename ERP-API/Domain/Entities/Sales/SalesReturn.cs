@@ -245,6 +245,7 @@ namespace ERP_API.Domain.Entities.Sales
 
         public decimal Dpp { get; set; }
 
+        public string ItemInitial { get; set; }
 
         public string ItemName { get; set; }
 
