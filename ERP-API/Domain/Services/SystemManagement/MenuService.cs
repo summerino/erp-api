@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using ERP_API.Domain.Entities;
 using ERP_API.Domain.Entities.SystemManagement;
 using ERP_API.Domain.Extensions;
 using ERP_API.Domain.Interfaces.SystemManagement;
 using ERP_API.Domain.Models;
+using ERP_API.Domain.Models.SystemManagement;
 
 namespace ERP_API.Domain.Services.SystemManagement
 {
@@ -25,6 +25,42 @@ namespace ERP_API.Domain.Services.SystemManagement
                 data = data.Where(x => x.Name.Contains(search));
 
             return data.ToDataSourceResult(skip, take, filter, sort);
+        }
+
+        public IEnumerable<MenuNavigation> GetNavigation(int roleId)
+        {
+            // Get menu based on role
+            var roleMenus = Db.RoleMenus.Where(x => x.IsActive && x.RoleId == roleId).Select(x => x.MenuId);
+            var menus = Db.Menus.Where(x => x.IsActive && roleMenus.Contains(x.Id)).ToList();
+
+            // Define navigation nodes
+            var navigation = menus
+                .Where(x => x.Deep == 0)
+                .OrderBy(x => x.Seq)
+                .Select(x => new MenuNavigation
+                {
+                    Icon = x.Icon,
+                    Text = x.Name,
+                    Link = x.Link,
+                    Regex = x.Regex,
+                    Items = DefineChildNavigation(menus, x.Id)
+                }).ToList();
+
+            // Adding Dashboard for default navigation
+            navigation.Insert(0, new MenuNavigation
+            {
+                Items = new List<MenuNavigation>
+                {
+                    new()
+                    {
+                        Icon = "mdi-view-dashboard-outline",
+                        Text = "Dashboard",
+                        Link = "dashboard"
+                    }
+                }
+            });
+
+            return navigation;
         }
 
         public object GetHierarchy()
@@ -64,7 +100,7 @@ namespace ERP_API.Domain.Services.SystemManagement
             return nodes;
         }
 
-        public IEnumerable<ERP_API.Domain.Entities.SystemManagement.Action> GetActions()
+        public IEnumerable<Entities.SystemManagement.Action> GetActions()
         {
             var data = Db.Actions.AsQueryable();
 
@@ -76,6 +112,21 @@ namespace ERP_API.Domain.Services.SystemManagement
             var data = Db.MenuActions.Where(x => x.MenuId == id);
 
             return data.OrderBy(x => x.Id);
+        }
+
+        private static IEnumerable<MenuNavigation> DefineChildNavigation(List<Menu> data, int? parentId = null)
+        {
+            return data
+                .Where(x => x.ParentId == parentId)
+                .OrderBy(x => x.Seq)
+                .Select(x => new MenuNavigation
+                {
+                    Icon = x.Icon,
+                    Text = x.Name,
+                    Link = x.Link,
+                    Regex = x.Regex,
+                    Items = DefineChildNavigation(data, x.Id)
+                });
         }
     }
 }

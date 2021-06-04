@@ -4,7 +4,6 @@ using System.Linq;
 using System.Linq.Dynamic.Core;
 using Microsoft.AspNetCore.Mvc;
 using ERP_API.Domain.Interfaces.SystemManagement;
-using ERP_API.Domain.Entities.SystemManagement;
 using ERP_API.Domain.Models;
 using ERP_API.Domain.Services;
 using ERP_API.Model;

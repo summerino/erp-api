@@ -1,28 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 using Microsoft.AspNetCore.Mvc;
 using ERP_API.Domain.Interfaces.SystemManagement;
 using ERP_API.Domain.Models;
 using ERP_API.Domain.Services;
-using ERP_API.Domain.Entities.SystemManagement;
 using ERP_API.Model;
 using Newtonsoft.Json;
 
 namespace ERP_API.Controllers.SystemManagement
 {
     [Route("api/v1/menu")]
-    //[Authorize]
     [ApiController]
     public class MenuController : ControllerBase
     {
         private readonly IMenuService _menu;
         private readonly IClaimService _claim;
 
-        public MenuController(IMenuService menu)
+        public MenuController(IMenuService menu, IClaimService claim)
         {
             _menu = menu;
+            _claim = claim;
         }
 
         [HttpGet]
@@ -40,6 +38,12 @@ namespace ERP_API.Controllers.SystemManagement
                 RowCount = data.Total,
                 TableData = data.Data.ToDynamicList()
             });
+        }
+
+        [HttpGet("navigation")]
+        public IActionResult GetNavigation()
+        {
+            return Ok(_menu.GetNavigation(_claim.RoleId));
         }
 
         [HttpGet("hierarchy")]

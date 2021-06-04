@@ -7,9 +7,11 @@ namespace ERP_API.Domain.Services
     {
         int UserId { get; }
 
-        string CatalogUserId { get; }
+        int RoleId { get; }
 
         int TenantId { get; }
+
+        string CatalogUserId { get; }
 
         string KeyToken { get; }
 
@@ -31,19 +33,25 @@ namespace ERP_API.Domain.Services
                 ? userId
                 : 0;
 
+        public int RoleId =>
+            int.TryParse(_accessor.HttpContext?.User?.Claims?.SingleOrDefault(x => x.Type == "RoleId")?.Value,
+                out var roleId)
+                ? roleId
+                : 0;
+
         public int TenantId =>
             int.TryParse(_accessor.HttpContext?.User?.Claims?.SingleOrDefault(x => x.Type == "TenantId")?.Value,
                 out var tenantId)
                 ? tenantId
                 : 0;
 
+        public string CatalogUserId =>
+            _accessor.HttpContext?.User?.Claims?.SingleOrDefault(x => x.Type == "CatalogUserId")?.Value.ToString();
+
         public string KeyToken =>
             _accessor.HttpContext?.Request?.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
         
         public string IpAddress =>
             _accessor.HttpContext?.Connection?.RemoteIpAddress?.ToString();
-
-        public string CatalogUserId =>
-            _accessor.HttpContext?.User?.Claims?.SingleOrDefault(x => x.Type == "CatalogUserId")?.Value.ToString();
     }
 }
