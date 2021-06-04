@@ -19,6 +19,70 @@ AS
         ON u_u.Id = r.UpdatedBy";
             migrationBuilder.Sql(sql);
 
+			// Create view Sales.vwPromoHeader
+			sql = @"CREATE VIEW [Sales].[vwPromoHeader]
+AS
+    SELECT p_h.*,
+        u_c.Initial AS CreatedInitial,
+        u_u.Initial AS UpdatedInitial,
+        u_a.Initial AS ApprovedInitial,
+        CASE p_h.Mark
+            WHEN 'A' THEN 'Active'
+            WHEN 'V' THEN 'Void' END AS [Status]
+    FROM Sales.PromoHeader p_h
+    LEFT JOIN SystemManagement.[User] u_c
+        ON u_c.Id = p_h.CreatedBy
+    LEFT JOIN SystemManagement.[User] u_u
+        ON u_u.Id = p_h.UpdatedBy
+    LEFT JOIN SystemManagement.[User] u_a
+        ON u_a.Id = p_h.ApprovedBy";
+            migrationBuilder.Sql(sql);
+
+			// Alter view Inventory.vwItem
+			sql = @"ALTER VIEW [Inventory].[vwItem]
+AS
+    SELECT i.*,
+        CASE i.TypeId
+            WHEN 0 THEN 'Raw Material'
+            WHEN 1 THEN 'Work In Process'
+            WHEN 2 THEN 'Finished Good'
+            WHEN 3 THEN 'Service'
+            WHEN 4 THEN 'Consignment'
+            WHEN 5 THEN 'Kits'
+            WHEN 6 THEN 'Resell'
+            ELSE '' END AS TypeName,
+        c.[Name] AS CategoryName,
+        uom.Initial AS UomInitial,
+        uom_c_s.UnitEquivalent AS UomSellName,
+        uom_c_b.UnitEquivalent AS UomBuyName,
+        u_c.Initial AS CreatedInitial,
+        u_u.Initial AS UpdatedInitial,
+        ISNULL(wq.QtyOnHand, 0) As QtyOnHand
+    FROM Inventory.Item i
+    LEFT JOIN Inventory.ItemCategory c
+        ON c.Id = i.CategoryId
+    LEFT JOIN Inventory.UoM uom
+        ON uom.Id = i.UomId
+    LEFT JOIN Inventory.UoMConversion uom_c_s
+        ON uom_c_s.Id = i.UomSellId
+    LEFT JOIN Inventory.UoMConversion uom_c_b
+        ON uom_c_b.Id = i.UomBuyId
+    LEFT JOIN SystemManagement.[User] u_c
+        ON u_c.Id = c.CreatedBy
+    LEFT JOIN SystemManagement.[User] u_u
+        ON u_u.Id = c.UpdatedBy
+    LEFT JOIN (
+		SELECT ItemId,
+			SUM(QtyOnHand) AS QtyOnHand,
+			SUM(QtyOnOrder) AS QtyOnOrder,
+			SUM(QtyOnIndent) AS QtyOnIndent,
+			SUM(QtyOnTransfer) AS QtyOnTransfer
+		FROM Inventory.WarehouseQuantity
+		GROUP BY ItemId
+	) wq
+        ON wq.ItemId = i.Id";
+            migrationBuilder.Sql(sql);
+
 			// Alter procedure dbo.sp_update_stock_mutation_from_do
 			sql = @"ALTER PROCEDURE [dbo].[sp_update_stock_mutation_from_do]
 	@code varchar(17),
