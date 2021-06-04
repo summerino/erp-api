@@ -102,20 +102,23 @@ namespace ERP_API.Domain.Services.Sales
                     var idNewItem = newItem.Id;
 
                     short j = 0;
-                    foreach (var uItem in item.UndeliveredItems)
+                    if(item.UndeliveredItems.Any())
                     {
-                        Db.DeliveryPlanUndeliveredItems.Add(new DeliveryPlanUndeliveredItem
+                        foreach (var uItem in item.UndeliveredItems)
                         {
-                            Code = newCode,
-                            DlvPlanDetailId = idNewItem,
-                            LineNo = ++j,
-                            ItemId = uItem.ItemId,
-                            UomId = uItem.UomId,
-                            UnitId = uItem.UnitId,
-                            Qty = uItem.Qty,
-                            WarehouseCode = uItem.WarehouseCode,
-                            Type = uItem.Type
-                        });
+                            Db.DeliveryPlanUndeliveredItems.Add(new DeliveryPlanUndeliveredItem
+                            {
+                                Code = newCode,
+                                DlvPlanDetailId = idNewItem,
+                                LineNo = ++j,
+                                ItemId = uItem.ItemId,
+                                UomId = uItem.UomId,
+                                UnitId = uItem.UnitId,
+                                Qty = uItem.Qty,
+                                WarehouseCode = uItem.WarehouseCode,
+                                Type = uItem.Type
+                            });
+                        }
                     }
                 }
 
