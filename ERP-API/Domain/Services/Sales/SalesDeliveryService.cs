@@ -83,7 +83,7 @@ namespace ERP_API.Domain.Services.Sales
                 }
 
                 // Checking deliver qty is excess or not
-                if (IsQtyExcess(data.Code, data.SrcTrans, data.TransCode, data.WarehouseCode, data.ItemDetails, false))
+                if (IsQtyExcess(null, data.SrcTrans, data.TransCode, data.ItemDetails))
                 {
                     result.Message = "Data pengiriman penjualan tidak bisa disimpan karena qty yg diterima lebih besar dari qty yang tersedia.";
                     return result;
@@ -172,7 +172,7 @@ namespace ERP_API.Domain.Services.Sales
                 }
 
                 // Checking deliver qty is excess or not
-                if (IsQtyExcess(data.Code, data.SrcTrans, data.TransCode, data.WarehouseCode, data.ItemDetails, true))
+                if (IsQtyExcess(data.Code, data.SrcTrans, data.TransCode, data.ItemDetails))
                 {
                     result.Message = "Data pengiriman penjualan tidak bisa disimpan karena qty yg diterima lebih besar dari qty yang tersedia.";
                     return result;
@@ -303,7 +303,7 @@ namespace ERP_API.Domain.Services.Sales
             return Db.SalesOrderHeaders.Any(x => x.Code == soCode && new[] { "V", "CLS" }.Contains(x.Mark));
         }
 
-        private bool IsQtyExcess(string code, int srcTrans, string transCode, string warehouseCode, IEnumerable<SalesDeliveryDetail> items, bool isUpdate)
+        private bool IsQtyExcess(string code, int srcTrans, string transCode, IEnumerable<SalesDeliveryDetail> items)
         {
             var result = false;
             if (srcTrans == 1) // Sales Order
@@ -311,7 +311,7 @@ namespace ERP_API.Domain.Services.Sales
                 foreach (var item in items)
                 {
                     var dataSODetail = Db.SalesOrderDetails.FirstOrDefault(x => x.Code == transCode && x.ItemId == item.ItemId);
-                    if (!isUpdate)
+                    if (code == null)
                     {
                         var availableStock = dataSODetail.Qty - dataSODetail.QtyDlv;
                         if (item.Qty > availableStock)
@@ -321,8 +321,8 @@ namespace ERP_API.Domain.Services.Sales
                     }
                     else
                     {
-                        var oldSOD = Db.SalesOrderDetails.FirstOrDefault(x => x.Code == transCode && x.ItemId == item.ItemId);
-                        var availableStock = dataSODetail.Qty - (dataSODetail.QtyDlv - oldSOD.Qty);
+                        var oldSDD = Db.SalesDeliveryDetails.AsNoTracking().FirstOrDefault(x => x.Code == code && x.ItemId == item.ItemId);
+                        var availableStock = dataSODetail.Qty - (dataSODetail.QtyDlv - oldSDD.Qty);
                         if (item.Qty > availableStock)
                         {
                             result = true;
@@ -335,7 +335,7 @@ namespace ERP_API.Domain.Services.Sales
                 foreach (var item in items)
                 {
                     var dataSRDetail = Db.SalesReturnDetails.FirstOrDefault(x => x.Code == transCode && x.ItemId == item.ItemId);
-                    if (!isUpdate)
+                    if (code == null)
                     {
                         var availableStock = dataSRDetail.Qty - dataSRDetail.QtyDlv;
                         if (item.Qty > availableStock)
@@ -345,8 +345,8 @@ namespace ERP_API.Domain.Services.Sales
                     }
                     else
                     {
-                        var oldSRD = Db.SalesReturnDetails.FirstOrDefault(x => x.Code == transCode && x.ItemId == item.ItemId);
-                        var availableStock = dataSRDetail.Qty - (dataSRDetail.QtyDlv - oldSRD.Qty);
+                        var oldSDD = Db.SalesDeliveryDetails.AsNoTracking().FirstOrDefault(x => x.Code == code && x.ItemId == item.ItemId);
+                        var availableStock = dataSRDetail.Qty - (dataSRDetail.QtyDlv - oldSDD.Qty);
                         if (item.Qty > availableStock)
                         {
                             result = true;

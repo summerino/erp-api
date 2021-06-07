@@ -83,7 +83,7 @@ namespace ERP_API.Domain.Services.Purchase
                 }
 
                 // Checking receive qty is excess or not
-                if (IsQtyExcess(data.SrcTrans, data.TransCode, data.ItemDetails, false))
+                if (IsQtyExcess(data.SrcTrans, data.TransCode, data.ItemDetails, null))
                 {
                     result.Message = "Data penerimaan pembelian tidak bisa diubah karena qty yg diterima lebih besar dari qty yang tersedia.";
                     return result;
@@ -213,7 +213,7 @@ namespace ERP_API.Domain.Services.Purchase
                 }
 
                 // Checking receive qty is excess or not
-                if (IsQtyExcess(data.SrcTrans, data.TransCode, data.ItemDetails, true))
+                if (IsQtyExcess(data.SrcTrans, data.TransCode, data.ItemDetails, data.Code))
                 {
                     result.Message = "Data penerimaan pembelian tidak bisa diubah karena qty yg diterima lebih besar dari qty yang tersedia.";
                     return result;
@@ -440,7 +440,7 @@ namespace ERP_API.Domain.Services.Purchase
             return Db.PurchaseOrderHeaders.Any(x => x.Code == poCode && new[] { "V", "CLS" }.Contains(x.Mark));
         }
 
-        private bool IsQtyExcess(int srcTrans, string transCode, IEnumerable<PurchaseReceiveDetail> items, bool isUpdate)
+        private bool IsQtyExcess(int srcTrans, string transCode, IEnumerable<PurchaseReceiveDetail> items, string code)
         {
             var result = false;
             if (srcTrans == 1) // Purchase Order
@@ -448,7 +448,7 @@ namespace ERP_API.Domain.Services.Purchase
                 foreach (var item in items)
                 {
                     var dataPODetail = Db.PurchaseOrderDetails.FirstOrDefault(x => x.Code == transCode && x.ItemId == item.ItemId);
-                    if (!isUpdate)
+                    if (code == null)
                     {
                         var availableStock = dataPODetail.Qty - dataPODetail.QtyRcv;
                         if (item.Qty > availableStock)
@@ -458,8 +458,8 @@ namespace ERP_API.Domain.Services.Purchase
                     }
                     else
                     {
-                        var oldPOD = Db.PurchaseOrderDetails.FirstOrDefault(x => x.Code == transCode && x.ItemId == item.ItemId);
-                        var availableStock = dataPODetail.Qty - (dataPODetail.QtyRcv - oldPOD.Qty) ;
+                        var oldPRD = Db.PurchaseReceiveDetails.AsNoTracking().FirstOrDefault(x => x.Code == code && x.ItemId == item.ItemId);
+                        var availableStock = dataPODetail.Qty - (dataPODetail.QtyRcv - oldPRD.Qty) ;
                         if (item.Qty > availableStock)
                         {
                             result = true;
@@ -472,7 +472,7 @@ namespace ERP_API.Domain.Services.Purchase
                 foreach (var item in items)
                 {
                     var dataPRDetail = Db.PurchaseReturnDetails.FirstOrDefault(x => x.Code == transCode && x.ItemId == item.ItemId);
-                    if (!isUpdate)
+                    if (code == null)
                     {
                         var availableStock = dataPRDetail.Qty - dataPRDetail.QtyRcv ;
                         if (item.Qty > availableStock)
@@ -482,7 +482,7 @@ namespace ERP_API.Domain.Services.Purchase
                     }
                     else
                     {
-                        var oldPRD = Db.PurchaseReceiveDetails.FirstOrDefault(x => x.Code == transCode && x.ItemId == item.ItemId);
+                        var oldPRD = Db.PurchaseReceiveDetails.AsNoTracking().FirstOrDefault(x => x.Code == code && x.ItemId == item.ItemId);
                         var availableStock = dataPRDetail.Qty - (dataPRDetail.QtyRcv - oldPRD.Qty);
                         if (item.Qty > availableStock)
                         {
