@@ -83,14 +83,9 @@ namespace ERP_API.Domain.Services.Sales
                 }
 
                 // Checking deliver qty is excess or not
-                if (IsQtyExcess(data.Code, data.SrcTrans, data.TransCode, data.WarehouseCode, data.ItemDetails, false) == 1)
+                if (IsQtyExcess(data.Code, data.SrcTrans, data.TransCode, data.WarehouseCode, data.ItemDetails, false))
                 {
                     result.Message = "Data pengiriman penjualan tidak bisa disimpan karena qty yg diterima lebih besar dari qty yang tersedia.";
-                    return result;
-                }
-                else if (IsQtyExcess(data.Code, data.SrcTrans, data.TransCode, data.WarehouseCode, data.ItemDetails, false) == 2)
-                {
-                    result.Message = "Barang tidak tersedia pada gudang tersebut.";
                     return result;
                 }
 
@@ -177,16 +172,11 @@ namespace ERP_API.Domain.Services.Sales
                 }
 
                 // Checking deliver qty is excess or not
-                if (IsQtyExcess(data.Code, data.SrcTrans, data.TransCode, data.WarehouseCode, data.ItemDetails, true) == 1)
+                if (IsQtyExcess(data.Code, data.SrcTrans, data.TransCode, data.WarehouseCode, data.ItemDetails, true))
                 {
                     result.Message = "Data pengiriman penjualan tidak bisa disimpan karena qty yg diterima lebih besar dari qty yang tersedia.";
                     return result;
                 } 
-                else if (IsQtyExcess(data.Code, data.SrcTrans, data.TransCode, data.WarehouseCode, data.ItemDetails, true) == 2)
-                {
-                    result.Message = "Barang tidak tersedia pada gudang tersebut.";
-                    return result;
-                }
 
                 // Update header data
                 Db.SalesDeliveryHeaders.Update(data);
@@ -313,114 +303,53 @@ namespace ERP_API.Domain.Services.Sales
             return Db.SalesOrderHeaders.Any(x => x.Code == soCode && new[] { "V", "CLS" }.Contains(x.Mark));
         }
 
-        private int IsQtyExcess(string code, int srcTrans, string transCode, string warehouseCode, IEnumerable<SalesDeliveryDetail> items, bool isUpdate)
+        private bool IsQtyExcess(string code, int srcTrans, string transCode, string warehouseCode, IEnumerable<SalesDeliveryDetail> items, bool isUpdate)
         {
-            var result = 0;
-            if (srcTrans == 1)
+            var result = false;
+            if (srcTrans == 1) // Sales Order
             {
                 foreach (var item in items)
                 {
-                    var uom = Db.UoMConversions.FirstOrDefault(x => x.Id == item.UnitId);
-                    var stockWH = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == warehouseCode && x.ItemId == item.ItemId);
-                    if(stockWH == null)
-                    {
-                        result = 2;
-                        return result;
-                    }
+                    var dataSODetail = Db.SalesOrderDetails.FirstOrDefault(x => x.Code == transCode && x.ItemId == item.ItemId);
                     if (!isUpdate)
                     {
-                        if (uom.IsBaseUnit)
+                        var availableStock = dataSODetail.QtyDlv - dataSODetail.Qty;
+                        if (item.Qty > availableStock)
                         {
-                            if (item.Qty > stockWH.QtyOnOrder)
-                            {
-                                result = 1;
-                            }
-                        }
-                        else
-                        {
-                            var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= uom.Seq).Select(x => x.Conversion).ToList();
-                            var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
-                            var baseQty = item.Qty * multipliedQty;
-                            if (baseQty > stockWH.QtyOnOrder)
-                            {
-                                result = 1;
-                            }
+                            result = true;
                         }
                     }
                     else
                     {
-                        var oldStock = Db.StockMutations.FirstOrDefault(x => x.ItemId == item.ItemId && x.RefCode1 == code);
-                        if (uom.IsBaseUnit)
+                        var oldSOD = Db.SalesOrderDetails.FirstOrDefault(x => x.Code == transCode && x.ItemId == item.ItemId);
+                        var availableStock = (dataSODetail.QtyDlv - oldSOD.Qty) - dataSODetail.Qty;
+                        if (item.Qty > availableStock)
                         {
-                            if (item.Qty > (stockWH.QtyOnOrder + oldStock.BaseQty))
-                            {
-                                result = 1;
-                            }
-                        }
-                        else
-                        {
-                            var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= uom.Seq).Select(x => x.Conversion).ToList();
-                            var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
-                            var baseQty = item.Qty * multipliedQty;
-                            if (baseQty > (stockWH.QtyOnOrder + oldStock.BaseQty))
-                            {
-                                result = 1;
-                            }
+                            result = true;
                         }
                     }
                 }
             }
-            else
+            else // Sales Return
             {
                 foreach (var item in items)
                 {
-                    var uom = Db.UoMConversions.FirstOrDefault(x => x.Id == item.UnitId);
-                    var stockSR = Db.StockMutations.FirstOrDefault(x => x.ItemId == item.ItemId && x.RefCode1 == transCode);
-                    var stockWH = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == warehouseCode && x.ItemId == item.ItemId);
-                    if (stockWH == null)
-                    {
-                        result = 2;
-                        return result;
-                    }
+                    var dataSRDetail = Db.SalesReturnDetails.FirstOrDefault(x => x.Code == transCode && x.ItemId == item.ItemId);
                     if (!isUpdate)
                     {
-                        if (uom.IsBaseUnit)
+                        var availableStock = dataSRDetail.QtyDlv - dataSRDetail.Qty;
+                        if (item.Qty > availableStock)
                         {
-                            if (item.Qty > stockSR.BaseQty)
-                            {
-                                result = 1;
-                            }
-                        }
-                        else
-                        {
-                            var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= uom.Seq).Select(x => x.Conversion).ToList();
-                            var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
-                            var baseQty = item.Qty * multipliedQty;
-                            if (baseQty > stockSR.BaseQty)
-                            {
-                                result = 1;
-                            }
+                            result = true;
                         }
                     }
                     else
                     {
-                        var oldStock = Db.StockMutations.FirstOrDefault(x => x.ItemId == item.ItemId && x.RefCode1 == code);
-                        if (uom.IsBaseUnit)
+                        var oldSRD = Db.SalesReturnDetails.FirstOrDefault(x => x.Code == transCode && x.ItemId == item.ItemId);
+                        var availableStock = (dataSRDetail.QtyDlv - oldSRD.Qty) - dataSRDetail.Qty;
+                        if (item.Qty > availableStock)
                         {
-                            if (item.Qty > (stockWH.QtyOnHand - oldStock.BaseQty))
-                            {
-                                result = 1;
-                            }
-                        }
-                        else
-                        {
-                            var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= uom.Seq).Select(x => x.Conversion).ToList();
-                            var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
-                            var baseQty = item.Qty * multipliedQty;
-                            if (baseQty > (stockWH.QtyOnHand - oldStock.BaseQty))
-                            {
-                                result = 1;
-                            }
+                            result = true;
                         }
                     }
                 }
