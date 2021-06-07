@@ -133,8 +133,16 @@ namespace ERP_API.Domain.Services.Sales
                     "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
                     data.Code, data.Date, data.TransCode);
 
-                // Execute sp_update_so_dlv_qty
-                Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", data.TransCode);
+                if (data.SrcTrans == 1)
+                {
+                    // Execute sp_update_so_dlv_qty
+                    Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", data.TransCode);
+                }
+                else
+                {
+                    // Execute sp_update_sr_rcv_qty
+                    Db.Database.ExecuteSqlRaw("EXEC sp_update_sr_dlv_qty {0}", data.TransCode);
+                }
 
                 transaction.Commit();
             }
@@ -239,8 +247,16 @@ namespace ERP_API.Domain.Services.Sales
                     "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
                     data.Code, data.Date, data.TransCode);
 
-                // Execute sp_update_so_dlv_qty
-                Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", data.TransCode);
+                if (data.SrcTrans == 1)
+                {
+                    // Execute sp_update_so_dlv_qty
+                    Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", data.TransCode);
+                }
+                else
+                {
+                    // Execute sp_update_sr_rcv_qty
+                    Db.Database.ExecuteSqlRaw("EXEC sp_update_sr_dlv_qty {0}", data.TransCode);
+                }
 
                 transaction.Commit();
             }
@@ -281,8 +297,16 @@ namespace ERP_API.Domain.Services.Sales
                     // Save changes
                     Db.SaveChanges();
 
-                    // Execute sp_update_so_dlv_qty
-                    Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", data.TransCode);
+                    if (data.SrcTrans == 1)
+                    {
+                        // Execute sp_update_so_dlv_qty
+                        Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", data.TransCode);
+                    }
+                    else
+                    {
+                        // Execute sp_update_sr_rcv_qty
+                        Db.Database.ExecuteSqlRaw("EXEC sp_update_sr_dlv_qty {0}", data.TransCode);
+                    }
 
                     transaction.Commit();
                 }
