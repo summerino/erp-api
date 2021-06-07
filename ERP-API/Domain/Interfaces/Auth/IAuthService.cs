@@ -1,11 +1,7 @@
 ﻿using ERP_API.Model.Auth;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using UserCatalog = ERP_API.Domain.Entities.Catalog.User;
 
-namespace ERP_API.Domain.Interfaces
+namespace ERP_API.Domain.Interfaces.Auth
 {
     public interface IAuthService
     {

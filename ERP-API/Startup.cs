@@ -13,10 +13,12 @@ using Microsoft.IdentityModel.Tokens;
 using ERP_API.Domain.Entities;
 using ERP_API.Domain.Interfaces;
 using ERP_API.Domain.Interfaces.Accounting;
+using ERP_API.Domain.Interfaces.Auth;
 using ERP_API.Domain.Interfaces.General;
 using ERP_API.Domain.Interfaces.Inventory;
 using ERP_API.Domain.Interfaces.Purchase;
 using ERP_API.Domain.Interfaces.Sales;
+using ERP_API.Domain.Interfaces.SystemManagement;
 using ERP_API.Domain.Services;
 using ERP_API.Domain.Services.Auth;
 using ERP_API.Domain.Services.Accounting;
@@ -24,11 +26,10 @@ using ERP_API.Domain.Services.General;
 using ERP_API.Domain.Services.Inventory;
 using ERP_API.Domain.Services.Purchase;
 using ERP_API.Domain.Services.Sales;
+using ERP_API.Domain.Services.SystemManagement;
 using ERP_API.Model.Auth;
 using Newtonsoft.Json.Serialization;
 using Swift.Framework;
-using ERP_API.Domain.Interfaces.SystemManagement;
-using ERP_API.Domain.Services.SystemManagement;
 
 namespace ERP_API
 {
@@ -175,10 +176,10 @@ namespace ERP_API
             services.AddScoped<IDeliveryPlanService, DeliveryPlanService>();
 
             // System Management services
-            services.AddScoped<IUserService, UserService>();
-            services.AddScoped<ISystemParameterService, SystemParameterService>();
-            services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<IMenuService, MenuService>();
+            services.AddScoped<IRoleService, RoleService>();
+            services.AddScoped<ISystemParameterService, SystemParameterService>();
+            services.AddScoped<IUserService, UserService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -198,8 +199,7 @@ namespace ERP_API
 
             app.UseEndpoints(endpoints =>
             {
-                //endpoints.MapControllers().RequireAuthorization();
-                endpoints.MapControllers().AllowAnonymous();
+                endpoints.MapControllers().RequireAuthorization();
             });
 
             EnsureDatabaseCreated(controlDbContext, shardingService);

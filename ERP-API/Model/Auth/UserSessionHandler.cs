@@ -1,8 +1,11 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 using ERP_API.Domain.Entities;
 using ERP_API.Domain.Services;
+using Microsoft.Extensions.Options;
 
 namespace ERP_API.Model.Auth
 {
@@ -15,36 +18,32 @@ namespace ERP_API.Model.Auth
 
     public class UserSessionHandler : AuthorizationHandler<UserSessionRequirement>
     {
-        private readonly CatalogContext _catalogCtx;
         private readonly TenantContext _tenantCtx;
         private readonly IClaimService _claim;
+        private readonly JwtConfig _jwtConfig;
 
-        public UserSessionHandler(CatalogContext catalogCtx, TenantContext tenantCtx, IClaimService claim)
+        public UserSessionHandler(TenantContext tenantCtx, IClaimService claim, IOptionsMonitor<JwtConfig> optionsMonitor)
         {
-            _catalogCtx = catalogCtx;
             _tenantCtx = tenantCtx;
             _claim = claim;
+            _jwtConfig = optionsMonitor.CurrentValue;
         }
 
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, UserSessionRequirement requirement)
         {
-            string currentUserId = _claim.CatalogUserId;
-            if (currentUserId != null)
+            var currentUserId = _claim.CatalogUserId;
+
+            if (!string.IsNullOrWhiteSpace(currentUserId))
             {
-                var loggedUser = _catalogCtx.Users.FirstOrDefault(x => x.Id.ToString() == currentUserId);
-                if (loggedUser != null)
+                if (
+                    _tenantCtx.Users
+                        .Any(x => x.IsActive && x.IsLoggedIn &&
+                                  x.CatalogUserId.ToString() == currentUserId &&
+                                  x.TokenId == _claim.KeyToken &&
+                                  x.IpAddress == _claim.IpAddress &&
+                                  EF.Functions.DateDiffMonth(x.LastLogin, DateTime.Now) < _jwtConfig.TimeInMinute))
                 {
-                    var headerToken = _claim.KeyToken;
-                    var accessIpAdd = _claim.IpAddress;
-                    var tenantUser = _tenantCtx.Users.FirstOrDefault(x => x.CatalogUserId == loggedUser.Id);
-                    if (tenantUser.TokenId != headerToken || tenantUser.IpAddress != accessIpAdd)
-                    {
-                        context.Fail();
-                    }
-                    else
-                    {
-                        context.Succeed(requirement);
-                    }
+                    context.Succeed(requirement);
                 }
                 else
                 {
@@ -55,6 +54,7 @@ namespace ERP_API.Model.Auth
             {
                 context.Fail();
             }
+
             return Task.CompletedTask;
         }
     }

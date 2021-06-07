@@ -4,12 +4,13 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using ERP_API.Domain.Entities;
 using ERP_API.Domain.Interfaces;
+using ERP_API.Domain.Interfaces.Auth;
 using ERP_API.Model.Auth;
-using Microsoft.EntityFrameworkCore;
 using UserTenant = ERP_API.Domain.Entities.SystemManagement.User;
 using UserCatalog = ERP_API.Domain.Entities.Catalog.User;
 
@@ -93,14 +94,11 @@ namespace ERP_API.Domain.Services.Auth
                 };
             }
 
-            var accessIpAdd = _claim.KeyToken;
-            var jwtToken = GenerateJwtToken(tenantUser, catalogUser.TenantId);
-
             tenantUser.IsLoggedIn = true;
             tenantUser.LastLogin = DateTime.Now;
+            tenantUser.SessionId = Guid.NewGuid().ToString();
+            tenantUser.TokenId = GenerateJwtToken(tenantUser, catalogUser.TenantId);
             tenantUser.IpAddress = _claim.IpAddress;
-            tenantUser.TokenId = jwtToken;
-            tenantUser.SessionId = _claim.UserId.ToString();
 
             tenantCtx.Users.Update(tenantUser);
             tenantCtx.Entry(tenantUser).Property(e => e.CatalogUserId).IsModified = false;
@@ -115,14 +113,13 @@ namespace ERP_API.Domain.Services.Auth
             tenantCtx.Entry(tenantUser).Property(e => e.UpdatedBy).IsModified = false;
             tenantCtx.Entry(tenantUser).Property(e => e.UpdatedDate).IsModified = false;
             tenantCtx.SaveChanges();
-
+            
             return new AuthResult
             {
-                accessToken = jwtToken,
-                Success = true,
-                Message = "Berhasil Masuk.",
-                userData = catalogUser.Id.ToString()
-
+                AccessToken = tenantUser.TokenId,
+                ExpToken = EpochTime.GetIntDate(tenantUser.LastLogin.Value.AddMinutes(_jwtConfig.TimeInMinute)),
+                UserData = catalogUser.Id.ToString(),
+                Success = true
             };
         }
 
@@ -176,7 +173,6 @@ namespace ERP_API.Domain.Services.Auth
             {
                 Success = true,
                 Message = "Berhasil Keluar."
-
             };
         }
 
@@ -185,25 +181,23 @@ namespace ERP_API.Domain.Services.Auth
             var jwtTokenHandler = new JwtSecurityTokenHandler();
 
             var key = Encoding.ASCII.GetBytes(_jwtConfig.Secret);
-            var issuer = _jwtConfig.Issuer;
-            var time = _jwtConfig.TimeInMinute;
 
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new[]
                 {
+                    new Claim(JwtRegisteredClaimNames.Sub, data.Username),
+                    new Claim(JwtRegisteredClaimNames.Jti, data.SessionId),
+                    new Claim(JwtRegisteredClaimNames.GivenName, data.Initial),
                     new Claim("UserId", data.Id.ToString()),
                     new Claim("RoleId", data.RoleId.ToString()),
                     new Claim("CatalogUserId", data.CatalogUserId.ToString()),
-                    new Claim("TenantId", tenantId.ToString()),
-                    new Claim(JwtRegisteredClaimNames.Sub, data.Username),
-                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                    new Claim(JwtRegisteredClaimNames.GivenName, data.Initial)
+                    new Claim("TenantId", tenantId.ToString())
                 }),
-                Expires = DateTime.Now.AddMinutes(time),
+                Expires = data.LastLogin.GetValueOrDefault(DateTime.Now).AddMinutes(_jwtConfig.TimeInMinute),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
-                Issuer = issuer,
-                NotBefore = DateTime.Now
+                Issuer = _jwtConfig.Issuer,
+                NotBefore = data.LastLogin.GetValueOrDefault(DateTime.Now)
             };
 
             var token = jwtTokenHandler.CreateJwtSecurityToken(tokenDescriptor);
