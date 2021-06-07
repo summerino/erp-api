@@ -450,7 +450,7 @@ namespace ERP_API.Domain.Services.Purchase
                     var dataPODetail = Db.PurchaseOrderDetails.FirstOrDefault(x => x.Code == transCode && x.ItemId == item.ItemId);
                     if (!isUpdate)
                     {
-                        var availableStock = dataPODetail.QtyRcv - dataPODetail.Qty;
+                        var availableStock = dataPODetail.Qty - dataPODetail.QtyRcv;
                         if (item.Qty > availableStock)
                         {
                             result = true;
@@ -459,7 +459,7 @@ namespace ERP_API.Domain.Services.Purchase
                     else
                     {
                         var oldPOD = Db.PurchaseOrderDetails.FirstOrDefault(x => x.Code == transCode && x.ItemId == item.ItemId);
-                        var availableStock = (dataPODetail.QtyRcv - oldPOD.Qty) - dataPODetail.Qty;
+                        var availableStock = dataPODetail.Qty - (dataPODetail.QtyRcv - oldPOD.Qty) ;
                         if (item.Qty > availableStock)
                         {
                             result = true;
@@ -474,7 +474,7 @@ namespace ERP_API.Domain.Services.Purchase
                     var dataPRDetail = Db.PurchaseReturnDetails.FirstOrDefault(x => x.Code == transCode && x.ItemId == item.ItemId);
                     if (!isUpdate)
                     {
-                        var availableStock = dataPRDetail.QtyRcv - dataPRDetail.Qty;
+                        var availableStock = dataPRDetail.Qty - dataPRDetail.QtyRcv ;
                         if (item.Qty > availableStock)
                         {
                             result = true;
@@ -483,7 +483,7 @@ namespace ERP_API.Domain.Services.Purchase
                     else
                     {
                         var oldPRD = Db.PurchaseReceiveDetails.FirstOrDefault(x => x.Code == transCode && x.ItemId == item.ItemId);
-                        var availableStock = (dataPRDetail.QtyRcv - oldPRD.Qty) - dataPRDetail.Qty;
+                        var availableStock = dataPRDetail.Qty - (dataPRDetail.QtyRcv - oldPRD.Qty);
                         if (item.Qty > availableStock)
                         {
                             result = true;
