@@ -83,7 +83,7 @@ namespace ERP_API.Domain.Services.Purchase
                 }
 
                 // Checking receive qty is excess or not
-                if (IsQtyExcess(data.SrcTrans, data.TransCode, data.ItemDetails, false))
+                if (IsQtyExcess(data.SrcTrans, data.TransCode, data.ItemDetails, null))
                 {
                     result.Message = "Data penerimaan pembelian tidak bisa diubah karena qty yg diterima lebih besar dari qty yang tersedia.";
                     return result;
@@ -129,41 +129,44 @@ namespace ERP_API.Domain.Services.Purchase
                 
                 if(data.SrcTrans == 2)
                 {
-                    // Update Debit Memo
-                    var dbtMemo = Db.DebitMemos.FirstOrDefault(x => x.TransCode == data.TransCode);
-                    var availableAmount = dbtMemo.Amount - dbtMemo.Used;
-                    if(data.Total > availableAmount)
-                    {
-                        result.Message = "Tidak bisa disimpan karena jumlah total penerimaan pembeliam lebih besar dari jumlah total memo debit.";
-                        return result;
-                    }
-                    availableAmount -= data.Total;
-                    dbtMemo.Used += data.Total;
-                    dbtMemo.Mark = availableAmount == 0 ? "FU" : "PU";
-                    dbtMemo.UpdatedBy = data.UpdatedBy;
-                    dbtMemo.UpdatedDate = data.UpdatedDate;
-                    Db.DebitMemos.Update(dbtMemo);
-
-                    // Update Purchase Return Detail
-                    var prData = Db.PurchaseReturnDetails.Where(x => x.Code == data.TransCode).ToList();
-                    foreach (var item in data.ItemDetails)
-                    {
-                        var itemPr = prData.FirstOrDefault(x => x.ItemId == item.ItemId);
-                        var availableQty = itemPr.Qty - itemPr.QtyRcv;
-                        if (item.Qty > availableQty)
+                    var dataPR = Db.PurchaseReturnHeaders.FirstOrDefault(x => x.Code == data.TransCode);
+                    if (dataPR.Type == 1) {
+                        // Update Debit Memo
+                        var dbtMemo = Db.DebitMemos.FirstOrDefault(x => x.TransCode == data.TransCode);
+                        var availableAmount = dbtMemo.Amount - dbtMemo.Used;
+                        if(data.Total > availableAmount)
                         {
-                            result.Message = "Data penerimaan pembelian tidak bisa disimpan karena qty yg diterima lebih besar dari qty yang tersedia";
+                            result.Message = "Tidak bisa disimpan karena jumlah total penerimaan pembeliam lebih besar dari jumlah total memo debit.";
                             return result;
                         }
+                        availableAmount -= data.Total;
+                        dbtMemo.Used += data.Total;
+                        dbtMemo.Mark = availableAmount == 0 ? "FU" : "PU";
+                        dbtMemo.UpdatedBy = data.UpdatedBy;
+                        dbtMemo.UpdatedDate = data.UpdatedDate;
+                        Db.DebitMemos.Update(dbtMemo);
 
-                        itemPr.QtyRcv += item.Qty;
-                        Db.PurchaseReturnDetails.Update(itemPr);
+                        // Update Purchase Return Detail
+                        var prData = Db.PurchaseReturnDetails.Where(x => x.Code == data.TransCode).ToList();
+                        foreach (var item in data.ItemDetails)
+                        {
+                            var itemPr = prData.FirstOrDefault(x => x.ItemId == item.ItemId);
+                            var availableQty = itemPr.Qty - itemPr.QtyRcv;
+                            if (item.Qty > availableQty)
+                            {
+                                result.Message = "Data penerimaan pembelian tidak bisa disimpan karena qty yg diterima lebih besar dari qty yang tersedia";
+                                return result;
+                            }
+
+                            itemPr.QtyRcv += item.Qty;
+                            Db.PurchaseReturnDetails.Update(itemPr);
+                        }
+
+                        // Update Purchase Return Header
+                        var prhData = Db.PurchaseReturnHeaders.FirstOrDefault(x => x.Code == data.TransCode);
+                        prhData.Mark = dbtMemo.Mark == "A" ? "A" : (dbtMemo.Mark == "PU" ? "PR" : "CMP");
+                        Db.PurchaseReturnHeaders.Update(prhData);
                     }
-
-                    // Update Purchase Return Header
-                    var prhData = Db.PurchaseReturnHeaders.FirstOrDefault(x => x.Code == data.TransCode);
-                    prhData.Mark = dbtMemo.Mark == "A" ? "A" : (dbtMemo.Mark == "PU" ? "PR" : "CMP");
-                    Db.PurchaseReturnHeaders.Update(prhData);
                 }
 
                 // Save changes
@@ -174,8 +177,16 @@ namespace ERP_API.Domain.Services.Purchase
                     "EXEC sp_update_stock_mutation_from_rcv {0}, {1}, {2}",
                     data.Code, data.Date, data.TransCode);
 
-                // Execute sp_update_po_rcv_qty
-                Db.Database.ExecuteSqlRaw("EXEC sp_update_po_rcv_qty {0}", data.TransCode);
+                if (data.SrcTrans == 1)
+                {
+                    // Execute sp_update_po_rcv_qty
+                    Db.Database.ExecuteSqlRaw("EXEC sp_update_po_rcv_qty {0}", data.TransCode);
+                }
+                else
+                {
+                    // Execute sp_update_pr_rcv_qty
+                    Db.Database.ExecuteSqlRaw("EXEC sp_update_pr_rcv_qty {0}", data.TransCode);
+                }
 
                 transaction.Commit();
             }
@@ -213,7 +224,7 @@ namespace ERP_API.Domain.Services.Purchase
                 }
 
                 // Checking receive qty is excess or not
-                if (IsQtyExcess(data.SrcTrans, data.TransCode, data.ItemDetails, true))
+                if (IsQtyExcess(data.SrcTrans, data.TransCode, data.ItemDetails, data.Code))
                 {
                     result.Message = "Data penerimaan pembelian tidak bisa diubah karena qty yg diterima lebih besar dari qty yang tersedia.";
                     return result;
@@ -277,68 +288,72 @@ namespace ERP_API.Domain.Services.Purchase
 
                 if (data.SrcTrans == 2)
                 {
-                    // Update Debit Memo
-                    var dbtMemo = Db.DebitMemos.FirstOrDefault(x => x.TransCode == data.TransCode);
-
-                    var oldTotal = Db.PurchaseReceiveHeaders.Where(x => x.TransCode == data.TransCode && x.Mark == "A")
-                        .GroupBy(x => new {x.TransCode})
-                        .Select(g => new { g.Key.TransCode, SumTotal = g.Sum(x => x.Total) });
-
-                    decimal valueTotal = 0;
-                    if (oldTotal.FirstOrDefault().SumTotal > data.Total)
+                    var dataPR = Db.PurchaseReturnHeaders.FirstOrDefault(x => x.Code == data.TransCode);
+                    if (dataPR.Type == 1)
                     {
-                        valueTotal = oldTotal.FirstOrDefault().SumTotal - data.Total;
-                        dbtMemo.Used -= valueTotal;
-                    }
-                    else
-                    {
-                        valueTotal = data.Total - oldTotal.FirstOrDefault().SumTotal;
-                        dbtMemo.Used += valueTotal;
-                    }
-                    
-                    if (dbtMemo.Used > dbtMemo.Amount)
-                    {
-                        result.Message = "Tidak bisa disimpan karena jumlah total penerimaan pembeliam lebih besar dari jumlah total memo debit.";
-                        return result;
-                    }
+                        // Update Debit Memo
+                        var dbtMemo = Db.DebitMemos.FirstOrDefault(x => x.TransCode == data.TransCode);
 
-                    dbtMemo.Mark = dbtMemo.Used == 0 ? "A" : ((dbtMemo.Amount - dbtMemo.Used) == 0 ? "FU" : "PU");
-                    dbtMemo.UpdatedBy = data.UpdatedBy;
-                    dbtMemo.UpdatedDate = data.UpdatedDate;
-                    Db.DebitMemos.Update(dbtMemo);
+                        var oldTotal = Db.PurchaseReceiveHeaders.Where(x => x.TransCode == data.TransCode && x.Mark == "A")
+                            .GroupBy(x => new { x.TransCode })
+                            .Select(g => new { g.Key.TransCode, SumTotal = g.Sum(x => x.Total) });
 
-                    // Update Purchase Return Detail
-                    var prData = Db.PurchaseReturnDetails.Where(x => x.Code == data.TransCode).ToList();
-                    foreach (var item in data.ItemDetails)
-                    {
-                        var itemPrcv = Db.PurchaseReceiveDetails.FirstOrDefault(x => x.Id == item.Id);
-                        var itemPr = prData.FirstOrDefault(x => x.ItemId == item.ItemId);
-
-                        decimal valueQty = 0;
-                        if (itemPr.QtyRcv > item.Qty)
+                        decimal valueTotal = 0;
+                        if (oldTotal.FirstOrDefault().SumTotal > data.Total)
                         {
-                            valueQty = itemPr.QtyRcv - item.Qty;
-                            itemPr.QtyRcv -= valueQty;
+                            valueTotal = oldTotal.FirstOrDefault().SumTotal - data.Total;
+                            dbtMemo.Used -= valueTotal;
                         }
                         else
                         {
-                            valueQty = item.Qty - itemPr.QtyRcv;
-                            itemPr.QtyRcv += valueQty;
+                            valueTotal = data.Total - oldTotal.FirstOrDefault().SumTotal;
+                            dbtMemo.Used += valueTotal;
                         }
 
-                        if (itemPr.QtyRcv > itemPr.Qty)
+                        if (dbtMemo.Used > dbtMemo.Amount)
                         {
-                            result.Message = "Data penerimaan pembelian tidak bisa disimpan karena qty yg diterima lebih besar dari qty yang tersedia";
+                            result.Message = "Tidak bisa disimpan karena jumlah total penerimaan pembeliam lebih besar dari jumlah total memo debit.";
                             return result;
                         }
 
-                        Db.PurchaseReturnDetails.Update(itemPr);
-                    }
+                        dbtMemo.Mark = dbtMemo.Used == 0 ? "A" : ((dbtMemo.Amount - dbtMemo.Used) == 0 ? "FU" : "PU");
+                        dbtMemo.UpdatedBy = data.UpdatedBy;
+                        dbtMemo.UpdatedDate = data.UpdatedDate;
+                        Db.DebitMemos.Update(dbtMemo);
 
-                    // Update Purchase Return Header
-                    var prhData = Db.PurchaseReturnHeaders.FirstOrDefault(x => x.Code == data.TransCode);
-                    prhData.Mark = dbtMemo.Mark == "A" ? "A" : (dbtMemo.Mark == "PU" ? "PR" : "CMP");
-                    Db.PurchaseReturnHeaders.Update(prhData);
+                        // Update Purchase Return Detail
+                        var prData = Db.PurchaseReturnDetails.Where(x => x.Code == data.TransCode).ToList();
+                        foreach (var item in data.ItemDetails)
+                        {
+                            var itemPrcv = Db.PurchaseReceiveDetails.FirstOrDefault(x => x.Id == item.Id);
+                            var itemPr = prData.FirstOrDefault(x => x.ItemId == item.ItemId);
+
+                            decimal valueQty = 0;
+                            if (itemPr.QtyRcv > item.Qty)
+                            {
+                                valueQty = itemPr.QtyRcv - item.Qty;
+                                itemPr.QtyRcv -= valueQty;
+                            }
+                            else
+                            {
+                                valueQty = item.Qty - itemPr.QtyRcv;
+                                itemPr.QtyRcv += valueQty;
+                            }
+
+                            if (itemPr.QtyRcv > itemPr.Qty)
+                            {
+                                result.Message = "Data penerimaan pembelian tidak bisa disimpan karena qty yg diterima lebih besar dari qty yang tersedia";
+                                return result;
+                            }
+
+                            Db.PurchaseReturnDetails.Update(itemPr);
+                        }
+
+                        // Update Purchase Return Header
+                        var prhData = Db.PurchaseReturnHeaders.FirstOrDefault(x => x.Code == data.TransCode);
+                        prhData.Mark = dbtMemo.Mark == "A" ? "A" : (dbtMemo.Mark == "PU" ? "PR" : "CMP");
+                        Db.PurchaseReturnHeaders.Update(prhData);
+                    }
                 }
 
                 // Save changes
@@ -349,8 +364,16 @@ namespace ERP_API.Domain.Services.Purchase
                     "EXEC sp_update_stock_mutation_from_rcv {0}, {1}, {2}",
                     data.Code, data.Date, data.TransCode);
 
-                // Execute sp_update_po_rcv_qty
-                Db.Database.ExecuteSqlRaw("EXEC sp_update_po_rcv_qty {0}", data.TransCode);
+                if (data.SrcTrans == 1)
+                {
+                    // Execute sp_update_po_rcv_qty
+                    Db.Database.ExecuteSqlRaw("EXEC sp_update_po_rcv_qty {0}", data.TransCode);
+                }
+                else
+                {
+                    // Execute sp_update_pr_rcv_qty
+                    Db.Database.ExecuteSqlRaw("EXEC sp_update_pr_rcv_qty {0}", data.TransCode);
+                }
 
                 transaction.Commit();
             }
@@ -419,7 +442,16 @@ namespace ERP_API.Domain.Services.Purchase
                     Db.SaveChanges();
 
                     // Execute sp_update_po_rcv_qty
-                    Db.Database.ExecuteSqlRaw("EXEC sp_update_po_rcv_qty {0}", data.TransCode);
+                    if (data.SrcTrans == 1)
+                    {
+                        // Execute sp_update_po_rcv_qty
+                        Db.Database.ExecuteSqlRaw("EXEC sp_update_po_rcv_qty {0}", data.TransCode);
+                    }
+                    else
+                    {
+                        // Execute sp_update_pr_rcv_qty
+                        Db.Database.ExecuteSqlRaw("EXEC sp_update_pr_rcv_qty {0}", data.TransCode);
+                    }
 
                     transaction.Commit();
                 }
@@ -440,7 +472,7 @@ namespace ERP_API.Domain.Services.Purchase
             return Db.PurchaseOrderHeaders.Any(x => x.Code == poCode && new[] { "V", "CLS" }.Contains(x.Mark));
         }
 
-        private bool IsQtyExcess(int srcTrans, string transCode, IEnumerable<PurchaseReceiveDetail> items, bool isUpdate)
+        private bool IsQtyExcess(int srcTrans, string transCode, IEnumerable<PurchaseReceiveDetail> items, string code)
         {
             var result = false;
             if (srcTrans == 1) // Purchase Order
@@ -448,7 +480,7 @@ namespace ERP_API.Domain.Services.Purchase
                 foreach (var item in items)
                 {
                     var dataPODetail = Db.PurchaseOrderDetails.FirstOrDefault(x => x.Code == transCode && x.ItemId == item.ItemId);
-                    if (!isUpdate)
+                    if (code == null)
                     {
                         var availableStock = dataPODetail.Qty - dataPODetail.QtyRcv;
                         if (item.Qty > availableStock)
@@ -458,8 +490,8 @@ namespace ERP_API.Domain.Services.Purchase
                     }
                     else
                     {
-                        var oldPOD = Db.PurchaseOrderDetails.FirstOrDefault(x => x.Code == transCode && x.ItemId == item.ItemId);
-                        var availableStock = dataPODetail.Qty - (dataPODetail.QtyRcv - oldPOD.Qty) ;
+                        var oldPRD = Db.PurchaseReceiveDetails.AsNoTracking().FirstOrDefault(x => x.Code == code && x.ItemId == item.ItemId);
+                        var availableStock = dataPODetail.Qty - (dataPODetail.QtyRcv - oldPRD.Qty) ;
                         if (item.Qty > availableStock)
                         {
                             result = true;
@@ -472,7 +504,7 @@ namespace ERP_API.Domain.Services.Purchase
                 foreach (var item in items)
                 {
                     var dataPRDetail = Db.PurchaseReturnDetails.FirstOrDefault(x => x.Code == transCode && x.ItemId == item.ItemId);
-                    if (!isUpdate)
+                    if (code == null)
                     {
                         var availableStock = dataPRDetail.Qty - dataPRDetail.QtyRcv ;
                         if (item.Qty > availableStock)
@@ -482,7 +514,7 @@ namespace ERP_API.Domain.Services.Purchase
                     }
                     else
                     {
-                        var oldPRD = Db.PurchaseReceiveDetails.FirstOrDefault(x => x.Code == transCode && x.ItemId == item.ItemId);
+                        var oldPRD = Db.PurchaseReceiveDetails.AsNoTracking().FirstOrDefault(x => x.Code == code && x.ItemId == item.ItemId);
                         var availableStock = dataPRDetail.Qty - (dataPRDetail.QtyRcv - oldPRD.Qty);
                         if (item.Qty > availableStock)
                         {
