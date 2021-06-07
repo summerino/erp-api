@@ -452,7 +452,7 @@ namespace ERP_API.Domain.Services.Purchase
                 var stock = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == item.WarehouseCode && x.ItemId == item.ItemId);
                 if (stock != null)
                 {
-                    if (code != null)
+                    if (code == null)
                     {
                         if (uom.IsBaseUnit)
                         {
