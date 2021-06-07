@@ -313,7 +313,7 @@ namespace ERP_API.Domain.Services.Sales
                     var dataSODetail = Db.SalesOrderDetails.FirstOrDefault(x => x.Code == transCode && x.ItemId == item.ItemId);
                     if (!isUpdate)
                     {
-                        var availableStock = dataSODetail.QtyDlv - dataSODetail.Qty;
+                        var availableStock = dataSODetail.Qty - dataSODetail.QtyDlv;
                         if (item.Qty > availableStock)
                         {
                             result = true;
@@ -322,7 +322,7 @@ namespace ERP_API.Domain.Services.Sales
                     else
                     {
                         var oldSOD = Db.SalesOrderDetails.FirstOrDefault(x => x.Code == transCode && x.ItemId == item.ItemId);
-                        var availableStock = (dataSODetail.QtyDlv - oldSOD.Qty) - dataSODetail.Qty;
+                        var availableStock = dataSODetail.Qty - (dataSODetail.QtyDlv - oldSOD.Qty);
                         if (item.Qty > availableStock)
                         {
                             result = true;
@@ -337,7 +337,7 @@ namespace ERP_API.Domain.Services.Sales
                     var dataSRDetail = Db.SalesReturnDetails.FirstOrDefault(x => x.Code == transCode && x.ItemId == item.ItemId);
                     if (!isUpdate)
                     {
-                        var availableStock = dataSRDetail.QtyDlv - dataSRDetail.Qty;
+                        var availableStock = dataSRDetail.Qty - dataSRDetail.QtyDlv;
                         if (item.Qty > availableStock)
                         {
                             result = true;
@@ -346,7 +346,7 @@ namespace ERP_API.Domain.Services.Sales
                     else
                     {
                         var oldSRD = Db.SalesReturnDetails.FirstOrDefault(x => x.Code == transCode && x.ItemId == item.ItemId);
-                        var availableStock = (dataSRDetail.QtyDlv - oldSRD.Qty) - dataSRDetail.Qty;
+                        var availableStock = dataSRDetail.Qty - (dataSRDetail.QtyDlv - oldSRD.Qty);
                         if (item.Qty > availableStock)
                         {
                             result = true;
