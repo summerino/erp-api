@@ -21,14 +21,12 @@ namespace ERP_API.Domain.Services.General
             string search)
         {
             var data = Db.VwCustomers.AsQueryable();
-
             if (!string.IsNullOrEmpty(search))
             {
                 data = data.Where(x =>
-                        x.Code.Contains(search) || x.Name.Contains(search) || x.TypeName.Contains(search) ||
+                        x.Code.Contains(search) || x.Initial.Contains(search) || x.Name.Contains(search) || x.TypeName.Contains(search) ||
                         x.Address1.Contains(search) || x.Phone.Contains(search) || x.CreditTerm.ToString() == search);
             }
-
             return data.ToDataSourceResult(skip, take, filter, sort);
         }
 
