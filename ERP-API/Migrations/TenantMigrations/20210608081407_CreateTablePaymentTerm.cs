@@ -960,6 +960,18 @@ END CATCH";
             migrationBuilder.DropTable(
                 name: "PaymentTerm",
                 schema: "General");
+
+            // Drop view General.vwPaymentTerm
+            var sql = @"DROP VIEW [General].[vwPaymentTerm]";
+            migrationBuilder.Sql(sql);
+
+			// Drop procedure dbo.sp_update_pr_rcv_qty
+			sql = @"DROP PROCEDURE [dbo].[sp_update_pr_rcv_qty]";
+            migrationBuilder.Sql(sql);
+
+			// Drop procedure dbo.sp_update_sr_dlv_qty
+			sql = @"DROP PROCEDURE [dbo].[sp_update_sr_dlv_qty]";
+            migrationBuilder.Sql(sql);
         }
-    }
+	}
 }
