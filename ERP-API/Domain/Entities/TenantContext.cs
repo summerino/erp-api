@@ -41,6 +41,8 @@ namespace ERP_API.Domain.Entities
         public DbSet<VwCustomerType> VwCustomerTypes { get; set; }
         public DbSet<Employee> Employees { get; set; }
         public DbSet<VwEmployee> VwEmployees { get; set; }
+        public DbSet<PaymentTerm> PaymentTerms { get; set; }
+        public DbSet<VwPaymentTerm> VwPaymentTerms { get; set; }
         public DbSet<Supplier> Suppliers { get; set; }
         public DbSet<VwSupplier> VwSuppliers { get; set; }
         public DbSet<SupplierType> SupplierTypes { get; set; }
@@ -235,6 +237,10 @@ namespace ERP_API.Domain.Entities
             modelBuilder.Entity<VwEmployee>()
                 .HasNoKey()
                 .ToView("vwEmployee", Schema.General);
+
+            modelBuilder.Entity<VwPaymentTerm>()
+                .HasNoKey()
+                .ToView("vwPaymentTerm", Schema.General);
 
             // Supplier entities
             //modelBuilder.Entity<Supplier>(entity =>
