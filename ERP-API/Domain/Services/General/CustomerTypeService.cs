@@ -106,9 +106,14 @@ namespace ERP_API.Domain.Services.General
                     return result;
                 }
 
-                data.IsActive = false;
-                data.UpdatedBy = userId;
-                data.UpdatedDate = DateTime.Now;
+                //Check if any customer already using this type
+                if (Db.Customers.Any(x=> x.TypeId == data.Id))
+                {
+                    result.Message = "Tidak bisa menghapus data tipe pelanggan karena telah digunakan pada data pelanggan.";
+                    return result;
+                }
+
+                Db.CustomerTypes.Remove(data);                
 
                 Db.SaveChanges();
             }

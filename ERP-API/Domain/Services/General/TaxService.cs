@@ -108,10 +108,13 @@ namespace ERP_API.Domain.Services.General
                     return result;
                 }
 
-                // Update data
-                data.IsActive = false;
-                data.UpdatedBy = userId;
-                data.UpdatedDate = DateTime.Now;
+                if (Db.Items.Any(x => x.SalesTaxId == data.Id) || Db.Items.Any(x => x.PurchaseTaxId == data.Id))
+                {
+                    result.Message = "Tidak bisa menghapus data tipe pajak karena telah digunakan pada data barang.";
+                    return result;
+                }
+
+                Db.Taxes.Remove(data);
 
                 Db.SaveChanges();
             }
