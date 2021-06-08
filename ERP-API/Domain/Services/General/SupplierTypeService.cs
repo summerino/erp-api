@@ -107,9 +107,13 @@ namespace ERP_API.Domain.Services.General
                     return result;
                 }
 
-                data.IsActive = false;
-                data.UpdatedBy = userId;
-                data.UpdatedDate = DateTime.Now;
+                if (Db.Suppliers.Any(x => x.TypeId == data.Id))
+                {
+                    result.Message = "Tidak bisa menghapus data tipe pemasok karena telah digunakan pada data pemasok.";
+                    return result;
+                }
+
+                Db.SupplierTypes.Remove(data);
 
                 Db.SaveChanges();
             }
