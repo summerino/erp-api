@@ -3,9 +3,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using ERP_API.Domain.Entities;
 using ERP_API.Domain.Services;
-using Microsoft.Extensions.Options;
 
 namespace ERP_API.Model.Auth
 {
@@ -40,7 +40,6 @@ namespace ERP_API.Model.Auth
                         .Any(x => x.IsActive && x.IsLoggedIn &&
                                   x.CatalogUserId.ToString() == currentUserId &&
                                   x.TokenId == _claim.KeyToken &&
-                                  x.IpAddress == _claim.IpAddress &&
                                   EF.Functions.DateDiffMonth(x.LastLogin, DateTime.Now) < _jwtConfig.TimeInMinute))
                 {
                     context.Succeed(requirement);

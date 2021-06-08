@@ -11,7 +11,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using ERP_API.Domain.Entities;
-using ERP_API.Domain.Interfaces;
 using ERP_API.Domain.Interfaces.Accounting;
 using ERP_API.Domain.Interfaces.Auth;
 using ERP_API.Domain.Interfaces.General;
@@ -186,6 +185,11 @@ namespace ERP_API
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, CatalogContext controlDbContext,
             IShardingService shardingService, IServiceProvider service­Provider)
         {
+            //app.UseForwardedHeaders(new ForwardedHeadersOptions
+            //{
+            //    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+            //});
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();

@@ -57,6 +57,6 @@ namespace ERP_API.Domain.Services
             _accessor.HttpContext?.Request?.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
         
         public string IpAddress =>
-            _accessor.HttpContext?.Connection?.RemoteIpAddress?.ToString();
+            _accessor.HttpContext?.Connection?.RemoteIpAddress?.MapToIPv4().ToString();
     }
 }
