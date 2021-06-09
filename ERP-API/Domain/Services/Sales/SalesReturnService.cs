@@ -213,6 +213,13 @@ namespace ERP_API.Domain.Services.Sales
                     return result;
                 }
 
+                // Checking mark header data
+                if (Db.SalesReturnHeaders.Any(x => x.Code == data.Code && x.Mark == "CMP"))
+                {
+                    result.Message = "Data pengiriman penjualan tidak bisa diubah karena status data sudah CMP.";
+                    return result;
+                }
+
                 // Checking receive qty is excess or not
                 if (IsQtyExcess(data.WarehouseCode ,data.ItemDetails, data.Code))
                 {
