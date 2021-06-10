@@ -136,6 +136,9 @@ namespace ERP_API.Domain.Entities
         public DbSet<VwSalesReturnDetail> VwSalesReturnDetails { get; set; }
         public DbSet<SalesReturnDetailExchDiffItem> SalesReturnDetailExchDiffItems { get; set; }
         public DbSet<VwSalesReturnDetailExchDiffItem> VwSalesReturnDetailExchDiffItems { get; set; }
+        public DbSet<VisitOrder> VisitOrders { get; set; }
+        public DbSet<VisitOrderCustomer> VisitOrderCustomers { get; set; }
+        public DbSet<VisitOrderInvoice> VisitOrderInvoices { get; set; }
         public DbSet<VisitPlanHeader> VisitPlanHeaders { get; set; }
         public DbSet<VisitPlanDetail> VisitPlanDetails { get; set; }
         public DbSet<VisitPlanDetailCustomer> VisitPlanDetailCustomers { get; set; }
@@ -566,6 +569,22 @@ namespace ERP_API.Domain.Entities
             modelBuilder.Entity<VwSalesReturnDetailExchDiffItem>()
                 .HasNoKey()
                 .ToView("vwSalesReturnDetailExchDiffItem", Schema.Sales);
+
+            // Visit Order entities
+            modelBuilder.Entity<VisitOrder>(entity =>
+                entity.Property(e => e.Mark)
+                    .IsRequired()
+            );
+
+            modelBuilder.Entity<VisitOrderCustomer>(entity =>
+                entity.Property(e => e.Code)
+                    .IsRequired()
+            );
+
+            modelBuilder.Entity<VisitOrderInvoice>(entity =>
+                entity.Property(e => e.Code)
+                    .IsRequired()
+            );
 
             // Visit Plan entities
             modelBuilder.Entity<VisitPlanHeader>(entity =>
