@@ -228,9 +228,13 @@ namespace ERP_API.Domain.Entities.Inventory
         public string UomBuyName { get; set; }
 
         public decimal QtyOnHand { get; set; }
+        
+        public double SellQtyAvailable { get; set; }
 
+        public double BuyQtyAvailable { get; set; }
+        
         public string CreatedInitial { get; set; }
-
+        
         public string UpdatedInitial { get; set; }
     }
 }
