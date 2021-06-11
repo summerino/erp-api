@@ -145,6 +145,7 @@ namespace ERP_API
             services.AddScoped<IVehicleTypeService, VehicleTypeService>();
             services.AddScoped<ICurrencyService, CurrencyService>();
             services.AddScoped<IItemGroupService, ItemGroupService>();
+            services.AddScoped<IPaymentTermService, PaymentTermService>();
 
             // Inventory services
             services.AddScoped<IAdjustmentService, AdjustmentService>();
@@ -173,6 +174,7 @@ namespace ERP_API
             services.AddScoped<IAreaService, AreaService>();
             services.AddScoped<ISalesReturnService, SalesReturnService>();
             services.AddScoped<IDeliveryPlanService, DeliveryPlanService>();
+            services.AddScoped<IPromoService, PromoService>();
 
             // System Management services
             services.AddScoped<IMenuService, MenuService>();
