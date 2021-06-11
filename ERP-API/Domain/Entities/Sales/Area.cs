@@ -1,8 +1,6 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using ERP_API.Domain.Entities.Core;
-using ERP_API.Domain.Entities.General;
 
 namespace ERP_API.Domain.Entities.Sales
 {

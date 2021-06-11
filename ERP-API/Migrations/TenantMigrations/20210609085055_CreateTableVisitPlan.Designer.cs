@@ -4,14 +4,16 @@ using ERP_API.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ERP_API.Migrations.TenantMigrations
 {
     [DbContext(typeof(TenantContext))]
-    partial class TenantContextModelSnapshot : ModelSnapshot
+    [Migration("20210609085055_CreateTableVisitPlan")]
+    partial class CreateTableVisitPlan
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -6152,123 +6154,6 @@ namespace ERP_API.Migrations.TenantMigrations
                     b.HasKey("Id");
 
                     b.ToTable("SalesmanScheduleCustomer", "Sales");
-                });
-
-            modelBuilder.Entity("ERP_API.Domain.Entities.Sales.VisitOrder", b =>
-                {
-                    b.Property<string>("Code")
-                        .HasMaxLength(17)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(17)");
-
-                    b.Property<int?>("ApprovedBy")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("ApprovedDate")
-                        .HasColumnType("datetime");
-
-                    b.Property<int>("CreatedBy")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime");
-
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("date");
-
-                    b.Property<string>("Mark")
-                        .IsRequired()
-                        .HasMaxLength(3)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(3)");
-
-                    b.Property<string>("Notes")
-                        .HasMaxLength(256)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(256)");
-
-                    b.Property<long>("SalesmanId")
-                        .HasColumnType("bigint");
-
-                    b.Property<int>("UpdatedBy")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("datetime");
-
-                    b.Property<string>("VisitPlanCode")
-                        .HasMaxLength(17)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(17)");
-
-                    b.HasKey("Code");
-
-                    b.ToTable("VisitOrder", "Sales");
-                });
-
-            modelBuilder.Entity("ERP_API.Domain.Entities.Sales.VisitOrderCustomer", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasMaxLength(17)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(17)");
-
-                    b.Property<string>("CustCode")
-                        .IsRequired()
-                        .HasMaxLength(8)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(8)");
-
-                    b.Property<long?>("ReplacingForSalesmanId")
-                        .HasColumnType("bigint");
-
-                    b.Property<bool>("Visited")
-                        .HasColumnType("bit");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("VisitOrderCustomer", "Sales");
-                });
-
-            modelBuilder.Entity("ERP_API.Domain.Entities.Sales.VisitOrderInvoice", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasMaxLength(17)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(17)");
-
-                    b.Property<bool>("Collecting")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("FailCollect")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("InvCode")
-                        .IsRequired()
-                        .HasMaxLength(17)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(17)");
-
-                    b.Property<string>("NotesFailCollect")
-                        .HasMaxLength(256)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(256)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("VisitOrderInvoice", "Sales");
                 });
 
             modelBuilder.Entity("ERP_API.Domain.Entities.Sales.VisitPlanDetail", b =>

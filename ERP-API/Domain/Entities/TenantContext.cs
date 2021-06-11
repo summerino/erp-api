@@ -124,6 +124,8 @@ namespace ERP_API.Domain.Entities
         public DbSet<SalesInvoiceDetail> SalesInvoiceDetails { get; set; }
         public DbSet<SalesmanGroup> SalesmanGroups { get; set; }
         public DbSet<VwSalesmanGroup> VwSalesmanGroups { get; set; }
+        public DbSet<SalesmanSchedule> SalesmanSchedules { get; set; }
+        public DbSet<SalesmanScheduleCustomer> SalesmanScheduleCustomers { get; set; }
         public DbSet<SalesOrderHeader> SalesOrderHeaders { get; set; }
         public DbSet<VwSalesOrderHeader> VwSalesOrderHeaders { get; set; }
         public DbSet<SalesOrderDetail> SalesOrderDetails { get; set; }
@@ -134,6 +136,12 @@ namespace ERP_API.Domain.Entities
         public DbSet<VwSalesReturnDetail> VwSalesReturnDetails { get; set; }
         public DbSet<SalesReturnDetailExchDiffItem> SalesReturnDetailExchDiffItems { get; set; }
         public DbSet<VwSalesReturnDetailExchDiffItem> VwSalesReturnDetailExchDiffItems { get; set; }
+        public DbSet<VisitOrder> VisitOrders { get; set; }
+        public DbSet<VisitOrderCustomer> VisitOrderCustomers { get; set; }
+        public DbSet<VisitOrderInvoice> VisitOrderInvoices { get; set; }
+        public DbSet<VisitPlanHeader> VisitPlanHeaders { get; set; }
+        public DbSet<VisitPlanDetail> VisitPlanDetails { get; set; }
+        public DbSet<VisitPlanDetailCustomer> VisitPlanDetailCustomers { get; set; }
 
         // System Management Entities
         public DbSet<SystemManagement.Action> Actions { get; set; }
@@ -553,11 +561,38 @@ namespace ERP_API.Domain.Entities
                 .HasNoKey()
                 .ToView("vwSalesReturnDetail", Schema.Sales);
 
+            modelBuilder.Entity<SalesReturnDetailExchDiffItem>(entity =>
+                entity.Property(e => e.Code)
+                    .IsRequired()
+            );
+
             modelBuilder.Entity<VwSalesReturnDetailExchDiffItem>()
                 .HasNoKey()
                 .ToView("vwSalesReturnDetailExchDiffItem", Schema.Sales);
-            
-            modelBuilder.Entity<SalesReturnDetailExchDiffItem>(entity =>
+
+            // Visit Order entities
+            modelBuilder.Entity<VisitOrder>(entity =>
+                entity.Property(e => e.Mark)
+                    .IsRequired()
+            );
+
+            modelBuilder.Entity<VisitOrderCustomer>(entity =>
+                entity.Property(e => e.Code)
+                    .IsRequired()
+            );
+
+            modelBuilder.Entity<VisitOrderInvoice>(entity =>
+                entity.Property(e => e.Code)
+                    .IsRequired()
+            );
+
+            // Visit Plan entities
+            modelBuilder.Entity<VisitPlanHeader>(entity =>
+                entity.Property(e => e.Mark)
+                    .IsRequired()
+            );
+
+            modelBuilder.Entity<VisitPlanDetail>(entity =>
                 entity.Property(e => e.Code)
                     .IsRequired()
             );
