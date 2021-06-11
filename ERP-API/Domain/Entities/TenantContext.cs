@@ -194,52 +194,22 @@ namespace ERP_API.Domain.Entities
                 property.SetIsUnicode(false);
             }
 
+            // Disable conventions--warning: this uses internal code and may break on any EF release
+            //((Microsoft.EntityFrameworkCore.Metadata.Internal.Model)modelBuilder.Model).ConventionDispatcher.StartBatch();
+
+            //foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+            //{
+            //    foreach (var index in entityType.GetIndexes().ToList())
+            //    {
+            //        // Logic to decide whether to remove the index here...
+            //        entityType.RemoveIndex(index.Properties);
+            //    }
+            //}
+
             // Core entities
             modelBuilder.Entity<BaseNewCodeEntity>()
                 .HasNoKey()
                 .ToTable("BaseNewCodeEntity", t => t.ExcludeFromMigrations());
-
-            // Customer entities
-            //modelBuilder.Entity<Customer>(entity =>
-            //{
-            //    entity.HasOne(d => d.Area1)
-            //        .WithMany(p => p.CustomerAreaId1Navigations)
-            //        .HasForeignKey(d => d.AreaId1)
-            //        .OnDelete(DeleteBehavior.NoAction);
-
-            //    entity.HasOne(d => d.Area2)
-            //        .WithMany(p => p.CustomerAreaId2Navigations)
-            //        .HasForeignKey(d => d.AreaId2)
-            //        .OnDelete(DeleteBehavior.NoAction);
-
-            //    entity.HasOne(d => d.Area3)
-            //        .WithMany(p => p.CustomerAreaId3Navigations)
-            //        .HasForeignKey(d => d.AreaId3)
-            //        .OnDelete(DeleteBehavior.NoAction);
-
-            //    entity.HasOne(d => d.Area4)
-            //        .WithMany(p => p.CustomerAreaId4Navigations)
-            //        .HasForeignKey(d => d.AreaId4)
-            //        .OnDelete(DeleteBehavior.NoAction);
-
-            //    entity.HasOne(d => d.Area5)
-            //        .WithMany(p => p.CustomerAreaId5Navigations)
-            //        .HasForeignKey(d => d.AreaId5)
-            //        .OnDelete(DeleteBehavior.NoAction);
-            //});
-
-            modelBuilder.Entity<VwCustomer>()
-                .HasNoKey()
-                .ToView("vwCustomer", Schema.General);
-
-            modelBuilder.Entity<CustomerAddress>(entity =>
-                entity.Property(e => e.Code)
-                    .IsRequired()
-            );
-
-            modelBuilder.Entity<VwCustomerType>()
-                .HasNoKey()
-                .ToView("vwCustomerType", Schema.General);
 
             // General entities
             modelBuilder.Entity<VwEmployee>()
@@ -250,12 +220,76 @@ namespace ERP_API.Domain.Entities
                 .HasNoKey()
                 .ToView("vwPaymentTerm", Schema.General);
 
+            // Customer entities
+            modelBuilder.Entity<Customer>(entity =>
+            {
+                entity.HasOne<CustomerType>()
+                    .WithMany()
+                    .HasForeignKey(d => d.TypeId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<CustomerAddress>()
+                    .WithMany()
+                    .HasForeignKey(d => d.BillingAddressId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<CustomerAddress>()
+                    .WithMany()
+                    .HasForeignKey(d => d.ShippingAddressId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Area>()
+                    .WithMany()
+                    .HasForeignKey(d => d.AreaId1)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Area>()
+                    .WithMany()
+                    .HasForeignKey(d => d.AreaId2)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Area>()
+                    .WithMany()
+                    .HasForeignKey(d => d.AreaId3)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Area>()
+                    .WithMany()
+                    .HasForeignKey(d => d.AreaId4)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Area>()
+                    .WithMany()
+                    .HasForeignKey(d => d.AreaId5)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            modelBuilder.Entity<VwCustomer>()
+                .HasNoKey()
+                .ToView("vwCustomer", Schema.General);
+
+            modelBuilder.Entity<CustomerAddress>(entity =>
+            {
+                entity.Property(e => e.Code)
+                    .IsRequired();
+
+                entity.HasOne<Customer>()
+                    .WithMany()
+                    .HasForeignKey(d => d.Code)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            modelBuilder.Entity<VwCustomerType>()
+                .HasNoKey()
+                .ToView("vwCustomerType", Schema.General);
+
             // Supplier entities
-            //modelBuilder.Entity<Supplier>(entity =>
-            //    entity.HasOne<SupplierType>()
-            //        .WithMany()
-            //        .HasForeignKey(d => d.TypeId)
-            //);
+            modelBuilder.Entity<Supplier>(entity =>
+                entity.HasOne<SupplierType>()
+                    .WithMany()
+                    .HasForeignKey(d => d.TypeId)
+                    .OnDelete(DeleteBehavior.NoAction)
+            );
 
             modelBuilder.Entity<VwSupplier>()
                 .HasNoKey()
@@ -269,6 +303,20 @@ namespace ERP_API.Domain.Entities
                 .HasNoKey()
                 .ToView("vwTax", Schema.General);
 
+            // Vehicle entities
+            modelBuilder.Entity<Vehicle>(entity =>
+            {
+                entity.HasOne<VehicleType>()
+                    .WithMany()
+                    .HasForeignKey(d => d.TypeId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Employee>()
+                    .WithMany()
+                    .HasForeignKey(d => d.DriverId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
             modelBuilder.Entity<VwVehicle>()
                 .HasNoKey()
                 .ToView("vwVehicle", Schema.General);
@@ -278,72 +326,246 @@ namespace ERP_API.Domain.Entities
                 .ToView("vwVehicleType", Schema.General);
 
             // Inventory entities
-            modelBuilder.Entity<VwItem>()
-                .HasNoKey()
-                .ToView("vwItem", Schema.Inventory);
-
-            modelBuilder.Entity<VwItemCategory>()
-                .HasNoKey()
-                .ToView("vwItemCategory", Schema.Inventory);
-
-            modelBuilder.Entity<VwItemGroup>()
-                .HasNoKey()
-                .ToView("vwItemGroup", Schema.Inventory);
-
-            modelBuilder.Entity<VwWarehouse>()
-                .HasNoKey()
-                .ToView("vwWarehouse", Schema.Inventory);
-
-            modelBuilder.Entity<VwWarehouseQuantity>()
-                .HasNoKey()
-                .ToView("vwWarehouseQuantity", Schema.Inventory);
-
-            modelBuilder.Entity<VwUoM>()
-                .HasNoKey()
-                .ToView("vwUoM", Schema.Inventory);
-
             // Adjustment entities
             modelBuilder.Entity<AdjustmentHeader>(entity =>
+            {
                 entity.Property(e => e.Mark)
-                    .IsRequired()
-            );
+                    .IsRequired();
+
+                entity.HasOne<Warehouse>()
+                    .WithMany()
+                    .HasForeignKey(d => d.WarehouseCode)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
 
             modelBuilder.Entity<VwAdjustmentHeader>()
                 .HasNoKey()
                 .ToView("vwAdjustmentHeader", Schema.Inventory);
 
             modelBuilder.Entity<AdjustmentDetail>(entity =>
+            {
                 entity.Property(e => e.Code)
-                    .IsRequired()
-            );
+                    .IsRequired();
+
+                entity.HasOne<AdjustmentHeader>()
+                    .WithMany()
+                    .HasForeignKey(d => d.Code)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Item>()
+                    .WithMany()
+                    .HasForeignKey(d => d.ItemId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<UoM>()
+                    .WithMany()
+                    .HasForeignKey(d => d.UomId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<UoMConversion>()
+                    .WithMany()
+                    .HasForeignKey(d => d.UnitId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
 
             modelBuilder.Entity<VwAdjustmentDetail>()
                 .HasNoKey()
                 .ToView("vwAdjustmentDetail", Schema.Inventory);
 
+            modelBuilder.Entity<AdjustmentDetailDiffUnit>(entity =>
+            {
+                //entity.HasOne<AdjustmentDetail>()
+                //    .WithMany()
+                //    .HasForeignKey(d => d.AdjustmentDetailId)
+                //    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<UoMConversion>()
+                    .WithMany()
+                    .HasForeignKey(d => d.UnitId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
             modelBuilder.Entity<VwAdjustmentItem>()
                 .HasNoKey()
                 .ToView("vwAdjustmentItem", Schema.Inventory);
 
-            // Transfer Stock entities
-            modelBuilder.Entity<TransferStockHeader> (entity =>
-                entity.Property(e => e.Mark)
-                    .IsRequired()
+            // Item entities
+            modelBuilder.Entity<Item>(entity =>
+            {
+                entity.HasOne<ItemCategory>()
+                    .WithMany()
+                    .HasForeignKey(d => d.CategoryId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<UoM>()
+                    .WithMany()
+                    .HasForeignKey(d => d.UomId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<UoMConversion>()
+                    .WithMany()
+                    .HasForeignKey(d => d.UomSellId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<UoMConversion>()
+                    .WithMany()
+                    .HasForeignKey(d => d.UomBuyId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Tax>()
+                    .WithMany()
+                    .HasForeignKey(d => d.SalesTaxId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Tax>()
+                    .WithMany()
+                    .HasForeignKey(d => d.PurchaseTaxId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            modelBuilder.Entity<VwItem>()
+                .HasNoKey()
+                .ToView("vwItem", Schema.Inventory);
+
+            // Item Category entities
+            modelBuilder.Entity<ItemCategory>(entity =>
+                entity.HasOne<ItemGroup>()
+                    .WithMany()
+                    .HasForeignKey(d => d.GroupId)
+                    .OnDelete(DeleteBehavior.NoAction)
             );
+
+            modelBuilder.Entity<VwItemCategory>()
+                .HasNoKey()
+                .ToView("vwItemCategory", Schema.Inventory);
+
+            // Item Group entities
+            modelBuilder.Entity<VwItemGroup>()
+                .HasNoKey()
+                .ToView("vwItemGroup", Schema.Inventory);
+
+            modelBuilder.Entity<ItemGroupSubGroup>(entity =>
+                entity.HasOne<ItemGroup>()
+                    .WithMany()
+                    .HasForeignKey(d => d.ItemGroupId)
+                    .OnDelete(DeleteBehavior.NoAction)
+            );
+
+            // Stock Mutation entities
+            modelBuilder.Entity<StockMutation>(entity =>
+            {
+                entity.HasOne<Warehouse>()
+                    .WithMany()
+                    .HasForeignKey(d => d.WarehouseCode)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Item>()
+                    .WithMany()
+                    .HasForeignKey(d => d.ItemId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<UoM>()
+                    .WithMany()
+                    .HasForeignKey(d => d.UomId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<UoMConversion>()
+                    .WithMany()
+                    .HasForeignKey(d => d.UnitId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<UoMConversion>()
+                    .WithMany()
+                    .HasForeignKey(d => d.BaseUnit)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            // Transfer Stock entities
+            modelBuilder.Entity<TransferStockHeader>(entity =>
+            {
+                entity.Property(e => e.Mark)
+                    .IsRequired();
+
+                entity.HasOne<Warehouse>()
+                    .WithMany()
+                    .HasForeignKey(d => d.WarehouseCodeFrom)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Warehouse>()
+                    .WithMany()
+                    .HasForeignKey(d => d.WarehouseCodeTo)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
 
             modelBuilder.Entity<VwTransferStockHeader>()
                 .HasNoKey()
                 .ToView("vwTransferStockHeader", Schema.Inventory);
 
             modelBuilder.Entity<TransferStockDetail>(entity =>
+            {
                 entity.Property(e => e.Code)
-                    .IsRequired()
-            );
+                    .IsRequired();
+
+                entity.HasOne<TransferStockHeader>()
+                    .WithMany()
+                    .HasForeignKey(d => d.Code)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Item>()
+                    .WithMany()
+                    .HasForeignKey(d => d.ItemId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<UoM>()
+                    .WithMany()
+                    .HasForeignKey(d => d.UomId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<UoMConversion>()
+                    .WithMany()
+                    .HasForeignKey(d => d.UnitId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
 
             modelBuilder.Entity<VwTransferStockDetail>()
                 .HasNoKey()
                 .ToView("vwTransferStockDetail", Schema.Inventory);
 
+            // UoM entities
+            modelBuilder.Entity<VwUoM>()
+                .HasNoKey()
+                .ToView("vwUoM", Schema.Inventory);
+
+            modelBuilder.Entity<UoMConversion>(entity =>
+                entity.HasOne<UoM>()
+                    .WithMany()
+                    .HasForeignKey(d => d.UomId)
+                    .OnDelete(DeleteBehavior.NoAction)
+            );
+
+            // Warehouse entities
+            modelBuilder.Entity<VwWarehouse>()
+                .HasNoKey()
+                .ToView("vwWarehouse", Schema.Inventory);
+
+            modelBuilder.Entity<WarehouseQuantity>(entity =>
+            {
+                entity.HasOne<Warehouse>()
+                    .WithMany()
+                    .HasForeignKey(d => d.WarehouseCode)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Item>()
+                    .WithMany()
+                    .HasForeignKey(d => d.ItemId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            modelBuilder.Entity<VwWarehouseQuantity>()
+                .HasNoKey()
+                .ToView("vwWarehouseQuantity", Schema.Inventory);
+
+            // Purchase entities
             // Debit Memo entities
             modelBuilder.Entity<DebitMemo>(entity =>
                 entity.Property(e => e.Mark)
@@ -434,6 +656,7 @@ namespace ERP_API.Domain.Entities
                 .HasNoKey()
                 .ToView("vwPurchaseReturnDetail", Schema.Purchasing);
 
+            // Sales entities
             // Area entities
             modelBuilder.Entity<VwArea>()
                 .HasNoKey()
@@ -451,23 +674,76 @@ namespace ERP_API.Domain.Entities
 
             // Delivery Plan entities
             modelBuilder.Entity<DeliveryPlanHeader>(entity =>
+            {
                 entity.Property(e => e.Mark)
-                    .IsRequired()
-            );
+                    .IsRequired();
+
+                entity.HasOne<Vehicle>()
+                    .WithMany()
+                    .HasForeignKey(d => d.VehicleId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Employee>()
+                    .WithMany()
+                    .HasForeignKey(d => d.DriverId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Warehouse>()
+                    .WithMany()
+                    .HasForeignKey(d => d.WarehouseCode)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
 
             modelBuilder.Entity<VwDeliveryPlanHeader>()
                 .HasNoKey()
                 .ToView("vwDeliveryPlanHeader", Schema.Sales);
 
             modelBuilder.Entity<DeliveryPlanDetail>(entity =>
+            {
                 entity.Property(e => e.Code)
-                    .IsRequired()
-            );
+                    .IsRequired();
+
+                entity.HasOne<DeliveryPlanHeader>()
+                    .WithMany()
+                    .HasForeignKey(d => d.Code)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
 
             modelBuilder.Entity<DeliveryPlanUndeliveredItem>(entity =>
+            {
                 entity.Property(e => e.Code)
-                    .IsRequired()
-            );
+                    .IsRequired();
+
+                entity.HasOne<DeliveryPlanHeader>()
+                    .WithMany()
+                    .HasForeignKey(d => d.Code)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<DeliveryPlanDetail>()
+                    .WithMany()
+                    .HasForeignKey(d => d.DlvPlanDetailId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Item>()
+                    .WithMany()
+                    .HasForeignKey(d => d.ItemId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<UoM>()
+                    .WithMany()
+                    .HasForeignKey(d => d.UomId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<UoMConversion>()
+                    .WithMany()
+                    .HasForeignKey(d => d.UnitId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Warehouse>()
+                    .WithMany()
+                    .HasForeignKey(d => d.WarehouseCode)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
 
             // Promo entities
             modelBuilder.Entity<PromoHeader>(entity =>
@@ -598,13 +874,73 @@ namespace ERP_API.Domain.Entities
             );
 
             // System Management entities
-            modelBuilder.Entity<VwUser>()
-                .HasNoKey()
-                .ToView("vwUser", Schema.SystemManagement);
+            // Menu entities
+            modelBuilder.Entity<MenuAction>(entity =>
+            {
+                entity.HasOne<Menu>()
+                    .WithMany()
+                    .HasForeignKey(d => d.MenuId)
+                    .OnDelete(DeleteBehavior.NoAction);
 
+                entity.HasOne<SystemManagement.Action>()
+                    .WithMany()
+                    .HasForeignKey(d => d.ActionId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            // Role entities
             modelBuilder.Entity<VwRole>()
                 .HasNoKey()
                 .ToView("vwRole", Schema.SystemManagement);
+
+            modelBuilder.Entity<RoleMenu>(entity =>
+            {
+                entity.HasOne<Role>()
+                    .WithMany()
+                    .HasForeignKey(d => d.RoleId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Menu>()
+                    .WithMany()
+                    .HasForeignKey(d => d.MenuId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            modelBuilder.Entity<RoleMenuAction>(entity =>
+            {
+                entity.HasOne<Role>()
+                    .WithMany()
+                    .HasForeignKey(d => d.RoleId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Menu>()
+                    .WithMany()
+                    .HasForeignKey(d => d.MenuId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<SystemManagement.Action>()
+                    .WithMany()
+                    .HasForeignKey(d => d.ActionId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            // User entities
+            modelBuilder.Entity<User>(entity =>
+            {
+                entity.HasOne<Role>()
+                    .WithMany()
+                    .HasForeignKey(d => d.RoleId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Employee>()
+                    .WithMany()
+                    .HasForeignKey(d => d.EmployeeId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            modelBuilder.Entity<VwUser>()
+                .HasNoKey()
+                .ToView("vwUser", Schema.SystemManagement);
         }
     }
 }

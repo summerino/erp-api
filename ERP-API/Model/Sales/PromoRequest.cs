@@ -15,7 +15,7 @@ namespace ERP_API.Model.Sales
     {
         public IEnumerable<PromoDetailTier> PromoTierList { get; set; }
 
-        public string SaleUnit { get; set; }
+        public int? SaleUnit { get; set; }
 
         public bool ApplyToAllUnit { get; set; }
 

@@ -29,14 +29,24 @@ namespace ERP_API.Domain.Entities.Inventory
     public class VwAdjustmentHeader : BaseEntityWithMarkAndApproved
     {
         public string Code { get; set; }
+
         public DateTime Date { get; set; }
+
         public short Type { get; set; }
+
         public string WarehouseCode { get; set; }
+
         public string Notes { get; set; }
+
+
         public string WarehouseInitial { get; set; }
+
         public string CreatedInitial { get; set; }
+
         public string UpdatedInitial { get; set; }
+
         public string ApprovedInitial { get; set; }
+
         public string Status { get; set; }
     }
     
@@ -47,7 +57,7 @@ namespace ERP_API.Domain.Entities.Inventory
         {
             DifferentUnits = new HashSet<AdjustmentDetailDiffUnit>();
         }
-        [Key]
+
         public long Id { get; set; }
 
         [StringLength(17)]
@@ -81,21 +91,9 @@ namespace ERP_API.Domain.Entities.Inventory
 
         [StringLength(256)]
         public string Notes { get; set; }
+
+
         public IEnumerable<AdjustmentDetailDiffUnit> DifferentUnits { get; set; }
-    }
-
-    [Table("AdjustmentDetailDiffUnit", Schema = Schema.Inventory)]
-    public class AdjustmentDetailDiffUnit
-    {
-        [Key]
-        public long Id { get; set; }
-
-        public long AdjustmentDetailId { get; set; }
-
-        public int UnitId { get; set; }
-
-        [Column(TypeName = "decimal(18, 2)")]
-        public decimal QtyAdjust { get; set; }
     }
 
     public class VwAdjustmentDetail
@@ -132,6 +130,19 @@ namespace ERP_API.Domain.Entities.Inventory
         public decimal Different { get; set; }
 
         public string ItemName { get; set; }
+    }
+
+    [Table("AdjustmentDetailDiffUnit", Schema = Schema.Inventory)]
+    public class AdjustmentDetailDiffUnit
+    {
+        public long Id { get; set; }
+
+        public long AdjustmentDetailId { get; set; }
+
+        public int UnitId { get; set; }
+
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal QtyAdjust { get; set; }
     }
 
     public class VwAdjustmentItem : BaseEntityWithActive
@@ -263,5 +274,4 @@ namespace ERP_API.Domain.Entities.Inventory
         public decimal QtyOnHand { get; set; }
         public string WarehouseCode { get; set; }
     }
-
 }
