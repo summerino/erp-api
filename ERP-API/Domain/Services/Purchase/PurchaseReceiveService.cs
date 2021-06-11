@@ -453,6 +453,24 @@ namespace ERP_API.Domain.Services.Purchase
                         Db.Database.ExecuteSqlRaw("EXEC sp_update_pr_rcv_qty {0}", data.TransCode);
                     }
 
+                    // update stock in warehouse
+                    var detailData = Db.PurchaseReceiveDetails.Where(x => x.Code == data.Code).ToList();
+                    foreach (var item in detailData)
+                    {
+                        var stockMRcv = Db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == item.Id);
+                        var stockMPo = Db.StockMutations.FirstOrDefault(x => x.RefCode1 == stockMRcv.RefCode2);
+                        var wqItemRcv = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == stockMRcv.WarehouseCode && x.ItemId == stockMRcv.ItemId);
+                        var wqItemPo = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == stockMPo.WarehouseCode && x.ItemId == stockMPo.ItemId);
+
+                        wqItemRcv.QtyOnHand -= stockMRcv.BaseQty;
+                        wqItemPo.QtyOnIndent += stockMRcv.BaseQty;
+
+                        Db.WarehouseQuantities.Update(wqItemRcv);
+                        Db.WarehouseQuantities.Update(wqItemPo);
+
+                        Db.StockMutations.Remove(stockMRcv);
+                        Db.SaveChanges();
+                    }
                     transaction.Commit();
                 }
                 catch (Exception ex)
