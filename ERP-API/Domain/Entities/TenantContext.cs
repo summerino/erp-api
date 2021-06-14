@@ -119,6 +119,7 @@ namespace ERP_API.Domain.Entities
         public DbSet<VwSalesDeliveryHeader> VwSalesDeliveryHeaders { get; set; }
         public DbSet<SalesDeliveryDetail> SalesDeliveryDetails { get; set; }
         public DbSet<VwSalesDeliveryDetail> VwSalesDeliveryDetails { get; set; }
+        public DbSet<SalesDeliveryDetailFreeGood> SalesDeliveryDetailFreeGoods { get; set; }
         public DbSet<SalesInvoiceHeader> SalesInvoiceHeaders { get; set; }
         public DbSet<VwSalesInvoiceHeader> VwSalesInvoiceHeaders { get; set; }
         public DbSet<SalesInvoiceDetail> SalesInvoiceDetails { get; set; }
@@ -130,6 +131,7 @@ namespace ERP_API.Domain.Entities
         public DbSet<VwSalesOrderHeader> VwSalesOrderHeaders { get; set; }
         public DbSet<SalesOrderDetail> SalesOrderDetails { get; set; }
         public DbSet<VwSalesOrderDetail> VwSalesOrderDetails { get; set; }
+        public DbSet<SalesOrderDetailFreeGood> SalesOrderDetailFreeGoods { get; set; }
         public DbSet<SalesReturnHeader> SalesReturnHeaders { get; set; }
         public DbSet<VwSalesReturnHeader> VwSalesReturnHeaders { get; set; }
         public DbSet<SalesReturnDetail> SalesReturnDetails { get; set; }
@@ -212,10 +214,19 @@ namespace ERP_API.Domain.Entities
                 .ToTable("BaseNewCodeEntity", t => t.ExcludeFromMigrations());
 
             // General entities
+            // Employee entities
+            modelBuilder.Entity<Employee>(entity =>
+                entity.HasOne<SalesmanGroup>()
+                    .WithMany()
+                    .HasForeignKey(d => d.SalesGroupId)
+                    .OnDelete(DeleteBehavior.NoAction)
+            );
+
             modelBuilder.Entity<VwEmployee>()
                 .HasNoKey()
                 .ToView("vwEmployee", Schema.General);
 
+            // Payment Term entities
             modelBuilder.Entity<VwPaymentTerm>()
                 .HasNoKey()
                 .ToView("vwPaymentTerm", Schema.General);
@@ -779,6 +790,11 @@ namespace ERP_API.Domain.Entities
                 .HasNoKey()
                 .ToView("vwSalesDeliveryDetail", Schema.Sales);
 
+            modelBuilder.Entity<SalesDeliveryDetailFreeGood>(entity =>
+                entity.Property(e => e.Code)
+                    .IsRequired()
+            );
+
             // Sales Invoice entities
             modelBuilder.Entity<SalesInvoiceHeader>(entity =>
                 entity.Property(e => e.Mark)
@@ -817,6 +833,11 @@ namespace ERP_API.Domain.Entities
             modelBuilder.Entity<VwSalesOrderDetail>()
                 .HasNoKey()
                 .ToView("vwSalesOrderDetail", Schema.Sales);
+
+            modelBuilder.Entity<SalesOrderDetailFreeGood>(entity =>
+                entity.Property(e => e.Code)
+                    .IsRequired()
+            );
 
             // Sales Return entities
             modelBuilder.Entity<SalesReturnHeader>(entity =>

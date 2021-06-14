@@ -266,4 +266,39 @@ namespace ERP_API.Domain.Entities.Sales
         
         public string UnitName { get; set; }
     }
+
+    [Table("SalesOrderDetailFreeGood", Schema = Schema.Sales)]
+    public class SalesOrderDetailFreeGood
+    {
+        public long Id { get; set; }
+
+        [StringLength(17)]
+        public string Code { get; set; }
+
+        public long OrderDetailId { get; set; }
+
+        public short LineNo { get; set; }
+
+        [Required]
+        [StringLength(17)]
+        public string PromoCode { get; set; }
+
+        public int ItemId { get; set; }
+
+        public int UomId { get; set; }
+
+        public int UnitId { get; set; }
+
+        [Column(TypeName = "decimal(19, 6)")]
+        public decimal Qty { get; set; }
+
+        [Column(TypeName = "decimal(19, 6)")]
+        public decimal QtyClosed { get; set; }
+
+        [Column(TypeName = "decimal(19, 6)")]
+        public decimal UnitPrice { get; set; }
+
+        [StringLength(6)]
+        public string CoaCode { get; set; }
+    }
 }

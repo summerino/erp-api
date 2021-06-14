@@ -16,6 +16,8 @@ namespace ERP_API.Domain.Entities.General
 
         public short Type { get; set; }
 
+        public int? SalesGroupId { get; set; }
+
         [Required]
         [StringLength(50)]
         public string FirstName { get; set; }
@@ -46,10 +48,6 @@ namespace ERP_API.Domain.Entities.General
 
         [StringLength(30)]
         public string Phone { get; set; }
-
-        [StringLength(50)]
-        [Column(TypeName = "nvarchar")]
-        public string Username { get; set; }
     }
 
     public class VwEmployee : BaseEntityWithActive
@@ -59,6 +57,8 @@ namespace ERP_API.Domain.Entities.General
         public string Initial { get; set; }
 
         public short Type { get; set; }
+
+        public int? SalesGroupId { get; set; }
 
         public string FirstName { get; set; }
 
@@ -81,8 +81,6 @@ namespace ERP_API.Domain.Entities.General
         public string Address2 { get; set; }
 
         public string Phone { get; set; }
-
-        public string Username { get; set; }
 
 
         public string UpdatedInitial { get; set; }
