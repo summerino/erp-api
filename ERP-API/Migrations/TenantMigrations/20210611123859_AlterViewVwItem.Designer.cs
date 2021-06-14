@@ -4,14 +4,16 @@ using ERP_API.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ERP_API.Migrations.TenantMigrations
 {
     [DbContext(typeof(TenantContext))]
-    partial class TenantContextModelSnapshot : ModelSnapshot
+    [Migration("20210611123859_AlterViewVwItem")]
+    partial class AlterViewVwItem
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -309,22 +311,6 @@ namespace ERP_API.Migrations.TenantMigrations
 
                     b.HasKey("Code");
 
-                    b.HasIndex("AreaId1");
-
-                    b.HasIndex("AreaId2");
-
-                    b.HasIndex("AreaId3");
-
-                    b.HasIndex("AreaId4");
-
-                    b.HasIndex("AreaId5");
-
-                    b.HasIndex("BillingAddressId");
-
-                    b.HasIndex("ShippingAddressId");
-
-                    b.HasIndex("TypeId");
-
                     b.ToTable("Customer", "General");
                 });
 
@@ -377,8 +363,6 @@ namespace ERP_API.Migrations.TenantMigrations
                         .HasColumnType("varchar(30)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Code");
 
                     b.ToTable("CustomerAddress", "General");
                 });
@@ -510,48 +494,6 @@ namespace ERP_API.Migrations.TenantMigrations
                     b.ToTable("Employee", "General");
                 });
 
-            modelBuilder.Entity("ERP_API.Domain.Entities.General.PaymentTerm", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<int>("CreatedBy")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime");
-
-                    b.Property<short>("Due")
-                        .HasColumnType("smallint");
-
-                    b.Property<string>("Initial")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(20)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(50)");
-
-                    b.Property<int>("UpdatedBy")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("datetime");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("PaymentTerm", "General");
-                });
-
             modelBuilder.Entity("ERP_API.Domain.Entities.General.Supplier", b =>
                 {
                     b.Property<string>("Code")
@@ -622,8 +564,6 @@ namespace ERP_API.Migrations.TenantMigrations
                         .HasColumnType("datetime");
 
                     b.HasKey("Code");
-
-                    b.HasIndex("TypeId");
 
                     b.ToTable("Supplier", "General");
                 });
@@ -717,8 +657,6 @@ namespace ERP_API.Migrations.TenantMigrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CoaCode");
-
                     b.ToTable("Tax", "General");
                 });
 
@@ -774,10 +712,6 @@ namespace ERP_API.Migrations.TenantMigrations
                         .HasColumnType("varchar(20)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("DriverId");
-
-                    b.HasIndex("TypeId");
 
                     b.ToTable("Vehicle", "General");
                 });
@@ -1042,44 +976,6 @@ namespace ERP_API.Migrations.TenantMigrations
                         .HasColumnType("varchar(max)");
 
                     b.ToView("vwEmployee", "General");
-                });
-
-            modelBuilder.Entity("ERP_API.Domain.Entities.General.VwPaymentTerm", b =>
-                {
-                    b.Property<int>("CreatedBy")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime");
-
-                    b.Property<short>("Due")
-                        .HasColumnType("smallint");
-
-                    b.Property<int>("Id")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Initial")
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Name")
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
-
-                    b.Property<int>("UpdatedBy")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("datetime");
-
-                    b.Property<string>("UpdatedInitial")
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
-
-                    b.ToView("vwPaymentTerm", "General");
                 });
 
             modelBuilder.Entity("ERP_API.Domain.Entities.General.VwSupplier", b =>
@@ -1382,14 +1278,6 @@ namespace ERP_API.Migrations.TenantMigrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Code");
-
-                    b.HasIndex("ItemId");
-
-                    b.HasIndex("UnitId");
-
-                    b.HasIndex("UomId");
-
                     b.ToTable("AdjustmentDetail", "Inventory");
                 });
 
@@ -1412,8 +1300,6 @@ namespace ERP_API.Migrations.TenantMigrations
                     b.HasKey("Id");
 
                     b.HasIndex("AdjustmentDetailId");
-
-                    b.HasIndex("UnitId");
 
                     b.ToTable("AdjustmentDetailDiffUnit", "Inventory");
                 });
@@ -1467,8 +1353,6 @@ namespace ERP_API.Migrations.TenantMigrations
                         .HasColumnType("varchar(8)");
 
                     b.HasKey("Code");
-
-                    b.HasIndex("WarehouseCode");
 
                     b.ToTable("AdjustmentHeader", "Inventory");
                 });
@@ -1678,18 +1562,6 @@ namespace ERP_API.Migrations.TenantMigrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CategoryId");
-
-                    b.HasIndex("PurchaseTaxId");
-
-                    b.HasIndex("SalesTaxId");
-
-                    b.HasIndex("UomBuyId");
-
-                    b.HasIndex("UomId");
-
-                    b.HasIndex("UomSellId");
-
                     b.ToTable("Item", "Inventory");
                 });
 
@@ -1744,8 +1616,6 @@ namespace ERP_API.Migrations.TenantMigrations
                         .HasColumnType("datetime");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("GroupId");
 
                     b.ToTable("ItemCategory", "Inventory");
                 });
@@ -1813,8 +1683,6 @@ namespace ERP_API.Migrations.TenantMigrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ItemGroupId");
-
                     b.ToTable("ItemGroupSubGroup", "Inventory");
                 });
 
@@ -1880,10 +1748,6 @@ namespace ERP_API.Migrations.TenantMigrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("BaseUnit");
-
-                    b.HasIndex("ItemId");
-
                     b.HasIndex("RefCode1");
 
                     b.HasIndex("RefCode2");
@@ -1893,12 +1757,6 @@ namespace ERP_API.Migrations.TenantMigrations
                     b.HasIndex("Src");
 
                     b.HasIndex("Type");
-
-                    b.HasIndex("UnitId");
-
-                    b.HasIndex("UomId");
-
-                    b.HasIndex("WarehouseCode");
 
                     b.ToTable("StockMutation", "Inventory");
                 });
@@ -1937,14 +1795,6 @@ namespace ERP_API.Migrations.TenantMigrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Code");
-
-                    b.HasIndex("ItemId");
-
-                    b.HasIndex("UnitId");
-
-                    b.HasIndex("UomId");
 
                     b.ToTable("TransferStockDetail", "Inventory");
                 });
@@ -2007,10 +1857,6 @@ namespace ERP_API.Migrations.TenantMigrations
                         .HasColumnType("varchar(8)");
 
                     b.HasKey("Code");
-
-                    b.HasIndex("WarehouseCodeFrom");
-
-                    b.HasIndex("WarehouseCodeTo");
 
                     b.ToTable("TransferStockHeader", "Inventory");
                 });
@@ -2091,8 +1937,6 @@ namespace ERP_API.Migrations.TenantMigrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("UomId");
 
                     b.ToTable("UoMConversion", "Inventory");
                 });
@@ -3090,10 +2934,6 @@ namespace ERP_API.Migrations.TenantMigrations
                         .HasColumnType("varchar(8)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ItemId");
-
-                    b.HasIndex("WarehouseCode");
 
                     b.ToTable("WarehouseQuantity", "Inventory");
                 });
@@ -5052,8 +4892,6 @@ namespace ERP_API.Migrations.TenantMigrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Code");
-
                     b.HasIndex("TransCode");
 
                     b.ToTable("DeliveryPlanDetail", "Sales");
@@ -5127,12 +4965,6 @@ namespace ERP_API.Migrations.TenantMigrations
 
                     b.HasKey("Code");
 
-                    b.HasIndex("DriverId");
-
-                    b.HasIndex("VehicleId");
-
-                    b.HasIndex("WarehouseCode");
-
                     b.ToTable("DeliveryPlanHeader", "Sales");
                 });
 
@@ -5176,18 +5008,6 @@ namespace ERP_API.Migrations.TenantMigrations
                         .HasColumnType("varchar(8)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Code");
-
-                    b.HasIndex("DlvPlanDetailId");
-
-                    b.HasIndex("ItemId");
-
-                    b.HasIndex("UnitId");
-
-                    b.HasIndex("UomId");
-
-                    b.HasIndex("WarehouseCode");
 
                     b.ToTable("DeliveryPlanUndeliveredItem", "Sales");
                 });
@@ -5293,8 +5113,10 @@ namespace ERP_API.Migrations.TenantMigrations
                     b.Property<long>("PromoDetailId")
                         .HasColumnType("bigint");
 
-                    b.Property<int?>("SaleUnit")
-                        .HasColumnType("int");
+                    b.Property<string>("SaleUnit")
+                        .HasMaxLength(20)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(20)");
 
                     b.Property<decimal?>("ToQty")
                         .HasColumnType("decimal(18,2)");
@@ -6195,270 +6017,6 @@ namespace ERP_API.Migrations.TenantMigrations
                     b.HasKey("Id");
 
                     b.ToTable("SalesmanGroup", "Sales");
-                });
-
-            modelBuilder.Entity("ERP_API.Domain.Entities.Sales.SalesmanSchedule", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<int?>("AreaId1")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("AreaId2")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("AreaId3")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("AreaId4")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("AreaId5")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("EndDate")
-                        .HasColumnType("date");
-
-                    b.Property<byte>("Recurrence")
-                        .HasColumnType("tinyint");
-
-                    b.Property<long>("SalesmanId")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTime>("StartDate")
-                        .HasColumnType("date");
-
-                    b.Property<byte>("VisitDay")
-                        .HasColumnType("tinyint");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("SalesmanSchedule", "Sales");
-                });
-
-            modelBuilder.Entity("ERP_API.Domain.Entities.Sales.SalesmanScheduleCustomer", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("CustCode")
-                        .IsRequired()
-                        .HasMaxLength(8)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(8)");
-
-                    b.Property<long>("SalesmanScheduleId")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("SalesmanScheduleCustomer", "Sales");
-                });
-
-            modelBuilder.Entity("ERP_API.Domain.Entities.Sales.VisitOrder", b =>
-                {
-                    b.Property<string>("Code")
-                        .HasMaxLength(17)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(17)");
-
-                    b.Property<int?>("ApprovedBy")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("ApprovedDate")
-                        .HasColumnType("datetime");
-
-                    b.Property<int>("CreatedBy")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime");
-
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("date");
-
-                    b.Property<string>("Mark")
-                        .IsRequired()
-                        .HasMaxLength(3)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(3)");
-
-                    b.Property<string>("Notes")
-                        .HasMaxLength(256)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(256)");
-
-                    b.Property<long>("SalesmanId")
-                        .HasColumnType("bigint");
-
-                    b.Property<int>("UpdatedBy")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("datetime");
-
-                    b.Property<string>("VisitPlanCode")
-                        .HasMaxLength(17)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(17)");
-
-                    b.HasKey("Code");
-
-                    b.ToTable("VisitOrder", "Sales");
-                });
-
-            modelBuilder.Entity("ERP_API.Domain.Entities.Sales.VisitOrderCustomer", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasMaxLength(17)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(17)");
-
-                    b.Property<string>("CustCode")
-                        .IsRequired()
-                        .HasMaxLength(8)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(8)");
-
-                    b.Property<long?>("ReplacingForSalesmanId")
-                        .HasColumnType("bigint");
-
-                    b.Property<bool>("Visited")
-                        .HasColumnType("bit");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("VisitOrderCustomer", "Sales");
-                });
-
-            modelBuilder.Entity("ERP_API.Domain.Entities.Sales.VisitOrderInvoice", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasMaxLength(17)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(17)");
-
-                    b.Property<bool>("Collecting")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("FailCollect")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("InvCode")
-                        .IsRequired()
-                        .HasMaxLength(17)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(17)");
-
-                    b.Property<string>("NotesFailCollect")
-                        .HasMaxLength(256)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(256)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("VisitOrderInvoice", "Sales");
-                });
-
-            modelBuilder.Entity("ERP_API.Domain.Entities.Sales.VisitPlanDetail", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasMaxLength(17)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(17)");
-
-                    b.Property<long>("SalesmanId")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("VisitPlanDetail", "Sales");
-                });
-
-            modelBuilder.Entity("ERP_API.Domain.Entities.Sales.VisitPlanDetailCustomer", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("CustCode")
-                        .IsRequired()
-                        .HasMaxLength(8)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(8)");
-
-                    b.Property<long>("VisitPlanDetailId")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("VisitPlanDetailCustomer", "Sales");
-                });
-
-            modelBuilder.Entity("ERP_API.Domain.Entities.Sales.VisitPlanHeader", b =>
-                {
-                    b.Property<string>("Code")
-                        .HasMaxLength(17)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(17)");
-
-                    b.Property<int?>("ApprovedBy")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("ApprovedDate")
-                        .HasColumnType("datetime");
-
-                    b.Property<int>("CreatedBy")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime");
-
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("date");
-
-                    b.Property<int>("GroupId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Mark")
-                        .IsRequired()
-                        .HasMaxLength(3)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(3)");
-
-                    b.Property<int>("UpdatedBy")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("datetime");
-
-                    b.HasKey("Code");
-
-                    b.ToTable("VisitPlanHeader", "Sales");
                 });
 
             modelBuilder.Entity("ERP_API.Domain.Entities.Sales.VwArea", b =>
@@ -7715,8 +7273,6 @@ namespace ERP_API.Migrations.TenantMigrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ActionId");
-
                     b.HasIndex("MenuId", "ActionId")
                         .IsUnique();
 
@@ -7786,8 +7342,6 @@ namespace ERP_API.Migrations.TenantMigrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("MenuId");
-
                     b.HasIndex("RoleId", "MenuId")
                         .IsUnique();
 
@@ -7818,10 +7372,6 @@ namespace ERP_API.Migrations.TenantMigrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ActionId");
-
-                    b.HasIndex("MenuId");
-
                     b.HasIndex("RoleId", "MenuId", "ActionId")
                         .IsUnique();
 
@@ -7851,10 +7401,6 @@ namespace ERP_API.Migrations.TenantMigrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Code");
-
-                    b.HasIndex("Format");
 
                     b.ToTable("SequenceNumber", "SystemManagement");
                 });
@@ -7969,10 +7515,6 @@ namespace ERP_API.Migrations.TenantMigrations
                         .HasColumnType("nvarchar(50)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("EmployeeId");
-
-                    b.HasIndex("RoleId");
 
                     b.ToTable("User", "SystemManagement");
                 });
@@ -8090,412 +7632,12 @@ namespace ERP_API.Migrations.TenantMigrations
                     b.ToView("vwUser", "SystemManagement");
                 });
 
-            modelBuilder.Entity("ERP_API.Domain.Entities.General.Customer", b =>
-                {
-                    b.HasOne("ERP_API.Domain.Entities.Sales.Area", null)
-                        .WithMany()
-                        .HasForeignKey("AreaId1")
-                        .OnDelete(DeleteBehavior.NoAction);
-
-                    b.HasOne("ERP_API.Domain.Entities.Sales.Area", null)
-                        .WithMany()
-                        .HasForeignKey("AreaId2")
-                        .OnDelete(DeleteBehavior.NoAction);
-
-                    b.HasOne("ERP_API.Domain.Entities.Sales.Area", null)
-                        .WithMany()
-                        .HasForeignKey("AreaId3")
-                        .OnDelete(DeleteBehavior.NoAction);
-
-                    b.HasOne("ERP_API.Domain.Entities.Sales.Area", null)
-                        .WithMany()
-                        .HasForeignKey("AreaId4")
-                        .OnDelete(DeleteBehavior.NoAction);
-
-                    b.HasOne("ERP_API.Domain.Entities.Sales.Area", null)
-                        .WithMany()
-                        .HasForeignKey("AreaId5")
-                        .OnDelete(DeleteBehavior.NoAction);
-
-                    b.HasOne("ERP_API.Domain.Entities.General.CustomerAddress", null)
-                        .WithMany()
-                        .HasForeignKey("BillingAddressId")
-                        .OnDelete(DeleteBehavior.NoAction);
-
-                    b.HasOne("ERP_API.Domain.Entities.General.CustomerAddress", null)
-                        .WithMany()
-                        .HasForeignKey("ShippingAddressId")
-                        .OnDelete(DeleteBehavior.NoAction);
-
-                    b.HasOne("ERP_API.Domain.Entities.General.CustomerType", null)
-                        .WithMany()
-                        .HasForeignKey("TypeId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("ERP_API.Domain.Entities.General.CustomerAddress", b =>
-                {
-                    b.HasOne("ERP_API.Domain.Entities.General.Customer", null)
-                        .WithMany()
-                        .HasForeignKey("Code")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("ERP_API.Domain.Entities.General.Supplier", b =>
-                {
-                    b.HasOne("ERP_API.Domain.Entities.General.SupplierType", null)
-                        .WithMany()
-                        .HasForeignKey("TypeId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("ERP_API.Domain.Entities.General.Vehicle", b =>
-                {
-                    b.HasOne("ERP_API.Domain.Entities.General.Employee", null)
-                        .WithMany()
-                        .HasForeignKey("DriverId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("ERP_API.Domain.Entities.General.VehicleType", null)
-                        .WithMany()
-                        .HasForeignKey("TypeId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("ERP_API.Domain.Entities.Inventory.AdjustmentDetail", b =>
-                {
-                    b.HasOne("ERP_API.Domain.Entities.Inventory.AdjustmentHeader", null)
-                        .WithMany()
-                        .HasForeignKey("Code")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("ERP_API.Domain.Entities.Inventory.Item", null)
-                        .WithMany()
-                        .HasForeignKey("ItemId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("ERP_API.Domain.Entities.Inventory.UoMConversion", null)
-                        .WithMany()
-                        .HasForeignKey("UnitId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("ERP_API.Domain.Entities.Inventory.UoM", null)
-                        .WithMany()
-                        .HasForeignKey("UomId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("ERP_API.Domain.Entities.Inventory.AdjustmentDetailDiffUnit", b =>
                 {
                     b.HasOne("ERP_API.Domain.Entities.Inventory.AdjustmentDetail", null)
                         .WithMany("DifferentUnits")
                         .HasForeignKey("AdjustmentDetailId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ERP_API.Domain.Entities.Inventory.UoMConversion", null)
-                        .WithMany()
-                        .HasForeignKey("UnitId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("ERP_API.Domain.Entities.Inventory.AdjustmentHeader", b =>
-                {
-                    b.HasOne("ERP_API.Domain.Entities.Inventory.Warehouse", null)
-                        .WithMany()
-                        .HasForeignKey("WarehouseCode")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("ERP_API.Domain.Entities.Inventory.Item", b =>
-                {
-                    b.HasOne("ERP_API.Domain.Entities.Inventory.ItemCategory", null)
-                        .WithMany()
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("ERP_API.Domain.Entities.General.Tax", null)
-                        .WithMany()
-                        .HasForeignKey("PurchaseTaxId")
-                        .OnDelete(DeleteBehavior.NoAction);
-
-                    b.HasOne("ERP_API.Domain.Entities.General.Tax", null)
-                        .WithMany()
-                        .HasForeignKey("SalesTaxId")
-                        .OnDelete(DeleteBehavior.NoAction);
-
-                    b.HasOne("ERP_API.Domain.Entities.Inventory.UoMConversion", null)
-                        .WithMany()
-                        .HasForeignKey("UomBuyId")
-                        .OnDelete(DeleteBehavior.NoAction);
-
-                    b.HasOne("ERP_API.Domain.Entities.Inventory.UoM", null)
-                        .WithMany()
-                        .HasForeignKey("UomId")
-                        .OnDelete(DeleteBehavior.NoAction);
-
-                    b.HasOne("ERP_API.Domain.Entities.Inventory.UoMConversion", null)
-                        .WithMany()
-                        .HasForeignKey("UomSellId")
-                        .OnDelete(DeleteBehavior.NoAction);
-                });
-
-            modelBuilder.Entity("ERP_API.Domain.Entities.Inventory.ItemCategory", b =>
-                {
-                    b.HasOne("ERP_API.Domain.Entities.Inventory.ItemGroup", null)
-                        .WithMany()
-                        .HasForeignKey("GroupId")
-                        .OnDelete(DeleteBehavior.NoAction);
-                });
-
-            modelBuilder.Entity("ERP_API.Domain.Entities.Inventory.ItemGroupSubGroup", b =>
-                {
-                    b.HasOne("ERP_API.Domain.Entities.Inventory.ItemGroup", null)
-                        .WithMany()
-                        .HasForeignKey("ItemGroupId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("ERP_API.Domain.Entities.Inventory.StockMutation", b =>
-                {
-                    b.HasOne("ERP_API.Domain.Entities.Inventory.UoMConversion", null)
-                        .WithMany()
-                        .HasForeignKey("BaseUnit")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("ERP_API.Domain.Entities.Inventory.Item", null)
-                        .WithMany()
-                        .HasForeignKey("ItemId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("ERP_API.Domain.Entities.Inventory.UoMConversion", null)
-                        .WithMany()
-                        .HasForeignKey("UnitId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("ERP_API.Domain.Entities.Inventory.UoM", null)
-                        .WithMany()
-                        .HasForeignKey("UomId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("ERP_API.Domain.Entities.Inventory.Warehouse", null)
-                        .WithMany()
-                        .HasForeignKey("WarehouseCode")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("ERP_API.Domain.Entities.Inventory.TransferStockDetail", b =>
-                {
-                    b.HasOne("ERP_API.Domain.Entities.Inventory.TransferStockHeader", null)
-                        .WithMany()
-                        .HasForeignKey("Code")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("ERP_API.Domain.Entities.Inventory.Item", null)
-                        .WithMany()
-                        .HasForeignKey("ItemId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("ERP_API.Domain.Entities.Inventory.UoMConversion", null)
-                        .WithMany()
-                        .HasForeignKey("UnitId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("ERP_API.Domain.Entities.Inventory.UoM", null)
-                        .WithMany()
-                        .HasForeignKey("UomId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("ERP_API.Domain.Entities.Inventory.TransferStockHeader", b =>
-                {
-                    b.HasOne("ERP_API.Domain.Entities.Inventory.Warehouse", null)
-                        .WithMany()
-                        .HasForeignKey("WarehouseCodeFrom")
-                        .OnDelete(DeleteBehavior.NoAction);
-
-                    b.HasOne("ERP_API.Domain.Entities.Inventory.Warehouse", null)
-                        .WithMany()
-                        .HasForeignKey("WarehouseCodeTo")
-                        .OnDelete(DeleteBehavior.NoAction);
-                });
-
-            modelBuilder.Entity("ERP_API.Domain.Entities.Inventory.UoMConversion", b =>
-                {
-                    b.HasOne("ERP_API.Domain.Entities.Inventory.UoM", null)
-                        .WithMany()
-                        .HasForeignKey("UomId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("ERP_API.Domain.Entities.Inventory.WarehouseQuantity", b =>
-                {
-                    b.HasOne("ERP_API.Domain.Entities.Inventory.Item", null)
-                        .WithMany()
-                        .HasForeignKey("ItemId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("ERP_API.Domain.Entities.Inventory.Warehouse", null)
-                        .WithMany()
-                        .HasForeignKey("WarehouseCode")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("ERP_API.Domain.Entities.Sales.DeliveryPlanDetail", b =>
-                {
-                    b.HasOne("ERP_API.Domain.Entities.Sales.DeliveryPlanHeader", null)
-                        .WithMany()
-                        .HasForeignKey("Code")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("ERP_API.Domain.Entities.Sales.DeliveryPlanHeader", b =>
-                {
-                    b.HasOne("ERP_API.Domain.Entities.General.Employee", null)
-                        .WithMany()
-                        .HasForeignKey("DriverId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("ERP_API.Domain.Entities.General.Vehicle", null)
-                        .WithMany()
-                        .HasForeignKey("VehicleId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("ERP_API.Domain.Entities.Inventory.Warehouse", null)
-                        .WithMany()
-                        .HasForeignKey("WarehouseCode")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("ERP_API.Domain.Entities.Sales.DeliveryPlanUndeliveredItem", b =>
-                {
-                    b.HasOne("ERP_API.Domain.Entities.Sales.DeliveryPlanHeader", null)
-                        .WithMany()
-                        .HasForeignKey("Code")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("ERP_API.Domain.Entities.Sales.DeliveryPlanDetail", null)
-                        .WithMany()
-                        .HasForeignKey("DlvPlanDetailId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("ERP_API.Domain.Entities.Inventory.Item", null)
-                        .WithMany()
-                        .HasForeignKey("ItemId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("ERP_API.Domain.Entities.Inventory.UoMConversion", null)
-                        .WithMany()
-                        .HasForeignKey("UnitId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("ERP_API.Domain.Entities.Inventory.UoM", null)
-                        .WithMany()
-                        .HasForeignKey("UomId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("ERP_API.Domain.Entities.Inventory.Warehouse", null)
-                        .WithMany()
-                        .HasForeignKey("WarehouseCode")
-                        .OnDelete(DeleteBehavior.NoAction);
-                });
-
-            modelBuilder.Entity("ERP_API.Domain.Entities.SystemManagement.MenuAction", b =>
-                {
-                    b.HasOne("ERP_API.Domain.Entities.SystemManagement.Action", null)
-                        .WithMany()
-                        .HasForeignKey("ActionId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("ERP_API.Domain.Entities.SystemManagement.Menu", null)
-                        .WithMany()
-                        .HasForeignKey("MenuId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("ERP_API.Domain.Entities.SystemManagement.RoleMenu", b =>
-                {
-                    b.HasOne("ERP_API.Domain.Entities.SystemManagement.Menu", null)
-                        .WithMany()
-                        .HasForeignKey("MenuId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("ERP_API.Domain.Entities.SystemManagement.Role", null)
-                        .WithMany()
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("ERP_API.Domain.Entities.SystemManagement.RoleMenuAction", b =>
-                {
-                    b.HasOne("ERP_API.Domain.Entities.SystemManagement.Action", null)
-                        .WithMany()
-                        .HasForeignKey("ActionId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("ERP_API.Domain.Entities.SystemManagement.Menu", null)
-                        .WithMany()
-                        .HasForeignKey("MenuId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("ERP_API.Domain.Entities.SystemManagement.Role", null)
-                        .WithMany()
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("ERP_API.Domain.Entities.SystemManagement.User", b =>
-                {
-                    b.HasOne("ERP_API.Domain.Entities.General.Employee", null)
-                        .WithMany()
-                        .HasForeignKey("EmployeeId")
-                        .OnDelete(DeleteBehavior.NoAction);
-
-                    b.HasOne("ERP_API.Domain.Entities.SystemManagement.Role", null)
-                        .WithMany()
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
                 });
 
