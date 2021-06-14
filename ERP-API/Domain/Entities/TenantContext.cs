@@ -2,6 +2,7 @@
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using ERP_API.Domain.Entities.Accounting;
+using ERP_API.Domain.Entities.AssetManagement;
 using ERP_API.Domain.Entities.Core;
 using ERP_API.Domain.Entities.General;
 using ERP_API.Domain.Entities.Inventory;
@@ -31,6 +32,12 @@ namespace ERP_API.Domain.Entities
         public DbSet<Coa> Coas { get; set; }
         public DbSet<CoaType> CoaTypes { get; set; }
         public DbSet<CurrencyRate> CurrencyRates { get; set; }
+
+        // Asset Management Entities
+        public DbSet<FixedAsset> FixedAssets { get; set; }
+        public DbSet<FixedAssetDepartment> FixedAssetDepartments { get; set; }
+        public DbSet<FixedAssetHistory> FixedAssetHistories { get; set; }
+        public DbSet<AssetType> AssetTypes { get; set; }
 
         // General entities
         public DbSet<Currency> Currencies { get; set; }
@@ -212,6 +219,26 @@ namespace ERP_API.Domain.Entities
             modelBuilder.Entity<BaseNewCodeEntity>()
                 .HasNoKey()
                 .ToTable("BaseNewCodeEntity", t => t.ExcludeFromMigrations());
+
+            // Asset Management entities
+            modelBuilder.Entity<FixedAsset>(entity =>
+                entity.Property(e => e.Mark)
+                    .IsRequired()
+            );
+
+            modelBuilder.Entity<FixedAssetDepartment>(entity =>
+                entity.Property(e => e.Code)
+                    .IsRequired()
+            );
+
+            modelBuilder.Entity<FixedAssetHistory>(entity =>
+                entity.Property(e => e.Code)
+                    .IsRequired()
+            );
+
+            modelBuilder.Entity<VwAssetType>()
+            .HasNoKey()
+            .ToView("vwAssetType", Schema.AssetManagement);
 
             // General entities
             // Employee entities
