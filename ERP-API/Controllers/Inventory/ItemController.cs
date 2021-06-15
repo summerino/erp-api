@@ -45,11 +45,11 @@ namespace ERP_API.Controllers.Inventory
                 if (item.QtyOnHand != null && item.QtyOnIndent != null && item.QtyOnOrder != null && item.QtyOnTransfer != null) {
                     if (item.BuySeq != null)
                     {
-                        item.BuyQtyAvailable = (decimal)((item.QtyOnHand - item.QtyOnOrder) / uomC.Where(u => u.UomId.Equals(item.UomId) && u.Seq.Equals(item.BuySeq)).Select(x => x.Conversion).Aggregate((a, x) => a * x));
+                        item.BuyQtyAvailable = (decimal)((item.QtyOnHand - item.QtyOnOrder) / uomC.Where(u => u.UomId.Equals(item.UomId) && u.Seq <= item.BuySeq).Select(x => x.Conversion).Aggregate((a, x) => a * x));
                     }
                     if (item.BuySeq != null)
                     {
-                        item.SellQtyAvailable = (decimal)((item.QtyOnHand - item.QtyOnOrder) / uomC.Where(u => u.UomId.Equals(item.UomId) && u.Seq.Equals(item.SellSeq)).Select(x => x.Conversion).Aggregate((a, x) => a * x));
+                        item.SellQtyAvailable = (decimal)((item.QtyOnHand - item.QtyOnOrder) / uomC.Where(u => u.UomId.Equals(item.UomId) && u.Seq <= item.SellSeq).Select(x => x.Conversion).Aggregate((a, x) => a * x));
                     }
                 }
             }
