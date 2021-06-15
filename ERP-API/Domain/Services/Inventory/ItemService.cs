@@ -17,8 +17,9 @@ namespace ERP_API.Domain.Services.Inventory
         }
 
         public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
-            List<int> category, string search)
+            List<int> category,string warehouseCode, string search)
         {
+
             var data = Db.VwItems.AsQueryable();
 
             if (category?.Any() ?? false)
@@ -29,11 +30,116 @@ namespace ERP_API.Domain.Services.Inventory
             if (!string.IsNullOrEmpty(search))
             {
                 data = data.Where(x =>
-                            x.Initial.Contains(search) || x.Name.Contains(search) || 
+                            x.Initial.Contains(search) || x.Name.Contains(search) ||
                             x.UomInitial.Contains(search) || x.UomSellName.Contains(search) ||
                             x.UomBuyName.Contains(search) || x.CategoryName.Contains(search));
             }
 
+            IQueryable<WarehouseQuantity> wq = Db.WarehouseQuantities;
+
+
+            if (!string.IsNullOrEmpty(warehouseCode))
+            {
+                wq = wq.Where(x=>x.WarehouseCode.Equals(warehouseCode))
+                        .GroupBy(x => new { x.ItemId, x.WarehouseCode })
+                        .Select(X =>
+                        new WarehouseQuantity
+                        {
+                            ItemId = X.Key.ItemId,
+                            WarehouseCode = X.Key.WarehouseCode,
+                            QtyOnHand = X.Sum(x => x.QtyOnHand),
+                            QtyOnIndent = X.Sum(x => x.QtyOnIndent),
+                            QtyOnOrder = X.Sum(x => x.QtyOnOrder),
+                            QtyOnTransfer = X.Sum(x => x.QtyOnTransfer),
+                            QtyReorderPoint = X.Sum(x => x.QtyReorderPoint)
+                        }).AsQueryable();
+            }
+            else {
+                wq = wq.GroupBy(x => new { x.ItemId })
+                           .Select(X =>
+                           new WarehouseQuantity
+                           {
+                               ItemId = X.Key.ItemId,
+                               WarehouseCode = "-",
+                               QtyOnHand = X.Sum(x => x.QtyOnHand),
+                               QtyOnIndent = X.Sum(x => x.QtyOnIndent),
+                               QtyOnOrder = X.Sum(x => x.QtyOnOrder),
+                               QtyOnTransfer = X.Sum(x => x.QtyOnTransfer),
+                               QtyReorderPoint = X.Sum(x => x.QtyReorderPoint)
+                           }).AsQueryable();
+            }
+
+            
+
+            data = (from x in data
+                    join y in wq on x.Id equals y.ItemId into gd
+                    from g in gd.DefaultIfEmpty()
+                    select new VwItem
+                    {
+                        Id = x.Id,
+                        Initial = x.Initial,
+                        Name = x.Name,
+                        Description = x.Description,
+                        BuyPrice = x.BuyPrice,
+                        CreatedBy = x.CreatedBy,
+                        CreatedDate = x.CreatedDate,
+                        Category1 = x.Category1,
+                        Category2 = x.Category2,
+                        Category3 = x.Category3,
+                        Category4 = x.Category4,
+                        Category5 = x.Category5,
+                        CategoryId = x.CategoryId,
+                        CategoryName = x.CategoryName,
+                        CoaCogs = x.CoaCogs,
+                        CoaPurcDisc = x.CoaPurcDisc,
+                        CoaPurc = x.CoaPurc,
+                        CoaCost = x.CoaCost,
+                        CoaExpense = x.CoaExpense,
+                        CoaInventory = x.CoaInventory,
+                        CoaOffSet = x.CoaOffSet,
+                        CoaPurcReturn = x.CoaPurcReturn,
+                        CoaSls = x.CoaSls,
+                        CoaSlsDisc = x.CoaSlsDisc,
+                        CoaSlsReturn = x.CoaSlsReturn,
+                        CostOfGoodSold = x.CostOfGoodSold,
+                        CreatedInitial = x.CreatedInitial,
+                        DimensionMeasurement = x.DimensionMeasurement,
+                        UpdatedDate = x.UpdatedDate,
+                        UpdatedInitial = x.UpdatedInitial,
+                        UpdatedBy = x.UpdatedBy,
+                        Height = x.Height,
+                        IsActive = x.IsActive,
+                        Length = x.Length,
+                        PurchaseTaxId = x.PurchaseTaxId,
+                        SalesTaxId = x.SalesTaxId,
+                        SellPrice = x.SellPrice,
+                        StockType = x.StockType,
+                        SubGroup1 = x.SubGroup1,
+                        SubGroup2 = x.SubGroup2,
+                        SubGroup3 = x.SubGroup3,
+                        SubGroup4 = x.SubGroup4,
+                        SubGroup5 = x.SubGroup5,
+                        TypeId = x.TypeId,
+                        TypeName = x.TypeName,
+                        UomBuyId = x.UomBuyId,
+                        UomBuyName = x.UomBuyName,
+                        UomId = x.UomId,
+                        UomInitial = x.UomInitial,
+                        UomSellId = x.UomSellId,
+                        UomSellName = x.UomSellName,
+                        ValuationMethod = x.ValuationMethod,
+                        Weight = x.Weight,
+                        WeightMeasurement = x.WeightMeasurement,
+                        Width = x.Width,
+                        BuySeq = x.BuySeq,
+                        SellSeq = x.SellSeq,
+                        WarehouseCode = g.WarehouseCode == null ? "" : g.WarehouseCode,
+                        QtyOnHand = g.QtyOnHand == 0 ? 0 : g.QtyOnHand,
+                        QtyOnIndent = g.QtyOnIndent == 0 ? 0 : g.QtyOnIndent,
+                        QtyOnOrder = g.QtyOnOrder == 0 ? 0 : g.QtyOnOrder,
+                        QtyOnTransfer = g.QtyOnTransfer == 0 ? 0 : g.QtyOnTransfer
+                    });
+            
             return data.ToDataSourceResult(skip, take, filter, sort);
         }
 

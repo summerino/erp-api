@@ -8,6 +8,7 @@ using ERP_API.Domain.Models;
 using ERP_API.Domain.Services;
 using ERP_API.Model;
 using Newtonsoft.Json;
+using System.Linq;
 
 namespace ERP_API.Controllers.Inventory
 {
@@ -16,29 +17,46 @@ namespace ERP_API.Controllers.Inventory
     public class ItemController : ControllerBase
     {
         private readonly IItemService _item;
+        private readonly IUnitOfMeasurementService _uom;
         private readonly IClaimService _claim;
 
-        public ItemController(IItemService item, IClaimService claim)
+        public ItemController(IItemService item, IUnitOfMeasurementService uom, IClaimService claim)
         {
+            _uom = uom;
             _item = item;
             _claim = claim;
         }
 
         [HttpGet]
-        public IActionResult GetData(string search, string category, string filters, string sorts, int skip, int take)
+        public IActionResult GetData(string search, string category,string warehouseCode, string filters, string sorts, int skip, int take)
         {
+            var uomC = _uom.GetDataConversion().ToList();
             var data =
                 _item.GetData(
                     skip, take,
                     JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
                     JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
                     JsonConvert.DeserializeObject<List<int>>(!string.IsNullOrWhiteSpace(category) ? category : "[]"),
+                    warehouseCode,
                     search);
-
+            var result = (List<VwItem>)data.Data;
+            foreach (var item in result)
+            {
+                if (item.QtyOnHand != null && item.QtyOnIndent != null && item.QtyOnOrder != null && item.QtyOnTransfer != null) {
+                    if (item.BuySeq != null)
+                    {
+                        item.BuyQtyAvailable = (decimal)((item.QtyOnHand - item.QtyOnOrder) / uomC.Where(u => u.UomId.Equals(item.UomId) && u.Seq.Equals(item.BuySeq)).Select(x => x.Conversion).Aggregate((a, x) => a * x));
+                    }
+                    if (item.BuySeq != null)
+                    {
+                        item.SellQtyAvailable = (decimal)((item.QtyOnHand - item.QtyOnOrder) / uomC.Where(u => u.UomId.Equals(item.UomId) && u.Seq.Equals(item.SellSeq)).Select(x => x.Conversion).Aggregate((a, x) => a * x));
+                    }
+                }
+            }
             return Ok(new ApiResponse
             {
                 RowCount = data.Total,
-                TableData = data.Data.ToDynamicList()
+                TableData = result.ToDynamicList()
             });
         }
 
