@@ -82,15 +82,22 @@ namespace ERP_API.Domain.Services.Sales
                     return result;
                 }
 
-                // Checking deliver qty is excess or not
-                if (IsQtyExcess(data.Code, data.SrcTrans, data.TransCode, data.WarehouseCode, data.ItemDetails, false) == 1)
+                //Checking warehouse qty is item is available or not
+                if (IsQtyAvailable(null, data.WarehouseCode, data.ItemDetails) == 1)
                 {
-                    result.Message = "Data pengiriman penjualan tidak bisa disimpan karena qty yg diterima lebih besar dari qty yang tersedia.";
+                    result.Message = "Terdapat barang yang tidak tersedia pada gudang yang dipilih";
                     return result;
                 }
-                else if (IsQtyExcess(data.Code, data.SrcTrans, data.TransCode, data.WarehouseCode, data.ItemDetails, false) == 2)
+                else if(IsQtyAvailable(null, data.WarehouseCode, data.ItemDetails) == 2)
                 {
-                    result.Message = "Barang tidak tersedia pada gudang tersebut.";
+                    result.Message = "Terdapat barang yang qty-nya melebihi ketersediaan pada gudang yang dipilih";
+                    return result;
+                }
+
+                // Checking deliver qty is excess or not
+                if (IsQtyExcess(null, data.SrcTrans, data.TransCode, data.ItemDetails))
+                {
+                    result.Message = "Data pengiriman penjualan tidak bisa disimpan karena qty yg diterima lebih besar dari qty yang tersedia.";
                     return result;
                 }
 
@@ -138,8 +145,16 @@ namespace ERP_API.Domain.Services.Sales
                     "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
                     data.Code, data.Date, data.TransCode);
 
-                // Execute sp_update_so_dlv_qty
-                Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", data.TransCode);
+                if (data.SrcTrans == 1)
+                {
+                    // Execute sp_update_so_dlv_qty
+                    Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", data.TransCode);
+                }
+                else
+                {
+                    // Execute sp_update_sr_rcv_qty
+                    Db.Database.ExecuteSqlRaw("EXEC sp_update_sr_dlv_qty {0}", data.TransCode);
+                }
 
                 transaction.Commit();
             }
@@ -176,17 +191,24 @@ namespace ERP_API.Domain.Services.Sales
                     return result;
                 }
 
+                //Checking warehouse qty is item is available or not
+                if (IsQtyAvailable(data.Code, data.WarehouseCode, data.ItemDetails) == 1)
+                {
+                    result.Message = "Terdapat barang yang tidak tersedia pada gudang yang dipilih";
+                    return result;
+                }
+                else if (IsQtyAvailable(data.Code, data.WarehouseCode, data.ItemDetails) == 2)
+                {
+                    result.Message = "Terdapat barang yang qty-nya melebihi ketersediaan pada gudang yang dipilih";
+                    return result;
+                }
+
                 // Checking deliver qty is excess or not
-                if (IsQtyExcess(data.Code, data.SrcTrans, data.TransCode, data.WarehouseCode, data.ItemDetails, true) == 1)
+                if (IsQtyExcess(data.Code, data.SrcTrans, data.TransCode, data.ItemDetails))
                 {
                     result.Message = "Data pengiriman penjualan tidak bisa disimpan karena qty yg diterima lebih besar dari qty yang tersedia.";
                     return result;
                 } 
-                else if (IsQtyExcess(data.Code, data.SrcTrans, data.TransCode, data.WarehouseCode, data.ItemDetails, true) == 2)
-                {
-                    result.Message = "Barang tidak tersedia pada gudang tersebut.";
-                    return result;
-                }
 
                 // Update header data
                 Db.SalesDeliveryHeaders.Update(data);
@@ -249,8 +271,16 @@ namespace ERP_API.Domain.Services.Sales
                     "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
                     data.Code, data.Date, data.TransCode);
 
-                // Execute sp_update_so_dlv_qty
-                Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", data.TransCode);
+                if (data.SrcTrans == 1)
+                {
+                    // Execute sp_update_so_dlv_qty
+                    Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", data.TransCode);
+                }
+                else
+                {
+                    // Execute sp_update_sr_rcv_qty
+                    Db.Database.ExecuteSqlRaw("EXEC sp_update_sr_dlv_qty {0}", data.TransCode);
+                }
 
                 transaction.Commit();
             }
@@ -291,8 +321,16 @@ namespace ERP_API.Domain.Services.Sales
                     // Save changes
                     Db.SaveChanges();
 
-                    // Execute sp_update_so_dlv_qty
-                    Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", data.TransCode);
+                    if (data.SrcTrans == 1)
+                    {
+                        // Execute sp_update_so_dlv_qty
+                        Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", data.TransCode);
+                    }
+                    else
+                    {
+                        // Execute sp_update_sr_rcv_qty
+                        Db.Database.ExecuteSqlRaw("EXEC sp_update_sr_dlv_qty {0}", data.TransCode);
+                    }
 
                     transaction.Commit();
                 }
@@ -313,82 +351,76 @@ namespace ERP_API.Domain.Services.Sales
             return Db.SalesOrderHeaders.Any(x => x.Code == soCode && new[] { "V", "CLS" }.Contains(x.Mark));
         }
 
-        private int IsQtyExcess(string code, int srcTrans, string transCode, string warehouseCode, IEnumerable<SalesDeliveryDetail> items, bool isUpdate)
+        private bool IsQtyExcess(string code, int srcTrans, string transCode, IEnumerable<SalesDeliveryDetail> items)
         {
-            var result = 0;
-            if (srcTrans == 1)
+            var result = false;
+            if (srcTrans == 1) // Sales Order
             {
                 foreach (var item in items)
                 {
-                    var uom = Db.UoMConversions.FirstOrDefault(x => x.Id == item.UnitId);
-                    var stockWH = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == warehouseCode && x.ItemId == item.ItemId);
-                    if(stockWH == null)
+                    var dataSODetail = Db.SalesOrderDetails.FirstOrDefault(x => x.Code == transCode && x.ItemId == item.ItemId);
+                    if (code == null)
                     {
-                        result = 2;
-                        return result;
-                    }
-                    if (!isUpdate)
-                    {
-                        if (uom.IsBaseUnit)
+                        var availableStock = dataSODetail.Qty - dataSODetail.QtyDlv;
+                        if (item.Qty > availableStock)
                         {
-                            if (item.Qty > stockWH.QtyOnOrder)
-                            {
-                                result = 1;
-                            }
-                        }
-                        else
-                        {
-                            var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= uom.Seq).Select(x => x.Conversion).ToList();
-                            var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
-                            var baseQty = item.Qty * multipliedQty;
-                            if (baseQty > stockWH.QtyOnOrder)
-                            {
-                                result = 1;
-                            }
+                            result = true;
                         }
                     }
                     else
                     {
-                        var oldStock = Db.StockMutations.FirstOrDefault(x => x.ItemId == item.ItemId && x.RefCode1 == code);
-                        if (uom.IsBaseUnit)
+                        var oldSDD = Db.SalesDeliveryDetails.AsNoTracking().FirstOrDefault(x => x.Code == code && x.ItemId == item.ItemId);
+                        var availableStock = dataSODetail.Qty - (dataSODetail.QtyDlv - oldSDD.Qty);
+                        if (item.Qty > availableStock)
                         {
-                            if (item.Qty > (stockWH.QtyOnOrder + oldStock.BaseQty))
-                            {
-                                result = 1;
-                            }
-                        }
-                        else
-                        {
-                            var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= uom.Seq).Select(x => x.Conversion).ToList();
-                            var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
-                            var baseQty = item.Qty * multipliedQty;
-                            if (baseQty > (stockWH.QtyOnOrder + oldStock.BaseQty))
-                            {
-                                result = 1;
-                            }
+                            result = true;
                         }
                     }
                 }
             }
-            else
+            else // Sales Return
             {
                 foreach (var item in items)
                 {
-                    var uom = Db.UoMConversions.FirstOrDefault(x => x.Id == item.UnitId);
-                    var stockSR = Db.StockMutations.FirstOrDefault(x => x.ItemId == item.ItemId && x.RefCode1 == transCode);
-                    var stockWH = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == warehouseCode && x.ItemId == item.ItemId);
-                    if (stockWH == null)
+                    var dataSRDetail = Db.SalesReturnDetails.FirstOrDefault(x => x.Code == transCode && x.ItemId == item.ItemId);
+                    if (code == null)
                     {
-                        result = 2;
-                        return result;
+                        var availableStock = dataSRDetail.Qty - dataSRDetail.QtyDlv;
+                        if (item.Qty > availableStock)
+                        {
+                            result = true;
+                        }
                     }
-                    if (!isUpdate)
+                    else
+                    {
+                        var oldSDD = Db.SalesDeliveryDetails.AsNoTracking().FirstOrDefault(x => x.Code == code && x.ItemId == item.ItemId);
+                        var availableStock = dataSRDetail.Qty - (dataSRDetail.QtyDlv - oldSDD.Qty);
+                        if (item.Qty > availableStock)
+                        {
+                            result = true;
+                        }
+                    }
+                }
+            }
+            return result;
+        }
+
+        private int IsQtyAvailable(string code, string warehouseCode, IEnumerable<SalesDeliveryDetail> items)
+        {
+            var result = 0;
+            foreach (var item in items)
+            {
+                var uom = Db.UoMConversions.FirstOrDefault(x => x.Id == item.UnitId);
+                var stock = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == warehouseCode && x.ItemId == item.ItemId);
+                if (stock != null)
+                {
+                    if (code == null)
                     {
                         if (uom.IsBaseUnit)
                         {
-                            if (item.Qty > stockSR.BaseQty)
+                            if (item.Qty > (stock.QtyOnHand - stock.QtyOnOrder))
                             {
-                                result = 1;
+                                result = 2;
                             }
                         }
                         else
@@ -396,9 +428,9 @@ namespace ERP_API.Domain.Services.Sales
                             var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= uom.Seq).Select(x => x.Conversion).ToList();
                             var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
                             var baseQty = item.Qty * multipliedQty;
-                            if (baseQty > stockSR.BaseQty)
+                            if (baseQty > (stock.QtyOnHand - stock.QtyOnOrder))
                             {
-                                result = 1;
+                                result = 2;
                             }
                         }
                     }
@@ -407,9 +439,9 @@ namespace ERP_API.Domain.Services.Sales
                         var oldStock = Db.StockMutations.FirstOrDefault(x => x.ItemId == item.ItemId && x.RefCode1 == code);
                         if (uom.IsBaseUnit)
                         {
-                            if (item.Qty > (stockWH.QtyOnHand - oldStock.BaseQty))
+                            if (item.Qty > (stock.QtyOnHand - (stock.QtyOnOrder - oldStock.BaseQty)))
                             {
-                                result = 1;
+                                result = 2;
                             }
                         }
                         else
@@ -417,12 +449,17 @@ namespace ERP_API.Domain.Services.Sales
                             var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= uom.Seq).Select(x => x.Conversion).ToList();
                             var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
                             var baseQty = item.Qty * multipliedQty;
-                            if (baseQty > (stockWH.QtyOnHand - oldStock.BaseQty))
+                            if (baseQty > (stock.QtyOnHand - (stock.QtyOnOrder - oldStock.BaseQty)))
                             {
-                                result = 1;
+                                result = 2;
                             }
                         }
                     }
+                }
+                else
+                {
+                    result = 1;
+                    return result;
                 }
             }
             return result;

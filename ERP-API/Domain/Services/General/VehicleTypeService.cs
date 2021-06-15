@@ -105,10 +105,13 @@ namespace ERP_API.Domain.Services.General
                     return result;
                 }
 
-                // Update data
-                data.IsActive = false;
-                data.UpdatedBy = userId;
-                data.UpdatedDate = DateTime.Now;
+                if (Db.Vehicles.Any(x => x.TypeId == data.Id))
+                {
+                    result.Message = "Tidak bisa menghapus data tipe kendaraan karena telah digunakan pada data kendaraan.";
+                    return result;
+                }
+
+                Db.VehicleTypes.Remove(data);
 
                 Db.SaveChanges();
             }

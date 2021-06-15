@@ -1,10 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 using ERP_API.Domain.Entities.Core;
 
 namespace ERP_API.Domain.Entities.General
 {
     [Table("Tax", Schema = Schema.General)]
+    [Index(nameof(CoaCode))]
     public class Tax : BaseEntityWithActive
     {
         public int Id { get; set; }

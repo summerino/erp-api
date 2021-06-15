@@ -1,8 +1,8 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using ERP_API.Domain.Entities.Core;
 using Microsoft.EntityFrameworkCore;
+using ERP_API.Domain.Entities.Core;
 
 namespace ERP_API.Domain.Entities.Sales
 {

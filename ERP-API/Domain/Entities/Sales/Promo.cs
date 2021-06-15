@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using ERP_API.Domain.Entities.Core;
-using ERP_API.Domain.Entities.General;
 
 namespace ERP_API.Domain.Entities.Sales
 {
@@ -116,8 +114,7 @@ namespace ERP_API.Domain.Entities.Sales
         [Column(TypeName = "decimal(18, 2)")]
         public decimal Value { get; set; }
 
-        [StringLength(20)]
-        public string SaleUnit { get; set; }
+        public int? SaleUnit { get; set; }
 
         public bool ApplyToAllUnit { get; set; }
 

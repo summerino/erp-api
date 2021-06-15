@@ -5,6 +5,8 @@ namespace ERP_API.Domain.Services
 {
     public interface IClaimService
     {
+        string Jti { get; }
+
         int UserId { get; }
 
         int RoleId { get; }
@@ -26,6 +28,9 @@ namespace ERP_API.Domain.Services
         {
             _accessor = accessor;
         }
+
+        public string Jti =>
+            _accessor.HttpContext?.User?.Claims?.SingleOrDefault(x => x.Type == "jti")?.Value.ToString();
 
         public int UserId =>
             int.TryParse(_accessor.HttpContext?.User?.Claims?.SingleOrDefault(x => x.Type == "UserId")?.Value,
@@ -52,6 +57,6 @@ namespace ERP_API.Domain.Services
             _accessor.HttpContext?.Request?.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
         
         public string IpAddress =>
-            _accessor.HttpContext?.Connection?.RemoteIpAddress?.ToString();
+            _accessor.HttpContext?.Connection?.RemoteIpAddress?.MapToIPv4().ToString();
     }
 }

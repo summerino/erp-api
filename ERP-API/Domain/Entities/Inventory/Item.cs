@@ -27,8 +27,6 @@ namespace ERP_API.Domain.Entities.Inventory
         [Column(TypeName = "decimal(19, 6)")]
         public decimal? CostOfGoodSold { get; set; }
 
-        public short? ValuationMethod { get; set; }
-
         public short? StockType { get; set; }
 
         public int? UomId { get; set; }
@@ -44,21 +42,6 @@ namespace ERP_API.Domain.Entities.Inventory
         public int? SalesTaxId { get; set; }
 
         public int? PurchaseTaxId { get; set; }
-
-        [StringLength(50)]
-        public string Category1 { get; set; }
-
-        [StringLength(50)]
-        public string Category2 { get; set; }
-
-        [StringLength(50)]
-        public string Category3 { get; set; }
-
-        [StringLength(50)]
-        public string Category4 { get; set; }
-
-        [StringLength(50)]
-        public string Category5 { get; set; }
 
         [StringLength(50)]
         public string SubGroup1 { get; set; }
@@ -144,8 +127,6 @@ namespace ERP_API.Domain.Entities.Inventory
 
         public decimal? CostOfGoodSold { get; set; }
 
-        public short? ValuationMethod { get; set; }
-
         public short? StockType { get; set; }
 
         public int? UomId { get; set; }
@@ -161,16 +142,6 @@ namespace ERP_API.Domain.Entities.Inventory
         public int? SalesTaxId { get; set; }
 
         public int? PurchaseTaxId { get; set; }
-
-        public string Category1 { get; set; }
-
-        public string Category2 { get; set; }
-
-        public string Category3 { get; set; }
-
-        public string Category4 { get; set; }
-
-        public string Category5 { get; set; }
 
         public string SubGroup1 { get; set; }
 

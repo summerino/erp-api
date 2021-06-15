@@ -65,7 +65,6 @@ namespace ERP_API.Domain.Entities.Inventory
     [Table("TransferStockDetail", Schema = Schema.Inventory)]
     public class TransferStockDetail
     {
-        [Key]
         public long Id { get; set; }
 
         [StringLength(17)]

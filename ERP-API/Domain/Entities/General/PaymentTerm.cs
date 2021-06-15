@@ -2,10 +2,10 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using ERP_API.Domain.Entities.Core;
 
-namespace ERP_API.Domain.Entities.Sales
+namespace ERP_API.Domain.Entities.General
 {
-    [Table("SalesmanGroup", Schema = Schema.Sales)]
-    public class SalesmanGroup : BaseEntityWithActive
+    [Table("PaymentTerm", Schema = Schema.General)]
+    public class PaymentTerm : BaseEntityWithActive
     {
         public int Id { get; set; }
 
@@ -17,10 +17,10 @@ namespace ERP_API.Domain.Entities.Sales
         [StringLength(50)]
         public string Name { get; set; }
 
-        public long SupervisorId { get; set; }
+        public short Due { get; set; }
     }
 
-    public class VwSalesmanGroup : BaseEntityWithActive
+    public class VwPaymentTerm : BaseEntityWithActive
     {
         public int Id { get; set; }
 
@@ -28,10 +28,8 @@ namespace ERP_API.Domain.Entities.Sales
 
         public string Name { get; set; }
 
-        public long SupervisorId { get; set; }
+        public short Due { get; set; }
 
-
-        public string SupervisorInitial { get; set; }
 
         public string UpdatedInitial { get; set; }
     }
