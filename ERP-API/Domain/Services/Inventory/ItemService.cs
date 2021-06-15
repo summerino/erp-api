@@ -122,7 +122,6 @@ namespace ERP_API.Domain.Services.Inventory
                         UomInitial = x.UomInitial,
                         UomSellId = x.UomSellId,
                         UomSellName = x.UomSellName,
-                        //ValuationMethod = x.ValuationMethod,
                         Weight = x.Weight,
                         WeightMeasurement = x.WeightMeasurement,
                         Width = x.Width,
