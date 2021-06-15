@@ -197,13 +197,22 @@ namespace ERP_API.Domain.Entities.Inventory
         public string UomSellName { get; set; }
 
         public string UomBuyName { get; set; }
+        public int? BuySeq { get; set; }
+        public int? SellSeq { get; set; }
 
-        public decimal QtyOnHand { get; set; }
-        
-        public double SellQtyAvailable { get; set; }
+        public decimal? QtyOnHand { get; set; }
 
-        public double BuyQtyAvailable { get; set; }
-        
+        public decimal? QtyOnOrder { get; set; } 
+
+        public decimal? QtyOnIndent { get; set; }
+
+        public decimal? QtyOnTransfer { get; set; }
+
+        public decimal SellQtyAvailable { get; set; }
+
+        public decimal BuyQtyAvailable { get; set; }
+        public string WarehouseCode { get; set; }
+
         public string CreatedInitial { get; set; }
         
         public string UpdatedInitial { get; set; }
