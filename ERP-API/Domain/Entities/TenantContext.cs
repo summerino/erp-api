@@ -154,6 +154,7 @@ namespace ERP_API.Domain.Entities
 
         // System Management Entities
         public DbSet<SystemManagement.Action> Actions { get; set; }
+        public DbSet<Company> Companies { get; set; }
         public DbSet<Menu> Menus { get; set; }
         public DbSet<MenuAction> MenuActions { get; set; }
         public DbSet<Role> Roles { get; set; }
