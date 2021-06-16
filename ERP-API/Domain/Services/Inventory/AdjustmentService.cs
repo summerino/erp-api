@@ -155,6 +155,7 @@ namespace ERP_API.Domain.Services.Inventory
                 // Checking mark header data
                 if (Db.AdjustmentHeaders.Any(x => x.Code == data.Code && x.Mark == "V"))
                 {
+
                     result.Message = "Data penyesuaian tidak bisa di ubah karena sudah ditandai sebagai void.";
                     return result;
                 }
@@ -285,13 +286,16 @@ namespace ERP_API.Domain.Services.Inventory
                 RefCode2 = null,
                 UnitId = item.UnitId,
                 UomId = item.UomId,
-                Type = "OH"                 
+                Type = "OH",
+                BaseQty = item.QtyAdjust, // will be update to baseqty on sp
+                BaseUnit = item.UnitId // will be update to base unit on sp
             };
         }
         private void AddStockMutation(AdjustmentRequest data, AdjustmentDetail item) {
             if (item.QtyAdjust > 0)
             {
-                Db.StockMutations.Add(GetStockMutation(data, item));
+                var stockMutation = GetStockMutation(data, item);
+                Db.StockMutations.Add(stockMutation);
             }
         }
       

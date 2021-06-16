@@ -42,15 +42,15 @@ namespace ERP_API.Controllers.Inventory
             var result = (List<VwItem>)data.Data;
             foreach (var item in result)
             {
-                if (item.QtyOnHand != null && item.QtyOnIndent != null && item.QtyOnOrder != null && item.QtyOnTransfer != null) {
-                    if (item.BuySeq != null)
-                    {
-                        item.BuyQtyAvailable = (decimal)((item.QtyOnHand - item.QtyOnOrder) / uomC.Where(u => u.UomId.Equals(item.UomId) && u.Seq <= item.BuySeq).Select(x => x.Conversion).Aggregate((a, x) => a * x));
-                    }
-                    if (item.BuySeq != null)
-                    {
-                        item.SellQtyAvailable = (decimal)((item.QtyOnHand - item.QtyOnOrder) / uomC.Where(u => u.UomId.Equals(item.UomId) && u.Seq <= item.SellSeq).Select(x => x.Conversion).Aggregate((a, x) => a * x));
-                    }
+                MapNull(item);
+
+                if (item.BuySeq != null)
+                {
+                    item.BuyQtyAvailable = (decimal)((item.QtyOnHand - item.QtyOnOrder) / uomC.Where(u => u.UomId.Equals(item.UomId) && u.Seq <= item.BuySeq).Select(x => x.Conversion).Aggregate((a, x) => a * x));
+                }
+                if (item.BuySeq != null)
+                {
+                    item.SellQtyAvailable = (decimal)((item.QtyOnHand - item.QtyOnOrder) / uomC.Where(u => u.UomId.Equals(item.UomId) && u.Seq <= item.SellSeq).Select(x => x.Conversion).Aggregate((a, x) => a * x));
                 }
             }
             return Ok(new ApiResponse
@@ -91,6 +91,21 @@ namespace ERP_API.Controllers.Inventory
             var result = _item.Delete(id, _claim.UserId);
 
             return Ok(result);
+        }
+
+        private void MapNull(VwItem data) 
+        {
+            if (data.QtyOnHand == null)
+                data.QtyOnHand = 0;
+
+            if (data.QtyOnIndent == null)
+                data.QtyOnIndent = 0;
+
+            if (data.QtyOnOrder == null)
+                data.QtyOnOrder = 0;
+
+            if (data.QtyOnTransfer == null)
+                data.QtyOnTransfer = 0;
         }
     }
 }
