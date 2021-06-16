@@ -267,6 +267,39 @@ namespace ERP_API.Domain.Entities.Sales
         public string UnitName { get; set; }
     }
 
+    [Table("SalesOrderDetailDiscount", Schema = Schema.Sales)]
+    public class SalesOrderDetailDiscount
+    {
+        public long Id { get; set; }
+
+        [StringLength(17)]
+        public string Code { get; set; }
+
+        public long OrderDetailId { get; set; }
+
+        public short LineNo { get; set; }
+
+        [StringLength(17)]
+        public string PromoCode { get; set; }
+
+        public long? PromoDetailId { get; set; }
+
+        [StringLength(50)]
+        public string Name { get; set; }
+
+        public bool IsPercentage { get; set; }
+
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal Value { get; set; }
+
+        [Column(TypeName = "decimal(19, 6)")]
+        public decimal Amount { get; set; }
+
+        [Required]
+        [StringLength(6)]
+        public string CoaCode { get; set; }
+    }
+
     [Table("SalesOrderDetailFreeGood", Schema = Schema.Sales)]
     public class SalesOrderDetailFreeGood
     {

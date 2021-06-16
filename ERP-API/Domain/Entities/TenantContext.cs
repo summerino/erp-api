@@ -138,6 +138,7 @@ namespace ERP_API.Domain.Entities
         public DbSet<VwSalesOrderHeader> VwSalesOrderHeaders { get; set; }
         public DbSet<SalesOrderDetail> SalesOrderDetails { get; set; }
         public DbSet<VwSalesOrderDetail> VwSalesOrderDetails { get; set; }
+        public DbSet<SalesOrderDetailDiscount> SalesOrderDetailDiscounts { get; set; }
         public DbSet<SalesOrderDetailFreeGood> SalesOrderDetailFreeGoods { get; set; }
         public DbSet<SalesReturnHeader> SalesReturnHeaders { get; set; }
         public DbSet<VwSalesReturnHeader> VwSalesReturnHeaders { get; set; }
@@ -861,6 +862,11 @@ namespace ERP_API.Domain.Entities
             modelBuilder.Entity<VwSalesOrderDetail>()
                 .HasNoKey()
                 .ToView("vwSalesOrderDetail", Schema.Sales);
+
+            modelBuilder.Entity<SalesOrderDetailDiscount>(entity =>
+                entity.Property(e => e.Code)
+                    .IsRequired()
+            );
 
             modelBuilder.Entity<SalesOrderDetailFreeGood>(entity =>
                 entity.Property(e => e.Code)
