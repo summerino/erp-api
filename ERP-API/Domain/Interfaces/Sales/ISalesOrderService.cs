@@ -14,6 +14,10 @@ namespace ERP_API.Domain.Interfaces.Sales
 
         List<dynamic> GetRelatedTransactions(string code);
 
+        IEnumerable<DetailFreeGoodData> GetFreeDetailData(string code);
+
+        IEnumerable<SalesOrderDetailDiscount> GetDiscDetailData(string code);
+
         SaveResult Insert(SalesOrderRequest data);
 
         SaveResult Update(SalesOrderRequest data);

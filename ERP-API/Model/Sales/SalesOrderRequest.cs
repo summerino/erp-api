@@ -6,7 +6,7 @@ namespace ERP_API.Model.Sales
 {
     public class SalesOrderRequest : SalesOrderHeader
     {
-        public IEnumerable<SalesOrderDetail> ItemDetails { get; set; }
+        public IEnumerable<SalesOrderDetailRequest> ItemDetails { get; set; }
 
         public DateTime DlvDate { get; set; }
 
@@ -17,5 +17,21 @@ namespace ERP_API.Model.Sales
         public DateTime InvDueDate { get; set; }
 
         public bool IsSoInv { get; set; }
+    }
+
+    public class SalesOrderDetailRequest : SalesOrderDetail
+    {
+        public IEnumerable<SalesOrderDetailFreeGood> FreeItemDetails { get; set; }
+
+        public IEnumerable<SalesOrderDetailDiscount> DiscountItemDetails { get; set; }
+    }
+
+    public class DetailFreeGoodData : SalesOrderDetailFreeGood 
+    {
+        public string Initial { get; set; }
+
+        public string Name { get; set; }
+
+        public string UnitName { get; set; }
     }
 }
