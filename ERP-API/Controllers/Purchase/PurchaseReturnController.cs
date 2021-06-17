@@ -10,6 +10,7 @@ using ERP_API.Model;
 using ERP_API.Model.Purchase;
 using Newtonsoft.Json;
 using ERP_API.Domain.Interfaces.Inventory;
+using ERP_API.Domain.Interfaces.Auth;
 
 namespace ERP_API.Controllers.Purchase
 {
@@ -20,12 +21,15 @@ namespace ERP_API.Controllers.Purchase
         private readonly IPurchaseReturnService _rtn;
         private readonly IClaimService _claim;
         private readonly IUnitOfMeasurementService _uom;
+        private readonly IAuthService _auth;
+        private const int _menuId = (int)Menu.PurchaseReturn;
 
-        public PurchaseReturnController(IPurchaseReturnService rtn, IClaimService claim, IUnitOfMeasurementService uom)
+        public PurchaseReturnController(IPurchaseReturnService rtn, IClaimService claim, IUnitOfMeasurementService uom, IAuthService auth)
         {
             _rtn = rtn;
             _claim = claim;
             _uom = uom;
+            _auth = auth;
         }
 
         [HttpGet]
@@ -176,6 +180,12 @@ namespace ERP_API.Controllers.Purchase
         [HttpPost]
         public IActionResult OnPost(PurchaseReturnRequest data)
         {
+
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Insert }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
+
             // Validate process
             var (isValid, message) = Validate(data);
             if (!isValid)
@@ -196,6 +206,12 @@ namespace ERP_API.Controllers.Purchase
         [HttpPut("{code}")]
         public IActionResult OnPut(string code, PurchaseReturnRequest data)
         {
+
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Update }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
+
             // Validate process
             var (isValid, message) = Validate(data);
             if (!isValid)
@@ -213,6 +229,12 @@ namespace ERP_API.Controllers.Purchase
         [HttpDelete("{code}")]
         public IActionResult OnDelete(string code)
         {
+
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Delete }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
+
             var result = _rtn.Delete(code, _claim.UserId);
 
             return Ok(result);

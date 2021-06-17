@@ -10,6 +10,7 @@ using ERP_API.Domain.Services;
 using ERP_API.Model;
 using ERP_API.Model.Purchase;
 using Newtonsoft.Json;
+using ERP_API.Domain.Interfaces.Auth;
 
 namespace ERP_API.Controllers.Purchase
 {
@@ -20,12 +21,15 @@ namespace ERP_API.Controllers.Purchase
         private readonly IPurchaseOrderService _po;
         private readonly IUnitOfMeasurementService _uom;
         private readonly IClaimService _claim;
+        private readonly IAuthService _auth;
+        private const int _menuId = (int)Menu.PurchaseOrder;
 
-        public PurchaseOrderController(IPurchaseOrderService po, IUnitOfMeasurementService uom, IClaimService claim)
+        public PurchaseOrderController(IPurchaseOrderService po, IUnitOfMeasurementService uom, IClaimService claim, IAuthService auth)
         {
             _po = po;
             _uom = uom;
             _claim = claim;
+            _auth = auth;
         }
 
         [HttpGet]
@@ -97,6 +101,12 @@ namespace ERP_API.Controllers.Purchase
         [HttpPost]
         public IActionResult OnPost(PurchaseOrderRequest data)
         {
+
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Insert }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
+
             // Validate process
             var (isValid, message) = Validate(data);
             if (!isValid)
@@ -117,6 +127,12 @@ namespace ERP_API.Controllers.Purchase
         [HttpPut("{code}")]
         public IActionResult OnPut(string code, PurchaseOrderRequest data)
         {
+
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Update }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
+
             // Validate process
             var (isValid, message) = Validate(data);
             if (!isValid)
@@ -134,6 +150,10 @@ namespace ERP_API.Controllers.Purchase
         [HttpDelete("{code}")]
         public IActionResult OnDelete(string code)
         {
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Delete }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
             var result = _po.Delete(code, _claim.UserId);
 
             return Ok(result);
@@ -142,6 +162,10 @@ namespace ERP_API.Controllers.Purchase
         [HttpPut("close/{code}")]
         public IActionResult OnClose(string code)
         {
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Close }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
             var result = _po.Close(code, _claim.UserId);
 
             return Ok(result);

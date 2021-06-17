@@ -9,6 +9,7 @@ using ERP_API.Domain.Services;
 using ERP_API.Domain.Entities.Sales;
 using ERP_API.Model;
 using Newtonsoft.Json;
+using ERP_API.Domain.Interfaces.Auth;
 
 namespace ERP_API.Controllers.Sales
 {
@@ -19,10 +20,13 @@ namespace ERP_API.Controllers.Sales
     {
         private readonly IAreaService _area;
         private readonly IClaimService _claim;
-
-        public AreaController(IAreaService area)
+        private readonly IAuthService _auth;
+        private const int _menuId = (int)Menu.Area;
+        public AreaController(IAreaService area, IClaimService claim, IAuthService auth)
         {
             _area = area;
+            _claim = claim;
+            _auth = auth;
         }
 
         [HttpGet]
@@ -73,6 +77,12 @@ namespace ERP_API.Controllers.Sales
         [HttpPost]
         public IActionResult OnPost(Area data)
         {
+
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Insert }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
+
             data.IsActive = true;
             data.CreatedBy = 1;
             data.CreatedDate = DateTime.Now;
@@ -87,6 +97,12 @@ namespace ERP_API.Controllers.Sales
         [HttpPut("{id}")]
         public IActionResult OnPut(int id, Area data)
         {
+
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Update }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
+
             data.UpdatedBy = 1;
             data.UpdatedDate = DateTime.Now;
 
@@ -98,6 +114,12 @@ namespace ERP_API.Controllers.Sales
         [HttpDelete("{id}")]
         public IActionResult OnDelete(int id)
         {
+
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Delete }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
+
             var result = _area.Delete(id, 1);
 
             return Ok(result);

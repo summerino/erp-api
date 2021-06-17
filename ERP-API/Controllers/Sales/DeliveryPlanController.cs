@@ -1,4 +1,5 @@
-﻿using ERP_API.Domain.Interfaces.Sales;
+﻿using ERP_API.Domain.Interfaces.Auth;
+using ERP_API.Domain.Interfaces.Sales;
 using ERP_API.Domain.Models;
 using ERP_API.Domain.Services;
 using ERP_API.Model;
@@ -19,11 +20,14 @@ namespace ERP_API.Controllers.Sales
     {
         private readonly IDeliveryPlanService _dp;
         private readonly IClaimService _claim;
+        private readonly IAuthService _auth;
+        private const int _menuId = (int)Menu.DeliveryPlan;
 
-        public DeliveryPlanController(IDeliveryPlanService deliveryPlan, IClaimService claimService)
+        public DeliveryPlanController(IDeliveryPlanService deliveryPlan, IClaimService claimService, IAuthService auth)
         {
             _dp = deliveryPlan;
             _claim = claimService;
+            _auth = auth;
         }
 
         [HttpGet]
@@ -97,6 +101,12 @@ namespace ERP_API.Controllers.Sales
         [HttpPost]
         public IActionResult OnPost(DeliveryPlanRequest data)
         {
+
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Insert }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
+
             // Validate process
             var (isValid, message) = Validate(data);
             if (!isValid)
@@ -117,6 +127,12 @@ namespace ERP_API.Controllers.Sales
         [HttpPut("{code}")]
         public IActionResult OnPut(string code, DeliveryPlanRequest data)
         {
+
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Update }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
+
             // Validate process
             var (isValid, message) = Validate(data);
             if (!isValid)
@@ -134,6 +150,12 @@ namespace ERP_API.Controllers.Sales
         [HttpDelete("{code}")]
         public IActionResult OnDelete(string code)
         {
+
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Delete }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
+
             var result = _dp.Delete(code, _claim.UserId);
 
             return Ok(result);

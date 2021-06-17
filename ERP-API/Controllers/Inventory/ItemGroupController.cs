@@ -10,6 +10,7 @@ using ERP_API.Domain.Services;
 using ERP_API.Model;
 using ERP_API.Model.Inventory;
 using Newtonsoft.Json;
+using ERP_API.Domain.Interfaces.Auth;
 
 namespace ERP_API.Controllers.Inventory
 {
@@ -18,10 +19,15 @@ namespace ERP_API.Controllers.Inventory
     public class ItemGroupController : ControllerBase
     {
         private readonly IItemGroupService _itemGroup;
+        private readonly IClaimService _claim;
+        private readonly IAuthService _auth;
+        private const int _menuId = (int)Menu.ItemGroup;
 
-        public ItemGroupController(IItemGroupService itemGroup)
+        public ItemGroupController(IItemGroupService itemGroup, IClaimService claim, IAuthService auth)
         {
             _itemGroup = itemGroup;
+            _claim = claim;
+            _auth = auth;
         }
 
         [HttpGet]
@@ -104,6 +110,11 @@ namespace ERP_API.Controllers.Inventory
         [HttpPost]
         public IActionResult OnPost(ItemGroupRequest data)
         {
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Insert }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
+
             data.IsActive = true;
             data.CreatedBy = 1;
             data.CreatedDate = DateTime.Now;
@@ -118,6 +129,12 @@ namespace ERP_API.Controllers.Inventory
         [HttpPut("{id}")]
         public IActionResult OnPut(int id, ItemGroupRequest data)
         {
+
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Update }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
+
             data.UpdatedBy = 1;
             data.UpdatedDate = DateTime.Now;
 
@@ -129,8 +146,12 @@ namespace ERP_API.Controllers.Inventory
         [HttpDelete("{id}")]
         public IActionResult OnDelete(int id)
         {
-            var result = _itemGroup.Delete(id, 1);
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Delete }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
 
+            var result = _itemGroup.Delete(id, 1);
             return Ok(result);
         }
     }

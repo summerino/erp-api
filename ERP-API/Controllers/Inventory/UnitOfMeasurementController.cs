@@ -8,6 +8,7 @@ using ERP_API.Domain.Services;
 using ERP_API.Model;
 using ERP_API.Model.Inventory;
 using Newtonsoft.Json;
+using ERP_API.Domain.Interfaces.Auth;
 
 namespace ERP_API.Controllers.Inventory
 {
@@ -18,11 +19,14 @@ namespace ERP_API.Controllers.Inventory
     {
         private readonly IUnitOfMeasurementService _uom;
         private readonly IClaimService _claim;
+        private readonly IAuthService _auth;
+        private const int _menuId = (int)Menu.Uom;
 
-        public UnitOfMeasurementController(IUnitOfMeasurementService uom, IClaimService claim)
+        public UnitOfMeasurementController(IUnitOfMeasurementService uom, IClaimService claim, IAuthService auth)
         {
             _uom = uom;
             _claim = claim;
+            _auth = auth;
         }
 
         [HttpGet]
@@ -78,7 +82,10 @@ namespace ERP_API.Controllers.Inventory
         [HttpPost]
         public IActionResult OnPost(UnitOfMeasurementRequest data)
         {
-
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Insert }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
             // Validate process
             var (isValid, message) = Validate(data);
             if (!isValid)
@@ -90,6 +97,10 @@ namespace ERP_API.Controllers.Inventory
         [HttpPut("{id}")]
         public IActionResult OnPut(string id, UnitOfMeasurementRequest data)
         {
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Update }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
             // Validate process
             var (isValid, message) = Validate(data);
             if (!isValid)
@@ -101,6 +112,11 @@ namespace ERP_API.Controllers.Inventory
         [HttpDelete("{id}")]
         public IActionResult OnDelete(int id)
         {
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Delete }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
+
             var result = _uom.Delete(id, _claim.UserId);
             return Ok(result);
         }

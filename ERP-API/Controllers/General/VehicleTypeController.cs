@@ -10,6 +10,7 @@ using ERP_API.Domain.Services;
 using ERP_API.Model;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.Authorization;
+using ERP_API.Domain.Interfaces.Auth;
 
 namespace ERP_API.Controllers.General
 {
@@ -19,11 +20,14 @@ namespace ERP_API.Controllers.General
     {
         private readonly IVehicleTypeService _vehicleType;
         private readonly IClaimService _claim;
+        private readonly IAuthService _auth;
+        private const int _menuId = (int)Menu.VehicleType;
 
-        public VehicleTypeController(IVehicleTypeService vehicleType, IClaimService claimService)
+        public VehicleTypeController(IVehicleTypeService vehicleType, IClaimService claimService, IAuthService auth)
         {
             _vehicleType = vehicleType;
             _claim = claimService;
+            _auth = auth;
         }
 
         [HttpGet]
@@ -69,6 +73,10 @@ namespace ERP_API.Controllers.General
         [HttpPost]
         public IActionResult OnPost(VehicleType data)
         {
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Insert }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
             data.IsActive = true;
             data.CreatedBy = _claim.UserId;
             data.CreatedDate = DateTime.Now;
@@ -83,6 +91,10 @@ namespace ERP_API.Controllers.General
         [HttpPut("{id}")]
         public IActionResult OnPut(string id, VehicleType data)
         {
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Update }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
             data.UpdatedBy = _claim.UserId;
             data.UpdatedDate = DateTime.Now;
 
@@ -94,6 +106,10 @@ namespace ERP_API.Controllers.General
         [HttpDelete("{id}")]
         public IActionResult OnDelete(int id)
         {
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Delete }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
             var result = _vehicleType.Delete(id, _claim.UserId);
 
             return Ok(result);

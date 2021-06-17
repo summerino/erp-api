@@ -9,6 +9,8 @@ using ERP_API.Domain.Services;
 using ERP_API.Model;
 using ERP_API.Model.SystemManagement;
 using Newtonsoft.Json;
+using ERP_API.Domain.Interfaces.Auth;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ERP_API.Controllers.SystemManagement
 {
@@ -18,11 +20,13 @@ namespace ERP_API.Controllers.SystemManagement
     {
         private readonly IRoleService _role;
         private readonly IClaimService _claim;
-
-        public RoleController(IRoleService role, IClaimService claim)
+        private readonly IAuthService _auth;
+        private const int _menuId = (int)Menu.Role;
+        public RoleController(IRoleService role, IClaimService claim, IAuthService auth)
         {
             _role = role;
             _claim = claim;
+            _auth = auth;
         }
 
         [HttpGet]
@@ -73,6 +77,10 @@ namespace ERP_API.Controllers.SystemManagement
         [HttpPost]
         public IActionResult OnPost(RoleRequest data)
         {
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Insert }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
             data.IsActive = true;
             data.CreatedBy = 1;
             data.CreatedDate = DateTime.Now;
@@ -87,6 +95,12 @@ namespace ERP_API.Controllers.SystemManagement
         [HttpPut("{id}")]
         public IActionResult OnPut(int id, RoleRequest data)
         {
+
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Update }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
+
             data.UpdatedBy = 1;
             data.UpdatedDate = DateTime.Now;
 
@@ -98,8 +112,27 @@ namespace ERP_API.Controllers.SystemManagement
         [HttpDelete("{id}")]
         public IActionResult OnDelete(int id)
         {
+
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Delete }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
+
             var result = _role.Delete(id, 1);
 
+            return Ok(result);
+        }
+
+        [HttpGet]
+        [Route("get-action")]
+        [AllowAnonymous]
+        public IActionResult GetAction(int menuId, string actions)
+        {
+            var result = _auth.GetActions(
+                menuId, 
+                _claim.RoleId, 
+                JsonConvert.DeserializeObject<List<int>>(actions)
+                );
             return Ok(result);
         }
     }

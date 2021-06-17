@@ -9,6 +9,7 @@ using ERP_API.Domain.Models;
 using ERP_API.Domain.Services;
 using ERP_API.Model;
 using Newtonsoft.Json;
+using ERP_API.Domain.Interfaces.Auth;
 
 namespace ERP_API.Controllers.Accounting
 {
@@ -18,11 +19,13 @@ namespace ERP_API.Controllers.Accounting
     {
         private readonly ICoaService _coa;
         private readonly IClaimService _claim;
-
-        public CoaController(ICoaService coa, IClaimService claim)
+        private readonly IAuthService _auth;
+        private const int _menuId = (int)Menu.COA;
+        public CoaController(ICoaService coa, IClaimService claim, IAuthService auth)
         {
             _coa = coa;
             _claim = claim;
+            _auth = auth;
         }
 
         [HttpGet]
@@ -66,6 +69,12 @@ namespace ERP_API.Controllers.Accounting
         [HttpPost]
         public IActionResult OnPost(Coa data)
         {
+
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Insert }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
+
             data.IsActive = true;
             data.CreatedBy = _claim.UserId;
             data.CreatedDate = DateTime.Now;
@@ -80,6 +89,12 @@ namespace ERP_API.Controllers.Accounting
         [HttpPut("{id}")]
         public IActionResult OnPut(string id, Coa data)
         {
+
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Update }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
+
             data.UpdatedBy = _claim.UserId;
             data.UpdatedDate = DateTime.Now;
 
@@ -91,6 +106,12 @@ namespace ERP_API.Controllers.Accounting
         [HttpDelete("{id}")]
         public IActionResult OnDelete(int id)
         {
+
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Delete }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
+
             var result = _coa.Delete(id, _claim.UserId);
 
             return Ok(result);
