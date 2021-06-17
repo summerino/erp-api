@@ -72,8 +72,8 @@ namespace ERP_API.Domain.Services.General
                 Db.SaveChanges();
 
                 // Get temporary billing & shipping
-                var tempBillingId = data.BillingAddressId;
-                var tempShippingId = data.ShippingAddressId;
+                var tempBillingId = data.BillingAddressId != null ? data.BillingAddressId : 0;
+                var tempShippingId = data.ShippingAddressId != null ? data.ShippingAddressId : 0;
                 var tempBillingInitial = "";
                 var tempShippingInitial = "";
 
@@ -168,8 +168,8 @@ namespace ERP_API.Domain.Services.General
             Db.CustomerAddress.RemoveRange(delDetails);
 
             // Get temporary billing & shipping to prevent if user choose a new address
-            var tempBillingId = data.BillingAddressId;
-            var tempShippingId = data.ShippingAddressId;
+            var tempBillingId = data.BillingAddressId != null ? data.BillingAddressId : 0;
+            var tempShippingId = data.ShippingAddressId != null ? data.ShippingAddressId : 0;
             var tempBillingInitial = "";
             var tempShippingInitial = "";
 
@@ -307,7 +307,13 @@ namespace ERP_API.Domain.Services.General
                     .Where(d => d.Initial == initial && d.Code == code)
                     .ToList();
 
-            return (addrDetails[0].Id > 0) ? addrDetails[0].Id : 0;
+            if (addrDetails.Count > 0)
+            {
+                return (addrDetails[0].Id > 0) ? addrDetails[0].Id : 0;
+            } else
+            {
+                return 0;
+            }
         }
     }
 }
