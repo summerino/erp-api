@@ -5,6 +5,11 @@ namespace ERP_API.Model.Sales
 {
     public class SalesDeliveryRequest : SalesDeliveryHeader
     {
-        public IEnumerable<SalesDeliveryDetail> ItemDetails { get; set; }
+        public IEnumerable<SalesDeliveryDetailRequest> ItemDetails { get; set; }
+    }
+
+    public class SalesDeliveryDetailRequest : SalesDeliveryDetail
+    {
+        public IEnumerable<SalesDeliveryDetailFreeGood> FreeItemDetails { get; set; }
     }
 }
