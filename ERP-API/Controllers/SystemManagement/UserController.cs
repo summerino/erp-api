@@ -12,6 +12,7 @@ using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Threading.Tasks;
 using ERP_API.Model.SystemManagement;
+using ERP_API.Domain.Interfaces.Auth;
 
 namespace ERP_API.Controllers.SystemManagement
 {
@@ -21,9 +22,12 @@ namespace ERP_API.Controllers.SystemManagement
     {
         private readonly IUserService _userService;
         private readonly IClaimService _claim;
-        public UserController(IUserService userService, IClaimService claimService)
+        private readonly IAuthService _auth;
+        private const int _menuId = (int)Model.Menu.User;
+        public UserController(IUserService userService, IClaimService claimService, IAuthService auth)
         {
             _userService = userService;
+            _auth = auth;
             _claim = claimService;
         }
 
@@ -47,6 +51,12 @@ namespace ERP_API.Controllers.SystemManagement
         [HttpPost]
         public IActionResult OnPost(UserRequest data)
         {
+
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Insert }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
+
             data.IsActive = true;
             data.CreatedBy = _claim.UserId;
             data.CreatedDate = DateTime.Now;
@@ -61,6 +71,12 @@ namespace ERP_API.Controllers.SystemManagement
         [HttpPut("{id}")]
         public IActionResult OnPut(UserRequest data)
         {
+
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Update }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
+
             data.UpdatedBy = _claim.UserId;
             data.UpdatedDate = DateTime.Now;
             var result = _userService.Update(data);
@@ -71,6 +87,12 @@ namespace ERP_API.Controllers.SystemManagement
         [HttpDelete("{id}")]
         public IActionResult OnDelete(int id)
         {
+
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Delete }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
+
             var result = _userService.Delete(id);
 
             return Ok(result);

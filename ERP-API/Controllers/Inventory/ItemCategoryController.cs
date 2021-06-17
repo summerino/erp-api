@@ -9,6 +9,7 @@ using ERP_API.Domain.Services;
 using ERP_API.Domain.Entities.Inventory;
 using ERP_API.Model;
 using Newtonsoft.Json;
+using ERP_API.Domain.Interfaces.Auth;
 
 namespace ERP_API.Controllers.Inventory
 {
@@ -19,10 +20,14 @@ namespace ERP_API.Controllers.Inventory
     {
         private readonly IItemCategoryService _category;
         private readonly IClaimService _claim;
+        private readonly IAuthService _auth;
+        private const int _menuId = (int)Menu.ItemCategory;
 
-        public ItemCategoryController(IItemCategoryService category)
+        public ItemCategoryController(IItemCategoryService category, IClaimService claim, IAuthService auth)
         {
             _category = category;
+            _auth = auth;
+            _claim = claim;
         }
 
         [HttpGet]
@@ -75,6 +80,10 @@ namespace ERP_API.Controllers.Inventory
         [HttpPost]
         public IActionResult OnPost(ItemCategory data)
         {
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Insert }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
             data.IsActive = true;
             data.CreatedBy = 1;
             data.CreatedDate = DateTime.Now;
@@ -89,6 +98,11 @@ namespace ERP_API.Controllers.Inventory
         [HttpPut("{id}")]
         public IActionResult OnPut(int id, ItemCategory data)
         {
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Update }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
+
             data.UpdatedBy = 1;
             data.UpdatedDate = DateTime.Now;
 
@@ -100,8 +114,12 @@ namespace ERP_API.Controllers.Inventory
         [HttpDelete("{id}")]
         public IActionResult OnDelete(int id)
         {
-            var result = _category.Delete(id, 1);
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Delete }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
 
+            var result = _category.Delete(id, 1);
             return Ok(result);
         }
     }

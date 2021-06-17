@@ -8,6 +8,8 @@ using ERP_API.Domain.Models;
 using ERP_API.Model;
 using ERP_API.Model.General;
 using Newtonsoft.Json;
+using ERP_API.Domain.Services;
+using ERP_API.Domain.Interfaces.Auth;
 
 namespace ERP_API.Controllers.General
 {
@@ -16,10 +18,14 @@ namespace ERP_API.Controllers.General
     public class CurrencyController : ControllerBase
     {
         private readonly ICurrencyService _currency;
-
-        public CurrencyController(ICurrencyService currency)
+        private readonly IClaimService _claim;
+        private readonly IAuthService _auth;
+        private const int _menuId = (int)Menu.Currency;
+        public CurrencyController(ICurrencyService currency, IClaimService claim, IAuthService auth)
         {
             _currency = currency;
+            _claim = claim;
+            _auth = auth;
         }
 
         [HttpGet]
@@ -71,6 +77,10 @@ namespace ERP_API.Controllers.General
         [HttpPost]
         public IActionResult OnPost(CurrencyRequest data)
         {
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Insert }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
             data.IsActive = true;
             data.CreatedBy = 1;
             data.CreatedDate = DateTime.Now;
@@ -85,6 +95,10 @@ namespace ERP_API.Controllers.General
         [HttpPut("{code}")]
         public IActionResult OnPut(string code, CurrencyRequest data)
         {
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Update }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
             data.UpdatedBy = 1;
             data.UpdatedDate = DateTime.Now;
 
@@ -96,6 +110,10 @@ namespace ERP_API.Controllers.General
         [HttpDelete("{code}")]
         public IActionResult OnDelete(string code)
         {
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Delete }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
             var result = _currency.Delete(code, 1);
 
             return Ok(result);

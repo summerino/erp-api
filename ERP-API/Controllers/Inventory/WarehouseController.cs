@@ -9,6 +9,7 @@ using ERP_API.Domain.Models;
 using ERP_API.Domain.Services;
 using ERP_API.Model;
 using Newtonsoft.Json;
+using ERP_API.Domain.Interfaces.Auth;
 
 namespace ERP_API.Controllers.Inventory
 {
@@ -18,9 +19,12 @@ namespace ERP_API.Controllers.Inventory
     {
         private readonly IWarehouseService _warehouse;
         private readonly IClaimService _claim;
+        private readonly IAuthService _auth;
+        private const int _menuId = (int)Menu.Warehouse;
 
-        public WarehouseController(IWarehouseService warehouse, IClaimService claim)
+        public WarehouseController(IWarehouseService warehouse, IAuthService auth, IClaimService claim)
         {
+            _auth = auth;
             _warehouse = warehouse;
             _claim = claim;
         }
@@ -67,6 +71,10 @@ namespace ERP_API.Controllers.Inventory
         [HttpPost]
         public IActionResult OnPost(Warehouse data)
         {
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Insert }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
             data.IsActive = true;
             data.CreatedBy = _claim.UserId;
             data.CreatedDate = DateTime.Now;
@@ -74,13 +82,17 @@ namespace ERP_API.Controllers.Inventory
             data.UpdatedDate = data.CreatedDate;
 
             var result = _warehouse.Insert(data);
-
             return Ok(result);
         }
 
         [HttpPut("{code}")]
         public IActionResult OnPut(string code, Warehouse data)
         {
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Update }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
+
             data.UpdatedBy = _claim.UserId;
             data.UpdatedDate = DateTime.Now;
 
@@ -92,6 +104,12 @@ namespace ERP_API.Controllers.Inventory
         [HttpDelete("{code}")]
         public IActionResult OnDelete(string code)
         {
+
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Delete }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
+
             var result = _warehouse.Delete(code, _claim.UserId);
             return Ok(result);
         }

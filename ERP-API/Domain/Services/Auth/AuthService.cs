@@ -8,11 +8,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using ERP_API.Domain.Entities;
-using ERP_API.Domain.Interfaces;
 using ERP_API.Domain.Interfaces.Auth;
 using ERP_API.Model.Auth;
 using UserTenant = ERP_API.Domain.Entities.SystemManagement.User;
 using UserCatalog = ERP_API.Domain.Entities.Catalog.User;
+using System.Collections.Generic;
+using ERP_API.Model;
 
 namespace ERP_API.Domain.Services.Auth
 {
@@ -21,11 +22,14 @@ namespace ERP_API.Domain.Services.Auth
         private readonly CatalogContext _catalogCtx;
         private readonly IClaimService _claim;
         private readonly JwtConfig _jwtConfig;
+        private readonly TenantContext _tenantCtx;
 
         public AuthService(CatalogContext catalogCtx,
             IClaimService claim,
-            IOptionsMonitor<JwtConfig> optionsMonitor)
+            IOptionsMonitor<JwtConfig> optionsMonitor,
+            TenantContext tenantCtx)
         {
+            _tenantCtx = tenantCtx;
             _catalogCtx = catalogCtx;
             _claim = claim;
             _jwtConfig = optionsMonitor.CurrentValue;
@@ -204,6 +208,18 @@ namespace ERP_API.Domain.Services.Auth
             var jwtToken = jwtTokenHandler.WriteToken(token);
 
             return jwtToken;
+        }
+
+        public IEnumerable<int> GetActions(int menuId, int roleId, Actions[] actions)
+        {
+            var arr = actions.Select(x => (int)x).ToList();
+            return GetActions(menuId, roleId, arr);
+        }
+
+        public IEnumerable<int> GetActions(int menuId, int roleId, List<int> actions)
+        {
+            var query = _tenantCtx.RoleMenuActions.Where(x => x.MenuId.Equals(menuId) && x.RoleId.Equals(roleId) && actions.Contains(x.ActionId));
+            return query.Select(x=>x.ActionId);
         }
     }
 }

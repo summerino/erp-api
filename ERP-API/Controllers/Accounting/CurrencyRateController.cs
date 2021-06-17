@@ -9,6 +9,8 @@ using ERP_API.Domain.Services;
 using ERP_API.Model;
 using ERP_API.Model.Accounting;
 using Newtonsoft.Json;
+using ERP_API.Domain.Interfaces.Auth;
+using System.Linq;
 
 namespace ERP_API.Controllers.Accounting
 {
@@ -19,11 +21,14 @@ namespace ERP_API.Controllers.Accounting
     {
         private readonly ICurrencyRateService _currencyRate;
         private readonly IClaimService _claim;
+        private readonly IAuthService _auth;
+        private const int _menuId = (int)Menu.CurrencyRate;
 
-        public CurrencyRateController(ICurrencyRateService currencyRate, IClaimService claim)
+        public CurrencyRateController(ICurrencyRateService currencyRate, IClaimService claim, IAuthService auth)
         {
             _currencyRate = currencyRate;
             _claim = claim;
+            _auth = auth;
         }
 
         [HttpGet]
@@ -46,6 +51,12 @@ namespace ERP_API.Controllers.Accounting
         [HttpPost]
         public IActionResult OnPost(CurrencyRateRequest data)
         {
+
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Insert }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
+
             data.CreatedBy = _claim.UserId;
             data.CreatedDate = DateTime.Now;
             data.UpdatedBy = data.CreatedBy;
@@ -59,6 +70,11 @@ namespace ERP_API.Controllers.Accounting
         [HttpPut("{id}")]
         public IActionResult OnPut(string id, CurrencyRate data)
         {
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Update }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
+
             data.UpdatedBy = _claim.UserId;
             data.UpdatedDate = DateTime.Now;
             var result = _currencyRate.Update(data);

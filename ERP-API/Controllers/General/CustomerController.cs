@@ -9,6 +9,7 @@ using ERP_API.Domain.Services;
 using ERP_API.Model;
 using ERP_API.Model.General;
 using Newtonsoft.Json;
+using ERP_API.Domain.Interfaces.Auth;
 
 namespace ERP_API.Controllers.General
 {
@@ -18,11 +19,14 @@ namespace ERP_API.Controllers.General
     {
         private readonly ICustomerService _customer;
         private readonly IClaimService _claim;
+        private readonly IAuthService _auth;
+        private const int _menuId = (int)Menu.Customer;
 
-        public CustomerController(ICustomerService customer, IClaimService claim)
+        public CustomerController(ICustomerService customer, IClaimService claim, IAuthService auth)
         {
             _customer = customer;
             _claim = claim;
+            _auth = auth;
         }
 
         [HttpGet]
@@ -98,6 +102,12 @@ namespace ERP_API.Controllers.General
         [HttpPost]
         public IActionResult OnPost(CustomerRequest data)
         {
+
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Insert }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
+
             data.IsActive = true;
             data.CreatedBy = _claim.UserId;
             data.CreatedDate = DateTime.Now;
@@ -112,6 +122,12 @@ namespace ERP_API.Controllers.General
         [HttpPut("{code}")]
         public IActionResult OnPut(string code, CustomerRequest data)
         {
+
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Update }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
+
             data.UpdatedBy = _claim.UserId;
             data.UpdatedDate = DateTime.Now;
 
@@ -123,6 +139,12 @@ namespace ERP_API.Controllers.General
         [HttpDelete("{code}")]
         public IActionResult OnDelete(string code)
         {
+
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Delete }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
+
             var result = _customer.Delete(code, _claim.UserId);
 
             return Ok(result);

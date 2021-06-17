@@ -9,6 +9,7 @@ using ERP_API.Domain.Services;
 using ERP_API.Model;
 using ERP_API.Model.Purchase;
 using Newtonsoft.Json;
+using ERP_API.Domain.Interfaces.Auth;
 
 namespace ERP_API.Controllers.Purchase
 {
@@ -18,11 +19,13 @@ namespace ERP_API.Controllers.Purchase
     {
         private readonly IPurchaseReceiveService _rcv;
         private readonly IClaimService _claim;
-
-        public PurchaseReceiveController(IPurchaseReceiveService rcv, IClaimService claim)
+        private readonly IAuthService _auth;
+        private const int _menuId = (int)Menu.PurchaseReceive;
+        public PurchaseReceiveController(IPurchaseReceiveService rcv, IClaimService claim, IAuthService auth)
         {
             _rcv = rcv;
             _claim = claim;
+            _auth = auth;
         }
 
         [HttpGet]
@@ -99,6 +102,12 @@ namespace ERP_API.Controllers.Purchase
         [HttpPost]
         public IActionResult OnPost(PurchaseReceiveRequest data)
         {
+
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Insert }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
+
             // Validate process
             var (isValid, message) = Validate(data);
             if (!isValid)
@@ -119,6 +128,12 @@ namespace ERP_API.Controllers.Purchase
         [HttpPut("{code}")]
         public IActionResult OnPut(string code, PurchaseReceiveRequest data)
         {
+
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Update }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
+
             // Validate process
             var (isValid, message) = Validate(data);
             if (!isValid)
@@ -136,6 +151,12 @@ namespace ERP_API.Controllers.Purchase
         [HttpDelete("{code}")]
         public IActionResult OnDelete(string code)
         {
+
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Delete }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
+
             var result = _rcv.Delete(code, _claim.UserId);
 
             return Ok(result);

@@ -10,6 +10,7 @@ using ERP_API.Domain.Services;
 using ERP_API.Model;
 using ERP_API.Model.Sales;
 using Newtonsoft.Json;
+using ERP_API.Domain.Interfaces.Auth;
 
 namespace ERP_API.Controllers.Sales
 {
@@ -20,12 +21,14 @@ namespace ERP_API.Controllers.Sales
         private readonly ISalesOrderService _so;
         private readonly IUnitOfMeasurementService _uom;
         private readonly IClaimService _claim;
-
-        public SalesOrderController(ISalesOrderService so, IUnitOfMeasurementService uom, IClaimService claim)
+        private readonly IAuthService _auth;
+        private const int _menuId = (int)Menu.SalesOrder;
+        public SalesOrderController(ISalesOrderService so, IUnitOfMeasurementService uom, IClaimService claim, IAuthService auth)
         {
             _so = so;
             _uom = uom;
             _claim = claim;
+            _auth = auth;
         }
 
         [HttpGet]
@@ -115,6 +118,12 @@ namespace ERP_API.Controllers.Sales
         [HttpPost]
         public IActionResult OnPost(SalesOrderRequest data)
         {
+
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Insert }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
+
             // Validate process
             var (isValid, message) = Validate(data);
             if (!isValid)
@@ -135,6 +144,12 @@ namespace ERP_API.Controllers.Sales
         [HttpPut("{code}")]
         public IActionResult OnPut(string code, SalesOrderRequest data)
         {
+
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Update }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
+
             // Validate process
             var (isValid, message) = Validate(data);
             if (!isValid)
@@ -152,6 +167,12 @@ namespace ERP_API.Controllers.Sales
         [HttpDelete("{code}")]
         public IActionResult OnDelete(string code)
         {
+
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Delete }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
+
             var result = _so.Delete(code, _claim.UserId);
 
             return Ok(result);
