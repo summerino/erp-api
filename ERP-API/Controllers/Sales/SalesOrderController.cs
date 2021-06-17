@@ -50,6 +50,8 @@ namespace ERP_API.Controllers.Sales
         {
             var uomC =_uom.GetDataConversion().ToList();
 
+            var discData = _so.GetDiscDetailData(code);
+
             var data = _so.GetDetailData(code, fullReceived)
                 .Select(x => new
                 {
@@ -72,7 +74,8 @@ namespace ERP_API.Controllers.Sales
                     OldUnitPrice = x.ItemSellPrice,
                     TotTax = x.Qty * x.TaxAmount,
                     TotDPP = x.Qty * x.Dpp,
-                    State = ""
+                    State = "",
+                    discPromo = discData.Where(d => d.OrderDetailId == x.Id)
                 })
                 .ToList<dynamic>();
 
@@ -82,6 +85,20 @@ namespace ERP_API.Controllers.Sales
                 TableData = data
             });
         }
+
+        [HttpGet("free-item")]
+        public IActionResult GetFreeDetailData(string code)
+        {
+
+            var data = _so.GetFreeDetailData(code).ToList<dynamic>();
+
+            return Ok(new ApiResponse
+            {
+                RowCount = data.Count,
+                TableData = data
+            });
+        }
+
 
         [HttpGet("related-trans")]
         public IActionResult GetRelatedTransactions(string code)

@@ -118,11 +118,57 @@ namespace ERP_API.Domain.Services.Sales
 
                     Db.SalesOrderDetails.Add(orderDetail);
 
-                    if (data.IsSoDlv || data.IsSoInv)
+                    if (data.IsSoDlv || data.IsSoInv || item.FreeItemDetails.Any() || item.DiscountItemDetails.Any())
                     {
                         Db.SaveChanges();
                         listIdDetail.Add(orderDetail.Id);
                     }
+
+                    if (item.DiscountItemDetails.Any())
+                    {
+                        short d = 0;
+                        foreach (var discItem in item.DiscountItemDetails)
+                        {
+                            Db.SalesOrderDetailDiscounts.Add(new SalesOrderDetailDiscount
+                            {
+                                Code = newCode,
+                                OrderDetailId = orderDetail.Id,
+                                LineNo = ++d,
+                                PromoCode = discItem.PromoCode,
+                                PromoDetailId = discItem.PromoDetailId,
+                                Name = discItem.Name,
+                                IsPercentage = discItem.IsPercentage,
+                                Value = discItem.Value,
+                                Amount = discItem.Amount,
+                                CoaCode = discItem.CoaCode
+                            });
+                        }
+                        Db.SaveChanges();
+                    }
+
+                    if (item.FreeItemDetails.Any())
+                    {
+                        short f = 0;
+                        foreach (var freeItem in item.FreeItemDetails)
+                        {
+                            Db.SalesOrderDetailFreeGoods.Add(new SalesOrderDetailFreeGood
+                            {
+                                Code = newCode,
+                                OrderDetailId = orderDetail.Id,
+                                LineNo = ++f,
+                                PromoCode = freeItem.PromoCode,
+                                ItemId = freeItem.ItemId,
+                                UomId = freeItem.UomId,
+                                UnitId = freeItem.UnitId,
+                                Qty = freeItem.Qty,
+                                QtyClosed = freeItem.QtyClosed,
+                                UnitPrice = freeItem.UnitPrice,
+                                CoaCode = freeItem.CoaCode
+                            });
+                        }
+                        Db.SaveChanges();
+                    }
+                    
                 }
 
                 if (data.IsSoDlv)
@@ -415,7 +461,7 @@ namespace ERP_API.Domain.Services.Sales
 
                         Db.SalesOrderDetails.Add(orderDetail);
 
-                        if (data.IsSoDlv || data.IsSoInv)
+                        if (data.IsSoDlv || data.IsSoInv || item.FreeItemDetails.Any() || item.DiscountItemDetails.Any())
                         {
                             Db.SaveChanges();
                             listIdDetail.Add(orderDetail.Id);
@@ -428,9 +474,86 @@ namespace ERP_API.Domain.Services.Sales
                         Db.SalesOrderDetails.Update(item);
                         Db.Entry(item).Property(e => e.Code).IsModified = false;
 
-                        if (data.IsSoDlv || data.IsSoInv)
+                        if (data.IsSoDlv || data.IsSoInv || item.FreeItemDetails.Any() || item.DiscountItemDetails.Any())
                         {
                             listIdDetail.Add(item.Id);
+                        }
+                    }
+
+                    var delDiscDetails = Db.SalesOrderDetailDiscounts
+                        .Where(d => d.Code == data.Code && d.OrderDetailId == item.Id && !item.DiscountItemDetails.Select(x => x.Id).Contains(d.Id))
+                        .ToList();
+
+                    Db.SalesOrderDetailDiscounts.RemoveRange(delDiscDetails);
+
+                    if (item.DiscountItemDetails.Any())
+                    {
+                        short d = 0;
+                        foreach (var discItem in item.DiscountItemDetails)
+                        {
+                            if (discItem.Id < 0)
+                            {
+                                Db.SalesOrderDetailDiscounts.Add(new SalesOrderDetailDiscount
+                                {
+                                    Code = data.Code,
+                                    OrderDetailId = listIdDetail[i - 1],
+                                    LineNo = ++d,
+                                    PromoCode = discItem.PromoCode,
+                                    PromoDetailId = discItem.PromoDetailId,
+                                    Name = discItem.Name,
+                                    IsPercentage = discItem.IsPercentage,
+                                    Value = discItem.Value,
+                                    Amount = discItem.Amount,
+                                    CoaCode = discItem.CoaCode
+                                });
+                            }
+                            else
+                            {
+                                discItem.LineNo = ++d;
+
+                                Db.SalesOrderDetailDiscounts.Update(discItem);
+                                Db.Entry(discItem).Property(e => e.Id).IsModified = false;
+                                Db.Entry(discItem).Property(e => e.Code).IsModified = false;
+                            }
+                        }
+                    }
+
+                    var delFreeDetails = Db.SalesOrderDetailFreeGoods
+                        .Where(d => d.Code == data.Code && d.OrderDetailId == item.Id &&  !item.FreeItemDetails.Select(x => x.Id).Contains(d.Id))
+                        .ToList();
+
+                    Db.SalesOrderDetailFreeGoods.RemoveRange(delFreeDetails);
+
+                    if (item.FreeItemDetails.Any())
+                    {
+                        short f = 0;
+                        foreach (var freeItem in item.FreeItemDetails)
+                        {
+                            if (freeItem.Id < 0)
+                            {
+                                Db.SalesOrderDetailFreeGoods.Add(new SalesOrderDetailFreeGood
+                                {
+                                    Code = data.Code,
+                                    OrderDetailId = listIdDetail[i - 1],
+                                    LineNo = ++f,
+                                    PromoCode = freeItem.PromoCode,
+                                    ItemId = freeItem.ItemId,
+                                    UomId = freeItem.UomId,
+                                    UnitId = freeItem.UnitId,
+                                    Qty = freeItem.Qty,
+                                    QtyClosed = freeItem.QtyClosed,
+                                    UnitPrice = freeItem.UnitPrice,
+                                    CoaCode = freeItem.CoaCode
+                                });
+                            }
+                            else
+                            {
+                                freeItem.LineNo = ++f;
+
+                                Db.SalesOrderDetailFreeGoods.Update(freeItem);
+                                Db.Entry(freeItem).Property(e => e.Id).IsModified = false;
+                                Db.Entry(freeItem).Property(e => e.Code).IsModified = false;
+                            }
                         }
                     }
                 }
@@ -817,6 +940,38 @@ namespace ERP_API.Domain.Services.Sales
                 }
             }
             return result;
+        }
+
+        public IEnumerable<DetailFreeGoodData> GetFreeDetailData(string code)
+        {
+            var result = (from dc in Db.SalesOrderDetailFreeGoods
+                          join i in Db.Items on dc.ItemId equals i.Id
+                          join u in Db.UoMConversions on dc.UnitId equals u.Id
+                          where dc.Code == code
+                          select new DetailFreeGoodData
+                          {
+                              Id = dc.Id,
+                              Code = dc.Code,
+                              OrderDetailId = dc.OrderDetailId,
+                              LineNo = dc.LineNo,
+                              PromoCode = dc.PromoCode,
+                              ItemId = dc.ItemId,
+                              UomId = dc.UomId,
+                              UnitId = dc.UnitId,
+                              Qty = dc.Qty,
+                              QtyClosed = dc.QtyClosed,
+                              UnitPrice = dc.UnitPrice,
+                              CoaCode = dc.CoaCode,
+                              Initial = i.Initial,
+                              Name = i.Name,
+                              UnitName = u.UnitEquivalent
+                          }).ToList();
+            return result;
+        }
+
+        public IEnumerable<SalesOrderDetailDiscount> GetDiscDetailData(string code)
+        {
+            return Db.SalesOrderDetailDiscounts.Where(x => x.Code == code).ToList();
         }
     }
 }
