@@ -134,6 +134,8 @@ namespace ERP_API.Domain.Entities
         public DbSet<VwSalesmanGroup> VwSalesmanGroups { get; set; }
         public DbSet<SalesmanSchedule> SalesmanSchedules { get; set; }
         public DbSet<SalesmanScheduleCustomer> SalesmanScheduleCustomers { get; set; }
+        public DbSet<VwSalesmanSchedule> VwSalesmanSchedules { get; set; }
+        public DbSet<VwSalesmanScheduleCustomer> VwSalesmanScheduleCustomers { get; set; }
         public DbSet<SalesOrderHeader> SalesOrderHeaders { get; set; }
         public DbSet<VwSalesOrderHeader> VwSalesOrderHeaders { get; set; }
         public DbSet<SalesOrderDetail> SalesOrderDetails { get; set; }
@@ -149,9 +151,13 @@ namespace ERP_API.Domain.Entities
         public DbSet<VisitOrder> VisitOrders { get; set; }
         public DbSet<VisitOrderCustomer> VisitOrderCustomers { get; set; }
         public DbSet<VisitOrderInvoice> VisitOrderInvoices { get; set; }
+        public DbSet<VwVisitOrder> VwVisitOrders { get; set; }
         public DbSet<VisitPlanHeader> VisitPlanHeaders { get; set; }
         public DbSet<VisitPlanDetail> VisitPlanDetails { get; set; }
         public DbSet<VisitPlanDetailCustomer> VisitPlanDetailCustomers { get; set; }
+        public DbSet<VwVisitPlanHeader> VwVisitPlanHeaders { get; set; }
+        public DbSet<VwVisitPlanDetail> VwVisitPlanDetails { get; set; }
+        public DbSet<VwVisitPlanDetailCustomer> VwVisitPlanDetailCustomers { get; set; }
 
         // System Management Entities
         public DbSet<SystemManagement.Action> Actions { get; set; }
@@ -844,6 +850,14 @@ namespace ERP_API.Domain.Entities
                 .HasNoKey()
                 .ToView("vwSalesmanGroup", Schema.Sales);
 
+            modelBuilder.Entity<VwSalesmanSchedule>()
+                .HasNoKey()
+                .ToView("vwSalesmanSchedule", Schema.Sales);
+
+            modelBuilder.Entity<VwSalesmanScheduleCustomer>()
+                .HasNoKey()
+                .ToView("vwSalesmanScheduleCustomer", Schema.Sales);
+
             // Sales Order entities
             modelBuilder.Entity<SalesOrderHeader>(entity =>
                 entity.Property(e => e.Mark)
@@ -917,6 +931,10 @@ namespace ERP_API.Domain.Entities
                     .IsRequired()
             );
 
+            modelBuilder.Entity<VwVisitOrder>()
+                .HasNoKey()
+                .ToView("vwVisitOrder", Schema.Sales);
+
             // Visit Plan entities
             modelBuilder.Entity<VisitPlanHeader>(entity =>
                 entity.Property(e => e.Mark)
@@ -927,6 +945,18 @@ namespace ERP_API.Domain.Entities
                 entity.Property(e => e.Code)
                     .IsRequired()
             );
+
+            modelBuilder.Entity<VwVisitPlanHeader>()
+                .HasNoKey()
+                .ToView("vwVisitPlanHeader", Schema.Sales);
+
+            modelBuilder.Entity<VwVisitPlanDetail>()
+                .HasNoKey()
+                .ToView("vwVisitPlanDetail", Schema.Sales);
+
+            modelBuilder.Entity<VwVisitPlanDetailCustomer>()
+                .HasNoKey()
+                .ToView("vwVisitPlanDetailCustomer", Schema.Sales);
 
             // System Management entities
             // Menu entities

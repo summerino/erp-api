@@ -60,4 +60,29 @@ namespace ERP_API.Domain.Entities.Sales
         [StringLength(256)]
         public string NotesFailCollect { get; set; }
     }
+
+    public class VwVisitOrder : BaseEntityWithMarkAndApproved
+    {
+        public string Code { get; set; }
+
+        public DateTime Date { get; set; }
+
+        public long SalesmanId { get; set; }
+
+        public string VisitPlanCode { get; set; }
+
+        public string Notes { get; set; }
+
+        public string CustCode { get; set; }
+
+        public string CustomerName { get; set; }
+
+        public string Status { get; set; }
+
+        public string CreatedInitial { get; set; }
+
+        public string UpdatedInitial { get; set; }
+
+        public string ApprovedInitial { get; set; }
+    }
 }
