@@ -218,12 +218,23 @@ namespace ERP_API.Domain.Services.Inventory
                     return result;
                 }
 
+                // Checking void ordered for type 1 only
+                if (data.Type == 1 && !IsInventoryInAlreadyVoid(data.Code))
+                {
+                    result.Message = "Data transfer stok tidak bisa ditandai sebagai void karena transfer persediaan pada barang masuk masih aktif.";
+                    return result;
+                }
+
                 // Update header data
                 data.Mark = "V";
                 data.UpdatedBy = userId;
                 data.UpdatedDate = DateTime.Now;
 
                 Db.SaveChanges();
+
+                // Execute sp_update_transfer_stock
+                Db.Database.ExecuteSqlRaw("EXEC sp_update_transfer_stock {0},{1},{2},{3},{4},{5}",
+                    data.Code, data.Date, data.Type, data.WarehouseCodeFrom, data.WarehouseCodeTo, 1);
             }
 
             result.Success = true;
@@ -234,6 +245,11 @@ namespace ERP_API.Domain.Services.Inventory
         private bool IsWarehouseItemExists(string warehouseCode, int itemId)
         {
             return Db.WarehouseQuantities.Any(x => x.WarehouseCode == warehouseCode && x.ItemId == itemId && x.QtyOnHand > 0);
+        }
+
+        private bool IsInventoryInAlreadyVoid(string code)
+        {
+            return Db.TransferStockHeaders.Any(x => x.OriginTransferCode == code && x.Mark == "V");
         }
     }
 }
