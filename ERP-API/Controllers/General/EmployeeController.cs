@@ -22,10 +22,11 @@ namespace ERP_API.Controllers.General
         private readonly IAuthService _auth;
         private const int _menuId = (int)Menu.Employee;
 
-        public EmployeeController(IEmployeeService employee, IClaimService claim)
+        public EmployeeController(IEmployeeService employee, IClaimService claim, IAuthService auth)
         {
             _employee = employee;
             _claim = claim;
+            _auth = auth;
         }
 
         [HttpGet]

@@ -22,8 +22,9 @@ namespace ERP_API.Controllers.Sales
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
         private const int _menuId = (int)Menu.Promo;
-        public PromoController(IPromoService promoService, IClaimService claimService)
+        public PromoController(IPromoService promoService, IClaimService claimService, IAuthService auth)
         {
+            _auth = auth;
             _promo = promoService;
             _claim = claimService;
         }

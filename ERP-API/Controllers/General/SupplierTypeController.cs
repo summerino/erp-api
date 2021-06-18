@@ -21,10 +21,11 @@ namespace ERP_API.Controllers.General
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
         private const int _menuId = (int)Menu.SupplierType;
-        public SupplierTypeController(ISupplierTypeService supplierTypes, IClaimService claim)
+        public SupplierTypeController(ISupplierTypeService supplierTypes, IClaimService claim, IAuthService auth)
         {
             _supplierType = supplierTypes;
             _claim = claim;
+            _auth = auth;
         }
 
         [HttpGet]

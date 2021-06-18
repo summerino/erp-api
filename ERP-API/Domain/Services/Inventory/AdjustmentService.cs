@@ -122,11 +122,11 @@ namespace ERP_API.Domain.Services.Inventory
                             UnitId = differentUnit.UnitId
                         };
                     }
-                    AddStockMutation(data, item);
+                    //AddStockMutation(data, item);
                 }
                 Db.SaveChanges();
 
-                //Execute sp_update_stock_mutation_from_adj
+                // Execute sp_update_stock_mutation_from_adj
                 Db.Database.ExecuteSqlRaw(
                     "EXEC sp_update_stock_mutation_from_adj {0}, {1}",
                     data.Code, data.Date);
@@ -248,24 +248,40 @@ namespace ERP_API.Domain.Services.Inventory
         public SaveResult Delete(string code, int userId)
         {
             var result = new SaveResult(false);
-
-            var data = Db.AdjustmentHeaders.Find(code);
-            if (data != null)
+            using var transaction = Db.Database.BeginTransaction();
+            try
             {
-                // Checking mark header data
-                if (data.Mark == "V")
+                var data = Db.AdjustmentHeaders.Find(code);
+                if (data != null)
                 {
-                    result.Message = "Data penyesuaian tidak bisa di ubah karena sudah ditandai sebagai void.";
-                    return result;
+
+                    // Execute sp_update_stock_mutation_from_adj
+                    Db.Database.ExecuteSqlRaw(
+                        "EXEC sp_restore_stock_mutation_from_adj {0}, {1}",
+                        data.Code, data.Date);
+
+                    // Checking mark header data
+                    if (data.Mark == "V")
+                    {
+                        result.Message = "Data penyesuaian tidak bisa di ubah karena sudah ditandai sebagai void.";
+                        return result;
+                    }
+
+                    // Update header data
+                    data.Mark = "V";
+                    data.UpdatedBy = userId;
+                    data.UpdatedDate = DateTime.Now;
+
+                    Db.SaveChanges();
+                    transaction.Commit();
                 }
-
-                // Update header data
-                data.Mark = "V";
-                data.UpdatedBy = userId;
-                data.UpdatedDate = DateTime.Now;
-
-                Db.SaveChanges();
             }
+            catch (Exception ex)
+            {
+                result.Message = ex.InnerException?.Message ?? ex.Message;
+                return result;
+            }
+            
 
             result.Success = true;
             result.Message = "Data penyesuaian berhasil ditandai sebagai void.";
