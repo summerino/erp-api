@@ -165,6 +165,10 @@ namespace ERP_API.Controllers.Sales
 
         public IActionResult OnClose(string code)
         {
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Close }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
             var result = _so.Close(code, _claim.UserId);
             return Ok(result);
         }
