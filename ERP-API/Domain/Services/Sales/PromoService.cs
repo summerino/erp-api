@@ -52,6 +52,9 @@ namespace ERP_API.Domain.Services.Sales
             try
             {
                 // Insert header data
+                var newCode = GetNewCode("PROMO_NUM_FMT", DateTime.Now);
+
+                data.Code = newCode;
                 Db.PromoHeaders.Add(data);
 
                 // Insert detail data
@@ -146,11 +149,12 @@ namespace ERP_API.Domain.Services.Sales
                 foreach (var item in data.ItemDetails)
                 {
                     var delTierDetails = Db.PromoDetailTiers
-                    .Where(d => d.PromoDetailId == item.Id && !item.PromoTierList.Select(x => x.Id).Contains(d.PromoDetailId))
-                    .ToList();
+                                            .Where(d => d.PromoDetailId == item.Id && !item.PromoTierList.Select(x => x.Id).Contains(d.Id))
+                                            .ToList();
 
                     Db.PromoDetailTiers.RemoveRange(delTierDetails);
 
+                    long idDetail = 0;
                     if (item.Id < 0)
                     {
                         var newItem = new PromoDetail
@@ -172,28 +176,7 @@ namespace ERP_API.Domain.Services.Sales
 
                         Db.SaveChanges();
 
-                        var idNewItem = newItem.Id;
-
-                        if (item.PromoTierList.Any())
-                        {
-                            foreach (var tItem in item.PromoTierList)
-                            {
-                                Db.PromoDetailTiers.Add(new PromoDetailTier
-                                {
-                                    PromoDetailId = idNewItem,
-                                    FromQty = tItem.FromQty,
-                                    ToQty = tItem.ToQty,
-                                    IsPercentage = item.IsPercentage,
-                                    Value = tItem.Value,
-                                    SaleUnit = item.SaleUnit,
-                                    ApplyToAllUnit = item.ApplyToAllUnit,
-                                    FreeGoodItemId = item.FreeGoodItemId,
-                                    UnitFreeGood = item.UnitFreeGood,
-                                    IsMultiple = item.IsMultiple,
-                                    PaymentTermId = tItem.PaymentTermId
-                                });
-                            }
-                        }
+                        idDetail = newItem.Id;
                     }
                     else
                     {
@@ -202,13 +185,18 @@ namespace ERP_API.Domain.Services.Sales
                         Db.PromoDetails.Update(item);
                         Db.Entry(item).Property(e => e.Code).IsModified = false;
 
+                        idDetail = item.Id;
+                    }
+
+                    if (item.PromoTierList.Any())
+                    {
                         foreach (var tItem in item.PromoTierList)
                         {
-                            if(tItem.Id < 0)
+                            if (tItem.Id < 0)
                             {
                                 Db.PromoDetailTiers.Add(new PromoDetailTier
                                 {
-                                    PromoDetailId = item.Id,
+                                    PromoDetailId = idDetail,
                                     FromQty = tItem.FromQty,
                                     ToQty = tItem.ToQty,
                                     IsPercentage = item.IsPercentage,
@@ -223,7 +211,7 @@ namespace ERP_API.Domain.Services.Sales
                             }
                             else
                             {
-                                var trItem = Db.PromoDetailTiers.FirstOrDefault(x => x.PromoDetailId == item.Id);
+                                var trItem = Db.PromoDetailTiers.FirstOrDefault(x => x.PromoDetailId == idDetail);
                                 trItem.FromQty = tItem.FromQty;
                                 trItem.ToQty = tItem.ToQty;
                                 trItem.IsPercentage = item.IsPercentage;
