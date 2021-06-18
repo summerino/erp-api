@@ -21,10 +21,11 @@ namespace ERP_API.Controllers.General
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
         private const int _menuId = (int)Menu.Tax;
-        public TaxController(ITaxService tax, IClaimService claim)
+        public TaxController(ITaxService tax, IClaimService claim, IAuthService auth)
         {
             _tax = tax;
             _claim = claim;
+            _auth = auth;
         }
 
         [HttpGet]
