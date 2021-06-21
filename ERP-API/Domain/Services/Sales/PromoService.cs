@@ -214,13 +214,13 @@ namespace ERP_API.Domain.Services.Sales
                                 var trItem = Db.PromoDetailTiers.FirstOrDefault(x => x.PromoDetailId == idDetail);
                                 trItem.FromQty = tItem.FromQty;
                                 trItem.ToQty = tItem.ToQty;
-                                trItem.IsPercentage = item.IsPercentage;
+                                trItem.IsPercentage = tItem.IsPercentage;
                                 trItem.Value = tItem.Value;
-                                trItem.SaleUnit = item.SaleUnit;
-                                trItem.ApplyToAllUnit = item.ApplyToAllUnit;
-                                trItem.FreeGoodItemId = item.FreeGoodItemId;
-                                trItem.UnitFreeGood = item.UnitFreeGood;
-                                trItem.IsMultiple = item.IsMultiple;
+                                trItem.SaleUnit = tItem.SaleUnit;
+                                trItem.ApplyToAllUnit = tItem.ApplyToAllUnit;
+                                trItem.FreeGoodItemId = tItem.FreeGoodItemId;
+                                trItem.UnitFreeGood = tItem.UnitFreeGood;
+                                trItem.IsMultiple = tItem.IsMultiple;
                                 trItem.PaymentTermId = tItem.PaymentTermId;
 
                                 Db.PromoDetailTiers.Update(trItem);
