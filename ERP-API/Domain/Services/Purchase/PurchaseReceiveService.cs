@@ -169,6 +169,45 @@ namespace ERP_API.Domain.Services.Purchase
                     }
                 }
 
+                if (data.IsPoInv)
+                {
+                    // Purchase Invoice
+                    var newInvCode = GetNewCode("PI_NUM_FMT", data.Date);
+                    var newPinvData = new PurchaseInvoiceHeader
+                    {
+                        Code = newInvCode,
+                        Date = data.InvDate,
+                        DueDate = data.InvDueDate,
+                        PoCode = data.TransCode,
+                        RefNo = data.InvRefNo,
+                        SupCode = data.SupCode,
+                        IssuedBy = data.CreatedBy,
+                        CurrCode = data.CurrCode,
+                        PaidAmount = data.Total,
+                        Total = data.Total,
+                        //Notes = data.Notes,
+                        Mark = data.Mark,
+                        CreatedBy = data.CreatedBy,
+                        CreatedDate = data.CreatedDate,
+                        UpdatedBy = data.UpdatedBy,
+                        UpdatedDate = data.UpdatedDate
+                    };
+
+                    Db.PurchaseInvoiceHeaders.Add(newPinvData);
+
+                    Db.PurchaseInvoiceDetails.Add(new PurchaseInvoiceDetail
+                    {
+                        Code = newInvCode,
+                        LineNo = 1,
+                        RcvCode = newCode,
+                        SubTotal = data.Total,
+                        FinalDisc = data.FinalDisc,
+                        TaxAmount = data.TaxAmount,
+                        Total = data.Total,
+                        Dpp = data.Dpp
+                    });
+                }
+
                 // Save changes
                 Db.SaveChanges();
 
@@ -186,6 +225,22 @@ namespace ERP_API.Domain.Services.Purchase
                 {
                     // Execute sp_update_pr_rcv_qty
                     Db.Database.ExecuteSqlRaw("EXEC sp_update_pr_rcv_qty {0}", data.TransCode);
+                }
+
+                if (data.IsPoInv)
+                {
+                    // Update purchase receive to invoiced
+                    Db.Database.ExecuteSqlRaw(
+                        "UPDATE Purchasing.PurchaseReceiveHeader SET Mark='INV' WHERE Code={0}", data.Code);
+
+                    // Update purchase order to closed if all purchase receive are invoiced
+                    if (
+                        !Db.PurchaseReceiveHeaders
+                            .Any(x => x.TransCode == data.TransCode && x.Mark != "INV"))
+                    {
+                        Db.Database.ExecuteSqlRaw(
+                            "UPDATE Purchasing.PurchaseOrderHeader SET Mark='CLS' WHERE Code={0} AND Mark='CMP'", data.TransCode);
+                    }
                 }
 
                 transaction.Commit();
@@ -356,6 +411,45 @@ namespace ERP_API.Domain.Services.Purchase
                     }
                 }
 
+                if (data.IsPoInv)
+                {
+                    // Purchase Invoice
+                    var newInvCode = GetNewCode("PI_NUM_FMT", data.Date);
+                    var newPinvData = new PurchaseInvoiceHeader
+                    {
+                        Code = newInvCode,
+                        Date = data.InvDate,
+                        DueDate = data.InvDueDate,
+                        PoCode = data.TransCode,
+                        RefNo = data.InvRefNo,
+                        SupCode = data.SupCode,
+                        IssuedBy = data.CreatedBy,
+                        CurrCode = data.CurrCode,
+                        PaidAmount = data.Total,
+                        Total = data.Total,
+                        //Notes = data.Notes,
+                        Mark = data.Mark,
+                        CreatedBy = data.CreatedBy,
+                        CreatedDate = data.CreatedDate,
+                        UpdatedBy = data.UpdatedBy,
+                        UpdatedDate = data.UpdatedDate
+                    };
+
+                    Db.PurchaseInvoiceHeaders.Add(newPinvData);
+
+                    Db.PurchaseInvoiceDetails.Add(new PurchaseInvoiceDetail
+                    {
+                        Code = newInvCode,
+                        LineNo = 1,
+                        RcvCode = data.Code,
+                        SubTotal = data.Total,
+                        FinalDisc = data.FinalDisc,
+                        TaxAmount = data.TaxAmount,
+                        Total = data.Total,
+                        Dpp = data.Dpp
+                    });
+                }
+
                 // Save changes
                 Db.SaveChanges();
 
@@ -373,6 +467,33 @@ namespace ERP_API.Domain.Services.Purchase
                 {
                     // Execute sp_update_pr_rcv_qty
                     Db.Database.ExecuteSqlRaw("EXEC sp_update_pr_rcv_qty {0}", data.TransCode);
+                }
+
+                if (data.IsPoInv)
+                {
+                    // Update purchase receive to invoiced
+                    Db.Database.ExecuteSqlRaw(
+                        "UPDATE Purchasing.PurchaseReceiveHeader SET Mark='INV' WHERE Code={0}", data.Code);
+
+                    // Check all purchase receive are invoiced
+                    if (
+                        !Db.PurchaseReceiveHeaders
+                            .Any(x => x.TransCode == data.TransCode && x.Mark != "INV"))
+                    {
+                        // Update purchase order to closed
+                        Db.Database.ExecuteSqlRaw(
+                            "UPDATE Purchasing.PurchaseOrderHeader SET Mark='CLS' WHERE Code={0} AND Mark='CMP'", data.TransCode);
+                    }
+                    else
+                    {
+                        // Update purchase order to partial receive or completed
+                        var poMark = Db.PurchaseOrderDetails.Any(x => x.Code == data.TransCode && x.Qty > x.QtyRcv)
+                            ? "PR"
+                            : "CMP";
+
+                        Db.Database.ExecuteSqlRaw(
+                            "UPDATE Purchasing.PurchaseOrderHeader SET Mark={0} WHERE Code={1}", poMark, data.TransCode);
+                    }
                 }
 
                 transaction.Commit();
