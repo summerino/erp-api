@@ -74,7 +74,7 @@ namespace ERP_API.Domain.Services.Sales
             try
             {
                 // Sales Order
-                var newOrderCode = GetNewCode("SO_NUM_FMT", data.Date);
+                var newOrderCode = GetNewCode("DI_NUM_FMT", data.Date);
                 Db.SalesOrderHeaders.Add(new SalesOrderHeader
                 {
                     Code = newOrderCode,
@@ -103,7 +103,7 @@ namespace ERP_API.Domain.Services.Sales
                 short i = 0;
                 foreach (var item in data.ItemDetails)
                 {
-                    Db.SalesOrderDetails.Add(new SalesOrderDetail
+                    var orderDetail = new SalesOrderDetail
                     {
                         Code = newOrderCode,
                         LineNo = ++i,
@@ -131,10 +131,62 @@ namespace ERP_API.Domain.Services.Sales
                         CoaSls = item.CoaSls,
                         CoaSlsDisc = item.CoaSlsDisc,
                         CoaSlsReturn = item.CoaSlsReturn
-                    });
+                    };
+
+                    Db.SalesOrderDetails.Add(orderDetail);
+
+                    if (item.FreeItemDetails.Any() || item.DiscountItemDetails.Any())
+                    {
+                        Db.SaveChanges();
+                    }
+
+                    if (item.DiscountItemDetails.Any())
+                    {
+                        short d = 0;
+                        foreach (var discItem in item.DiscountItemDetails)
+                        {
+                            Db.SalesOrderDetailDiscounts.Add(new SalesOrderDetailDiscount
+                            {
+                                Code = newOrderCode,
+                                OrderDetailId = orderDetail.Id,
+                                LineNo = ++d,
+                                PromoCode = discItem.PromoCode,
+                                PromoDetailId = discItem.PromoDetailId,
+                                Name = discItem.Name,
+                                IsPercentage = discItem.IsPercentage,
+                                Value = discItem.Value,
+                                Amount = discItem.Amount,
+                                CoaCode = discItem.CoaCode
+                            });
+                        }
+                        Db.SaveChanges();
+                    }
+
+                    if (item.FreeItemDetails.Any())
+                    {
+                        short f = 0;
+                        foreach (var freeItem in item.FreeItemDetails)
+                        {
+                            Db.SalesOrderDetailFreeGoods.Add(new SalesOrderDetailFreeGood
+                            {
+                                Code = newOrderCode,
+                                OrderDetailId = orderDetail.Id,
+                                LineNo = ++f,
+                                PromoCode = freeItem.PromoCode,
+                                ItemId = freeItem.ItemId,
+                                UomId = freeItem.UomId,
+                                UnitId = freeItem.UnitId,
+                                Qty = freeItem.Qty,
+                                QtyClosed = freeItem.QtyClosed,
+                                UnitPrice = freeItem.UnitPrice,
+                                CoaCode = freeItem.CoaCode
+                            });
+                        }
+                        Db.SaveChanges();
+                    }
                 }
                 // Sales Delivery
-                var newDlvCode = GetNewCode("DO_NUM_FMT", data.Date);
+                var newDlvCode = GetNewCode("DI_NUM_FMT", data.Date);
 
                 Db.SalesDeliveryHeaders.Add(new SalesDeliveryHeader
                 {
@@ -165,7 +217,7 @@ namespace ERP_API.Domain.Services.Sales
                 short j = 0;
                 foreach (var item in data.ItemDetails)
                 {
-                    Db.SalesDeliveryDetails.Add(new SalesDeliveryDetail
+                    var deliveryDetail = new SalesDeliveryDetail
                     {
                         Code = newDlvCode,
                         LineNo = ++j,
@@ -186,11 +238,44 @@ namespace ERP_API.Domain.Services.Sales
                         NettPrice = item.NettPrice,
                         Total = item.Total,
                         Dpp = item.Dpp
-                    });
+                    };
+
+                    Db.SalesDeliveryDetails.Add(deliveryDetail);
+
+                    if (item.FreeItemDetails.Any())
+                    {
+                        Db.SaveChanges();
+                    }
+
+                    if (item.FreeItemDetails.Any())
+                    {
+                        short f = 0;
+                        foreach (var freeItem in item.FreeItemDetails)
+                        {
+                            Db.SalesDeliveryDetailFreeGoods.Add(new SalesDeliveryDetailFreeGood
+                            {
+                                Code = newDlvCode,
+                                DlvOrderDetailId = deliveryDetail.Id,
+                                LineNo = ++f,
+                                PromoCode = freeItem.PromoCode,
+                                ItemId = freeItem.ItemId,
+                                UomId = freeItem.UomId,
+                                UnitId = freeItem.UnitId,
+                                Qty = freeItem.Qty,
+                                UnitPrice = freeItem.UnitPrice,
+                                CoaCode = freeItem.CoaCode
+                            });
+
+                            var orderFreeDetail = Db.SalesOrderDetailFreeGoods.FirstOrDefault(x => x.Id == freeItem.Id);
+                            orderFreeDetail.QtyClosed += freeItem.Qty;
+                            Db.SalesOrderDetailFreeGoods.Update(orderFreeDetail);
+                        }
+                        Db.SaveChanges();
+                    }
                 }
 
                 // Sales Invoice
-                var newInvCode = GetNewCode("SI_NUM_FMT", data.Date);
+                var newInvCode = GetNewCode("DI_NUM_FMT", data.Date);
                 Db.SalesInvoiceHeaders.Add(new SalesInvoiceHeader
                 {
                     Code = newInvCode,
@@ -263,6 +348,8 @@ namespace ERP_API.Domain.Services.Sales
         public SaveResult Update(SalesInvoiceRequest data)
         {
             var result = new SaveResult(false);
+            var listOrderIdDetail = new List<long>();
+            var listDeliveryIdDetail = new List<long>();
 
             using var transaction = Db.Database.BeginTransaction();
             try
@@ -353,7 +440,7 @@ namespace ERP_API.Domain.Services.Sales
                 {
                     if (item.Id == 0)
                     {
-                        Db.SalesOrderDetails.Add(new SalesOrderDetail
+                        var orderDetail = new SalesOrderDetail
                         {
                             Code = item.Code,
                             LineNo = ++i,
@@ -381,7 +468,15 @@ namespace ERP_API.Domain.Services.Sales
                             CoaSls = item.CoaSls,
                             CoaSlsDisc = item.CoaSlsDisc,
                             CoaSlsReturn = item.CoaSlsReturn
-                        });
+                        };
+
+                        Db.SalesOrderDetails.Add(orderDetail);
+
+                        if (item.FreeItemDetails.Any() || item.DiscountItemDetails.Any())
+                        {
+                            Db.SaveChanges();
+                            listOrderIdDetail.Add(orderDetail.Id);
+                        }
                     }
                     else
                     {
@@ -389,6 +484,88 @@ namespace ERP_API.Domain.Services.Sales
 
                         Db.SalesOrderDetails.Update(item);
                         Db.Entry(item).Property(e => e.Code).IsModified = false;
+
+                        if (item.FreeItemDetails.Any() || item.DiscountItemDetails.Any())
+                        {
+                            listOrderIdDetail.Add(item.Id);
+                        }
+                    }
+
+                    var delDiscDetails = Db.SalesOrderDetailDiscounts
+                        .Where(d => d.Code == data.Code && d.OrderDetailId == item.Id && !item.DiscountItemDetails.Select(x => x.Id).Contains(d.Id))
+                        .ToList();
+
+                    Db.SalesOrderDetailDiscounts.RemoveRange(delDiscDetails);
+
+                    if (item.DiscountItemDetails.Any())
+                    {
+                        short d = 0;
+                        foreach (var discItem in item.DiscountItemDetails)
+                        {
+                            if (discItem.Id < 0)
+                            {
+                                Db.SalesOrderDetailDiscounts.Add(new SalesOrderDetailDiscount
+                                {
+                                    Code = data.Code,
+                                    OrderDetailId = listOrderIdDetail[i - 1],
+                                    LineNo = ++d,
+                                    PromoCode = discItem.PromoCode,
+                                    PromoDetailId = discItem.PromoDetailId,
+                                    Name = discItem.Name,
+                                    IsPercentage = discItem.IsPercentage,
+                                    Value = discItem.Value,
+                                    Amount = discItem.Amount,
+                                    CoaCode = discItem.CoaCode
+                                });
+                            }
+                            else
+                            {
+                                discItem.LineNo = ++d;
+
+                                Db.SalesOrderDetailDiscounts.Update(discItem);
+                                Db.Entry(discItem).Property(e => e.Id).IsModified = false;
+                                Db.Entry(discItem).Property(e => e.Code).IsModified = false;
+                            }
+                        }
+                    }
+
+                    var delFreeDetails = Db.SalesOrderDetailFreeGoods
+                        .Where(d => d.Code == data.Code && d.OrderDetailId == item.Id && !item.FreeItemDetails.Select(x => x.Id).Contains(d.Id))
+                        .ToList();
+
+                    Db.SalesOrderDetailFreeGoods.RemoveRange(delFreeDetails);
+
+                    if (item.FreeItemDetails.Any())
+                    {
+                        short f = 0;
+                        foreach (var freeItem in item.FreeItemDetails)
+                        {
+                            if (freeItem.Id < 0)
+                            {
+                                Db.SalesOrderDetailFreeGoods.Add(new SalesOrderDetailFreeGood
+                                {
+                                    Code = data.Code,
+                                    OrderDetailId = listOrderIdDetail[i - 1],
+                                    LineNo = ++f,
+                                    PromoCode = freeItem.PromoCode,
+                                    ItemId = freeItem.ItemId,
+                                    UomId = freeItem.UomId,
+                                    UnitId = freeItem.UnitId,
+                                    Qty = freeItem.Qty,
+                                    QtyClosed = freeItem.QtyClosed,
+                                    UnitPrice = freeItem.UnitPrice,
+                                    CoaCode = freeItem.CoaCode
+                                });
+                            }
+                            else
+                            {
+                                freeItem.LineNo = ++f;
+
+                                Db.SalesOrderDetailFreeGoods.Update(freeItem);
+                                Db.Entry(freeItem).Property(e => e.Id).IsModified = false;
+                                Db.Entry(freeItem).Property(e => e.Code).IsModified = false;
+                            }
+                        }
                     }
                 }
 
@@ -404,7 +581,7 @@ namespace ERP_API.Domain.Services.Sales
                 short j = 0;
                 foreach (var item in data.ItemDetails)
                 {
-                    Db.SalesDeliveryDetails.Add(new SalesDeliveryDetail
+                    var deliveryDetail = new SalesDeliveryDetail
                     {
                         Code = InvoiceDetailData.DoCode,
                         LineNo = ++j,
@@ -425,7 +602,46 @@ namespace ERP_API.Domain.Services.Sales
                         NettPrice = item.NettPrice,
                         Total = item.Total,
                         Dpp = item.Dpp
-                    });
+                    };
+                    Db.SalesDeliveryDetails.Add(deliveryDetail);
+
+                    if (item.FreeItemDetails.Any())
+                    {
+                        Db.SaveChanges();
+                        listDeliveryIdDetail.Add(deliveryDetail.Id);
+                    }
+
+                    var delFreeDetails = Db.SalesDeliveryDetailFreeGoods
+                        .Where(d => d.Code == data.Code && d.DlvOrderDetailId == item.Id && !item.FreeItemDetails.Select(x => x.Id).Contains(d.Id))
+                        .ToList();
+
+                    Db.SalesDeliveryDetailFreeGoods.RemoveRange(delFreeDetails);
+
+                    if (item.FreeItemDetails.Any())
+                    {
+                        short f = 0;
+                        foreach (var freeItem in item.FreeItemDetails)
+                        {
+                            Db.SalesDeliveryDetailFreeGoods.Add(new SalesDeliveryDetailFreeGood
+                            {
+                                Code = InvoiceDetailData.DoCode,
+                                DlvOrderDetailId = listDeliveryIdDetail[j - 1],
+                                LineNo = ++f,
+                                PromoCode = freeItem.PromoCode,
+                                ItemId = freeItem.ItemId,
+                                UomId = freeItem.UomId,
+                                UnitId = freeItem.UnitId,
+                                Qty = freeItem.Qty,
+                                UnitPrice = freeItem.UnitPrice,
+                                CoaCode = freeItem.CoaCode
+                            });
+
+                            var orderFreeDetail = Db.SalesOrderDetailFreeGoods.FirstOrDefault(x => x.Id == freeItem.Id);
+                            orderFreeDetail.QtyClosed += freeItem.Qty;
+                            Db.SalesOrderDetailFreeGoods.Update(orderFreeDetail);
+                        }
+                        Db.SaveChanges();
+                    }
                 }
 
 
