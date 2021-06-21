@@ -138,36 +138,78 @@ namespace ERP_API.Domain.Services.Sales
 
                     Db.SalesDeliveryDetails.Add(deliveryDetail);
 
-                    if (item.FreeItemDetails.Any())
+                    if (item.FreeItemDetails != null)
                     {
                         Db.SaveChanges();
                     }
 
-                    if (item.FreeItemDetails.Any())
+                    if (item.FreeItemDetails != null)
                     {
-                        short f = 0;
-                        foreach (var freeItem in item.FreeItemDetails)
+                        if (item.FreeItemDetails.Any())
                         {
-                            Db.SalesDeliveryDetailFreeGoods.Add(new SalesDeliveryDetailFreeGood
+                            short f = 0;
+                            foreach (var freeItem in item.FreeItemDetails)
                             {
-                                Code = newCode,
-                                DlvOrderDetailId = deliveryDetail.Id,
-                                LineNo = ++f,
-                                PromoCode = freeItem.PromoCode,
-                                ItemId = freeItem.ItemId,
-                                UomId = freeItem.UomId,
-                                UnitId = freeItem.UnitId,
-                                Qty = freeItem.Qty,
-                                UnitPrice = freeItem.UnitPrice,
-                                CoaCode = freeItem.CoaCode
-                            });
+                                Db.SalesDeliveryDetailFreeGoods.Add(new SalesDeliveryDetailFreeGood
+                                {
+                                    Code = newCode,
+                                    DlvOrderDetailId = deliveryDetail.Id,
+                                    LineNo = ++f,
+                                    PromoCode = freeItem.PromoCode,
+                                    ItemId = freeItem.ItemId,
+                                    UomId = freeItem.UomId,
+                                    UnitId = freeItem.UnitId,
+                                    Qty = freeItem.Qty,
+                                    UnitPrice = freeItem.UnitPrice,
+                                    CoaCode = freeItem.CoaCode
+                                });
 
-                            var orderFreeDetail = Db.SalesOrderDetailFreeGoods.FirstOrDefault(x => x.Id == freeItem.Id);
-                            orderFreeDetail.QtyClosed += freeItem.Qty;
-                            Db.SalesOrderDetailFreeGoods.Update(orderFreeDetail);
+                                var orderFreeDetail = Db.SalesOrderDetailFreeGoods.FirstOrDefault(x => x.Id == freeItem.Id);
+                                orderFreeDetail.QtyClosed += freeItem.Qty;
+                                Db.SalesOrderDetailFreeGoods.Update(orderFreeDetail);
+                            }
                         }
                         Db.SaveChanges();
                     }
+                }
+
+                if (data.IsSoInv)
+                {
+                    // Sales Invoice
+                    var newInvCode = GetNewCode("SI_NUM_FMT", data.Date);
+                    var newSinvData = new SalesInvoiceHeader
+                    {
+                        Code = newInvCode,
+                        Date = data.InvDate,
+                        DueDate = data.InvDueDate,
+                        SoCode = data.TransCode,
+                        CustCode = data.CustCode,
+                        IssuedBy = data.CreatedBy,
+                        CurrCode = data.CurrCode,
+                        Total = data.Total,
+                        Notes = data.Notes,
+                        Mark = data.Mark,
+                        CreatedBy = data.CreatedBy,
+                        CreatedDate = data.CreatedDate,
+                        UpdatedBy = data.UpdatedBy,
+                        UpdatedDate = data.UpdatedDate
+                    };
+
+                    Db.SalesInvoiceHeaders.Add(newSinvData);
+
+                    Db.SalesInvoiceDetails.Add(new SalesInvoiceDetail
+                    {
+                        Code = newInvCode,
+                        LineNo = 1,
+                        DoCode = newCode,
+                        ShipmentFee = data.ShipmentFee,
+                        HandlingFee = data.HandlingFee,
+                        SubTotal = data.SubTotal,
+                        FinalDisc = data.FinalDisc,
+                        TaxAmount = data.TaxAmount,
+                        Total = data.Total,
+                        Dpp = data.Dpp
+                    });
                 }
 
                 // Save changes
@@ -187,6 +229,21 @@ namespace ERP_API.Domain.Services.Sales
                 {
                     // Execute sp_update_sr_rcv_qty
                     Db.Database.ExecuteSqlRaw("EXEC sp_update_sr_dlv_qty {0}", data.TransCode);
+                }
+
+                if (data.IsSoInv)
+                {
+                    // Update sales delivery to invoiced
+                    Db.Database.ExecuteSqlRaw("UPDATE Sales.SalesDeliveryHeader SET Mark='INV' WHERE Code={0}", data.Code);
+
+                    // Update sales order to closed if all sales delivery are invoiced
+                    if (
+                        !Db.SalesDeliveryHeaders
+                            .Any(x => x.TransCode == data.TransCode && x.Mark != "INV"))
+                    {
+                        Db.Database.ExecuteSqlRaw(
+                            "UPDATE Sales.SalesOrderHeader SET Mark='CLS' WHERE Code={0} AND Mark='CMP'", data.TransCode);
+                    }
                 }
 
                 transaction.Commit();
@@ -289,7 +346,7 @@ namespace ERP_API.Domain.Services.Sales
                         };
                         Db.SalesDeliveryDetails.Add(deliveryDetail);
 
-                        if (item.FreeItemDetails.Any())
+                        if (item.FreeItemDetails != null)
                         {
                             Db.SaveChanges();
                             listIdDetail.Add(deliveryDetail.Id);
@@ -302,49 +359,91 @@ namespace ERP_API.Domain.Services.Sales
                         Db.SalesDeliveryDetails.Update(item);
                         Db.Entry(item).Property(e => e.Code).IsModified = false;
 
-                        if (item.FreeItemDetails.Any())
+                        if (item.FreeItemDetails != null)
                         {
                             listIdDetail.Add(item.Id);
                         }
                     }
 
-                    var delFreeDetails = Db.SalesDeliveryDetailFreeGoods
+                    if (item.FreeItemDetails != null)
+                    {
+                        var delFreeDetails = Db.SalesDeliveryDetailFreeGoods
                         .Where(d => d.Code == data.Code && d.DlvOrderDetailId == item.Id && !item.FreeItemDetails.Select(x => x.Id).Contains(d.Id))
                         .ToList();
 
-                    Db.SalesDeliveryDetailFreeGoods.RemoveRange(delFreeDetails);
+                        Db.SalesDeliveryDetailFreeGoods.RemoveRange(delFreeDetails);
 
-                    if (item.FreeItemDetails.Any())
-                    {
-                        short f = 0;
-                        foreach (var freeItem in item.FreeItemDetails)
+                        if (item.FreeItemDetails.Any())
                         {
-                            if (freeItem.Id < 0)
+                            short f = 0;
+                            foreach (var freeItem in item.FreeItemDetails)
                             {
-                                Db.SalesDeliveryDetailFreeGoods.Add(new SalesDeliveryDetailFreeGood
+                                if (freeItem.Id < 0)
                                 {
-                                    Code = data.Code,
-                                    DlvOrderDetailId = listIdDetail[i - 1],
-                                    LineNo = ++f,
-                                    PromoCode = freeItem.PromoCode,
-                                    ItemId = freeItem.ItemId,
-                                    UomId = freeItem.UomId,
-                                    UnitId = freeItem.UnitId,
-                                    Qty = freeItem.Qty,
-                                    UnitPrice = freeItem.UnitPrice,
-                                    CoaCode = freeItem.CoaCode
-                                });
-                            }
-                            else
-                            {
-                                freeItem.LineNo = ++f;
+                                    Db.SalesDeliveryDetailFreeGoods.Add(new SalesDeliveryDetailFreeGood
+                                    {
+                                        Code = data.Code,
+                                        DlvOrderDetailId = listIdDetail[i - 1],
+                                        LineNo = ++f,
+                                        PromoCode = freeItem.PromoCode,
+                                        ItemId = freeItem.ItemId,
+                                        UomId = freeItem.UomId,
+                                        UnitId = freeItem.UnitId,
+                                        Qty = freeItem.Qty,
+                                        UnitPrice = freeItem.UnitPrice,
+                                        CoaCode = freeItem.CoaCode
+                                    });
+                                }
+                                else
+                                {
+                                    freeItem.LineNo = ++f;
 
-                                Db.SalesDeliveryDetailFreeGoods.Update(freeItem);
-                                Db.Entry(freeItem).Property(e => e.Id).IsModified = false;
-                                Db.Entry(freeItem).Property(e => e.Code).IsModified = false;
+                                    Db.SalesDeliveryDetailFreeGoods.Update(freeItem);
+                                    Db.Entry(freeItem).Property(e => e.Id).IsModified = false;
+                                    Db.Entry(freeItem).Property(e => e.Code).IsModified = false;
+                                }
                             }
                         }
                     }
+                }
+
+                if (data.IsSoInv)
+                {
+                    // Sales Invoice
+                    var newInvCode = GetNewCode("SI_NUM_FMT", data.Date);
+                    var newSinvData = new SalesInvoiceHeader
+                    {
+                        Code = newInvCode,
+                        Date = data.InvDate,
+                        DueDate = data.InvDueDate,
+                        SoCode = data.TransCode,
+                        CustCode = data.CustCode,
+                        IssuedBy = data.CreatedBy,
+                        CurrCode = data.CurrCode,
+                        Total = data.Total,
+                        Notes = data.Notes,
+                        Mark = data.Mark,
+                        CreatedBy = data.CreatedBy,
+                        CreatedDate = data.CreatedDate,
+                        UpdatedBy = data.UpdatedBy,
+                        UpdatedDate = data.UpdatedDate
+                    };
+
+                    Db.SalesInvoiceHeaders.Add(newSinvData);
+
+                    Db.SalesInvoiceDetails.Add(new SalesInvoiceDetail
+                    {
+                        Code = newInvCode,
+                        LineNo = 1,
+                        DoCode = data.Code,
+                        ShipmentFee = data.ShipmentFee,
+                        HandlingFee = data.HandlingFee,
+                        SubTotal = data.SubTotal,
+                        FinalDisc = data.FinalDisc,
+                        TaxAmount = data.TaxAmount,
+                        Total = data.Total,
+                        Dpp = data.Dpp
+                    });
                 }
 
                 // Save changes
@@ -364,6 +463,32 @@ namespace ERP_API.Domain.Services.Sales
                 {
                     // Execute sp_update_sr_rcv_qty
                     Db.Database.ExecuteSqlRaw("EXEC sp_update_sr_dlv_qty {0}", data.TransCode);
+                }
+
+                if (data.IsSoInv)
+                {
+                    // Update sales delivery to invoiced
+                    Db.Database.ExecuteSqlRaw("UPDATE Sales.SalesDeliveryHeader SET Mark='INV' WHERE Code={0}", data.Code);
+
+                    // Check all sales delivery are invoiced
+                    if (
+                        !Db.SalesDeliveryHeaders
+                            .Any(x => x.TransCode == data.TransCode && x.Mark != "INV"))
+                    {
+                        // Update sales order to closed
+                        Db.Database.ExecuteSqlRaw(
+                            "UPDATE Sales.SalesOrderHeader SET Mark='CLS' WHERE Code={0} AND Mark='CMP'", data.TransCode);
+                    }
+                    else
+                    {
+                        // Update sales order to partial receive or completed
+                        var soMark = Db.SalesOrderDetails.Any(x => x.Code == data.TransCode && x.Qty > x.QtyDlv)
+                            ? "PS"
+                            : "CMP";
+
+                        Db.Database.ExecuteSqlRaw(
+                            "UPDATE Sales.SalesOrderHeader SET Mark={0} WHERE Code={1}", soMark, data.TransCode);
+                    }
                 }
 
                 transaction.Commit();
