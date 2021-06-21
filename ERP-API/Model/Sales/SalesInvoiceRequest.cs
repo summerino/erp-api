@@ -7,7 +7,7 @@ namespace ERP_API.Model.Sales
     {
         public IEnumerable<SalesInvoiceDetail> Details { get; set; }
 
-        public IEnumerable<SalesOrderDetail> ItemDetails { get; set; }
+        public IEnumerable<SalesOrderDetailRequest> ItemDetails { get; set; }
 
         // Direct Invoice
         public long SalesBy { get; set; }
