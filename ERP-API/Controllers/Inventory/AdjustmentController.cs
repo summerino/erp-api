@@ -171,7 +171,7 @@ namespace ERP_API.Controllers.Inventory
         [HttpDelete("{code}")]
         public IActionResult OnDelete(string code)
         {
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Delete }).Any())
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Void }).Any())
             {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
             }
