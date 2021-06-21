@@ -21,6 +21,10 @@ namespace ERP_API.Domain.Entities.Sales
 
         public long SalesBy { get; set; }
 
+        public int? BillingAddressId { get; set; }
+
+        public int? PaymentTermId { get; set; }
+
         [StringLength(8)]
         public string WarehouseCode { get; set; }
 
@@ -72,6 +76,10 @@ namespace ERP_API.Domain.Entities.Sales
         public string CustCode { get; set; }
 
         public long SalesBy { get; set; }
+
+        public int? BillingAddressId { get; set; }
+
+        public int? PaymentTermId { get; set; }
 
         public string WarehouseCode { get; set; }
 
