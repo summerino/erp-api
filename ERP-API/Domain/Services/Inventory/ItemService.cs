@@ -201,23 +201,20 @@ namespace ERP_API.Domain.Services.Inventory
             var data = Db.Items.Find(id);
             if (data != null)
             {
-                // Checking active
-                if (!data.IsActive)
+                //Check if any warehouse already have this item
+                if (Db.WarehouseQuantities.Any(x => x.ItemId == data.Id))
                 {
-                    result.Message = "Tidak bisa menonaktifkan data barang karena data sudah nonaktif.";
+                    result.Message = "Tidak bisa menghapus data barang karena telah digunakan pada data gudang.";
                     return result;
                 }
 
-                // Update data
-                data.IsActive = false;
-                data.UpdatedBy = userId;
-                data.UpdatedDate = DateTime.Now;
+                Db.Items.Remove(data);
 
                 Db.SaveChanges();
             }
 
             result.Success = true;
-            result.Message = "Data barang berhasil dinonaktifkan.";
+            result.Message = "Data barang berhasil dihapus.";
             return result;
         }
 

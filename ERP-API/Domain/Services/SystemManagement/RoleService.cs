@@ -200,23 +200,20 @@ namespace ERP_API.Domain.Services.SystemManagement
             var data = Db.Roles.Find(id);
             if (data != null)
             {
-                // Checking active
-                if (!data.IsActive)
+                //Check if any user already using this role
+                if (Db.Users.Any(x => x.RoleId == data.Id))
                 {
-                    result.Message = "Tidak bisa menonaktifkan data kelompok barang karena data sudah nonaktif.";
+                    result.Message = "Tidak bisa menghapus data peran karena telah digunakan pada data pengguna.";
                     return result;
                 }
 
-                // Update data
-                data.IsActive = false;
-                data.UpdatedBy = userId;
-                data.UpdatedDate = DateTime.Now;
+                Db.Roles.Remove(data);
 
                 Db.SaveChanges();
             }
 
             result.Success = true;
-            result.Message = "Data peran berhasil dinonaktifkan.";
+            result.Message = "Data peran berhasil dihapus.";
             return result;
         }
 
