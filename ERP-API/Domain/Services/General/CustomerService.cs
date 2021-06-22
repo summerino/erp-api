@@ -255,23 +255,25 @@ namespace ERP_API.Domain.Services.General
             var data = Db.Customers.Find(code);
             if (data != null)
             {
-                // Checking active
-                if (data.IsActive == false)
+                //Check if any sales order already using this customer
+                if (Db.SalesOrderHeaders.Any(x => x.CustCode == data.Code))
                 {
-                    result.Message = "Tidak bisa menonaktifkan data pelanggan karena data sudah nonaktif.";
+                    result.Message = "Tidak bisa menghapus data pelanggan karena telah digunakan pada data order penjualan.";
                     return result;
                 }
 
-                // Update data
-                data.IsActive = false;
-                data.UpdatedBy = userId;
-                data.UpdatedDate = DateTime.Now;
+                var addData = Db.CustomerAddress.Where(x => x.Code == data.Code);
+                Db.CustomerAddress.RemoveRange(addData);
+
+                Db.SaveChanges();
+
+                Db.Customers.Remove(data);
 
                 Db.SaveChanges();
             }
 
             result.Success = true;
-            result.Message = "Data pelanggan berhasil dinonaktifkan.";
+            result.Message = "Data pelanggan berhasil dihapus.";
             return result;
         }
 

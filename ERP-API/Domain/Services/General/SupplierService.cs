@@ -111,23 +111,20 @@ namespace ERP_API.Domain.Services.General
             var data = Db.Suppliers.Find(code);
             if (data != null)
             {
-                // Checking active
-                if (data.IsActive == false)
+                //Check if any purchase order already using this supplier
+                if (Db.PurchaseOrderHeaders.Any(x => x.SupCode == data.Code))
                 {
-                    result.Message = "Tidak bisa menonaktifkan data pemasok karena data sudah nonaktif.";
+                    result.Message = "Tidak bisa menghapus data pemasok karena telah digunakan pada data order pembelian.";
                     return result;
                 }
 
-                // Update data
-                data.IsActive = false;
-                data.UpdatedBy = userId;
-                data.UpdatedDate = DateTime.Now;
+                Db.Suppliers.Remove(data);
 
                 Db.SaveChanges();
             }
 
             result.Success = true;
-            result.Message = "Data pemasok berhasil dinonaktifkan.";
+            result.Message = "Data pemasok berhasil dihapus.";
             return result;
         }
 
