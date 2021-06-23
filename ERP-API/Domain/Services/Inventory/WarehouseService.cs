@@ -122,23 +122,38 @@ namespace ERP_API.Domain.Services.Inventory
             var data = Db.Warehouses.Find(code);
             if (data != null)
             {
-                // Checking active
-                if (!data.IsActive)
+                //// Checking active
+                //if (!data.IsActive)
+                //{
+                //    result.Message = "Tidak bisa menonaktifkan data gudang karena data sudah nonaktif.";
+                //    return result;
+                //}
+
+                //// Update data
+                //data.IsActive = false;
+                //data.UpdatedBy = userId;
+                //data.UpdatedDate = DateTime.Now;
+
+                // check if default warehouse
+
+                if (data.IsDefault) 
                 {
-                    result.Message = "Tidak bisa menonaktifkan data gudang karena data sudah nonaktif.";
+                    result.Message = "Tidak bisa menghapus data gudang karena data sebagai gudang default.";
                     return result;
                 }
 
-                // Update data
-                data.IsActive = false;
-                data.UpdatedBy = userId;
-                data.UpdatedDate = DateTime.Now;
+                if (Db.WarehouseQuantities.Where(x=>x.WarehouseCode.Equals(data.Code)).Any()) 
+                {
+                    result.Message = "Tidak bisa menghapus data karena sudah digunakan di transaksi.";
+                    return result;
+                }
 
+                Db.Warehouses.Remove(data);
                 Db.SaveChanges();
             }
 
             result.Success = true;
-            result.Message = "Data gudang berhasil dinonaktifkan.";
+            result.Message = "Data gudang berhasil dihapus.";
             return result;
         }
 
