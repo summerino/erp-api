@@ -140,10 +140,10 @@ namespace ERP_API.Controllers.Sales
         private static (bool, string) Validate(PromoRequest data)
         {
             if (!data.ItemDetails.Any())
-                return (false, "Item details can't be empty.");
+                return (false, "Bagian detil tidak boleh kosong.");
 
-            return data.ItemDetails.Where(x => x.ApplyTo != 2).GroupBy(x => new { x.Code, x.ItemId }).Any(x => x.Count() > 1)
-                ? (false, "There are duplicate item submitted with same unit.")
+            return data.ItemDetails.Where(x => x.ApplyTo != 2).GroupBy(x => new { x.Code, x.ItemId, x.PromoType }).Any(x => x.Count() > 1)
+                ? (false, "Terdapat data detil yang duplikat.")
                 : (true, "");
         }
     }
