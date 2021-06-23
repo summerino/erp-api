@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Dynamic.Core;
 using ERP_API.Domain.Entities;
 using ERP_API.Domain.Entities.Inventory;
+using ERP_API.Domain.Entities.Purchase;
+using ERP_API.Domain.Entities.Sales;
 using ERP_API.Domain.Extensions;
 using ERP_API.Domain.Interfaces.Inventory;
 using ERP_API.Domain.Models;
@@ -221,6 +224,79 @@ namespace ERP_API.Domain.Services.Inventory
         public bool IsInitialExists(string initial, int id)
         {
             return Db.Items.Any(x => x.Initial == initial && x.Id != id);
+        }
+
+        public IEnumerable<dynamic> GetRelatedOrderTrans(string whid, int itemid)
+        {
+            var stockM = Db.StockMutations.Where(x => x.WarehouseCode == whid && x.ItemId == itemid && x.Type == "OO").ToList();
+            var header = Db.VwSalesOrderHeaders.Where(s => (new string[] { "A", "PS" }).Contains(s.Mark) && stockM.Select(x => x.RefCode1).Contains(s.Code)).ToList();
+            var details = Db.VwSalesOrderDetails.Where(r => header.Select(x => x.Code).Contains(r.Code) && r.ItemId == itemid).ToList();
+            var free = Db.SalesOrderDetailFreeGoods.Where(r => header.Select(x => x.Code).Contains(r.Code) && r.ItemId == itemid).ToList();
+            var result = (
+                        new[] { new { Code = "", Date = new DateTime(), Type = "", CustName = "", Qty = 0, QtyDlv = 0, QtyRemain = 0 } }
+                        ).Union(from h in header
+                          join d in details on h.Code equals d.Code
+                          select new
+                          {
+                              Code = h.Code,
+                              Date = h.Date,
+                              Type = h.FromDirectInvoice == true ? "Penjualan Langsung" : "Order Penjualan",
+                              CustName = h.CustName,
+                              Qty = Convert.ToInt32(d.Qty),
+                              QtyDlv = Convert.ToInt32(d.QtyDlv),
+                              QtyRemain = Convert.ToInt32(d.Qty - d.QtyDlv)
+                          }).Union(from h in header
+                          join f in free on h.Code equals f.Code
+                          select new
+                          {
+                              Code = h.Code,
+                              Date = h.Date,
+                              Type = "Bonus",
+                              CustName = h.CustName,
+                              Qty = Convert.ToInt32(f.Qty),
+                              QtyDlv = Convert.ToInt32(f.QtyClosed),
+                              QtyRemain = Convert.ToInt32(f.Qty - f.QtyClosed)
+                          }).Skip(1);
+            return result;
+        }
+
+        public IEnumerable<dynamic> GetRelatedIndentTrans(string whid, int itemid)
+        {
+            var stockM = Db.StockMutations.Where(x => x.WarehouseCode == whid && x.ItemId == itemid && x.Type == "OI").ToList();
+            var header = Db.VwPurchaseOrderHeaders.Where(s => (new string[] { "A", "PR" }).Contains(s.Mark) && stockM.Select(x => x.RefCode1).Contains(s.Code)).ToList();
+            var details = Db.VwPurchaseOrderDetails.Where(r => header.Select(x => x.Code).Contains(r.Code) && r.ItemId == itemid).ToList();
+            var result = (from h in header
+                          join d in details on h.Code equals d.Code
+                          select new
+                          {
+                              Code = h.Code,
+                              Date = h.Date,
+                              Type = "Order Pembelian",
+                              Qty = Convert.ToInt32(d.Qty),
+                              QtyDlv = Convert.ToInt32(d.QtyRcv),
+                              QtyRemain = Convert.ToInt32(d.Qty - d.QtyRcv)
+                          }).ToDynamicList();
+
+            return result;
+            
+        }
+
+        public IEnumerable<dynamic> GetRelatedTransferTrans(string whid, int itemid)
+        {
+            var stockM = Db.StockMutations.Where(x => x.WarehouseCode == whid && x.ItemId == itemid && x.Type == "OT").ToList();
+            var header = Db.VwTransferStockHeaders.Where(s => s.Mark == "A" && s.Type == 1 && stockM.Select(x => x.RefCode1).Contains(s.Code)).ToList();
+            var details = Db.VwTransferStockDetails.Where(r => header.Select(x => x.Code).Contains(r.Code) && r.ItemId == itemid).ToList();
+            var result = (from h in header
+                          join d in details on h.Code equals d.Code
+                          select new
+                          {
+                              Code = h.Code,
+                              Date = h.Date,
+                              Type = "Transfer Persediaan",
+                              Qty = Convert.ToInt32(d.Qty)
+                          }).ToDynamicList();
+
+            return result;
         }
     }
 }
