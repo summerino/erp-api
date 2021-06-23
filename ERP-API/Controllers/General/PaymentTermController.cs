@@ -34,7 +34,8 @@ namespace ERP_API.Controllers.General
                     {
                         x.Id,
                         x.Initial,
-                        x.Name
+                        x.Name,
+                        x.Due
                     })
                     .ToList<dynamic>();
 
