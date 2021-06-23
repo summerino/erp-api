@@ -74,10 +74,10 @@ namespace ERP_API.Domain.Services.Sales
             try
             {
                 // Sales Order
-                var newOrderCode = GetNewCode("DI_NUM_FMT", data.Date);
+                var newCode = GetNewCode("DI_NUM_FMT", data.Date);
                 Db.SalesOrderHeaders.Add(new SalesOrderHeader
                 {
-                    Code = newOrderCode,
+                    Code = newCode,
                     Date = data.Date,
                     CustCode = data.CustCode,
                     SalesBy = data.SalesBy,
@@ -105,7 +105,7 @@ namespace ERP_API.Domain.Services.Sales
                 {
                     var orderDetail = new SalesOrderDetail
                     {
-                        Code = newOrderCode,
+                        Code = newCode,
                         LineNo = ++i,
                         ItemId = item.ItemId,
                         UomId = item.UomId,
@@ -147,7 +147,7 @@ namespace ERP_API.Domain.Services.Sales
                         {
                             Db.SalesOrderDetailDiscounts.Add(new SalesOrderDetailDiscount
                             {
-                                Code = newOrderCode,
+                                Code = newCode,
                                 OrderDetailId = orderDetail.Id,
                                 LineNo = ++d,
                                 PromoCode = discItem.PromoCode,
@@ -169,7 +169,7 @@ namespace ERP_API.Domain.Services.Sales
                         {
                             Db.SalesOrderDetailFreeGoods.Add(new SalesOrderDetailFreeGood
                             {
-                                Code = newOrderCode,
+                                Code = newCode,
                                 OrderDetailId = orderDetail.Id,
                                 LineNo = ++f,
                                 PromoCode = freeItem.PromoCode,
@@ -186,13 +186,11 @@ namespace ERP_API.Domain.Services.Sales
                     }
                 }
                 // Sales Delivery
-                var newDlvCode = GetNewCode("DI_NUM_FMT", data.Date);
-
                 Db.SalesDeliveryHeaders.Add(new SalesDeliveryHeader
                 {
-                    Code = newDlvCode,
+                    Code = newCode,
                     Date = data.Date,
-                    TransCode = newOrderCode,
+                    TransCode = newCode,
                     CustCode = data.CustCode,
                     WarehouseCode = data.WarehouseCode,
                     ShippedBy = data.SalesBy,
@@ -219,7 +217,7 @@ namespace ERP_API.Domain.Services.Sales
                 {
                     var deliveryDetail = new SalesDeliveryDetail
                     {
-                        Code = newDlvCode,
+                        Code = newCode,
                         LineNo = ++j,
                         ItemId = item.ItemId,
                         UomId = item.UomId,
@@ -254,7 +252,7 @@ namespace ERP_API.Domain.Services.Sales
                         {
                             Db.SalesDeliveryDetailFreeGoods.Add(new SalesDeliveryDetailFreeGood
                             {
-                                Code = newDlvCode,
+                                Code = newCode,
                                 DlvOrderDetailId = deliveryDetail.Id,
                                 LineNo = ++f,
                                 PromoCode = freeItem.PromoCode,
@@ -275,13 +273,12 @@ namespace ERP_API.Domain.Services.Sales
                 }
 
                 // Sales Invoice
-                var newInvCode = GetNewCode("DI_NUM_FMT", data.Date);
                 Db.SalesInvoiceHeaders.Add(new SalesInvoiceHeader
                 {
-                    Code = newInvCode,
+                    Code = newCode,
                     Date = data.Date,
                     DueDate = data.DueDate,
-                    SoCode = newOrderCode,
+                    SoCode = newCode,
                     CustCode = data.CustCode,
                     IssuedBy = data.SalesBy,
                     CurrCode = data.CurrCode,
@@ -297,9 +294,9 @@ namespace ERP_API.Domain.Services.Sales
 
                 Db.SalesInvoiceDetails.Add(new SalesInvoiceDetail
                 {
-                    Code = newInvCode,
+                    Code = newCode,
                     LineNo = 1,
-                    DoCode = newDlvCode,
+                    DoCode = newCode,
                     SubTotal = data.SubTotal,
                     FinalDisc = data.FinalDisc,
                     TaxAmount = data.TaxAmount,
@@ -309,27 +306,27 @@ namespace ERP_API.Domain.Services.Sales
 
                 Db.SaveChanges();
 
-                var DlvData = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.TransCode == newOrderCode);
+                var DlvData = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.TransCode == newCode);
                 // Execute sp_update_stock_mutation_from_so
                 Db.Database.ExecuteSqlRaw(
                     "EXEC sp_update_stock_mutation_from_so {0}, {1}",
-                    newOrderCode, data.Date);
+                    newCode, data.Date);
 
                 // Execute sp_update_stock_mutation_from_do
                 Db.Database.ExecuteSqlRaw(
                     "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
-                    DlvData.Code, data.Date, newOrderCode);
+                    DlvData.Code, data.Date, newCode);
 
                 // Execute sp_update_po_rcv_qty
-                Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", newOrderCode);
+                Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", newCode);
 
                 // Update sales order to closed if all sales delivery are invoiced
                 if (
                     !Db.SalesDeliveryHeaders
-                        .Any(x => x.TransCode == newOrderCode && x.Mark != "INV"))
+                        .Any(x => x.TransCode == newCode && x.Mark != "INV"))
                 {
                     Db.Database.ExecuteSqlRaw(
-                        "UPDATE Sales.SalesOrderHeader SET Mark='CLS' WHERE Code={0} AND Mark='CMP'", newOrderCode);
+                        "UPDATE Sales.SalesOrderHeader SET Mark='CLS' WHERE Code={0} AND Mark='CMP'", newCode);
                 }
 
                 transaction.Commit();

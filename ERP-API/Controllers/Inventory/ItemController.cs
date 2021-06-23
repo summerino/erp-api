@@ -31,7 +31,7 @@ namespace ERP_API.Controllers.Inventory
         }
 
         [HttpGet]
-        public IActionResult GetData(string search, string category,string warehouseCode, string filters, string sorts, int skip, int take)
+        public IActionResult GetData(string search, string category, string warehouseCode, string filters, string sorts, int skip, int take)
         {
             var uomC = _uom.GetDataConversion().ToList();
             var data =
@@ -60,6 +60,30 @@ namespace ERP_API.Controllers.Inventory
             {
                 RowCount = data.Total,
                 TableData = result.ToDynamicList()
+            });
+        }
+
+        [HttpGet("related")]
+        public IActionResult GetOrderTrans(string whid, int itemid, int from)
+        {
+            List<dynamic> data = new();
+            if (from == 1)
+            {
+                data = _item.GetRelatedOrderTrans(whid, itemid).ToList<dynamic>();
+            }
+            else if (from == 2)
+            {
+                data = _item.GetRelatedIndentTrans(whid, itemid).ToList<dynamic>();
+            }
+            else
+            {
+                data = _item.GetRelatedTransferTrans(whid, itemid).ToList<dynamic>();
+            }
+
+            return Ok(new ApiResponse
+            {
+                RowCount = data.Count,
+                TableData = data
             });
         }
 
