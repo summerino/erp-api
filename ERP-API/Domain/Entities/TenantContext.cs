@@ -251,11 +251,17 @@ namespace ERP_API.Domain.Entities
             // General entities
             // Employee entities
             modelBuilder.Entity<Employee>(entity =>
+            {
                 entity.HasOne<SalesmanGroup>()
                     .WithMany()
                     .HasForeignKey(d => d.SalesGroupId)
-                    .OnDelete(DeleteBehavior.NoAction)
-            );
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Warehouse>()
+                    .WithMany()
+                    .HasForeignKey(d => d.WarehouseCode)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
 
             modelBuilder.Entity<VwEmployee>()
                 .HasNoKey()
@@ -272,6 +278,11 @@ namespace ERP_API.Domain.Entities
                 entity.HasOne<CustomerType>()
                     .WithMany()
                     .HasForeignKey(d => d.TypeId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<PaymentTerm>()
+                    .WithMany()
+                    .HasForeignKey(d => d.PaymentTermId)
                     .OnDelete(DeleteBehavior.NoAction);
 
                 entity.HasOne<CustomerAddress>()

@@ -48,6 +48,9 @@ namespace ERP_API.Domain.Entities.General
 
         [StringLength(30)]
         public string Phone { get; set; }
+
+        [StringLength(8)]
+        public string WarehouseCode { get; set; }
     }
 
     public class VwEmployee : BaseEntityWithActive
@@ -81,6 +84,8 @@ namespace ERP_API.Domain.Entities.General
         public string Address2 { get; set; }
 
         public string Phone { get; set; }
+
+        public string WarehouseCode { get; set; }
 
 
         public string UpdatedInitial { get; set; }

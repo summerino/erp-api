@@ -27,7 +27,7 @@ namespace ERP_API.Domain.Entities.General
         [StringLength(50)]
         public string Website { get; set; }
 
-        public short CreditTerm { get; set; }
+        public int PaymentTermId { get; set; }
 
         [Column(TypeName = "decimal(18, 2)")]
         public decimal CreditLimit { get; set; }
@@ -79,7 +79,7 @@ namespace ERP_API.Domain.Entities.General
 
         public string Website { get; set; }
 
-        public short CreditTerm { get; set; }
+        public int PaymentTermId { get; set; }
 
         public decimal CreditLimit { get; set; }
 

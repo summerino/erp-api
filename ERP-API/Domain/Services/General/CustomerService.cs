@@ -25,7 +25,7 @@ namespace ERP_API.Domain.Services.General
             {
                 data = data.Where(x =>
                         x.Code.Contains(search) || x.Initial.Contains(search) || x.Name.Contains(search) || x.TypeName.Contains(search) ||
-                        x.Address1.Contains(search) || x.Phone.Contains(search) || x.CreditTerm.ToString() == search);
+                        x.Address1.Contains(search) || x.Phone.Contains(search));
             }
             return data.ToDataSourceResult(skip, take, filter, sort);
         }
