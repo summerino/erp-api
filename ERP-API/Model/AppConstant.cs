@@ -50,6 +50,8 @@
         SalesOrder = 44,
         SalesReturn = 47,
         Role = 52,
-        User = 51
+        User = 51,
+        AssetType = 32, // masih disamain kaya warehouse
+        Asset = 32 // masih disamain kaya warehouse
     }
 }
