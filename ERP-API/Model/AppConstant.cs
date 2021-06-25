@@ -51,8 +51,8 @@
         SalesReturn = 47,
         Role = 52,
         User = 51,
-        AssetType = 32, // masih disamain kaya warehouse
+        AssetType = 62, 
         SalesmanGroup = 58,
-        FixedAsset = 32 // masih disamain kaya warehouse
+        FixedAsset = 63 
     }
 }
