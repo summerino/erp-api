@@ -53,6 +53,7 @@
         User = 51,
         AssetType = 32, // masih disamain kaya warehouse
         Asset = 32, // masih disamain kaya warehouse
-        SalesmanGroup = 58
+        SalesmanGroup = 58,
+        COAType = 67
     }
 }
