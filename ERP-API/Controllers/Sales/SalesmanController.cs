@@ -7,10 +7,7 @@ using ERP_API.Domain.Interfaces.Sales;
 using ERP_API.Domain.Models;
 using ERP_API.Domain.Services;
 using ERP_API.Model;
-using ERP_API.Model.Sales;
 using Newtonsoft.Json;
-using ERP_API.Domain.Entities.Sales;
-using ERP_API.Domain.Interfaces.Auth;
 
 namespace ERP_API.Controllers.Sales
 {    
@@ -20,14 +17,11 @@ namespace ERP_API.Controllers.Sales
     {
         private readonly ISalesmanService _salesman;
         private readonly IClaimService _claim;
-        private readonly IAuthService _auth;
-        private const int _menuId = (int)Menu.CustomerType;
 
-        public SalesmanController(ISalesmanService salesman, IClaimService claim, IAuthService authService)
+        public SalesmanController(ISalesmanService salesman, IClaimService claim)
         {
             _salesman = salesman;
             _claim = claim;
-            _auth = authService;
         }
 
         [HttpGet]
@@ -71,55 +65,6 @@ namespace ERP_API.Controllers.Sales
                 RowCount = data.Count,
                 TableData = data
             });
-        }
-
-        [HttpPost]
-        public IActionResult OnPost(SalesmanGroup data)
-        {
-
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Insert }).Any())
-            {
-                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
-
-            data.IsActive = true;
-            data.CreatedBy = _claim.UserId;
-            data.CreatedDate = DateTime.Now;
-            data.UpdatedBy = data.CreatedBy;
-            data.UpdatedDate = data.CreatedDate;
-
-            var result = _salesman.Insert(data);
-
-            return Ok(result);
-        }
-
-        [HttpPut("{id}")]
-        public IActionResult OnPut(string id, SalesmanGroup data)
-        {
-
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Update }).Any())
-            {
-                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
-
-            data.UpdatedBy = _claim.UserId;
-            data.UpdatedDate = DateTime.Now;
-
-            var result = _salesman.Update(data);
-
-            return Ok(result);
-        }
-
-        [HttpDelete("{id}")]
-        public IActionResult OnDelete(int id)
-        {
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Delete }).Any())
-            {
-                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
-
-            var result = _salesman.Delete(id, _claim.UserId);
-            return Ok(result);
         }
     }
 }
