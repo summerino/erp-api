@@ -52,7 +52,7 @@
         Role = 52,
         User = 51,
         AssetType = 32, // masih disamain kaya warehouse
-        SalesmanGroup = 58
+        SalesmanGroup = 58,
         FixedAsset = 32 // masih disamain kaya warehouse
     }
 }
