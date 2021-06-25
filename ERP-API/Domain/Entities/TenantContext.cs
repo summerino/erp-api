@@ -38,6 +38,7 @@ namespace ERP_API.Domain.Entities
         public DbSet<FixedAssetDepartment> FixedAssetDepartments { get; set; }
         public DbSet<FixedAssetHistory> FixedAssetHistories { get; set; }
         public DbSet<AssetType> AssetTypes { get; set; }
+        public DbSet<VwFixedAsset> VwFixedAssets { get; set; }
 
         // General entities
         public DbSet<Currency> Currencies { get; set; }
@@ -247,6 +248,10 @@ namespace ERP_API.Domain.Entities
             modelBuilder.Entity<VwAssetType>()
             .HasNoKey()
             .ToView("vwAssetType", Schema.AssetManagement);
+
+            modelBuilder.Entity<VwFixedAsset>()
+            .HasNoKey()
+            .ToView("vwFixedAsset", Schema.AssetManagement);
 
             // General entities
             // Employee entities
