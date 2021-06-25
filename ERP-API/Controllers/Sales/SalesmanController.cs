@@ -55,6 +55,19 @@ namespace ERP_API.Controllers.Sales
             });
         }
 
+        [HttpGet("salesman-schedule-by-id")]
+        public IActionResult GetEmployeeSchedule(long id)
+        {
+            var data =
+                _salesman.GetSalesmanSchedule(id).ToList<dynamic>();
+
+            return Ok(new ApiResponse
+            {
+                RowCount = data.Count,
+                TableData = data
+            });
+        }
+
         [HttpGet("salesman-schedule-customer")]
         public IActionResult GetEmployeeScheduleDetailData(string ids)
         {

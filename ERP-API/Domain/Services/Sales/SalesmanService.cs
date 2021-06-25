@@ -50,6 +50,13 @@ namespace ERP_API.Domain.Services.Sales
             }
         }
 
+        public IEnumerable<VwSalesmanSchedule> GetSalesmanSchedule(long id)
+        {
+            var data = Db.VwSalesmanSchedules.Where(x => x.Id == id);
+
+            return data.OrderBy(x => x.Id);
+        }
+
         public IEnumerable<VwSalesmanScheduleCustomer> GetSalesmanScheduleDetailData(List<long> id)
         {
             var data = Db.VwSalesmanScheduleCustomers.AsQueryable();

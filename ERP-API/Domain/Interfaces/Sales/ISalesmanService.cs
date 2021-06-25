@@ -12,6 +12,8 @@ namespace ERP_API.Domain.Interfaces.Sales
 
         IEnumerable<VwSalesmanSchedule> GetSalesmanSchedule(string groupId, string startDate, string recurrence, string visitDay);
 
+        IEnumerable<VwSalesmanSchedule> GetSalesmanSchedule(long id);
+
         IEnumerable<VwSalesmanScheduleCustomer> GetSalesmanScheduleDetailData(List<long> id);
     }
 }
