@@ -83,7 +83,7 @@ namespace ERP_API.Controllers.AssetManagement
             return Ok(result);
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{code}")]
         public IActionResult OnDelete(string code)
         {
 
