@@ -137,6 +137,7 @@ namespace ERP_API
 
             // Asset services
             services.AddScoped<IAssetTypeService, AssetTypeService>();
+            services.AddScoped<IFixedAssetService, FixedAssetService>();
 
 
             // General services

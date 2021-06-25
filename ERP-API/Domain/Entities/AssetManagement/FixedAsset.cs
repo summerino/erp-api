@@ -168,4 +168,87 @@ namespace ERP_API.Domain.Entities.AssetManagement
 
         public string UpdatedInitial { get; set; }
     }
+
+    public class VwFixedAsset : BaseEntityWithMarkAndApproved
+    {
+        [Key]
+        [StringLength(17)]
+        public string Code { get; set; }
+
+        [Required]
+        [StringLength(50)]
+        public string Name { get; set; }
+
+        public int TypeId { get; set; }
+
+        [Column(TypeName = "date")]
+        public DateTime PurchaseDate { get; set; }
+
+        [Column(TypeName = "date")]
+        public DateTime StartDepreciateOn { get; set; }
+
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal PurchaseValue { get; set; }
+
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal AcquiredValue { get; set; }
+
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal SalvageValue { get; set; }
+
+        public int DepreciationMonth { get; set; }
+
+        public int DepartmentId { get; set; }
+
+        [Required]
+        [StringLength(8)]
+        public string SupCode { get; set; }
+
+        [Required]
+        [StringLength(17)]
+        public string PurchaseOrderNo { get; set; }
+
+        [Required]
+        [StringLength(17)]
+        public string InvoiceNo { get; set; }
+
+        [Required]
+        [StringLength(17)]
+        public string PaymentVoucherNo { get; set; }
+
+        public int YearWarranty { get; set; }
+
+        [Required]
+        [StringLength(17)]
+        public string CodeWarranty { get; set; }
+
+        public short EstimatedLife { get; set; }
+
+        public int DepreciationMethod { get; set; }
+
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal InitDepreciationExpense { get; set; }
+
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal BookValue { get; set; }
+
+        [StringLength(256)]
+        public string Notes { get; set; }
+
+        [StringLength(6)]
+        public string CoaExpense { get; set; }
+
+        //--------------------------------------
+
+        public string SupName { get; set; }
+        public string AssetType { get; set; }
+
+        public string CreatedInitial { get; set; }
+
+        public string UpdatedInitial { get; set; }
+
+        public string ApprovedInitial { get; set; }
+
+        public string Status { get; set; }
+    }
 }

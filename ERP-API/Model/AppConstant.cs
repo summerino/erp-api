@@ -52,6 +52,6 @@
         Role = 52,
         User = 51,
         AssetType = 32, // masih disamain kaya warehouse
-        Asset = 32 // masih disamain kaya warehouse
+        FixedAsset = 32 // masih disamain kaya warehouse
     }
 }
