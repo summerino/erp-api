@@ -56,7 +56,7 @@ namespace ERP_API.Controllers.General
                     .ToDynamicList()
                     .Select(x => new
                     {
-                        x.Code, x.Initial, x.Name, x.Address1, x.Phone, x.Fax
+                        x.Code, x.Initial, x.Name, x.Address1, x.Phone, x.Fax, x.PaymentTermId
                     })
                     .ToList<dynamic>();
 

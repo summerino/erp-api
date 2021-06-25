@@ -7,7 +7,6 @@ using ERP_API.Domain.Interfaces.Sales;
 using ERP_API.Domain.Models;
 using ERP_API.Domain.Services;
 using ERP_API.Model;
-using ERP_API.Model.Sales;
 using Newtonsoft.Json;
 
 namespace ERP_API.Controllers.Sales

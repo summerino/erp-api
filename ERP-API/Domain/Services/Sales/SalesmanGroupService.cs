@@ -1,43 +1,38 @@
 ﻿using ERP_API.Domain.Entities;
-using ERP_API.Domain.Entities.General;
+using ERP_API.Domain.Entities.Sales;
 using ERP_API.Domain.Extensions;
-using ERP_API.Domain.Interfaces.General;
+using ERP_API.Domain.Interfaces.Sales;
 using ERP_API.Domain.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
-namespace ERP_API.Domain.Services.General
+namespace ERP_API.Domain.Services.Sales
 {
-    public class PaymentTermService : GeneralService<PaymentTerm>, IPaymentTermService
+    public class SalesmanGroupService : GeneralService<SalesmanGroup>, ISalesmanGroupService
     {
-
-        public PaymentTermService(TenantContext db)
+        public SalesmanGroupService(TenantContext db)
             :base(db)
         {
+
         }
 
-        public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string search)
+        public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
+            List<int> category, string search)
         {
-            var data = Db.VwPaymentTerms.AsQueryable();
+            var data = Db.VwSalesmanGroups.AsQueryable();
 
             if (!string.IsNullOrEmpty(search))
             {
                 data = data.Where(x =>
-                        x.Initial.Contains(search) || x.Name.Contains(search));
+                        x.Initial.Contains(search) || x.Name.Contains(search) || x.SupervisorInitial.Contains(search));
             }
 
-            return data.ToDataSourceResult(skip, take, filters, sorts);
+            return data.ToDataSourceResult(skip, take, filter, sort);
         }
 
-        public DataSourceResult GetLists(IEnumerable<Filter> filters, IEnumerable<Sort> sorts)
-        {
-            var data = Db.VwPaymentTerms.Where(x => x.IsActive);
-
-            return data.ToDataSourceResult(0, -1, filters, sorts);
-        }
-
-        public override SaveResult Insert(PaymentTerm data)
+        public override SaveResult Insert(SalesmanGroup data)
         {
             var result = new SaveResult(false);
 
@@ -64,11 +59,11 @@ namespace ERP_API.Domain.Services.General
 
             result.Success = true;
             result.Data = data.Id;
-            result.Message = "Data pembayaran berhasil disimpan.";
+            result.Message = "Data grup penjual berhasil disimpan.";
             return result;
         }
 
-        public override SaveResult Update(PaymentTerm data)
+        public override SaveResult Update(SalesmanGroup data)
         {
             var result = new SaveResult(false);
 
@@ -80,7 +75,7 @@ namespace ERP_API.Domain.Services.General
             }
 
             // Update data
-            Db.PaymentTerms.Update(data);
+            Db.SalesmanGroups.Update(data);
             Db.Entry(data).Property(e => e.Id).IsModified = false;
             Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
             Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
@@ -89,7 +84,7 @@ namespace ERP_API.Domain.Services.General
 
             result.Success = true;
             result.Data = data.Id;
-            result.Message = "Data pembayaran berhasil diperbarui.";
+            result.Message = "Data grup penjual berhasil diperbarui.";
             return result;
         }
 
@@ -97,36 +92,29 @@ namespace ERP_API.Domain.Services.General
         {
             var result = new SaveResult(false);
 
-            var data = Db.PaymentTerms.Find(id);
+            var data = Db.SalesmanGroups.Find(id);
             if (data != null)
             {
                 // Checking active
                 if (data.IsActive == false)
                 {
-                    result.Message = "Tidak bisa menghapus data pembayaran karena data sudah dihapus.";
+                    result.Message = "Tidak bisa menghapus data grup penjual karena data sudah dihapus.";
                     return result;
                 }
 
-                //Check if any customers already using this type
-                if (Db.Customers.Any(x => x.PaymentTermId == data.Id))
-                {
-                    result.Message = "Tidak bisa menghapus data pembayaran karena telah digunakan pada data pelanggan.";
-                    return result;
-                }
-
-                Db.PaymentTerms.Remove(data);
+                Db.SalesmanGroups.Remove(data);
 
                 Db.SaveChanges();
             }
 
             result.Success = true;
-            result.Message = "Data pembayaran berhasil dihapus.";
+            result.Message = "Data grup penjual berhasil dihapus.";
             return result;
         }
 
         private bool IsInitialExists(string initial, int id)
         {
-            return Db.PaymentTerms.Any(x => x.Initial == initial && x.Id != id && x.IsActive == true);
+            return Db.SalesmanGroups.Any(x => x.Initial == initial && x.Id != id && x.IsActive == true);
         }
     }
 }
