@@ -53,6 +53,7 @@
         User = 51,
         AssetType = 62, 
         SalesmanGroup = 58,
-        FixedAsset = 63 
+        FixedAsset = 63,
+        COAType = 67
     }
 }
