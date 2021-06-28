@@ -21,7 +21,7 @@ namespace ERP_API.Domain.Services.Expedition
        
         public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, string search)
         {
-            var data = Db.ExpeditionInvoiceHeaders.AsQueryable();
+            var data = Db.VwExpeditionInvoiceHeaders.AsQueryable();
 
             if (!string.IsNullOrEmpty(search))
             {
