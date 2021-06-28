@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using ERP_API.Domain.Entities.Accounting;
 using ERP_API.Domain.Entities.AssetManagement;
 using ERP_API.Domain.Entities.Core;
+using ERP_API.Domain.Entities.Expedition;
 using ERP_API.Domain.Entities.General;
 using ERP_API.Domain.Entities.Inventory;
 using ERP_API.Domain.Entities.Purchase;
@@ -32,13 +33,6 @@ namespace ERP_API.Domain.Entities
         public DbSet<Coa> Coas { get; set; }
         public DbSet<CoaType> CoaTypes { get; set; }
         public DbSet<CurrencyRate> CurrencyRates { get; set; }
-
-        // Asset Management Entities
-        public DbSet<FixedAsset> FixedAssets { get; set; }
-        public DbSet<FixedAssetDepartment> FixedAssetDepartments { get; set; }
-        public DbSet<FixedAssetHistory> FixedAssetHistories { get; set; }
-        public DbSet<AssetType> AssetTypes { get; set; }
-        public DbSet<VwFixedAsset> VwFixedAssets { get; set; }
 
         // General entities
         public DbSet<Currency> Currencies { get; set; }
@@ -160,6 +154,17 @@ namespace ERP_API.Domain.Entities
         public DbSet<VwVisitPlanDetail> VwVisitPlanDetails { get; set; }
         public DbSet<VwVisitPlanDetailCustomer> VwVisitPlanDetailCustomers { get; set; }
 
+        // Expedition entities
+        public DbSet<ExpeditionInvoiceHeader> ExpeditionInvoiceHeaders { get; set; }
+        public DbSet<ExpeditionInvoiceDetail> ExpeditionInvoiceDetails { get; set; }
+
+        // Asset Management Entities
+        public DbSet<FixedAsset> FixedAssets { get; set; }
+        public DbSet<FixedAssetDepartment> FixedAssetDepartments { get; set; }
+        public DbSet<FixedAssetHistory> FixedAssetHistories { get; set; }
+        public DbSet<AssetType> AssetTypes { get; set; }
+        public DbSet<VwFixedAsset> VwFixedAssets { get; set; }
+
         // System Management Entities
         public DbSet<SystemManagement.Action> Actions { get; set; }
         public DbSet<Company> Companies { get; set; }
@@ -228,30 +233,6 @@ namespace ERP_API.Domain.Entities
             modelBuilder.Entity<BaseNewCodeEntity>()
                 .HasNoKey()
                 .ToTable("BaseNewCodeEntity", t => t.ExcludeFromMigrations());
-
-            // Asset Management entities
-            modelBuilder.Entity<FixedAsset>(entity =>
-                entity.Property(e => e.Mark)
-                    .IsRequired()
-            );
-
-            modelBuilder.Entity<FixedAssetDepartment>(entity =>
-                entity.Property(e => e.Code)
-                    .IsRequired()
-            );
-
-            modelBuilder.Entity<FixedAssetHistory>(entity =>
-                entity.Property(e => e.Code)
-                    .IsRequired()
-            );
-
-            modelBuilder.Entity<VwAssetType>()
-            .HasNoKey()
-            .ToView("vwAssetType", Schema.AssetManagement);
-
-            modelBuilder.Entity<VwFixedAsset>()
-            .HasNoKey()
-            .ToView("vwFixedAsset", Schema.AssetManagement);
 
             // General entities
             // Employee entities
@@ -957,14 +938,14 @@ namespace ERP_API.Domain.Entities
                     .IsRequired()
             );
 
+            modelBuilder.Entity<VwVisitPlanHeader>()
+                .HasNoKey()
+                .ToView("vwVisitPlanHeader", Schema.Sales);
+
             modelBuilder.Entity<VisitPlanDetail>(entity =>
                 entity.Property(e => e.Code)
                     .IsRequired()
             );
-
-            modelBuilder.Entity<VwVisitPlanHeader>()
-                .HasNoKey()
-                .ToView("vwVisitPlanHeader", Schema.Sales);
 
             modelBuilder.Entity<VwVisitPlanDetail>()
                 .HasNoKey()
@@ -973,6 +954,78 @@ namespace ERP_API.Domain.Entities
             modelBuilder.Entity<VwVisitPlanDetailCustomer>()
                 .HasNoKey()
                 .ToView("vwVisitPlanDetailCustomer", Schema.Sales);
+
+            // Expedition entities
+            modelBuilder.Entity<ExpeditionInvoiceHeader>(entity =>
+            {
+                entity.Property(e => e.Mark)
+                    .IsRequired();
+
+                entity.HasOne<Supplier>()
+                    .WithMany()
+                    .HasForeignKey(d => d.SupCode)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            modelBuilder.Entity<ExpeditionInvoiceDetail>(entity =>
+            {
+                entity.Property(e => e.Code)
+                    .IsRequired();
+
+                entity.HasOne<ExpeditionInvoiceHeader>()
+                    .WithMany()
+                    .HasForeignKey(d => d.Code)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            // Asset Management entities
+            // Asset Type entities
+            modelBuilder.Entity<VwAssetType>()
+                .HasNoKey()
+                .ToView("vwAssetType", Schema.AssetManagement);
+
+            // Fixed Asset entities
+            modelBuilder.Entity<FixedAsset>(entity =>
+            {
+                entity.Property(e => e.Mark)
+                    .IsRequired();
+
+                entity.HasOne<AssetType>()
+                    .WithMany()
+                    .HasForeignKey(d => d.TypeId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Supplier>()
+                    .WithMany()
+                    .HasForeignKey(d => d.SupCode)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            modelBuilder.Entity<VwFixedAsset>()
+                .HasNoKey()
+                .ToView("vwFixedAsset", Schema.AssetManagement);
+
+            modelBuilder.Entity<FixedAssetDepartment>(entity =>
+            {
+                entity.Property(e => e.Code)
+                    .IsRequired();
+
+                entity.HasOne<FixedAsset>()
+                    .WithMany()
+                    .HasForeignKey(d => d.Code)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            modelBuilder.Entity<FixedAssetHistory>(entity =>
+            {
+                entity.Property(e => e.Code)
+                    .IsRequired();
+
+                entity.HasOne<FixedAsset>()
+                    .WithMany()
+                    .HasForeignKey(d => d.Code)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
 
             // System Management entities
             // Menu entities
