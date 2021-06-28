@@ -31,6 +31,8 @@ using Newtonsoft.Json.Serialization;
 using Swift.Framework;
 using ERP_API.Domain.Interfaces.AssetManagement;
 using ERP_API.Domain.Services.AssetManagement;
+using ERP_API.Domain.Interfaces.Expedition;
+using ERP_API.Domain.Services.Expedition;
 
 namespace ERP_API
 {
@@ -140,6 +142,8 @@ namespace ERP_API
             services.AddScoped<IAssetTypeService, AssetTypeService>();
             services.AddScoped<IFixedAssetService, FixedAssetService>();
 
+            // Expedition services
+            services.AddScoped<IExpeditionInvoiceService, ExpeditionInvoiceService>();
 
             // General services
             services.AddScoped<ICurrencyService, CurrencyService>();
