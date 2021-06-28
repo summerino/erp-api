@@ -44,6 +44,7 @@ namespace ERP_API.Domain.Entities
         // Expedition entities
         public DbSet<ExpeditionInvoiceHeader> ExpeditionInvoiceHeaders { get; set; }
         public DbSet<ExpeditionInvoiceDetail> ExpeditionInvoiceDetails { get; set; }
+        public DbSet<VwExpeditionInvoiceHeader> VwExpeditionInvoiceHeaders { get; set; }
 
         // General entities
         public DbSet<Currency> Currencies { get; set; }
@@ -305,6 +306,10 @@ namespace ERP_API.Domain.Entities
                     .HasForeignKey(d => d.Code)
                     .OnDelete(DeleteBehavior.NoAction);
             });
+
+            modelBuilder.Entity<VwExpeditionInvoiceHeader>()
+                .HasNoKey()
+                .ToView("vwExpeditionInvoiceHeader", Schema.Expedition);
 
             // General entities
             // Employee entities

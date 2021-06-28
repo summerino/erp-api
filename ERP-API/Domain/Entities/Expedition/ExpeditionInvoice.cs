@@ -55,4 +55,35 @@ namespace ERP_API.Domain.Entities.Expedition
         [StringLength(17)]
         public string TransCode { get; set; }
     }
+
+    public class VwExpeditionInvoiceHeader : BaseEntityWithMarkAndApproved
+    {
+        public string Code { get; set; }
+
+        public DateTime Date { get; set; }
+
+        public DateTime DueDate { get; set; }
+
+        public short SrcTrans { get; set; }
+
+        public string RefNo { get; set; }
+
+        public string SupCode { get; set; }
+
+        public string CurrCode { get; set; }
+
+        public decimal Rate { get; set; }
+
+        public decimal Amount { get; set; }
+
+        public string Notes { get; set; }
+
+        public string SupplierInitial { get; set; }
+
+        public string CreatedInitial { get; set; }
+
+        public string UpdatedInitial { get; set; }
+
+        public string ApprovedInitial { get; set; }
+    }
 }
