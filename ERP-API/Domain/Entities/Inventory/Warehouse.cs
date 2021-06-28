@@ -26,6 +26,9 @@ namespace ERP_API.Domain.Entities.Inventory
         public string Phone { get; set; }
 
         public bool IsDefault { get; set; }
+
+        [StringLength(8)]
+        public string CustCode { get; set; }
     }
 
     public class VwWarehouse : BaseEntityWithActive
@@ -41,6 +44,8 @@ namespace ERP_API.Domain.Entities.Inventory
         public string Phone { get; set; }
 
         public bool IsDefault { get; set; }
+
+        public string CustCode { get; set; }
 
 
         public string UpdatedInitial { get; set; }

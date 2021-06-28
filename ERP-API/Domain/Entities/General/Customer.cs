@@ -51,6 +51,8 @@ namespace ERP_API.Domain.Entities.General
         public int? AreaId4 { get; set; }
 
         public int? AreaId5 { get; set; }
+
+        public bool IsConsignee { get; set; }
     }
 
     public class VwCustomer : BaseEntityWithActive
@@ -100,6 +102,8 @@ namespace ERP_API.Domain.Entities.General
         public int? AreaId4 { get; set; }
         
         public int? AreaId5 { get; set; }
+
+        public bool IsConsignee { get; set; }
 
 
         public string TypeName { get; set; }

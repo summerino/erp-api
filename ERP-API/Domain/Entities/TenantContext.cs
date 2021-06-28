@@ -43,8 +43,8 @@ namespace ERP_API.Domain.Entities
 
         // Expedition entities
         public DbSet<ExpeditionInvoiceHeader> ExpeditionInvoiceHeaders { get; set; }
-        public DbSet<ExpeditionInvoiceDetail> ExpeditionInvoiceDetails { get; set; }
         public DbSet<VwExpeditionInvoiceHeader> VwExpeditionInvoiceHeaders { get; set; }
+        public DbSet<ExpeditionInvoiceDetail> ExpeditionInvoiceDetails { get; set; }
 
         // General entities
         public DbSet<Currency> Currencies { get; set; }
@@ -296,6 +296,10 @@ namespace ERP_API.Domain.Entities
                     .OnDelete(DeleteBehavior.NoAction);
             });
 
+            modelBuilder.Entity<VwExpeditionInvoiceHeader>()
+                .HasNoKey()
+                .ToView("vwExpeditionInvoiceHeader", Schema.Expedition);
+
             modelBuilder.Entity<ExpeditionInvoiceDetail>(entity =>
             {
                 entity.Property(e => e.Code)
@@ -306,10 +310,6 @@ namespace ERP_API.Domain.Entities
                     .HasForeignKey(d => d.Code)
                     .OnDelete(DeleteBehavior.NoAction);
             });
-
-            modelBuilder.Entity<VwExpeditionInvoiceHeader>()
-                .HasNoKey()
-                .ToView("vwExpeditionInvoiceHeader", Schema.Expedition);
 
             // General entities
             // Employee entities
@@ -664,6 +664,13 @@ namespace ERP_API.Domain.Entities
             );
 
             // Warehouse entities
+            modelBuilder.Entity<Warehouse>(entity =>
+                entity.HasOne<Customer>()
+                    .WithMany()
+                    .HasForeignKey(d => d.CustCode)
+                    .OnDelete(DeleteBehavior.NoAction)
+            );
+
             modelBuilder.Entity<VwWarehouse>()
                 .HasNoKey()
                 .ToView("vwWarehouse", Schema.Inventory);

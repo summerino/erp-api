@@ -59,9 +59,6 @@ namespace ERP_API.Domain.Entities.Purchase
 
         [StringLength(256)]
         public string Notes { get; set; }
-
-        [StringLength(20)]
-        public string RcvStatus { get; set; }
     }
 
     public class VwPurchaseOrderHeader : BaseEntityWithMarkAndApproved
@@ -107,9 +104,6 @@ namespace ERP_API.Domain.Entities.Purchase
 
         [StringLength(256)]
         public string Notes { get; set; }
-
-        [StringLength(20)]
-        public string RcvStatus { get; set; }
 
 
         public string SupName { get; set; }

@@ -41,21 +41,6 @@ namespace ERP_API.Domain.Entities.Expedition
         public string Notes { get; set; }
     }
 
-    [Table("ExpeditionInvoiceDetail", Schema = Schema.Expedition)]
-    public class ExpeditionInvoiceDetail
-    {
-        public long Id { get; set; }
-
-        [StringLength(17)]
-        public string Code { get; set; }
-
-        public short LineNo { get; set; }
-
-        [Required]
-        [StringLength(17)]
-        public string TransCode { get; set; }
-    }
-
     public class VwExpeditionInvoiceHeader : BaseEntityWithMarkAndApproved
     {
         public string Code { get; set; }
@@ -78,6 +63,7 @@ namespace ERP_API.Domain.Entities.Expedition
 
         public string Notes { get; set; }
 
+
         public string SupplierInitial { get; set; }
 
         public string CreatedInitial { get; set; }
@@ -85,5 +71,20 @@ namespace ERP_API.Domain.Entities.Expedition
         public string UpdatedInitial { get; set; }
 
         public string ApprovedInitial { get; set; }
+    }
+
+    [Table("ExpeditionInvoiceDetail", Schema = Schema.Expedition)]
+    public class ExpeditionInvoiceDetail
+    {
+        public long Id { get; set; }
+
+        [StringLength(17)]
+        public string Code { get; set; }
+
+        public short LineNo { get; set; }
+
+        [Required]
+        [StringLength(17)]
+        public string TransCode { get; set; }
     }
 }
