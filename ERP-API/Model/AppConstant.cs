@@ -12,7 +12,8 @@
         Delete = 3,
         Void = 4,
         ChangeWarehouse = 5,
-        Close = 6
+        Close = 6,
+        ChangeDate = 8
     }
 
     public enum Menu 

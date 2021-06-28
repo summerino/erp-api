@@ -98,10 +98,25 @@ namespace ERP_API.Domain.Services.Auth
                 };
             }
 
+            string defaultWarehouseCode = "";
+            var temp = tenantCtx.Employees.SingleOrDefault(x => x.Id.Equals(tenantUser.Id));
+
+            if (temp == null)
+            {
+                return new AuthResult
+                {
+                    Message = "Data karyawan tidak ditemukan.",
+                    Success = false
+                };
+            }
+            else {
+                defaultWarehouseCode = temp.WarehouseCode;
+            }
+
             tenantUser.IsLoggedIn = true;
             tenantUser.LastLogin = DateTime.Now;
             tenantUser.SessionId = Guid.NewGuid().ToString();
-            tenantUser.TokenId = GenerateJwtToken(tenantUser, catalogUser.TenantId);
+            tenantUser.TokenId = GenerateJwtToken(tenantUser, catalogUser.TenantId, defaultWarehouseCode);
             tenantUser.IpAddress = _claim.IpAddress;
 
             tenantCtx.Users.Update(tenantUser);
@@ -180,7 +195,7 @@ namespace ERP_API.Domain.Services.Auth
             };
         }
 
-        private string GenerateJwtToken(UserTenant data, int tenantId)
+        private string GenerateJwtToken(UserTenant data, int tenantId, string defaultWarehouseCode)
         {
             var jwtTokenHandler = new JwtSecurityTokenHandler();
 
@@ -196,7 +211,8 @@ namespace ERP_API.Domain.Services.Auth
                     new Claim("UserId", data.Id.ToString()),
                     new Claim("RoleId", data.RoleId.ToString()),
                     new Claim("CatalogUserId", data.CatalogUserId.ToString()),
-                    new Claim("TenantId", tenantId.ToString())
+                    new Claim("TenantId", tenantId.ToString()),
+                    new Claim("WarehouseCode", defaultWarehouseCode == null ? string.Empty : defaultWarehouseCode)
                 }),
                 Expires = data.LastLogin.GetValueOrDefault(DateTime.Now).AddMinutes(_jwtConfig.TimeInMinute),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
