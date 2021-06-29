@@ -11,11 +11,7 @@ namespace ERP_API.Domain.Entities.SystemManagement
     {
         public int Id { get; set; }
 
-        [StringLength(50)]
-        public string Module { get; set; }
-
-        [StringLength(50)]
-        public string Category { get; set; }
+        public int ModuleId { get; set; }
 
         [Required]
         [StringLength(50)]
@@ -25,6 +21,34 @@ namespace ERP_API.Domain.Entities.SystemManagement
         [StringLength(100)]
         public string Value { get; set; }
 
-        public int? Seq { get; set; }
+        [Required]
+        [StringLength(20)]
+        public string DataType { get; set; }
+
+        [Required]
+        [StringLength(256)]
+        public string Description { get; set; }
+
+        public int Seq { get; set; }
+
+        public bool IsActive { get; set; }
+    }
+
+    [Table("SystemParameterModule", Schema = Schema.SystemManagement)]
+    public class SystemParameterModule
+    {
+        public int Id { get; set; }
+
+        [Required]
+        [StringLength(50)]
+        public string Name { get; set; }
+
+        public int? ParentId { get; set; }
+
+        public int Deep { get; set; }
+
+        public int Seq { get; set; }
+
+        public bool IsActive { get; set; }
     }
 }

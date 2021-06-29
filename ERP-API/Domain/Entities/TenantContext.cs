@@ -177,6 +177,7 @@ namespace ERP_API.Domain.Entities
         public DbSet<RoleMenuAction> RoleMenuActions { get; set; }
         public DbSet<SequenceNumber> SequenceNumbers { get; set; }
         public DbSet<SystemParameter> SystemParameters { get; set; }
+        public DbSet<SystemParameterModule> SystemParameterModules { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<VwUser> VwUsers { get; set; }
 
@@ -1089,6 +1090,14 @@ namespace ERP_API.Domain.Entities
                     .HasForeignKey(d => d.ActionId)
                     .OnDelete(DeleteBehavior.NoAction);
             });
+
+            // System Parameter entities
+            modelBuilder.Entity<SystemParameter>(entity =>
+                entity.HasOne<SystemParameterModule>()
+                    .WithMany()
+                    .HasForeignKey(d => d.ModuleId)
+                    .OnDelete(DeleteBehavior.NoAction)
+            );
 
             // User entities
             modelBuilder.Entity<User>(entity =>
