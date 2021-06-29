@@ -12,8 +12,10 @@
         Delete = 3,
         Void = 4,
         ChangeWarehouse = 5,
-        Close = 6,
-        ChangeDate = 8
+        ViewRelatedTrans = 6,
+        Close = 7,
+        ChangeDate = 8,
+        Approve = 9
     }
 
     public enum Menu 
@@ -55,6 +57,7 @@
         AssetType = 62, 
         SalesmanGroup = 58,
         FixedAsset = 63,
-        COAType = 67
+        COAType = 67,
+        Parameter = 73
     }
 }

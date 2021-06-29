@@ -7,6 +7,8 @@ using ERP_API.Domain.Models;
 using ERP_API.Domain.Services;
 using ERP_API.Model;
 using Newtonsoft.Json;
+using ERP_API.Model.SystemManagement;
+using ERP_API.Domain.Interfaces.Auth;
 
 namespace ERP_API.Controllers.SystemManagement
 {
@@ -14,13 +16,23 @@ namespace ERP_API.Controllers.SystemManagement
     [ApiController]
     public class SystemParameterController : ControllerBase
     {
+        private readonly IAuthService _auth;
         private readonly ISystemParameterService _sysParam;
         private readonly IClaimService _claim;
+        private const int _menuId = (int)Menu.Parameter;
 
-        public SystemParameterController(ISystemParameterService sysParam, IClaimService claimService)
+        public SystemParameterController(ISystemParameterService sysParam, IClaimService claimService, IAuthService auth)
         {
             _sysParam = sysParam;
             _claim = claimService;
+            _auth = auth;
+        }
+
+        [HttpGet]
+        public IActionResult GetHierarchy()
+        {
+            var data = _sysParam.GetHierarchy();
+            return Ok(data);
         }
 
         [HttpGet("lists")]
@@ -43,5 +55,16 @@ namespace ERP_API.Controllers.SystemManagement
                 TableData = data
             });
         }
+        [HttpPost]
+        public IActionResult OnPost(List<SystemParameterRequest> data)
+        {
+            //if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Insert }).Any())
+            //{
+            //    return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            //}
+            var result = _sysParam.Save(data);
+            return Ok(result);
+        }
+
     }
 }
