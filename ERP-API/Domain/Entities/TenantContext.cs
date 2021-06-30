@@ -236,6 +236,21 @@ namespace ERP_API.Domain.Entities
                 .HasNoKey()
                 .ToTable("BaseNewCodeEntity", t => t.ExcludeFromMigrations());
 
+            // Accounting entities
+            // COA entities
+            modelBuilder.Entity<Coa>(entity =>
+            {
+                entity.HasOne<CoaType>()
+                    .WithMany()
+                    .HasForeignKey(d => d.TypeId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Currency>()
+                    .WithMany()
+                    .HasForeignKey(d => d.CurrCode)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
             // Asset Management entities
             // Asset Type entities
             modelBuilder.Entity<VwAssetType>()

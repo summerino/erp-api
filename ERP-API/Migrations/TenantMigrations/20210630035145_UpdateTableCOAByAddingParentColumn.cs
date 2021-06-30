@@ -20,6 +20,43 @@ namespace ERP_API.Migrations.TenantMigrations
                 type: "int",
                 nullable: true);
 
+            migrationBuilder.CreateIndex(
+                name: "IX_COA_Code",
+                schema: "Accounting",
+                table: "COA",
+                column: "Code",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_COA_CurrCode",
+                schema: "Accounting",
+                table: "COA",
+                column: "CurrCode");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_COA_TypeId",
+                schema: "Accounting",
+                table: "COA",
+                column: "TypeId");
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_COA_COAType_TypeId",
+                schema: "Accounting",
+                table: "COA",
+                column: "TypeId",
+                principalSchema: "Accounting",
+                principalTable: "COAType",
+                principalColumn: "Id");
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_COA_Currency_CurrCode",
+                schema: "Accounting",
+                table: "COA",
+                column: "CurrCode",
+                principalSchema: "General",
+                principalTable: "Currency",
+                principalColumn: "Code");
+
             // Reorder Accounting.COA columns
             var sql = @"BEGIN TRANSACTION
 SET QUOTED_IDENTIFIER ON
@@ -29,6 +66,22 @@ SET CONCAT_NULL_YIELDS_NULL ON
 SET ANSI_NULLS ON
 SET ANSI_PADDING ON
 SET ANSI_WARNINGS ON
+COMMIT
+BEGIN TRANSACTION
+GO
+ALTER TABLE Accounting.COA
+	DROP CONSTRAINT FK_COA_Currency_CurrCode
+GO
+ALTER TABLE General.Currency SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+ALTER TABLE Accounting.COA
+	DROP CONSTRAINT FK_COA_COAType_TypeId
+GO
+ALTER TABLE Accounting.COAType SET (LOCK_ESCALATION = TABLE)
+GO
 COMMIT
 BEGIN TRANSACTION
 GO
@@ -76,7 +129,54 @@ ALTER TABLE Accounting.COA ADD CONSTRAINT
 	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 
 GO
+CREATE UNIQUE NONCLUSTERED INDEX IX_COA_Code ON Accounting.COA
+	(
+	Code
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+GO
+CREATE NONCLUSTERED INDEX IX_COA_CurrCode ON Accounting.COA
+	(
+	CurrCode
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+GO
+CREATE NONCLUSTERED INDEX IX_COA_TypeId ON Accounting.COA
+	(
+	TypeId
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+GO
+ALTER TABLE Accounting.COA ADD CONSTRAINT
+	FK_COA_COAType_TypeId FOREIGN KEY
+	(
+	TypeId
+	) REFERENCES Accounting.COAType
+	(
+	Id
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE Accounting.COA ADD CONSTRAINT
+	FK_COA_Currency_CurrCode FOREIGN KEY
+	(
+	CurrCode
+	) REFERENCES General.Currency
+	(
+	Code
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
 COMMIT";
+            migrationBuilder.Sql(sql);
+
+            // Create view SystemManagement.vwCompany
+            sql = @"CREATE VIEW SystemManagement.vwCompany
+AS
+	SELECT c.*,
+		u.Initial AS UpdatedInitial
+	FROM SystemManagement.Company c
+	LEFT JOIN SystemManagement.[User] u
+		ON c.UpdatedBy = u.Id";
             migrationBuilder.Sql(sql);
         }
 
@@ -91,6 +191,35 @@ COMMIT";
                 name: "ParentId",
                 schema: "Accounting",
                 table: "COA");
+
+            migrationBuilder.DropForeignKey(
+                name: "FK_COA_COAType_TypeId",
+                schema: "Accounting",
+                table: "COA");
+
+            migrationBuilder.DropForeignKey(
+                name: "FK_COA_Currency_CurrCode",
+                schema: "Accounting",
+                table: "COA");
+
+            migrationBuilder.DropIndex(
+                name: "IX_COA_Code",
+                schema: "Accounting",
+                table: "COA");
+
+            migrationBuilder.DropIndex(
+                name: "IX_COA_CurrCode",
+                schema: "Accounting",
+                table: "COA");
+
+            migrationBuilder.DropIndex(
+                name: "IX_COA_TypeId",
+                schema: "Accounting",
+                table: "COA");
+
+            // Drop view SystemManagement.vwCompany
+            var sql = @"DROP VIEW SystemManagement.vwCompany";
+            migrationBuilder.Sql(sql);
         }
     }
 }

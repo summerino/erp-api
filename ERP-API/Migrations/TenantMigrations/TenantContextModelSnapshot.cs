@@ -104,6 +104,13 @@ namespace ERP_API.Migrations.TenantMigrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.HasIndex("CurrCode");
+
+                    b.HasIndex("TypeId");
+
                     b.ToTable("COA", "Accounting");
                 });
 
@@ -9489,6 +9496,20 @@ namespace ERP_API.Migrations.TenantMigrations
                         .HasColumnType("varchar(max)");
 
                     b.ToView("vwUser", "SystemManagement");
+                });
+
+            modelBuilder.Entity("ERP_API.Domain.Entities.Accounting.Coa", b =>
+                {
+                    b.HasOne("ERP_API.Domain.Entities.General.Currency", null)
+                        .WithMany()
+                        .HasForeignKey("CurrCode")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("ERP_API.Domain.Entities.Accounting.CoaType", null)
+                        .WithMany()
+                        .HasForeignKey("TypeId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("ERP_API.Domain.Entities.AssetManagement.FixedAsset", b =>
