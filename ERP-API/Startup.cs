@@ -197,6 +197,7 @@ namespace ERP_API
             services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<ISystemParameterService, SystemParameterService>();
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<ICompanyProfileService, CompanyProfileService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
