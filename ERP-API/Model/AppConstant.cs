@@ -58,6 +58,7 @@
         SalesmanGroup = 58,
         FixedAsset = 63,
         COAType = 67,
-        Parameter = 73
+        Parameter = 73,
+        ExpeditionInvoice = 70
     }
 }
