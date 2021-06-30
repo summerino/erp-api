@@ -4,14 +4,16 @@ using ERP_API.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ERP_API.Migrations.TenantMigrations
 {
     [DbContext(typeof(TenantContext))]
-    partial class TenantContextModelSnapshot : ModelSnapshot
+    [Migration("20210630035145_UpdateTableCOAByAddingParentColumn")]
+    partial class UpdateTableCOAByAddingParentColumn
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -103,13 +105,6 @@ namespace ERP_API.Migrations.TenantMigrations
                         .HasColumnType("varchar(4)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Code")
-                        .IsUnique();
-
-                    b.HasIndex("CurrCode");
-
-                    b.HasIndex("TypeId");
 
                     b.ToTable("COA", "Accounting");
                 });
@@ -9496,20 +9491,6 @@ namespace ERP_API.Migrations.TenantMigrations
                         .HasColumnType("varchar(max)");
 
                     b.ToView("vwUser", "SystemManagement");
-                });
-
-            modelBuilder.Entity("ERP_API.Domain.Entities.Accounting.Coa", b =>
-                {
-                    b.HasOne("ERP_API.Domain.Entities.General.Currency", null)
-                        .WithMany()
-                        .HasForeignKey("CurrCode")
-                        .OnDelete(DeleteBehavior.NoAction);
-
-                    b.HasOne("ERP_API.Domain.Entities.Accounting.CoaType", null)
-                        .WithMany()
-                        .HasForeignKey("TypeId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("ERP_API.Domain.Entities.AssetManagement.FixedAsset", b =>

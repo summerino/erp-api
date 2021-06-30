@@ -170,6 +170,7 @@ namespace ERP_API.Domain.Entities
         // System Management Entities
         public DbSet<SystemManagement.Action> Actions { get; set; }
         public DbSet<Company> Companies { get; set; }
+        public DbSet<VwCompany> VwCompanies { get; set; }
         public DbSet<Menu> Menus { get; set; }
         public DbSet<MenuAction> MenuActions { get; set; }
         public DbSet<Role> Roles { get; set; }
@@ -237,6 +238,21 @@ namespace ERP_API.Domain.Entities
             modelBuilder.Entity<BaseNewCodeEntity>()
                 .HasNoKey()
                 .ToTable("BaseNewCodeEntity", t => t.ExcludeFromMigrations());
+
+            // Accounting entities
+            // COA entities
+            modelBuilder.Entity<Coa>(entity =>
+            {
+                entity.HasOne<CoaType>()
+                    .WithMany()
+                    .HasForeignKey(d => d.TypeId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Currency>()
+                    .WithMany()
+                    .HasForeignKey(d => d.CurrCode)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
 
             // Asset Management entities
             // Asset Type entities
@@ -1048,6 +1064,11 @@ namespace ERP_API.Domain.Entities
                 .ToView("vwVisitPlanDetailCustomer", Schema.Sales);
 
             // System Management entities
+            // Company entities
+            modelBuilder.Entity<VwCompany>()
+                .HasNoKey()
+                .ToView("vwCompany", Schema.SystemManagement);
+
             // Menu entities
             modelBuilder.Entity<MenuAction>(entity =>
             {

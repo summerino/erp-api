@@ -58,6 +58,8 @@
         SalesmanGroup = 58,
         FixedAsset = 63,
         COAType = 67,
+        ExpeditionInvoice = 70,
+        CompanyProfile = 75,
         Parameter = 73,
         Approval = 72
     }
@@ -83,6 +85,7 @@
         public static string VisitPlan = "Rencana Kunjungan";
         public static string VisitOrder = "Perintah Kunjungan";
 
+      
     }
 
 }

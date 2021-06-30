@@ -158,7 +158,7 @@ namespace ERP_API.Domain.Entities.Sales
 
         public string Website { get; set; }
 
-        public short CreditTerm { get; set; }
+        //public short CreditTerm { get; set; }
 
         public decimal CreditLimit { get; set; }
 

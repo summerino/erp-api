@@ -1,10 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using ERP_API.Domain.Entities.Core;
+using Microsoft.EntityFrameworkCore;
 
 namespace ERP_API.Domain.Entities.Accounting
 {
     [Table("COA", Schema = Schema.Accounting)]
+    [Index(nameof(Code), IsUnique = true)]
     public class Coa : BaseEntityWithActive
     {
         public int Id { get; set; }
@@ -18,6 +20,10 @@ namespace ERP_API.Domain.Entities.Accounting
         public string Name { get; set; }
 
         public int TypeId { get; set; }
+
+        public int? ParentId { get; set; }
+
+        public int? Deep { get; set; }
 
         [Column("LOD")]
         public byte Lod { get; set; }

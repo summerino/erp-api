@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using ERP_API.Domain.Entities;
 using ERP_API.Domain.Entities.General;
+using ERP_API.Domain.Entities.Sales;
 using ERP_API.Domain.Extensions;
 using ERP_API.Domain.Interfaces.General;
 using ERP_API.Domain.Models;
+using ERP_API.Model.General;
 
 namespace ERP_API.Domain.Services.General
 {
@@ -43,9 +45,11 @@ namespace ERP_API.Domain.Services.General
             return data.ToDataSourceResult(0, -1, filters, sorts);
         }
 
-        public override SaveResult Insert(Employee data)
+        public SaveResult Insert(EmployeeRequest data)
         {
             var result = new SaveResult(false);
+            var listIdDetail = new List<long>();
+            var tempBeforeId = new List<long>();
 
             using var transaction = Db.Database.BeginTransaction();
             try
@@ -58,7 +62,52 @@ namespace ERP_API.Domain.Services.General
                 }
 
                 // Insert data
-                Db.Add(data);
+                Db.Employees.Add(data);
+                Db.SaveChanges();
+
+                // Insert schedule for penjual
+                if (data.ScheduleDetails.Any())
+                {
+                    foreach (var item in data.ScheduleDetails)
+                    {
+                        var itemSchedule = new SalesmanSchedule
+                        {
+                            SalesmanId = data.Id,
+                            AreaId1 = item.AreaId1,
+                            AreaId2 = item.AreaId2,
+                            AreaId3 = item.AreaId3,
+                            AreaId4 = item.AreaId4,
+                            AreaId5 = item.AreaId5,
+                            StartDate = item.StartDate,
+                            EndDate = item.EndDate,
+                            Recurrence = item.Recurrence,
+                            VisitDay = item.VisitDay
+                        };
+                        tempBeforeId.Add(item.Id);
+                        Db.SalesmanSchedules.Add(itemSchedule);
+                        Db.SaveChanges();
+
+                        listIdDetail.Add(itemSchedule.Id);
+                    }
+
+                    if (data.CustomerListDetails.Any())
+                    {
+                        foreach (var itemDetail in data.CustomerListDetails)
+                        {
+                            for (var i = 0; i < tempBeforeId.Count; i++)
+                            {
+                                if (itemDetail.SalesmanScheduleId == tempBeforeId[i])
+                                {
+                                    Db.SalesmanScheduleCustomers.Add(new SalesmanScheduleCustomer
+                                    {
+                                        SalesmanScheduleId = listIdDetail[i],
+                                        CustCode = itemDetail.CustCode
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
 
                 Db.SaveChanges();
                 transaction.Commit();
@@ -75,24 +124,98 @@ namespace ERP_API.Domain.Services.General
             return result;
         }
 
-        public override SaveResult Update(Employee data)
+        public SaveResult Update(EmployeeRequest data)
         {
             var result = new SaveResult(false);
+            var listIdDetail = new List<long>();
+            var tempBeforeId = new List<long>();
 
-            // Checking initial already exists or not
-            if (IsInitialExists(data.Initial, data.Id))
+            using var transaction = Db.Database.BeginTransaction();
+            try
             {
-                result.Message = "Inisial sudah terdaftar. Tolong gunakan inisial lain.";
+                // Checking initial already exists or not
+                if (IsInitialExists(data.Initial, data.Id))
+                {
+                    result.Message = "Inisial sudah terdaftar. Tolong gunakan inisial lain.";
+                    return result;
+                }
+
+                // Update data
+                Db.Employees.Update(data);
+                Db.Entry(data).Property(e => e.Id).IsModified = false;
+                Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
+                Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
+
+                // Delete existing item detail SalesmanSchedules
+                var delScheduleDetails = Db.SalesmanSchedules
+                        .Where(d => d.SalesmanId == data.Id).ToList();
+
+                if (delScheduleDetails.Count > 0)
+                {
+                    for (var i = 0; i < delScheduleDetails.Count; i++)
+                    {
+                        // Delete existing item detail SalesmanScheduleCustomers
+                        var delCustomerDetails = Db.SalesmanScheduleCustomers
+                                .Where(d => d.SalesmanScheduleId == delScheduleDetails[i].Id).ToList();
+
+                        Db.SalesmanScheduleCustomers.RemoveRange(delCustomerDetails);
+                    }
+
+                    Db.SalesmanSchedules.RemoveRange(delScheduleDetails);
+                }
+
+                // Insert schedule for penjual
+                if (data.ScheduleDetails.Any())
+                {
+                    foreach (var item in data.ScheduleDetails)
+                    {
+                        var itemSchedule = new SalesmanSchedule
+                        {
+                            SalesmanId = data.Id,
+                            AreaId1 = item.AreaId1,
+                            AreaId2 = item.AreaId2,
+                            AreaId3 = item.AreaId3,
+                            AreaId4 = item.AreaId4,
+                            AreaId5 = item.AreaId5,
+                            StartDate = item.StartDate,
+                            EndDate = item.EndDate,
+                            Recurrence = item.Recurrence,
+                            VisitDay = item.VisitDay
+                        };
+                        tempBeforeId.Add(item.Id);
+                        Db.SalesmanSchedules.Add(itemSchedule);
+                        Db.SaveChanges();
+
+                        listIdDetail.Add(itemSchedule.Id);
+                    }
+
+                    if (data.CustomerListDetails.Any())
+                    {
+                        foreach (var itemDetail in data.CustomerListDetails)
+                        {
+                            for (var i = 0; i < tempBeforeId.Count; i++)
+                            {
+                                if (itemDetail.SalesmanScheduleId == tempBeforeId[i])
+                                {
+                                    Db.SalesmanScheduleCustomers.Add(new SalesmanScheduleCustomer
+                                    {
+                                        SalesmanScheduleId = listIdDetail[i],
+                                        CustCode = itemDetail.CustCode
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Db.SaveChanges(); 
+                transaction.Commit();
+            }
+            catch (Exception ex)
+            {
+                result.Message = ex.InnerException?.Message ?? ex.Message;
                 return result;
             }
-
-            // Update data
-            Db.Employees.Update(data);
-            Db.Entry(data).Property(e => e.Id).IsModified = false;
-            Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
-            Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
-
-            Db.SaveChanges();
 
             result.Success = true;
             result.Data = data.Initial;
