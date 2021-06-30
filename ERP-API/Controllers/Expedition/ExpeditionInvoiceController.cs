@@ -1,4 +1,5 @@
-﻿using ERP_API.Domain.Interfaces.Expedition;
+﻿using ERP_API.Domain.Interfaces.Auth;
+using ERP_API.Domain.Interfaces.Expedition;
 using ERP_API.Domain.Models;
 using ERP_API.Domain.Services;
 using ERP_API.Model;
@@ -19,11 +20,14 @@ namespace ERP_API.Controllers.Expedition
     {
         private readonly IExpeditionInvoiceService _exp;
         private readonly IClaimService _claim;
+        private readonly IAuthService _auth;
+        private const int _menuId = (int)Menu.ExpeditionInvoice;
 
-        public ExpeditionInvoiceController(IExpeditionInvoiceService expeditionInvoiceService, IClaimService claimService)
+        public ExpeditionInvoiceController(IExpeditionInvoiceService expeditionInvoiceService, IClaimService claimService, IAuthService auth)
         {
             _exp = expeditionInvoiceService;
             _claim = claimService;
+            _auth = auth;
         }
 
         [HttpGet]
@@ -67,10 +71,10 @@ namespace ERP_API.Controllers.Expedition
         public IActionResult OnPost(ExpeditionInvoiceRequest data)
         {
 
-            //if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Insert }).Any())
-            //{
-            //    return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            //}
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Insert }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
 
             // Validate process
             var (isValid, message) = Validate(data);
@@ -93,10 +97,10 @@ namespace ERP_API.Controllers.Expedition
         public IActionResult OnPut(string code, ExpeditionInvoiceRequest data)
         {
 
-            //if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Update }).Any())
-            //{
-            //    return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            //}
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Update }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
 
             // Validate process
             var (isValid, message) = Validate(data);
@@ -116,10 +120,10 @@ namespace ERP_API.Controllers.Expedition
         public IActionResult OnDelete(string code)
         {
 
-            //if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Void }).Any())
-            //{
-            //    return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            //}
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Void }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
 
             var result = _exp.Delete(code, _claim.UserId);
 
