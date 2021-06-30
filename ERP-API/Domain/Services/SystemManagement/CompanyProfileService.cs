@@ -42,6 +42,7 @@ namespace ERP_API.Domain.Services.SystemManagement
                 // Update data
                 _tenantCtx.Companies.Update(data);
                 _tenantCtx.Entry(data).Property(e => e.Id).IsModified = false;
+                _tenantCtx.Entry(data).Property(e => e.Name).IsModified = false;
                 _tenantCtx.Entry(data).Property(e => e.CatalogTenantId).IsModified = false;
 
 

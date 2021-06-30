@@ -50,6 +50,49 @@ namespace ERP_API.Domain.Entities.Accounting
         public string IsDetCode { get; set; }
     }
 
+    public class VwCoa : BaseEntityWithActive
+    {
+        public int Id { get; set; }
+
+        public string Code { get; set; }
+
+        public string Name { get; set; }
+
+        public int TypeId { get; set; }
+
+        public int? ParentId { get; set; }
+
+        public int? Deep { get; set; }
+
+        [Column("LOD")]
+        public byte Lod { get; set; }
+
+        public string Description { get; set; }
+
+        public string CurrCode { get; set; }
+
+        public string CBType { get; set; }
+
+        public string VouCode { get; set; }
+
+        public string BsCode { get; set; }
+
+        public string IsCode { get; set; }
+
+        public string IsDetCode { get; set; }
+
+        public string TypeName { get; set; }
+
+        public string CurrName { get; set; }
+
+        public string CreatedInitial { get; set; }
+
+        public string UpdatedInitial { get; set; }
+
+        public int IsParent { get; set; }
+    }
+
+
     [Table("COAType", Schema = Schema.Accounting)]
     public class CoaType : BaseEntityWithActive
     {

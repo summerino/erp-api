@@ -31,6 +31,7 @@ namespace ERP_API.Domain.Entities
 
         // Accounting Entities
         public DbSet<Coa> Coas { get; set; }
+        public DbSet<VwCoa> VwCoas { get; set; }
         public DbSet<CoaType> CoaTypes { get; set; }
         public DbSet<CurrencyRate> CurrencyRates { get; set; }
 
@@ -251,6 +252,10 @@ namespace ERP_API.Domain.Entities
                     .HasForeignKey(d => d.CurrCode)
                     .OnDelete(DeleteBehavior.NoAction);
             });
+
+            modelBuilder.Entity<VwCoa>()
+                .HasNoKey()
+                .ToView("vwCoa", Schema.Accounting);
 
             // Asset Management entities
             // Asset Type entities
