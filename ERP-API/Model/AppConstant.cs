@@ -58,8 +58,34 @@
         SalesmanGroup = 58,
         FixedAsset = 63,
         COAType = 67,
-        Parameter = 73,
         ExpeditionInvoice = 70,
-        CompanyProfile = 75
+        CompanyProfile = 75,
+        Parameter = 73,
+        Approval = 72
     }
+    public static class ApprovalType
+    {
+        public static string FixedAsset = "Aktiva Tetap";
+
+        public static string ExpeditionInvoice = "Expedition Invoice";
+        // Inventory
+        public static string Adjustment = "Penyesuaian";
+        public static string TransferStock = "Transfer Persediaan";
+        // Purchase
+        public static string PurchaseOrder = "Order Pembelian";
+        public static string PurchaseInvoice = "Faktur Pembelian";
+        public static string PurchaseReceive = "Penerimaan";
+        public static string PurchaseReturn = "Retur Pembelian";
+        // Sales
+        public static string SalesOrder = "Order Penjualan";
+        public static string SalesReturn = "Retur Penjualan";
+        public static string SalesInvoice = "Faktur Penjualan";
+        public static string SalesDelivery = "Surat Jalan";
+        public static string Promo = "Promo";
+        public static string VisitPlan = "Rencana Kunjungan";
+        public static string VisitOrder = "Perintah Kunjungan";
+
+      
+    }
+
 }
