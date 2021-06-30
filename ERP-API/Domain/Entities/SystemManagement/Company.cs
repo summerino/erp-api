@@ -48,4 +48,35 @@ namespace ERP_API.Domain.Entities.SystemManagement
         [Column(TypeName = "datetime")]
         public DateTime UpdatedDate { get; set; }
     }
+
+    public class VwCompany
+    {
+        public short Id { get; set; }
+
+        public int CatalogTenantId { get; set; }
+
+        public string Name { get; set; }
+
+        public string Address1 { get; set; }
+
+        public string Address2 { get; set; }
+
+        public string City { get; set; }
+
+        public string Zip { get; set; }
+
+        public string Phone { get; set; }
+
+        public string Fax { get; set; }
+
+        public string Npwp { get; set; }
+
+        public DateTime? PkpDate { get; set; }
+
+        public int UpdatedBy { get; set; }
+
+        public DateTime UpdatedDate { get; set; }
+
+        public string UpdatedInitial { get; set; }
+    }
 }

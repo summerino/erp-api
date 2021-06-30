@@ -59,6 +59,7 @@
         FixedAsset = 63,
         COAType = 67,
         Parameter = 73,
-        ExpeditionInvoice = 70
+        ExpeditionInvoice = 70,
+        CompanyProfile = 75
     }
 }
