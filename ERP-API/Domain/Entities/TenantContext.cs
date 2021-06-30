@@ -11,6 +11,7 @@ using ERP_API.Domain.Entities.Purchase;
 using ERP_API.Domain.Entities.Sales;
 using ERP_API.Domain.Entities.SystemManagement;
 using ERP_API.Domain.Services;
+using ERP_API.Model.General;
 
 namespace ERP_API.Domain.Entities
 {
@@ -180,6 +181,7 @@ namespace ERP_API.Domain.Entities
         public DbSet<SystemParameterModule> SystemParameterModules { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<VwUser> VwUsers { get; set; }
+        public DbSet<VwApproval> VwApprovals { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -445,6 +447,11 @@ namespace ERP_API.Domain.Entities
             modelBuilder.Entity<VwVehicleType>()
                 .HasNoKey()
                 .ToView("vwVehicleType", Schema.General);
+
+            // Approval entities
+            modelBuilder.Entity<VwApproval>()
+               .HasNoKey()
+               .ToView("vwApproval", Schema.General);
 
             // Inventory entities
             // Adjustment entities

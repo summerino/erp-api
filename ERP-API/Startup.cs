@@ -158,6 +158,7 @@ namespace ERP_API
             services.AddScoped<ICurrencyService, CurrencyService>();
             services.AddScoped<IItemGroupService, ItemGroupService>();
             services.AddScoped<IPaymentTermService, PaymentTermService>();
+            services.AddScoped<IApprovalService, ApprovalService>();
 
             // Inventory services
             services.AddScoped<IAdjustmentService, AdjustmentService>();
