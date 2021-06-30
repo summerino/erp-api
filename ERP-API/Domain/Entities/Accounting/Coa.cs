@@ -19,6 +19,10 @@ namespace ERP_API.Domain.Entities.Accounting
 
         public int TypeId { get; set; }
 
+        public int? ParentId { get; set; }
+
+        public int? Deep { get; set; }
+
         [Column("LOD")]
         public byte Lod { get; set; }
 
