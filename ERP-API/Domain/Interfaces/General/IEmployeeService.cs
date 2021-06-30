@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using ERP_API.Domain.Entities.General;
 using ERP_API.Domain.Models;
+using ERP_API.Model.General;
 
 namespace ERP_API.Domain.Interfaces.General
 {
@@ -10,6 +11,10 @@ namespace ERP_API.Domain.Interfaces.General
             string search);
 
         DataSourceResult GetLists(IEnumerable<Filter> filters, IEnumerable<Sort> sorts);
+
+        SaveResult Insert(EmployeeRequest data);
+
+        SaveResult Update(EmployeeRequest data);
 
         SaveResult Delete(long id, int userId);
     }
