@@ -83,7 +83,6 @@ namespace ERP_API.Domain.Entities.Accounting
 
         public string TypeName { get; set; }
 
-        public string CurrName { get; set; }
 
         public string CreatedInitial { get; set; }
 

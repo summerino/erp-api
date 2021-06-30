@@ -1,8 +1,5 @@
-﻿using ERP_API.Domain.Entities.Sales;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using ERP_API.Domain.Entities.Sales;
 
 namespace ERP_API.Model.Sales
 {

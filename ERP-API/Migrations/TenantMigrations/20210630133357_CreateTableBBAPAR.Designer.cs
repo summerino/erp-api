@@ -4,14 +4,16 @@ using ERP_API.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ERP_API.Migrations.TenantMigrations
 {
     [DbContext(typeof(TenantContext))]
-    partial class TenantContextModelSnapshot : ModelSnapshot
+    [Migration("20210630133357_CreateTableBBAPAR")]
+    partial class CreateTableBBAPAR
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -52,10 +54,10 @@ namespace ERP_API.Migrations.TenantMigrations
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<DateTime>("Date")
-                        .HasColumnType("date");
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime>("DueDate")
-                        .HasColumnType("date");
+                        .HasColumnType("datetime2");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -127,10 +129,10 @@ namespace ERP_API.Migrations.TenantMigrations
                         .HasColumnType("varchar(8)");
 
                     b.Property<DateTime>("Date")
-                        .HasColumnType("date");
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime>("DueDate")
-                        .HasColumnType("date");
+                        .HasColumnType("datetime2");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
