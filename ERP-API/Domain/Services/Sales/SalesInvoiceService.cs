@@ -132,7 +132,10 @@ namespace ERP_API.Domain.Services.Sales
                     result.Message = "Data faktur penjualan tidak bisa diubah karena status order penjualan bukan diterima sebagian atau selesai.";
                     return result;
                 }
-                
+
+                data.ApprovedBy = null;
+                data.ApprovedDate = null;
+
                 // Update header data
                 Db.SalesInvoiceHeaders.Update(data);
                 Db.Entry(data).Property(e => e.Code).IsModified = false;

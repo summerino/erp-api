@@ -132,7 +132,10 @@ namespace ERP_API.Domain.Services.Purchase
                     result.Message = "Data faktur pembelian tidak bisa diubah karena status order pembelian bukan diterima sebagian atau selesai.";
                     return result;
                 }
-                
+
+                data.ApprovedBy = null;
+                data.ApprovedDate = null;
+
                 // Update header data
                 Db.PurchaseInvoiceHeaders.Update(data);
                 Db.Entry(data).Property(e => e.Code).IsModified = false;

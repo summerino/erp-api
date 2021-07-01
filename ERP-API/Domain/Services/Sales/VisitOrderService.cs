@@ -96,6 +96,9 @@ namespace ERP_API.Domain.Services.Sales
             try
             {
                 // Disable sementara
+
+                data.ApprovedBy = null;
+                data.ApprovedDate = null;
             }
             catch (Exception ex)
             {

@@ -36,7 +36,7 @@
         Tax = 26,
         Vehicle = 24,
         VehicleType = 25,
-        COA = 17,
+        COA = 66,
         CurrencyRate = 18,
         DebitMemo = 40,
         CreditMemo = 49,
@@ -45,8 +45,8 @@
         PurchaseReceive = 37,
         PurchaseReturn = 39,
         Area = 42,
-        DeliveryPlan = 25,
-        DirectInvoice = 26,
+        DeliveryPlan = 48,
+        DirectInvoice = 46,
         Promo = 56,
         SalesDelivery = 45,
         SalesInvoice = 46,
@@ -81,6 +81,7 @@
         public static string SalesReturn = "Retur Penjualan";
         public static string SalesInvoice = "Faktur Penjualan";
         public static string SalesDelivery = "Surat Jalan";
+        public static string SalesDeliveryPlan = "Rencana Pengiriman"; 
         public static string Promo = "Promo";
         public static string VisitPlan = "Rencana Kunjungan";
         public static string VisitOrder = "Perintah Kunjungan";
