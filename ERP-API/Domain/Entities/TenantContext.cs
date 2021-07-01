@@ -11,7 +11,6 @@ using ERP_API.Domain.Entities.Purchase;
 using ERP_API.Domain.Entities.Sales;
 using ERP_API.Domain.Entities.SystemManagement;
 using ERP_API.Domain.Services;
-using ERP_API.Model.General;
 
 namespace ERP_API.Domain.Entities
 {
@@ -31,7 +30,10 @@ namespace ERP_API.Domain.Entities
         public DbSet<BaseNewCodeEntity> NewCodes { get; set; }
 
         // Accounting Entities
+        public DbSet<BeginningBalanceAP> BeginningBalanceAPs { get; set; }
+        public DbSet<BeginningBalanceAR> BeginningBalanceARs { get; set; }
         public DbSet<Coa> Coas { get; set; }
+        public DbSet<VwCoa> VwCoas { get; set; }
         public DbSet<CoaType> CoaTypes { get; set; }
         public DbSet<CurrencyRate> CurrencyRates { get; set; }
 
@@ -68,6 +70,7 @@ namespace ERP_API.Domain.Entities
         public DbSet<VwVehicle> VwVehicles { get; set; }
         public DbSet<VehicleType> VehicleTypes { get; set; }
         public DbSet<VwVehicleType> VwVehicleTypes { get; set; }
+        public DbSet<VwApproval> VwApprovals { get; set; }
 
         // Inventory entities
         public DbSet<AdjustmentHeader> AdjustmentHeaders { get; set; }
@@ -182,7 +185,6 @@ namespace ERP_API.Domain.Entities
         public DbSet<SystemParameterModule> SystemParameterModules { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<VwUser> VwUsers { get; set; }
-        public DbSet<VwApproval> VwApprovals { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -240,6 +242,34 @@ namespace ERP_API.Domain.Entities
                 .ToTable("BaseNewCodeEntity", t => t.ExcludeFromMigrations());
 
             // Accounting entities
+            // Beginning Balance AP entities
+            modelBuilder.Entity<BeginningBalanceAP>(entity =>
+            {
+                entity.HasOne<Supplier>()
+                    .WithMany()
+                    .HasForeignKey(d => d.SupCode)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Currency>()
+                    .WithMany()
+                    .HasForeignKey(d => d.CurrCode)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            // Beginning Balance AR entities
+            modelBuilder.Entity<BeginningBalanceAR>(entity =>
+            {
+                entity.HasOne<Customer>()
+                    .WithMany()
+                    .HasForeignKey(d => d.CustCode)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Currency>()
+                    .WithMany()
+                    .HasForeignKey(d => d.CurrCode)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
             // COA entities
             modelBuilder.Entity<Coa>(entity =>
             {
@@ -253,6 +283,10 @@ namespace ERP_API.Domain.Entities
                     .HasForeignKey(d => d.CurrCode)
                     .OnDelete(DeleteBehavior.NoAction);
             });
+
+            modelBuilder.Entity<VwCoa>()
+                .HasNoKey()
+                .ToView("vwCoa", Schema.Accounting);
 
             // Asset Management entities
             // Asset Type entities

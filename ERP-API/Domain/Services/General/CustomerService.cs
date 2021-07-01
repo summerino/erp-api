@@ -113,7 +113,22 @@ namespace ERP_API.Domain.Services.General
                         });
                     }
                 }
-                
+
+                if (data.IsConsignee)
+                {
+                    Db.Warehouses.Add(new Entities.Inventory.Warehouse
+                    {
+                        Code = data.Code,
+                        Initial = data.Initial,
+                        Name = data.Initial,
+                        IsActive = true,
+                        CreatedBy = data.CreatedBy,
+                        CreatedDate = data.CreatedDate,
+                        UpdatedBy = data.UpdatedBy,
+                        UpdatedDate = data.UpdatedDate,
+                        CustCode = data.Code
+                    });
+                }
 
                 Db.SaveChanges();
 
@@ -219,6 +234,40 @@ namespace ERP_API.Domain.Services.General
                 }
             }
 
+            if (data.IsConsignee)
+            {
+                var dataWH = Db.Warehouses.FirstOrDefault(x => x.Code == data.Code);
+                if (dataWH != null)
+                {
+                    dataWH.IsActive = true;
+                    Db.Warehouses.Update(dataWH);
+                }
+                else
+                {
+                    Db.Warehouses.Add(new Entities.Inventory.Warehouse
+                    {
+                        Code = data.Code,
+                        Initial = data.Initial,
+                        Name = data.Initial,
+                        IsActive = true,
+                        CreatedBy = data.CreatedBy,
+                        CreatedDate = data.CreatedDate,
+                        UpdatedBy = data.UpdatedBy,
+                        UpdatedDate = data.UpdatedDate,
+                        CustCode = data.Code
+                    });
+                }
+            }
+            else
+            {
+                var dataWH = Db.Warehouses.FirstOrDefault(x => x.Code == data.Code);
+                if (dataWH != null)
+                {
+                    dataWH.IsActive = false;
+                    Db.Warehouses.Update(dataWH);
+                }
+            }
+
             Db.SaveChanges();
 
             if (data.ItemDetails.Any())
@@ -262,8 +311,18 @@ namespace ERP_API.Domain.Services.General
                     return result;
                 }
 
+                //Check if any sales order already using this warehouse 
+                if (Db.SalesOrderHeaders.Any(x => x.WarehouseCode == data.Code))
+                {
+                    result.Message = "Tidak bisa menghapus data gudang konsinyi karena telah digunakan pada data order penjualan.";
+                    return result;
+                }
+
                 var addData = Db.CustomerAddress.Where(x => x.Code == data.Code);
                 Db.CustomerAddress.RemoveRange(addData);
+
+                var dataWH = Db.Warehouses.FirstOrDefault(x => x.Code == data.Code);
+                Db.Warehouses.Remove(dataWH);
 
                 Db.SaveChanges();
 

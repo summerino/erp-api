@@ -19,7 +19,7 @@ namespace ERP_API.Domain.Services.Accounting
         public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
             string search)
         {
-            var data = Db.Coas.AsQueryable();
+            var data = Db.VwCoas.AsQueryable();
 
             if (!string.IsNullOrEmpty(search))
             {
@@ -51,6 +51,11 @@ namespace ERP_API.Domain.Services.Accounting
                 }
 
                 // Insert data
+                if(data.ParentId != null)
+                {
+                    var dataParent = Db.Coas.FirstOrDefault(x => x.Id == data.ParentId);
+                    data.Deep = dataParent.Deep == null ? 1 : dataParent.Deep + 1;
+                }
                 Db.Add(data);
 
                 Db.SaveChanges();
@@ -80,6 +85,11 @@ namespace ERP_API.Domain.Services.Accounting
             }
 
             // Update data
+            if (data.ParentId != null)
+            {
+                var dataParent = Db.Coas.FirstOrDefault(x => x.Id == data.ParentId);
+                data.Deep = dataParent.Deep == null ? 1 : dataParent.Deep + 1;
+            }
             Db.Coas.Update(data);
             Db.Entry(data).Property(e => e.Code).IsModified = false;
             Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
@@ -107,10 +117,14 @@ namespace ERP_API.Domain.Services.Accounting
                     return result;
                 }
 
-                // Update data
-                data.IsActive = false;
-                data.UpdatedBy = userId;
-                data.UpdatedDate = DateTime.Now;
+                //Check if any promo already using this coa
+                if (Db.PromoHeaders.Any(x => x.CoaCost == data.Code))
+                {
+                    result.Message = "Tidak bisa menghapus data akun karena telah digunakan pada data promo.";
+                    return result;
+                }
+                // Delete data
+                Db.Coas.Remove(data);
 
                 Db.SaveChanges();
             }
@@ -122,7 +136,7 @@ namespace ERP_API.Domain.Services.Accounting
 
         private bool IsCoaExists(string code, int id)
         {
-            return Db.Coas.Any(x => x.Code == code && x.IsActive && x.Id != id);
+            return Db.Coas.Any(x => x.Code == code && x.Id != id);
         }
     }
 }
