@@ -61,7 +61,9 @@
         ExpeditionInvoice = 70,
         CompanyProfile = 75,
         Parameter = 73,
-        Approval = 72
+        Approval = 72,
+        AccountPayable = 78,
+        AccountReceivable = 79
     }
     public static class ApprovalType
     {

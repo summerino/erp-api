@@ -137,6 +137,8 @@ namespace ERP_API
             services.AddScoped<ICoaService, CoaService>();
             services.AddScoped<ICurrencyRateService, CurrencyRateService>();
             services.AddScoped<ICoaTypeService, CoaTypeService>();
+            services.AddScoped<IAccountPayableService, AccountPayableService>();
+            services.AddScoped<IAccountReceivableService, AccountReceivableService>();
 
             // Asset services
             services.AddScoped<IAssetTypeService, AssetTypeService>();

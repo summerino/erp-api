@@ -40,6 +40,33 @@ namespace ERP_API.Domain.Entities.Accounting
         public string Notes { get; set; }
     }
 
+    public class VwBeginningBalanceAP : BaseEntityWithActive
+    {
+        public long Id { get; set; }
+
+        public string Code { get; set; }
+
+        public DateTime Date { get; set; }
+
+        public DateTime DueDate { get; set; }
+
+        public string SupCode { get; set; }
+
+        public string CurrCode { get; set; }
+
+        public decimal CurrRate { get; set; }
+
+        public decimal Amount { get; set; }
+
+        public string Notes { get; set; }
+
+        public string SupName { get; set; }
+
+        public string CreatedInitial { get; set; }
+
+        public string UpdatedInitial { get; set; }
+    }
+
     [Table("BeginningBalanceAR", Schema = Schema.Accounting)]
     [Index(nameof(Code), IsUnique = true)]
     public class BeginningBalanceAR : BaseEntityWithActive
@@ -72,5 +99,32 @@ namespace ERP_API.Domain.Entities.Accounting
 
         [StringLength(256)]
         public string Notes { get; set; }
+    }
+
+    public class VwBeginningBalanceAR : BaseEntityWithActive
+    {
+        public long Id { get; set; }
+
+        public string Code { get; set; }
+
+        public DateTime Date { get; set; }
+
+        public DateTime DueDate { get; set; }
+
+        public string CustCode { get; set; }
+
+        public string CurrCode { get; set; }
+
+        public decimal CurrRate { get; set; }
+
+        public decimal Amount { get; set; }
+
+        public string Notes { get; set; }
+
+        public string CustName { get; set; }
+
+        public string CreatedInitial { get; set; }
+
+        public string UpdatedInitial { get; set; }
     }
 }

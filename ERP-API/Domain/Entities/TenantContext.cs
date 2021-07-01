@@ -31,7 +31,9 @@ namespace ERP_API.Domain.Entities
 
         // Accounting Entities
         public DbSet<BeginningBalanceAP> BeginningBalanceAPs { get; set; }
+        public DbSet<VwBeginningBalanceAP> VwBeginningBalanceAPs { get; set; }
         public DbSet<BeginningBalanceAR> BeginningBalanceARs { get; set; }
+        public DbSet<VwBeginningBalanceAR> VwBeginningBalanceARs { get; set; }
         public DbSet<Coa> Coas { get; set; }
         public DbSet<VwCoa> VwCoas { get; set; }
         public DbSet<CoaType> CoaTypes { get; set; }
@@ -256,6 +258,10 @@ namespace ERP_API.Domain.Entities
                     .OnDelete(DeleteBehavior.NoAction);
             });
 
+            modelBuilder.Entity<VwBeginningBalanceAP>()
+                .HasNoKey()
+                .ToView("vwBeginningBalanceAP", Schema.Accounting);
+
             // Beginning Balance AR entities
             modelBuilder.Entity<BeginningBalanceAR>(entity =>
             {
@@ -269,6 +275,10 @@ namespace ERP_API.Domain.Entities
                     .HasForeignKey(d => d.CurrCode)
                     .OnDelete(DeleteBehavior.NoAction);
             });
+
+            modelBuilder.Entity<VwBeginningBalanceAR>()
+                .HasNoKey()
+                .ToView("vwBeginningBalanceAR", Schema.Accounting);
 
             // COA entities
             modelBuilder.Entity<Coa>(entity =>
