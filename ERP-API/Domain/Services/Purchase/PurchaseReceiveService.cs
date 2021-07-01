@@ -285,6 +285,9 @@ namespace ERP_API.Domain.Services.Purchase
                     return result;
                 }
 
+                data.ApprovedBy = null;
+                data.ApprovedDate = null;
+
                 // Update header data
                 Db.PurchaseReceiveHeaders.Update(data);
                 Db.Entry(data).Property(e => e.Code).IsModified = false;

@@ -134,6 +134,9 @@ namespace ERP_API.Domain.Services.Sales
                     return result;
                 }
 
+                data.ApprovedBy = null;
+                data.ApprovedDate = null;
+
                 Db.PromoHeaders.Update(data);
                 Db.Entry(data).Property(e => e.Code).IsModified = false;
                 Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;

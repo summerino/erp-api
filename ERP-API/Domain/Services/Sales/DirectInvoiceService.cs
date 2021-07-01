@@ -357,6 +357,9 @@ namespace ERP_API.Domain.Services.Sales
                     return result;
                 }
 
+                data.ApprovedBy = null;
+                data.ApprovedDate = null;
+
                 // Update Invoice header data
                 Db.SalesInvoiceHeaders.Update(data);
                 Db.Entry(data).Property(e => e.Code).IsModified = false;

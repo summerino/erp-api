@@ -131,6 +131,9 @@ namespace ERP_API.Domain.Services.Sales
                     return result;
                 }
 
+                data.ApprovedBy = null;
+                data.ApprovedDate = null;
+
                 // Update data
                 Db.VisitPlanHeaders.Update(data);
                 Db.Entry(data).Property(e => e.Code).IsModified = false;

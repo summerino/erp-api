@@ -96,6 +96,9 @@ namespace ERP_API.Domain.Services.Expedition
                     return result;
                 }
 
+                data.ApprovedBy = null;
+                data.ApprovedDate = null;
+
                 // Update header data
                 Db.ExpeditionInvoiceHeaders.Update(data);
                 Db.Entry(data).Property(e => e.Code).IsModified = false;

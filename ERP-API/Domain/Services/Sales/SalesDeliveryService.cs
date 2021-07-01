@@ -299,7 +299,10 @@ namespace ERP_API.Domain.Services.Sales
                 {
                     result.Message = "Data pengiriman penjualan tidak bisa disimpan karena qty yg diterima lebih besar dari qty yang tersedia.";
                     return result;
-                } 
+                }
+
+                data.ApprovedBy = null;
+                data.ApprovedDate = null;
 
                 // Update header data
                 Db.SalesDeliveryHeaders.Update(data);

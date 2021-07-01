@@ -81,6 +81,7 @@
         public static string SalesReturn = "Retur Penjualan";
         public static string SalesInvoice = "Faktur Penjualan";
         public static string SalesDelivery = "Surat Jalan";
+        public static string SalesDeliveryPlan = "Rencana Pengiriman"; 
         public static string Promo = "Promo";
         public static string VisitPlan = "Rencana Kunjungan";
         public static string VisitOrder = "Perintah Kunjungan";

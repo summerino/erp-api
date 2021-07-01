@@ -28,6 +28,7 @@ namespace ERP_API.Domain.Entities.Core
             Approvals.Add(new Approval { TableName = $"{Schema.Sales}.SalesReturnHeader", Description = ApprovalType.SalesReturn });
             Approvals.Add(new Approval { TableName = $"{Schema.Sales}.SalesInvoiceHeader", Description = ApprovalType.SalesInvoice });
             Approvals.Add(new Approval { TableName = $"{Schema.Sales}.SalesDeliveryHeader", Description = ApprovalType.SalesDelivery });
+            Approvals.Add(new Approval { TableName = $"{Schema.Sales}.DeliveryPlanHeader", Description = ApprovalType.SalesDeliveryPlan });
             Approvals.Add(new Approval { TableName = $"{Schema.Sales}.PromoHeader", Description = ApprovalType.Promo });
             Approvals.Add(new Approval { TableName = $"{Schema.Sales}.VisitPlanHeader", Description = ApprovalType.VisitPlan });
             Approvals.Add(new Approval { TableName = $"{Schema.Sales}.VisitOrder", Description = ApprovalType.VisitOrder });

@@ -152,6 +152,9 @@ namespace ERP_API.Domain.Services.Inventory
             using var transaction = Db.Database.BeginTransaction();
             try
             {
+
+                
+
                 // Checking mark header data
                 if (Db.AdjustmentHeaders.Any(x => x.Code == data.Code && x.Mark == "V"))
                 {
@@ -159,6 +162,9 @@ namespace ERP_API.Domain.Services.Inventory
                     result.Message = "Data penyesuaian tidak bisa di ubah karena sudah ditandai sebagai void.";
                     return result;
                 }
+
+                data.ApprovedBy = null;
+                data.ApprovedDate = null;
 
                 // Update header data
                 Db.AdjustmentHeaders.Update(data);
