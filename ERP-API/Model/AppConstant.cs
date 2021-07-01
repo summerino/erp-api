@@ -45,7 +45,7 @@
         PurchaseReceive = 37,
         PurchaseReturn = 39,
         Area = 42,
-        DeliveryPlan = 25,
+        DeliveryPlan = 48,
         DirectInvoice = 26,
         Promo = 56,
         SalesDelivery = 45,
