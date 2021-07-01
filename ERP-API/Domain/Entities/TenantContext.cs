@@ -5,6 +5,7 @@ using ERP_API.Domain.Entities.Accounting;
 using ERP_API.Domain.Entities.AssetManagement;
 using ERP_API.Domain.Entities.Core;
 using ERP_API.Domain.Entities.Expedition;
+using ERP_API.Domain.Entities.Finance;
 using ERP_API.Domain.Entities.General;
 using ERP_API.Domain.Entities.Inventory;
 using ERP_API.Domain.Entities.Purchase;
@@ -50,6 +51,11 @@ namespace ERP_API.Domain.Entities
         public DbSet<ExpeditionInvoiceHeader> ExpeditionInvoiceHeaders { get; set; }
         public DbSet<VwExpeditionInvoiceHeader> VwExpeditionInvoiceHeaders { get; set; }
         public DbSet<ExpeditionInvoiceDetail> ExpeditionInvoiceDetails { get; set; }
+
+        // Finance entities
+        // General Cash Bank entities
+        public DbSet<GeneralCashBankHeader> GeneralCashBankHeaders { get; set; }
+        public DbSet<GeneralCashBankDetail> GeneralCashBankDetails { get; set; }
 
         // General entities
         public DbSet<Currency> Currencies { get; set; }
@@ -371,6 +377,35 @@ namespace ERP_API.Domain.Entities
                 entity.HasOne<ExpeditionInvoiceHeader>()
                     .WithMany()
                     .HasForeignKey(d => d.Code)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            // Finance entities
+            // General Cash Bank entities
+            modelBuilder.Entity<GeneralCashBankHeader>(entity =>
+            {
+                entity.Property(e => e.Mark)
+                    .IsRequired();
+
+                entity.HasOne<Currency>()
+                    .WithMany()
+                    .HasForeignKey(d => d.CurrCode)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            modelBuilder.Entity<GeneralCashBankDetail>(entity =>
+            {
+                entity.Property(e => e.Code)
+                    .IsRequired();
+
+                entity.HasOne<GeneralCashBankHeader>()
+                    .WithMany()
+                    .HasForeignKey(d => d.Code)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Currency>()
+                    .WithMany()
+                    .HasForeignKey(d => d.CurrCode)
                     .OnDelete(DeleteBehavior.NoAction);
             });
 
