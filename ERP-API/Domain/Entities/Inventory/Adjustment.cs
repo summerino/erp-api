@@ -33,6 +33,7 @@ namespace ERP_API.Domain.Entities.Inventory
         public DateTime Date { get; set; }
 
         public short Type { get; set; }
+        public string Types { get; set; }
 
         public string WarehouseCode { get; set; }
 
