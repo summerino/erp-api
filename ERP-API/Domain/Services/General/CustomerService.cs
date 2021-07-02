@@ -240,6 +240,10 @@ namespace ERP_API.Domain.Services.General
                 if (dataWH != null)
                 {
                     dataWH.IsActive = true;
+                    dataWH.Initial = data.Initial;
+                    dataWH.Name = data.Name;
+                    dataWH.UpdatedBy = data.UpdatedBy;
+                    dataWH.UpdatedDate = data.UpdatedDate;
                     Db.Warehouses.Update(dataWH);
                 }
                 else
