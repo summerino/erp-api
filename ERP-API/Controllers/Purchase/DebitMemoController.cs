@@ -5,6 +5,11 @@ using ERP_API.Domain.Interfaces.Purchase;
 using ERP_API.Domain.Models;
 using ERP_API.Model;
 using Newtonsoft.Json;
+using ERP_API.Domain.Services;
+using ERP_API.Domain.Interfaces.Auth;
+using System.Linq;
+using ERP_API.Domain.Entities.Purchase;
+using System;
 
 namespace ERP_API.Controllers.Purchase
 {
@@ -13,10 +18,15 @@ namespace ERP_API.Controllers.Purchase
     public class DebitMemoController : ControllerBase
     {
         private readonly IDebitMemoService _memo;
+        private readonly IClaimService _claim;
+        private readonly IAuthService _auth;
+        private const int _menuId = (int)Menu.DebitMemo;
 
-        public DebitMemoController(IDebitMemoService memo)
+        public DebitMemoController(IDebitMemoService memo, IClaimService claim, IAuthService auth)
         {
             _memo = memo;
+            _claim = claim;
+            _auth= auth;
         }
 
         [HttpGet]
@@ -34,6 +44,42 @@ namespace ERP_API.Controllers.Purchase
                 RowCount = data.Total,
                 TableData = data.Data.ToDynamicList()
             });
+        }
+
+        [HttpPost]
+        public IActionResult OnPost(DebitMemo data)
+        {
+
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Insert }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
+            data.Mark = "PP"; // Pending Payment
+            data.CreatedBy = _claim.UserId;
+            data.CreatedDate = DateTime.Now;
+            data.UpdatedBy = data.CreatedBy;
+            data.UpdatedDate = data.CreatedDate;
+
+            var result = _memo.Insert(data);
+
+            return Ok(result);
+        }
+
+        [HttpPut("{code}")]
+        public IActionResult OnPut(string code, DebitMemo data)
+        {
+
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Update }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
+
+            data.UpdatedBy = _claim.UserId;
+            data.UpdatedDate = DateTime.Now;
+
+            var result = _memo.Update(data);
+
+            return Ok(result);
         }
 
         [HttpGet("related-trans")]

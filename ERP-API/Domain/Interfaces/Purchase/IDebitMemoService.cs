@@ -10,5 +10,7 @@ namespace ERP_API.Domain.Interfaces.Purchase
             string search);
 
         List<dynamic> GetRelatedTransactions(string code);
+        SaveResult Delete(string code, int userId);
+
     }
 }
