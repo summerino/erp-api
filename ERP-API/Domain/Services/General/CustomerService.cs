@@ -120,7 +120,7 @@ namespace ERP_API.Domain.Services.General
                     {
                         Code = data.Code,
                         Initial = data.Initial,
-                        Name = data.Initial,
+                        Name = data.Name,
                         IsActive = true,
                         CreatedBy = data.CreatedBy,
                         CreatedDate = data.CreatedDate,
@@ -240,6 +240,10 @@ namespace ERP_API.Domain.Services.General
                 if (dataWH != null)
                 {
                     dataWH.IsActive = true;
+                    dataWH.Initial = data.Initial;
+                    dataWH.Name = data.Name;
+                    dataWH.UpdatedBy = data.UpdatedBy;
+                    dataWH.UpdatedDate = data.UpdatedDate;
                     Db.Warehouses.Update(dataWH);
                 }
                 else
@@ -248,7 +252,7 @@ namespace ERP_API.Domain.Services.General
                     {
                         Code = data.Code,
                         Initial = data.Initial,
-                        Name = data.Initial,
+                        Name = data.Name,
                         IsActive = true,
                         CreatedBy = data.CreatedBy,
                         CreatedDate = data.CreatedDate,

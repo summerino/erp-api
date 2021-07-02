@@ -63,7 +63,7 @@ namespace ERP_API.Controllers.Sales
                     x.SrcTrans,
                     x.IsFailShipment,
                     x.NotesFailShipment,
-                    UndeliveredItems = uData.Where(x => x.DlvPlanDetailId == x.Id).OrderBy(x => x.LineNo)
+                    UndeliveredItems = uData.Where(d => d.DlvPlanDetailId == x.Id).OrderBy(d => d.LineNo)
                 })
                 .ToList<dynamic>();
 
