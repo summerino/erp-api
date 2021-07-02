@@ -17,6 +17,33 @@ namespace ERP_API.Domain.Services.Purchase
         {
         }
 
+        public SaveResult Delete(string code, int userId)
+        {
+            var result = new SaveResult(false);
+
+            var data = Db.DebitMemos.Find(code);
+            if (data != null)
+            {
+                // Checking mark header data
+                if (data.Mark == "V")
+                {
+                    result.Message = "Data nota debit tidak bisa ditandai sebagai void karena sudah ditandai sebagai void.";
+                    return result;
+                }
+
+                // Update header data
+                data.Mark = "V";
+                data.UpdatedBy = userId;
+                data.UpdatedDate = DateTime.Now;
+
+                Db.SaveChanges();
+            }
+
+            result.Success = true;
+            result.Message = "Data nota debit berhasil ditandai sebagai void.";
+            return result;
+        }
+
         public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
             string search)
         {
@@ -46,5 +73,57 @@ namespace ERP_API.Domain.Services.Purchase
 
             return data.ToDynamicList();
         }
+
+        public override SaveResult Insert(DebitMemo data)
+        {
+            var result = new SaveResult(false);
+
+            using var transaction = Db.Database.BeginTransaction();
+            try
+            {
+
+                // Get new code
+                var newCode = GetNewCode("DM_NUM_FMT", data.CreatedDate);
+
+                // Insert data
+                data.Code = newCode;
+                // Insert data
+                Db.DebitMemos.Add(data);
+
+                Db.SaveChanges();
+                transaction.Commit();
+            }
+            catch (Exception ex)
+            {
+                result.Message = ex.InnerException?.Message ?? ex.Message;
+                return result;
+            }
+
+            result.Success = true;
+            result.Data = data.Code;
+            result.Message = "Data nota debit berhasil disimpan.";
+            return result;
+        }
+
+        public override SaveResult Update(DebitMemo data)
+        {
+            var result = new SaveResult(false);           
+
+            // Update data
+            Db.DebitMemos.Update(data);
+            Db.Entry(data).Property(e => e.Code).IsModified = false;
+            Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
+            Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
+
+            Db.SaveChanges();
+
+            
+            result.Success = true;
+            result.Data = data.Code;
+            result.Message = "Data nota debit berhasil diperbarui.";
+            return result;
+        }
+
+
     }
 }
