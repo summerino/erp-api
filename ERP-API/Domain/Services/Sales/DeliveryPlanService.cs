@@ -167,7 +167,7 @@ namespace ERP_API.Domain.Services.Sales
                 Db.DeliveryPlanDetails.RemoveRange(delDetails);
 
                 var delUnDetails = Db.DeliveryPlanUndeliveredItems
-                    .Where(x => delDetails.Select(d => d.Id).Contains(x.Id));
+                    .Where(x => delDetails.Select(d => d.Id).Contains(x.DlvPlanDetailId));
 
                 Db.DeliveryPlanUndeliveredItems.RemoveRange(delUnDetails);
 
@@ -224,10 +224,28 @@ namespace ERP_API.Domain.Services.Sales
                             uItem.LineNo = ++j;
 
                             var unItem = Db.DeliveryPlanUndeliveredItems.FirstOrDefault(x => x.DlvPlanDetailId == item.Id);
-                            unItem.Qty = uItem.Qty;
+                            if (unItem != null)
+                            {
+                                unItem.Qty = uItem.Qty;
 
-                            Db.DeliveryPlanUndeliveredItems.Update(unItem);
-                            Db.Entry(uItem).Property(e => e.Code).IsModified = false;
+                                Db.DeliveryPlanUndeliveredItems.Update(unItem);
+                                Db.Entry(uItem).Property(e => e.Code).IsModified = false;
+                            } 
+                            else
+                            {
+                                Db.DeliveryPlanUndeliveredItems.Add(new DeliveryPlanUndeliveredItem
+                                {
+                                    Code = data.Code,
+                                    DlvPlanDetailId = item.Id,
+                                    LineNo = ++j,
+                                    ItemId = uItem.ItemId,
+                                    UomId = uItem.UomId,
+                                    UnitId = uItem.UnitId,
+                                    Qty = uItem.Qty,
+                                    WarehouseCode = uItem.WarehouseCode,
+                                    Type = uItem.Type
+                                });
+                            }
                         }
                     }
                 }
