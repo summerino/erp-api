@@ -120,7 +120,7 @@ namespace ERP_API.Domain.Services.General
                     {
                         Code = data.Code,
                         Initial = data.Initial,
-                        Name = data.Initial,
+                        Name = data.Name,
                         IsActive = true,
                         CreatedBy = data.CreatedBy,
                         CreatedDate = data.CreatedDate,
@@ -248,7 +248,7 @@ namespace ERP_API.Domain.Services.General
                     {
                         Code = data.Code,
                         Initial = data.Initial,
-                        Name = data.Initial,
+                        Name = data.Name,
                         IsActive = true,
                         CreatedBy = data.CreatedBy,
                         CreatedDate = data.CreatedDate,
