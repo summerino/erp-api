@@ -977,9 +977,20 @@ namespace ERP_API.Domain.Entities
 
             // Promo entities
             modelBuilder.Entity<PromoHeader>(entity =>
+            {
                 entity.Property(e => e.Mark)
-                    .IsRequired()
-            );
+                    .IsRequired();
+
+                entity.HasOne<Customer>()
+                    .WithMany()
+                    .HasForeignKey(d => d.CustCode)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<CustomerType>()
+                    .WithMany()
+                    .HasForeignKey(d => d.CustTypeId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
 
             modelBuilder.Entity<VwPromoHeader>()
                 .HasNoKey()

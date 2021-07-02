@@ -4,14 +4,16 @@ using ERP_API.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ERP_API.Migrations.TenantMigrations
 {
     [DbContext(typeof(TenantContext))]
-    partial class TenantContextModelSnapshot : ModelSnapshot
+    [Migration("20210702045047_AddingColumnCustomerInPromo")]
+    partial class AddingColumnCustomerInPromo
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -6541,10 +6543,6 @@ namespace ERP_API.Migrations.TenantMigrations
 
                     b.HasKey("Code");
 
-                    b.HasIndex("CustCode");
-
-                    b.HasIndex("CustTypeId");
-
                     b.ToTable("PromoHeader", "Sales");
                 });
 
@@ -10603,19 +10601,6 @@ namespace ERP_API.Migrations.TenantMigrations
                     b.HasOne("ERP_API.Domain.Entities.Inventory.Warehouse", null)
                         .WithMany()
                         .HasForeignKey("WarehouseCode")
-                        .OnDelete(DeleteBehavior.NoAction);
-                });
-
-            modelBuilder.Entity("ERP_API.Domain.Entities.Sales.PromoHeader", b =>
-                {
-                    b.HasOne("ERP_API.Domain.Entities.General.Customer", null)
-                        .WithMany()
-                        .HasForeignKey("CustCode")
-                        .OnDelete(DeleteBehavior.NoAction);
-
-                    b.HasOne("ERP_API.Domain.Entities.General.CustomerType", null)
-                        .WithMany()
-                        .HasForeignKey("CustTypeId")
                         .OnDelete(DeleteBehavior.NoAction);
                 });
 
