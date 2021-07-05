@@ -64,6 +64,9 @@ namespace ERP_API.Domain.Entities.Purchase
 
         [Column("DPP", TypeName = "decimal(18, 2)")]
         public decimal Dpp { get; set; }
+
+        [Column(TypeName = "decimal(19, 6)")]
+        public decimal PaidAmount { get; set; }
     }
 
     public class VwPurchaseReceiveHeader : BaseEntityWithMarkAndApproved
@@ -103,6 +106,8 @@ namespace ERP_API.Domain.Entities.Purchase
         public decimal Total { get; set; }
 
         public decimal Dpp { get; set; }
+        
+        public decimal PaidAmount { get; set; }
 
 
         public string SupName { get; set; }

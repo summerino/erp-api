@@ -39,6 +39,9 @@ namespace ERP_API.Domain.Entities
         public DbSet<VwCoa> VwCoas { get; set; }
         public DbSet<CoaType> CoaTypes { get; set; }
         public DbSet<CurrencyRate> CurrencyRates { get; set; }
+        public DbSet<GeneralJournalHeader> GeneralJournalHeaders { get; set; }
+        public DbSet<GeneralJournalDetail> GeneralJournalDetails { get; set; }
+        public DbSet<Journal> Journals { get; set; }
 
         // Asset Management Entities
         public DbSet<FixedAsset> FixedAssets { get; set; }
@@ -303,6 +306,32 @@ namespace ERP_API.Domain.Entities
             modelBuilder.Entity<VwCoa>()
                 .HasNoKey()
                 .ToView("vwCoa", Schema.Accounting);
+
+            // General Journal entities
+            modelBuilder.Entity<GeneralJournalHeader>(entity =>
+            {
+                entity.Property(e => e.Mark)
+                    .IsRequired();
+
+                entity.HasOne<Currency>()
+                    .WithMany()
+                    .HasForeignKey(d => d.CurrCode)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            modelBuilder.Entity<GeneralJournalDetail>(entity =>
+            {
+                entity.Property(e => e.Code)
+                    .IsRequired();
+            });
+
+            // Journal entities
+            modelBuilder.Entity<Journal>(entity =>
+                entity.HasOne<Currency>()
+                    .WithMany()
+                    .HasForeignKey(d => d.CurrCode)
+                    .OnDelete(DeleteBehavior.NoAction)
+            );
 
             // Asset Management entities
             // Asset Type entities
