@@ -10,6 +10,10 @@ namespace ERP_API.Domain.Interfaces.Sales
         DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
             List<int> category, string search);
 
+        IEnumerable<VwVisitOrderCustomer> GetVisitOrderCustomer(string code);
+
+        IEnumerable<VwVisitOrderInvoice> GetVisitOrderInvoice(string code);
+
         SaveResult Insert(VisitOrderRequest data);
 
         SaveResult Update(VisitOrderRequest data);
