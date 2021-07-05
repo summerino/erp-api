@@ -93,4 +93,20 @@ namespace ERP_API.Domain.Entities.Finance
         [StringLength(256)]
         public string Notes { get; set; }
     }
+
+    [Table("CashBankType", Schema = Schema.Finance)]
+    public class CashBankType
+    {
+        [Key]
+        [StringLength(5)]
+        public string Code { get; set; }
+
+        [Required]
+        [StringLength(50)]
+        public string Name { get; set; }
+
+        public short Seq { get; set; }
+
+        public bool IsActive { get; set; }
+    }
 }

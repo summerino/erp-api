@@ -56,9 +56,9 @@ namespace ERP_API.Domain.Entities
         public DbSet<ExpeditionInvoiceDetail> ExpeditionInvoiceDetails { get; set; }
 
         // Finance entities
-        // General Cash Bank entities
         public DbSet<GeneralCashBankHeader> GeneralCashBankHeaders { get; set; }
         public DbSet<GeneralCashBankDetail> GeneralCashBankDetails { get; set; }
+        public DbSet<CashBankType> CashBankTypes { get; set; }
 
         // General entities
         public DbSet<Currency> Currencies { get; set; }
@@ -430,6 +430,11 @@ namespace ERP_API.Domain.Entities
                 entity.HasOne<GeneralCashBankHeader>()
                     .WithMany()
                     .HasForeignKey(d => d.Code)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<CashBankType>()
+                    .WithMany()
+                    .HasForeignKey(d => d.Type)
                     .OnDelete(DeleteBehavior.NoAction);
 
                 entity.HasOne<Currency>()
