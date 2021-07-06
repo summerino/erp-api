@@ -18,7 +18,7 @@ namespace ERP_API.Domain.Services.Sales
         {
         }
 
-        public DirectInvoiceHeader FindByCode(string code)
+        public DirectInvoiceRequest FindByCode(string code)
         {
             var invData = Db.VwSalesInvoiceHeaders.FirstOrDefault(x => x.Code == code && x.FromDirectInvoice);
 
@@ -27,7 +27,7 @@ namespace ERP_API.Domain.Services.Sales
 
             var ordData = Db.SalesOrderHeaders.FirstOrDefault(x => x.Code == invData.SoCode);
 
-            return new DirectInvoiceHeader
+            return new DirectInvoiceRequest
             {
                 Code = invData.Code,
                 Date = invData.Date,
@@ -53,6 +53,7 @@ namespace ERP_API.Domain.Services.Sales
                 UpdatedInitial = invData.UpdatedInitial,
                 ApprovedInitial = invData.ApprovedInitial,
                 Status = invData.Status,
+                PaymentTermId = ordData.PaymentTermId,
                 SalesBy = ordData?.SalesBy ?? 0,
                 WarehouseCode = ordData?.WarehouseCode,
                 ShipmentFee = ordData?.ShipmentFee ?? 0m,
@@ -80,6 +81,7 @@ namespace ERP_API.Domain.Services.Sales
                     Code = newCode,
                     Date = data.Date,
                     CustCode = data.CustCode,
+                    PaymentTermId = data.PaymentTermId,
                     SalesBy = data.SalesBy,
                     WarehouseCode = data.WarehouseCode,
                     CurrCode = data.CurrCode,
@@ -370,6 +372,7 @@ namespace ERP_API.Domain.Services.Sales
                 var OrderData = Db.SalesOrderHeaders.FirstOrDefault(x => x.Code == data.SoCode);
                 OrderData.Date = data.Date;
                 OrderData.CustCode = data.CustCode;
+                OrderData.PaymentTermId = data.PaymentTermId;
                 OrderData.SalesBy = data.SalesBy;
                 OrderData.WarehouseCode = data.WarehouseCode;
                 OrderData.CurrCode = data.CurrCode;

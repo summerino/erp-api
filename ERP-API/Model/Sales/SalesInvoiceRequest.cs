@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using ERP_API.Domain.Entities.Sales;
+using ERP_API.Domain.Models.Sales;
 
 namespace ERP_API.Model.Sales
 {
@@ -10,6 +11,8 @@ namespace ERP_API.Model.Sales
         public IEnumerable<SalesOrderDetailRequest> ItemDetails { get; set; }
 
         // Direct Invoice
+        public int? PaymentTermId { get; set; }
+
         public long SalesBy { get; set; }
 
         public string WarehouseCode { get; set; }
@@ -28,5 +31,11 @@ namespace ERP_API.Model.Sales
 
         public decimal Dpp { get; set; }
         // End - Direct Invoice
+    }
+
+    public class DirectInvoiceRequest : DirectInvoiceHeader
+    {
+        public int? PaymentTermId { get; set; }
+
     }
 }
