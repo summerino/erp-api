@@ -41,6 +41,7 @@ namespace ERP_API.Domain.Entities
         public DbSet<CurrencyRate> CurrencyRates { get; set; }
         public DbSet<GeneralJournalHeader> GeneralJournalHeaders { get; set; }
         public DbSet<GeneralJournalDetail> GeneralJournalDetails { get; set; }
+        public DbSet<VwGeneralJournalHeader> VwGeneralJournalHeaders { get; set; }
         public DbSet<Journal> Journals { get; set; }
 
         // Asset Management Entities
@@ -318,6 +319,10 @@ namespace ERP_API.Domain.Entities
                     .HasForeignKey(d => d.CurrCode)
                     .OnDelete(DeleteBehavior.NoAction);
             });
+
+            modelBuilder.Entity<VwGeneralJournalHeader>()
+                .HasNoKey()
+                .ToView("vwGeneralJournalHeader", Schema.Accounting);
 
             modelBuilder.Entity<GeneralJournalDetail>(entity =>
             {
