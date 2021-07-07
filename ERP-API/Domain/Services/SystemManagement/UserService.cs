@@ -139,6 +139,13 @@ namespace ERP_API.Domain.Services.SystemManagement
                     return result;
                 }
 
+                // Checking employee already used or not
+                if (IsEmployeeExists(data.EmployeeId, data.Id))
+                {
+                    result.Message = "Karyawan sudah digunakan oleh pengguna lain. Tolong gunakan karyawan lain.";
+                    return result;
+                }
+
                 var dataCatalog = _catalogCtx.Users.FirstOrDefault(x => x.Id == data.CatalogUserId);
                 dataCatalog.Username = data.Username;
                 if (data.Password != null)
@@ -214,6 +221,11 @@ namespace ERP_API.Domain.Services.SystemManagement
             result.Success = true;
             result.Message = "Data pengguna berhasil dinonaktifkan.";
             return result;
+        }
+
+        private bool IsEmployeeExists(long? idEmp, int id)
+        {
+            return _tenantCtx.Users.Any(x => x.EmployeeId == idEmp && x.Id != id);
         }
     }
 }

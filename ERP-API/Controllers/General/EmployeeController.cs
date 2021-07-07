@@ -71,6 +71,25 @@ namespace ERP_API.Controllers.General
             });
         }
 
+        [HttpGet("un-lists")]
+        public IActionResult GetUnList()
+        {
+            var data = _employee.GetUnUsedList()
+                .Select(x => new
+                {
+                    x.Id,
+                    x.Initial,
+                    x.FirstName
+                })
+                .ToList<dynamic>();
+
+            return Ok(new ApiResponse
+            {
+                RowCount = data.Count,
+                TableData = data
+            });
+        }
+
         [HttpGet("salesman-schedule")]
         public IActionResult GetEmployeeSchedule(string groupId, string startDate, string recurrence, string visitDay)
         {
