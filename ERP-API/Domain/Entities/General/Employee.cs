@@ -87,6 +87,13 @@ namespace ERP_API.Domain.Entities.General
 
         public string WarehouseCode { get; set; }
 
+        public string GroupInitial { get; set; }
+
+        public string GroupName { get; set; }
+
+        public string FullName { get; set; }
+
+        public string Gender { get; set; }
 
         public string UpdatedInitial { get; set; }
     }

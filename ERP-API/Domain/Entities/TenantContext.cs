@@ -175,6 +175,8 @@ namespace ERP_API.Domain.Entities
         public DbSet<VisitOrderCustomer> VisitOrderCustomers { get; set; }
         public DbSet<VisitOrderInvoice> VisitOrderInvoices { get; set; }
         public DbSet<VwVisitOrder> VwVisitOrders { get; set; }
+        public DbSet<VwVisitOrderCustomer> VwVisitOrderCustomers { get; set; }
+        public DbSet<VwVisitOrderInvoice> VwVisitOrderInvoices { get; set; }
         public DbSet<VisitPlanHeader> VisitPlanHeaders { get; set; }
         public DbSet<VisitPlanDetail> VisitPlanDetails { get; set; }
         public DbSet<VisitPlanDetailCustomer> VisitPlanDetailCustomers { get; set; }
@@ -1168,6 +1170,14 @@ namespace ERP_API.Domain.Entities
             modelBuilder.Entity<VwVisitOrder>()
                 .HasNoKey()
                 .ToView("vwVisitOrder", Schema.Sales);
+
+            modelBuilder.Entity<VwVisitOrderCustomer>()
+                .HasNoKey()
+                .ToView("vwVisitOrderCustomer", Schema.Sales);
+
+            modelBuilder.Entity<VwVisitOrderInvoice>()
+                .HasNoKey()
+                .ToView("vwVisitOrderInvoice", Schema.Sales);
 
             // Visit Plan entities
             modelBuilder.Entity<VisitPlanHeader>(entity =>

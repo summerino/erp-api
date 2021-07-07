@@ -43,6 +43,32 @@ namespace ERP_API.Controllers.Sales
             });
         }
 
+        [HttpGet("visit-order-customer")]
+        public IActionResult GetVisitOrderCustomer(string code)
+        {
+            var data =
+                _visitOrder.GetVisitOrderCustomer(code).ToList<dynamic>();
+
+            return Ok(new ApiResponse
+            {
+                RowCount = data.Count,
+                TableData = data
+            });
+        }
+
+        [HttpGet("visit-order-invoice")]
+        public IActionResult GetVisitOrderInvoice(string code)
+        {
+            var data =
+                _visitOrder.GetVisitOrderInvoice(code).ToList<dynamic>();
+
+            return Ok(new ApiResponse
+            {
+                RowCount = data.Count,
+                TableData = data
+            });
+        }
+
         [HttpPost]
         public IActionResult OnPost(VisitOrderRequest data)
         {

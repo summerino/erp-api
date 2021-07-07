@@ -27,15 +27,31 @@ namespace ERP_API.Domain.Services.Sales
                 data = DateTime.TryParse(search, out var searchDate)
                     ? data.Where(x => x.Date == searchDate)
                     : data.Where(x =>
-                        x.Code.Contains(search) || x.VisitPlanCode.Contains(search) || x.CustomerName.Contains(search));
+                        x.Code.Contains(search) || x.VisitPlanCode.Contains(search));
             }
 
             return data.ToDataSourceResult(skip, take, filter, sort);
         }
 
+        public IEnumerable<VwVisitOrderCustomer> GetVisitOrderCustomer(string code)
+        {
+            var data = Db.VwVisitOrderCustomers.Where(x => x.Code == code);
+
+            return data.OrderBy(x => x.Id);
+        }
+
+        public IEnumerable<VwVisitOrderInvoice> GetVisitOrderInvoice(string code)
+        {
+            var data = Db.VwVisitOrderInvoices.Where(x => x.Code == code);
+
+            return data.OrderBy(x => x.Id);
+        }
+
         public SaveResult Insert(VisitOrderRequest data)
         {
-            var result = new SaveResult(false);            
+            var result = new SaveResult(false);
+            var arrCustCode = new List<string>();
+            var arrInvCode = new List<string>();
 
             using var transaction = Db.Database.BeginTransaction();
             try
@@ -48,29 +64,45 @@ namespace ERP_API.Domain.Services.Sales
                 Db.VisitOrders.Add(data);
                 Db.SaveChanges();
 
-                // Insert detail data CustomerDetails
-                foreach (var item in data.CustomerDetails)
+                if (data.CustomerDetails.Any())
                 {
-                    Db.VisitOrderCustomers.Add(new VisitOrderCustomer
+                    // Insert detail data CustomerDetails
+                    foreach (var item in data.CustomerDetails)
                     {
-                        Code = newCode,
-                        CustCode = item.CustCode,
-                        ReplacingForSalesmanId = item.ReplacingForSalesmanId,
-                        Visited = item.Visited
-                    });
+                        // Prevent multiple insert details
+                        if (!arrCustCode.Contains(item.CustCode))
+                        {
+                            arrCustCode.Add(item.CustCode);
+                            Db.VisitOrderCustomers.Add(new VisitOrderCustomer
+                            {
+                                Code = newCode,
+                                CustCode = item.CustCode,
+                                ReplacingForSalesmanId = item.ReplacingForSalesmanId,
+                                Visited = item.Visited
+                            });
+                        }
+                    }
                 }
 
-                // Insert detail data Invoice
-                foreach (var item in data.InvoiceDetails)
+                if (data.InvoiceDetails.Any())
                 {
-                    Db.VisitOrderInvoices.Add(new VisitOrderInvoice
+                    // Insert detail data Invoice
+                    foreach (var item in data.InvoiceDetails)
                     {
-                        Code = newCode,
-                        InvCode = item.InvCode,
-                        Collecting = item.Collecting,
-                        FailCollect = item.FailCollect,
-                        NotesFailCollect = item.NotesFailCollect
-                    });
+                        // Prevent multiple insert details
+                        if (!arrInvCode.Contains(item.InvCode))
+                        {
+                            arrInvCode.Add(item.InvCode);
+                            Db.VisitOrderInvoices.Add(new VisitOrderInvoice
+                            {
+                                Code = newCode,
+                                InvCode = item.InvCode,
+                                Collecting = item.Collecting,
+                                FailCollect = item.FailCollect,
+                                NotesFailCollect = item.NotesFailCollect
+                            });
+                        }
+                    }
                 }
 
                 Db.SaveChanges();
@@ -91,14 +123,84 @@ namespace ERP_API.Domain.Services.Sales
         public SaveResult Update(VisitOrderRequest data)
         {
             var result = new SaveResult(false);
-            
+            var arrCustCode = new List<string>();
+            var arrInvCode = new List<string>();
+
             using var transaction = Db.Database.BeginTransaction();
             try
             {
-                // Disable sementara
+                // Checking mark header data
+                if (Db.VisitOrders.Any(x => x.Code == data.Code && x.Mark == "V"))
+                {
+                    result.Message = "Data perintah kunjungan tidak bisa diubah karena sudah ditandai sebagai void.";
+                    return result;
+                }
 
-                data.ApprovedBy = null;
+                // Update header data
+				data.ApprovedBy = null;
                 data.ApprovedDate = null;
+                Db.VisitOrders.Update(data);
+                Db.Entry(data).Property(e => e.Code).IsModified = false;
+                Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
+                Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
+
+                // Get detail data that exists in order before
+                var delCustomerDetails = Db.VisitOrderCustomers
+                    .Where(d => d.Code == data.Code).ToList();
+
+                // Delete detail data that exists in order before
+                Db.VisitOrderCustomers.RemoveRange(delCustomerDetails);
+
+                // Get detail data that exists in order before
+                var delInvoiceDetails = Db.VisitOrderInvoices
+                    .Where(d => d.Code == data.Code).ToList();
+
+                // Delete detail data that exists in order before
+                Db.VisitOrderInvoices.RemoveRange(delInvoiceDetails);
+
+                if (data.CustomerDetails.Any())
+                {
+                    // Insert detail data CustomerDetails
+                    foreach (var item in data.CustomerDetails)
+                    {
+                        // Prevent multiple insert details
+                        if (!arrCustCode.Contains(item.CustCode))
+                        {
+                            arrCustCode.Add(item.CustCode);
+                            Db.VisitOrderCustomers.Add(new VisitOrderCustomer
+                            {
+                                Code = data.Code,
+                                CustCode = item.CustCode,
+                                ReplacingForSalesmanId = item.ReplacingForSalesmanId,
+                                Visited = item.Visited
+                            });
+                        }
+                    }
+                }
+
+                if (data.InvoiceDetails.Any())
+                {
+                    // Insert detail data Invoice
+                    foreach (var item in data.InvoiceDetails)
+                    {
+                        // Prevent multiple insert details
+                        if (!arrInvCode.Contains(item.InvCode))
+                        {
+                            arrInvCode.Add(item.InvCode);
+                            Db.VisitOrderInvoices.Add(new VisitOrderInvoice
+                            {
+                                Code = data.Code,
+                                InvCode = item.InvCode,
+                                Collecting = item.Collecting,
+                                FailCollect = item.FailCollect,
+                                NotesFailCollect = item.NotesFailCollect
+                            });
+                        }
+                    }
+                }
+
+                Db.SaveChanges();
+                transaction.Commit();
             }
             catch (Exception ex)
             {
