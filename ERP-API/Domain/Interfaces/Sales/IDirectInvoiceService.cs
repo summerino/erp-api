@@ -7,7 +7,7 @@ namespace ERP_API.Domain.Interfaces.Sales
 {
     public interface IDirectInvoiceService : IGeneralService<SalesInvoiceHeader>
     {
-        DirectInvoiceHeader FindByCode(string code);
+        DirectInvoiceRequest FindByCode(string code);
 
         SaveResult Insert(SalesInvoiceRequest data);
 
