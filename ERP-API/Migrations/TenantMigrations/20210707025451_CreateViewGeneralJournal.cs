@@ -25,6 +25,9 @@ AS
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            // Drop view Accounting.vwGeneralJournalHeader
+            var sql = @"DROP VIEW [Accounting].[vwGeneralJournalHeader]";
+            migrationBuilder.Sql(sql);
 
         }
     }
