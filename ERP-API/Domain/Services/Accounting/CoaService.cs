@@ -90,8 +90,7 @@ namespace ERP_API.Domain.Services.Accounting
                 var dataParent = Db.Coas.FirstOrDefault(x => x.Id == data.ParentId);
                 data.Deep = dataParent.Deep == null ? 1 : dataParent.Deep + 1;
             }
-            Db.Coas.Update(data);
-            Db.Entry(data).Property(e => e.Code).IsModified = false;
+            Db.Coas.Update(data);            
             Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
             Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
 
