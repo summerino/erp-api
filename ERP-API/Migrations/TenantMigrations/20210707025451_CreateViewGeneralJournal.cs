@@ -28,7 +28,6 @@ AS
             // Drop view Accounting.vwGeneralJournalHeader
             var sql = @"DROP VIEW [Accounting].[vwGeneralJournalHeader]";
             migrationBuilder.Sql(sql);
-
         }
     }
 }
