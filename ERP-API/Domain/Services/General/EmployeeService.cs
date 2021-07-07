@@ -45,9 +45,9 @@ namespace ERP_API.Domain.Services.General
             return data.ToDataSourceResult(0, -1, filters, sorts);
         }
 
-        public IEnumerable<Employee> GetUnUsedList()
+        public IEnumerable<Employee> GetUnUsedList(long? empId)
         {
-            var userData = Db.Users.ToList();
+            var userData = Db.Users.Where(x => x.EmployeeId != empId).ToList();
             return Db.Employees.Where(x => x.IsActive && !userData.Select(d => d.EmployeeId).Contains(x.Id));
         }
 

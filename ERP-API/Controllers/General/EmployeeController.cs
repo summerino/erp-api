@@ -72,9 +72,9 @@ namespace ERP_API.Controllers.General
         }
 
         [HttpGet("un-lists")]
-        public IActionResult GetUnList()
+        public IActionResult GetUnList(long? id)
         {
-            var data = _employee.GetUnUsedList()
+            var data = _employee.GetUnUsedList(id)
                 .Select(x => new
                 {
                     x.Id,

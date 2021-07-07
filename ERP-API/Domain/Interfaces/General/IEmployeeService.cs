@@ -12,7 +12,7 @@ namespace ERP_API.Domain.Interfaces.General
 
         DataSourceResult GetLists(IEnumerable<Filter> filters, IEnumerable<Sort> sorts);
 
-        IEnumerable<Employee> GetUnUsedList();
+        IEnumerable<Employee> GetUnUsedList(long? empId);
 
         SaveResult Insert(EmployeeRequest data);
 
