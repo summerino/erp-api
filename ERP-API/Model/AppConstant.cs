@@ -63,7 +63,8 @@
         Parameter = 73,
         Approval = 72,
         AccountPayable = 78,
-        AccountReceivable = 79
+        AccountReceivable = 79,
+        GeneralJournal = 84
     }
     public static class ApprovalType
     {
