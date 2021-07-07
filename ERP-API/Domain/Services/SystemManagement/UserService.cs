@@ -139,6 +139,7 @@ namespace ERP_API.Domain.Services.SystemManagement
                     return result;
                 }
 
+
                 var dataCatalog = _catalogCtx.Users.FirstOrDefault(x => x.Id == data.CatalogUserId);
                 dataCatalog.Username = data.Username;
                 if (data.Password != null)
