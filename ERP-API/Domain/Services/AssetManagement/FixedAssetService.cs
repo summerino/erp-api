@@ -62,7 +62,7 @@ namespace ERP_API.Domain.Services.AssetManagement
                 result.Message = ex.InnerException?.Message ?? ex.Message;
                 return result;
             }
-
+            result.Data = data.Code;
             result.Success = true;
             result.Message = "Data aktiva tetap berhasil disimpan.";
             return result;
