@@ -24,7 +24,7 @@ namespace ERP_API.Controllers.Finance
         private readonly ICashBankService _cashBank;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
-        private const int _menuId = (int)Menu.AccountPayable;
+        private const int _menuId = (int)Menu.CashBank;
         public CashBankController(ICashBankService cashBank, IClaimService claim, IAuthService auth)
         {
             _cashBank = cashBank;

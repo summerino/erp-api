@@ -1,6 +1,7 @@
 ﻿using ERP_API.Domain.Entities;
+using ERP_API.Domain.Entities.Finance;
 using ERP_API.Domain.Interfaces.Finance;
-using ERP_API.Domain.Models;
+using System.Linq;
 
 namespace ERP_API.Domain.Services.Finance
 {
@@ -12,9 +13,9 @@ namespace ERP_API.Domain.Services.Finance
         {
             _tenantCtx = tenantCtx;
         }
-        public DataSourceResult GetList()
+        public IQueryable<CashBankType> GetList()
         {
-            throw new System.NotImplementedException();
+            return _tenantCtx.CashBankTypes.Where(x=>x.IsActive).OrderBy(x => x.Seq);
         }
     }
 }

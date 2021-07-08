@@ -33,6 +33,8 @@ using ERP_API.Domain.Interfaces.AssetManagement;
 using ERP_API.Domain.Services.AssetManagement;
 using ERP_API.Domain.Interfaces.Expedition;
 using ERP_API.Domain.Services.Expedition;
+using ERP_API.Domain.Interfaces.Finance;
+using ERP_API.Domain.Services.Finance;
 
 namespace ERP_API
 {
@@ -147,6 +149,10 @@ namespace ERP_API
 
             // Expedition services
             services.AddScoped<IExpeditionInvoiceService, ExpeditionInvoiceService>();
+
+            // Finance
+            services.AddScoped<ICashBankService, CashBankService>();
+            services.AddScoped<ICashBankTypeService, CashBankTypeService>();
 
             // General services
             services.AddScoped<ICurrencyService, CurrencyService>();
