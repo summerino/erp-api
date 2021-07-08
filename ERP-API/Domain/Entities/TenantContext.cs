@@ -431,6 +431,10 @@ namespace ERP_API.Domain.Entities
                     .OnDelete(DeleteBehavior.NoAction);
             });
 
+            modelBuilder.Entity<VwGeneralCashBankHeader>()
+                .HasNoKey()
+                .ToView("vwGeneralCashBankHeader", Schema.Finance);
+
             modelBuilder.Entity<GeneralCashBankDetail>(entity =>
             {
                 entity.Property(e => e.Code)
@@ -452,13 +456,9 @@ namespace ERP_API.Domain.Entities
                     .OnDelete(DeleteBehavior.NoAction);
             });
 
-            modelBuilder.Entity<VwGeneralCashBankHeader>()
-                .HasNoKey()
-                .ToView("VwGeneralCashBankHeader", Schema.Finance);
-
             modelBuilder.Entity<VwGeneralCashBankDetail>()
                 .HasNoKey()
-                .ToView("VwGeneralCashBankDetail", Schema.Finance);
+                .ToView("vwGeneralCashBankDetail", Schema.Finance);
 
             // General entities
             // Employee entities
