@@ -56,6 +56,13 @@ namespace ERP_API.Domain.Services.Sales
             using var transaction = Db.Database.BeginTransaction();
             try
             {
+                // Checking if employee is assigned in same date
+                if (IsEmployeeAssignedInSameDate(data.Date, data.SalesmanId))
+                {
+                    result.Message = "Karyawan tidak dapat dipilih pada tanggal yang sama.";
+                    return result;
+                }
+
                 // Get new code
                 var newCode = GetNewCode("VST_ORD_NUM_FMT", data.Date);
 
@@ -129,6 +136,13 @@ namespace ERP_API.Domain.Services.Sales
             using var transaction = Db.Database.BeginTransaction();
             try
             {
+                // Checking if employee is assigned in same date
+                if (IsEmployeeAssignedInSameDate(data.Date, data.SalesmanId))
+                {
+                    result.Message = "Karyawan tidak dapat dipilih pada tanggal yang sama.";
+                    return result;
+                }
+
                 // Checking mark header data
                 if (Db.VisitOrders.Any(x => x.Code == data.Code && x.Mark == "V"))
                 {
@@ -249,6 +263,11 @@ namespace ERP_API.Domain.Services.Sales
             result.Success = true;
             result.Message = "Data perintah kunjungan berhasil dihapus.";
             return result;
+        }
+
+        private bool IsEmployeeAssignedInSameDate(DateTime date, long id)
+        {
+            return Db.VwVisitOrders.Any(x => x.SalesmanId == id && x.Date == date);
         }
     }
 }
