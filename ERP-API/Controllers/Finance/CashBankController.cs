@@ -49,6 +49,17 @@ namespace ERP_API.Controllers.Finance
             });
         }
 
+        [HttpGet("detail")]
+        public IActionResult GetDetailData(string code)
+        {
+            var data = _cashBank.GetDetailData(code).ToList<dynamic>();
+
+            return Ok(new ApiResponse
+            {
+                RowCount = data.Count,
+                TableData = data
+            });
+        }
 
         [HttpPost]
         public IActionResult OnPost(CashBankRequest data)
@@ -113,7 +124,7 @@ namespace ERP_API.Controllers.Finance
         private static (bool, string) Validate(CashBankRequest data)
         {
             if (!data.ItemDetails.Any())
-                return (false, "Item details can't be empty.");
+                return (false, "Data detil tidak boleh kosongs.");
 
             return (true, "");
         }

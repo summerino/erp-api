@@ -31,7 +31,11 @@ namespace ERP_API.Domain.Services.Finance
 
             return data.ToDataSourceResult(skip, take, filters, sorts);
         }
-
+        public IEnumerable<GeneralCashBankDetail> GetDetailData(string code)
+        {
+            var data = Db.GeneralCashBankDetails.Where(x => x.Code.Equals(code));
+            return data;
+        }
         public SaveResult Insert(CashBankRequest data)
         {
             var result = new SaveResult(false);
@@ -40,7 +44,7 @@ namespace ERP_API.Domain.Services.Finance
             try
             {
                 // Get new code
-                var newCode = GetNewCode("PO_NUM_FMT", data.Date);
+                var newCode = GetNewCode("CB_NUM_FMT", data.Date);
 
                 // Insert header data
                 data.Code = newCode;
@@ -51,7 +55,7 @@ namespace ERP_API.Domain.Services.Finance
                 {
                     Db.GeneralCashBankDetails.Add(new GeneralCashBankDetail
                     {
-                        Code = item.Code,
+                        Code = data.Code,
                         LineNo = j,
                         Type = item.Type,
                         TransCode = item.TransCode,
@@ -124,7 +128,7 @@ namespace ERP_API.Domain.Services.Finance
 
                         Db.GeneralCashBankDetails.Add(new GeneralCashBankDetail
                         {
-                            Code = item.Code,
+                            Code = data.Code,
                             LineNo = ++i,
                             Type = item.Type,
                             TransCode = item.TransCode,
@@ -190,5 +194,7 @@ namespace ERP_API.Domain.Services.Finance
             result.Message = "Data bank tunai berhasil ditandai sebagai void.";
             return result;
         }
+
+        
     }
 }
