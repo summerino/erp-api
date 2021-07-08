@@ -59,6 +59,8 @@ namespace ERP_API.Domain.Entities
         // Finance entities
         public DbSet<GeneralCashBankHeader> GeneralCashBankHeaders { get; set; }
         public DbSet<GeneralCashBankDetail> GeneralCashBankDetails { get; set; }
+        public DbSet<VwGeneralCashBankHeader> VwGeneralCashBankHeaders { get; set; }
+        public DbSet<VwGeneralCashBankDetail> VwGeneralCashBankDetails { get; set; }
         public DbSet<CashBankType> CashBankTypes { get; set; }
 
         // General entities
@@ -449,6 +451,14 @@ namespace ERP_API.Domain.Entities
                     .HasForeignKey(d => d.CurrCode)
                     .OnDelete(DeleteBehavior.NoAction);
             });
+
+            modelBuilder.Entity<VwGeneralCashBankHeader>()
+                .HasNoKey()
+                .ToView("VwGeneralCashBankHeader", Schema.Finance);
+
+            modelBuilder.Entity<VwGeneralCashBankDetail>()
+                .HasNoKey()
+                .ToView("VwGeneralCashBankDetail", Schema.Finance);
 
             // General entities
             // Employee entities

@@ -18,7 +18,7 @@ namespace ERP_API.Domain.Services.Finance
         }
         public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string search)
         {
-            var data = Db.GeneralCashBankHeaders.AsQueryable();
+            var data = Db.VwGeneralCashBankHeaders.AsQueryable();
 
             if (!string.IsNullOrEmpty(search))
             {
@@ -31,9 +31,9 @@ namespace ERP_API.Domain.Services.Finance
 
             return data.ToDataSourceResult(skip, take, filters, sorts);
         }
-        public IEnumerable<GeneralCashBankDetail> GetDetailData(string code)
+        public IEnumerable<VwGeneralCashBankDetail> GetDetailData(string code)
         {
-            var data = Db.GeneralCashBankDetails.Where(x => x.Code.Equals(code));
+            var data = Db.VwGeneralCashBankDetails.Where(x => x.Code.Equals(code));
             return data;
         }
         public SaveResult Insert(CashBankRequest data)

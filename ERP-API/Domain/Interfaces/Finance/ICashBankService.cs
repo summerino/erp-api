@@ -9,7 +9,7 @@ namespace ERP_API.Domain.Interfaces.Finance
     {
         DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
             string search);
-        IEnumerable<GeneralCashBankDetail> GetDetailData(string code);
+        IEnumerable<VwGeneralCashBankDetail> GetDetailData(string code);
         SaveResult Delete(string code, int userId);
     }
 }
