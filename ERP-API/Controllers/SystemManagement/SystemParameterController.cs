@@ -27,7 +27,7 @@ namespace ERP_API.Controllers.SystemManagement
             _claim = claimService;
             _auth = auth;
         }
-
+       
         [HttpGet]
         public IActionResult GetHierarchy()
         {
@@ -36,12 +36,13 @@ namespace ERP_API.Controllers.SystemManagement
         }
 
         [HttpGet("lists")]
-        public IActionResult GetList(string filters, string sorts) 
+        public IActionResult GetList(string filters, string sorts, string codes) 
         {
             var data =
                 _sysParam.GetLists(
                     JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
-                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]")).Data
+                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
+                    JsonConvert.DeserializeObject<List<string>>(!string.IsNullOrWhiteSpace(codes) ? codes : "[]")).Data
                     .ToDynamicList()
                     .Select(x => new
                     {

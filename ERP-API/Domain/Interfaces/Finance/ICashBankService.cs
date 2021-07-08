@@ -1,4 +1,5 @@
-﻿using ERP_API.Domain.Models;
+﻿using ERP_API.Domain.Entities.Finance;
+using ERP_API.Domain.Models;
 using ERP_API.Model.Finance;
 using System.Collections.Generic;
 
@@ -8,8 +9,7 @@ namespace ERP_API.Domain.Interfaces.Finance
     {
         DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
             string search);
-        SaveResult Insert(CashBankRequest data);
-        SaveResult Update(CashBankRequest data);
+        IEnumerable<VwGeneralCashBankDetail> GetDetailData(string code);
         SaveResult Delete(string code, int userId);
     }
 }

@@ -65,9 +65,14 @@ namespace ERP_API.Domain.Services.SystemManagement
             return result;
         }
 
-        public DataSourceResult GetLists(IEnumerable<Filter> filters, IEnumerable<Sort> sorts)
+        public DataSourceResult GetLists(IEnumerable<Filter> filters, IEnumerable<Sort> sorts, IEnumerable<string> codes)
         {
-            return Db.SystemParameters.ToDataSourceResult(0, -1, filters, sorts);
+            var data = Db.SystemParameters.AsQueryable();
+            if (codes?.Any() ?? false)
+            {
+                data = data.Where(x => codes.Contains(x.Code));
+            }
+            return data.ToDataSourceResult(0, -1, filters, sorts);
         }
 
         public SaveResult Save(List<SystemParameterRequest> data)

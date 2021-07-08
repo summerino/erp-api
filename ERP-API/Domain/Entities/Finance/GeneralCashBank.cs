@@ -48,6 +48,51 @@ namespace ERP_API.Domain.Entities.Finance
         public string Notes { get; set; }
     }
 
+    public class VwGeneralCashBankHeader : BaseEntityWithMarkAndApproved
+    {
+        [Key]
+        [StringLength(17)]
+        public string Code { get; set; }
+
+        [StringLength(17)]
+        public string VouCode { get; set; }
+
+        [Required]
+        [StringLength(1)]
+        public string Type { get; set; }
+
+        [Column(TypeName = "date")]
+        public DateTime Date { get; set; }
+
+        [Required]
+        [StringLength(6)]
+        public string CoaCode { get; set; }
+
+        [Required]
+        [StringLength(3)]
+        public string CurrCode { get; set; }
+
+        [Column(TypeName = "decimal(19, 6)")]
+        public decimal Rate { get; set; }
+
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal Amount { get; set; }
+
+        [StringLength(25)]
+        public string ChequeNo { get; set; }
+
+        [Column(TypeName = "date")]
+        public DateTime? ChequeDate { get; set; }
+
+        [StringLength(256)]
+        public string Notes { get; set; }
+        public string CreatedInitial { get; set; }
+        public string UpdatedInitial { get; set; }
+        public string ApprovedInitial { get; set; }
+        public string CoaName{ get; set; }
+
+    }
+
     [Table("GeneralCashBankDetail", Schema = Schema.Finance)]
     [Index(nameof(TransCode))]
     [Index(nameof(CoaCode))]
@@ -64,7 +109,51 @@ namespace ERP_API.Domain.Entities.Finance
         [StringLength(5)]
         public string Type { get; set; }
 
+        [StringLength(17)]
+        public string TransCode { get; set; }
+
         [Required]
+        [StringLength(6)]
+        public string CoaCode { get; set; }
+
+
+        [Required]
+        [StringLength(3)]
+        public string CurrCode { get; set; }
+
+        [Column(TypeName = "decimal(19, 6)")]
+        public decimal Rate { get; set; }
+
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal Amount { get; set; }
+
+        [Required]
+        [StringLength(1)]
+        public string TypeAmount { get; set; }
+
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal TransAmount { get; set; }
+
+        [Required]
+        [StringLength(256)]
+        public string Notes { get; set; }
+
+        
+    }
+
+    public class VwGeneralCashBankDetail
+    {
+        public long Id { get; set; }
+
+        [StringLength(17)]
+        public string Code { get; set; }
+
+        public short LineNo { get; set; }
+
+        [Required]
+        [StringLength(5)]
+        public string Type { get; set; }
+
         [StringLength(17)]
         public string TransCode { get; set; }
 
@@ -92,6 +181,9 @@ namespace ERP_API.Domain.Entities.Finance
         [Required]
         [StringLength(256)]
         public string Notes { get; set; }
+        
+        public string CoaName { get; set; }
+
     }
 
     [Table("CashBankType", Schema = Schema.Finance)]

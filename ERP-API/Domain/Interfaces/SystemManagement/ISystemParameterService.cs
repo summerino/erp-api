@@ -7,7 +7,7 @@ namespace ERP_API.Domain.Interfaces.SystemManagement
 {
     public interface ISystemParameterService : IGeneralService<SystemParameter>
     {
-        DataSourceResult GetLists(IEnumerable<Filter> filters, IEnumerable<Sort> sorts);
+        DataSourceResult GetLists(IEnumerable<Filter> filters, IEnumerable<Sort> sorts, IEnumerable<string> codes);
         List<SystemParameterRequest> GetHierarchy();
         SaveResult Save(List<SystemParameterRequest> data);
     }
