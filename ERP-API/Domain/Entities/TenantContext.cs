@@ -39,6 +39,10 @@ namespace ERP_API.Domain.Entities
         public DbSet<VwCoa> VwCoas { get; set; }
         public DbSet<CoaType> CoaTypes { get; set; }
         public DbSet<CurrencyRate> CurrencyRates { get; set; }
+        public DbSet<GeneralJournalHeader> GeneralJournalHeaders { get; set; }
+        public DbSet<GeneralJournalDetail> GeneralJournalDetails { get; set; }
+        public DbSet<VwGeneralJournalHeader> VwGeneralJournalHeaders { get; set; }
+        public DbSet<Journal> Journals { get; set; }
 
         // Asset Management Entities
         public DbSet<FixedAsset> FixedAssets { get; set; }
@@ -53,9 +57,9 @@ namespace ERP_API.Domain.Entities
         public DbSet<ExpeditionInvoiceDetail> ExpeditionInvoiceDetails { get; set; }
 
         // Finance entities
-        // General Cash Bank entities
         public DbSet<GeneralCashBankHeader> GeneralCashBankHeaders { get; set; }
         public DbSet<GeneralCashBankDetail> GeneralCashBankDetails { get; set; }
+        public DbSet<CashBankType> CashBankTypes { get; set; }
 
         // General entities
         public DbSet<Currency> Currencies { get; set; }
@@ -171,6 +175,8 @@ namespace ERP_API.Domain.Entities
         public DbSet<VisitOrderCustomer> VisitOrderCustomers { get; set; }
         public DbSet<VisitOrderInvoice> VisitOrderInvoices { get; set; }
         public DbSet<VwVisitOrder> VwVisitOrders { get; set; }
+        public DbSet<VwVisitOrderCustomer> VwVisitOrderCustomers { get; set; }
+        public DbSet<VwVisitOrderInvoice> VwVisitOrderInvoices { get; set; }
         public DbSet<VisitPlanHeader> VisitPlanHeaders { get; set; }
         public DbSet<VisitPlanDetail> VisitPlanDetails { get; set; }
         public DbSet<VisitPlanDetailCustomer> VisitPlanDetailCustomers { get; set; }
@@ -304,6 +310,36 @@ namespace ERP_API.Domain.Entities
                 .HasNoKey()
                 .ToView("vwCoa", Schema.Accounting);
 
+            // General Journal entities
+            modelBuilder.Entity<GeneralJournalHeader>(entity =>
+            {
+                entity.Property(e => e.Mark)
+                    .IsRequired();
+
+                entity.HasOne<Currency>()
+                    .WithMany()
+                    .HasForeignKey(d => d.CurrCode)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            modelBuilder.Entity<VwGeneralJournalHeader>()
+                .HasNoKey()
+                .ToView("vwGeneralJournalHeader", Schema.Accounting);
+
+            modelBuilder.Entity<GeneralJournalDetail>(entity =>
+            {
+                entity.Property(e => e.Code)
+                    .IsRequired();
+            });
+
+            // Journal entities
+            modelBuilder.Entity<Journal>(entity =>
+                entity.HasOne<Currency>()
+                    .WithMany()
+                    .HasForeignKey(d => d.CurrCode)
+                    .OnDelete(DeleteBehavior.NoAction)
+            );
+
             // Asset Management entities
             // Asset Type entities
             modelBuilder.Entity<VwAssetType>()
@@ -401,6 +437,11 @@ namespace ERP_API.Domain.Entities
                 entity.HasOne<GeneralCashBankHeader>()
                     .WithMany()
                     .HasForeignKey(d => d.Code)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<CashBankType>()
+                    .WithMany()
+                    .HasForeignKey(d => d.Type)
                     .OnDelete(DeleteBehavior.NoAction);
 
                 entity.HasOne<Currency>()
@@ -1129,6 +1170,14 @@ namespace ERP_API.Domain.Entities
             modelBuilder.Entity<VwVisitOrder>()
                 .HasNoKey()
                 .ToView("vwVisitOrder", Schema.Sales);
+
+            modelBuilder.Entity<VwVisitOrderCustomer>()
+                .HasNoKey()
+                .ToView("vwVisitOrderCustomer", Schema.Sales);
+
+            modelBuilder.Entity<VwVisitOrderInvoice>()
+                .HasNoKey()
+                .ToView("vwVisitOrderInvoice", Schema.Sales);
 
             // Visit Plan entities
             modelBuilder.Entity<VisitPlanHeader>(entity =>

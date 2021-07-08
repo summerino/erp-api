@@ -1,67 +1,78 @@
 ﻿using ERP_API.Domain.Entities;
-using ERP_API.Domain.Entities.Expedition;
+using ERP_API.Domain.Entities.Accounting;
 using ERP_API.Domain.Extensions;
-using ERP_API.Domain.Interfaces.Expedition;
+using ERP_API.Domain.Interfaces.Accounting;
 using ERP_API.Domain.Models;
-using ERP_API.Model.Expedition;
+using ERP_API.Model.Accounting;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace ERP_API.Domain.Services.Expedition
+namespace ERP_API.Domain.Services.Accounting
 {
-    public class ExpeditionInvoiceService : GeneralService<ExpeditionInvoiceHeader>, IExpeditionInvoiceService
+    public class GeneralJournalService : GeneralService<GeneralJournalHeader>, IGeneralJournalService
     {
-        public ExpeditionInvoiceService(TenantContext db)
+        public GeneralJournalService(TenantContext db)
             :base(db)
         {
 
         }
-       
+
         public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, string search)
         {
-            var data = Db.VwExpeditionInvoiceHeaders.AsQueryable();
+            var data = Db.VwGeneralJournalHeaders.AsQueryable();
 
             if (!string.IsNullOrEmpty(search))
             {
                 data = DateTime.TryParse(search, out var searchDate)
                     ? data.Where(x => x.Date == searchDate)
                     : data.Where(x =>
-                        x.Code.Contains(search) || x.RefNo.Contains(search) || x.SupplierInitial.Contains(search));
+                        x.Code.Contains(search) || x.CurrCode.Contains(search) || x.Total.ToString().Contains(search)
+                        || x.Notes.Contains(search));
             }
 
             return data.ToDataSourceResult(skip, take, filter, sort);
         }
 
-        public IEnumerable<ExpeditionInvoiceDetail> GetDetailData(string code)
+        public IEnumerable<GeneralJournalDetail> GetDetailData(string code)
         {
-            return Db.ExpeditionInvoiceDetails.Where(x => x.Code == code).OrderBy(x => x.LineNo);
+            return Db.GeneralJournalDetails.Where(x => x.Code == code).OrderBy(x => x.LineNo);
         }
 
-        public SaveResult Insert(ExpeditionInvoiceRequest data)
+        public SaveResult Insert(GeneralJournalRequest data)
         {
             var result = new SaveResult(false);
 
             using var transaction = Db.Database.BeginTransaction();
             try
             {
+                // Verified Total Debit & Credit
+                if (data.TotalDebit != data.TotalCredit)
+                {
+                    result.Message = "Nominal total debit tidak sama dengan nomimal total kredit.";
+                    return result;
+                }
+
                 // Get new code
-                var newCode = GetNewCode("EI_NUM_FMT", data.Date);
+                var newCode = GetNewCode("GEN_JR_NUM_FMT", data.Date);
 
                 // Insert header data
                 data.Code = newCode;
-                Db.ExpeditionInvoiceHeaders.Add(data);
+                Db.GeneralJournalHeaders.Add(data);
 
                 // Insert detail data
                 short i = 0;
                 foreach (var item in data.Details)
                 {
-                    Db.ExpeditionInvoiceDetails.Add(new ExpeditionInvoiceDetail
+                    Db.GeneralJournalDetails.Add(new GeneralJournalDetail
                     {
                         Code = newCode,
                         LineNo = ++i,
-                        TransCode = item.TransCode
+                        CoaCode = item.CoaCode,
+                        Notes = item.Notes,
+                        Type = item.CreditValue != 0 ? "C" : "D",
+                        Amount = (decimal)(item.CreditValue != 0 ? item.CreditValue : item.DebitValue)
                     });
                 }
 
@@ -78,11 +89,11 @@ namespace ERP_API.Domain.Services.Expedition
 
             result.Success = true;
             result.Data = data.Code;
-            result.Message = "Data faktur ekspedisi berhasil disimpan.";
+            result.Message = "Data jurnal umum berhasil disimpan.";
             return result;
         }
 
-        public SaveResult Update(ExpeditionInvoiceRequest data)
+        public SaveResult Update(GeneralJournalRequest data)
         {
             var result = new SaveResult(false);
 
@@ -90,9 +101,16 @@ namespace ERP_API.Domain.Services.Expedition
             try
             {
                 // Checking mark header data
-                if (Db.ExpeditionInvoiceHeaders.Any(x => x.Code == data.Code && x.Mark == "V"))
+                if (Db.GeneralJournalHeaders.Any(x => x.Code == data.Code && x.Mark == "V"))
                 {
-                    result.Message = "Data faktur ekspedisi tidak bisa diubah karena data sudah ditandai sebagai void.";
+                    result.Message = "Data jurnal umum tidak bisa diubah karena data sudah ditandai sebagai void.";
+                    return result;
+                }
+
+                // Verified Total Debit & Credit
+                if (data.TotalDebit != data.TotalCredit)
+                {
+                    result.Message = "Nominal total debit tidak sama dengan nomimal total kredit.";
                     return result;
                 }
 
@@ -100,18 +118,18 @@ namespace ERP_API.Domain.Services.Expedition
                 data.ApprovedDate = null;
 
                 // Update header data
-                Db.ExpeditionInvoiceHeaders.Update(data);
+                Db.GeneralJournalHeaders.Update(data);
                 Db.Entry(data).Property(e => e.Code).IsModified = false;
                 Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
                 Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
 
                 // Get detail data that exists in invoice before
-                var delDetails = Db.ExpeditionInvoiceDetails
+                var delDetails = Db.GeneralJournalDetails
                     .Where(d => d.Code == data.Code && !data.Details.Select(x => x.Id).Contains(d.Id))
                     .ToList();
 
                 // Get detail data that exists in invoice before
-                Db.ExpeditionInvoiceDetails.RemoveRange(delDetails);
+                Db.GeneralJournalDetails.RemoveRange(delDetails);
 
                 // Update detail data
                 short i = 0;
@@ -119,18 +137,23 @@ namespace ERP_API.Domain.Services.Expedition
                 {
                     if (item.Id <= 0)
                     {
-                        Db.ExpeditionInvoiceDetails.Add(new ExpeditionInvoiceDetail
+                        Db.GeneralJournalDetails.Add(new GeneralJournalDetail
                         {
                             Code = data.Code,
                             LineNo = ++i,
-                            TransCode = item.TransCode
+                            CoaCode = item.CoaCode,
+                            Notes = item.Notes,
+                            Type = item.CreditValue != 0 ? "C" : "D",
+                            Amount = (decimal)(item.CreditValue != 0 ? item.CreditValue : item.DebitValue)
                         });
                     }
                     else
                     {
                         item.LineNo = ++i;
+                        item.Type = item.CreditValue != 0 ? "C" : "D";
+                        item.Amount = (decimal)(item.CreditValue != 0 ? item.CreditValue : item.DebitValue);
 
-                        Db.ExpeditionInvoiceDetails.Update(item);
+                        Db.GeneralJournalDetails.Update(item);
                         Db.Entry(item).Property(e => e.Code).IsModified = false;
                     }
                 }
@@ -148,7 +171,7 @@ namespace ERP_API.Domain.Services.Expedition
 
             result.Success = true;
             result.Data = data.Code;
-            result.Message = "Data faktur ekspedisi berhasil diperbarui.";
+            result.Message = "Data jurnal umum berhasil diperbarui.";
             return result;
         }
 
@@ -156,13 +179,13 @@ namespace ERP_API.Domain.Services.Expedition
         {
             var result = new SaveResult(false);
 
-            var data = Db.ExpeditionInvoiceHeaders.Find(code);
+            var data = Db.GeneralJournalHeaders.Find(code);
             if (data != null)
             {
                 // Checking mark header data
                 if (data.Mark == "V")
                 {
-                    result.Message = "Data faktur ekspedisi tidak bisa ditandai sebagai void karena sudah ditandai sebagai void.";
+                    result.Message = "Data jurnal umum tidak bisa ditandai sebagai void karena sudah ditandai sebagai void.";
                     return result;
                 }
 
@@ -187,7 +210,7 @@ namespace ERP_API.Domain.Services.Expedition
             }
 
             result.Success = true;
-            result.Message = "Data faktur ekspedisi berhasil ditandai sebagai void.";
+            result.Message = "Data jurnal umum berhasil ditandai sebagai void.";
             return result;
         }
     }

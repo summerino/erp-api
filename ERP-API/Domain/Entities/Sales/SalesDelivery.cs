@@ -66,6 +66,9 @@ namespace ERP_API.Domain.Entities.Sales
         [Column("DPP", TypeName = "decimal(18, 2)")]
         public decimal Dpp { get; set; }
 
+        [Column(TypeName = "decimal(19, 6)")]
+        public decimal PaidAmount { get; set; }
+
         [StringLength(256)]
         public string Notes { get; set; }
 
@@ -109,6 +112,8 @@ namespace ERP_API.Domain.Entities.Sales
         public decimal Total { get; set; }
 
         public decimal Dpp { get; set; }
+        
+        public decimal PaidAmount { get; set; }
 
         public string Notes { get; set; }
 
