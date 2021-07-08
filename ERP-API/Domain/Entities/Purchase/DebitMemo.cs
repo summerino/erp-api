@@ -66,6 +66,8 @@ namespace ERP_API.Domain.Entities.Purchase
         public string Notes { get; set; }
 
 
+        public decimal Remaining { get; set; }
+        public string SupInitial { get; set; }
         public string SupName { get; set; }
 
         public string SrcTransName { get; set; }
