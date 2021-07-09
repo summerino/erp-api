@@ -13,7 +13,7 @@ using System.Linq.Dynamic.Core;
 
 namespace ERP_API.Controllers.General
 {
-    [Route("api/v1/approval")]
+    [Route("approval")]
     [ApiController]
     [AllowAnonymous]
     public class ApprovalController : ControllerBase

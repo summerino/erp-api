@@ -13,7 +13,7 @@ using ERP_API.Domain.Interfaces.Auth;
 
 namespace ERP_API.Controllers.General
 {
-    [Route("api/v1/tax")]
+    [Route("[controller]")]
     [ApiController]
     public class TaxController : ControllerBase
     {

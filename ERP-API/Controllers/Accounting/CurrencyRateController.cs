@@ -14,7 +14,7 @@ using System.Linq;
 
 namespace ERP_API.Controllers.Accounting
 {
-    [Route("api/v1/currency-rate")]
+    [Route("currency-rate")]
     [ApiController]
 
     public class CurrencyRateController : ControllerBase

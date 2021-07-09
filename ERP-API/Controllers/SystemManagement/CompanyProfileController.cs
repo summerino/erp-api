@@ -1,19 +1,19 @@
-﻿using ERP_API.Model;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Dynamic.Core;
+using Microsoft.AspNetCore.Mvc;
+using ERP_API.Domain.Entities.SystemManagement;
 using ERP_API.Domain.Interfaces.Auth;
 using ERP_API.Domain.Interfaces.SystemManagement;
-using ERP_API.Domain.Services;
-using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 using ERP_API.Domain.Models;
-using System.Linq.Dynamic.Core;
-using System.Collections.Generic;
-using ERP_API.Domain.Entities.SystemManagement;
-using System.Linq;
-using System;
+using ERP_API.Domain.Services;
+using ERP_API.Model;
+using Newtonsoft.Json;
 
 namespace ERP_API.Controllers.SystemManagement
 {
-    [Route("api/v1/company-profile")]
+    [Route("company-profile")]
     [ApiController]
     public class CompanyProfileController : ControllerBase
     {

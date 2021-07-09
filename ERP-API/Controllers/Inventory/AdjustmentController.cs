@@ -13,7 +13,7 @@ using ERP_API.Domain.Interfaces.Auth;
 
 namespace ERP_API.Controllers.Inventory
 {
-    [Route("api/v1/adjustment")]
+    [Route("adjustment")]
     [ApiController]
 
     public class AdjustmentController : ControllerBase

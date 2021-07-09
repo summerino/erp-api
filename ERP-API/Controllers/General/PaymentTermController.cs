@@ -13,7 +13,7 @@ using System.Linq.Dynamic.Core;
 
 namespace ERP_API.Controllers.General
 {
-    [Route("api/v1/payment-term")]
+    [Route("payment-term")]
     [ApiController]
     public class PaymentTermController : ControllerBase
     {

@@ -11,7 +11,7 @@ using Newtonsoft.Json;
 
 namespace ERP_API.Controllers.Sales
 {    
-    [Route("api/v1/salesman")]
+    [Route("salesman")]
     [ApiController]
     public class SalesmanController : ControllerBase
     {

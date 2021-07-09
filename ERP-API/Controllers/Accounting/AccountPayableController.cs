@@ -13,7 +13,7 @@ using System.Linq.Dynamic.Core;
 
 namespace ERP_API.Controllers.Accounting
 {
-    [Route("api/v1/account-payable")]
+    [Route("account-payable")]
     [ApiController]
     public class AccountPayableController : ControllerBase
     {

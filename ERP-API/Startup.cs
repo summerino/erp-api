@@ -12,15 +12,21 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using ERP_API.Domain.Entities;
 using ERP_API.Domain.Interfaces.Accounting;
+using ERP_API.Domain.Interfaces.AssetManagement;
 using ERP_API.Domain.Interfaces.Auth;
+using ERP_API.Domain.Interfaces.Expedition;
+using ERP_API.Domain.Interfaces.Finance;
 using ERP_API.Domain.Interfaces.General;
 using ERP_API.Domain.Interfaces.Inventory;
 using ERP_API.Domain.Interfaces.Purchase;
 using ERP_API.Domain.Interfaces.Sales;
 using ERP_API.Domain.Interfaces.SystemManagement;
 using ERP_API.Domain.Services;
-using ERP_API.Domain.Services.Auth;
 using ERP_API.Domain.Services.Accounting;
+using ERP_API.Domain.Services.AssetManagement;
+using ERP_API.Domain.Services.Auth;
+using ERP_API.Domain.Services.Expedition;
+using ERP_API.Domain.Services.Finance;
 using ERP_API.Domain.Services.General;
 using ERP_API.Domain.Services.Inventory;
 using ERP_API.Domain.Services.Purchase;
@@ -29,12 +35,6 @@ using ERP_API.Domain.Services.SystemManagement;
 using ERP_API.Model.Auth;
 using Newtonsoft.Json.Serialization;
 using Swift.Framework;
-using ERP_API.Domain.Interfaces.AssetManagement;
-using ERP_API.Domain.Services.AssetManagement;
-using ERP_API.Domain.Interfaces.Expedition;
-using ERP_API.Domain.Services.Expedition;
-using ERP_API.Domain.Interfaces.Finance;
-using ERP_API.Domain.Services.Finance;
 
 namespace ERP_API
 {

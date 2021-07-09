@@ -13,7 +13,7 @@ using ERP_API.Domain.Interfaces.Auth;
 
 namespace ERP_API.Controllers.Sales
 {
-    [Route("api/v1/direct-invoice")]
+    [Route("direct-invoice")]
     [ApiController]
     public class DirectInvoiceController : ControllerBase
     {

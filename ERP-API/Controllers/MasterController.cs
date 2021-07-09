@@ -18,7 +18,7 @@ using ERP_API.Domain.Services;
 
 namespace ERP_API.Controllers
 {
-    [Route("api/v1/master")]
+    [Route("[controller]")]
     [AllowAnonymous]
     [ApiController]
     public class MasterController : ControllerBase

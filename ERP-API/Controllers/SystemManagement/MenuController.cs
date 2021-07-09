@@ -10,7 +10,7 @@ using Newtonsoft.Json;
 
 namespace ERP_API.Controllers.SystemManagement
 {
-    [Route("api/v1/menu")]
+    [Route("[controller]")]
     [ApiController]
     public class MenuController : ControllerBase
     {

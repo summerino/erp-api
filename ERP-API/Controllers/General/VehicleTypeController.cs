@@ -14,7 +14,7 @@ using ERP_API.Domain.Interfaces.Auth;
 
 namespace ERP_API.Controllers.General
 {
-    [Route("api/v1/vehicle-type")]
+    [Route("vehicle-type")]
     [ApiController]
     public class VehicleTypeController : ControllerBase
     {

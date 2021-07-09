@@ -8,7 +8,7 @@ using ERP_API.Model;
 namespace ERP_API.Controllers
 {
     [AllowAnonymous]
-    [Route("api/v1/status")]
+    [Route("[controller]")]
     public class StatusController : Controller
     {
         public StatusController() { }

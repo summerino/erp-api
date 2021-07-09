@@ -13,7 +13,7 @@ using ERP_API.Domain.Interfaces.Auth;
 
 namespace ERP_API.Controllers.Purchase
 {
-    [Route("api/v1/purchase-receive")]
+    [Route("purchase-receive")]
     [ApiController]
     public class PurchaseReceiveController : ControllerBase
     {

@@ -13,7 +13,7 @@ using ERP_API.Domain.Interfaces.Auth;
 
 namespace ERP_API.Controllers.Inventory
 {
-    [Route("api/v1/item-category")]
+    [Route("item-category")]
     //[Authorize]
     [ApiController]
     public class ItemCategoryController : ControllerBase

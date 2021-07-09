@@ -10,11 +10,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
-using System.Threading.Tasks;
 
 namespace ERP_API.Controllers.General
 {
-    [Route("api/v1/vehicle")]
+    [Route("[controller]")]
     [ApiController]
     public class VehicleController : ControllerBase
     {
