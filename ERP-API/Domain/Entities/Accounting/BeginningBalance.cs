@@ -36,6 +36,9 @@ namespace ERP_API.Domain.Entities.Accounting
         [Column(TypeName = "decimal(18, 2)")]
         public decimal Amount { get; set; }
 
+        [Column(TypeName = "decimal(19, 6)")]
+        public decimal PaidAmount { get; set; }
+
         [StringLength(256)]
         public string Notes { get; set; }
     }
@@ -57,8 +60,11 @@ namespace ERP_API.Domain.Entities.Accounting
         public decimal CurrRate { get; set; }
 
         public decimal Amount { get; set; }
+        
+        public decimal PaidAmount { get; set; }
 
         public string Notes { get; set; }
+
 
         public string SupName { get; set; }
 
@@ -97,6 +103,9 @@ namespace ERP_API.Domain.Entities.Accounting
         [Column(TypeName = "decimal(18, 2)")]
         public decimal Amount { get; set; }
 
+        [Column(TypeName = "decimal(19, 6)")]
+        public decimal PaidAmount { get; set; }
+
         [StringLength(256)]
         public string Notes { get; set; }
     }
@@ -118,8 +127,11 @@ namespace ERP_API.Domain.Entities.Accounting
         public decimal CurrRate { get; set; }
 
         public decimal Amount { get; set; }
+        
+        public decimal PaidAmount { get; set; }
 
         public string Notes { get; set; }
+
 
         public string CustName { get; set; }
 
