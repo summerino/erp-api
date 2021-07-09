@@ -14,7 +14,7 @@ using ERP_API.Domain.Interfaces.Auth;
 
 namespace ERP_API.Controllers.Sales
 {
-    [Route("api/v1/sales-return")]
+    [Route("sales-return")]
     [ApiController]
     public class SalesReturnController : ControllerBase
     {

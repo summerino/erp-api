@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 using Microsoft.AspNetCore.Mvc;
-using ERP_API.Domain.Interfaces.Inventory;
-using ERP_API.Domain.Entities.Inventory;
 using ERP_API.Domain.Models;
 using ERP_API.Domain.Services;
 using ERP_API.Model;
@@ -15,7 +13,7 @@ using ERP_API.Domain.Entities.AssetManagement;
 
 namespace ERP_API.Controllers.AssetManagement
 {
-    [Route("api/v1/asset-type")]
+    [Route("asset-type")]
     [ApiController]
     public class AssetTypeController : ControllerBase
     {

@@ -13,7 +13,7 @@ using ERP_API.Domain.Interfaces.Auth;
 
 namespace ERP_API.Controllers.Accounting
 {
-    [Route("api/v1/coa-type")]
+    [Route("coa-type")]
     [ApiController]
     public class CoaTypeController : ControllerBase
     {

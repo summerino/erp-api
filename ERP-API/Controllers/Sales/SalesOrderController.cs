@@ -14,7 +14,7 @@ using ERP_API.Domain.Interfaces.Auth;
 
 namespace ERP_API.Controllers.Sales
 {
-    [Route("api/v1/sales-order")]
+    [Route("sales-order")]
     [ApiController]
     public class SalesOrderController : ControllerBase
     {

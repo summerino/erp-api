@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 using Microsoft.AspNetCore.Mvc;
-using ERP_API.Domain.Entities.General;
 using ERP_API.Domain.Interfaces.General;
 using ERP_API.Domain.Interfaces.Sales;
 using ERP_API.Domain.Models;
@@ -15,7 +14,7 @@ using ERP_API.Domain.Interfaces.Auth;
 
 namespace ERP_API.Controllers.General
 {
-    [Route("api/v1/employee")]
+    [Route("[controller]")]
     [ApiController]
     public class EmployeeController : ControllerBase
     {

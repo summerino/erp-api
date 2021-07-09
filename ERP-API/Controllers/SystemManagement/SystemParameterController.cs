@@ -2,17 +2,17 @@
 using System.Linq;
 using System.Linq.Dynamic.Core;
 using Microsoft.AspNetCore.Mvc;
+using ERP_API.Domain.Interfaces.Auth;
 using ERP_API.Domain.Interfaces.SystemManagement;
 using ERP_API.Domain.Models;
 using ERP_API.Domain.Services;
 using ERP_API.Model;
-using Newtonsoft.Json;
 using ERP_API.Model.SystemManagement;
-using ERP_API.Domain.Interfaces.Auth;
+using Newtonsoft.Json;
 
 namespace ERP_API.Controllers.SystemManagement
 {
-    [Route("api/v1/system-parameter")]
+    [Route("system-parameter")]
     [ApiController]
     public class SystemParameterController : ControllerBase
     {

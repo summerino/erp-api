@@ -12,7 +12,7 @@ using Newtonsoft.Json;
 
 namespace ERP_API.Controllers.Inventory
 {
-    [Route("api/v1/warehouse-quantity")]
+    [Route("warehouse-quantity")]
     [ApiController]
     public class WarehouseQuantityController : ControllerBase
     {

@@ -13,7 +13,7 @@ using ERP_API.Domain.Interfaces.Auth;
 
 namespace ERP_API.Controllers.General
 {
-    [Route("api/v1/supplier")]
+    [Route("[controller]")]
     [ApiController]
     public class SupplierController : ControllerBase
     {

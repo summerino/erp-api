@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace ERP_API.Controllers.Sales
 {
-    [Route("api/v1/delivery-plan")]
+    [Route("delivery-plan")]
     [ApiController]
     public class DeliveryPlanController : ControllerBase
     {

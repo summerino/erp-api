@@ -6,7 +6,7 @@ using UserCatalog = ERP_API.Domain.Entities.Catalog.User;
 
 namespace ERP_API.Controllers.Auth
 {
-    [Route("api/v1/auth")]
+    [Route("auth")]
     [ApiController]
     public class AuthManagementController : ControllerBase
     {

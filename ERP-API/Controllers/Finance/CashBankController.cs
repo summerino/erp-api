@@ -1,11 +1,9 @@
 ﻿using ERP_API.Domain.Interfaces.Auth;
 using ERP_API.Domain.Interfaces.Finance;
-using ERP_API.Domain.Interfaces.General;
 using ERP_API.Domain.Models;
 using ERP_API.Domain.Services;
 using ERP_API.Model;
 using ERP_API.Model.Finance;
-using ERP_API.Model.General;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -16,7 +14,7 @@ using System.Linq.Dynamic.Core;
 
 namespace ERP_API.Controllers.Finance
 {
-    [Route("api/v1/general-cash-bank")]
+    [Route("general-cash-bank")]
     [ApiController]
     [AllowAnonymous]
     public class CashBankController : ControllerBase

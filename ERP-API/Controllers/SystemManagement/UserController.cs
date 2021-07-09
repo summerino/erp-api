@@ -1,22 +1,19 @@
-﻿using ERP_API.Domain.Entities.SystemManagement;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Dynamic.Core;
+using Microsoft.AspNetCore.Mvc;
+using ERP_API.Domain.Interfaces.Auth;
 using ERP_API.Domain.Interfaces.SystemManagement;
 using ERP_API.Domain.Models;
 using ERP_API.Domain.Services;
 using ERP_API.Model;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Dynamic.Core;
-using System.Threading.Tasks;
 using ERP_API.Model.SystemManagement;
-using ERP_API.Domain.Interfaces.Auth;
+using Newtonsoft.Json;
 
 namespace ERP_API.Controllers.SystemManagement
 {
-    [Route("api/v1/user")]
+    [Route("[controller]")]
     [ApiController]
     public class UserController : ControllerBase
     {

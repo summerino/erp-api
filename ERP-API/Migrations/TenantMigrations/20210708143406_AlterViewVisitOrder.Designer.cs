@@ -4,14 +4,16 @@ using ERP_API.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ERP_API.Migrations.TenantMigrations
 {
     [DbContext(typeof(TenantContext))]
-    partial class TenantContextModelSnapshot : ModelSnapshot
+    [Migration("20210708143406_AlterViewVisitOrder")]
+    partial class AlterViewVisitOrder
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -64,9 +66,6 @@ namespace ERP_API.Migrations.TenantMigrations
                         .HasMaxLength(256)
                         .IsUnicode(false)
                         .HasColumnType("varchar(256)");
-
-                    b.Property<decimal>("PaidAmount")
-                        .HasColumnType("decimal(19,6)");
 
                     b.Property<string>("SupCode")
                         .IsRequired()
@@ -142,9 +141,6 @@ namespace ERP_API.Migrations.TenantMigrations
                         .HasMaxLength(256)
                         .IsUnicode(false)
                         .HasColumnType("varchar(256)");
-
-                    b.Property<decimal>("PaidAmount")
-                        .HasColumnType("decimal(19,6)");
 
                     b.Property<int>("UpdatedBy")
                         .HasColumnType("int");
@@ -595,9 +591,6 @@ namespace ERP_API.Migrations.TenantMigrations
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
 
-                    b.Property<decimal>("PaidAmount")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<string>("SupCode")
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
@@ -668,9 +661,6 @@ namespace ERP_API.Migrations.TenantMigrations
                     b.Property<string>("Notes")
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
-
-                    b.Property<decimal>("PaidAmount")
-                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("UpdatedBy")
                         .HasColumnType("int");
@@ -1615,9 +1605,6 @@ namespace ERP_API.Migrations.TenantMigrations
                     b.Property<DateTime>("Date")
                         .HasColumnType("date");
 
-                    b.Property<bool>("IsInterCashBank")
-                        .HasColumnType("bit");
-
                     b.Property<string>("Mark")
                         .IsRequired()
                         .HasMaxLength(3)
@@ -1664,20 +1651,25 @@ namespace ERP_API.Migrations.TenantMigrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("CoaCode")
+                        .IsRequired()
+                        .HasMaxLength(6)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
+                        .HasColumnType("varchar(6)");
 
                     b.Property<string>("CoaName")
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
 
                     b.Property<string>("Code")
+                        .HasMaxLength(17)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
+                        .HasColumnType("varchar(17)");
 
                     b.Property<string>("CurrCode")
+                        .IsRequired()
+                        .HasMaxLength(3)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
+                        .HasColumnType("varchar(3)");
 
                     b.Property<long>("Id")
                         .HasColumnType("bigint");
@@ -1686,26 +1678,33 @@ namespace ERP_API.Migrations.TenantMigrations
                         .HasColumnType("smallint");
 
                     b.Property<string>("Notes")
+                        .IsRequired()
+                        .HasMaxLength(256)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
+                        .HasColumnType("varchar(256)");
 
                     b.Property<decimal>("Rate")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(19,6)");
 
                     b.Property<decimal>("TransAmount")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("TransCode")
+                        .HasMaxLength(17)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
+                        .HasColumnType("varchar(17)");
 
                     b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(5)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
+                        .HasColumnType("varchar(5)");
 
                     b.Property<string>("TypeAmount")
+                        .IsRequired()
+                        .HasMaxLength(1)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
+                        .HasColumnType("varchar(1)");
 
                     b.ToView("vwGeneralCashBankDetail", "Finance");
                 });
@@ -1726,23 +1725,27 @@ namespace ERP_API.Migrations.TenantMigrations
                         .HasColumnType("varchar(max)");
 
                     b.Property<DateTime?>("ChequeDate")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("date");
 
                     b.Property<string>("ChequeNo")
+                        .HasMaxLength(25)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
+                        .HasColumnType("varchar(25)");
 
                     b.Property<string>("CoaCode")
+                        .IsRequired()
+                        .HasMaxLength(6)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
+                        .HasColumnType("varchar(6)");
 
                     b.Property<string>("CoaName")
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
 
                     b.Property<string>("Code")
+                        .HasMaxLength(17)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
+                        .HasColumnType("varchar(17)");
 
                     b.Property<int>("CreatedBy")
                         .HasColumnType("int");
@@ -1755,14 +1758,13 @@ namespace ERP_API.Migrations.TenantMigrations
                         .HasColumnType("varchar(max)");
 
                     b.Property<string>("CurrCode")
+                        .IsRequired()
+                        .HasMaxLength(3)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
+                        .HasColumnType("varchar(3)");
 
                     b.Property<DateTime>("Date")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsInterCashBank")
-                        .HasColumnType("bit");
+                        .HasColumnType("date");
 
                     b.Property<string>("Mark")
                         .HasMaxLength(3)
@@ -1770,15 +1772,18 @@ namespace ERP_API.Migrations.TenantMigrations
                         .HasColumnType("varchar(3)");
 
                     b.Property<string>("Notes")
+                        .HasMaxLength(256)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
+                        .HasColumnType("varchar(256)");
 
                     b.Property<decimal>("Rate")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(19,6)");
 
                     b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(1)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
+                        .HasColumnType("varchar(1)");
 
                     b.Property<int>("UpdatedBy")
                         .HasColumnType("int");
@@ -1791,8 +1796,9 @@ namespace ERP_API.Migrations.TenantMigrations
                         .HasColumnType("varchar(max)");
 
                     b.Property<string>("VouCode")
+                        .HasMaxLength(17)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
+                        .HasColumnType("varchar(17)");
 
                     b.ToView("vwGeneralCashBankHeader", "Finance");
                 });
@@ -4912,7 +4918,7 @@ namespace ERP_API.Migrations.TenantMigrations
                         .HasColumnType("varchar(256)");
 
                     b.Property<decimal>("PaidAmount")
-                        .HasColumnType("decimal(19,6)");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("PoCode")
                         .HasMaxLength(17)
@@ -7383,7 +7389,7 @@ namespace ERP_API.Migrations.TenantMigrations
                         .HasColumnType("varchar(256)");
 
                     b.Property<decimal>("PaidAmount")
-                        .HasColumnType("decimal(19,6)");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("SoCode")
                         .HasMaxLength(17)

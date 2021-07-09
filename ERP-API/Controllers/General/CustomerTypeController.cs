@@ -13,7 +13,7 @@ using ERP_API.Domain.Interfaces.Auth;
 
 namespace ERP_API.Controllers.General
 {
-    [Route("api/v1/customer-type")]
+    [Route("customer-type")]
     [ApiController]
     public class CustomerTypesController : ControllerBase
     {

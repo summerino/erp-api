@@ -13,7 +13,7 @@ using ERP_API.Domain.Interfaces.Auth;
 
 namespace ERP_API.Controllers.General
 {
-    [Route("api/v1/currency")]
+    [Route("[controller]")]
     [ApiController]
     public class CurrencyController : ControllerBase
     {

@@ -13,7 +13,7 @@ using ERP_API.Domain.Interfaces.Auth;
 
 namespace ERP_API.Controllers.Inventory
 {
-    [Route("api/v1/transfer-stock")]
+    [Route("transfer-stock")]
     [ApiController]
     public class TransferStockController : ControllerBase
     {

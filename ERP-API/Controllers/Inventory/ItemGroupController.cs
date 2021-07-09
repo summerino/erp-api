@@ -14,7 +14,7 @@ using ERP_API.Domain.Interfaces.Auth;
 
 namespace ERP_API.Controllers.Inventory
 {
-    [Route("api/v1/item-group")]
+    [Route("item-group")]
     [ApiController]
     public class ItemGroupController : ControllerBase
     {

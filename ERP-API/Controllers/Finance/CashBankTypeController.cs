@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace ERP_API.Controllers.Finance
 {
-    [Route("api/v1/general-cash-bank-type")]
+    [Route("general-cash-bank-type")]
     [ApiController]
     [AllowAnonymous]
     public class CashBankTypeController : ControllerBase

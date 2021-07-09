@@ -32,7 +32,7 @@ namespace ERP_API.Domain.Entities.Sales
         [StringLength(3)]
         public string CurrCode { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Column(TypeName = "decimal(19, 6)")]
         public decimal PaidAmount { get; set; }
 
         [Column(TypeName = "decimal(18, 2)")]

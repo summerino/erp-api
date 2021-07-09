@@ -13,7 +13,7 @@ using System;
 
 namespace ERP_API.Controllers.Purchase
 {
-    [Route("api/v1/debit-memo")]
+    [Route("debit-memo")]
     [ApiController]
     public class DebitMemoController : ControllerBase
     {

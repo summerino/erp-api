@@ -12,7 +12,7 @@ using ERP_API.Domain.Interfaces.Auth;
 
 namespace ERP_API.Controllers.Inventory
 {
-    [Route("api/v1/uom")]
+    [Route("uom")]
     [ApiController]
 
     public class UnitOfMeasurementController : ControllerBase

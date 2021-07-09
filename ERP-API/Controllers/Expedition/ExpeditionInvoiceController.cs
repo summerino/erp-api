@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace ERP_API.Controllers.Expedition
 {
-    [Route("api/v1/expedition-invoice")]
+    [Route("expedition-invoice")]
     [ApiController]
     public class ExpeditionInvoiceController : ControllerBase
     {

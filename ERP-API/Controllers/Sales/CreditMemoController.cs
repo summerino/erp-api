@@ -13,7 +13,7 @@ using System.Linq;
 
 namespace ERP_API.Controllers.Sales
 {
-    [Route("api/v1/credit-memo")]
+    [Route("credit-memo")]
     [ApiController]
     public class CreditMemoController : ControllerBase
     {
