@@ -35,14 +35,29 @@ namespace ERP_API.Domain.Services.Finance
 
         public DataSourceResult GetDataAP(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string search)
         {
-            throw new NotImplementedException();
+            var data = Db.VwAPs.AsQueryable();
+
+            return data.ToDataSourceResult(skip, take, filters, sorts);
         }
 
         public DataSourceResult GetDataAR(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string search)
         {
-            throw new NotImplementedException();
+            var data = Db.VwARs.AsQueryable();
+            return data.ToDataSourceResult(skip, take, filters, sorts);
+        }
+        public DataSourceResult GetDataDebitMemo(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string search)
+        {
+            var data = Db.VwDebitMemos.AsQueryable();
+            data.Where(x => x.Used < x.Amount);
+            return data.ToDataSourceResult(skip, take, filters, sorts);
         }
 
+        public DataSourceResult GetDataCreditMemo(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string search)
+        {
+            var data = Db.VwCreditMemos.AsQueryable();
+            data.Where(x => x.Used < x.Amount);
+            return data.ToDataSourceResult(skip, take, filters, sorts);
+        }
         public IEnumerable<VwGeneralCashBankDetail> GetDetailData(string code)
         {
             var data = Db.VwGeneralCashBankDetails.Where(x => x.Code.Equals(code));
@@ -133,6 +148,9 @@ namespace ERP_API.Domain.Services.Finance
                 data.ApprovedBy = null;
                 data.ApprovedDate = null;
 
+                // Restore transaction to precious data. (roll back data menjadi ketika sebelum edit)
+                Db.Database.ExecuteSqlRaw($"sp_restore_cash_bank_transaction '{data.Code}';");
+
                 // Update header data
                 Db.GeneralCashBankHeaders.Update(data);
                 Db.Entry(data).Property(e => e.Code).IsModified = false;
@@ -213,6 +231,8 @@ namespace ERP_API.Domain.Services.Finance
                     result.Message = "Data bank tunai tidak bisa ditandai sebagai void karena sudah ditandai sebagai void.";
                     return result;
                 }
+
+                Db.Database.ExecuteSqlRaw($"sp_restore_cash_bank_transaction '{code}';");
 
                 // Update header data
                 data.Mark = "V";
@@ -303,8 +323,8 @@ namespace ERP_API.Domain.Services.Finance
                         var memo = Db.DebitMemos.SingleOrDefault(x => x.Code.Equals(item.TransCode));
                         if (memo != null) 
                         {
-                            decimal remaining = memo.Amount - memo.Used;
-                            if (totalAmount > remaining) 
+                            //decimal remaining = memo.Amount - memo.Used;
+                            if (totalAmount > memo.Amount) 
                             {
                                 return ($"Lebih bayar untuk transaksi dengan kode {memo.Code}.", false, new List<string>());
                             }
@@ -315,8 +335,8 @@ namespace ERP_API.Domain.Services.Finance
                         var memo = Db.CreditMemos.SingleOrDefault(x => x.Code.Equals(item.TransCode));
                         if (memo != null)
                         {
-                            decimal remaining = memo.Amount - memo.Used;
-                            if (totalAmount > remaining)
+                            //decimal remaining = memo.Amount - memo.Used;
+                            if (totalAmount > memo.Amount)
                             {
                                 return ($"Lebih bayar untuk transaksi dengan kode {memo.Code}.", false, new List<string>());
                             }
@@ -350,6 +370,7 @@ namespace ERP_API.Domain.Services.Finance
             }
             return query;
         }
+
         private string Convert(List<string> querys) 
         {
             string query = "";
@@ -359,5 +380,7 @@ namespace ERP_API.Domain.Services.Finance
             }
             return query;
         }
+
+        
     }
 }

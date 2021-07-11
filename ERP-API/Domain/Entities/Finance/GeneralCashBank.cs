@@ -177,4 +177,33 @@ namespace ERP_API.Domain.Entities.Finance
 
         public bool IsActive { get; set; }
     }
+
+    public class VwAP 
+    {
+        public string Code { get; set; }
+        public string SupCode { get; set; }
+        public string SupName { get; set; }
+        public string CurrCode { get; set; }
+        public decimal Rate { get; set; }
+        public DateTime Date { get; set; }
+        public decimal Amount { get; set; }
+        public decimal PaidAmount { get; set; }
+        public decimal Remaining { get; set; }
+        public string Notes { get; set; }
+    }
+
+    public class VwAR
+    {
+        public string Code { get; set; }
+        public string CustCode { get; set; }
+        public string CustName { get; set; }
+        
+        public string CurrCode { get; set; }
+        public decimal Rate { get; set; }
+        public DateTime Date { get; set; }
+        public decimal Amount { get; set; }
+        public decimal PaidAmount { get; set; }
+        public decimal Remaining { get; set; }
+        public string Notes { get; set; }
+    }
 }

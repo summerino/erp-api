@@ -13,6 +13,10 @@ namespace ERP_API.Domain.Interfaces.Finance
             string search);
         DataSourceResult GetDataAR(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
             string search);
+        DataSourceResult GetDataDebitMemo(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
+            string search);
+        DataSourceResult GetDataCreditMemo(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
+            string search);
         IEnumerable<VwGeneralCashBankDetail> GetDetailData(string code);
         SaveResult Delete(string code, int userId);
     }
