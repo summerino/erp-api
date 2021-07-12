@@ -100,7 +100,7 @@ namespace ERP_API.Domain.Services.SystemManagement
             return nodes;
         }
 
-        public IEnumerable<Entities.SystemManagement.Action> GetActions()
+        public IEnumerable<Action> GetActions()
         {
             var data = Db.Actions.AsQueryable();
 

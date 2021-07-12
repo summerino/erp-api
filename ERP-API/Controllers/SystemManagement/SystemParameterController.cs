@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using ERP_API.Domain.Interfaces.Auth;
 using ERP_API.Domain.Interfaces.SystemManagement;
 using ERP_API.Domain.Models;
-using ERP_API.Domain.Services;
+using ERP.Entity;
 using ERP_API.Model;
 using ERP_API.Model.SystemManagement;
 using Newtonsoft.Json;

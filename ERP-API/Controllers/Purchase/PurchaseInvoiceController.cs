@@ -5,7 +5,7 @@ using System.Linq.Dynamic.Core;
 using Microsoft.AspNetCore.Mvc;
 using ERP_API.Domain.Interfaces.Purchase;
 using ERP_API.Domain.Models;
-using ERP_API.Domain.Services;
+using ERP.Entity;
 using ERP_API.Model;
 using ERP_API.Model.Purchase;
 using Newtonsoft.Json;

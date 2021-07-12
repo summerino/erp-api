@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ERP.Entity;
 using ERP.Entity.General;
+using ERP.Entity.Inventory;
 using ERP_API.Domain.Extensions;
 using ERP_API.Domain.Interfaces.General;
 using ERP_API.Domain.Models;
@@ -116,7 +117,7 @@ namespace ERP_API.Domain.Services.General
 
                 if (data.IsConsignee)
                 {
-                    Db.Warehouses.Add(new Entities.Inventory.Warehouse
+                    Db.Warehouses.Add(new Warehouse
                     {
                         Code = data.Code,
                         Initial = data.Initial,
@@ -248,7 +249,7 @@ namespace ERP_API.Domain.Services.General
                 }
                 else
                 {
-                    Db.Warehouses.Add(new Entities.Inventory.Warehouse
+                    Db.Warehouses.Add(new Warehouse
                     {
                         Code = data.Code,
                         Initial = data.Initial,

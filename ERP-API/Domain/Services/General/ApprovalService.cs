@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ERP.Entity;
 using ERP.Entity.Core;
+using ERP_API.Domain.Models.General;
 
 namespace ERP_API.Domain.Services.General
 {

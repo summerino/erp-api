@@ -7,7 +7,7 @@ using ERP.Entity.SystemManagement;
 using ERP_API.Domain.Interfaces.Auth;
 using ERP_API.Domain.Interfaces.SystemManagement;
 using ERP_API.Domain.Models;
-using ERP_API.Domain.Services;
+using ERP.Entity;
 using ERP_API.Model;
 using Newtonsoft.Json;
 

@@ -10,11 +10,11 @@ using Swift.Framework.Model;
 using ERP_API.Domain.Extensions;
 using System;
 using System.ComponentModel.DataAnnotations;
+using ERP.Entity;
 using ERP.Entity.Accounting;
 using ERP.Entity.General;
 using ERP_API.Domain.Models;
 using Sort = Swift.Framework.Model.Sort;
-using ERP_API.Domain.Services;
 
 namespace ERP_API.Controllers
 {

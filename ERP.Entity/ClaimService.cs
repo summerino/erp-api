@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using Microsoft.AspNetCore.Http;
 
-namespace ERP_API.Domain.Services
+namespace ERP.Entity
 {
     public interface IClaimService
     {

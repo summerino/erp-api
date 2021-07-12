@@ -1,12 +1,15 @@
 ﻿using System.Collections.Generic;
+using ERP.Entity.Core;
+using ERP_API.Model;
 
-namespace ERP.Entity.Core
+namespace ERP_API.Domain.Models.General
 {
     public class Approval
     {
         public string TableName { get; set; }
         public string Description { get; set; }
     }
+
     public class MapApproval
     {
         public MapApproval()

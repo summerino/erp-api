@@ -1,6 +1,6 @@
 ﻿using ERP_API.Domain.Interfaces.Auth;
 using ERP_API.Domain.Interfaces.Finance;
-using ERP_API.Domain.Services;
+using ERP.Entity;
 using ERP_API.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

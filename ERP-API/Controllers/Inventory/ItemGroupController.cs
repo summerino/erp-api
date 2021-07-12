@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using ERP_API.Domain.Interfaces.Inventory;
 using ERP.Entity.Inventory;
 using ERP_API.Domain.Models;
-using ERP_API.Domain.Services;
+using ERP.Entity;
 using ERP_API.Model;
 using ERP_API.Model.Inventory;
 using Newtonsoft.Json;
