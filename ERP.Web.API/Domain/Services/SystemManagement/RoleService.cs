@@ -135,7 +135,7 @@ namespace ERP.Web.API.Domain.Services.SystemManagement
                 Db.RoleMenuActions.RemoveRange(delRoleMenuActions);
 
                 // Update detail data 1
-                foreach (var item in data.RoleMenus.Where(x=> GetMenu().Contains(x.MenuId)))
+                foreach (var item in data.RoleMenus)
                 {
                     if (item.Id < 0)
                     {
@@ -157,7 +157,7 @@ namespace ERP.Web.API.Domain.Services.SystemManagement
                 }
 
                 // Update detail data 2
-                foreach (var item in data.RoleMenuActions.Where(x => GetMenu().Contains(x.MenuId)))
+                foreach (var item in data.RoleMenuActions)
                 {
                     if (item.Id < 0)
                     {
@@ -220,13 +220,6 @@ namespace ERP.Web.API.Domain.Services.SystemManagement
         public bool IsInitialExists(string initial, int id)
         {
             return Db.Items.Any(x => x.Initial == initial && x.Id != id);
-        }
-
-        private List<int> GetMenu() 
-        {
-            return (from x in Db.Menus
-                    where x.Link.Length > 0
-                    select x.Id).ToList();
         }
     }
 }

@@ -261,11 +261,14 @@ namespace ERP.Web.API.Domain.Services.Finance
             
             foreach (var item in data.ItemDetails)
             {
-                decimal prevTransaction = oldTransactions.Where(x => x.TransCode.Equals(item.TransCode)).Sum(x => x.Amount);
-                decimal totalAmount = prevTransaction + item.Amount;
+                
 
                 if (item.Type == "AP") 
                 {
+
+                    decimal prevTransaction = oldTransactions.Where(x => x.TransCode.Equals(item.TransCode)).Sum(x => x.Amount);
+                    decimal totalAmount = prevTransaction + item.Amount;
+
                     //validasi hutang
                     var header = Db.PurchaseInvoiceHeaders.SingleOrDefault(x => x.Code.Equals(item.TransCode));
 
@@ -289,6 +292,9 @@ namespace ERP.Web.API.Domain.Services.Finance
                 } 
                 else if (item.Type == "AR") 
                 {
+
+                    decimal prevTransaction = oldTransactions.Where(x => x.TransCode.Equals(item.TransCode)).Sum(x => x.Amount);
+                    decimal totalAmount = prevTransaction + item.Amount;
                     // validasi piutang
                     var header = Db.SalesInvoiceHeaders.SingleOrDefault(x => x.Code.Equals(item.TransCode));
                     
@@ -317,12 +323,18 @@ namespace ERP.Web.API.Domain.Services.Finance
                 }
                 else if (item.Type == "PR" || item.Type == "RDPS" || item.Type == "RDPC" || item.Type == "SR")
                 {
+                    decimal tempTotalAmount = 0;
                     // validasi retur uang muka pembelian dan retur pembelian
                     if (item.Type == "PR" || item.Type == "RDPS")
                     {
+                        decimal prevTransaction = oldTransactions.Where(x => x.TransCode.Equals(item.TransCode) && x.TypeAmount.Equals("C")).Sum(x => x.Amount);
+                        decimal totalAmount = prevTransaction + item.Amount;
+                        tempTotalAmount = totalAmount;
+
                         var memo = Db.DebitMemos.SingleOrDefault(x => x.Code.Equals(item.TransCode));
                         if (memo != null) 
                         {
+
                             //decimal remaining = memo.Amount - memo.Used;
                             if (totalAmount > memo.Amount) 
                             {
@@ -332,6 +344,11 @@ namespace ERP.Web.API.Domain.Services.Finance
                     }
                     else if(item.Type == "RDPC" || item.Type == "SR")
                     {
+
+                        decimal prevTransaction = oldTransactions.Where(x => x.TransCode.Equals(item.TransCode) && x.TypeAmount.Equals("D")).Sum(x => x.Amount);
+                        decimal totalAmount = prevTransaction + item.Amount;
+                        tempTotalAmount = totalAmount;
+
                         var memo = Db.CreditMemos.SingleOrDefault(x => x.Code.Equals(item.TransCode));
                         if (memo != null)
                         {
@@ -342,7 +359,7 @@ namespace ERP.Web.API.Domain.Services.Finance
                             }
                         }
                     }
-                    string query = QueryBuilder(item.Type, item.TransCode, totalAmount);
+                    string query = QueryBuilder(item.Type, item.TransCode, tempTotalAmount);
                     querys.Add(query);
                 }
             }
