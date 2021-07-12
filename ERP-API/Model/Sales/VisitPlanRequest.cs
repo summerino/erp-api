@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using ERP_API.Domain.Entities.Sales;
+using ERP.Entity.Sales;
 
 namespace ERP_API.Model.Sales
 {

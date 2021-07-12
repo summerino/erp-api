@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq.Dynamic.Core;
 using Microsoft.AspNetCore.Mvc;
 using ERP_API.Domain.Interfaces.Inventory;
-using ERP_API.Domain.Entities.Inventory;
+using ERP.Entity.Inventory;
 using ERP_API.Domain.Models;
 using ERP_API.Domain.Services;
 using ERP_API.Model;
 using Newtonsoft.Json;
 using System.Linq;
+using ERP.Entity.Inventory;
 using ERP_API.Domain.Interfaces.Auth;
 
 namespace ERP_API.Controllers.Inventory

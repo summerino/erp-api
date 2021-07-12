@@ -1,4 +1,4 @@
-﻿using ERP_API.Domain.Entities.Sales;
+﻿using ERP.Entity.Sales;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using ERP_API.Domain.Entities.Purchase;
+using ERP.Entity.Purchase;
 using ERP_API.Domain.Models;
 using ERP_API.Model.Purchase;
 

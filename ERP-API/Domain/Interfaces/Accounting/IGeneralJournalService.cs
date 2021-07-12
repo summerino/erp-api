@@ -1,7 +1,7 @@
-﻿using ERP_API.Domain.Entities.Accounting;
-using ERP_API.Domain.Models;
+﻿using ERP_API.Domain.Models;
 using ERP_API.Model.Accounting;
 using System.Collections.Generic;
+using ERP.Entity.Accounting;
 
 namespace ERP_API.Domain.Interfaces.Accounting
 {

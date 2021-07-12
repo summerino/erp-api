@@ -37,4 +37,8 @@
     </EmbeddedResource>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\ERP.Entity\ERP.Entity.csproj" />
+  </ItemGroup>
+
 </Project>

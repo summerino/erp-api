@@ -1,6 +1,6 @@
-﻿using ERP_API.Domain.Entities.Accounting;
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
+using ERP.Entity.Accounting;
 
 namespace ERP_API.Model.Accounting
 {

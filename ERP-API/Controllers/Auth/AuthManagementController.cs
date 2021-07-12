@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using ERP_API.Domain.Interfaces.Auth;
 using ERP_API.Model.Auth;
-using UserCatalog = ERP_API.Domain.Entities.Catalog.User;
+using UserCatalog = ERP.Entity.Catalog.User;
 
 namespace ERP_API.Controllers.Auth
 {

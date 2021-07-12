@@ -1,5 +1,6 @@
 using System;
 using System.Text;
+using ERP.Entity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -10,7 +11,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using ERP_API.Domain.Entities;
 using ERP_API.Domain.Interfaces.Accounting;
 using ERP_API.Domain.Interfaces.AssetManagement;
 using ERP_API.Domain.Interfaces.Auth;

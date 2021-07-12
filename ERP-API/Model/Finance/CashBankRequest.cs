@@ -1,5 +1,5 @@
-﻿using ERP_API.Domain.Entities.Finance;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using ERP.Entity.Finance;
 
 namespace ERP_API.Model.Finance
 {

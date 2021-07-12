@@ -1,6 +1,4 @@
-﻿using ERP_API.Domain.Entities;
-using ERP_API.Domain.Entities.Finance;
-using ERP_API.Domain.Extensions;
+﻿using ERP_API.Domain.Extensions;
 using ERP_API.Domain.Interfaces.Finance;
 using ERP_API.Domain.Models;
 using ERP_API.Model.Finance;
@@ -8,6 +6,8 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ERP.Entity;
+using ERP.Entity.Finance;
 
 namespace ERP_API.Domain.Services.Finance
 {

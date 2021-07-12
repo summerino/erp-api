@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using ERP_API.Domain.Entities.Expedition;
+using ERP.Entity.Expedition;
 using ERP_API.Domain.Models;
 using ERP_API.Model.Expedition;
 

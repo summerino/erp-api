@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
-using ERP_API.Domain.Entities;
-using ERP_API.Domain.Entities.Sales;
+using ERP.Entity.Sales;
 using ERP_API.Domain.Interfaces.Sales;
 using ERP_API.Domain.Models;
 using ERP_API.Domain.Models.Sales;
 using ERP_API.Model.Sales;
 using System.Collections.Generic;
+using ERP.Entity;
 
 namespace ERP_API.Domain.Services.Sales
 {

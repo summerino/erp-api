@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Threading.Tasks;
+using ERP.Entity;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using ERP_API.Database;
-using ERP_API.Domain.Entities;
-using ERP_API.Domain.Entities.Catalog;
 using ERP_API.Utils;
 
 namespace ERP_API.Domain.Services

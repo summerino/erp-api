@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using ERP_API.Domain.Entities.SystemManagement;
+using ERP.Entity.SystemManagement;
 
 namespace ERP_API.Model.SystemManagement
 {

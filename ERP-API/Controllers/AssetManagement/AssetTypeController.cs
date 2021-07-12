@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
+using ERP.Entity.AssetManagement;
 using Microsoft.AspNetCore.Mvc;
 using ERP_API.Domain.Models;
 using ERP_API.Domain.Services;
@@ -9,7 +10,6 @@ using ERP_API.Model;
 using Newtonsoft.Json;
 using ERP_API.Domain.Interfaces.Auth;
 using ERP_API.Domain.Interfaces.AssetManagement;
-using ERP_API.Domain.Entities.AssetManagement;
 
 namespace ERP_API.Controllers.AssetManagement
 {

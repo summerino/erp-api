@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq.Dynamic.Core;
 using Microsoft.AspNetCore.Mvc;
-using ERP_API.Domain.Entities.Accounting;
 using ERP_API.Domain.Interfaces.Accounting;
 using ERP_API.Domain.Models;
 using ERP_API.Domain.Services;
@@ -11,6 +10,7 @@ using ERP_API.Model.Accounting;
 using Newtonsoft.Json;
 using ERP_API.Domain.Interfaces.Auth;
 using System.Linq;
+using ERP.Entity.Accounting;
 
 namespace ERP_API.Controllers.Accounting
 {

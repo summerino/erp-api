@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using ERP_API.Domain.Entities.Inventory;
+using ERP.Entity.Inventory;
 using ERP_API.Domain.Models;
 using ERP_API.Model.Inventory;
 

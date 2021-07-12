@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
-using ERP_API.Domain.Entities;
-using ERP_API.Domain.Entities.Purchase;
+using ERP.Entity;
+using ERP.Entity.Purchase;
 using ERP_API.Domain.Extensions;
 using ERP_API.Domain.Interfaces.Purchase;
 using ERP_API.Domain.Models;

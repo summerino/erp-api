@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using ERP_API.Domain.Entities.Accounting;
+using ERP.Entity.Accounting;
 using ERP_API.Domain.Models;
 using ERP_API.Model.Accounting;
 

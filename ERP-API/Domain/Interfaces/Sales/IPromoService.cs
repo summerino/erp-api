@@ -1,4 +1,4 @@
-﻿using ERP_API.Domain.Entities.Sales;
+﻿using ERP.Entity.Sales;
 using ERP_API.Domain.Models;
 using ERP_API.Model.Sales;
 using System;

@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
+using ERP.Entity.Accounting;
 using Microsoft.AspNetCore.Mvc;
-using ERP_API.Domain.Entities.Accounting;
 using ERP_API.Domain.Interfaces.Accounting;
 using ERP_API.Domain.Models;
 using ERP_API.Domain.Services;

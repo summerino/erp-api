@@ -1,6 +1,4 @@
-﻿using ERP_API.Domain.Entities;
-using ERP_API.Domain.Entities.Accounting;
-using ERP_API.Domain.Extensions;
+﻿using ERP_API.Domain.Extensions;
 using ERP_API.Domain.Interfaces.Accounting;
 using ERP_API.Domain.Models;
 using ERP_API.Model.Accounting;
@@ -8,6 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ERP.Entity;
+using ERP.Entity.Accounting;
 
 namespace ERP_API.Domain.Services.Accounting
 {

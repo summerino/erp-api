@@ -5,7 +5,7 @@ using ERP_API.Domain.Interfaces.Sales;
 using ERP_API.Domain.Models;
 using ERP_API.Model;
 using Newtonsoft.Json;
-using ERP_API.Domain.Entities.Sales;
+using ERP.Entity.Sales;
 using ERP_API.Domain.Services;
 using ERP_API.Domain.Interfaces.Auth;
 using System;

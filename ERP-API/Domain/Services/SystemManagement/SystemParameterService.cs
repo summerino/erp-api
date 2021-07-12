@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using ERP_API.Domain.Entities;
-using ERP_API.Domain.Entities.SystemManagement;
+using ERP.Entity;
+using ERP.Entity.SystemManagement;
 using ERP_API.Domain.Extensions;
 using ERP_API.Domain.Interfaces.SystemManagement;
 using ERP_API.Domain.Models;

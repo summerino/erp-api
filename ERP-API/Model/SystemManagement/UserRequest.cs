@@ -1,4 +1,4 @@
-﻿using ERP_API.Domain.Entities.SystemManagement;
+﻿using ERP.Entity.SystemManagement;
 using System;
 using System.Collections.Generic;
 using System.Linq;

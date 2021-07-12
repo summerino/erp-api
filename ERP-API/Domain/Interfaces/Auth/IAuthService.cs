@@ -1,7 +1,7 @@
 ﻿using ERP_API.Model;
 using ERP_API.Model.Auth;
 using System.Collections.Generic;
-using UserCatalog = ERP_API.Domain.Entities.Catalog.User;
+using UserCatalog = ERP.Entity.Catalog.User;
 
 namespace ERP_API.Domain.Interfaces.Auth
 {

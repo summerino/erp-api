@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 using ERP_API.Domain.Services;
 using ERP_API.Domain.Interfaces.Auth;
 using System.Linq;
-using ERP_API.Domain.Entities.Purchase;
+using ERP.Entity.Purchase;
 using System;
 
 namespace ERP_API.Controllers.Purchase
