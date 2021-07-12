@@ -2,9 +2,9 @@
 using System.Linq;
 using ERP.Entity;
 using ERP.Entity.Inventory;
-using ERP_API.Domain.Interfaces.Inventory;
+using ERP.Web.API.Domain.Interfaces.Inventory;
 
-namespace ERP_API.Domain.Services.Inventory
+namespace ERP.Web.API.Domain.Services.Inventory
 {
     public class UoMConversionService : IUoMConversionService
     {

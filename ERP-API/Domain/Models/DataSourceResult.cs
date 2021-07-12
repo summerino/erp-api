@@ -1,6 +1,6 @@
 ﻿using System.Collections;
 
-namespace ERP_API.Domain.Models
+namespace ERP.Web.API.Domain.Models
 {
     public class DataSourceResult
     {

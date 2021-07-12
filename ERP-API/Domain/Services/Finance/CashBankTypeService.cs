@@ -1,9 +1,9 @@
-﻿using ERP_API.Domain.Interfaces.Finance;
+﻿using ERP.Web.API.Domain.Interfaces.Finance;
 using System.Linq;
 using ERP.Entity;
 using ERP.Entity.Finance;
 
-namespace ERP_API.Domain.Services.Finance
+namespace ERP.Web.API.Domain.Services.Finance
 {
     public class CashBankTypeService : ICashBankTypeService
     {

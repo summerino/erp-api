@@ -7,15 +7,15 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using ERP_API.Domain.Interfaces.Auth;
-using ERP_API.Model.Auth;
+using ERP.Web.API.Domain.Interfaces.Auth;
+using ERP.Web.API.Model.Auth;
 using UserTenant = ERP.Entity.SystemManagement.User;
 using UserCatalog = ERP.Entity.Catalog.User;
 using System.Collections.Generic;
 using ERP.Entity;
-using ERP_API.Model;
+using ERP.Web.API.Model;
 
-namespace ERP_API.Domain.Services.Auth
+namespace ERP.Web.API.Domain.Services.Auth
 {
     public class AuthService : IAuthService
     {

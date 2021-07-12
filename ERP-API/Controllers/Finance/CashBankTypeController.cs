@@ -1,12 +1,12 @@
-﻿using ERP_API.Domain.Interfaces.Auth;
-using ERP_API.Domain.Interfaces.Finance;
-using ERP.Entity;
-using ERP_API.Model;
+﻿using System.Linq;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Linq;
+using ERP.Entity;
+using ERP.Web.API.Domain.Interfaces.Auth;
+using ERP.Web.API.Domain.Interfaces.Finance;
+using ERP.Web.API.Model;
 
-namespace ERP_API.Controllers.Finance
+namespace ERP.Web.API.Controllers.Finance
 {
     [Route("general-cash-bank-type")]
     [ApiController]

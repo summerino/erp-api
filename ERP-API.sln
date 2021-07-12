@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30611.23
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ERP-API", "ERP-API\ERP-API.csproj", "{FD6D768C-5F28-4DBF-BE6E-60C124959D0A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ERP.Web.API", "ERP-API\ERP.Web.API.csproj", "{FD6D768C-5F28-4DBF-BE6E-60C124959D0A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ERP.Entity", "ERP.Entity\ERP.Entity.csproj", "{E754FCBF-F4C2-451C-92FE-37D62DEB95EA}"
 EndProject

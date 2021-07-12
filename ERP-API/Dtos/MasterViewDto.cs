@@ -7,7 +7,7 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace ERP_API.Dtos
+namespace ERP.Web.API.Dtos
 {
     public class MasterViewDto
     {

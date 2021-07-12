@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace ERP_API.Migrations.CatalogMigrations
+namespace ERP.Web.API.Migrations.CatalogMigrations
 {
     [DbContext(typeof(CatalogContext))]
     [Migration("20210420070335_InitialCreate")]

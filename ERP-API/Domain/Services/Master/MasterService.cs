@@ -1,9 +1,9 @@
-﻿//using ERP_API.Domain.Entities;
-//using ERP_API.Domain.Interfaces.Master;
-//using ERP_API.Domain.Models;
+﻿//using ERP.Web.API.Domain.Entities;
+//using ERP.Web.API.Domain.Interfaces.Master;
+//using ERP.Web.API.Domain.Models;
 //using Microsoft.EntityFrameworkCore;
 
-//namespace ERP_API.Domain.Services.Master
+//namespace ERP.Web.API.Domain.Services.Master
 //{
 //    public class MasterService : IMasterService
 //    {

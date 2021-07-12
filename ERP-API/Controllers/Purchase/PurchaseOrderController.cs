@@ -3,16 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 using Microsoft.AspNetCore.Mvc;
-using ERP_API.Domain.Interfaces.Inventory;
-using ERP_API.Domain.Interfaces.Purchase;
-using ERP_API.Domain.Models;
 using ERP.Entity;
-using ERP_API.Model;
-using ERP_API.Model.Purchase;
+using ERP.Web.API.Domain.Interfaces.Auth;
+using ERP.Web.API.Domain.Interfaces.Inventory;
+using ERP.Web.API.Domain.Interfaces.Purchase;
+using ERP.Web.API.Domain.Models;
+using ERP.Web.API.Model;
+using ERP.Web.API.Model.Purchase;
 using Newtonsoft.Json;
-using ERP_API.Domain.Interfaces.Auth;
 
-namespace ERP_API.Controllers.Purchase
+namespace ERP.Web.API.Controllers.Purchase
 {
     [Route("purchase-order")]
     [ApiController]

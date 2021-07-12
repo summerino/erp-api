@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using ERP.Entity.Accounting;
-using ERP_API.Domain.Models;
-using ERP_API.Model.Accounting;
+using ERP.Web.API.Domain.Models;
+using ERP.Web.API.Model.Accounting;
 
-namespace ERP_API.Domain.Interfaces.Accounting
+namespace ERP.Web.API.Domain.Interfaces.Accounting
 {
     public interface ICurrencyRateService : IGeneralService<CurrencyRate>
     {

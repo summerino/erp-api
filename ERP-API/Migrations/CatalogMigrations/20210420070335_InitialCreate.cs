@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace ERP_API.Migrations.CatalogMigrations
+namespace ERP.Web.API.Migrations.CatalogMigrations
 {
     public partial class InitialCreate : Migration
     {

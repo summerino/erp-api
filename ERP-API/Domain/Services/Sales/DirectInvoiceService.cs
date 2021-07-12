@@ -2,14 +2,14 @@
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using ERP.Entity.Sales;
-using ERP_API.Domain.Interfaces.Sales;
-using ERP_API.Domain.Models;
-using ERP_API.Domain.Models.Sales;
-using ERP_API.Model.Sales;
+using ERP.Web.API.Domain.Interfaces.Sales;
+using ERP.Web.API.Domain.Models;
+using ERP.Web.API.Domain.Models.Sales;
+using ERP.Web.API.Model.Sales;
 using System.Collections.Generic;
 using ERP.Entity;
 
-namespace ERP_API.Domain.Services.Sales
+namespace ERP.Web.API.Domain.Services.Sales
 {
     public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectInvoiceService
     {

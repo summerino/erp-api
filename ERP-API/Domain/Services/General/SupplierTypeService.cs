@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using ERP.Entity;
 using ERP.Entity.General;
-using ERP_API.Domain.Extensions;
-using ERP_API.Domain.Interfaces.General;
-using ERP_API.Domain.Models;
+using ERP.Web.API.Domain.Extensions;
+using ERP.Web.API.Domain.Interfaces.General;
+using ERP.Web.API.Domain.Models;
 
-namespace ERP_API.Domain.Services.General
+namespace ERP.Web.API.Domain.Services.General
 {
     public class SupplierTypeService : GeneralService<SupplierType>, ISupplierTypeService
     {

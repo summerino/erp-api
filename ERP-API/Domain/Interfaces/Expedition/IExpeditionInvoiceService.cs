@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using ERP.Entity.Expedition;
-using ERP_API.Domain.Models;
-using ERP_API.Model.Expedition;
+using ERP.Web.API.Domain.Models;
+using ERP.Web.API.Model.Expedition;
 
-namespace ERP_API.Domain.Interfaces.Expedition
+namespace ERP.Web.API.Domain.Interfaces.Expedition
 {
     public interface IExpeditionInvoiceService : IGeneralService<ExpeditionInvoiceHeader>
     {

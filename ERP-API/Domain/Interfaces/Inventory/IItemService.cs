@@ -3,9 +3,9 @@ using ERP.Entity.Inventory;
 using ERP.Entity.Inventory;
 using ERP.Entity.Purchase;
 using ERP.Entity.Sales;
-using ERP_API.Domain.Models;
+using ERP.Web.API.Domain.Models;
 
-namespace ERP_API.Domain.Interfaces.Inventory
+namespace ERP.Web.API.Domain.Interfaces.Inventory
 {
     public interface IItemService : IGeneralService<Item>
     {

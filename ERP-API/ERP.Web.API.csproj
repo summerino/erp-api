@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
-    <RootNamespace>ERP_API</RootNamespace>
 	<Authors>Sahassa Dev. Team</Authors>
 	<Company>Sahassa Panca Manunggal</Company>
 	<Product>Sahassa® ERP</Product>

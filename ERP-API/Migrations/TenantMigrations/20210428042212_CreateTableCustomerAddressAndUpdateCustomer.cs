@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace ERP_API.Migrations.TenantMigrations
+namespace ERP.Web.API.Migrations.TenantMigrations
 {
     public partial class CreateTableCustomerAddressAndUpdateCustomer : Migration
     {

@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
-using ERP_API.Domain.Models;
-using ERP_API.Model.General;
+using ERP.Web.API.Domain.Models;
+using ERP.Web.API.Model.General;
 
-namespace ERP_API.Domain.Interfaces.General
+namespace ERP.Web.API.Domain.Interfaces.General
 {
     public interface IApprovalService 
     {

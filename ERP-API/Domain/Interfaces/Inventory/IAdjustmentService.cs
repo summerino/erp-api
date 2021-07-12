@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using ERP.Entity.Inventory;
 using ERP.Entity.Inventory;
-using ERP_API.Domain.Models;
-using ERP_API.Model.Inventory;
+using ERP.Web.API.Domain.Models;
+using ERP.Web.API.Model.Inventory;
 
-namespace ERP_API.Domain.Interfaces.Inventory
+namespace ERP.Web.API.Domain.Interfaces.Inventory
 {
     public interface IAdjustmentService : IGeneralService<AdjustmentHeader>
     {

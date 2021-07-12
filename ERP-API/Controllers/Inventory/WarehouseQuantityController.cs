@@ -1,16 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Linq.Dynamic.Core;
 using Microsoft.AspNetCore.Mvc;
-using ERP_API.Domain.Interfaces.Inventory;
-using ERP.Entity.Inventory;
-using ERP_API.Domain.Models;
 using ERP.Entity;
-using ERP_API.Model;
+using ERP.Web.API.Domain.Interfaces.Inventory;
+using ERP.Web.API.Domain.Models;
+using ERP.Web.API.Model;
 using Newtonsoft.Json;
 
-namespace ERP_API.Controllers.Inventory
+namespace ERP.Web.API.Controllers.Inventory
 {
     [Route("warehouse-quantity")]
     [ApiController]

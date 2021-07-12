@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using ERP.Entity.Purchase;
-using ERP_API.Domain.Models;
-using ERP_API.Model.Purchase;
+using ERP.Web.API.Domain.Models;
+using ERP.Web.API.Model.Purchase;
 
-namespace ERP_API.Domain.Interfaces.Purchase
+namespace ERP.Web.API.Domain.Interfaces.Purchase
 {
     public interface IPurchaseOrderService : IGeneralService<PurchaseOrderHeader>
     {

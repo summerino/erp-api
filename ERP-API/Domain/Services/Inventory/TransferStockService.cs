@@ -4,13 +4,13 @@ using System.Linq;
 using System.Linq.Dynamic.Core;
 using ERP.Entity;
 using ERP.Entity.Inventory;
-using ERP_API.Domain.Extensions;
-using ERP_API.Domain.Interfaces.Inventory;
-using ERP_API.Domain.Models;
-using ERP_API.Model.Inventory;
+using ERP.Web.API.Domain.Extensions;
+using ERP.Web.API.Domain.Interfaces.Inventory;
+using ERP.Web.API.Domain.Models;
+using ERP.Web.API.Model.Inventory;
 using Microsoft.EntityFrameworkCore;
 
-namespace ERP_API.Domain.Services.Inventory
+namespace ERP.Web.API.Domain.Services.Inventory
 {
     public class TransferStockService : GeneralService<TransferStockHeader>, ITransferStockService
     {

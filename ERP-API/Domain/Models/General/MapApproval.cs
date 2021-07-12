@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using ERP.Entity.Core;
-using ERP_API.Model;
+using ERP.Web.API.Model;
 
-namespace ERP_API.Domain.Models.General
+namespace ERP.Web.API.Domain.Models.General
 {
     public class Approval
     {

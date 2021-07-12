@@ -1,7 +1,7 @@
-﻿using ERP_API.Domain.Extensions;
-using ERP_API.Domain.Interfaces.Expedition;
-using ERP_API.Domain.Models;
-using ERP_API.Model.Expedition;
+﻿using ERP.Web.API.Domain.Extensions;
+using ERP.Web.API.Domain.Interfaces.Expedition;
+using ERP.Web.API.Domain.Models;
+using ERP.Web.API.Model.Expedition;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using ERP.Entity;
 using ERP.Entity.Expedition;
 
-namespace ERP_API.Domain.Services.Expedition
+namespace ERP.Web.API.Domain.Services.Expedition
 {
     public class ExpeditionInvoiceService : GeneralService<ExpeditionInvoiceHeader>, IExpeditionInvoiceService
     {

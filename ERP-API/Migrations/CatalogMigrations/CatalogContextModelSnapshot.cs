@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace ERP_API.Migrations.CatalogMigrations
+namespace ERP.Web.API.Migrations.CatalogMigrations
 {
     [DbContext(typeof(CatalogContext))]
     partial class CatalogContextModelSnapshot : ModelSnapshot

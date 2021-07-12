@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace ERP_API.Model.Auth
+namespace ERP.Web.API.Model.Auth
 {
     public class JwtConfig
     {

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using ERP.Entity.Accounting;
 
-namespace ERP_API.Model.Accounting
+namespace ERP.Web.API.Model.Accounting
 {
     public class GeneralJournalRequest : GeneralJournalHeader
     {

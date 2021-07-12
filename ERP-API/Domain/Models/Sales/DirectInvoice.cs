@@ -1,7 +1,7 @@
 ﻿using System;
 using ERP.Entity.Sales;
 
-namespace ERP_API.Domain.Models.Sales
+namespace ERP.Web.API.Domain.Models.Sales
 {
     public class DirectInvoiceHeader : VwSalesInvoiceHeader
     {

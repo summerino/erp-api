@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Swift.Framework.Dtos.PageView;
 
-namespace ERP_API.Model
+namespace ERP.Web.API.Model
 {
     public class ApiResponse
     {

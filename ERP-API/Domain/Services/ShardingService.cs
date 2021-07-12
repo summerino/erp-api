@@ -4,10 +4,10 @@ using ERP.Entity;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using ERP_API.Database;
-using ERP_API.Utils;
+using ERP.Web.API.Database;
+using ERP.Web.API.Utils;
 
-namespace ERP_API.Domain.Services
+namespace ERP.Web.API.Domain.Services
 {
     public interface IShardingService
     {

@@ -1,22 +1,22 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ERP_API.Dtos;
+using ERP.Entity;
+using ERP.Entity.Accounting;
+using ERP.Entity.General;
+using ERP.Web.API.Domain.Extensions;
+using ERP.Web.API.Domain.Models;
+using ERP.Web.API.Dtos;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Swift.Framework;
 using Swift.Framework.Model;
-using ERP_API.Domain.Extensions;
-using System;
-using System.ComponentModel.DataAnnotations;
-using ERP.Entity;
-using ERP.Entity.Accounting;
-using ERP.Entity.General;
-using ERP_API.Domain.Models;
 using Sort = Swift.Framework.Model.Sort;
 
-namespace ERP_API.Controllers
+namespace ERP.Web.API.Controllers
 {
     [Route("[controller]")]
     [AllowAnonymous]

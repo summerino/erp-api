@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using ERP.Entity.Purchase;
-using ERP_API.Domain.Models;
+using ERP.Web.API.Domain.Models;
 
-namespace ERP_API.Domain.Interfaces.Purchase
+namespace ERP.Web.API.Domain.Interfaces.Purchase
 {
     public interface IDebitMemoService : IGeneralService<DebitMemo>
     {

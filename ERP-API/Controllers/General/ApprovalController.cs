@@ -1,17 +1,17 @@
-﻿using ERP_API.Domain.Interfaces.Auth;
-using ERP_API.Domain.Interfaces.General;
-using ERP_API.Domain.Models;
-using ERP.Entity;
-using ERP_API.Model;
-using ERP_API.Model.General;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using ERP.Entity;
+using ERP.Web.API.Domain.Interfaces.Auth;
+using ERP.Web.API.Domain.Interfaces.General;
+using ERP.Web.API.Domain.Models;
+using ERP.Web.API.Model;
+using ERP.Web.API.Model.General;
+using Newtonsoft.Json;
 
-namespace ERP_API.Controllers.General
+namespace ERP.Web.API.Controllers.General
 {
     [Route("approval")]
     [ApiController]

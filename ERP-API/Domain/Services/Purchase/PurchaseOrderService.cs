@@ -4,13 +4,13 @@ using System.Linq;
 using System.Linq.Dynamic.Core;
 using ERP.Entity;
 using ERP.Entity.Purchase;
-using ERP_API.Domain.Extensions;
-using ERP_API.Domain.Interfaces.Purchase;
-using ERP_API.Domain.Models;
-using ERP_API.Model.Purchase;
+using ERP.Web.API.Domain.Extensions;
+using ERP.Web.API.Domain.Interfaces.Purchase;
+using ERP.Web.API.Domain.Models;
+using ERP.Web.API.Model.Purchase;
 using Microsoft.EntityFrameworkCore;
 
-namespace ERP_API.Domain.Services.Purchase
+namespace ERP.Web.API.Domain.Services.Purchase
 {
     public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurchaseOrderService
     {

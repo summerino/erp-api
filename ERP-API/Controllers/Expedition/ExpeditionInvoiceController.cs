@@ -1,18 +1,17 @@
-﻿using ERP_API.Domain.Interfaces.Auth;
-using ERP_API.Domain.Interfaces.Expedition;
-using ERP_API.Domain.Models;
-using ERP.Entity;
-using ERP_API.Model;
-using ERP_API.Model.Expedition;
-using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using ERP.Entity;
+using ERP.Web.API.Domain.Interfaces.Auth;
+using ERP.Web.API.Domain.Interfaces.Expedition;
+using ERP.Web.API.Domain.Models;
+using ERP.Web.API.Model;
+using ERP.Web.API.Model.Expedition;
+using Newtonsoft.Json;
 
-namespace ERP_API.Controllers.Expedition
+namespace ERP.Web.API.Controllers.Expedition
 {
     [Route("expedition-invoice")]
     [ApiController]

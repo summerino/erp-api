@@ -1,12 +1,12 @@
 ﻿using ERP.Entity.SystemManagement;
-using ERP_API.Domain.Models;
+using ERP.Web.API.Domain.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using ERP_API.Model.SystemManagement;
+using ERP.Web.API.Model.SystemManagement;
 
-namespace ERP_API.Domain.Interfaces.SystemManagement
+namespace ERP.Web.API.Domain.Interfaces.SystemManagement
 {
     public interface IUserService
     {

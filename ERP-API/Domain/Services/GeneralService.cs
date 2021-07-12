@@ -4,11 +4,11 @@ using System.Linq;
 using System.Linq.Expressions;
 using ERP.Entity;
 using Microsoft.EntityFrameworkCore;
-using ERP_API.Domain.Extensions;
-using ERP_API.Domain.Interfaces;
-using ERP_API.Domain.Models;
+using ERP.Web.API.Domain.Extensions;
+using ERP.Web.API.Domain.Interfaces;
+using ERP.Web.API.Domain.Models;
 
-namespace ERP_API.Domain.Services
+namespace ERP.Web.API.Domain.Services
 {
     public abstract class GeneralService<T> : IGeneralService<T>
         where T : class

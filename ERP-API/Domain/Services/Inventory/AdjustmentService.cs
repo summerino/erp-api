@@ -5,12 +5,12 @@ using ERP.Entity;
 using ERP.Entity.Inventory;
 using Microsoft.EntityFrameworkCore;
 using ERP.Entity.Inventory;
-using ERP_API.Domain.Extensions;
-using ERP_API.Domain.Interfaces.Inventory;
-using ERP_API.Domain.Models;
-using ERP_API.Model.Inventory;
+using ERP.Web.API.Domain.Extensions;
+using ERP.Web.API.Domain.Interfaces.Inventory;
+using ERP.Web.API.Domain.Models;
+using ERP.Web.API.Model.Inventory;
 
-namespace ERP_API.Domain.Services.Inventory
+namespace ERP.Web.API.Domain.Services.Inventory
 {
     public class AdjustmentService : GeneralService<AdjustmentHeader>, IAdjustmentService
     {

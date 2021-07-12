@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace ERP_API.Migrations.TenantMigrations
+namespace ERP.Web.API.Migrations.TenantMigrations
 {
     [DbContext(typeof(TenantContext))]
     [Migration("20210708143406_AlterViewVisitOrder")]

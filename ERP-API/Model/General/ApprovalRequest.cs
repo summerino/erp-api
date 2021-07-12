@@ -1,4 +1,4 @@
-﻿namespace ERP_API.Model.General
+﻿namespace ERP.Web.API.Model.General
 {
     public class ApprovalRequest
     {

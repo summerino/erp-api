@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using ERP.Entity.SystemManagement;
 
-namespace ERP_API.Model.SystemManagement
+namespace ERP.Web.API.Model.SystemManagement
 {
     public class RoleRequest : Role
     {

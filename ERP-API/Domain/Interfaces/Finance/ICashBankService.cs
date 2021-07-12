@@ -1,9 +1,9 @@
-﻿using ERP_API.Domain.Models;
-using ERP_API.Model.Finance;
+﻿using ERP.Web.API.Domain.Models;
+using ERP.Web.API.Model.Finance;
 using System.Collections.Generic;
 using ERP.Entity.Finance;
 
-namespace ERP_API.Domain.Interfaces.Finance
+namespace ERP.Web.API.Domain.Interfaces.Finance
 {
     public interface ICashBankService : IGeneralService<CashBankRequest>
     {

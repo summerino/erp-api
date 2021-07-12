@@ -5,12 +5,12 @@ using System.Linq.Dynamic.Core;
 using ERP.Entity;
 using ERP.Entity.General;
 using Microsoft.EntityFrameworkCore;
-using ERP_API.Domain.Extensions;
-using ERP_API.Domain.Interfaces.General;
-using ERP_API.Domain.Models;
-using ERP_API.Model.General;
+using ERP.Web.API.Domain.Extensions;
+using ERP.Web.API.Domain.Interfaces.General;
+using ERP.Web.API.Domain.Models;
+using ERP.Web.API.Model.General;
 
-namespace ERP_API.Domain.Services.General
+namespace ERP.Web.API.Domain.Services.General
 {
     public class CurrencyService : GeneralService<Currency>, ICurrencyService
     {

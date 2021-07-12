@@ -1,14 +1,14 @@
 ﻿using ERP.Entity.Sales;
-using ERP_API.Domain.Extensions;
-using ERP_API.Domain.Interfaces.Sales;
-using ERP_API.Domain.Models;
+using ERP.Web.API.Domain.Extensions;
+using ERP.Web.API.Domain.Interfaces.Sales;
+using ERP.Web.API.Domain.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ERP.Entity;
 
-namespace ERP_API.Domain.Services.Sales
+namespace ERP.Web.API.Domain.Services.Sales
 {
     public class SalesmanGroupService : GeneralService<SalesmanGroup>, ISalesmanGroupService
     {

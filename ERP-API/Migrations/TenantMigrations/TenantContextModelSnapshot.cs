@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace ERP_API.Migrations.TenantMigrations
+namespace ERP.Web.API.Migrations.TenantMigrations
 {
     [DbContext(typeof(TenantContext))]
     partial class TenantContextModelSnapshot : ModelSnapshot

@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace ERP_API.Migrations.TenantMigrations
+namespace ERP.Web.API.Migrations.TenantMigrations
 {
     [DbContext(typeof(TenantContext))]
     [Migration("20210701041904_AlterVwApproval")]
@@ -9556,7 +9556,7 @@ namespace ERP_API.Migrations.TenantMigrations
                     b.ToView("vwUser", "SystemManagement");
                 });
 
-            modelBuilder.Entity("ERP_API.Model.General.VwApproval", b =>
+            modelBuilder.Entity("ERP.Web.API.Model.General.VwApproval", b =>
                 {
                     b.Property<string>("Code")
                         .IsUnicode(false)
