@@ -1,17 +1,17 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Dynamic.Core;
 using Microsoft.AspNetCore.Mvc;
-using ERP_API.Domain.Interfaces.Sales;
-using ERP_API.Domain.Models;
-using ERP_API.Model;
+using ERP.Entity;
+using ERP.Entity.Sales;
+using ERP.Web.API.Domain.Interfaces.Auth;
+using ERP.Web.API.Domain.Interfaces.Sales;
+using ERP.Web.API.Domain.Models;
+using ERP.Web.API.Model;
 using Newtonsoft.Json;
-using ERP_API.Domain.Entities.Sales;
-using ERP_API.Domain.Services;
-using ERP_API.Domain.Interfaces.Auth;
-using System;
-using System.Linq;
 
-namespace ERP_API.Controllers.Sales
+namespace ERP.Web.API.Controllers.Sales
 {
     [Route("credit-memo")]
     [ApiController]

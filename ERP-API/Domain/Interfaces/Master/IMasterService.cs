@@ -1,6 +1,6 @@
-﻿//using ERP_API.Domain.Models;
+﻿//using ERP.Web.API.Domain.Models;
 
-//namespace ERP_API.Domain.Interfaces.Master
+//namespace ERP.Web.API.Domain.Interfaces.Master
 //{
 //    public interface IMasterService 
 //    {

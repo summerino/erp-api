@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using ERP.Entity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using ERP_API.Domain.Entities;
-using ERP_API.Domain.Services;
+using ERP.Web.API.Domain.Services;
 
-namespace ERP_API.Model.Auth
+namespace ERP.Web.API.Model.Auth
 {
     public class UserSessionRequirement : IAuthorizationRequirement
     {

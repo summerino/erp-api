@@ -1,7 +1,7 @@
-﻿using ERP_API.Domain.Entities.Finance;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using ERP.Entity.Finance;
 
-namespace ERP_API.Model.Finance
+namespace ERP.Web.API.Model.Finance
 {
     public class CashBankRequest : GeneralCashBankHeader
     {

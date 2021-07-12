@@ -1,17 +1,17 @@
-﻿using ERP_API.Domain.Entities.Accounting;
-using ERP_API.Domain.Interfaces.Accounting;
-using ERP_API.Domain.Interfaces.Auth;
-using ERP_API.Domain.Models;
-using ERP_API.Domain.Services;
-using ERP_API.Model;
-using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
+using Microsoft.AspNetCore.Mvc;
+using ERP.Entity;
+using ERP.Entity.Accounting;
+using ERP.Web.API.Domain.Interfaces.Accounting;
+using ERP.Web.API.Domain.Interfaces.Auth;
+using ERP.Web.API.Domain.Models;
+using ERP.Web.API.Model;
+using Newtonsoft.Json;
 
-namespace ERP_API.Controllers.Accounting
+namespace ERP.Web.API.Controllers.Accounting
 {
     [Route("account-payable")]
     [ApiController]

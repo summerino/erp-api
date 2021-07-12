@@ -2,17 +2,16 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using ERP_API.Domain.Entities;
-using ERP_API.Domain.Entities.Core;
-using ERP_API.Domain.Entities.General;
+using ERP.Entity;
+using ERP.Entity.Core;
 
-namespace ERP_API.Database
+namespace ERP.Web.API.Database
 {
     public class DbInitializer
     {
         public void EnsureSeeded(TenantContext dbContext)
         {
-            var resourceString = "ERP_API.Data.{0}.json";
+            var resourceString = "ERP.Web.API.Data.{0}.json";
 
             //SeedEntity<Supplier>(string.Format(resourceString, "Supplier"), dbContext);
         }

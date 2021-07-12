@@ -1,4 +1,4 @@
-﻿namespace ERP_API.Model.Auth
+﻿namespace ERP.Web.API.Model.Auth
 {
     public class AuthResult
     {

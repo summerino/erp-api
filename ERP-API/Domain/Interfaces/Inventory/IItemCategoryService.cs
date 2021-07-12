@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
-using ERP_API.Domain.Entities.Inventory;
-using ERP_API.Domain.Models;
+using ERP.Entity.Inventory;
+using ERP.Web.API.Domain.Models;
 
-namespace ERP_API.Domain.Interfaces.Inventory
+namespace ERP.Web.API.Domain.Interfaces.Inventory
 {
     public interface IItemCategoryService : IGeneralService<ItemCategory>
     {

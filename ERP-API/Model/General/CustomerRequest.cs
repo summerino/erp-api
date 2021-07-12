@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using ERP_API.Domain.Entities.General;
+using ERP.Entity.General;
 
-namespace ERP_API.Model.General
+namespace ERP.Web.API.Model.General
 {
     public class CustomerRequest : Customer
     {

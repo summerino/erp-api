@@ -2,13 +2,13 @@
 using System.Linq;
 using System.Linq.Dynamic.Core;
 using Microsoft.AspNetCore.Mvc;
-using ERP_API.Domain.Interfaces.SystemManagement;
-using ERP_API.Domain.Models;
-using ERP_API.Domain.Services;
-using ERP_API.Model;
+using ERP.Entity;
+using ERP.Web.API.Domain.Interfaces.SystemManagement;
+using ERP.Web.API.Domain.Models;
+using ERP.Web.API.Model;
 using Newtonsoft.Json;
 
-namespace ERP_API.Controllers.SystemManagement
+namespace ERP.Web.API.Controllers.SystemManagement
 {
     [Route("[controller]")]
     [ApiController]

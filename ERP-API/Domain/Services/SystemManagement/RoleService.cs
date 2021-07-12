@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using ERP_API.Domain.Entities;
-using ERP_API.Domain.Entities.SystemManagement;
-using ERP_API.Domain.Extensions;
-using ERP_API.Domain.Interfaces.SystemManagement;
-using ERP_API.Domain.Models;
-using ERP_API.Model.SystemManagement;
+using ERP.Entity;
+using ERP.Entity.SystemManagement;
+using ERP.Web.API.Domain.Extensions;
+using ERP.Web.API.Domain.Interfaces.SystemManagement;
+using ERP.Web.API.Domain.Models;
+using ERP.Web.API.Model.SystemManagement;
 
-namespace ERP_API.Domain.Services.SystemManagement
+namespace ERP.Web.API.Domain.Services.SystemManagement
 {
     public class RoleService : GeneralService<Role>, IRoleService
     {

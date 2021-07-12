@@ -3,15 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 using Microsoft.AspNetCore.Mvc;
-using ERP_API.Domain.Entities.General;
-using ERP_API.Domain.Interfaces.General;
-using ERP_API.Domain.Models;
-using ERP_API.Domain.Services;
-using ERP_API.Model;
+using ERP.Entity;
+using ERP.Entity.General;
+using ERP.Web.API.Domain.Interfaces.Auth;
+using ERP.Web.API.Domain.Interfaces.General;
+using ERP.Web.API.Domain.Models;
+using ERP.Web.API.Model;
 using Newtonsoft.Json;
-using ERP_API.Domain.Interfaces.Auth;
 
-namespace ERP_API.Controllers.General
+namespace ERP.Web.API.Controllers.General
 {
     [Route("customer-type")]
     [ApiController]

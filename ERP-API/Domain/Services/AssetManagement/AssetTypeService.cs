@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using ERP_API.Domain.Entities;
-using ERP_API.Domain.Entities.AssetManagement;
-using ERP_API.Domain.Extensions;
-using ERP_API.Domain.Interfaces.AssetManagement;
-using ERP_API.Domain.Models;
+using ERP.Entity;
+using ERP.Entity.AssetManagement;
+using ERP.Web.API.Domain.Extensions;
+using ERP.Web.API.Domain.Interfaces.AssetManagement;
+using ERP.Web.API.Domain.Models;
 
-namespace ERP_API.Domain.Services.AssetManagement
+namespace ERP.Web.API.Domain.Services.AssetManagement
 {
     public class AssetTypeService : GeneralService<AssetType>, IAssetTypeService
     {

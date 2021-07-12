@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
-using ERP_API.Domain.Entities.Sales;
-using ERP_API.Domain.Models.Sales;
+using ERP.Entity.Sales;
+using ERP.Web.API.Domain.Models.Sales;
 
-namespace ERP_API.Model.Sales
+namespace ERP.Web.API.Model.Sales
 {
     public class SalesInvoiceRequest : SalesInvoiceHeader
     {

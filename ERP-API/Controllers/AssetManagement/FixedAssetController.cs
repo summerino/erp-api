@@ -3,15 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 using Microsoft.AspNetCore.Mvc;
-using ERP_API.Domain.Models;
-using ERP_API.Domain.Services;
-using ERP_API.Model;
+using ERP.Entity;
+using ERP.Entity.AssetManagement;
+using ERP.Web.API.Domain.Interfaces.AssetManagement;
+using ERP.Web.API.Domain.Interfaces.Auth;
+using ERP.Web.API.Domain.Models;
+using ERP.Web.API.Model;
 using Newtonsoft.Json;
-using ERP_API.Domain.Interfaces.Auth;
-using ERP_API.Domain.Interfaces.AssetManagement;
-using ERP_API.Domain.Entities.AssetManagement;
 
-namespace ERP_API.Controllers.AssetManagement
+namespace ERP.Web.API.Controllers.AssetManagement
 {
     [Route("fixed-asset")]
     [ApiController]

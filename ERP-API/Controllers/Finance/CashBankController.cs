@@ -1,18 +1,18 @@
-﻿using ERP_API.Domain.Interfaces.Auth;
-using ERP_API.Domain.Interfaces.Finance;
-using ERP_API.Domain.Models;
-using ERP_API.Domain.Services;
-using ERP_API.Model;
-using ERP_API.Model.Finance;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using ERP.Entity;
+using ERP.Web.API.Domain.Interfaces.Auth;
+using ERP.Web.API.Domain.Interfaces.Finance;
+using ERP.Web.API.Domain.Models;
+using ERP.Web.API.Model;
+using ERP.Web.API.Model.Finance;
+using Newtonsoft.Json;
 
-namespace ERP_API.Controllers.Finance
+namespace ERP.Web.API.Controllers.Finance
 {
     [Route("general-cash-bank")]
     [ApiController]

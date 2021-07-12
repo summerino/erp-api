@@ -3,9 +3,9 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ERP_API.Model;
+using ERP.Web.API.Model;
 
-namespace ERP_API.Controllers
+namespace ERP.Web.API.Controllers
 {
     [AllowAnonymous]
     [Route("[controller]")]

@@ -1,8 +1,8 @@
-﻿using ERP_API.Domain.Entities.Accounting;
-using ERP_API.Domain.Models;
+﻿using ERP.Web.API.Domain.Models;
 using System.Collections.Generic;
+using ERP.Entity.Accounting;
 
-namespace ERP_API.Domain.Interfaces.Accounting
+namespace ERP.Web.API.Domain.Interfaces.Accounting
 {
     public interface ICoaTypeService : IGeneralService<CoaType>
     {

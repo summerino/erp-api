@@ -6,7 +6,7 @@ using System.Linq;
 using System.Net.NetworkInformation;
 using System.Threading.Tasks;
 
-namespace ERP_API.Utils
+namespace ERP.Web.API.Utils
 {
     public static class DatabaseUtility
     {

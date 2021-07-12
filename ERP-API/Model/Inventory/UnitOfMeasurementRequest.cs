@@ -1,7 +1,7 @@
-﻿using ERP_API.Domain.Entities.Inventory;
+﻿using ERP.Entity.Inventory;
 using System.Collections.Generic;
 
-namespace ERP_API.Model.Inventory
+namespace ERP.Web.API.Model.Inventory
 {
 
     public class UnitOfMeasurementRequest : UoM

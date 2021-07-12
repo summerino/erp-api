@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
-using ERP_API.Domain.Models;
+using ERP.Web.API.Domain.Models;
 
-namespace ERP_API.Domain.Interfaces
+namespace ERP.Web.API.Domain.Interfaces
 {
     public interface IGeneralService<T> where T : class
     {

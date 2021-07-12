@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 
-namespace ERP_API
+namespace ERP.Web.API
 {
     public class Program
     {

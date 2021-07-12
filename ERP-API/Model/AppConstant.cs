@@ -1,4 +1,4 @@
-﻿namespace ERP_API.Model
+﻿namespace ERP.Web.API.Model
 {
     public static class AppConstant
     {

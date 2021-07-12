@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
-using ERP_API.Domain.Entities.General;
-using ERP_API.Domain.Models;
+using ERP.Entity.General;
+using ERP.Web.API.Domain.Models;
 
-namespace ERP_API.Domain.Interfaces.General
+namespace ERP.Web.API.Domain.Interfaces.General
 {
     public interface ICustomerTypeService : IGeneralService<CustomerType>
     {

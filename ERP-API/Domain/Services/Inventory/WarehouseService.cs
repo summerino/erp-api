@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using ERP_API.Domain.Entities;
-using ERP_API.Domain.Entities.Inventory;
-using ERP_API.Domain.Extensions;
-using ERP_API.Domain.Interfaces.Inventory;
-using ERP_API.Domain.Models;
+using ERP.Entity;
+using ERP.Entity.Inventory;
+using ERP.Web.API.Domain.Extensions;
+using ERP.Web.API.Domain.Interfaces.Inventory;
+using ERP.Web.API.Domain.Models;
 
-namespace ERP_API.Domain.Services.Inventory
+namespace ERP.Web.API.Domain.Services.Inventory
 {
     public class WarehouseService : GeneralService<Warehouse>, IWarehouseService
     {

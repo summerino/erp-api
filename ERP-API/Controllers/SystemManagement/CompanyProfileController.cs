@@ -3,15 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 using Microsoft.AspNetCore.Mvc;
-using ERP_API.Domain.Entities.SystemManagement;
-using ERP_API.Domain.Interfaces.Auth;
-using ERP_API.Domain.Interfaces.SystemManagement;
-using ERP_API.Domain.Models;
-using ERP_API.Domain.Services;
-using ERP_API.Model;
+using ERP.Entity;
+using ERP.Entity.SystemManagement;
+using ERP.Web.API.Domain.Interfaces.Auth;
+using ERP.Web.API.Domain.Interfaces.SystemManagement;
+using ERP.Web.API.Domain.Models;
+using ERP.Web.API.Model;
 using Newtonsoft.Json;
 
-namespace ERP_API.Controllers.SystemManagement
+namespace ERP.Web.API.Controllers.SystemManagement
 {
     [Route("company-profile")]
     [ApiController]
@@ -20,7 +20,7 @@ namespace ERP_API.Controllers.SystemManagement
         private readonly ICompanyProfileService _comp;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
-        private const int _menuId = (int)ERP_API.Model.Menu.CompanyProfile;
+        private const int _menuId = (int)ERP.Web.API.Model.Menu.CompanyProfile;
 
         public CompanyProfileController(ICompanyProfileService companyProfileService, IClaimService claim, IAuthService auth)
         {

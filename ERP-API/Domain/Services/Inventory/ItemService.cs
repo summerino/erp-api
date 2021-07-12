@@ -2,15 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
-using ERP_API.Domain.Entities;
-using ERP_API.Domain.Entities.Inventory;
-using ERP_API.Domain.Entities.Purchase;
-using ERP_API.Domain.Entities.Sales;
-using ERP_API.Domain.Extensions;
-using ERP_API.Domain.Interfaces.Inventory;
-using ERP_API.Domain.Models;
+using ERP.Entity;
+using ERP.Entity.Inventory;
+using ERP.Entity.Inventory;
+using ERP.Entity.Purchase;
+using ERP.Entity.Sales;
+using ERP.Web.API.Domain.Extensions;
+using ERP.Web.API.Domain.Interfaces.Inventory;
+using ERP.Web.API.Domain.Models;
 
-namespace ERP_API.Domain.Services.Inventory
+namespace ERP.Web.API.Domain.Services.Inventory
 {
     public class ItemService : GeneralService<Item>, IItemService
     {

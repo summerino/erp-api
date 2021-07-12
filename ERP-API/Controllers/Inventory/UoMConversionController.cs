@@ -1,9 +1,9 @@
 ﻿using System.Linq;
 using Microsoft.AspNetCore.Mvc;
-using ERP_API.Domain.Interfaces.Inventory;
-using ERP_API.Model;
+using ERP.Web.API.Domain.Interfaces.Inventory;
+using ERP.Web.API.Model;
 
-namespace ERP_API.Controllers.Inventory
+namespace ERP.Web.API.Controllers.Inventory
 {
     [Route("uom-conversion")]
     [ApiController]

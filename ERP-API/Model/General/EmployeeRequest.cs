@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
-using ERP_API.Domain.Entities.General;
-using ERP_API.Domain.Entities.Sales;
+using ERP.Entity.General;
+using ERP.Entity.Sales;
 
-namespace ERP_API.Model.General
+namespace ERP.Web.API.Model.General
 {
     public class EmployeeRequest : Employee
     {

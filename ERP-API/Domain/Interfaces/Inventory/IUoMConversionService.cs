@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using ERP_API.Domain.Entities.Inventory;
+using ERP.Entity.Inventory;
 
-namespace ERP_API.Domain.Interfaces.Inventory
+namespace ERP.Web.API.Domain.Interfaces.Inventory
 {
     public interface IUoMConversionService
     {

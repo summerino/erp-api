@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
-using ERP_API.Domain.Entities.AssetManagement;
-using ERP_API.Domain.Models;
+using ERP.Entity.AssetManagement;
+using ERP.Web.API.Domain.Models;
 
-namespace ERP_API.Domain.Interfaces.AssetManagement
+namespace ERP.Web.API.Domain.Interfaces.AssetManagement
 {
     public interface IFixedAssetService : IGeneralService<FixedAsset>
     {

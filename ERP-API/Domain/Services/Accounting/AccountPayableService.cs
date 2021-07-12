@@ -1,14 +1,14 @@
-﻿using ERP_API.Domain.Entities;
-using ERP_API.Domain.Entities.Accounting;
-using ERP_API.Domain.Extensions;
-using ERP_API.Domain.Interfaces.Accounting;
-using ERP_API.Domain.Models;
+﻿using ERP.Web.API.Domain.Extensions;
+using ERP.Web.API.Domain.Interfaces.Accounting;
+using ERP.Web.API.Domain.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ERP.Entity;
+using ERP.Entity.Accounting;
 
-namespace ERP_API.Domain.Services.Accounting
+namespace ERP.Web.API.Domain.Services.Accounting
 {
     public class AccountPayableService : GeneralService<BeginningBalanceAP>, IAccountPayableService
     {

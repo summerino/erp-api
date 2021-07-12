@@ -1,10 +1,10 @@
-﻿using ERP_API.Domain.Entities.Sales;
+﻿using ERP.Entity.Sales;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace ERP_API.Model.Sales
+namespace ERP.Web.API.Model.Sales
 {
     public class SalesReturnRequest : SalesReturnHeader
     {

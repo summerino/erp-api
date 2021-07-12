@@ -1,13 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using ERP_API.Domain.Entities;
-using ERP_API.Domain.Entities.SystemManagement;
-using ERP_API.Domain.Extensions;
-using ERP_API.Domain.Interfaces.SystemManagement;
-using ERP_API.Domain.Models;
-using ERP_API.Domain.Models.SystemManagement;
+using ERP.Entity;
+using ERP.Entity.SystemManagement;
+using ERP.Web.API.Domain.Extensions;
+using ERP.Web.API.Domain.Interfaces.SystemManagement;
+using ERP.Web.API.Domain.Models;
+using ERP.Web.API.Domain.Models.SystemManagement;
 
-namespace ERP_API.Domain.Services.SystemManagement
+namespace ERP.Web.API.Domain.Services.SystemManagement
 {
     public class MenuService : GeneralService<Menu>, IMenuService
     {
@@ -100,7 +100,7 @@ namespace ERP_API.Domain.Services.SystemManagement
             return nodes;
         }
 
-        public IEnumerable<Entities.SystemManagement.Action> GetActions()
+        public IEnumerable<Action> GetActions()
         {
             var data = Db.Actions.AsQueryable();
 

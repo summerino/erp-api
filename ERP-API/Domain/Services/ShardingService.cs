@@ -1,87 +1,28 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.Data.SqlClient;
+﻿using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using ERP_API.Database;
-using ERP_API.Domain.Entities;
-using ERP_API.Domain.Entities.Catalog;
-using ERP_API.Utils;
+using ERP.Entity;
 
-namespace ERP_API.Domain.Services
+namespace ERP.Web.API.Domain.Services
 {
     public interface IShardingService
     {
-        //string DbPrefix { get; }
-        //Task<Guid> CreateNewInstanceAsync(string tenantName);
-        //Task<Guid> RegisterNewShardAsync(string connectionString, string tenantName);
-        //Task ApplyDatabaseMigrationAsync(string connectionString, Guid shardingKey);
         Task ApplyMigrationAsync();
     }
 
     public class ShardingService : IShardingService
     {
-        private readonly CatalogContext _controlCtx;
+        private readonly CatalogContext _catalogCtx;
         private readonly IClaimService _claim;
-        private readonly IConfiguration _configuration;
 
-        //public string DbPrefix { get => "ErpInstance"; }
-
-        public ShardingService(CatalogContext controlCtx, IClaimService claim, IConfiguration configuration)
+        public ShardingService(CatalogContext catalogCtx, IClaimService claim)
         {
-            _controlCtx = controlCtx;
+            _catalogCtx = catalogCtx;
             _claim = claim;
-            _configuration = configuration;
         }
-
-        //public async Task<Guid> CreateNewInstanceAsync(string tenantName)
-        //{
-        //    string connectionString = _configuration.GetConnectionString("controlConnectionString");
-        //    Guid tenantShard = await RegisterNewShardAsync(connectionString, tenantName.Trim());
-
-        //    return tenantShard;
-        //}
-
-        //public async Task<Guid> RegisterNewShardAsync(string connectionString, string tenantName)
-        //{
-        //    if (!DatabaseUtility.DatabaseExists(connectionString))
-        //    {
-        //        DatabaseUtility.CreateDatabase(connectionString);
-        //    }
-
-        //    Guid tenantShard = await GetOrCreateUnclaimedShardAsync(connectionString);
-
-        //    _controlCtx.Tenants.Add(new Tenant { Name = tenantName, Initial = DatabaseUtility.GetTenantSlug(tenantName) });
-        //    await _controlCtx.SaveChangesAsync();
-
-        //    return tenantShard;
-        //}
-
-        //public async Task ApplyDatabaseMigrationAsync(string connectionString, Guid shardingKey)
-        //{
-        //    SqlConnectionStringBuilder connectionStringBuilder = new SqlConnectionStringBuilder(connectionString);
-        //    connectionStringBuilder.InitialCatalog = $"{DbPrefix}_{shardingKey}";
-        //    string shardConnectionString = connectionStringBuilder.ConnectionString;
-
-        //    if (!DatabaseUtility.DatabaseExists(shardConnectionString))
-        //    {
-        //        DatabaseUtility.CreateDatabase(shardConnectionString);
-        //    }
-
-        //    var optionsBuilder = new DbContextOptionsBuilder<ERPDbContext>();
-        //    optionsBuilder.UseSqlServer(connectionStringBuilder.ConnectionString);
-
-        //    using (ERPDbContext dbContext = new ERPDbContext(optionsBuilder.Options, _configuration, shardingKey))
-        //    {
-        //        await dbContext.Database.MigrateAsync();
-        //        DbInitializer dbInitializer = new DbInitializer();
-        //        dbInitializer.EnsureSeeded(dbContext);
-        //    }
-        //}
 
         public async Task ApplyMigrationAsync()
         {
-            foreach (var tenant in _controlCtx.Tenants)
+            foreach (var tenant in _catalogCtx.Tenants)
             {
                 if (!string.IsNullOrWhiteSpace(tenant.ServerName) || !string.IsNullOrWhiteSpace(tenant.DatabaseName) ||
                     !string.IsNullOrWhiteSpace(tenant.ServerUserId) || !string.IsNullOrWhiteSpace(tenant.ServerPassword))
@@ -90,20 +31,10 @@ namespace ERP_API.Domain.Services
                     optionsBuilder.UseSqlServer(
                         $"Server={tenant.ServerName};Database={tenant.DatabaseName};User Id={tenant.ServerUserId};Password={tenant.ServerPassword}");
 
-                    var tenantContext = new TenantContext(optionsBuilder.Options, _controlCtx, _claim);
-                    await tenantContext.Database.MigrateAsync();
+                    var tenantCtx = new TenantContext(optionsBuilder.Options, _catalogCtx, _claim);
+                    await tenantCtx.Database.MigrateAsync();
                 }
             }
         }
-        
-        //private async Task<Guid> GetOrCreateUnclaimedShardAsync(string connectionStrung)
-        //{
-        //    Guid tenantShard = Guid.NewGuid();
-        //    _controlCtx.ShardTable.Add(new ShardTable() { Shard = tenantShard });
-
-        //    await _controlCtx.SaveChangesAsync();
-
-        //    return tenantShard;
-        //}
     }
 }

@@ -6,7 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace ERP_API.Extensions
+namespace ERP.Web.API.Extensions
 {
     public static class DbContextExtensions
     {

@@ -2,16 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
+using ERP.Entity;
 using Microsoft.EntityFrameworkCore;
-using ERP_API.Domain.Entities;
-using ERP_API.Domain.Entities.Purchase;
-using ERP_API.Domain.Extensions;
-using ERP_API.Domain.Interfaces.Purchase;
-using ERP_API.Domain.Models;
-using ERP_API.Model.Purchase;
-using ERP_API.Domain.Entities.Inventory;
+using ERP.Entity.Purchase;
+using ERP.Web.API.Domain.Extensions;
+using ERP.Web.API.Domain.Interfaces.Purchase;
+using ERP.Web.API.Domain.Models;
+using ERP.Web.API.Model.Purchase;
+using ERP.Entity.Inventory;
 
-namespace ERP_API.Domain.Services.Purchase
+namespace ERP.Web.API.Domain.Services.Purchase
 {
     public class PurchaseReturnService : GeneralService<PurchaseReturnHeader>, IPurchaseReturnService
     {

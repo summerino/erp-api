@@ -1,7 +1,7 @@
-﻿using ERP_API.Domain.Entities.Expedition;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using ERP.Entity.Expedition;
 
-namespace ERP_API.Model.Expedition
+namespace ERP.Web.API.Model.Expedition
 {
     public class ExpeditionInvoiceRequest : ExpeditionInvoiceHeader
     {

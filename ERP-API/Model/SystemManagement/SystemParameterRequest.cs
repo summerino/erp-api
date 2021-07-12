@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace ERP_API.Model.SystemManagement
+namespace ERP.Web.API.Model.SystemManagement
 {
     public class SystemParameterRequest
     {
