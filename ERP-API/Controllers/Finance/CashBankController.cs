@@ -59,6 +59,73 @@ namespace ERP_API.Controllers.Finance
             });
         }
 
+        [HttpGet("ap")]
+        public IActionResult GetDataAP(string search, string filters, string sorts, int skip, int take)
+        {
+            var data =
+                _cashBank.GetDataAP(
+                    skip, take,
+                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
+                    search);
+
+            return Ok(new ApiResponse
+            {
+                RowCount = data.Total,
+                TableData = data.Data.ToDynamicList()
+            });
+        }
+
+        [HttpGet("ar")]
+        public IActionResult GetDataAR(string search, string filters, string sorts, int skip, int take)
+        {
+            var data =
+                _cashBank.GetDataAR(
+                    skip, take,
+                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
+                    search);
+
+            return Ok(new ApiResponse
+            {
+                RowCount = data.Total,
+                TableData = data.Data.ToDynamicList()
+            });
+        }
+        [HttpGet("debit-memo")]
+        public IActionResult GetDataDebitMemo(string search, string filters, string sorts, int skip, int take)
+        {
+            var data =
+                _cashBank.GetDataDebitMemo(
+                    skip, take,
+                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
+                    search);
+
+            return Ok(new ApiResponse
+            {
+                RowCount = data.Total,
+                TableData = data.Data.ToDynamicList()
+            });
+        }
+
+        [HttpGet("credit-memo")]
+        public IActionResult GetDataCreditMemo(string search, string filters, string sorts, int skip, int take)
+        {
+            var data =
+                _cashBank.GetDataCreditMemo(
+                    skip, take,
+                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
+                    search);
+
+            return Ok(new ApiResponse
+            {
+                RowCount = data.Total,
+                TableData = data.Data.ToDynamicList()
+            });
+        }
+
         [HttpPost]
         public IActionResult OnPost(CashBankRequest data)
         {

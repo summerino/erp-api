@@ -82,7 +82,7 @@ namespace ERP_API.Domain.Services.AssetManagement
             Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
 
             Db.SaveChanges();
-
+            result.Data = data.Code;
             result.Success = true;
             result.Message = "Data aktiva tetap berhasil diperbarui.";
             return result;

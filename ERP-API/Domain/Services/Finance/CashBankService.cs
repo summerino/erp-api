@@ -4,6 +4,7 @@ using ERP_API.Domain.Extensions;
 using ERP_API.Domain.Interfaces.Finance;
 using ERP_API.Domain.Models;
 using ERP_API.Model.Finance;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,6 +32,32 @@ namespace ERP_API.Domain.Services.Finance
 
             return data.ToDataSourceResult(skip, take, filters, sorts);
         }
+
+        public DataSourceResult GetDataAP(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string search)
+        {
+            var data = Db.VwAPs.AsQueryable();
+
+            return data.ToDataSourceResult(skip, take, filters, sorts);
+        }
+
+        public DataSourceResult GetDataAR(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string search)
+        {
+            var data = Db.VwARs.AsQueryable();
+            return data.ToDataSourceResult(skip, take, filters, sorts);
+        }
+        public DataSourceResult GetDataDebitMemo(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string search)
+        {
+            var data = Db.VwDebitMemos.AsQueryable();
+            data.Where(x => x.Used < x.Amount);
+            return data.ToDataSourceResult(skip, take, filters, sorts);
+        }
+
+        public DataSourceResult GetDataCreditMemo(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string search)
+        {
+            var data = Db.VwCreditMemos.AsQueryable();
+            data.Where(x => x.Used < x.Amount);
+            return data.ToDataSourceResult(skip, take, filters, sorts);
+        }
         public IEnumerable<VwGeneralCashBankDetail> GetDetailData(string code)
         {
             var data = Db.VwGeneralCashBankDetails.Where(x => x.Code.Equals(code));
@@ -43,6 +70,11 @@ namespace ERP_API.Domain.Services.Finance
             using var transaction = Db.Database.BeginTransaction();
             try
             {
+
+                var querys = new List<string>();
+                (result.Message, result.Success, querys) = Validate(data);
+                if (!result.Success) return result;
+
                 // Get new code
                 var newCode = GetNewCode("CB_NUM_FMT", data.Date);
 
@@ -70,6 +102,13 @@ namespace ERP_API.Domain.Services.Finance
                     j++;
                 }
 
+                if (querys.Any()) {
+                    string query = Convert(querys);
+                    if (!string.IsNullOrEmpty(query))
+                    {
+                        Db.Database.ExecuteSqlRaw(query);
+                    }
+                }
 
                 Db.SaveChanges();
                                
@@ -95,6 +134,10 @@ namespace ERP_API.Domain.Services.Finance
             using var transaction = Db.Database.BeginTransaction();
             try
             {
+                var querys = new List<string>();
+                (result.Message, result.Success, querys) = Validate(data);
+                if (!result.Success) return result;
+
                 // Checking mark header data
                 if (Db.GeneralCashBankHeaders.Any(x => x.Code == data.Code && x.Mark == "V"))
                 {
@@ -104,6 +147,9 @@ namespace ERP_API.Domain.Services.Finance
 
                 data.ApprovedBy = null;
                 data.ApprovedDate = null;
+
+                // Restore transaction to precious data. (roll back data menjadi ketika sebelum edit)
+                Db.Database.ExecuteSqlRaw($"sp_restore_cash_bank_transaction '{data.Code}';");
 
                 // Update header data
                 Db.GeneralCashBankHeaders.Update(data);
@@ -125,7 +171,6 @@ namespace ERP_API.Domain.Services.Finance
                 {
                     if (item.Id <= 0)
                     {
-
                         Db.GeneralCashBankDetails.Add(new GeneralCashBankDetail
                         {
                             Code = data.Code,
@@ -140,19 +185,24 @@ namespace ERP_API.Domain.Services.Finance
                             TransAmount = item.TransAmount,
                             Notes = item.Notes
                         });
-
                     }
                     else
                     {
                         item.LineNo = ++i;
-
                         Db.GeneralCashBankDetails.Update(item);
                         Db.Entry(item).Property(e => e.Code).IsModified = false;
-
                     }
                 }
 
-                
+                if (querys.Any())
+                {
+                    string query = Convert(querys);
+                    if (!string.IsNullOrEmpty(query))
+                    {
+                        Db.Database.ExecuteSqlRaw(query);
+                    }
+                }
+
                 Db.SaveChanges();          
 
                 transaction.Commit();
@@ -182,6 +232,8 @@ namespace ERP_API.Domain.Services.Finance
                     return result;
                 }
 
+                Db.Database.ExecuteSqlRaw($"sp_restore_cash_bank_transaction '{code}';");
+
                 // Update header data
                 data.Mark = "V";
                 data.UpdatedBy = userId;
@@ -193,6 +245,140 @@ namespace ERP_API.Domain.Services.Finance
             result.Success = true;
             result.Message = "Data bank tunai berhasil ditandai sebagai void.";
             return result;
+        }
+
+        private (string, bool, List<string>) Validate(CashBankRequest data) 
+        {
+            var listTransCode = data.ItemDetails.Select(x => x.TransCode).ToList();
+            
+            // validasi hutang
+            var oldTransactions = (from h in Db.GeneralCashBankHeaders
+                                  join d in Db.GeneralCashBankDetails on h.Code equals d.Code
+                                  where h.Mark == "A" && listTransCode.Contains(d.TransCode) && h.Code != data.Code
+                                  select d).ToList();
+            
+            var querys = new List<string>();
+            
+            foreach (var item in data.ItemDetails)
+            {
+                decimal prevTransaction = oldTransactions.Where(x => x.TransCode.Equals(item.TransCode)).Sum(x => x.Amount);
+                decimal totalAmount = prevTransaction + item.Amount;
+
+                if (item.Type == "AP") 
+                {
+                    //validasi hutang
+                    var header = Db.PurchaseInvoiceHeaders.SingleOrDefault(x => x.Code.Equals(item.TransCode));
+
+                    if (totalAmount <= header.Total)
+                    {
+                        string queryHeader = $"UPDATE Purchasing.PurchaseInvoiceHeader SET PaidAmount='{totalAmount}' WHERE Code='{item.TransCode}';";
+                        querys.Add(queryHeader);
+
+                        var detail = Db.PurchaseInvoiceDetails.Where(x => x.Code.Equals(item.TransCode));
+                        foreach (var item2 in detail)
+                        {
+                            var proRateValue = totalAmount * item2.Total / header.Total;
+                            string queryDetail = $"UPDATE Purchasing.PurchaseReceiveHeader SET PaidAmount='{proRateValue}' WHERE Code='{item2.RcvCode}';";
+                            querys.Add(queryDetail);
+                        }
+                    }
+                    else 
+                    {
+                        return ($"Lebih bayar untuk transaksi dengan kode {header.Code}.", false, new List<string>());
+                    }
+                } 
+                else if (item.Type == "AR") 
+                {
+                    // validasi piutang
+                    var header = Db.SalesInvoiceHeaders.SingleOrDefault(x => x.Code.Equals(item.TransCode));
+                    
+                    if (totalAmount <= header.Total)
+                    {
+                        string queryHeader = $"UPDATE Sales.SalesInvoiceHeader SET PaidAmount='{totalAmount}' WHERE Code='{item.TransCode}';";
+                        querys.Add(queryHeader);
+
+                        var detail = Db.SalesInvoiceDetails.Where(x => x.Code.Equals(item.TransCode));
+                        foreach (var item2 in detail)
+                        {
+                            var proRateValue = totalAmount * item2.Total / header.Total;
+                            string queryDetail = $"UPDATE Sales.SalesDeliveryHeader SET PaidAmount='{proRateValue}' WHERE Code='{item2.DoCode}';";
+                            querys.Add(queryDetail);
+                        }
+                    }
+                    else
+                    {
+                        return ($"Lebih bayar untuk transaksi dengan kode {header.Code}.", false, new List<string>());
+                    }
+                }
+                else if (item.Type == "DPC" || item.Type == "DPS") 
+                {
+                    string query = QueryBuilder(item.Type, item.TransCode);
+                    querys.Add(query);
+                }
+                else if (item.Type == "PR" || item.Type == "RDPS" || item.Type == "RDPC" || item.Type == "SR")
+                {
+                    // validasi retur uang muka pembelian dan retur pembelian
+                    if (item.Type == "PR" || item.Type == "RDPS")
+                    {
+                        var memo = Db.DebitMemos.SingleOrDefault(x => x.Code.Equals(item.TransCode));
+                        if (memo != null) 
+                        {
+                            //decimal remaining = memo.Amount - memo.Used;
+                            if (totalAmount > memo.Amount) 
+                            {
+                                return ($"Lebih bayar untuk transaksi dengan kode {memo.Code}.", false, new List<string>());
+                            }
+                        }
+                    }
+                    else if(item.Type == "RDPC" || item.Type == "SR")
+                    {
+                        var memo = Db.CreditMemos.SingleOrDefault(x => x.Code.Equals(item.TransCode));
+                        if (memo != null)
+                        {
+                            //decimal remaining = memo.Amount - memo.Used;
+                            if (totalAmount > memo.Amount)
+                            {
+                                return ($"Lebih bayar untuk transaksi dengan kode {memo.Code}.", false, new List<string>());
+                            }
+                        }
+                    }
+                    string query = QueryBuilder(item.Type, item.TransCode, totalAmount);
+                    querys.Add(query);
+                }
+            }
+            return ("", true, querys);
+        }
+       
+        private string QueryBuilder(string type, string code, decimal amount = 0) 
+        {
+            string query = "";
+             if (type == "DPC")
+            {
+                query = $"UPDATE Sales.CreditMemo SET Mark='A' WHERE Code='{code}';";
+            }
+            else if (type == "DPS")
+            {
+                query = $"UPDATE Purchasing.DebitMemo SET Mark='A' WHERE Code='{code}';";
+            }
+            else if (type == "PR" || type == "RDPS")
+            {
+                query = $"UPDATE Purchasing.DebitMemo SET Used='{amount}' WHERE Code='{code}';";
+            }
+            else if (type == "RDPC" || type == "SR")
+            {
+                query = $"UPDATE Sales.CreditMemo SET Used='{amount}' WHERE Code='{code}';";
+            }
+            return query;
+        }
+
+        private string Convert(List<string> querys) 
+        {
+            string query = "";
+            foreach (var item in querys)
+            {
+                query += item;
+            }
+            return query;
         }
 
         

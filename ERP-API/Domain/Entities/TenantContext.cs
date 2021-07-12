@@ -62,6 +62,8 @@ namespace ERP_API.Domain.Entities
         public DbSet<VwGeneralCashBankHeader> VwGeneralCashBankHeaders { get; set; }
         public DbSet<VwGeneralCashBankDetail> VwGeneralCashBankDetails { get; set; }
         public DbSet<CashBankType> CashBankTypes { get; set; }
+        public DbSet<VwAP> VwAPs { get; set; }
+        public DbSet<VwAR> VwARs { get; set; }
 
         // General entities
         public DbSet<Currency> Currencies { get; set; }
@@ -434,6 +436,14 @@ namespace ERP_API.Domain.Entities
             modelBuilder.Entity<VwGeneralCashBankHeader>()
                 .HasNoKey()
                 .ToView("vwGeneralCashBankHeader", Schema.Finance);
+
+            modelBuilder.Entity<VwAP>()
+                .HasNoKey()
+                .ToView("VwAP", Schema.Finance);
+
+            modelBuilder.Entity<VwAR>()
+                .HasNoKey()
+                .ToView("VwAR", Schema.Finance);
 
             modelBuilder.Entity<GeneralCashBankDetail>(entity =>
             {
