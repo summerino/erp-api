@@ -29,6 +29,8 @@ namespace ERP.Entity.SystemManagement
 
         public long? EmployeeId { get; set; }
 
+        public bool MobileSignIn { get; set; }
+        
         public bool IsLoggedIn { get; set; }
 
         [Column(TypeName = "datetime")]
@@ -59,6 +61,8 @@ namespace ERP.Entity.SystemManagement
         public int RoleId { get; set; }
 
         public long? EmployeeId { get; set; }
+
+        public bool MobileSignIn { get; set; }
 
         public bool IsLoggedIn { get; set; }
 
