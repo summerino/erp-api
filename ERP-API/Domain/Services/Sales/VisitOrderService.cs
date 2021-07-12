@@ -136,13 +136,6 @@ namespace ERP_API.Domain.Services.Sales
             using var transaction = Db.Database.BeginTransaction();
             try
             {
-                // Checking if employee is assigned in same date
-                if (IsEmployeeAssignedInSameDate(data.Date, data.SalesmanId))
-                {
-                    result.Message = "Karyawan tidak dapat dipilih pada tanggal yang sama.";
-                    return result;
-                }
-
                 // Checking mark header data
                 if (Db.VisitOrders.Any(x => x.Code == data.Code && x.Mark == "V"))
                 {
