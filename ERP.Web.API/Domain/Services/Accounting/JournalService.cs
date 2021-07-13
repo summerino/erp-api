@@ -1,16 +1,16 @@
-﻿using ERP.Entity;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using ERP.Common;
+using ERP.Entity;
 using ERP.Entity.Accounting;
 using ERP.Entity.General;
 using ERP.Entity.Inventory;
 using ERP.Entity.SystemManagement;
-using ERP.Web.API.Domain.Models;
-using ERP_API.Domain.Interfaces.Accounting;
-using ERP_API.Model.Accounting;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using ERP.Web.API.Domain.Interfaces.Accounting;
+using ERP.Web.API.Model.Accounting;
 
-namespace ERP_API.Domain.Services.Accounting
+namespace ERP.Web.API.Domain.Services.Accounting
 {
     public class JournalService : IJournalService
     {

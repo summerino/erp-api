@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ERP_API.Model.Accounting
+namespace ERP.Web.API.Model.Accounting
 {
     public class JournalRequest
     {

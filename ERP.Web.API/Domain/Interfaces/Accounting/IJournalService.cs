@@ -1,7 +1,7 @@
-﻿using ERP.Web.API.Domain.Models;
-using ERP_API.Model.Accounting;
+﻿using ERP.Common;
+using ERP.Web.API.Model.Accounting;
 
-namespace ERP_API.Domain.Interfaces.Accounting
+namespace ERP.Web.API.Domain.Interfaces.Accounting
 {
     public interface IJournalService
     {

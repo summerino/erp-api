@@ -1,16 +1,15 @@
-﻿using ERP.Entity;
-using ERP.Web.API.Domain.Interfaces.Auth;
-using ERP.Web.API.Domain.Models;
-using ERP.Web.API.Model;
-using ERP_API.Domain.Interfaces.Accounting;
-using ERP_API.Model.Accounting;
+﻿using System.Linq;
 using Microsoft.AspNetCore.Mvc;
-using System.Linq;
+using ERP.Common;
+using ERP.Entity;
+using ERP.Web.API.Domain.Interfaces.Accounting;
+using ERP.Web.API.Domain.Interfaces.Auth;
+using ERP.Web.API.Model;
+using ERP.Web.API.Model.Accounting;
 
-
-namespace ERP_API.Controllers.Accounting
+namespace ERP.Web.API.Controllers.Accounting
 {
-    [Route("journal")]
+    [Route("[controller]")]
     [ApiController]
     public class JournalController : ControllerBase
     {
