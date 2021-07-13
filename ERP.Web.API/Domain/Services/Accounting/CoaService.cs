@@ -131,7 +131,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
             }
 
             result.Success = true;
-            result.Message = "Data akun berhasil dinonaktifkan.";
+            result.Message = "Data akun berhasil dihapus.";
             return result;
         }
 
