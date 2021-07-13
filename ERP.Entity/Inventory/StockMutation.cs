@@ -53,5 +53,11 @@ namespace ERP.Entity.Inventory
         [Required]
         [StringLength(10)]
         public string Src { get; set; }
+
+        [Column(TypeName = "decimal(19, 6)")]
+        public decimal NettPrice { get; set; }
+
+        [Column(TypeName = "decimal(19, 6)")]
+        public decimal BaseNettPrice { get; set; }
     }
 }

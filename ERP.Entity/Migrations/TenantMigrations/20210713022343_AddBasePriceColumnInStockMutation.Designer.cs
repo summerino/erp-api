@@ -4,14 +4,16 @@ using ERP.Entity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ERP.Entity.Migrations.TenantMigrations
 {
     [DbContext(typeof(TenantContext))]
-    partial class TenantContextModelSnapshot : ModelSnapshot
+    [Migration("20210713022343_AddBasePriceColumnInStockMutation")]
+    partial class AddBasePriceColumnInStockMutation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -10596,32 +10598,11 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.Property<bool>("IsLoggedIn")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("IsMobileLoggedIn")
-                        .HasColumnType("bit");
-
                     b.Property<DateTime?>("LastLogin")
                         .HasColumnType("datetime");
 
-                    b.Property<string>("MobileIpAddress")
-                        .HasMaxLength(40)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(40)")
-                        .HasColumnName("MobileIpAddress");
-
-                    b.Property<DateTime?>("MobileLastLogin")
-                        .HasColumnType("datetime");
-
-                    b.Property<string>("MobileSessionId")
-                        .HasMaxLength(50)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(50)");
-
                     b.Property<bool>("MobileSignIn")
                         .HasColumnType("bit");
-
-                    b.Property<string>("MobileTokenId")
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -10791,29 +10772,11 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.Property<bool>("IsLoggedIn")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("IsMobileLoggedIn")
-                        .HasColumnType("bit");
-
                     b.Property<DateTime?>("LastLogin")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("MobileIpAddress")
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
-
-                    b.Property<DateTime?>("MobileLastLogin")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("MobileSessionId")
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
-
                     b.Property<bool>("MobileSignIn")
                         .HasColumnType("bit");
-
-                    b.Property<string>("MobileTokenId")
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
 
                     b.Property<string>("Name")
                         .IsUnicode(false)

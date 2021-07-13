@@ -35,6 +35,8 @@ using ERP.Web.API.Domain.Services.SystemManagement;
 using ERP.Web.API.Model.Auth;
 using Newtonsoft.Json.Serialization;
 using Swift.Framework;
+using ERP_API.Domain.Interfaces.Accounting;
+using ERP_API.Domain.Services.Accounting;
 
 namespace ERP.Web.API
 {
@@ -143,6 +145,7 @@ namespace ERP.Web.API
             services.AddScoped<ICoaTypeService, CoaTypeService>();
             services.AddScoped<ICurrencyRateService, CurrencyRateService>();
             services.AddScoped<IGeneralJournalService, GeneralJournalService>();
+            services.AddScoped<IJournalService, JournalService>();
 
             // Asset Management services
             services.AddScoped<IAssetTypeService, AssetTypeService>();

@@ -15,7 +15,8 @@
         ViewRelatedTrans = 6,
         Close = 7,
         ChangeDate = 8,
-        Approve = 9
+        Approve = 9,
+        Post = 10
     }
 
     public enum Menu 
@@ -66,7 +67,8 @@
         AccountReceivable = 79,
         GeneralJournal = 84,
         CashBank = 82,
-        CashBankInter = 83
+        CashBankInter = 83,
+        Journal = 86
     }
     public static class ApprovalType
     {
