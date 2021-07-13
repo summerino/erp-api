@@ -44,6 +44,19 @@ namespace ERP.Entity.SystemManagement
         [Column("IPAddress")]
         [StringLength(40)]
         public string IpAddress { get; set; }
+        public bool IsMobileLoggedIn { get; set; }
+
+        [Column(TypeName = "datetime")]
+        public DateTime? MobileLastLogin { get; set; }
+
+        [StringLength(50)]
+        public string MobileSessionId { get; set; }
+
+        public string MobileTokenId { get; set; }
+
+        [Column("MobileIpAddress")]
+        [StringLength(40)]
+        public string MobileIpAddress { get; set; }
     }
 
     public class VwUser : BaseEntityWithActive
@@ -73,7 +86,15 @@ namespace ERP.Entity.SystemManagement
         public string TokenId { get; set; }
 
         public string IpAddress { get; set; }
+        public bool IsMobileLoggedIn { get; set; }
 
+        public DateTime? MobileLastLogin { get; set; }
+
+        public string MobileSessionId { get; set; }
+
+        public string MobileTokenId { get; set; }
+
+        public string MobileIpAddress { get; set; }
 
         public string RoleName { get; set; }
 
