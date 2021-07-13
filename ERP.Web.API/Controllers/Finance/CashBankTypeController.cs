@@ -16,6 +16,7 @@ namespace ERP.Web.API.Controllers.Finance
         private readonly ICashBankTypeService _cashBankType;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
+
         public CashBankTypeController(ICashBankTypeService cashBank, IClaimService claim, IAuthService auth)
         {
             _cashBankType = cashBank;

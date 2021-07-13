@@ -6,16 +6,16 @@ using ERP.Web.API.Model.Finance;
 
 namespace ERP.Web.API.Domain.Interfaces.Finance
 {
-    public interface ICashBankInterService : IGeneralService<GeneralCashBankHeader>
+    public interface IInterCashBankService : IGeneralService<GeneralCashBankHeader>
     {
         DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
             string search);
 
         IEnumerable<VwGeneralCashBankDetail> GetDetailData(string code);
 
-        SaveResult Insert(CashBankInterRequest data);
+        SaveResult Insert(CashBankRequest data);
 
-        SaveResult Update(CashBankInterRequest data);
+        SaveResult Update(CashBankRequest data);
 
         SaveResult Delete(string code, int userId);
     }

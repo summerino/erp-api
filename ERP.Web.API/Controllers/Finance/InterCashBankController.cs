@@ -17,14 +17,14 @@ namespace ERP.Web.API.Controllers.Finance
 {
     [Route("inter-cash-bank")]
     [ApiController]
-    [AllowAnonymous]
-    public class CashBankInterController : ControllerBase
+    public class InterCashBankController : ControllerBase
     {
-        private readonly ICashBankInterService _cashBankInter;
+        private readonly IInterCashBankService _cashBankInter;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
         private const int _menuId = (int)Menu.CashBankInter;
-        public CashBankInterController(ICashBankInterService cashBankInter, IClaimService claim, IAuthService auth)
+
+        public InterCashBankController(IInterCashBankService cashBankInter, IClaimService claim, IAuthService auth)
         {
             _cashBankInter = cashBankInter;
             _claim = claim;
@@ -61,7 +61,7 @@ namespace ERP.Web.API.Controllers.Finance
         }
 
         [HttpPost]
-        public IActionResult OnPost(CashBankInterRequest data)
+        public IActionResult OnPost(CashBankRequest data)
         {
 
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Insert }).Any())
@@ -82,7 +82,7 @@ namespace ERP.Web.API.Controllers.Finance
         }
 
         [HttpPut("{code}")]
-        public IActionResult OnPut(string code, CashBankInterRequest data)
+        public IActionResult OnPut(string code, CashBankRequest data)
         {
 
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Update }).Any())

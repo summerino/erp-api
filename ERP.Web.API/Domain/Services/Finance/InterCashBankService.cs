@@ -11,9 +11,9 @@ using System.Linq;
 
 namespace ERP.Web.API.Domain.Services.Finance
 {
-    public class CashBankInterService : GeneralService<GeneralCashBankHeader>, ICashBankInterService
+    public class InterCashBankService : GeneralService<GeneralCashBankHeader>, IInterCashBankService
     {
-        public CashBankInterService(TenantContext db)
+        public InterCashBankService(TenantContext db)
             : base(db)
         {
         }
@@ -39,7 +39,7 @@ namespace ERP.Web.API.Domain.Services.Finance
             return data;
         }
 
-        public SaveResult Insert(CashBankInterRequest data)
+        public SaveResult Insert(CashBankRequest data)
         {
             var result = new SaveResult(false);
 
@@ -132,7 +132,7 @@ namespace ERP.Web.API.Domain.Services.Finance
             return result;
         }
 
-        public SaveResult Update(CashBankInterRequest data)
+        public SaveResult Update(CashBankRequest data)
         {
             var result = new SaveResult(false);
 
