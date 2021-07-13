@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using ERP.Common.Models;
 using ERP.Entity.Sales;
 using ERP.Web.API.Domain.Models;
 using ERP.Web.API.Model.Sales;

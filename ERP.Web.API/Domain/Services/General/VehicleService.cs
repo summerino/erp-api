@@ -1,11 +1,13 @@
-﻿using ERP.Web.API.Domain.Extensions;
-using ERP.Web.API.Domain.Interfaces.General;
+﻿using ERP.Web.API.Domain.Interfaces.General;
 using ERP.Web.API.Domain.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using ERP.Common;
+using ERP.Common.Extensions;
+using ERP.Common.Models;
 using ERP.Entity;
 using ERP.Entity.General;
 

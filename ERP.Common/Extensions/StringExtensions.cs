@@ -1,4 +1,4 @@
-﻿namespace ERP.Web.API.Domain.Extensions
+﻿namespace ERP.Common.Extensions
 {
     public static class StringExtensions
     {

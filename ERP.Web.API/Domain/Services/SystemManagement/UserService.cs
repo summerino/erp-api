@@ -4,13 +4,15 @@ using ERP.Web.API.Domain.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ERP.Common;
+using ERP.Common.Extensions;
+using ERP.Common.Models;
 using ERP.Entity;
 using ERP.Web.API.Model.SystemManagement;
 using UserTenant = ERP.Entity.SystemManagement.User;
 using UserCatalog = ERP.Entity.Catalog.User;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
-using ERP.Web.API.Domain.Extensions;
 
 namespace ERP.Web.API.Domain.Services.SystemManagement
 {

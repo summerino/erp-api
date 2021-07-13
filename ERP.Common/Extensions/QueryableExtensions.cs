@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
-using ERP.Web.API.Domain.Models;
+using ERP.Common.Models;
 using Newtonsoft.Json.Linq;
 
-namespace ERP.Web.API.Domain.Extensions
+namespace ERP.Common.Extensions
 {
     public static class QueryableExtensions
     {

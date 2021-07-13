@@ -1,5 +1,4 @@
 ﻿using ERP.Entity.Sales;
-using ERP.Web.API.Domain.Extensions;
 using ERP.Web.API.Domain.Interfaces.Sales;
 using ERP.Web.API.Domain.Models;
 using ERP.Web.API.Model.Sales;
@@ -8,6 +7,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Threading.Tasks;
+using ERP.Common;
+using ERP.Common.Extensions;
+using ERP.Common.Models;
 using ERP.Entity;
 
 namespace ERP.Web.API.Domain.Services.Sales

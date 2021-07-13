@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ERP.Common;
+using ERP.Common.Models;
 
 namespace ERP.Web.API.Domain.Interfaces.Sales
 {

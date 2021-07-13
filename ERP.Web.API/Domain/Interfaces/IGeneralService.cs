@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using ERP.Common;
+using ERP.Common.Models;
 using ERP.Web.API.Domain.Models;
 
 namespace ERP.Web.API.Domain.Interfaces
