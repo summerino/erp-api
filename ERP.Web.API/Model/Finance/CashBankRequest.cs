@@ -9,6 +9,7 @@ namespace ERP.Web.API.Model.Finance
         {
             ItemDetails = new List<GeneralCashBankDetail>();
         }
+
         public List<GeneralCashBankDetail> ItemDetails { get; set; }
     }
 }

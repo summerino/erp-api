@@ -67,6 +67,7 @@
         AccountReceivable = 79,
         GeneralJournal = 84,
         CashBank = 82,
+        CashBankInter = 83,
         Journal = 86
     }
     public static class ApprovalType

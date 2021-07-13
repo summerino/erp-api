@@ -1,6 +1,8 @@
 ﻿using ERP.Entity.SystemManagement;
 using ERP.Web.API.Domain.Models;
 using System.Collections.Generic;
+using ERP.Common;
+using ERP.Common.Models;
 
 namespace ERP.Web.API.Domain.Interfaces.SystemManagement
 {

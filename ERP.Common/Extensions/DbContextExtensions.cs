@@ -1,12 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
-namespace ERP.Web.API.Extensions
+namespace ERP.Common.Extensions
 {
     public static class DbContextExtensions
     {

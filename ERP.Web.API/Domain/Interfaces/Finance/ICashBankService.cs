@@ -1,6 +1,8 @@
 ﻿using ERP.Web.API.Domain.Models;
 using ERP.Web.API.Model.Finance;
 using System.Collections.Generic;
+using ERP.Common;
+using ERP.Common.Models;
 using ERP.Entity.Finance;
 
 namespace ERP.Web.API.Domain.Interfaces.Finance

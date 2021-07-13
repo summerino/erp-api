@@ -1,4 +1,4 @@
-﻿namespace ERP.Web.API.Domain.Models
+﻿namespace ERP.Common
 {
     public class SaveResult
     {

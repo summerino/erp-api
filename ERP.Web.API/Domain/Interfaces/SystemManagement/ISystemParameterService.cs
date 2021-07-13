@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using ERP.Common;
+using ERP.Common.Models;
 using ERP.Entity.SystemManagement;
 using ERP.Web.API.Domain.Models;
 using ERP.Web.API.Model.SystemManagement;

@@ -1,4 +1,5 @@
-﻿using ERP.Entity.Sales;
+﻿using ERP.Common;
+using ERP.Entity.Sales;
 using ERP.Web.API.Domain.Models;
 using ERP.Web.API.Domain.Models.Sales;
 using ERP.Web.API.Model.Sales;

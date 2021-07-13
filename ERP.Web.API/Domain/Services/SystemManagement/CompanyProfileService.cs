@@ -1,10 +1,12 @@
 ﻿using ERP.Entity.SystemManagement;
-using ERP.Web.API.Domain.Extensions;
 using ERP.Web.API.Domain.Interfaces.SystemManagement;
 using ERP.Web.API.Domain.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ERP.Common;
+using ERP.Common.Extensions;
+using ERP.Common.Models;
 using ERP.Entity;
 
 namespace ERP.Web.API.Domain.Services.SystemManagement

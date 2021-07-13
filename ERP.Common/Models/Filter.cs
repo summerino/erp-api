@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace ERP.Web.API.Domain.Models
+namespace ERP.Common.Models
 {
     public class Filter
     {

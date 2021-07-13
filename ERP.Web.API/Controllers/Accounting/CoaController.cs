@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
+using ERP.Common;
+using ERP.Common.Models;
 using Microsoft.AspNetCore.Mvc;
 using ERP.Entity;
 using ERP.Entity.Accounting;
@@ -55,7 +57,7 @@ namespace ERP.Web.API.Controllers.Accounting
                     .ToDynamicList()
                     .Select(x => new
                     {
-                        x.Id, x.Code, x.Name, x.ParentId
+                        x.Id, x.Code, x.Name, x.ParentId, x.CurrCode, x.VouCode
                     })
                     .ToList<dynamic>();
 

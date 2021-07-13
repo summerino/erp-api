@@ -10596,11 +10596,32 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.Property<bool>("IsLoggedIn")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("IsMobileLoggedIn")
+                        .HasColumnType("bit");
+
                     b.Property<DateTime?>("LastLogin")
                         .HasColumnType("datetime");
 
+                    b.Property<string>("MobileIpAddress")
+                        .HasMaxLength(40)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(40)")
+                        .HasColumnName("MobileIpAddress");
+
+                    b.Property<DateTime?>("MobileLastLogin")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("MobileSessionId")
+                        .HasMaxLength(50)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(50)");
+
                     b.Property<bool>("MobileSignIn")
                         .HasColumnType("bit");
+
+                    b.Property<string>("MobileTokenId")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -10770,11 +10791,29 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.Property<bool>("IsLoggedIn")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("IsMobileLoggedIn")
+                        .HasColumnType("bit");
+
                     b.Property<DateTime?>("LastLogin")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("MobileIpAddress")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<DateTime?>("MobileLastLogin")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("MobileSessionId")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
                     b.Property<bool>("MobileSignIn")
                         .HasColumnType("bit");
+
+                    b.Property<string>("MobileTokenId")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
 
                     b.Property<string>("Name")
                         .IsUnicode(false)
