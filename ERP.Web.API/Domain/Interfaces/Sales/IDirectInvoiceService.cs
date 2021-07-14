@@ -3,13 +3,14 @@ using ERP.Entity.Sales;
 using ERP.Web.API.Domain.Models;
 using ERP.Web.API.Domain.Models.Sales;
 using ERP.Web.API.Model.Sales;
+using System.Collections.Generic;
 
 namespace ERP.Web.API.Domain.Interfaces.Sales
 {
     public interface IDirectInvoiceService : IGeneralService<SalesInvoiceHeader>
     {
         DirectInvoiceRequest FindByCode(string code);
-
+        List<dynamic> GetRelatedTransactions(string code);
         SaveResult Insert(SalesInvoiceRequest data);
 
         SaveResult Update(SalesInvoiceRequest data);

@@ -67,7 +67,24 @@ namespace ERP.Web.API.Controllers.Purchase
                 TableData = data
             });
         }
+        [HttpGet("related-trans")]
+        public IActionResult GetRelatedTransactions(string code)
+        {
+            var data = _inv.GetRelatedTransactions(code)
+                .Select(x => new
+                {
+                    x.Code,
+                    x.Date,
+                    Total = x.Amount,
+                    Type = "Kas Bank"
+                }).ToList<dynamic>();
 
+            return Ok(new ApiResponse
+            {
+                RowCount = data.Count,
+                TableData = data
+            });
+        }
         [HttpPost]
         public IActionResult OnPost(PurchaseInvoiceRequest data)
         {

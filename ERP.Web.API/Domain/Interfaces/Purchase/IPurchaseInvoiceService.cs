@@ -13,6 +13,7 @@ namespace ERP.Web.API.Domain.Interfaces.Purchase
             string search);
 
         IEnumerable<PurchaseInvoiceDetail> GetDetailData(string code);
+        List<dynamic> GetRelatedTransactions(string code);
 
         SaveResult Insert(PurchaseInvoiceRequest data);
 

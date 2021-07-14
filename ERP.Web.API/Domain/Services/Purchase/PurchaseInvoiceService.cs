@@ -10,6 +10,7 @@ using ERP.Entity.Purchase;
 using ERP.Web.API.Domain.Interfaces.Purchase;
 using ERP.Web.API.Domain.Models;
 using ERP.Web.API.Model.Purchase;
+using System.Linq.Dynamic.Core;
 
 namespace ERP.Web.API.Domain.Services.Purchase
 {
@@ -245,6 +246,12 @@ namespace ERP.Web.API.Domain.Services.Purchase
         {
             var result = new SaveResult(false);
 
+            if (IsAlreadyInTransaction(code))
+            {
+                result.Message = "Data faktur pembelian tidak bisa ditandai sebagai void karena sudah ada ditransaksi";
+                return result;
+            }
+
             var data = Db.PurchaseInvoiceHeaders.Find(code);
             if (data != null)
             {
@@ -301,6 +308,28 @@ namespace ERP.Web.API.Domain.Services.Purchase
         private bool IsPurchaseOrderInvalid(string poCode)
         {
             return Db.PurchaseOrderHeaders.Any(x => x.Code == poCode && !new[] { "PR", "CMP" }.Contains(x.Mark));
+        }
+        private bool IsAlreadyInTransaction(string code)
+        {
+            return (from h in Db.GeneralCashBankHeaders
+                    join d in Db.GeneralCashBankDetails on h.Code equals d.Code
+                    where h.Mark == "A"
+                    select h.Code).Any();
+        }
+
+        public List<dynamic> GetRelatedTransactions(string code)
+        {
+
+            var data = (from h in Db.GeneralCashBankHeaders
+                        join d in Db.GeneralCashBankDetails on h.Code equals d.Code
+                        where h.Mark == "A" && d.TransCode == code
+                        select new { 
+                            h.Code,
+                            h.Date,
+                            h.Amount
+                        }).GroupBy(x=>x.Code);
+
+            return data.ToDynamicList();
         }
     }
 }
