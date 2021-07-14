@@ -13,7 +13,7 @@ namespace ERP.Web.API.Domain.Interfaces.Sales
             string search);
 
         IEnumerable<SalesInvoiceDetail> GetDetailData(string code);
-
+        List<dynamic> GetRelatedTransactions(string code);
         SaveResult Insert(SalesInvoiceRequest data);
 
         SaveResult Update(SalesInvoiceRequest data);

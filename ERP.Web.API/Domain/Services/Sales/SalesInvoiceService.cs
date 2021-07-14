@@ -10,6 +10,7 @@ using ERP.Entity.Sales;
 using ERP.Web.API.Domain.Interfaces.Sales;
 using ERP.Web.API.Domain.Models;
 using ERP.Web.API.Model.Sales;
+using System.Linq.Dynamic.Core;
 
 namespace ERP.Web.API.Domain.Services.Sales
 {
@@ -40,6 +41,21 @@ namespace ERP.Web.API.Domain.Services.Sales
         public IEnumerable<SalesInvoiceDetail> GetDetailData(string code)
         {
             return Db.SalesInvoiceDetails.Where(x => x.Code == code).OrderBy(x => x.LineNo);
+        }
+        public List<dynamic> GetRelatedTransactions(string code)
+        {
+
+            var data = (from h in Db.GeneralCashBankHeaders
+                        join d in Db.GeneralCashBankDetails on h.Code equals d.Code
+                        where h.Mark == "A" && d.TransCode == code
+                        select new
+                        {
+                            h.Code,
+                            h.Date,
+                            h.Amount
+                        });
+
+            return data.ToDynamicList();
         }
 
         public SaveResult Insert(SalesInvoiceRequest data)
@@ -245,6 +261,12 @@ namespace ERP.Web.API.Domain.Services.Sales
         {
             var result = new SaveResult(false);
 
+            if (IsAlreadyInTransaction(code))
+            {
+                result.Message = "Data faktur penjualan tidak bisa ditandai sebagai void karena sudah ada ditransaksi";
+                return result;
+            }
+
             var data = Db.SalesInvoiceHeaders.Find(code);
             if (data != null)
             {
@@ -302,5 +324,13 @@ namespace ERP.Web.API.Domain.Services.Sales
         {
             return Db.SalesOrderHeaders.Any(x => x.Code == soCode && !new[] { "PS", "CMP" }.Contains(x.Mark));
         }
+        private bool IsAlreadyInTransaction(string code)
+        {
+            return (from h in Db.GeneralCashBankHeaders
+                    join d in Db.GeneralCashBankDetails on h.Code equals d.Code
+                    where h.Mark == "A"
+                    select h.Code).Any();
+        }
+
     }
 }

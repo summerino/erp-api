@@ -63,6 +63,7 @@ namespace ERP.Entity.Sales
         public decimal PaidAmount { get; set; }
 
         public decimal Total { get; set; }
+        public decimal Remaining { get; set; }
 
         public string Notes { get; set; }
 
