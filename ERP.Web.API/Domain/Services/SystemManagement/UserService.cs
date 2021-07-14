@@ -85,7 +85,7 @@ namespace ERP.Web.API.Domain.Services.SystemManagement
 
                 _catalogCtx.Add(newCatalogUser);
                 _catalogCtx.SaveChanges();
-
+                 
                 var newTenantUser = new UserTenant()
                 {
                     CatalogUserId = newCatalogUser.Id,
