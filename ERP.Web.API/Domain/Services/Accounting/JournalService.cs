@@ -43,11 +43,20 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     _db.RemoveRange(removedAR);
                 }
 
+                var removedCB = _db.Journals.Where(x => x.Date.Month == data.Date.Month && x.Date.Year == data.Date.Year && x.SrcTrans == "CB").ToList();
+                if (removedCB != null)
+                {
+                    _db.RemoveRange(removedCB);
+                }
+
                 var journalAP = ProcessPurchaseJournal(data.Date, systemParam, items, taxes);
                 _db.AddRange(journalAP);
 
                 var journalAR = ProcessSaleJournal(data.Date, systemParam, items, taxes);
                 _db.AddRange(journalAR);
+
+                var journalCB = ProcessCashBankJournal(data.Date, systemParam);
+                _db.AddRange(journalCB);
 
                 _db.SaveChanges();
 
@@ -416,6 +425,74 @@ namespace ERP.Web.API.Domain.Services.Accounting
             return journals;
         }
 
+        private IEnumerable<Journal> ProcessCashBankJournal(DateTime dateTime, List<SystemParameter> systemParam)
+        {
+            List<Journal> journals = new();
+            var cashBankData = _db.GeneralCashBankHeaders.Where(x => x.Date.Month == dateTime.Month && x.Date.Year == dateTime.Year).ToList();
+            foreach (var itemData in cashBankData)
+            {
+                var cashBankDetailData = _db.GeneralCashBankDetails.Where(x => x.Code == itemData.Code).ToList();
+                short i = 0;
+                short j = 0;
+                foreach (var itemDetailData in cashBankDetailData)
+                {   
+                    //Detail
+                    journals.Add(new Journal
+                    {
+                        Code = itemData.Code,
+                        LineNo = ++i,
+                        Date = itemData.Date,
+                        CoaCode = itemDetailData.CoaCode ?? systemParam.FirstOrDefault(x => x.Code == $"{itemDetailData.Type}_COA")?.Value ?? "",
+                        TypeCode = "CB_DT",
+                        Notes = ($"{systemParam.FirstOrDefault(x => x.Code == $"JR_PREFIX_{itemDetailData.Type}")?.Value ?? ""} {itemDetailData.Notes}").Trim(),
+                        RefCode1 = itemDetailData.TransCode,
+                        Group = 1,
+                        CurrCode = itemDetailData.CurrCode,
+                        Period = itemData.Date.ToString("yyyyMMdd"),
+                        Type = itemDetailData.TypeAmount,
+                        Amount = itemDetailData.Amount,
+                        SrcTrans = "CB"
+                    });
+                    //Header
+                    journals.Add(new Journal
+                    {
+                        Code = itemData.Code,
+                        LineNo = ++j,
+                        Date = itemData.Date,
+                        CoaCode = itemData.CoaCode ?? "",
+                        TypeCode = "CB",
+                        //Notes = ($"{systemParam.FirstOrDefault(x => x.Code == $"JR_PREFIX_{itemDetailData.Type}")?.Value ?? ""} {itemDetailData.Notes}").Trim(),
+                        //RefCode1 = itemDetailData.TransCode,
+                        Group = 2,
+                        CurrCode = itemData.CurrCode,
+                        Period = itemData.Date.ToString("yyyyMMdd"),
+                        Type = itemDetailData.TypeAmount == "C" ? "D" : "C",
+                        Amount = itemDetailData.Amount,
+                        SrcTrans = "CB"
+                    });
+                }
+                ////Header
+                //journals.Add(new Journal
+                //{
+                //    Code = itemData.Code,
+                //    LineNo = 1,
+                //    Date = itemData.Date,
+                //    CoaCode = itemData.CoaCode ?? "",
+                //    TypeCode = "CB",
+                //    //Notes = ($"{systemParam.FirstOrDefault(x => x.Code == $"JR_PREFIX_{itemDetailData.Type}")?.Value ?? ""} {itemDetailData.Notes}").Trim(),
+                //    RefCode1 = itemData.Code,
+                //    Group = 2,
+                //    CurrCode = itemData.CurrCode,
+                //    Period = itemData.Date.ToString("yyyyMMdd"),
+                //    Type = itemData.Type,
+                //    Amount = journals.Sum(x => x.Amount),
+                //    SrcTrans = "CB"
+                //});
+            }
+
+            return journals;
+        }
+
         private decimal CalculateHPP(IEnumerable<StockMutation> stockMutations, string whCode, int itemId, long dlvId)
         {
             decimal latestQty = 0;
@@ -427,11 +504,12 @@ namespace ERP.Web.API.Domain.Services.Accounting
 
             var currentSM = stockMutations.FirstOrDefault(x => x.WarehouseCode == whCode && x.ItemId == itemId && x.RefDetailId1 == dlvId);
 
-            latestStockValue += firstSM.BaseNettPrice;
+            latestStockValue += firstSM.BaseNettPrice * firstSM.BaseQty;
             latestQty += firstSM.BaseQty;
             hpp = latestStockValue / latestQty;
 
-            foreach (var item in stockMutations.Where(x => x.WarehouseCode == whCode && x.ItemId == itemId && x.Id > firstId && x.Id <= currentSM.Id).OrderBy(x => x.Id))
+            var listSM = stockMutations.Where(x => x.WarehouseCode == whCode && x.ItemId == itemId && x.Id > firstId && x.Id <= currentSM.Id).OrderBy(x => x.Id).ToList();
+            foreach (var item in listSM)
             {
                 if (item.Src == "RCV")
                 {
