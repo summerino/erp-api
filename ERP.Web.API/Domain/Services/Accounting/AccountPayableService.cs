@@ -78,6 +78,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
             // Update data
             Db.BeginningBalanceAPs.Update(data);
             Db.Entry(data).Property(e => e.Id).IsModified = false;
+            Db.Entry(data).Property(e => e.PaidAmount).IsModified = false;
             Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
             Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
 
@@ -89,9 +90,36 @@ namespace ERP.Web.API.Domain.Services.Accounting
             return result;
         }
 
-        public SaveResult Delete(int id, int userId)
+        public SaveResult Delete(long id, int userId)
         {
-            throw new NotImplementedException();
+            var result = new SaveResult(false);
+
+            var data = Db.BeginningBalanceAPs.Find(id);
+            if (data != null)
+            {
+
+                //Check if any cash bank already using this BBAP
+                var validRes = Db.GeneralCashBankDetails
+                            .Join(Db.GeneralCashBankHeaders, detail => detail.Code, header => header.Code, (detail, header) => new { Detail = detail, Header = header })
+                            .Where(x => x.Detail.TransCode == data.Code).ToList();
+                foreach (var item in validRes)
+                {
+                    if (item.Header.Mark == "A")
+                    {
+                        result.Message = "Tidak bisa menghapus data hutang karena telah digunakan pada data bank tunai.";
+                        return result;
+                    }
+                }
+
+                // Delete data
+                Db.BeginningBalanceAPs.Remove(data);
+
+                Db.SaveChanges();
+            }
+
+            result.Success = true;
+            result.Message = "Data hutang berhasil dihapus.";
+            return result;
         }
 
         private bool IsCodeExists(string code, long id)

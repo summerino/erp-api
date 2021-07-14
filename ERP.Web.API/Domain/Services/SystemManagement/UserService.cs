@@ -158,6 +158,7 @@ namespace ERP.Web.API.Domain.Services.SystemManagement
                 userTenant.Name = data.Name;
                 userTenant.RoleId = data.RoleId;
                 userTenant.EmployeeId = data.EmployeeId;
+                userTenant.MobileSignIn = data.MobileSignIn;
                 userTenant.IsActive = data.IsActive;
                 userTenant.UpdatedBy = data.UpdatedBy;
                 userTenant.UpdatedDate = data.UpdatedDate;
