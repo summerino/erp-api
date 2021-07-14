@@ -21,6 +21,6 @@ namespace ERP.Web.API.Domain.Interfaces.SystemManagement
 
         SaveResult Delete(int id);
 
-
+        SaveResult ChangePassword(UserRequest data);
     }
 }
