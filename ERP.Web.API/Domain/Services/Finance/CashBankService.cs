@@ -273,24 +273,26 @@ namespace ERP.Web.API.Domain.Services.Finance
 
                     //validasi hutang
                     var header = Db.PurchaseInvoiceHeaders.SingleOrDefault(x => x.Code.Equals(item.TransCode));
-
-                    if (totalAmount <= header.Total)
-                    {
-                        string queryHeader = $"UPDATE Purchasing.PurchaseInvoiceHeader SET PaidAmount='{totalAmount}' WHERE Code='{item.TransCode}';";
-                        querys.Add(queryHeader);
-
-                        var detail = Db.PurchaseInvoiceDetails.Where(x => x.Code.Equals(item.TransCode));
-                        foreach (var item2 in detail)
+                    if (header != null) {
+                        if (totalAmount <= header.Total)
                         {
-                            var proRateValue = totalAmount * item2.Total / header.Total;
-                            string queryDetail = $"UPDATE Purchasing.PurchaseReceiveHeader SET PaidAmount='{proRateValue}' WHERE Code='{item2.RcvCode}';";
-                            querys.Add(queryDetail);
+                            string queryHeader = $"UPDATE Purchasing.PurchaseInvoiceHeader SET PaidAmount='{totalAmount}' WHERE Code='{item.TransCode}';";
+                            querys.Add(queryHeader);
+
+                            var detail = Db.PurchaseInvoiceDetails.Where(x => x.Code.Equals(item.TransCode));
+                            foreach (var item2 in detail)
+                            {
+                                var proRateValue = totalAmount * item2.Total / header.Total;
+                                string queryDetail = $"UPDATE Purchasing.PurchaseReceiveHeader SET PaidAmount='{proRateValue}' WHERE Code='{item2.RcvCode}';";
+                                querys.Add(queryDetail);
+                            }
+                        }
+                        else
+                        {
+                            return ($"Lebih bayar untuk transaksi dengan kode {header.Code}.", false, new List<string>());
                         }
                     }
-                    else 
-                    {
-                        return ($"Lebih bayar untuk transaksi dengan kode {header.Code}.", false, new List<string>());
-                    }
+                    
                 } 
                 else if (item.Type == "AR") 
                 {
@@ -299,23 +301,26 @@ namespace ERP.Web.API.Domain.Services.Finance
                     decimal totalAmount = prevTransaction + item.Amount;
                     // validasi piutang
                     var header = Db.SalesInvoiceHeaders.SingleOrDefault(x => x.Code.Equals(item.TransCode));
-                    
-                    if (totalAmount <= header.Total)
-                    {
-                        string queryHeader = $"UPDATE Sales.SalesInvoiceHeader SET PaidAmount='{totalAmount}' WHERE Code='{item.TransCode}';";
-                        querys.Add(queryHeader);
 
-                        var detail = Db.SalesInvoiceDetails.Where(x => x.Code.Equals(item.TransCode));
-                        foreach (var item2 in detail)
-                        {
-                            var proRateValue = totalAmount * item2.Total / header.Total;
-                            string queryDetail = $"UPDATE Sales.SalesDeliveryHeader SET PaidAmount='{proRateValue}' WHERE Code='{item2.DoCode}';";
-                            querys.Add(queryDetail);
-                        }
-                    }
-                    else
+                    if (header != null) 
                     {
-                        return ($"Lebih bayar untuk transaksi dengan kode {header.Code}.", false, new List<string>());
+                        if (totalAmount <= header.Total)
+                        {
+                            string queryHeader = $"UPDATE Sales.SalesInvoiceHeader SET PaidAmount='{totalAmount}' WHERE Code='{item.TransCode}';";
+                            querys.Add(queryHeader);
+
+                            var detail = Db.SalesInvoiceDetails.Where(x => x.Code.Equals(item.TransCode));
+                            foreach (var item2 in detail)
+                            {
+                                var proRateValue = totalAmount * item2.Total / header.Total;
+                                string queryDetail = $"UPDATE Sales.SalesDeliveryHeader SET PaidAmount='{proRateValue}' WHERE Code='{item2.DoCode}';";
+                                querys.Add(queryDetail);
+                            }
+                        }
+                        else
+                        {
+                            return ($"Lebih bayar untuk transaksi dengan kode {header.Code}.", false, new List<string>());
+                        }
                     }
                 }
                 else if (item.Type == "DPC" || item.Type == "DPS") 
