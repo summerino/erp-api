@@ -56,49 +56,72 @@ namespace ERP.Web.API.Domain.Services.Finance
         }
         public DataSourceResult GetDataDebitMemo(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string search, string cashBankCode, string type)
         {
+            var listExistingTransactions = new List<string>();
             var data = Db.VwDebitMemos.Where(x => x.Used < x.Amount).AsQueryable();
-
-            if (!string.IsNullOrEmpty(cashBankCode) && !string.IsNullOrWhiteSpace(cashBankCode)) 
-            {
-                var listExistingTransactions = Db.GeneralCashBankDetails.Where(x => x.Code.Equals(cashBankCode)).Select(x => x.TransCode).ToList();
-                data = data.Where(x => !listExistingTransactions.Contains(x.Code));
-            }
-
             if (type == "RDPS")
             {
+                if (!string.IsNullOrEmpty(cashBankCode) && !string.IsNullOrWhiteSpace(cashBankCode))
+                {
+                    listExistingTransactions = Db.GeneralCashBankDetails.Where(x => x.Code.Equals(cashBankCode)).Select(x => x.TransCode).ToList();
+                    data = data.Where(x => !listExistingTransactions.Contains(x.Code));
+                }
                 data.Where(x => x.SrcTrans == 1 && x.Remaining > 0 && (x.Mark == "A" || x.Mark == "PU"));
+                return data.ToDataSourceResult(skip, take, filters, sorts);
             }
             else if (type == "DPS")
             {
+                if (!string.IsNullOrEmpty(cashBankCode) && !string.IsNullOrWhiteSpace(cashBankCode))
+                {
+                    listExistingTransactions = Db.GeneralCashBankDetails.Where(x => x.Code.Equals(cashBankCode)).Select(x => x.TransCode).ToList();
+                    data = data.Where(x => !listExistingTransactions.Contains(x.Code));
+                }
                 data.Where(x => x.SrcTrans == 1 && x.Mark == "PP");
             }
             else if (type == "PR")
             {
-                data.Where(x => x.SrcTrans != 1 && (x.Mark == "PU" || x.Mark == "A"));
+                var pr = Db.VwPRs.AsQueryable();
+                if (!string.IsNullOrEmpty(cashBankCode) && !string.IsNullOrWhiteSpace(cashBankCode))
+                {
+                    listExistingTransactions = Db.GeneralCashBankDetails.Where(x => x.Code.Equals(cashBankCode)).Select(x => x.TransCode).ToList();
+                    pr = pr.Where(x => !listExistingTransactions.Contains(x.Code));
+                }
+                return pr.ToDataSourceResult(skip, take, filters, sorts);
             }
-
             return data.ToDataSourceResult(skip, take, filters, sorts);
         }
         public DataSourceResult GetDataCreditMemo(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string search, string cashBankCode, string type)
         {
+           
+            var listExistingTransactions = new List<string>();
             var data = Db.VwCreditMemos.Where(x => x.Used < x.Amount).AsQueryable();
-
-            if (!string.IsNullOrEmpty(cashBankCode) && !string.IsNullOrWhiteSpace(cashBankCode))
-            {
-                var listExistingTransactions = Db.GeneralCashBankDetails.Where(x => x.Code.Equals(cashBankCode)).Select(x => x.TransCode).ToList();
-                data = data.Where(x => !listExistingTransactions.Contains(x.Code));
-            }
             if (type == "RDPC")
             {
+                if (!string.IsNullOrEmpty(cashBankCode) && !string.IsNullOrWhiteSpace(cashBankCode))
+                {
+                    listExistingTransactions = Db.GeneralCashBankDetails.Where(x => x.Code.Equals(cashBankCode)).Select(x => x.TransCode).ToList();
+                    data = data.Where(x => !listExistingTransactions.Contains(x.Code));
+                }
                 data.Where(x => x.SrcTrans == 1 && x.Remaining > 0 && (x.Mark == "A" || x.Mark == "PU"));
-            } 
+                return data.ToDataSourceResult(skip, take, filters, sorts);
+            }
             else if (type == "DPC")
             {
+                if (!string.IsNullOrEmpty(cashBankCode) && !string.IsNullOrWhiteSpace(cashBankCode))
+                {
+                    listExistingTransactions = Db.GeneralCashBankDetails.Where(x => x.Code.Equals(cashBankCode)).Select(x => x.TransCode).ToList();
+                    data = data.Where(x => !listExistingTransactions.Contains(x.Code));
+                }
                 data.Where(x => x.SrcTrans == 1 && x.Mark == "PP");
             }
-            else if (type == "SR") 
+            else if (type == "SR")
             {
-                data.Where(x => x.SrcTrans != 1 && (x.Mark == "PU" || x.Mark == "A"));
+                var pr = Db.VwSRs.AsQueryable();
+                if (!string.IsNullOrEmpty(cashBankCode) && !string.IsNullOrWhiteSpace(cashBankCode))
+                {
+                    listExistingTransactions = Db.GeneralCashBankDetails.Where(x => x.Code.Equals(cashBankCode)).Select(x => x.TransCode).ToList();
+                    pr = pr.Where(x => !listExistingTransactions.Contains(x.Code));
+                }
+                return pr.ToDataSourceResult(skip, take, filters, sorts);
             }
             return data.ToDataSourceResult(skip, take, filters, sorts);
         }
