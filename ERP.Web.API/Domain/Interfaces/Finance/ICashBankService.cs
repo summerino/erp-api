@@ -12,10 +12,10 @@ namespace ERP.Web.API.Domain.Interfaces.Finance
             string search);
 
         DataSourceResult GetDataAP(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
-            string search);
+            string search, string cashbankCode);
 
         DataSourceResult GetDataAR(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
-            string search);
+            string search, string cashbankCode);
 
         DataSourceResult GetDataDebitMemo(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
             string search, string cashbankCode);
