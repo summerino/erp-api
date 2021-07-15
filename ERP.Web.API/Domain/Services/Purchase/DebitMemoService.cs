@@ -65,14 +65,23 @@ namespace ERP.Web.API.Domain.Services.Purchase
 
         public List<dynamic> GetRelatedTransactions(string code)
         {
-            var piD = from dt in Db.PurchaseInvoiceDetails
-                      where dt.RcvCode == code
-                      select dt.Code;
+            //var piD = from dt in Db.PurchaseInvoiceDetails
+            //          where dt.RcvCode == code
+            //          select dt.Code;
 
-            var data = from piH in Db.PurchaseInvoiceHeaders
-                       where piD.Contains(piH.Code) && piH.Mark == "A"
-                       select new { piH.Code, piH.Date, piH.Total };
+            //var data = from piH in Db.PurchaseInvoiceHeaders
+            //           where piD.Contains(piH.Code) && piH.Mark == "A"
+            //           select new { piH.Code, piH.Date, piH.Total };
 
+            var data = (from h in Db.GeneralCashBankHeaders
+                        join d in Db.GeneralCashBankDetails on h.Code equals d.Code
+                        where h.Mark == "A" && d.TransCode == code
+                        select new
+                        {
+                            h.Code,
+                            h.Date,
+                            Total = h.Amount
+                        });
             return data.ToDynamicList();
         }
 

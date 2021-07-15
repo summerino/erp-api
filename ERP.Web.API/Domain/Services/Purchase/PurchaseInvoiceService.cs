@@ -323,11 +323,12 @@ namespace ERP.Web.API.Domain.Services.Purchase
             var data = (from h in Db.GeneralCashBankHeaders
                         join d in Db.GeneralCashBankDetails on h.Code equals d.Code
                         where h.Mark == "A" && d.TransCode == code
-                        select new { 
+                        select new
+                        {
                             h.Code,
                             h.Date,
                             h.Amount
-                        }).GroupBy(x=>x.Code);
+                        });
 
             return data.ToDynamicList();
         }
