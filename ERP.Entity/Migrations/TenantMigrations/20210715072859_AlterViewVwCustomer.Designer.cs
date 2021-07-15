@@ -4,14 +4,16 @@ using ERP.Entity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ERP.Entity.Migrations.TenantMigrations
 {
     [DbContext(typeof(TenantContext))]
-    partial class TenantContextModelSnapshot : ModelSnapshot
+    [Migration("20210715072859_AlterViewVwCustomer")]
+    partial class AlterViewVwCustomer
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -5165,47 +5167,9 @@ namespace ERP.Entity.Migrations.TenantMigrations
 
                     b.HasKey("Code");
 
-                    b.HasIndex("CurrCode");
-
-                    b.HasIndex("SupCode");
-
                     b.HasIndex("TransCode");
 
                     b.ToTable("DebitMemo", "Purchasing");
-                });
-
-            modelBuilder.Entity("ERP.Entity.Purchase.PurchaseInvoiceDebitMemo", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<decimal>("DebitMemoAmount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("DebitMemoCode")
-                        .IsRequired()
-                        .HasMaxLength(17)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(17)");
-
-                    b.Property<decimal>("InvAmount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("InvCode")
-                        .IsRequired()
-                        .HasMaxLength(17)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(17)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DebitMemoCode");
-
-                    b.HasIndex("InvCode");
-
-                    b.ToTable("PurchaseInvoiceDebitMemo", "Purchasing");
                 });
 
             modelBuilder.Entity("ERP.Entity.Purchase.PurchaseInvoiceDetail", b =>
@@ -5253,10 +5217,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("decimal(19,6)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Code");
-
-                    b.HasIndex("RcvCode");
 
                     b.ToTable("PurchaseInvoiceDetail", "Purchasing");
                 });
@@ -5336,14 +5296,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("datetime");
 
                     b.HasKey("Code");
-
-                    b.HasIndex("CurrCode");
-
-                    b.HasIndex("IssuedBy");
-
-                    b.HasIndex("PoCode");
-
-                    b.HasIndex("SupCode");
 
                     b.ToTable("PurchaseInvoiceHeader", "Purchasing");
                 });
@@ -7065,10 +7017,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
 
                     b.HasKey("Code");
 
-                    b.HasIndex("CurrCode");
-
-                    b.HasIndex("CustCode");
-
                     b.HasIndex("TransCode");
 
                     b.ToTable("CreditMemo", "Sales");
@@ -7688,40 +7636,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.ToTable("SalesDeliveryHeader", "Sales");
                 });
 
-            modelBuilder.Entity("ERP.Entity.Sales.SalesInvoiceCreditMemo", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<decimal>("CreditMemoAmount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("CreditMemoCode")
-                        .IsRequired()
-                        .HasMaxLength(17)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(17)");
-
-                    b.Property<decimal>("InvAmount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("InvCode")
-                        .IsRequired()
-                        .HasMaxLength(17)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(17)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CreditMemoCode");
-
-                    b.HasIndex("InvCode");
-
-                    b.ToTable("SalesInvoiceCreditMemo", "Sales");
-                });
-
             modelBuilder.Entity("ERP.Entity.Sales.SalesInvoiceDetail", b =>
                 {
                     b.Property<long>("Id")
@@ -7768,10 +7682,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("decimal(19,6)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Code");
-
-                    b.HasIndex("DoCode");
 
                     b.ToTable("SalesInvoiceDetail", "Sales");
                 });
@@ -7849,14 +7759,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("datetime");
 
                     b.HasKey("Code");
-
-                    b.HasIndex("CurrCode");
-
-                    b.HasIndex("CustCode");
-
-                    b.HasIndex("IssuedBy");
-
-                    b.HasIndex("SoCode");
 
                     b.ToTable("SalesInvoiceHeader", "Sales");
                 });
@@ -11706,92 +11608,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ERP.Entity.Purchase.DebitMemo", b =>
-                {
-                    b.HasOne("ERP.Entity.General.Currency", null)
-                        .WithMany()
-                        .HasForeignKey("CurrCode")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("ERP.Entity.General.Supplier", null)
-                        .WithMany()
-                        .HasForeignKey("SupCode")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("ERP.Entity.Purchase.PurchaseInvoiceDebitMemo", b =>
-                {
-                    b.HasOne("ERP.Entity.Purchase.DebitMemo", null)
-                        .WithMany()
-                        .HasForeignKey("DebitMemoCode")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("ERP.Entity.Purchase.PurchaseInvoiceHeader", null)
-                        .WithMany()
-                        .HasForeignKey("InvCode")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("ERP.Entity.Purchase.PurchaseInvoiceDetail", b =>
-                {
-                    b.HasOne("ERP.Entity.Purchase.PurchaseInvoiceHeader", null)
-                        .WithMany()
-                        .HasForeignKey("Code")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("ERP.Entity.Purchase.PurchaseReceiveHeader", null)
-                        .WithMany()
-                        .HasForeignKey("RcvCode")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("ERP.Entity.Purchase.PurchaseInvoiceHeader", b =>
-                {
-                    b.HasOne("ERP.Entity.General.Currency", null)
-                        .WithMany()
-                        .HasForeignKey("CurrCode")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("ERP.Entity.General.Employee", null)
-                        .WithMany()
-                        .HasForeignKey("IssuedBy")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("ERP.Entity.Purchase.PurchaseOrderHeader", null)
-                        .WithMany()
-                        .HasForeignKey("PoCode")
-                        .OnDelete(DeleteBehavior.NoAction);
-
-                    b.HasOne("ERP.Entity.General.Supplier", null)
-                        .WithMany()
-                        .HasForeignKey("SupCode")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("ERP.Entity.Sales.CreditMemo", b =>
-                {
-                    b.HasOne("ERP.Entity.General.Currency", null)
-                        .WithMany()
-                        .HasForeignKey("CurrCode")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("ERP.Entity.General.Customer", null)
-                        .WithMany()
-                        .HasForeignKey("CustCode")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("ERP.Entity.Sales.DeliveryPlanDetail", b =>
                 {
                     b.HasOne("ERP.Entity.Sales.DeliveryPlanHeader", null)
@@ -11870,62 +11686,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.HasOne("ERP.Entity.General.CustomerType", null)
                         .WithMany()
                         .HasForeignKey("CustTypeId")
-                        .OnDelete(DeleteBehavior.NoAction);
-                });
-
-            modelBuilder.Entity("ERP.Entity.Sales.SalesInvoiceCreditMemo", b =>
-                {
-                    b.HasOne("ERP.Entity.Sales.CreditMemo", null)
-                        .WithMany()
-                        .HasForeignKey("CreditMemoCode")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("ERP.Entity.Sales.SalesInvoiceHeader", null)
-                        .WithMany()
-                        .HasForeignKey("InvCode")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("ERP.Entity.Sales.SalesInvoiceDetail", b =>
-                {
-                    b.HasOne("ERP.Entity.Sales.SalesInvoiceHeader", null)
-                        .WithMany()
-                        .HasForeignKey("Code")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("ERP.Entity.Sales.SalesDeliveryHeader", null)
-                        .WithMany()
-                        .HasForeignKey("DoCode")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("ERP.Entity.Sales.SalesInvoiceHeader", b =>
-                {
-                    b.HasOne("ERP.Entity.General.Currency", null)
-                        .WithMany()
-                        .HasForeignKey("CurrCode")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("ERP.Entity.General.Customer", null)
-                        .WithMany()
-                        .HasForeignKey("CustCode")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("ERP.Entity.General.Employee", null)
-                        .WithMany()
-                        .HasForeignKey("IssuedBy")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("ERP.Entity.Sales.SalesOrderHeader", null)
-                        .WithMany()
-                        .HasForeignKey("SoCode")
                         .OnDelete(DeleteBehavior.NoAction);
                 });
 
