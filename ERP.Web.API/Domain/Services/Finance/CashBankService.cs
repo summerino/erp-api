@@ -18,7 +18,6 @@ namespace ERP.Web.API.Domain.Services.Finance
             : base(db)
         {
         }
-
         public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string search)
         {
             var data = Db.VwGeneralCashBankHeaders.AsQueryable();
@@ -34,14 +33,12 @@ namespace ERP.Web.API.Domain.Services.Finance
 
             return data.ToDataSourceResult(skip, take, filters, sorts);
         }
-
         public DataSourceResult GetDataAP(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string search)
         {
             var data = Db.VwAPs.AsQueryable();
 
             return data.ToDataSourceResult(skip, take, filters, sorts);
         }
-
         public DataSourceResult GetDataAR(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string search)
         {
             var data = Db.VwARs.AsQueryable();
@@ -58,7 +55,6 @@ namespace ERP.Web.API.Domain.Services.Finance
             }
             return data.ToDataSourceResult(skip, take, filters, sorts);
         }
-
         public DataSourceResult GetDataCreditMemo(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string search, string cashBankCode)
         {
             var data = Db.VwCreditMemos.Where(x => x.Used < x.Amount).AsQueryable();
@@ -82,7 +78,6 @@ namespace ERP.Web.API.Domain.Services.Finance
             using var transaction = Db.Database.BeginTransaction();
             try
             {
-
                 var querys = new List<string>();
                 (result.Message, result.Success, querys) = Validate(data);
                 if (!result.Success) return result;
@@ -137,7 +132,6 @@ namespace ERP.Web.API.Domain.Services.Finance
             result.Message = "Data bank tunai berhasil disimpan.";
             return result;
         }
-
         public SaveResult Update(CashBankRequest data)
         {
             var result = new SaveResult(false);
@@ -258,7 +252,6 @@ namespace ERP.Web.API.Domain.Services.Finance
             result.Message = "Data bank tunai berhasil ditandai sebagai void.";
             return result;
         }
-
         private (string, bool, List<string>) Validate(CashBankRequest data) 
         {
             var listTransCode = data.ItemDetails.Select(x => x.TransCode).ToList();
@@ -382,7 +375,6 @@ namespace ERP.Web.API.Domain.Services.Finance
             }
             return ("", true, querys);
         }
-       
         private string QueryBuilder(string type, string code, decimal amount = 0) 
         {
             string query = "";
@@ -404,7 +396,6 @@ namespace ERP.Web.API.Domain.Services.Finance
             }
             return query;
         }
-
         private string Convert(List<string> querys) 
         {
             string query = "";
