@@ -94,14 +94,14 @@ namespace ERP.Web.API.Controllers.Finance
             });
         }
         [HttpGet("debit-memo")]
-        public IActionResult GetDataDebitMemo(string search, string filters, string sorts, int skip, int take)
+        public IActionResult GetDataDebitMemo(string cashbankCode, string search, string filters, string sorts, int skip, int take)
         {
             var data =
                 _cashBank.GetDataDebitMemo(
                     skip, take,
                     JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
                     JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
-                    search);
+                    search, cashbankCode);
 
             return Ok(new ApiResponse
             {
@@ -111,14 +111,14 @@ namespace ERP.Web.API.Controllers.Finance
         }
 
         [HttpGet("credit-memo")]
-        public IActionResult GetDataCreditMemo(string search, string filters, string sorts, int skip, int take)
+        public IActionResult GetDataCreditMemo(string cashbankCode, string search, string filters, string sorts, int skip, int take)
         {
             var data =
                 _cashBank.GetDataCreditMemo(
                     skip, take,
                     JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
                     JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
-                    search);
+                    search, cashbankCode);
 
             return Ok(new ApiResponse
             {
