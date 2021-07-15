@@ -11,6 +11,6 @@ namespace ERP.Web.API.Domain.Interfaces.Accounting
         DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
             string search);
 
-        SaveResult Delete(int id, int userId);
+        SaveResult Delete(long id, int userId);
     }
 }

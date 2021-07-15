@@ -206,4 +206,62 @@ namespace ERP.Entity.Finance
         public decimal Remaining { get; set; }
         public string Notes { get; set; }
     }
+
+    public class VwInterCashBankHeader : BaseEntityWithMarkAndApproved
+    {
+        public string Code { get; set; }
+
+        public string VouCode { get; set; }
+
+        public string Type { get; set; }
+
+        public DateTime Date { get; set; }
+
+        public string CoaCode { get; set; }
+
+        public string CurrCode { get; set; }
+
+        public decimal Rate { get; set; }
+
+        public decimal Amount { get; set; }
+
+        public string ChequeNo { get; set; }
+
+        public DateTime? ChequeDate { get; set; }
+
+        public string Notes { get; set; }
+
+        public bool IsInterCashBank { get; set; }
+
+
+        public string TransCode { get; set; }
+
+        public string CoaDetail { get; set; }
+
+        public string CurrDetail { get; set; }
+
+        public decimal RateDetail { get; set; }
+
+        public decimal AmountDetail { get; set; }
+
+        public string TypeDetail { get; set; }
+
+        public string TypeAmount { get; set; }
+
+        public decimal TransAmount { get; set; }
+
+        public string NotesDetail { get; set; }
+
+        public string CoaNameFrom { get; set; }
+
+        public string CoaNameTo { get; set; }
+
+        public string CreatedInitial { get; set; }
+
+        public string UpdatedInitial { get; set; }
+
+        public string ApprovedInitial { get; set; }
+
+        public string Status { get; set; }
+    }
 }

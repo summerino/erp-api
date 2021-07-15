@@ -158,6 +158,7 @@ namespace ERP.Web.API.Domain.Services.SystemManagement
                 userTenant.Name = data.Name;
                 userTenant.RoleId = data.RoleId;
                 userTenant.EmployeeId = data.EmployeeId;
+                userTenant.MobileSignIn = data.MobileSignIn;
                 userTenant.IsActive = data.IsActive;
                 userTenant.UpdatedBy = data.UpdatedBy;
                 userTenant.UpdatedDate = data.UpdatedDate;
@@ -215,6 +216,58 @@ namespace ERP.Web.API.Domain.Services.SystemManagement
 
             result.Success = true;
             result.Message = "Data pengguna berhasil dinonaktifkan.";
+            return result;
+        }
+
+        public SaveResult ChangePassword(UserRequest data)
+        {
+            var result = new SaveResult(false);
+
+            using var transaction = _catalogCtx.Database.BeginTransaction();
+            try
+            {
+                var tenant = _catalogCtx.Tenants.FirstOrDefault(x => x.Id == _claim.TenantId);
+                if (tenant == null)
+                {
+                    result.Message = "Tenant tidak terdaftar.";
+                    return result;
+                }
+
+                if (data.NewPassword != data.ConfirmPassword)
+                {
+                    result.Message = "Konfirmasi kata sandi tidak sama.";
+                    return result;
+                }
+
+                var user = _tenantCtx.Users.FirstOrDefault(x => x.Id.Equals(_claim.UserId));
+                if (user != null)
+                {
+                    var catalogUser = _catalogCtx.Users.FirstOrDefault(x => x.Username == user.Username);
+                    var pwh = new PasswordHasher<UserCatalog>();
+                    var isCorrect = pwh.VerifyHashedPassword(catalogUser, catalogUser.Password, data.Password);
+
+                    if (isCorrect != PasswordVerificationResult.Success)
+                    {
+                        result.Message = "Kata sandi tidak sesuai.";
+                        return result;
+                    }
+
+                    var hashPwd = pwh.HashPassword(catalogUser, data.NewPassword);
+                    catalogUser.Password = hashPwd;
+                    _catalogCtx.SaveChanges();
+                }
+
+                transaction.Commit();
+            }
+            catch (Exception ex)
+            {
+                result.Message = ex.InnerException?.Message ?? ex.Message;
+                return result;
+            }
+
+            result.Success = true;
+            result.Data = data.CatalogUserId;
+            result.Message = "Kata sandi berhasil diubah.";
             return result;
         }
     }

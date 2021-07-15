@@ -7,7 +7,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<string>(
-                name: "MobileIpAddress",
+                name: "MobileIPAddress",
                 schema: "SystemManagement",
                 table: "User",
                 type: "varchar(40)",
@@ -19,7 +19,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "MobileIpAddress",
+                name: "MobileIPAddress",
                 schema: "SystemManagement",
                 table: "User");
         }

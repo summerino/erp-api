@@ -96,5 +96,21 @@ namespace ERP.Web.API.Controllers.SystemManagement
 
             return Ok(result);
         }
+
+        [HttpPut("change-password/{id}")]
+        public IActionResult OnChangePassword(UserRequest data)
+        {
+
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Update }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
+
+            data.UpdatedBy = _claim.UserId;
+            data.UpdatedDate = DateTime.Now;
+            var result = _userService.ChangePassword(data);
+
+            return Ok(result);
+        }
     }
 }

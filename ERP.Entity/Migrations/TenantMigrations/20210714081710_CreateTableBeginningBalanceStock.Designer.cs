@@ -4,14 +4,16 @@ using ERP.Entity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ERP.Entity.Migrations.TenantMigrations
 {
     [DbContext(typeof(TenantContext))]
-    partial class TenantContextModelSnapshot : ModelSnapshot
+    [Migration("20210714081710_CreateTableBeginningBalanceStock")]
+    partial class CreateTableBeginningBalanceStock
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -162,33 +164,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.HasIndex("CustCode");
 
                     b.ToTable("BeginningBalanceAR", "Accounting");
-                });
-
-            modelBuilder.Entity("ERP.Entity.Accounting.ClosingMonth", b =>
-                {
-                    b.Property<string>("Period")
-                        .HasMaxLength(6)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(6)");
-
-                    b.Property<int>("CreatedBy")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime");
-
-                    b.Property<bool>("IsClose")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("UpdatedBy")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("datetime");
-
-                    b.HasKey("Period");
-
-                    b.ToTable("ClosingMonth", "Accounting");
                 });
 
             modelBuilder.Entity("ERP.Entity.Accounting.Coa", b =>
@@ -6088,9 +6063,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
 
-                    b.Property<decimal>("Remaining")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<string>("Status")
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
@@ -9200,9 +9172,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(max)");
 
                     b.Property<decimal>("PaidAmount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("Remaining")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("SoCode")

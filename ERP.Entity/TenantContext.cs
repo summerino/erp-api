@@ -34,6 +34,7 @@ namespace ERP.Entity
         public DbSet<VwBeginningBalanceAP> VwBeginningBalanceAPs { get; set; }
         public DbSet<BeginningBalanceAR> BeginningBalanceARs { get; set; }
         public DbSet<VwBeginningBalanceAR> VwBeginningBalanceARs { get; set; }
+        public DbSet<ClosingMonth> ClosingMonths { get; set; }
         public DbSet<Coa> Coas { get; set; }
         public DbSet<VwCoa> VwCoas { get; set; }
         public DbSet<CoaType> CoaTypes { get; set; }
@@ -63,6 +64,7 @@ namespace ERP.Entity
         public DbSet<CashBankType> CashBankTypes { get; set; }
         public DbSet<VwAP> VwAPs { get; set; }
         public DbSet<VwAR> VwARs { get; set; }
+        public DbSet<VwInterCashBankHeader> VwInterCashBankHeaders { get; set; }
 
         // General entities
         public DbSet<Currency> Currencies { get; set; }
@@ -94,6 +96,8 @@ namespace ERP.Entity
         public DbSet<VwAdjustmentDetail> VwAdjustmentDetails { get; set; }
         public DbSet<AdjustmentDetailDiffUnit> AdjustmentDetailDiffUnits { get; set; }
         public DbSet<VwAdjustmentItem> VwAdjustmentItems { get; set; }
+        public DbSet<BeginningBalanceStockHeader> BeginningBalanceStockHeaders { get; set; }
+        public DbSet<BeginningBalanceStockDetail> BeginningBalanceStockDetails { get; set; }
         public DbSet<Item> Items { get; set; }
         public DbSet<VwItem> VwItems { get; set; }
         public DbSet<ItemCategory> ItemCategories { get; set; }
@@ -438,11 +442,15 @@ namespace ERP.Entity
 
             modelBuilder.Entity<VwAP>()
                 .HasNoKey()
-                .ToView("VwAP", Schema.Finance);
+                .ToView("vwAP", Schema.Finance);
 
             modelBuilder.Entity<VwAR>()
                 .HasNoKey()
-                .ToView("VwAR", Schema.Finance);
+                .ToView("vwAR", Schema.Finance);
+
+            modelBuilder.Entity<VwInterCashBankHeader>()
+                .HasNoKey()
+                .ToView("vwInterCashBankHeader", Schema.Finance);
 
             modelBuilder.Entity<GeneralCashBankDetail>(entity =>
             {
@@ -671,6 +679,40 @@ namespace ERP.Entity
             modelBuilder.Entity<VwAdjustmentItem>()
                 .HasNoKey()
                 .ToView("vwAdjustmentItem", Schema.Inventory);
+
+            // Beginning Balance Stock entities
+            modelBuilder.Entity<BeginningBalanceStockHeader>(entity =>
+                entity.HasOne<Warehouse>()
+                    .WithMany()
+                    .HasForeignKey(d => d.WarehouseCode)
+                    .OnDelete(DeleteBehavior.NoAction)
+            );
+
+            modelBuilder.Entity<BeginningBalanceStockDetail>(entity =>
+            {
+                entity.Property(e => e.Code)
+                    .IsRequired();
+
+                entity.HasOne<BeginningBalanceStockHeader>()
+                    .WithMany()
+                    .HasForeignKey(d => d.Code)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Item>()
+                    .WithMany()
+                    .HasForeignKey(d => d.ItemId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<UoM>()
+                    .WithMany()
+                    .HasForeignKey(d => d.UomId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<UoMConversion>()
+                    .WithMany()
+                    .HasForeignKey(d => d.UnitId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
 
             // Item entities
             modelBuilder.Entity<Item>(entity =>

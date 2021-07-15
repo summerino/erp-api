@@ -1,15 +1,14 @@
-﻿using ERP.Web.API.Domain.Interfaces.Finance;
-using ERP.Web.API.Domain.Models;
-using ERP.Web.API.Model.Finance;
-using Microsoft.EntityFrameworkCore;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
 using ERP.Common;
 using ERP.Common.Extensions;
 using ERP.Common.Models;
 using ERP.Entity;
 using ERP.Entity.Finance;
+using ERP.Web.API.Domain.Interfaces.Finance;
+using ERP.Web.API.Model.Finance;
 
 namespace ERP.Web.API.Domain.Services.Finance
 {
@@ -19,6 +18,7 @@ namespace ERP.Web.API.Domain.Services.Finance
             : base(db)
         {
         }
+
         public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string search)
         {
             var data = Db.VwGeneralCashBankHeaders.AsQueryable();
@@ -414,7 +414,5 @@ namespace ERP.Web.API.Domain.Services.Finance
             }
             return query;
         }
-
-        
     }
 }

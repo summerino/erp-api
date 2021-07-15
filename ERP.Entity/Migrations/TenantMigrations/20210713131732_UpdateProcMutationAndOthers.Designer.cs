@@ -4,14 +4,16 @@ using ERP.Entity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ERP.Entity.Migrations.TenantMigrations
 {
     [DbContext(typeof(TenantContext))]
-    partial class TenantContextModelSnapshot : ModelSnapshot
+    [Migration("20210713131732_UpdateProcMutationAndOthers")]
+    partial class UpdateProcMutationAndOthers
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -162,33 +164,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.HasIndex("CustCode");
 
                     b.ToTable("BeginningBalanceAR", "Accounting");
-                });
-
-            modelBuilder.Entity("ERP.Entity.Accounting.ClosingMonth", b =>
-                {
-                    b.Property<string>("Period")
-                        .HasMaxLength(6)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(6)");
-
-                    b.Property<int>("CreatedBy")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime");
-
-                    b.Property<bool>("IsClose")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("UpdatedBy")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("datetime");
-
-                    b.HasKey("Period");
-
-                    b.ToTable("ClosingMonth", "Accounting");
                 });
 
             modelBuilder.Entity("ERP.Entity.Accounting.Coa", b =>
@@ -1722,7 +1697,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
 
-                    b.ToView("vwAP", "Finance");
+                    b.ToView("VwAP", "Finance");
                 });
 
             modelBuilder.Entity("ERP.Entity.Finance.VwAR", b =>
@@ -1762,7 +1737,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.Property<decimal>("Remaining")
                         .HasColumnType("decimal(18,2)");
 
-                    b.ToView("vwAR", "Finance");
+                    b.ToView("VwAR", "Finance");
                 });
 
             modelBuilder.Entity("ERP.Entity.Finance.VwGeneralCashBankDetail", b =>
@@ -3373,98 +3348,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.HasIndex("WarehouseCode");
 
                     b.ToTable("AdjustmentHeader", "Inventory");
-                });
-
-            modelBuilder.Entity("ERP.Entity.Inventory.BeginningBalanceStockDetail", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasMaxLength(17)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(17)");
-
-                    b.Property<int>("ItemId")
-                        .HasColumnType("int");
-
-                    b.Property<short>("LineNo")
-                        .HasColumnType("smallint");
-
-                    b.Property<string>("Notes")
-                        .HasMaxLength(256)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(256)");
-
-                    b.Property<decimal>("Qty")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("UnitId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("UomId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Code");
-
-                    b.HasIndex("ItemId");
-
-                    b.HasIndex("UnitId");
-
-                    b.HasIndex("UomId");
-
-                    b.ToTable("BeginningBalanceDetail", "Inventory");
-                });
-
-            modelBuilder.Entity("ERP.Entity.Inventory.BeginningBalanceStockHeader", b =>
-                {
-                    b.Property<string>("Code")
-                        .HasMaxLength(17)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(17)");
-
-                    b.Property<int>("CreatedBy")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime");
-
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("date");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Notes")
-                        .HasMaxLength(256)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(256)");
-
-                    b.Property<int>("UpdatedBy")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("datetime");
-
-                    b.Property<string>("WarehouseCode")
-                        .IsRequired()
-                        .HasMaxLength(8)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(8)");
-
-                    b.HasKey("Code");
-
-                    b.HasIndex("WarehouseCode");
-
-                    b.ToTable("BeginningBalanceHeader", "Inventory");
                 });
 
             modelBuilder.Entity("ERP.Entity.Inventory.Item", b =>
@@ -6087,9 +5970,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.Property<string>("RefNo")
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
-
-                    b.Property<decimal>("Remaining")
-                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Status")
                         .IsUnicode(false)
@@ -9202,9 +9082,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.Property<decimal>("PaidAmount")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<decimal>("Remaining")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<string>("SoCode")
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
@@ -11386,42 +11263,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                 });
 
             modelBuilder.Entity("ERP.Entity.Inventory.AdjustmentHeader", b =>
-                {
-                    b.HasOne("ERP.Entity.Inventory.Warehouse", null)
-                        .WithMany()
-                        .HasForeignKey("WarehouseCode")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("ERP.Entity.Inventory.BeginningBalanceStockDetail", b =>
-                {
-                    b.HasOne("ERP.Entity.Inventory.BeginningBalanceStockHeader", null)
-                        .WithMany()
-                        .HasForeignKey("Code")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("ERP.Entity.Inventory.Item", null)
-                        .WithMany()
-                        .HasForeignKey("ItemId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("ERP.Entity.Inventory.UoMConversion", null)
-                        .WithMany()
-                        .HasForeignKey("UnitId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("ERP.Entity.Inventory.UoM", null)
-                        .WithMany()
-                        .HasForeignKey("UomId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("ERP.Entity.Inventory.BeginningBalanceStockHeader", b =>
                 {
                     b.HasOne("ERP.Entity.Inventory.Warehouse", null)
                         .WithMany()

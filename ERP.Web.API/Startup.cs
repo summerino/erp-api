@@ -143,6 +143,7 @@ namespace ERP.Web.API
             services.AddScoped<ICoaTypeService, CoaTypeService>();
             services.AddScoped<ICurrencyRateService, CurrencyRateService>();
             services.AddScoped<IGeneralJournalService, GeneralJournalService>();
+            services.AddScoped<IJournalService, JournalService>();
 
             // Asset Management services
             services.AddScoped<IAssetTypeService, AssetTypeService>();
@@ -151,9 +152,10 @@ namespace ERP.Web.API
             // Expedition services
             services.AddScoped<IExpeditionInvoiceService, ExpeditionInvoiceService>();
 
-            // Finance
+            // Finance services
             services.AddScoped<ICashBankService, CashBankService>();
             services.AddScoped<ICashBankTypeService, CashBankTypeService>();
+            services.AddScoped<IInterCashBankService, InterCashBankService>();
 
             // General services
             services.AddScoped<IApprovalService, ApprovalService>();

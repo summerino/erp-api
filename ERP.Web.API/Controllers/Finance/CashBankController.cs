@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Mvc;
 using ERP.Entity;
 using ERP.Web.API.Domain.Interfaces.Auth;
 using ERP.Web.API.Domain.Interfaces.Finance;
-using ERP.Web.API.Domain.Models;
 using ERP.Web.API.Model;
 using ERP.Web.API.Model.Finance;
 using Newtonsoft.Json;
@@ -18,13 +17,13 @@ namespace ERP.Web.API.Controllers.Finance
 {
     [Route("general-cash-bank")]
     [ApiController]
-    [AllowAnonymous]
     public class CashBankController : ControllerBase
     {
         private readonly ICashBankService _cashBank;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
         private const int _menuId = (int)Menu.CashBank;
+
         public CashBankController(ICashBankService cashBank, IClaimService claim, IAuthService auth)
         {
             _cashBank = cashBank;

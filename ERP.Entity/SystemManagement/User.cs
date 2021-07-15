@@ -44,6 +44,7 @@ namespace ERP.Entity.SystemManagement
         [Column("IPAddress")]
         [StringLength(40)]
         public string IpAddress { get; set; }
+
         public bool IsMobileLoggedIn { get; set; }
 
         [Column(TypeName = "datetime")]
@@ -54,7 +55,7 @@ namespace ERP.Entity.SystemManagement
 
         public string MobileTokenId { get; set; }
 
-        [Column("MobileIpAddress")]
+        [Column("MobileIPAddress")]
         [StringLength(40)]
         public string MobileIpAddress { get; set; }
     }
@@ -86,6 +87,7 @@ namespace ERP.Entity.SystemManagement
         public string TokenId { get; set; }
 
         public string IpAddress { get; set; }
+
         public bool IsMobileLoggedIn { get; set; }
 
         public DateTime? MobileLastLogin { get; set; }
@@ -95,6 +97,7 @@ namespace ERP.Entity.SystemManagement
         public string MobileTokenId { get; set; }
 
         public string MobileIpAddress { get; set; }
+
 
         public string RoleName { get; set; }
 
