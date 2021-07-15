@@ -104,11 +104,13 @@ namespace ERP.Entity.General
         public int? AreaId5 { get; set; }
 
         public bool IsConsignee { get; set; }
-
-
         public string TypeName { get; set; }
-
         public string UpdatedInitial { get; set; }
+        public string AreaName1 { get; set; }
+        public string AreaName2 { get; set; }
+        public string AreaName3 { get; set; }
+        public string AreaName4 { get; set; }
+        public string AreaName5 { get; set; }
     }
 
     [Table("CustomerType", Schema = Schema.General)]
