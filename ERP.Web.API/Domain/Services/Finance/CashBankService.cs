@@ -51,9 +51,10 @@ namespace ERP.Web.API.Domain.Services.Finance
                 var listExistingTransactions = Db.GeneralCashBankDetails.Where(x => x.Code.Equals(cashBankCode)).Select(x => x.TransCode).ToList();
                 data = data.Where(x => !listExistingTransactions.Contains(x.Code));
             }
+
             return data.ToDataSourceResult(skip, take, filters, sorts);
         }
-        public DataSourceResult GetDataDebitMemo(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string search, string cashBankCode)
+        public DataSourceResult GetDataDebitMemo(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string search, string cashBankCode, string type)
         {
             var data = Db.VwDebitMemos.Where(x => x.Used < x.Amount).AsQueryable();
 
@@ -62,9 +63,23 @@ namespace ERP.Web.API.Domain.Services.Finance
                 var listExistingTransactions = Db.GeneralCashBankDetails.Where(x => x.Code.Equals(cashBankCode)).Select(x => x.TransCode).ToList();
                 data = data.Where(x => !listExistingTransactions.Contains(x.Code));
             }
+
+            if (type == "RDPS")
+            {
+                data.Where(x => x.SrcTrans == 1 && x.Remaining > 0 && (x.Mark == "A" || x.Mark == "PU"));
+            }
+            else if (type == "DPS")
+            {
+                data.Where(x => x.SrcTrans == 1 && x.Mark == "PP");
+            }
+            else if (type == "PR")
+            {
+                data.Where(x => x.SrcTrans != 1 && (x.Mark == "PU" || x.Mark == "A"));
+            }
+
             return data.ToDataSourceResult(skip, take, filters, sorts);
         }
-        public DataSourceResult GetDataCreditMemo(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string search, string cashBankCode)
+        public DataSourceResult GetDataCreditMemo(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string search, string cashBankCode, string type)
         {
             var data = Db.VwCreditMemos.Where(x => x.Used < x.Amount).AsQueryable();
 
@@ -72,6 +87,18 @@ namespace ERP.Web.API.Domain.Services.Finance
             {
                 var listExistingTransactions = Db.GeneralCashBankDetails.Where(x => x.Code.Equals(cashBankCode)).Select(x => x.TransCode).ToList();
                 data = data.Where(x => !listExistingTransactions.Contains(x.Code));
+            }
+            if (type == "RDPC")
+            {
+                data.Where(x => x.SrcTrans == 1 && x.Remaining > 0 && (x.Mark == "A" || x.Mark == "PU"));
+            } 
+            else if (type == "DPC")
+            {
+                data.Where(x => x.SrcTrans == 1 && x.Mark == "PP");
+            }
+            else if (type == "SR") 
+            {
+                data.Where(x => x.SrcTrans != 1 && (x.Mark == "PU" || x.Mark == "A"));
             }
             return data.ToDataSourceResult(skip, take, filters, sorts);
         }
@@ -288,7 +315,8 @@ namespace ERP.Web.API.Domain.Services.Finance
                     if (header != null) {
                         if (totalAmount <= header.Total)
                         {
-                            string queryHeader = $"UPDATE Purchasing.PurchaseInvoiceHeader SET PaidAmount='{totalAmount}' WHERE Code='{item.TransCode}';";
+                            string mark = header.Total == totalAmount ? "CMP" : "PP";
+                            string queryHeader = $"UPDATE Purchasing.PurchaseInvoiceHeader SET PaidAmount='{totalAmount}', Mark='{mark}' WHERE Code='{item.TransCode}';";
                             querys.Add(queryHeader);
 
                             var detail = Db.PurchaseInvoiceDetails.Where(x => x.Code.Equals(item.TransCode));
@@ -318,7 +346,8 @@ namespace ERP.Web.API.Domain.Services.Finance
                     {
                         if (totalAmount <= header.Total)
                         {
-                            string queryHeader = $"UPDATE Sales.SalesInvoiceHeader SET PaidAmount='{totalAmount}' WHERE Code='{item.TransCode}';";
+                            string mark = header.Total == totalAmount ? "CMP" : "PP";
+                            string queryHeader = $"UPDATE Sales.SalesInvoiceHeader SET PaidAmount='{totalAmount}', Mark='{mark}' WHERE Code='{item.TransCode}';";
                             querys.Add(queryHeader);
 
                             var detail = Db.SalesInvoiceDetails.Where(x => x.Code.Equals(item.TransCode));
@@ -343,6 +372,7 @@ namespace ERP.Web.API.Domain.Services.Finance
                 else if (item.Type == "PR" || item.Type == "RDPS" || item.Type == "RDPC" || item.Type == "SR")
                 {
                     decimal tempTotalAmount = 0;
+                    string mark = "";
                     // validasi retur uang muka pembelian dan retur pembelian
                     if (item.Type == "PR" || item.Type == "RDPS")
                     {
@@ -353,7 +383,7 @@ namespace ERP.Web.API.Domain.Services.Finance
                         var memo = Db.DebitMemos.SingleOrDefault(x => x.Code.Equals(item.TransCode));
                         if (memo != null) 
                         {
-
+                            mark = tempTotalAmount == memo.Amount ? "FU" : "PU";
                             //decimal remaining = memo.Amount - memo.Used;
                             if (totalAmount > memo.Amount) 
                             {
@@ -371,6 +401,7 @@ namespace ERP.Web.API.Domain.Services.Finance
                         var memo = Db.CreditMemos.SingleOrDefault(x => x.Code.Equals(item.TransCode));
                         if (memo != null)
                         {
+                            mark = tempTotalAmount == memo.Amount ? "FU" : "PU";
                             //decimal remaining = memo.Amount - memo.Used;
                             if (totalAmount > memo.Amount)
                             {
@@ -378,13 +409,13 @@ namespace ERP.Web.API.Domain.Services.Finance
                             }
                         }
                     }
-                    string query = QueryBuilder(item.Type, item.TransCode, tempTotalAmount);
+                    string query = QueryBuilder(item.Type, item.TransCode, tempTotalAmount, mark);
                     querys.Add(query);
                 }
             }
             return ("", true, querys);
         }
-        private string QueryBuilder(string type, string code, decimal amount = 0) 
+        private string QueryBuilder(string type, string code, decimal amount = 0, string mark = "") 
         {
             string query = "";
              if (type == "DPC")
@@ -397,11 +428,11 @@ namespace ERP.Web.API.Domain.Services.Finance
             }
             else if (type == "PR" || type == "RDPS")
             {
-                query = $"UPDATE Purchasing.DebitMemo SET Used='{amount}' WHERE Code='{code}';";
+                query = $"UPDATE Purchasing.DebitMemo SET Used='{amount}',Mark='{mark}' WHERE Code='{code}';";
             }
             else if (type == "RDPC" || type == "SR")
             {
-                query = $"UPDATE Sales.CreditMemo SET Used='{amount}' WHERE Code='{code}';";
+                query = $"UPDATE Sales.CreditMemo SET Used='{amount}',Mark='{mark}' WHERE Code='{code}';";
             }
             return query;
         }
