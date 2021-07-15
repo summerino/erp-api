@@ -34,6 +34,7 @@ namespace ERP.Entity
         public DbSet<VwBeginningBalanceAP> VwBeginningBalanceAPs { get; set; }
         public DbSet<BeginningBalanceAR> BeginningBalanceARs { get; set; }
         public DbSet<VwBeginningBalanceAR> VwBeginningBalanceARs { get; set; }
+        public DbSet<ClosingMonth> ClosingMonths { get; set; }
         public DbSet<Coa> Coas { get; set; }
         public DbSet<VwCoa> VwCoas { get; set; }
         public DbSet<CoaType> CoaTypes { get; set; }

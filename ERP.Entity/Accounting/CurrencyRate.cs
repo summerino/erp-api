@@ -1,8 +1,8 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using ERP.Entity.Core;
 using Microsoft.EntityFrameworkCore;
+using ERP.Entity.Core;
 
 namespace ERP.Entity.Accounting
 {
