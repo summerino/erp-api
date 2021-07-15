@@ -33,15 +33,24 @@ namespace ERP.Web.API.Domain.Services.Finance
 
             return data.ToDataSourceResult(skip, take, filters, sorts);
         }
-        public DataSourceResult GetDataAP(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string search)
+        public DataSourceResult GetDataAP(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string search, string cashBankCode)
         {
             var data = Db.VwAPs.AsQueryable();
-
+            if (!string.IsNullOrEmpty(cashBankCode) && !string.IsNullOrWhiteSpace(cashBankCode))
+            {
+                var listExistingTransactions = Db.GeneralCashBankDetails.Where(x => x.Code.Equals(cashBankCode)).Select(x => x.TransCode).ToList();
+                data = data.Where(x => !listExistingTransactions.Contains(x.Code));
+            }
             return data.ToDataSourceResult(skip, take, filters, sorts);
         }
-        public DataSourceResult GetDataAR(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string search)
+        public DataSourceResult GetDataAR(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string search, string cashBankCode)
         {
             var data = Db.VwARs.AsQueryable();
+            if (!string.IsNullOrEmpty(cashBankCode) && !string.IsNullOrWhiteSpace(cashBankCode))
+            {
+                var listExistingTransactions = Db.GeneralCashBankDetails.Where(x => x.Code.Equals(cashBankCode)).Select(x => x.TransCode).ToList();
+                data = data.Where(x => !listExistingTransactions.Contains(x.Code));
+            }
             return data.ToDataSourceResult(skip, take, filters, sorts);
         }
         public DataSourceResult GetDataDebitMemo(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string search, string cashBankCode)

@@ -61,14 +61,14 @@ namespace ERP.Web.API.Controllers.Finance
         }
 
         [HttpGet("ap")]
-        public IActionResult GetDataAP(string search, string filters, string sorts, int skip, int take)
+        public IActionResult GetDataAP(string cashbankCode, string search, string filters, string sorts, int skip, int take)
         {
             var data =
                 _cashBank.GetDataAP(
                     skip, take,
                     JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
                     JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
-                    search);
+                    search, cashbankCode);
 
             return Ok(new ApiResponse
             {
@@ -78,14 +78,14 @@ namespace ERP.Web.API.Controllers.Finance
         }
 
         [HttpGet("ar")]
-        public IActionResult GetDataAR(string search, string filters, string sorts, int skip, int take)
+        public IActionResult GetDataAR(string cashbankCode, string search, string filters, string sorts, int skip, int take)
         {
             var data =
                 _cashBank.GetDataAR(
                     skip, take,
                     JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
                     JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
-                    search);
+                    search, cashbankCode);
 
             return Ok(new ApiResponse
             {
