@@ -34,6 +34,8 @@ namespace ERP.Entity
         public DbSet<VwBeginningBalanceAP> VwBeginningBalanceAPs { get; set; }
         public DbSet<BeginningBalanceAR> BeginningBalanceARs { get; set; }
         public DbSet<VwBeginningBalanceAR> VwBeginningBalanceARs { get; set; }
+        public DbSet<BeginningBalanceCreditMemo> BeginningBalanceCreditMemos { get; set; }
+        public DbSet<BeginningBalanceDebitMemo> BeginningBalanceDebitMemos { get; set; }
         public DbSet<ClosingMonth> ClosingMonths { get; set; }
         public DbSet<Coa> Coas { get; set; }
         public DbSet<VwCoa> VwCoas { get; set; }
@@ -300,6 +302,34 @@ namespace ERP.Entity
             modelBuilder.Entity<VwBeginningBalanceAR>()
                 .HasNoKey()
                 .ToView("vwBeginningBalanceAR", Schema.Accounting);
+
+            // Beginning Balance Credit Memo entities
+            modelBuilder.Entity<BeginningBalanceCreditMemo>(entity =>
+            {
+                entity.HasOne<Supplier>()
+                    .WithMany()
+                    .HasForeignKey(d => d.CustCode)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Currency>()
+                    .WithMany()
+                    .HasForeignKey(d => d.CurrCode)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            // Beginning Balance Debit Memo entities
+            modelBuilder.Entity<BeginningBalanceDebitMemo>(entity =>
+            {
+                entity.HasOne<Customer>()
+                    .WithMany()
+                    .HasForeignKey(d => d.SupCode)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Currency>()
+                    .WithMany()
+                    .HasForeignKey(d => d.CurrCode)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
 
             // COA entities
             modelBuilder.Entity<Coa>(entity =>
