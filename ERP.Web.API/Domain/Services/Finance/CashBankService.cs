@@ -47,17 +47,27 @@ namespace ERP.Web.API.Domain.Services.Finance
             var data = Db.VwARs.AsQueryable();
             return data.ToDataSourceResult(skip, take, filters, sorts);
         }
-        public DataSourceResult GetDataDebitMemo(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string search)
+        public DataSourceResult GetDataDebitMemo(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string search, string cashBankCode)
         {
-            var data = Db.VwDebitMemos.AsQueryable();
-            data.Where(x => x.Used < x.Amount);
+            var data = Db.VwDebitMemos.Where(x => x.Used < x.Amount).AsQueryable();
+
+            if (!string.IsNullOrEmpty(cashBankCode) && !string.IsNullOrWhiteSpace(cashBankCode)) 
+            {
+                var listExistingTransactions = Db.GeneralCashBankDetails.Where(x => x.Code.Equals(cashBankCode)).Select(x => x.TransCode).ToList();
+                data = data.Where(x => !listExistingTransactions.Contains(x.Code));
+            }
             return data.ToDataSourceResult(skip, take, filters, sorts);
         }
 
-        public DataSourceResult GetDataCreditMemo(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string search)
+        public DataSourceResult GetDataCreditMemo(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string search, string cashBankCode)
         {
-            var data = Db.VwCreditMemos.AsQueryable();
-            data.Where(x => x.Used < x.Amount);
+            var data = Db.VwCreditMemos.Where(x => x.Used < x.Amount).AsQueryable();
+
+            if (!string.IsNullOrEmpty(cashBankCode) && !string.IsNullOrWhiteSpace(cashBankCode))
+            {
+                var listExistingTransactions = Db.GeneralCashBankDetails.Where(x => x.Code.Equals(cashBankCode)).Select(x => x.TransCode).ToList();
+                data = data.Where(x => !listExistingTransactions.Contains(x.Code));
+            }
             return data.ToDataSourceResult(skip, take, filters, sorts);
         }
         public IEnumerable<VwGeneralCashBankDetail> GetDetailData(string code)
