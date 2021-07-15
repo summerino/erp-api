@@ -119,4 +119,23 @@ namespace ERP.Entity.Purchase
         [Column("DPP", TypeName = "decimal(19, 6)")]
         public decimal Dpp { get; set; }
     }
+
+    [Table("PurchaseInvoiceDebitMemo", Schema = Schema.Purchasing)]
+    public class PurchaseInvoiceDebitMemo
+    {
+        public long Id { get; set; }
+
+        [StringLength(17)]
+        public string InvCode { get; set; }
+
+        [Required]
+        [StringLength(17)]
+        public string DebitMemoCode { get; set; }
+
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal InvAmount { get; set; }
+
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal DebitMemoAmount { get; set; }
+    }
 }

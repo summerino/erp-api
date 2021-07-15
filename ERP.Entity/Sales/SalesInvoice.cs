@@ -119,4 +119,23 @@ namespace ERP.Entity.Sales
         [Column("DPP", TypeName = "decimal(19, 6)")]
         public decimal Dpp { get; set; }
     }
+
+    [Table("SalesInvoiceCreditMemo", Schema = Schema.Sales)]
+    public class SalesInvoiceCreditMemo
+    {
+        public long Id { get; set; }
+
+        [StringLength(17)]
+        public string InvCode { get; set; }
+
+        [Required]
+        [StringLength(17)]
+        public string CreditMemoCode { get; set; }
+
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal InvAmount { get; set; }
+
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal CreditMemoAmount { get; set; }
+    }
 }

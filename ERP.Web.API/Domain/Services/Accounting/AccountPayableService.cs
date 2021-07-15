@@ -47,6 +47,13 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     return result;
                 }
 
+                // Check Date greater than Data Start Date
+                if (data.Date >= Convert.ToDateTime(Db.SystemParameters.FirstOrDefault(x => x.Code == "DATA_START_DATE").Value))
+                {
+                    result.Message = "Tanggal tidak boleh lebih dari tanggal mulai data.";
+                    return result;
+                }
+
                 Db.Add(data);
 
                 Db.SaveChanges();
@@ -72,6 +79,13 @@ namespace ERP.Web.API.Domain.Services.Accounting
             if (IsCodeExists(data.Code, data.Id))
             {
                 result.Message = "Kode sudah terdaftar. Tolong gunakan kode lain.";
+                return result;
+            }
+
+            // Check Date greater than Data Start Date
+            if (data.Date >= Convert.ToDateTime(Db.SystemParameters.FirstOrDefault(x => x.Code == "DATA_START_DATE").Value))
+            {
+                result.Message = "Tanggal tidak boleh lebih dari tanggal mulai data.";
                 return result;
             }
 
