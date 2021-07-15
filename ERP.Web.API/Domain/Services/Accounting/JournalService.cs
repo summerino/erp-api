@@ -49,6 +49,18 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     _db.RemoveRange(removedCB);
                 }
 
+                var removedBBAP = _db.Journals.Where(x => x.SrcTrans == "BB_AP").ToList();
+                if (removedBBAP != null)
+                {
+                    _db.RemoveRange(removedBBAP);
+                }
+
+                var removedBBAR = _db.Journals.Where(x => x.SrcTrans == "BB_AR").ToList();
+                if (removedBBAR != null)
+                {
+                    _db.RemoveRange(removedBBAR);
+                }
+
                 var journalAP = ProcessPurchaseJournal(data.Date, systemParam, items, taxes);
                 _db.AddRange(journalAP);
 
@@ -57,6 +69,18 @@ namespace ERP.Web.API.Domain.Services.Accounting
 
                 var journalCB = ProcessCashBankJournal(data.Date, systemParam);
                 _db.AddRange(journalCB);
+
+                var journalBBAP = ProcessBBAPJournal(systemParam);
+                if (journalBBAP != null)
+                {
+                    _db.AddRange(journalBBAP);
+                }
+
+                var journalBBAR = ProcessBBARJournal(systemParam);
+                if (journalBBAR != null)
+                {
+                    _db.AddRange(journalBBAR);
+                }
 
                 _db.SaveChanges();
 
@@ -460,9 +484,9 @@ namespace ERP.Web.API.Domain.Services.Accounting
                         LineNo = ++j,
                         Date = itemData.Date,
                         CoaCode = itemData.CoaCode ?? "",
-                        TypeCode = "CB",
-                        //Notes = ($"{systemParam.FirstOrDefault(x => x.Code == $"JR_PREFIX_{itemDetailData.Type}")?.Value ?? ""} {itemDetailData.Notes}").Trim(),
-                        //RefCode1 = itemDetailData.TransCode,
+                        TypeCode = "CB_DT",
+                        Notes = ($"{systemParam.FirstOrDefault(x => x.Code == $"JR_PREFIX_{itemDetailData.Type}")?.Value ?? ""} {itemDetailData.Notes}").Trim(),
+                        RefCode1 = itemDetailData.TransCode,
                         Group = 2,
                         CurrCode = itemData.CurrCode,
                         Period = itemData.Date.ToString("yyyyMMdd"),
@@ -471,25 +495,106 @@ namespace ERP.Web.API.Domain.Services.Accounting
                         SrcTrans = "CB"
                     });
                 }
-                ////Header
-                //journals.Add(new Journal
-                //{
-                //    Code = itemData.Code,
-                //    LineNo = 1,
-                //    Date = itemData.Date,
-                //    CoaCode = itemData.CoaCode ?? "",
-                //    TypeCode = "CB",
-                //    //Notes = ($"{systemParam.FirstOrDefault(x => x.Code == $"JR_PREFIX_{itemDetailData.Type}")?.Value ?? ""} {itemDetailData.Notes}").Trim(),
-                //    RefCode1 = itemData.Code,
-                //    Group = 2,
-                //    CurrCode = itemData.CurrCode,
-                //    Period = itemData.Date.ToString("yyyyMMdd"),
-                //    Type = itemData.Type,
-                //    Amount = journals.Sum(x => x.Amount),
-                //    SrcTrans = "CB"
-                //});
             }
 
+            return journals;
+        }
+
+        private IEnumerable<Journal> ProcessBBAPJournal(List<SystemParameter> systemParam)
+        {
+            List<Journal> journals = new();
+            var startDate = Convert.ToDateTime(systemParam.FirstOrDefault(x => x.Code == "DATA_START_DATE").Value);
+            var latestData = _db.VwBeginningBalanceAPs.OrderByDescending(x => x.Date).FirstOrDefault();
+            if (latestData.Date.Month == startDate.Month && latestData.Date.Year == startDate.Year)
+            {
+                var bbapData = _db.VwBeginningBalanceAPs.ToList();
+                short i = 0;
+                foreach (var item in bbapData)
+                {
+                    journals.Add(new Journal
+                    {
+                        Code = "BB-AP-" + startDate.ToString("yyMMdd"),
+                        LineNo = ++i,
+                        Date = item.Date,
+                        CoaCode = systemParam.FirstOrDefault(x => x.Code == "AP_COA")?.Value ?? "",
+                        TypeCode = "BB_AP",
+                        Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_AP")?.Value ?? ""} {item.SupName}").Trim(),
+                        RefCode1 = item.Code,
+                        Group = 2,
+                        CurrCode = "IDR",
+                        Period = item.Date.ToString("yyyyMMdd"),
+                        Type = "C",
+                        Amount = item.Amount,
+                        SrcTrans = "BB_AP"
+                    });
+                }
+
+                journals.Add(new Journal
+                {
+                    Code = "BB-AP-" + startDate.ToString("yyMMdd"),
+                    LineNo = 1,
+                    Date = startDate,
+                    CoaCode = systemParam.FirstOrDefault(x => x.Code == "BB_COA")?.Value ?? "",
+                    TypeCode = "BB_AP",
+                    Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_BB_AP")?.Value ?? ""}").Trim(),
+                    RefCode1 = "BB-AP-" + startDate.ToString("yyMMdd"),
+                    Group = 1,
+                    CurrCode = "IDR",
+                    Period = startDate.ToString("yyyyMMdd"),
+                    Type = "D",
+                    Amount = journals.Sum(x => x.Amount),
+                    SrcTrans = "BB_AP"
+                });
+            }
+            return journals;
+        }
+
+        private IEnumerable<Journal> ProcessBBARJournal(List<SystemParameter> systemParam)
+        {
+            List<Journal> journals = new();
+            var startDate = Convert.ToDateTime(systemParam.FirstOrDefault(x => x.Code == "DATA_START_DATE").Value);
+            var latestData = _db.VwBeginningBalanceARs.OrderByDescending(x => x.Date).FirstOrDefault();
+            if (latestData.Date.Month == startDate.Month && latestData.Date.Year == startDate.Year)
+            {
+                var bbapData = _db.VwBeginningBalanceARs.ToList();
+                short i = 0;
+                foreach (var item in bbapData)
+                {
+                    journals.Add(new Journal
+                    {
+                        Code = "BB-AR-" + startDate.ToString("yyMMdd"),
+                        LineNo = ++i,
+                        Date = item.Date,
+                        CoaCode = systemParam.FirstOrDefault(x => x.Code == "AR_COA")?.Value ?? "",
+                        TypeCode = "BB_AR",
+                        Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_AR")?.Value ?? ""} {item.CustName}").Trim(),
+                        RefCode1 = item.Code,
+                        Group = 2,
+                        CurrCode = "IDR",
+                        Period = item.Date.ToString("yyyyMMdd"),
+                        Type = "D",
+                        Amount = item.Amount,
+                        SrcTrans = "BB_AR"
+                    });
+                }
+
+                journals.Add(new Journal
+                {
+                    Code = "BB-AR-" + startDate.ToString("yyMMdd"),
+                    LineNo = 1,
+                    Date = startDate,
+                    CoaCode = systemParam.FirstOrDefault(x => x.Code == "BB_COA")?.Value ?? "",
+                    TypeCode = "BB_AR",
+                    Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_BB_AR")?.Value ?? ""}").Trim(),
+                    RefCode1 = "BB-AR-" + startDate.ToString("yyMMdd"),
+                    Group = 1,
+                    CurrCode = "IDR",
+                    Period = startDate.ToString("yyyyMMdd"),
+                    Type = "C",
+                    Amount = journals.Sum(x => x.Amount),
+                    SrcTrans = "BB_AR"
+                });
+            }
             return journals;
         }
 
