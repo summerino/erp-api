@@ -48,7 +48,7 @@ namespace ERP.Entity
             int.TryParse(_accessor.HttpContext?.User?.Claims?.SingleOrDefault(x => x.Type == "TenantId")?.Value,
                 out var tenantId)
                 ? tenantId
-                : 0;
+                : 1;
 
         public string CatalogUserId =>
             _accessor.HttpContext?.User?.Claims?.SingleOrDefault(x => x.Type == "CatalogUserId")?.Value.ToString();

@@ -124,6 +124,7 @@ namespace ERP.Entity
         public DbSet<PurchaseInvoiceHeader> PurchaseInvoiceHeaders { get; set; }
         public DbSet<VwPurchaseInvoiceHeader> VwPurchaseInvoiceHeaders { get; set; }
         public DbSet<PurchaseInvoiceDetail> PurchaseInvoiceDetails { get; set; }
+        public DbSet<PurchaseInvoiceDebitMemo> PurchaseInvoiceDebitMemos { get; set; }
         public DbSet<PurchaseOrderHeader> PurchaseOrderHeaders { get; set; }
         public DbSet<VwPurchaseOrderHeader> VwPurchaseOrderHeaders { get; set; }
         public DbSet<PurchaseOrderDetail> PurchaseOrderDetails { get; set; }
@@ -160,6 +161,7 @@ namespace ERP.Entity
         public DbSet<SalesInvoiceHeader> SalesInvoiceHeaders { get; set; }
         public DbSet<VwSalesInvoiceHeader> VwSalesInvoiceHeaders { get; set; }
         public DbSet<SalesInvoiceDetail> SalesInvoiceDetails { get; set; }
+        public DbSet<SalesInvoiceCreditMemo> SalesInvoiceCreditMemos { get; set; }
         public DbSet<SalesmanGroup> SalesmanGroups { get; set; }
         public DbSet<VwSalesmanGroup> VwSalesmanGroups { get; set; }
         public DbSet<SalesmanSchedule> SalesmanSchedules { get; set; }
@@ -900,9 +902,20 @@ namespace ERP.Entity
             // Purchase entities
             // Debit Memo entities
             modelBuilder.Entity<DebitMemo>(entity =>
+            {
                 entity.Property(e => e.Mark)
-                    .IsRequired()
-            );
+                    .IsRequired();
+
+                entity.HasOne<Supplier>()
+                    .WithMany()
+                    .HasForeignKey(d => d.SupCode)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Currency>()
+                    .WithMany()
+                    .HasForeignKey(d => d.CurrCode)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
 
             modelBuilder.Entity<VwDebitMemo>()
                 .HasNoKey()
@@ -910,18 +923,66 @@ namespace ERP.Entity
 
             // Purchase Invoice entities
             modelBuilder.Entity<PurchaseInvoiceHeader>(entity =>
+            {
                 entity.Property(e => e.Mark)
-                    .IsRequired()
-            );
+                    .IsRequired();
+
+                entity.HasOne<PurchaseOrderHeader>()
+                    .WithMany()
+                    .HasForeignKey(d => d.PoCode)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Supplier>()
+                    .WithMany()
+                    .HasForeignKey(d => d.SupCode)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Employee>()
+                    .WithMany()
+                    .HasForeignKey(d => d.IssuedBy)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Currency>()
+                    .WithMany()
+                    .HasForeignKey(d => d.CurrCode)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
 
             modelBuilder.Entity<VwPurchaseInvoiceHeader>()
                 .HasNoKey()
                 .ToView("vwPurchaseInvoiceHeader", Schema.Purchasing);
 
             modelBuilder.Entity<PurchaseInvoiceDetail>(entity =>
+            {
                 entity.Property(e => e.Code)
-                    .IsRequired()
-            );
+                    .IsRequired();
+
+                entity.HasOne<PurchaseInvoiceHeader>()
+                    .WithMany()
+                    .HasForeignKey(d => d.Code)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<PurchaseReceiveHeader>()
+                    .WithMany()
+                    .HasForeignKey(d => d.RcvCode)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            modelBuilder.Entity<PurchaseInvoiceDebitMemo>(entity =>
+            {
+                entity.Property(e => e.InvCode)
+                    .IsRequired();
+
+                entity.HasOne<PurchaseInvoiceHeader>()
+                    .WithMany()
+                    .HasForeignKey(d => d.InvCode)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<DebitMemo>()
+                    .WithMany()
+                    .HasForeignKey(d => d.DebitMemoCode)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
 
             // Purchase Order entities
             modelBuilder.Entity<PurchaseOrderHeader>(entity =>
@@ -976,17 +1037,18 @@ namespace ERP.Entity
                     .IsRequired()
             );
 
+            modelBuilder.Entity<VwPurchaseReturnDetail>()
+                .HasNoKey()
+                .ToView("vwPurchaseReturnDetail", Schema.Purchasing);
+
             modelBuilder.Entity<PurchaseReturnDetailExchDiffItem>(entity =>
                 entity.Property(e => e.Code)
                     .IsRequired()
             );
+
             modelBuilder.Entity<VwPurchaseReturnDetailExchDiffItem>()
                 .HasNoKey()
                 .ToView("vwPurchaseReturnDetailExchDiffItem", Schema.Purchasing);
-
-            modelBuilder.Entity<VwPurchaseReturnDetail>()
-                .HasNoKey()
-                .ToView("vwPurchaseReturnDetail", Schema.Purchasing);
 
             // Sales entities
             // Area entities
@@ -996,9 +1058,20 @@ namespace ERP.Entity
 
             // Credit Memo entities
             modelBuilder.Entity<CreditMemo>(entity =>
+            {
                 entity.Property(e => e.Mark)
-                    .IsRequired()
-            );
+                    .IsRequired();
+
+                entity.HasOne<Customer>()
+                    .WithMany()
+                    .HasForeignKey(d => d.CustCode)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Currency>()
+                    .WithMany()
+                    .HasForeignKey(d => d.CurrCode)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
 
             modelBuilder.Entity<VwCreditMemo>()
                 .HasNoKey()
@@ -1129,18 +1202,66 @@ namespace ERP.Entity
 
             // Sales Invoice entities
             modelBuilder.Entity<SalesInvoiceHeader>(entity =>
+            {
                 entity.Property(e => e.Mark)
-                    .IsRequired()
-            );
+                    .IsRequired();
+
+                entity.HasOne<SalesOrderHeader>()
+                    .WithMany()
+                    .HasForeignKey(d => d.SoCode)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Customer>()
+                    .WithMany()
+                    .HasForeignKey(d => d.CustCode)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Employee>()
+                    .WithMany()
+                    .HasForeignKey(d => d.IssuedBy)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Currency>()
+                    .WithMany()
+                    .HasForeignKey(d => d.CurrCode)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
 
             modelBuilder.Entity<VwSalesInvoiceHeader>()
                 .HasNoKey()
                 .ToView("vwSalesInvoiceHeader", Schema.Sales);
 
             modelBuilder.Entity<SalesInvoiceDetail>(entity =>
+            {
                 entity.Property(e => e.Code)
-                    .IsRequired()
-            );
+                    .IsRequired();
+
+                entity.HasOne<SalesInvoiceHeader>()
+                    .WithMany()
+                    .HasForeignKey(d => d.Code)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<SalesDeliveryHeader>()
+                    .WithMany()
+                    .HasForeignKey(d => d.DoCode)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            modelBuilder.Entity<SalesInvoiceCreditMemo>(entity =>
+            {
+                entity.Property(e => e.InvCode)
+                    .IsRequired();
+
+                entity.HasOne<SalesInvoiceHeader>()
+                    .WithMany()
+                    .HasForeignKey(d => d.InvCode)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<CreditMemo>()
+                    .WithMany()
+                    .HasForeignKey(d => d.CreditMemoCode)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
 
             // Salesman Group entities
             modelBuilder.Entity<VwSalesmanGroup>()
