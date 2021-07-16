@@ -8,6 +8,8 @@ namespace ERP.Entity.General
 
         public string Name { get; set; }
 
+        public DateTime Date { get; set; }
+
         public string SourceTrans { get; set; }
 
         public DateTime UpdatedDate { get; set; }

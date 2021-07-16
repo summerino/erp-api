@@ -70,7 +70,8 @@
         CashBankInter = 83,
         Journal = 86,
         BeginningBalanceDebitMemo = 89,
-        BeginningBalanceCreditMemo = 90
+        BeginningBalanceCreditMemo = 90,
+        ClosingMonth = 88
     }
     public static class ApprovalType
     {
