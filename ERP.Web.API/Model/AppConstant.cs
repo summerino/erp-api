@@ -68,7 +68,9 @@
         GeneralJournal = 84,
         CashBank = 82,
         CashBankInter = 83,
-        Journal = 86
+        Journal = 86,
+        BeginningBalanceDebitMemo = 89,
+        BeginningBalanceCreditMemo = 90
     }
     public static class ApprovalType
     {

@@ -176,6 +176,35 @@ namespace ERP.Entity.Accounting
         public string Notes { get; set; }
     }
 
+    public class VwBeginningBalanceCreditMemo : BaseEntityWithActive
+    {
+        public long Id { get; set; }
+
+        public string Code { get; set; }
+
+        public DateTime Date { get; set; }
+
+        public short Type { get; set; }
+
+        public string CustCode { get; set; }
+
+        public string CurrCode { get; set; }
+
+        public decimal CurrRate { get; set; }
+
+        public decimal Amount { get; set; }
+
+        public decimal Used { get; set; }
+
+        public string Notes { get; set; }
+
+        public string CustName { get; set; }
+
+        public string CreatedInitial { get; set; }
+
+        public string UpdatedInitial { get; set; }
+    }
+
     [Table("BeginningBalanceDebitMemo", Schema = Schema.Accounting)]
     [Index(nameof(Code), IsUnique = true)]
     public class BeginningBalanceDebitMemo : BaseEntityWithActive
@@ -211,4 +240,34 @@ namespace ERP.Entity.Accounting
         [StringLength(256)]
         public string Notes { get; set; }
     }
+
+    public class VwBeginningBalanceDebitMemo : BaseEntityWithActive
+    {
+        public long Id { get; set; }
+
+        public string Code { get; set; }
+
+        public DateTime Date { get; set; }
+
+        public short Type { get; set; }
+
+        public string SupCode { get; set; }
+
+        public string CurrCode { get; set; }
+
+        public decimal CurrRate { get; set; }
+
+        public decimal Amount { get; set; }
+
+        public decimal Used { get; set; }
+
+        public string Notes { get; set; }
+
+        public string SupName { get; set; }
+
+        public string CreatedInitial { get; set; }
+
+        public string UpdatedInitial { get; set; }
+    }
+
 }
