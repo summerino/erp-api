@@ -35,7 +35,9 @@ namespace ERP.Entity
         public DbSet<BeginningBalanceAR> BeginningBalanceARs { get; set; }
         public DbSet<VwBeginningBalanceAR> VwBeginningBalanceARs { get; set; }
         public DbSet<BeginningBalanceCreditMemo> BeginningBalanceCreditMemos { get; set; }
+        public DbSet<VwBeginningBalanceCreditMemo> VwBeginningBalanceCreditMemos { get; set; }
         public DbSet<BeginningBalanceDebitMemo> BeginningBalanceDebitMemos { get; set; }
+        public DbSet<VwBeginningBalanceDebitMemo> VwBeginningBalanceDebitMemos { get; set; }
         public DbSet<ClosingMonth> ClosingMonths { get; set; }
         public DbSet<Coa> Coas { get; set; }
         public DbSet<VwCoa> VwCoas { get; set; }
@@ -319,6 +321,10 @@ namespace ERP.Entity
                     .OnDelete(DeleteBehavior.NoAction);
             });
 
+            modelBuilder.Entity<VwBeginningBalanceCreditMemo>()
+                .HasNoKey()
+                .ToView("vwBeginningBalanceCreditMemo", Schema.Accounting);
+
             // Beginning Balance Debit Memo entities
             modelBuilder.Entity<BeginningBalanceDebitMemo>(entity =>
             {
@@ -332,6 +338,10 @@ namespace ERP.Entity
                     .HasForeignKey(d => d.CurrCode)
                     .OnDelete(DeleteBehavior.NoAction);
             });
+
+            modelBuilder.Entity<VwBeginningBalanceDebitMemo>()
+                .HasNoKey()
+                .ToView("vwBeginningBalanceDebitMemo", Schema.Accounting);
 
             // COA entities
             modelBuilder.Entity<Coa>(entity =>
