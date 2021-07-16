@@ -84,6 +84,7 @@ namespace ERP.Entity.Finance
         public string UpdatedInitial { get; set; }
 
         public string ApprovedInitial { get; set; }
+        public string Status { get; set; }
     }
 
     [Table("GeneralCashBankDetail", Schema = Schema.Finance)]
@@ -263,5 +264,32 @@ namespace ERP.Entity.Finance
         public string ApprovedInitial { get; set; }
 
         public string Status { get; set; }
+    }
+
+    public class VwPR
+    {
+        public string Code { get; set; }
+        public string SupCode { get; set; }
+        public string SupName { get; set; }
+        public string CurrCode { get; set; }
+        public decimal Rate { get; set; }
+        public DateTime Date { get; set; }
+        public decimal Amount { get; set; }
+        public decimal Used { get; set; }
+        public decimal Remaining { get; set; }
+        public string Notes { get; set; }
+    }
+    public class VwSR 
+    {
+        public string Code { get; set; }
+        public string CustCode { get; set; }
+        public string CustName { get; set; }
+        public string CurrCode { get; set; }
+        public decimal Rate { get; set; }
+        public DateTime Date { get; set; }
+        public decimal Amount { get; set; }
+        public decimal Used { get; set; }
+        public decimal Remaining { get; set; }
+        public string Notes { get; set; }
     }
 }

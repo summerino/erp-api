@@ -66,6 +66,8 @@ namespace ERP.Entity
         public DbSet<CashBankType> CashBankTypes { get; set; }
         public DbSet<VwAP> VwAPs { get; set; }
         public DbSet<VwAR> VwARs { get; set; }
+        public DbSet<VwSR> VwSRs { get; set; }
+        public DbSet<VwPR> VwPRs { get; set; }
         public DbSet<VwInterCashBankHeader> VwInterCashBankHeaders { get; set; }
 
         // General entities
@@ -479,6 +481,14 @@ namespace ERP.Entity
             modelBuilder.Entity<VwAR>()
                 .HasNoKey()
                 .ToView("vwAR", Schema.Finance);
+
+            modelBuilder.Entity<VwPR>()
+                .HasNoKey()
+                .ToView("VwPR", Schema.Finance);
+
+            modelBuilder.Entity<VwSR>()
+                .HasNoKey()
+                .ToView("VwSR", Schema.Finance);
 
             modelBuilder.Entity<VwInterCashBankHeader>()
                 .HasNoKey()

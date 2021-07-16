@@ -18,9 +18,9 @@ namespace ERP.Web.API.Domain.Interfaces.Finance
             string search, string cashbankCode);
 
         DataSourceResult GetDataDebitMemo(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
-            string search, string cashbankCode);
+            string search, string cashbankCode, string type);
         DataSourceResult GetDataCreditMemo(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
-            string search, string cashbankCode);
+            string search, string cashbankCode, string type);
         IEnumerable<VwGeneralCashBankDetail> GetDetailData(string code);
 
         SaveResult Delete(string code, int userId);
