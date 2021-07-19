@@ -96,7 +96,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
 
             result.Success = true;
             result.Data = data.Period;
-            result.Message = "Data nilai tukar mata uang berhasil diperbarui.";
+            result.Message = "Data tutup bulan berhasil diperbarui.";
             return result;
         }
     }
