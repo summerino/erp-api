@@ -31,7 +31,7 @@ namespace ERP.Entity.Accounting
         public string CurrCode { get; set; }
 
         [Column(TypeName = "decimal(19, 6)")]
-        public decimal CurrRate { get; set; }
+        public decimal Rate { get; set; }
 
         [Column(TypeName = "decimal(18, 2)")]
         public decimal Amount { get; set; }
@@ -57,7 +57,7 @@ namespace ERP.Entity.Accounting
 
         public string CurrCode { get; set; }
 
-        public decimal CurrRate { get; set; }
+        public decimal Rate { get; set; }
 
         public decimal Amount { get; set; }
         
@@ -98,7 +98,7 @@ namespace ERP.Entity.Accounting
         public string CurrCode { get; set; }
 
         [Column(TypeName = "decimal(19, 6)")]
-        public decimal CurrRate { get; set; }
+        public decimal Rate { get; set; }
 
         [Column(TypeName = "decimal(18, 2)")]
         public decimal Amount { get; set; }
@@ -124,7 +124,7 @@ namespace ERP.Entity.Accounting
 
         public string CurrCode { get; set; }
 
-        public decimal CurrRate { get; set; }
+        public decimal Rate { get; set; }
 
         public decimal Amount { get; set; }
         
@@ -164,7 +164,7 @@ namespace ERP.Entity.Accounting
         public string CurrCode { get; set; }
 
         [Column(TypeName = "decimal(19, 6)")]
-        public decimal CurrRate { get; set; }
+        public decimal Rate { get; set; }
 
         [Column(TypeName = "decimal(18, 2)")]
         public decimal Amount { get; set; }
@@ -190,7 +190,7 @@ namespace ERP.Entity.Accounting
 
         public string CurrCode { get; set; }
 
-        public decimal CurrRate { get; set; }
+        public decimal Rate { get; set; }
 
         public decimal Amount { get; set; }
 
@@ -229,7 +229,7 @@ namespace ERP.Entity.Accounting
         public string CurrCode { get; set; }
 
         [Column(TypeName = "decimal(19, 6)")]
-        public decimal CurrRate { get; set; }
+        public decimal Rate { get; set; }
 
         [Column(TypeName = "decimal(18, 2)")]
         public decimal Amount { get; set; }
@@ -255,7 +255,7 @@ namespace ERP.Entity.Accounting
 
         public string CurrCode { get; set; }
 
-        public decimal CurrRate { get; set; }
+        public decimal Rate { get; set; }
 
         public decimal Amount { get; set; }
 
