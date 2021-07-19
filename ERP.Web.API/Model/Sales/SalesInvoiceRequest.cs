@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using ERP.Entity.Sales;
 using ERP.Web.API.Domain.Models.Sales;
 
@@ -31,6 +32,10 @@ namespace ERP.Web.API.Model.Sales
 
         public decimal Dpp { get; set; }
         // End - Direct Invoice
+
+        public DateTime? OriginalDate { get; set; }
+
+        public DateTime? OriginalDueDate { get; set; }
     }
 
     public class DirectInvoiceRequest : DirectInvoiceHeader

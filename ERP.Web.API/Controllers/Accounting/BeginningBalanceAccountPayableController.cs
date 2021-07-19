@@ -12,6 +12,7 @@ using ERP.Web.API.Domain.Interfaces.Auth;
 using ERP.Web.API.Domain.Interfaces.SystemManagement;
 using ERP.Web.API.Model;
 using Newtonsoft.Json;
+using ERP.Web.API.Model.Accounting;
 
 namespace ERP.Web.API.Controllers.Accounting
 {
@@ -23,16 +24,18 @@ namespace ERP.Web.API.Controllers.Accounting
         private readonly ISystemParameterService _sysPar;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
+        private readonly IClosingMonthService _closingMonth;
 
         private const int _menuId = (int)Menu.AccountPayable;
 
         public BeginningBalanceAccountPayableController(IBeginningBalanceAccountPayableService BbAp,
-            ISystemParameterService sysPar, IClaimService claim, IAuthService auth)
+            ISystemParameterService sysPar, IClaimService claim, IAuthService auth, IClosingMonthService closingMonthService)
         {
             _BbAp = BbAp;
             _sysPar = sysPar;
             _claim = claim;
             _auth = auth;
+            _closingMonth = closingMonthService;
         }
 
         [HttpGet]
@@ -53,7 +56,7 @@ namespace ERP.Web.API.Controllers.Accounting
         }
 
         [HttpPost]
-        public IActionResult OnPost(BeginningBalanceAP data)
+        public IActionResult OnPost(BeginningBalanceAPRequest data)
         {
             // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Insert }).Any())
@@ -76,7 +79,7 @@ namespace ERP.Web.API.Controllers.Accounting
         }
 
         [HttpPut("{id}")]
-        public IActionResult OnPut(string id, BeginningBalanceAP data)
+        public IActionResult OnPut(string id, BeginningBalanceAPRequest data)
         {
             // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Update }).Any())
@@ -95,20 +98,32 @@ namespace ERP.Web.API.Controllers.Accounting
             return Ok(result);
         }
 
-        [HttpDelete("{id}")]
-        public IActionResult OnDelete(int id)
+        [HttpDelete]
+        public IActionResult OnDelete(BeginningBalanceAPRequest data)
         {
             // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Delete }).Any())
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
-            var result = _BbAp.Delete(id, _claim.UserId);
+            // Validate process
+            var (isValid, message) = Validate(data);
+            if (!isValid)
+                return Ok(new SaveResult(false, message));
+
+            var result = _BbAp.Delete(data.Id, _claim.UserId);
 
             return Ok(result);
         }
 
-        private (bool, string) Validate(BeginningBalanceAP data)
+        private (bool, string) Validate(BeginningBalanceAPRequest data)
         {
+            var periods = new List<string> { data.Date.ToString("yyyyMM") };
+            if (data.OriginalDate.HasValue)
+                periods.Add(data.OriginalDate.Value.ToString("yyyyMM"));
+
+            if (_closingMonth.IsMonthClosed(periods))
+                return(false, "Periode sudah ditutup. Silakan hubungi departemen akuntansi.");
+
             // Checking data start date validity
             return _sysPar.IsStartDateValid(data.Date)
                 ? (false, "Tanggal tidak boleh lebih besar dari tanggal mulai data.")

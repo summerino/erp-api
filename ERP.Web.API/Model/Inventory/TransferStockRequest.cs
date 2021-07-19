@@ -7,5 +7,7 @@ namespace ERP.Web.API.Model.Inventory
     public class TransferStockRequest : TransferStockHeader
     {
         public IEnumerable<TransferStockDetail> ItemDetails { get; set; }
+
+        public DateTime? OriginalDate { get; set; }
     }
 }

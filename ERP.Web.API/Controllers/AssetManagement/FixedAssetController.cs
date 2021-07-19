@@ -12,6 +12,8 @@ using ERP.Web.API.Domain.Interfaces.Auth;
 using ERP.Web.API.Domain.Interfaces.SystemManagement;
 using ERP.Web.API.Model;
 using Newtonsoft.Json;
+using ERP.Web.API.Domain.Interfaces.Accounting;
+using ERP.Web.API.Model.AssetManagement;
 
 namespace ERP.Web.API.Controllers.AssetManagement
 {
@@ -23,16 +25,17 @@ namespace ERP.Web.API.Controllers.AssetManagement
         private readonly ISystemParameterService _sysPar;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
-
+        private readonly IClosingMonthService _closingMonth;
         private const int _menuId = (int)Menu.FixedAsset;
 
         public FixedAssetController(IFixedAssetService fixedAsset, ISystemParameterService sysPar, 
-            IClaimService claim, IAuthService auth)
+            IClaimService claim, IAuthService auth, IClosingMonthService closingMonthService)
         {
             _fixedAsset = fixedAsset;
             _sysPar = sysPar;
             _claim = claim;
             _auth = auth;
+            _closingMonth = closingMonthService;
         }
 
         [HttpGet]
@@ -53,7 +56,7 @@ namespace ERP.Web.API.Controllers.AssetManagement
         }
 
         [HttpPost]
-        public IActionResult OnPost(FixedAsset data)
+        public IActionResult OnPost(FixedAssetRequest data)
         {
             // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Insert }).Any())
@@ -76,7 +79,7 @@ namespace ERP.Web.API.Controllers.AssetManagement
         }
 
         [HttpPut("{id}")]
-        public IActionResult OnPut(string code, FixedAsset data)
+        public IActionResult OnPut(string code, FixedAssetRequest data)
         {
             // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Update }).Any())
@@ -95,20 +98,34 @@ namespace ERP.Web.API.Controllers.AssetManagement
             return Ok(result);
         }
 
-        [HttpDelete("{code}")]
-        public IActionResult OnDelete(string code)
+        [HttpDelete]
+        public IActionResult OnDelete(FixedAssetRequest data)
         {
             // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Void }).Any())
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
-            var result = _fixedAsset.Delete(code, _claim.UserId);
+            // Validate process
+            var (isValid, message) = Validate(data);
+            if (!isValid)
+                return Ok(new SaveResult(false, message));
+
+            var result = _fixedAsset.Delete(data.Code, _claim.UserId);
 
             return Ok(result);
         }
 
-        private (bool, string) Validate(FixedAsset data)
+        private (bool, string) Validate(FixedAssetRequest data)
         {
+            var periods = new List<string> { data.PurchaseDate.ToString("yyyyMM"), data.StartDepreciateOn.ToString("yyyyMM") };
+            if (data.OriginalPurchaseDate.HasValue)
+                periods.Add(data.OriginalPurchaseDate.Value.ToString("yyyyMM"));
+            if (data.OriginalStartDepreciateOn.HasValue)
+                periods.Add(data.OriginalStartDepreciateOn.Value.ToString("yyyyMM"));
+
+            if (_closingMonth.IsMonthClosed(periods))
+                return (false, "Periode sudah ditutup. Silakan hubungi departemen akuntansi.");
+
             // Checking data start date validity
             if (!_sysPar.IsStartDateValid(data.PurchaseDate))
                 return (false, "Tanggal Perolehan tidak boleh lebih kecil dari tanggal mulai data.");

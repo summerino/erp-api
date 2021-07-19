@@ -12,6 +12,8 @@ using ERP.Web.API.Domain.Interfaces.Sales;
 using ERP.Web.API.Domain.Interfaces.SystemManagement;
 using ERP.Web.API.Model;
 using Newtonsoft.Json;
+using ERP.Web.API.Domain.Interfaces.Accounting;
+using ERP.Web.API.Model.Sales;
 
 namespace ERP.Web.API.Controllers.Sales
 {
@@ -23,16 +25,17 @@ namespace ERP.Web.API.Controllers.Sales
         private readonly ISystemParameterService _sysPar;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
-
+        private readonly IClosingMonthService _closingMonth;
         private const int _menuId = (int)Menu.CreditMemo;
 
         public CreditMemoController(ICreditMemoService memo, ISystemParameterService sysPar,
-            IClaimService claim, IAuthService auth)
+            IClaimService claim, IAuthService auth, IClosingMonthService closingMonthService)
         {
             _memo = memo;
             _sysPar = sysPar;
             _claim = claim;
             _auth = auth;
+            _closingMonth = closingMonthService;
         }
 
         [HttpGet]
@@ -65,7 +68,7 @@ namespace ERP.Web.API.Controllers.Sales
         }
 
         [HttpPost]
-        public IActionResult OnPost(CreditMemo data)
+        public IActionResult OnPost(CreditMemoRequest data)
         {
             // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Insert }).Any())
@@ -88,7 +91,7 @@ namespace ERP.Web.API.Controllers.Sales
         }
 
         [HttpPut("{code}")]
-        public IActionResult OnPut(string code, CreditMemo data)
+        public IActionResult OnPut(string code, CreditMemoRequest data)
         {
             // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Update }).Any())
@@ -107,20 +110,32 @@ namespace ERP.Web.API.Controllers.Sales
             return Ok(result);
         }
 
-        [HttpDelete("{code}")]
-        public IActionResult OnDelete(string code)
+        [HttpDelete]
+        public IActionResult OnDelete(CreditMemoRequest data)
         {
             // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Void }).Any())
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
-            var result = _memo.Delete(code, _claim.UserId);
+            // Validate process
+            var (isValid, message) = Validate(data);
+            if (!isValid)
+                return Ok(new SaveResult(false, message));
+
+            var result = _memo.Delete(data.Code, _claim.UserId);
 
             return Ok(result);
         }
 
-        private (bool, string) Validate(CreditMemo data)
+        private (bool, string) Validate(CreditMemoRequest data)
         {
+            var periods = new List<string> { data.Date.ToString("yyyyMM") };
+            if (data.OriginalDate.HasValue)
+                periods.Add(data.OriginalDate.Value.ToString("yyyyMM"));
+
+            if (_closingMonth.IsMonthClosed(periods))
+                return (false, "Periode sudah ditutup. Silakan hubungi departemen akuntansi.");
+
             // Checking data start date validity
             return !_sysPar.IsStartDateValid(data.Date)
                 ? (false, "Tanggal tidak boleh lebih kecil dari tanggal mulai data.")

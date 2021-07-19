@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using ERP.Entity.Expedition;
 
 namespace ERP.Web.API.Model.Expedition
@@ -6,5 +7,7 @@ namespace ERP.Web.API.Model.Expedition
     public class ExpeditionInvoiceRequest : ExpeditionInvoiceHeader
     {
         public IEnumerable<ExpeditionInvoiceDetail> Details { get; set; }
+
+        public DateTime? OriginalDate { get; set; }
     }
 }

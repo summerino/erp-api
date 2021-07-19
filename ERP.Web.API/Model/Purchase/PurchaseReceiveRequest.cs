@@ -15,5 +15,7 @@ namespace ERP.Web.API.Model.Purchase
         public DateTime InvDueDate { get; set; }
 
         public bool IsPoInv { get; set; }
+
+        public DateTime? OriginalDate { get; set; }
     }
 }

@@ -23,16 +23,17 @@ namespace ERP.Web.API.Controllers.Accounting
         private readonly ISystemParameterService _sysPar;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
-
+        private readonly IClosingMonthService _closingMonth;
         private const int _menuId = (int)Menu.GeneralJournal;
 
         public GeneralJournalController(IGeneralJournalService gj, ISystemParameterService sysPar,
-            IClaimService claim, IAuthService auth)
+            IClaimService claim, IAuthService auth, IClosingMonthService closingMonthService)
         {
             _gj = gj;
             _sysPar = sysPar;
             _claim = claim;
             _auth = auth;
+            _closingMonth = closingMonthService;
         }
 
         [HttpGet]
@@ -120,27 +121,43 @@ namespace ERP.Web.API.Controllers.Accounting
             return Ok(result);
         }
 
-        [HttpDelete("{code}")]
-        public IActionResult OnDelete(string code)
+        [HttpDelete]
+        public IActionResult OnDelete(GeneralJournalRequest data)
         {
             // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Void }).Any())
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
-            var result = _gj.Delete(code, _claim.UserId);
+            // Validate process
+            var (isValid, message) = Validate(data);
+            if (!isValid)
+                return Ok(new SaveResult(false, message));
+
+            var result = _gj.Delete(data.Code, _claim.UserId);
 
             return Ok(result);
         }
 
         private (bool, string) Validate(GeneralJournalRequest data)
         {
+            var periods = new List<string> { data.Date.ToString("yyyyMM") };
+            if (data.OriginalDate.HasValue)
+                periods.Add(data.OriginalDate.Value.ToString("yyyyMM"));
+
+            if (_closingMonth.IsMonthClosed(periods))
+                return (false, "Periode sudah ditutup. Silakan hubungi departemen akuntansi.");
+
             // Checking data start date validity
             if (!_sysPar.IsStartDateValid(data.Date))
                 return (false, "Tanggal tidak boleh lebih kecil dari tanggal mulai data.");
 
-            return !data.Details.Any()
-                ? (false, "Detail tidak boleh kosong.")
-                : (true, "");
+            if (data.Details != null)
+            {
+                if (!data.Details.Any())
+                    return (false, "Detail tidak boleh kosong.");
+            }
+
+            return (true, "");
         }
     }
 }

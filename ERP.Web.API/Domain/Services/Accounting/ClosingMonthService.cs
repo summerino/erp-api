@@ -38,8 +38,8 @@ namespace ERP.Web.API.Domain.Services.Accounting
 
             try
             {
-                DateTime startDate = new(data.StartDate.Year, data.StartDate.Month, 1);
-                DateTime endDate = new(data.EndDate.Year, data.EndDate.Month, 1);
+                DateTime startDate = new(data.StartDate.Value.Year, data.StartDate.Value.Month, 1);
+                DateTime endDate = new(data.EndDate.Value.Year, data.EndDate.Value.Month, 1);
                 //Check if EndDate greater than StartDate
                 if (endDate < startDate)
                 {
@@ -75,6 +75,11 @@ namespace ERP.Web.API.Domain.Services.Accounting
             result.Success = true;
             result.Message = "Data tutup bulan berhasil disimpan.";
             return result;
+        }
+
+        public bool IsMonthClosed(List<string> periods)
+        {
+            return Db.ClosingMonths.Any(x => x.IsClose && periods.Contains(x.Period));
         }
 
         public override SaveResult Update(ClosingMonth data)

@@ -61,19 +61,11 @@ namespace ERP.Web.API.Controllers.Accounting
             {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
             }
-            var lastDay = DateTime.DaysInMonth(Convert.ToInt32(data.EndDate.Year), Convert.ToInt32(data.EndDate.Month));
 
-            var filters = "[{\"field\":\"date\",\"operator\":\"lte\",\"keyword\":\"" + data.EndDate.Year + "-" + data.EndDate.Month + "-" + lastDay + "\"},{\"field\":\"date\",\"operator\":\"gte\",\"keyword\":\"" + data.StartDate.Year + "-" + data.StartDate.Month + "-01\"}]";
-            var approvalData =
-                _apv.GetData(
-                    0, 1,
-                    JsonConvert.DeserializeObject<List<Filter>>(filters),
-                    JsonConvert.DeserializeObject<List<Sort>>("[]"),
-                    null);
-            if (approvalData.Data.ToDynamicList().Count > 0 && data.IsClose)
-            {
-                return Ok(new SaveResult(false, "Tidak bisa tutup bulan karena terdapat transaksi yang belum disetujui."));
-            }
+            // Validate process
+            var (isValid, message) = Validate(data);
+            if (!isValid)
+                return Ok(new SaveResult(false, message));
 
             data.CreatedBy = _claim.UserId;
             data.CreatedDate = DateTime.Now;
@@ -86,18 +78,41 @@ namespace ERP.Web.API.Controllers.Accounting
         }
 
         [HttpPut]
-        public IActionResult OnPut(ClosingMonth data)
+        public IActionResult OnPut(ClosingMonthRequest data)
         {
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Update }).Any())
             {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
             }
 
-            var year = data.Period[..4];
-            var month = data.Period[^2..];
-            var lastDay = DateTime.DaysInMonth(Convert.ToInt32(year), Convert.ToInt32(month));
+            // Validate process
+            var (isValid, message) = Validate(data);
+            if (!isValid)
+                return Ok(new SaveResult(false, message));
 
-            var filters = "[{\"field\":\"date\",\"operator\":\"lte\",\"keyword\":\"" + year + "-" + month + "-" + lastDay + "\"},{\"field\":\"date\",\"operator\":\"gte\",\"keyword\":\"" + year + "-" + month + "-01\"}]";
+            data.UpdatedBy = _claim.UserId;
+            data.UpdatedDate = DateTime.Now;
+            var result = _cm.Update(data);
+            return Ok(result);
+        }
+
+        private (bool, string) Validate(ClosingMonthRequest data)
+        {
+            string filters = "";
+            if (data.StartDate == null && data.EndDate == null)
+            {
+                var year = Convert.ToInt32(data.Period[..4]);
+                var month = Convert.ToInt32(data.Period[^2..]);
+                var lastDay = DateTime.DaysInMonth(year, month);
+                filters = "[{\"field\":\"date\",\"operator\":\"lte\",\"keyword\":\"" + year + "-" + month + "-" + lastDay + "\"},{\"field\":\"date\",\"operator\":\"gte\",\"keyword\":\"" + year + "-" + month + "-01\"}]";
+            } 
+            else
+            {
+                var lastDay = DateTime.DaysInMonth(Convert.ToInt32(data.EndDate?.Year), Convert.ToInt32(data.EndDate?.Month));
+
+                filters = "[{\"field\":\"date\",\"operator\":\"lte\",\"keyword\":\"" + data.EndDate?.Year + "-" + data.EndDate?.Month + "-" + lastDay + "\"},{\"field\":\"date\",\"operator\":\"gte\",\"keyword\":\"" + data.StartDate?.Year + "-" + data.StartDate?.Month + "-01\"}]";
+            }
+
             var approvalData =
                 _apv.GetData(
                     0, 1,
@@ -105,14 +120,9 @@ namespace ERP.Web.API.Controllers.Accounting
                     JsonConvert.DeserializeObject<List<Sort>>("[]"),
                     null);
             if (approvalData.Data.ToDynamicList().Count > 0 && data.IsClose)
-            {
-                return Ok(new SaveResult(false, "Tidak bisa tutup bulan karena terdapat transaksi yang belum disetujui."));
-            }
+                return (false, "Tidak bisa tutup bulan karena terdapat transaksi yang belum disetujui.");
 
-            data.UpdatedBy = _claim.UserId;
-            data.UpdatedDate = DateTime.Now;
-            var result = _cm.Update(data);
-            return Ok(result);
+            return (true, "");
         }
     }
 }

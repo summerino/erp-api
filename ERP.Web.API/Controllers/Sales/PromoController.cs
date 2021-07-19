@@ -12,6 +12,7 @@ using ERP.Web.API.Domain.Interfaces.SystemManagement;
 using ERP.Web.API.Model;
 using ERP.Web.API.Model.Sales;
 using Newtonsoft.Json;
+using ERP.Web.API.Domain.Interfaces.Accounting;
 
 namespace ERP.Web.API.Controllers.Sales
 {
@@ -23,15 +24,16 @@ namespace ERP.Web.API.Controllers.Sales
         private readonly ISystemParameterService _sysPar;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
-
+        private readonly IClosingMonthService _closingMonth;
         private const int _menuId = (int)Menu.Promo;
 
-        public PromoController(IPromoService promo, ISystemParameterService sysPar, IClaimService claim, IAuthService auth)
+        public PromoController(IPromoService promo, ISystemParameterService sysPar, IClaimService claim, IAuthService auth, IClosingMonthService closingMonthService)
         {
             _promo = promo;
             _sysPar = sysPar;
             _claim = claim;
             _auth = auth;
+            _closingMonth = closingMonthService;
         }
 
         [HttpGet]
@@ -124,20 +126,34 @@ namespace ERP.Web.API.Controllers.Sales
             return Ok(result);
         }
 
-        [HttpDelete("{code}")]
-        public IActionResult OnDelete(string code)
+        [HttpDelete]
+        public IActionResult OnDelete(PromoRequest data)
         {
             // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Void }).Any())
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
-            var result = _promo.Delete(code, _claim.UserId);
+            // Validate process
+            var (isValid, message) = Validate(data);
+            if (!isValid)
+                return Ok(new SaveResult(false, message));
+
+            var result = _promo.Delete(data.Code, _claim.UserId);
 
             return Ok(result);
         }
 
         private (bool, string) Validate(PromoRequest data)
         {
+            var periods = new List<string> { data.StartDate.ToString("yyyyMM"), data.EndDate.ToString("yyyyMM") };
+            if (data.OriginalStartDate.HasValue)
+                periods.Add(data.OriginalStartDate.Value.ToString("yyyyMM"));
+            if (data.OriginalEndDate.HasValue)
+                periods.Add(data.OriginalEndDate.Value.ToString("yyyyMM"));
+
+            if (_closingMonth.IsMonthClosed(periods))
+                return (false, "Periode sudah ditutup. Silakan hubungi departemen akuntansi.");
+
             // Checking data start date validity
             if (!_sysPar.IsStartDateValid(data.StartDate))
                 return (false, "Tanggal Mulai tidak boleh lebih kecil dari tanggal mulai data.");
@@ -146,12 +162,16 @@ namespace ERP.Web.API.Controllers.Sales
             if (!_sysPar.IsStartDateValid(data.EndDate))
                 return (false, "Tanggal Akhir tidak boleh lebih kecil dari tanggal mulai data.");
 
-            if (!data.ItemDetails.Any())
-                return (false, "Detail tidak boleh kosong.");
+            if (data.ItemDetails != null)
+            {
+                if (!data.ItemDetails.Any())
+                    return (false, "Detail tidak boleh kosong.");
 
-            return data.ItemDetails.Where(x => x.ApplyTo != 2).GroupBy(x => new { x.Code, x.ItemId, x.PromoType }).Any(x => x.Count() > 1)
-                ? (false, "Terdapat data detail yang sama.")
-                : (true, "");
+                if (data.ItemDetails.Where(x => x.ApplyTo != 2).GroupBy(x => new { x.Code, x.ItemId, x.PromoType }).Any(x => x.Count() > 1))
+                    return(false, "Terdapat data detail yang sama.");
+            }
+
+            return (true, "");
         }
     }
 }
