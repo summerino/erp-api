@@ -127,7 +127,7 @@ namespace ERP.Web.API.Controllers.Inventory
         {
             //validate if items empty
             if (!data.Details.Any())
-                return (false, "Item details can't be empty.");
+                return (false, "Detail tidak boleh kosong.");
             
             //validate if items rules is not match
             short index = 0;

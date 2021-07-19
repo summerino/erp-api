@@ -1,17 +1,17 @@
-﻿using ERP.Web.API.Domain.Interfaces.Auth;
-using ERP.Web.API.Domain.Interfaces.Finance;
-using ERP.Common;
-using ERP.Common.Models;
-using ERP.Entity;
-using ERP.Web.API.Model;
-using ERP.Web.API.Model.Finance;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
+using Microsoft.AspNetCore.Mvc;
+using ERP.Common;
+using ERP.Common.Models;
+using ERP.Entity;
+using ERP.Web.API.Domain.Interfaces.Auth;
+using ERP.Web.API.Domain.Interfaces.Finance;
+using ERP.Web.API.Domain.Interfaces.SystemManagement;
+using ERP.Web.API.Model;
+using ERP.Web.API.Model.Finance;
+using Newtonsoft.Json;
 
 namespace ERP.Web.API.Controllers.Finance
 {
@@ -19,14 +19,18 @@ namespace ERP.Web.API.Controllers.Finance
     [ApiController]
     public class InterCashBankController : ControllerBase
     {
-        private readonly IInterCashBankService _cashBankInter;
+        private readonly IInterCashBankService _interCb;
+        private readonly ISystemParameterService _sysPar;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
+
         private const int _menuId = (int)Menu.CashBankInter;
 
-        public InterCashBankController(IInterCashBankService cashBankInter, IClaimService claim, IAuthService auth)
+        public InterCashBankController(IInterCashBankService interCb, ISystemParameterService sysPar,
+            IClaimService claim, IAuthService auth)
         {
-            _cashBankInter = cashBankInter;
+            _interCb = interCb;
+            _sysPar = sysPar;
             _claim = claim;
             _auth = auth;
         }
@@ -35,7 +39,7 @@ namespace ERP.Web.API.Controllers.Finance
         public IActionResult GetData(string search, string filters, string sorts, int skip, int take)
         {
             var data =
-                _cashBankInter.GetData(
+                _interCb.GetData(
                     skip, take,
                     JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
                     JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
@@ -51,7 +55,7 @@ namespace ERP.Web.API.Controllers.Finance
         [HttpGet("detail")]
         public IActionResult GetDetailData(string code)
         {
-            var data = _cashBankInter.GetDetailData(code).ToList<dynamic>();
+            var data = _interCb.GetDetailData(code).ToList<dynamic>();
 
             return Ok(new ApiResponse
             {
@@ -63,11 +67,14 @@ namespace ERP.Web.API.Controllers.Finance
         [HttpPost]
         public IActionResult OnPost(CashBankRequest data)
         {
-
+            // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Insert }).Any())
-            {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
+
+            // Validate process
+            var (isValid, message) = Validate(data);
+            if (!isValid)
+                return Ok(new SaveResult(false, message));
 
             // Insert process
             data.Mark = "A";
@@ -76,7 +83,7 @@ namespace ERP.Web.API.Controllers.Finance
             data.UpdatedBy = data.CreatedBy;
             data.UpdatedDate = data.CreatedDate;
 
-            var result = _cashBankInter.Insert(data);
+            var result = _interCb.Insert(data);
 
             return Ok(result);
         }
@@ -84,17 +91,20 @@ namespace ERP.Web.API.Controllers.Finance
         [HttpPut("{code}")]
         public IActionResult OnPut(string code, CashBankRequest data)
         {
-
+            // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Update }).Any())
-            {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
+
+            // Validate process
+            var (isValid, message) = Validate(data);
+            if (!isValid)
+                return Ok(new SaveResult(false, message));
 
             // Update process
             data.UpdatedBy = _claim.UserId;
             data.UpdatedDate = DateTime.Now;
 
-            var result = _cashBankInter.Update(data);
+            var result = _interCb.Update(data);
 
             return Ok(result);
         }
@@ -102,13 +112,21 @@ namespace ERP.Web.API.Controllers.Finance
         [HttpDelete("{code}")]
         public IActionResult OnDelete(string code)
         {
+            // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Void }).Any())
-            {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
-            var result = _cashBankInter.Delete(code, _claim.UserId);
+
+            var result = _interCb.Delete(code, _claim.UserId);
 
             return Ok(result);
+        }
+
+        private (bool, string) Validate(CashBankRequest data)
+        {
+            // Checking data start date validity
+            return !_sysPar.IsStartDateValid(data.Date)
+                ? (false, "Tanggal tidak boleh lebih kecil dari tanggal mulai data.")
+                : (true, "");
         }
     }
 }

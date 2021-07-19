@@ -9,7 +9,7 @@ using ERP.Entity;
 using ERP.Web.API.Domain.Interfaces.Auth;
 using ERP.Web.API.Domain.Interfaces.Inventory;
 using ERP.Web.API.Domain.Interfaces.Sales;
-using ERP.Web.API.Domain.Models;
+using ERP.Web.API.Domain.Interfaces.SystemManagement;
 using ERP.Web.API.Model;
 using ERP.Web.API.Model.Sales;
 using Newtonsoft.Json;
@@ -22,14 +22,18 @@ namespace ERP.Web.API.Controllers.Sales
     {
         private readonly ISalesReturnService _rtn;
         private readonly IUnitOfMeasurementService _uom;
+        private readonly ISystemParameterService _sysPar;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
+
         private const int _menuId = (int)Menu.SalesReturn;
 
-        public SalesReturnController(ISalesReturnService rtn, IUnitOfMeasurementService uom, IClaimService claim, IAuthService auth)
+        public SalesReturnController(ISalesReturnService rtn, IUnitOfMeasurementService uom,
+            ISystemParameterService sysPar, IClaimService claim, IAuthService auth)
         {
-            _uom = uom;
             _rtn = rtn;
+            _uom = uom;
+            _sysPar = sysPar;
             _claim = claim;
             _auth = auth;
         }
@@ -181,11 +185,9 @@ namespace ERP.Web.API.Controllers.Sales
         [HttpPost]
         public IActionResult OnPost(SalesReturnRequest data)
         {
-
+            // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Insert }).Any())
-            {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
 
             // Validate process
             var (isValid, message) = Validate(data);
@@ -207,11 +209,9 @@ namespace ERP.Web.API.Controllers.Sales
         [HttpPut("{code}")]
         public IActionResult OnPut(string code, SalesReturnRequest data)
         {
-
+            // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Update }).Any())
-            {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
 
             // Validate process
             var (isValid, message) = Validate(data);
@@ -230,27 +230,29 @@ namespace ERP.Web.API.Controllers.Sales
         [HttpDelete("{code}")]
         public IActionResult OnDelete(string code)
         {
-
+            // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Void }).Any())
-            {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
 
             var result = _rtn.Delete(code, _claim.UserId);
 
             return Ok(result);
         }
 
-        private static (bool, string) Validate(SalesReturnRequest data)
+        private (bool, string) Validate(SalesReturnRequest data)
         {
+            // Checking data start date validity
+            if (!_sysPar.IsStartDateValid(data.Date))
+                return (false, "Tanggal tidak boleh lebih kecil dari tanggal mulai data.");
+
             if (!data.ItemDetails.Any())
-                return (false, "Item details can't be empty.");
+                return (false, "Detail tidak boleh kosong.");
 
             if (data.ItemDetails.GroupBy(x => new { x.ItemId, x.UnitId }).Any(x => x.Count() > 1))
-                return (false, "There are duplicate item submitted with same unit.");
+                return (false, "Terdapat barang dengan satuan yang sama pada bagian detail.");
 
             return data.ItemDetails.Sum(x => x.Qty) <= 0
-                ? (false, "Total receive qty can't be 0.")
+                ? (false, "Jumlah qty barang tidak boleh nol.")
                 : (true, "");
         }
     }

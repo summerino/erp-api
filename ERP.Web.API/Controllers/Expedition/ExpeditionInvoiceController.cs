@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
+using Microsoft.AspNetCore.Mvc;
 using ERP.Common;
 using ERP.Common.Models;
-using Microsoft.AspNetCore.Mvc;
 using ERP.Entity;
 using ERP.Web.API.Domain.Interfaces.Auth;
 using ERP.Web.API.Domain.Interfaces.Expedition;
-using ERP.Web.API.Domain.Models;
+using ERP.Web.API.Domain.Interfaces.SystemManagement;
 using ERP.Web.API.Model;
 using ERP.Web.API.Model.Expedition;
 using Newtonsoft.Json;
@@ -19,15 +19,19 @@ namespace ERP.Web.API.Controllers.Expedition
     [ApiController]
     public class ExpeditionInvoiceController : ControllerBase
     {
-        private readonly IExpeditionInvoiceService _exp;
+        private readonly IExpeditionInvoiceService _inv;
+        private readonly ISystemParameterService _sysPar;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
+
         private const int _menuId = (int)Menu.ExpeditionInvoice;
 
-        public ExpeditionInvoiceController(IExpeditionInvoiceService expeditionInvoiceService, IClaimService claimService, IAuthService auth)
+        public ExpeditionInvoiceController(IExpeditionInvoiceService inv, ISystemParameterService sysPar,
+            IClaimService claim, IAuthService auth)
         {
-            _exp = expeditionInvoiceService;
-            _claim = claimService;
+            _inv = inv;
+            _sysPar = sysPar;
+            _claim = claim;
             _auth = auth;
         }
 
@@ -35,7 +39,7 @@ namespace ERP.Web.API.Controllers.Expedition
         public IActionResult GetData(string search, string filters, string sorts, int skip, int take)
         {
             var data =
-                _exp.GetData(
+                _inv.GetData(
                     skip, take,
                     JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
                     JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
@@ -51,7 +55,7 @@ namespace ERP.Web.API.Controllers.Expedition
         [HttpGet("detail")]
         public IActionResult GetDetailData(string code)
         {
-            var data = _exp.GetDetailData(code)
+            var data = _inv.GetDetailData(code)
                 .Select(x => new
                 {
                     x.Id,
@@ -71,11 +75,9 @@ namespace ERP.Web.API.Controllers.Expedition
         [HttpPost]
         public IActionResult OnPost(ExpeditionInvoiceRequest data)
         {
-
+            // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Insert }).Any())
-            {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
 
             // Validate process
             var (isValid, message) = Validate(data);
@@ -89,7 +91,7 @@ namespace ERP.Web.API.Controllers.Expedition
             data.UpdatedBy = data.CreatedBy;
             data.UpdatedDate = data.CreatedDate;
 
-            var result = _exp.Insert(data);
+            var result = _inv.Insert(data);
 
             return Ok(result);
         }
@@ -97,12 +99,10 @@ namespace ERP.Web.API.Controllers.Expedition
         [HttpPut("{code}")]
         public IActionResult OnPut(string code, ExpeditionInvoiceRequest data)
         {
-
+            // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Update }).Any())
-            {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
-
+            
             // Validate process
             var (isValid, message) = Validate(data);
             if (!isValid)
@@ -112,7 +112,7 @@ namespace ERP.Web.API.Controllers.Expedition
             data.UpdatedBy = _claim.UserId;
             data.UpdatedDate = DateTime.Now;
 
-            var result = _exp.Update(data);
+            var result = _inv.Update(data);
 
             return Ok(result);
         }
@@ -120,19 +120,21 @@ namespace ERP.Web.API.Controllers.Expedition
         [HttpDelete("{code}")]
         public IActionResult OnDelete(string code)
         {
-
+            // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Void }).Any())
-            {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
 
-            var result = _exp.Delete(code, _claim.UserId);
+            var result = _inv.Delete(code, _claim.UserId);
 
             return Ok(result);
         }
 
-        private static (bool, string) Validate(ExpeditionInvoiceRequest data)
+        private (bool, string) Validate(ExpeditionInvoiceRequest data)
         {
+            // Checking data start date validity
+            if (!_sysPar.IsStartDateValid(data.Date))
+                return (false, "Tanggal tidak boleh lebih kecil dari tanggal mulai data.");
+
             if (!data.Details.Any())
                 return (false, "Detail tidak boleh kosong.");
 

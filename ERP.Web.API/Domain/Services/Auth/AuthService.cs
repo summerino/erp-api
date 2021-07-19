@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
@@ -7,13 +8,12 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using ERP.Entity;
 using ERP.Web.API.Domain.Interfaces.Auth;
+using ERP.Web.API.Model;
 using ERP.Web.API.Model.Auth;
 using UserTenant = ERP.Entity.SystemManagement.User;
 using UserCatalog = ERP.Entity.Catalog.User;
-using System.Collections.Generic;
-using ERP.Entity;
-using ERP.Web.API.Model;
 
 namespace ERP.Web.API.Domain.Services.Auth
 {

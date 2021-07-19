@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
+using Microsoft.AspNetCore.Mvc;
 using ERP.Common;
 using ERP.Common.Models;
-using Microsoft.AspNetCore.Mvc;
 using ERP.Entity;
 using ERP.Web.API.Domain.Interfaces.Auth;
 using ERP.Web.API.Domain.Interfaces.Inventory;
-using ERP.Web.API.Domain.Models;
+using ERP.Web.API.Domain.Interfaces.SystemManagement;
 using ERP.Web.API.Model;
 using ERP.Web.API.Model.Inventory;
 using Newtonsoft.Json;
@@ -21,14 +21,18 @@ namespace ERP.Web.API.Controllers.Inventory
     {
         private readonly ITransferStockService _ts;
         private readonly IUnitOfMeasurementService _uom;
+        private readonly ISystemParameterService _sysPar;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
+
         private const int _menuId = (int)Menu.TransferStock;
 
-        public TransferStockController(ITransferStockService ts, IUnitOfMeasurementService uom, IClaimService claim, IAuthService auth)
+        public TransferStockController(ITransferStockService ts, IUnitOfMeasurementService uom,
+            ISystemParameterService sysPar, IClaimService claim, IAuthService auth)
         {
             _ts = ts;
             _uom = uom;
+            _sysPar = sysPar;
             _claim = claim;
             _auth = auth;
         }
@@ -106,11 +110,9 @@ namespace ERP.Web.API.Controllers.Inventory
         [HttpPost]
         public IActionResult OnPost(TransferStockRequest data)
         {
-
+            // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Insert }).Any())
-            {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
 
             // Validate process
             var (isValid, message) = Validate(data);
@@ -132,11 +134,9 @@ namespace ERP.Web.API.Controllers.Inventory
         [HttpPut("{code}")]
         public IActionResult OnPut(string code, TransferStockRequest data)
         {
-
+            // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Update }).Any())
-            {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
 
             // Validate process
             var (isValid, message) = Validate(data);
@@ -155,22 +155,25 @@ namespace ERP.Web.API.Controllers.Inventory
         [HttpDelete("{code}")]
         public IActionResult OnDelete(string code)
         {
+            // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Void }).Any())
-            {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
 
             var result = _ts.Delete(code, _claim.UserId);
             return Ok(result);
         }
 
-        private static (bool, string) Validate(TransferStockRequest data)
+        private (bool, string) Validate(TransferStockRequest data)
         {
+            // Checking data start date validity
+            if (!_sysPar.IsStartDateValid(data.Date))
+                return (false, "Tanggal tidak boleh lebih kecil dari tanggal mulai data.");
+
             if (!data.ItemDetails.Any())
-                return (false, "Detil barang tidak boleh kosong.");
+                return (false, "Detail tidak boleh kosong.");
 
             return data.ItemDetails.GroupBy(x => new { x.ItemId, x.UnitId }).Any(x => x.Count() > 1)
-                ? (false, "Ada barang yang sama dalam satuan yang sama.")
+                ? (false, "Terdapat barang dengan satuan yang sama pada bagian detail.")
                 : (true, "");
         }
     }

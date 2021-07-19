@@ -1,13 +1,12 @@
-﻿using ERP.Common;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using ERP.Common;
 using ERP.Common.Extensions;
 using ERP.Common.Models;
 using ERP.Entity;
 using ERP.Entity.Accounting;
 using ERP.Web.API.Domain.Interfaces.Accounting;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace ERP.Web.API.Domain.Services.Accounting
 {
@@ -16,8 +15,8 @@ namespace ERP.Web.API.Domain.Services.Accounting
         public BeginningBalanceDebitMemoService(TenantContext db)
             :base(db)
         {
-
         }
+
         public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string search)
         {
             var data = Db.VwBeginningBalanceDebitMemos.AsQueryable();
@@ -44,14 +43,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     result.Message = "Kode sudah terdaftar. Tolong gunakan kode lain.";
                     return result;
                 }
-
-                // Check Date greater than Data Start Date
-                if (data.Date >= Convert.ToDateTime(Db.SystemParameters.FirstOrDefault(x => x.Code == "DATA_START_DATE").Value))
-                {
-                    result.Message = "Tanggal tidak boleh lebih dari tanggal mulai data.";
-                    return result;
-                }
-
+                
                 Db.Add(data);
 
                 Db.SaveChanges();
@@ -79,14 +71,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 result.Message = "Kode sudah terdaftar. Tolong gunakan kode lain.";
                 return result;
             }
-
-            // Check Date greater than Data Start Date
-            if (data.Date >= Convert.ToDateTime(Db.SystemParameters.FirstOrDefault(x => x.Code == "DATA_START_DATE").Value))
-            {
-                result.Message = "Tanggal tidak boleh lebih dari tanggal mulai data.";
-                return result;
-            }
-
+            
             // Update data
             Db.BeginningBalanceDebitMemos.Update(data);
             Db.Entry(data).Property(e => e.Id).IsModified = false;
@@ -108,7 +93,6 @@ namespace ERP.Web.API.Domain.Services.Accounting
             var data = Db.BeginningBalanceDebitMemos.Find(id);
             if (data != null)
             {
-
                 //Check if any cash bank already using this BBDM
                 var validRes = Db.GeneralCashBankDetails
                             .Join(Db.GeneralCashBankHeaders, detail => detail.Code, header => header.Code, (detail, header) => new { Detail = detail, Header = header })

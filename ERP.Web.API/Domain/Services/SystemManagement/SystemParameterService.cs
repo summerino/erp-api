@@ -1,14 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
 using ERP.Common;
 using ERP.Common.Extensions;
 using ERP.Common.Models;
 using ERP.Entity;
 using ERP.Entity.SystemManagement;
 using ERP.Web.API.Domain.Interfaces.SystemManagement;
-using ERP.Web.API.Domain.Models;
 using ERP.Web.API.Model.SystemManagement;
-using Microsoft.EntityFrameworkCore;
 
 namespace ERP.Web.API.Domain.Services.SystemManagement
 {
@@ -121,6 +121,11 @@ namespace ERP.Web.API.Domain.Services.SystemManagement
             result.Success = true;
             result.Message = "Data sistem parameter berhasil disimpan.";
             return result;
+        }
+
+        public bool IsStartDateValid(DateTime transDate)
+        {
+            return transDate >= Convert.ToDateTime(Db.SystemParameters.FirstOrDefault(x => x.Code == "DATA_START_DATE")?.Value);
         }
     }
 }

@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
+using Microsoft.AspNetCore.Mvc;
 using ERP.Common;
 using ERP.Common.Models;
-using Microsoft.AspNetCore.Mvc;
 using ERP.Entity;
 using ERP.Web.API.Domain.Interfaces.Accounting;
 using ERP.Web.API.Domain.Interfaces.Auth;
-using ERP.Web.API.Domain.Models;
+using ERP.Web.API.Domain.Interfaces.SystemManagement;
 using ERP.Web.API.Model;
 using ERP.Web.API.Model.Accounting;
 using Newtonsoft.Json;
@@ -20,16 +20,19 @@ namespace ERP.Web.API.Controllers.Accounting
     public class GeneralJournalController : ControllerBase
     {
         private readonly IGeneralJournalService _gj;
+        private readonly ISystemParameterService _sysPar;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
+
         private const int _menuId = (int)Menu.GeneralJournal;
 
-
-        public GeneralJournalController(IGeneralJournalService generalJournalService, IClaimService claimService, IAuthService authService)
+        public GeneralJournalController(IGeneralJournalService gj, ISystemParameterService sysPar,
+            IClaimService claim, IAuthService auth)
         {
-            _gj = generalJournalService;
-            _claim = claimService;
-            _auth = authService;
+            _gj = gj;
+            _sysPar = sysPar;
+            _claim = claim;
+            _auth = auth;
         }
 
         [HttpGet]
@@ -75,11 +78,9 @@ namespace ERP.Web.API.Controllers.Accounting
         [HttpPost]
         public IActionResult OnPost(GeneralJournalRequest data)
         {
-
+            // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Insert }).Any())
-            {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
 
             // Validate process
             var (isValid, message) = Validate(data);
@@ -101,11 +102,9 @@ namespace ERP.Web.API.Controllers.Accounting
         [HttpPut("{code}")]
         public IActionResult OnPut(string code, GeneralJournalRequest data)
         {
-
+            // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Update }).Any())
-            {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
 
             // Validate process
             var (isValid, message) = Validate(data);
@@ -124,23 +123,24 @@ namespace ERP.Web.API.Controllers.Accounting
         [HttpDelete("{code}")]
         public IActionResult OnDelete(string code)
         {
-
+            // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Void }).Any())
-            {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
 
             var result = _gj.Delete(code, _claim.UserId);
 
             return Ok(result);
         }
 
-        private static (bool, string) Validate(GeneralJournalRequest data)
+        private (bool, string) Validate(GeneralJournalRequest data)
         {
-            if (!data.Details.Any())
-                return (false, "Detail tidak boleh kosong.");
+            // Checking data start date validity
+            if (!_sysPar.IsStartDateValid(data.Date))
+                return (false, "Tanggal tidak boleh lebih kecil dari tanggal mulai data.");
 
-            return (true, "");
+            return !data.Details.Any()
+                ? (false, "Detail tidak boleh kosong.")
+                : (true, "");
         }
     }
 }

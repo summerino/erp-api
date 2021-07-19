@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
+using Microsoft.AspNetCore.Mvc;
 using ERP.Common;
 using ERP.Common.Models;
-using Microsoft.AspNetCore.Mvc;
 using ERP.Entity;
 using ERP.Entity.Sales;
 using ERP.Web.API.Domain.Interfaces.Auth;
 using ERP.Web.API.Domain.Interfaces.Sales;
-using ERP.Web.API.Domain.Models;
+using ERP.Web.API.Domain.Interfaces.SystemManagement;
 using ERP.Web.API.Model;
 using Newtonsoft.Json;
 
@@ -20,13 +20,17 @@ namespace ERP.Web.API.Controllers.Sales
     public class CreditMemoController : ControllerBase
     {
         private readonly ICreditMemoService _memo;
+        private readonly ISystemParameterService _sysPar;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
+
         private const int _menuId = (int)Menu.CreditMemo;
 
-        public CreditMemoController(ICreditMemoService memo, IClaimService claim, IAuthService auth)
+        public CreditMemoController(ICreditMemoService memo, ISystemParameterService sysPar,
+            IClaimService claim, IAuthService auth)
         {
             _memo = memo;
+            _sysPar = sysPar;
             _claim = claim;
             _auth = auth;
         }
@@ -63,11 +67,15 @@ namespace ERP.Web.API.Controllers.Sales
         [HttpPost]
         public IActionResult OnPost(CreditMemo data)
         {
-
+            // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Insert }).Any())
-            {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
+
+            // Validate process
+            var (isValid, message) = Validate(data);
+            if (!isValid)
+                return Ok(new SaveResult(false, message));
+
             data.Mark = "PP"; // Pending Payment
             data.CreatedBy = _claim.UserId;
             data.CreatedDate = DateTime.Now;
@@ -82,11 +90,14 @@ namespace ERP.Web.API.Controllers.Sales
         [HttpPut("{code}")]
         public IActionResult OnPut(string code, CreditMemo data)
         {
-
+            // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Update }).Any())
-            {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
+
+            // Validate process
+            var (isValid, message) = Validate(data);
+            if (!isValid)
+                return Ok(new SaveResult(false, message));
 
             data.UpdatedBy = _claim.UserId;
             data.UpdatedDate = DateTime.Now;
@@ -95,19 +106,25 @@ namespace ERP.Web.API.Controllers.Sales
 
             return Ok(result);
         }
+
         [HttpDelete("{code}")]
         public IActionResult OnDelete(string code)
         {
-
+            // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Void }).Any())
-            {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
 
             var result = _memo.Delete(code, _claim.UserId);
 
             return Ok(result);
         }
-        
+
+        private (bool, string) Validate(CreditMemo data)
+        {
+            // Checking data start date validity
+            return !_sysPar.IsStartDateValid(data.Date)
+                ? (false, "Tanggal tidak boleh lebih kecil dari tanggal mulai data.")
+                : (true, "");
+        }
     }
 }

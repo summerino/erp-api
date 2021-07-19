@@ -1,6 +1,6 @@
-﻿using ERP.Web.API.Model;
+﻿using System.Collections.Generic;
+using ERP.Web.API.Model;
 using ERP.Web.API.Model.Auth;
-using System.Collections.Generic;
 using UserCatalog = ERP.Entity.Catalog.User;
 
 namespace ERP.Web.API.Domain.Interfaces.Auth

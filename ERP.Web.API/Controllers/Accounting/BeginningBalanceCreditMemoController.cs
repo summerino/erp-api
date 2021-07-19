@@ -9,7 +9,7 @@ using ERP.Entity;
 using ERP.Entity.Accounting;
 using ERP.Web.API.Domain.Interfaces.Accounting;
 using ERP.Web.API.Domain.Interfaces.Auth;
-using ERP.Web.API.Domain.Models;
+using ERP.Web.API.Domain.Interfaces.SystemManagement;
 using ERP.Web.API.Model;
 using Newtonsoft.Json;
 
@@ -19,23 +19,26 @@ namespace ERP.Web.API.Controllers.Accounting
     [ApiController]
     public class BeginningBalanceCreditMemoController : ControllerBase
     {
-        private readonly IBeginningBalanceCreditMemoService _bbcm;
+        private readonly IBeginningBalanceCreditMemoService _bbCm;
+        private readonly ISystemParameterService _sysPar;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
+
         private const int _menuId = (int)Menu.BeginningBalanceCreditMemo;
 
-        public BeginningBalanceCreditMemoController(IBeginningBalanceCreditMemoService beginningBalanceCreditMemoService, IClaimService claimService, IAuthService authService)
+        public BeginningBalanceCreditMemoController(IBeginningBalanceCreditMemoService bbCm,
+            ISystemParameterService sysPar, IClaimService claim, IAuthService auth)
         {
-            _bbcm = beginningBalanceCreditMemoService;
-            _claim = claimService;
-            _auth = authService;
+            _bbCm = bbCm;
+            _claim = claim;
+            _auth = auth;
         }
 
         [HttpGet]
         public IActionResult GetData(string search, string filters, string sorts, int skip, int take)
         {
             var data =
-                _bbcm.GetData(
+                _bbCm.GetData(
                     skip, take,
                     JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
                     JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
@@ -51,11 +54,13 @@ namespace ERP.Web.API.Controllers.Accounting
         [HttpPost]
         public IActionResult OnPost(BeginningBalanceCreditMemo data)
         {
-
+            // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Insert }).Any())
-            {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
+
+            // Checking data start date validity
+            if (_sysPar.IsStartDateValid(data.Date))
+                return Ok(new SaveResult(false, "Tanggal tidak boleh lebih besar dari tanggal mulai data."));
 
             data.IsActive = true;
             data.CreatedBy = _claim.UserId;
@@ -63,7 +68,7 @@ namespace ERP.Web.API.Controllers.Accounting
             data.UpdatedBy = data.CreatedBy;
             data.UpdatedDate = data.CreatedDate;
 
-            var result = _bbcm.Insert(data);
+            var result = _bbCm.Insert(data);
 
             return Ok(result);
         }
@@ -71,16 +76,18 @@ namespace ERP.Web.API.Controllers.Accounting
         [HttpPut("{id}")]
         public IActionResult OnPut(string id, BeginningBalanceCreditMemo data)
         {
-
+            // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Update }).Any())
-            {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
+
+            // Checking data start date validity
+            if (_sysPar.IsStartDateValid(data.Date))
+                return Ok(new SaveResult(false, "Tanggal tidak boleh lebih besar dari tanggal mulai data."));
 
             data.UpdatedBy = _claim.UserId;
             data.UpdatedDate = DateTime.Now;
 
-            var result = _bbcm.Update(data);
+            var result = _bbCm.Update(data);
 
             return Ok(result);
         }
@@ -88,13 +95,11 @@ namespace ERP.Web.API.Controllers.Accounting
         [HttpDelete("{id}")]
         public IActionResult OnDelete(int id)
         {
-
+            // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Delete }).Any())
-            {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
 
-            var result = _bbcm.Delete(id, _claim.UserId);
+            var result = _bbCm.Delete(id, _claim.UserId);
 
             return Ok(result);
         }

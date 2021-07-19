@@ -71,7 +71,8 @@
         Journal = 86,
         BeginningBalanceDebitMemo = 89,
         BeginningBalanceCreditMemo = 90,
-        ClosingMonth = 88
+        ClosingMonth = 88,
+        VisitOrder = 55
     }
     public static class ApprovalType
     {

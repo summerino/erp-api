@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
+using Microsoft.AspNetCore.Mvc;
 using ERP.Common;
 using ERP.Common.Models;
-using Microsoft.AspNetCore.Mvc;
 using ERP.Entity;
 using ERP.Web.API.Domain.Interfaces.Auth;
 using ERP.Web.API.Domain.Interfaces.Sales;
-using ERP.Web.API.Domain.Models;
+using ERP.Web.API.Domain.Interfaces.SystemManagement;
 using ERP.Web.API.Model;
 using ERP.Web.API.Model.Sales;
 using Newtonsoft.Json;
@@ -20,14 +20,18 @@ namespace ERP.Web.API.Controllers.Sales
     public class DeliveryPlanController : ControllerBase
     {
         private readonly IDeliveryPlanService _dp;
+        private readonly ISystemParameterService _sysPar;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
+
         private const int _menuId = (int)Menu.DeliveryPlan;
 
-        public DeliveryPlanController(IDeliveryPlanService deliveryPlan, IClaimService claimService, IAuthService auth)
+        public DeliveryPlanController(IDeliveryPlanService deliveryPlan, ISystemParameterService sysPar, 
+            IClaimService claim, IAuthService auth)
         {
             _dp = deliveryPlan;
-            _claim = claimService;
+            _sysPar = sysPar;
+            _claim = claim;
             _auth = auth;
         }
 
@@ -102,11 +106,9 @@ namespace ERP.Web.API.Controllers.Sales
         [HttpPost]
         public IActionResult OnPost(DeliveryPlanRequest data)
         {
-
+            // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Insert }).Any())
-            {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
 
             // Validate process
             var (isValid, message) = Validate(data);
@@ -128,11 +130,9 @@ namespace ERP.Web.API.Controllers.Sales
         [HttpPut("{code}")]
         public IActionResult OnPut(string code, DeliveryPlanRequest data)
         {
-
+            // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Update }).Any())
-            {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
 
             // Validate process
             var (isValid, message) = Validate(data);
@@ -151,24 +151,25 @@ namespace ERP.Web.API.Controllers.Sales
         [HttpDelete("{code}")]
         public IActionResult OnDelete(string code)
         {
-
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Void }).Any())
-            {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
 
             var result = _dp.Delete(code, _claim.UserId);
 
             return Ok(result);
         }
 
-        private static (bool, string) Validate(DeliveryPlanRequest data)
+        private (bool, string) Validate(DeliveryPlanRequest data)
         {
+            // Checking data start date validity
+            if (!_sysPar.IsStartDateValid(data.Date))
+                return (false, "Tanggal tidak boleh lebih kecil dari tanggal mulai data.");
+
             if (!data.ItemDetails.Any())
-                return (false, "Item details can't be empty.");
+                return (false, "Detail tidak boleh kosong.");
 
             return data.ItemDetails.GroupBy(x => new { x.Code, x.TransCode }).Any(x => x.Count() > 1)
-                ? (false, "There are duplicate item submitted with same unit.")
+                ? (false, "Terdapat barang dengan satuan yang sama pada bagian detail.")
                 : (true, "");
         }
     }

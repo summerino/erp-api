@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
+using Microsoft.AspNetCore.Mvc;
 using ERP.Common;
 using ERP.Common.Models;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
 using ERP.Entity;
 using ERP.Web.API.Domain.Interfaces.Auth;
 using ERP.Web.API.Domain.Interfaces.Finance;
+using ERP.Web.API.Domain.Interfaces.SystemManagement;
 using ERP.Web.API.Model;
 using ERP.Web.API.Model.Finance;
 using Newtonsoft.Json;
@@ -19,14 +19,18 @@ namespace ERP.Web.API.Controllers.Finance
     [ApiController]
     public class CashBankController : ControllerBase
     {
-        private readonly ICashBankService _cashBank;
+        private readonly ICashBankService _cb;
+        private readonly ISystemParameterService _sysPar;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
+
         private const int _menuId = (int)Menu.CashBank;
 
-        public CashBankController(ICashBankService cashBank, IClaimService claim, IAuthService auth)
+        public CashBankController(ICashBankService cb, ISystemParameterService sysPar, IClaimService claim,
+            IAuthService auth)
         {
-            _cashBank = cashBank;
+            _cb = cb;
+            _sysPar = sysPar;
             _claim = claim;
             _auth = auth;
         }
@@ -35,7 +39,7 @@ namespace ERP.Web.API.Controllers.Finance
         public IActionResult GetData(string search, string filters, string sorts, int skip, int take)
         {
             var data =
-                _cashBank.GetData(
+                _cb.GetData(
                     skip, take,
                     JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
                     JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
@@ -51,7 +55,7 @@ namespace ERP.Web.API.Controllers.Finance
         [HttpGet("detail")]
         public IActionResult GetDetailData(string code)
         {
-            var data = _cashBank.GetDetailData(code).ToList<dynamic>();
+            var data = _cb.GetDetailData(code).ToList<dynamic>();
 
             return Ok(new ApiResponse
             {
@@ -64,7 +68,7 @@ namespace ERP.Web.API.Controllers.Finance
         public IActionResult GetDataAP(string cashbankCode, string search, string filters, string sorts, int skip, int take)
         {
             var data =
-                _cashBank.GetDataAP(
+                _cb.GetDataAP(
                     skip, take,
                     JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
                     JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
@@ -81,7 +85,7 @@ namespace ERP.Web.API.Controllers.Finance
         public IActionResult GetDataAR(string cashbankCode, string search, string filters, string sorts, int skip, int take)
         {
             var data =
-                _cashBank.GetDataAR(
+                _cb.GetDataAR(
                     skip, take,
                     JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
                     JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
@@ -97,7 +101,7 @@ namespace ERP.Web.API.Controllers.Finance
         public IActionResult GetDataDebitMemo(string type, string cashbankCode, string search, string filters, string sorts, int skip, int take)
         {
             var data =
-                _cashBank.GetDataDebitMemo(
+                _cb.GetDataDebitMemo(
                     skip, take,
                     JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
                     JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
@@ -114,7 +118,7 @@ namespace ERP.Web.API.Controllers.Finance
         public IActionResult GetDataCreditMemo(string type, string cashbankCode, string search, string filters, string sorts, int skip, int take)
         {
             var data =
-                _cashBank.GetDataCreditMemo(
+                _cb.GetDataCreditMemo(
                     skip, take,
                     JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
                     JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
@@ -130,11 +134,9 @@ namespace ERP.Web.API.Controllers.Finance
         [HttpPost]
         public IActionResult OnPost(CashBankRequest data)
         {
-
+            // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Insert }).Any())
-            {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
 
             // Validate process
             var (isValid, message) = Validate(data);
@@ -151,7 +153,7 @@ namespace ERP.Web.API.Controllers.Finance
             data.UpdatedBy = data.CreatedBy;
             data.UpdatedDate = data.CreatedDate;
 
-            var result = _cashBank.Insert(data);
+            var result = _cb.Insert(data);
 
             return Ok(result);
         }
@@ -159,11 +161,9 @@ namespace ERP.Web.API.Controllers.Finance
         [HttpPut("{code}")]
         public IActionResult OnPut(string code, CashBankRequest data)
         {
-
+            // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Update }).Any())
-            {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
 
             // Validate process
             var (isValid, message) = Validate(data);
@@ -177,7 +177,7 @@ namespace ERP.Web.API.Controllers.Finance
             data.UpdatedBy = _claim.UserId;
             data.UpdatedDate = DateTime.Now;
 
-            var result = _cashBank.Update(data);
+            var result = _cb.Update(data);
 
             return Ok(result);
         }
@@ -185,20 +185,23 @@ namespace ERP.Web.API.Controllers.Finance
         [HttpDelete("{code}")]
         public IActionResult OnDelete(string code)
         {
+            // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Void }).Any())
-            {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
-            var result = _cashBank.Delete(code, _claim.UserId);
+            
+            var result = _cb.Delete(code, _claim.UserId);
 
             return Ok(result);
         }
-        private static (bool, string) Validate(CashBankRequest data)
+        private (bool, string) Validate(CashBankRequest data)
         {
-            if (!data.ItemDetails.Any())
-                return (false, "Data detil tidak boleh kosongs.");
+            // Checking data start date validity
+            if (!_sysPar.IsStartDateValid(data.Date))
+                return (false, "Tanggal tidak boleh lebih kecil dari tanggal mulai data.");
 
-            return (true, "");
+            return !data.ItemDetails.Any()
+                ? (false, "Detail tidak boleh kosong.")
+                : (true, "");
         }
     }
 }

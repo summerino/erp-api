@@ -310,7 +310,7 @@ namespace ERP.Entity
             // Beginning Balance Credit Memo entities
             modelBuilder.Entity<BeginningBalanceCreditMemo>(entity =>
             {
-                entity.HasOne<Supplier>()
+                entity.HasOne<Customer>()
                     .WithMany()
                     .HasForeignKey(d => d.CustCode)
                     .OnDelete(DeleteBehavior.NoAction);
@@ -328,7 +328,7 @@ namespace ERP.Entity
             // Beginning Balance Debit Memo entities
             modelBuilder.Entity<BeginningBalanceDebitMemo>(entity =>
             {
-                entity.HasOne<Customer>()
+                entity.HasOne<Supplier>()
                     .WithMany()
                     .HasForeignKey(d => d.SupCode)
                     .OnDelete(DeleteBehavior.NoAction);

@@ -2,13 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using Microsoft.EntityFrameworkCore;
 using ERP.Common;
 using ERP.Common.Extensions;
 using ERP.Common.Models;
 using ERP.Entity;
-using Microsoft.EntityFrameworkCore;
 using ERP.Web.API.Domain.Interfaces;
-using ERP.Web.API.Domain.Models;
 
 namespace ERP.Web.API.Domain.Services
 {
@@ -21,10 +20,12 @@ namespace ERP.Web.API.Domain.Services
         {
             Db = db;
         }
+
         public virtual DataSourceResult GetData(int take, int skip, IEnumerable<Filter> filter, IEnumerable<Sort> sort, List<int> list)
         {
             throw new NotImplementedException();
         }
+
         public virtual DataSourceResult GetData(int take, int skip, IEnumerable<Filter> filter, IEnumerable<Sort> sort)
         {
             return GetData<T>(take, skip, filter, sort);
@@ -95,7 +96,5 @@ namespace ERP.Web.API.Domain.Services
                 .FromSqlInterpolated($"EXEC sp_generate_autono {code}, {date}").ToList()
                 .FirstOrDefault()?.Value;
         }
-
-        
     }
 }

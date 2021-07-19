@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
+using Microsoft.AspNetCore.Mvc;
 using ERP.Common;
 using ERP.Common.Models;
-using Microsoft.AspNetCore.Mvc;
 using ERP.Entity;
 using ERP.Web.API.Domain.Interfaces.Auth;
 using ERP.Web.API.Domain.Interfaces.Inventory;
 using ERP.Web.API.Domain.Interfaces.Purchase;
-using ERP.Web.API.Domain.Models;
+using ERP.Web.API.Domain.Interfaces.SystemManagement;
 using ERP.Web.API.Model;
 using ERP.Web.API.Model.Purchase;
 using Newtonsoft.Json;
@@ -22,14 +22,18 @@ namespace ERP.Web.API.Controllers.Purchase
     {
         private readonly IPurchaseOrderService _po;
         private readonly IUnitOfMeasurementService _uom;
+        private readonly ISystemParameterService _sysPar;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
+
         private const int _menuId = (int)Menu.PurchaseOrder;
 
-        public PurchaseOrderController(IPurchaseOrderService po, IUnitOfMeasurementService uom, IClaimService claim, IAuthService auth)
+        public PurchaseOrderController(IPurchaseOrderService po, IUnitOfMeasurementService uom,
+            ISystemParameterService sysPar, IClaimService claim, IAuthService auth)
         {
             _po = po;
             _uom = uom;
+            _sysPar = sysPar;
             _claim = claim;
             _auth = auth;
         }
@@ -103,11 +107,9 @@ namespace ERP.Web.API.Controllers.Purchase
         [HttpPost]
         public IActionResult OnPost(PurchaseOrderRequest data)
         {
-
+            // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Insert }).Any())
-            {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
 
             // Validate process
             var (isValid, message) = Validate(data);
@@ -129,11 +131,9 @@ namespace ERP.Web.API.Controllers.Purchase
         [HttpPut("{code}")]
         public IActionResult OnPut(string code, PurchaseOrderRequest data)
         {
-
+            // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Update }).Any())
-            {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
 
             // Validate process
             var (isValid, message) = Validate(data);
@@ -152,10 +152,10 @@ namespace ERP.Web.API.Controllers.Purchase
         [HttpDelete("{code}")]
         public IActionResult OnDelete(string code)
         {
+            // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Void }).Any())
-            {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
+
             var result = _po.Delete(code, _claim.UserId);
 
             return Ok(result);
@@ -164,22 +164,26 @@ namespace ERP.Web.API.Controllers.Purchase
         [HttpPut("close/{code}")]
         public IActionResult OnClose(string code)
         {
+            // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Close }).Any())
-            {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
+
             var result = _po.Close(code, _claim.UserId);
 
             return Ok(result);
         }
 
-        private static (bool, string) Validate(PurchaseOrderRequest data)
+        private (bool, string) Validate(PurchaseOrderRequest data)
         {
+            // Checking data start date validity
+            if (!_sysPar.IsStartDateValid(data.Date))
+                return (false, "Tanggal tidak boleh lebih kecil dari tanggal mulai data.");
+
             if (!data.ItemDetails.Any())
-                return (false, "Item details can't be empty.");
+                return (false, "Detail tidak boleh kosong.");
 
             return data.ItemDetails.GroupBy(x => new { x.ItemId, x.UnitId }).Any(x => x.Count() > 1)
-                ? (false, "There are duplicate item submitted with same unit.")
+                ? (false, "Terdapat barang dengan satuan yang sama pada bagian detail.")
                 : (true, "");
         }
     }

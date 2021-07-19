@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using ERP.Entity;
 using ERP.Web.API.Domain.Interfaces.Auth;
 using ERP.Web.API.Domain.Interfaces.Sales;
-using ERP.Web.API.Domain.Models;
+using ERP.Web.API.Domain.Interfaces.SystemManagement;
 using ERP.Web.API.Model;
 using ERP.Web.API.Model.Sales;
 using Newtonsoft.Json;
@@ -20,12 +20,17 @@ namespace ERP.Web.API.Controllers.Sales
     public class SalesInvoiceController : ControllerBase
     {
         private readonly ISalesInvoiceService _inv;
+        private readonly ISystemParameterService _sysPar;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
+
         private const int _menuId = (int)Menu.SalesInvoice;
-        public SalesInvoiceController(ISalesInvoiceService inv, IClaimService claim, IAuthService auth)
+
+        public SalesInvoiceController(ISalesInvoiceService inv, ISystemParameterService sysPar,
+            IClaimService claim, IAuthService auth)
         {
             _inv = inv;
+            _sysPar = sysPar;
             _claim = claim;
             _auth = auth;
         }
@@ -88,11 +93,9 @@ namespace ERP.Web.API.Controllers.Sales
         [HttpPost]
         public IActionResult OnPost(SalesInvoiceRequest data)
         {
-
+            // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Insert }).Any())
-            {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
 
             // Validate process
             var (isValid, message) = Validate(data);
@@ -114,11 +117,9 @@ namespace ERP.Web.API.Controllers.Sales
         [HttpPut("{code}")]
         public IActionResult OnPut(string code, SalesInvoiceRequest data)
         {
-
+            // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Update }).Any())
-            {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
 
             // Validate process
             var (isValid, message) = Validate(data);
@@ -137,24 +138,30 @@ namespace ERP.Web.API.Controllers.Sales
         [HttpDelete("{code}")]
         public IActionResult OnDelete(string code)
         {
-
+            // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Void }).Any())
-            {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
 
             var result = _inv.Delete(code, _claim.UserId);
 
             return Ok(result);
         }
 
-        private static (bool, string) Validate(SalesInvoiceRequest data)
+        private (bool, string) Validate(SalesInvoiceRequest data)
         {
+            // Checking data start date validity
+            if (!_sysPar.IsStartDateValid(data.Date))
+                return (false, "Tanggal Transaksi tidak boleh lebih kecil dari tanggal mulai data.");
+
+            // Checking data start date validity
+            if (!_sysPar.IsStartDateValid(data.DueDate))
+                return (false, "Tanggal Jatuh Tempo tidak boleh lebih kecil dari tanggal mulai data.");
+
             if (!data.Details.Any())
-                return (false, "Item details can't be empty.");
+                return (false, "Detail tidak boleh kosong.");
 
             return data.Details.GroupBy(x => new { x.DoCode }).Any(x => x.Count() > 1)
-                ? (false, "There are duplicate receive code submitted.")
+                ? (false, "Terdapat kode pengiriman yang sama pada bagian detail.")
                 : (true, "");
         }
     }

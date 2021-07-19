@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
+using Microsoft.AspNetCore.Mvc;
 using ERP.Common;
 using ERP.Common.Models;
-using Microsoft.AspNetCore.Mvc;
 using ERP.Entity;
 using ERP.Entity.AssetManagement;
 using ERP.Web.API.Domain.Interfaces.AssetManagement;
 using ERP.Web.API.Domain.Interfaces.Auth;
-using ERP.Web.API.Domain.Models;
+using ERP.Web.API.Domain.Interfaces.SystemManagement;
 using ERP.Web.API.Model;
 using Newtonsoft.Json;
 
@@ -19,16 +19,20 @@ namespace ERP.Web.API.Controllers.AssetManagement
     [ApiController]
     public class FixedAssetController : ControllerBase
     {
-        private readonly IClaimService _claim;
         private readonly IFixedAssetService _fixedAsset;
+        private readonly ISystemParameterService _sysPar;
+        private readonly IClaimService _claim;
         private readonly IAuthService _auth;
+
         private const int _menuId = (int)Menu.FixedAsset;
 
-        public FixedAssetController(IFixedAssetService fixedAsset, IAuthService auth, IClaimService claim)
+        public FixedAssetController(IFixedAssetService fixedAsset, ISystemParameterService sysPar, 
+            IClaimService claim, IAuthService auth)
         {
-            _auth = auth;
-            _claim = claim;
             _fixedAsset = fixedAsset;
+            _sysPar = sysPar;
+            _claim = claim;
+            _auth = auth;
         }
 
         [HttpGet]
@@ -51,10 +55,14 @@ namespace ERP.Web.API.Controllers.AssetManagement
         [HttpPost]
         public IActionResult OnPost(FixedAsset data)
         {
+            // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Insert }).Any())
-            {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
+
+            // Validate process
+            var (isValid, message) = Validate(data);
+            if (!isValid)
+                return Ok(new SaveResult(false, message));
 
             // Insert process
             data.Mark = "A";
@@ -70,10 +78,14 @@ namespace ERP.Web.API.Controllers.AssetManagement
         [HttpPut("{id}")]
         public IActionResult OnPut(string code, FixedAsset data)
         {
+            // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Update }).Any())
-            {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
+            
+            // Validate process
+            var (isValid, message) = Validate(data);
+            if (!isValid)
+                return Ok(new SaveResult(false, message));
 
             data.UpdatedBy = _claim.UserId;
             data.UpdatedDate = DateTime.Now;
@@ -86,14 +98,25 @@ namespace ERP.Web.API.Controllers.AssetManagement
         [HttpDelete("{code}")]
         public IActionResult OnDelete(string code)
         {
-
+            // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Void }).Any())
-            {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
 
             var result = _fixedAsset.Delete(code, _claim.UserId);
+
             return Ok(result);
+        }
+
+        private (bool, string) Validate(FixedAsset data)
+        {
+            // Checking data start date validity
+            if (!_sysPar.IsStartDateValid(data.PurchaseDate))
+                return (false, "Tanggal Perolehan tidak boleh lebih kecil dari tanggal mulai data.");
+
+            // Checking data start date validity
+            return !_sysPar.IsStartDateValid(data.StartDepreciateOn)
+                ? (false, "Tanggal Mulai Depresiasi tidak boleh lebih kecil dari tanggal mulai data.")
+                : (true, "");
         }
     }
 }

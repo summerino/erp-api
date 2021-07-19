@@ -1,12 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
-using ERP.Common.Models;
 using Microsoft.AspNetCore.Mvc;
+using ERP.Common.Models;
 using ERP.Entity;
 using ERP.Web.API.Domain.Interfaces.Auth;
 using ERP.Web.API.Domain.Interfaces.SystemManagement;
-using ERP.Web.API.Domain.Models;
 using ERP.Web.API.Model;
 using ERP.Web.API.Model.SystemManagement;
 using Newtonsoft.Json;

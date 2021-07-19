@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
+using Microsoft.AspNetCore.Mvc;
 using ERP.Common;
 using ERP.Common.Models;
-using Microsoft.AspNetCore.Mvc;
 using ERP.Entity;
 using ERP.Web.API.Domain.Interfaces.Auth;
 using ERP.Web.API.Domain.Interfaces.Purchase;
-using ERP.Web.API.Domain.Models;
+using ERP.Web.API.Domain.Interfaces.SystemManagement;
 using ERP.Web.API.Model;
 using ERP.Web.API.Model.Purchase;
 using Newtonsoft.Json;
@@ -20,14 +20,18 @@ namespace ERP.Web.API.Controllers.Purchase
     public class PurchaseInvoiceController : ControllerBase
     {
         private readonly IPurchaseInvoiceService _inv;
+        private readonly ISystemParameterService _sysPar;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
+
         private const int _menuId = (int)Menu.PurchaseInvoice;
 
 
-        public PurchaseInvoiceController(IPurchaseInvoiceService inv, IClaimService claim, IAuthService auth)
+        public PurchaseInvoiceController(IPurchaseInvoiceService inv, ISystemParameterService sysPar,
+            IClaimService claim, IAuthService auth)
         {
             _inv = inv;
+            _sysPar = sysPar;
             _claim = claim;
             _auth = auth;
         }
@@ -67,6 +71,7 @@ namespace ERP.Web.API.Controllers.Purchase
                 TableData = data
             });
         }
+
         [HttpGet("related-trans")]
         public IActionResult GetRelatedTransactions(string code)
         {
@@ -85,14 +90,13 @@ namespace ERP.Web.API.Controllers.Purchase
                 TableData = data
             });
         }
+
         [HttpPost]
         public IActionResult OnPost(PurchaseInvoiceRequest data)
         {
-
+            // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Insert }).Any())
-            {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
 
             // Validate process
             var (isValid, message) = Validate(data);
@@ -114,11 +118,9 @@ namespace ERP.Web.API.Controllers.Purchase
         [HttpPut("{code}")]
         public IActionResult OnPut(string code, PurchaseInvoiceRequest data)
         {
-
+            // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Update }).Any())
-            {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
 
             // Validate process
             var (isValid, message) = Validate(data);
@@ -137,24 +139,30 @@ namespace ERP.Web.API.Controllers.Purchase
         [HttpDelete("{code}")]
         public IActionResult OnDelete(string code)
         {
-
+            // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Void }).Any())
-            {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
 
             var result = _inv.Delete(code, _claim.UserId);
 
             return Ok(result);
         }
 
-        private static (bool, string) Validate(PurchaseInvoiceRequest data)
+        private (bool, string) Validate(PurchaseInvoiceRequest data)
         {
+            // Checking data start date validity
+            if (!_sysPar.IsStartDateValid(data.Date))
+                return (false, "Tanggal Transaksi tidak boleh lebih kecil dari tanggal mulai data.");
+
+            // Checking data start date validity
+            if (!_sysPar.IsStartDateValid(data.DueDate))
+                return (false, "Tanggal Jatuh Tempo tidak boleh lebih kecil dari tanggal mulai data.");
+
             if (!data.Details.Any())
-                return (false, "Item details can't be empty.");
+                return (false, "Detail tidak boleh kosong.");
 
             return data.Details.GroupBy(x => new { x.RcvCode }).Any(x => x.Count() > 1)
-                ? (false, "There are duplicate receive code submitted.")
+                ? (false, "Terdapat kode penerimaan yang sama pada bagian detail.")
                 : (true, "");
         }
     }

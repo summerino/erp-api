@@ -2,40 +2,44 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
+using Microsoft.AspNetCore.Mvc;
 using ERP.Common;
 using ERP.Common.Models;
-using Microsoft.AspNetCore.Mvc;
 using ERP.Entity;
 using ERP.Entity.Accounting;
 using ERP.Web.API.Domain.Interfaces.Accounting;
 using ERP.Web.API.Domain.Interfaces.Auth;
-using ERP.Web.API.Domain.Models;
+using ERP.Web.API.Domain.Interfaces.SystemManagement;
 using ERP.Web.API.Model;
 using Newtonsoft.Json;
 
 namespace ERP.Web.API.Controllers.Accounting
 {
-    [Route("account-payable")]
+    [Route("bb-ap")]
     [ApiController]
-    public class AccountPayableController : ControllerBase
+    public class BeginningBalanceAccountPayableController : ControllerBase
     {
-        private readonly IAccountPayableService _ap;
+        private readonly IBeginningBalanceAccountPayableService _BbAp;
+        private readonly ISystemParameterService _sysPar;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
+
         private const int _menuId = (int)Menu.AccountPayable;
 
-        public AccountPayableController(IAccountPayableService accountPayableService, IClaimService claimService, IAuthService authService)
+        public BeginningBalanceAccountPayableController(IBeginningBalanceAccountPayableService BbAp,
+            ISystemParameterService sysPar, IClaimService claim, IAuthService auth)
         {
-            _ap = accountPayableService;
-            _claim = claimService;
-            _auth = authService;
+            _BbAp = BbAp;
+            _sysPar = sysPar;
+            _claim = claim;
+            _auth = auth;
         }
 
         [HttpGet]
         public IActionResult GetData(string search, string filters, string sorts, int skip, int take)
         {
             var data =
-                _ap.GetData(
+                _BbAp.GetData(
                     skip, take,
                     JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
                     JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
@@ -51,11 +55,14 @@ namespace ERP.Web.API.Controllers.Accounting
         [HttpPost]
         public IActionResult OnPost(BeginningBalanceAP data)
         {
-
+            // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Insert }).Any())
-            {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
+
+            // Validate process
+            var (isValid, message) = Validate(data);
+            if (!isValid)
+                return Ok(new SaveResult(false, message));
 
             data.IsActive = true;
             data.CreatedBy = _claim.UserId;
@@ -63,7 +70,7 @@ namespace ERP.Web.API.Controllers.Accounting
             data.UpdatedBy = data.CreatedBy;
             data.UpdatedDate = data.CreatedDate;
 
-            var result = _ap.Insert(data);
+            var result = _BbAp.Insert(data);
 
             return Ok(result);
         }
@@ -71,16 +78,19 @@ namespace ERP.Web.API.Controllers.Accounting
         [HttpPut("{id}")]
         public IActionResult OnPut(string id, BeginningBalanceAP data)
         {
-
+            // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Update }).Any())
-            {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
+
+            // Validate process
+            var (isValid, message) = Validate(data);
+            if (!isValid)
+                return Ok(new SaveResult(false, message));
 
             data.UpdatedBy = _claim.UserId;
             data.UpdatedDate = DateTime.Now;
 
-            var result = _ap.Update(data);
+            var result = _BbAp.Update(data);
 
             return Ok(result);
         }
@@ -88,15 +98,21 @@ namespace ERP.Web.API.Controllers.Accounting
         [HttpDelete("{id}")]
         public IActionResult OnDelete(int id)
         {
-
+            // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Delete }).Any())
-            {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
 
-            var result = _ap.Delete(id, _claim.UserId);
+            var result = _BbAp.Delete(id, _claim.UserId);
 
             return Ok(result);
+        }
+
+        private (bool, string) Validate(BeginningBalanceAP data)
+        {
+            // Checking data start date validity
+            return _sysPar.IsStartDateValid(data.Date)
+                ? (false, "Tanggal tidak boleh lebih besar dari tanggal mulai data.")
+                : (true, "");
         }
     }
 }

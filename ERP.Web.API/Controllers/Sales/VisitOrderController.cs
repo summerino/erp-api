@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
-using ERP.Common.Models;
+using ERP.Common;
 using Microsoft.AspNetCore.Mvc;
+using ERP.Common.Models;
 using ERP.Entity;
+using ERP.Web.API.Domain.Interfaces.Auth;
 using ERP.Web.API.Domain.Interfaces.Sales;
-using ERP.Web.API.Domain.Models;
+using ERP.Web.API.Domain.Interfaces.SystemManagement;
 using ERP.Web.API.Model;
 using ERP.Web.API.Model.Sales;
 using Newtonsoft.Json;
@@ -18,12 +20,19 @@ namespace ERP.Web.API.Controllers.Sales
     public class VisitOrderController : ControllerBase
     {
         private readonly IVisitOrderService _visitOrder;
+        private readonly ISystemParameterService _sysPar;
         private readonly IClaimService _claim;
+        private readonly IAuthService _auth;
 
-        public VisitOrderController(IVisitOrderService visitOrder, IClaimService claim)
+        private const int _menuId = (int)Menu.VisitOrder;
+
+        public VisitOrderController(IVisitOrderService visitOrder, ISystemParameterService sysPar,
+            IClaimService claim, IAuthService auth)
         {
             _visitOrder = visitOrder;
+            _sysPar = sysPar;
             _claim = claim;
+            _auth = auth;
         }
 
         [HttpGet]
@@ -73,6 +82,15 @@ namespace ERP.Web.API.Controllers.Sales
         [HttpPost]
         public IActionResult OnPost(VisitOrderRequest data)
         {
+            // Checking role authorization
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Insert }).Any())
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+
+            // Validate process
+            var (isValid, message) = Validate(data);
+            if (!isValid)
+                return Ok(new SaveResult(false, message));
+
             data.Mark = "A";
             data.CreatedBy = 1;
             data.CreatedDate = DateTime.Now;
@@ -87,6 +105,15 @@ namespace ERP.Web.API.Controllers.Sales
         [HttpPut("{code}")]
         public IActionResult OnPut(string code, VisitOrderRequest data)
         {
+            // Checking role authorization
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Update }).Any())
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+
+            // Validate process
+            var (isValid, message) = Validate(data);
+            if (!isValid)
+                return Ok(new SaveResult(false, message));
+
             data.UpdatedBy = 1;
             data.UpdatedDate = DateTime.Now;
 
@@ -98,9 +125,21 @@ namespace ERP.Web.API.Controllers.Sales
         [HttpDelete("{code}")]
         public IActionResult OnDelete(string code)
         {
+            // Checking role authorization
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Void }).Any())
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+
             var result = _visitOrder.Delete(code, _claim.UserId);
 
             return Ok(result);
+        }
+
+        private (bool, string) Validate(VisitOrderRequest data)
+        {
+            // Checking data start date validity
+            return !_sysPar.IsStartDateValid(data.Date)
+                ? (false, "Tanggal tidak boleh lebih kecil dari tanggal mulai data.")
+                : (true, "");
         }
     }
 }
