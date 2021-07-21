@@ -8,6 +8,8 @@ namespace ERP.Web.API.Model.Sales
     {
         public IEnumerable<PromoDetailRequest> ItemDetails { get; set; }
 
+        public IEnumerable<PromoSubjectRequest> SubjectDetails { get; set; }
+
         public DateTime? OriginalStartDate { get; set; }
 
         public DateTime? OriginalEndDate { get; set; }
@@ -26,5 +28,10 @@ namespace ERP.Web.API.Model.Sales
         public string UnitFreeGood { get; set; }
 
         public bool IsMultiple { get; set; }
+    }
+
+    public class PromoSubjectRequest : PromoSubject
+    {
+        public string Subject { get; set; }
     }
 }

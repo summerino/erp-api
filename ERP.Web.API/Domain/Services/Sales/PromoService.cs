@@ -46,6 +46,11 @@ namespace ERP.Web.API.Domain.Services.Sales
             return Db.PromoDetailTiers.ToList();
         }
 
+        public IEnumerable<PromoSubject> GetSubjectData(string code)
+        {
+            return Db.PromoSubjects.Where(x => x.Code == code);
+        }
+
         public SaveResult Insert(PromoRequest data)
         {
             var result = new SaveResult(false);
@@ -106,6 +111,27 @@ namespace ERP.Web.API.Domain.Services.Sales
                     }
                 }
 
+                if (data.ApplyTo != 1)
+                {
+                    foreach (var item in data.SubjectDetails)
+                    {
+                        PromoSubject newSubject = new();
+
+                        if (data.ApplyTo == 2)
+                        {
+                            newSubject.Code = newCode;
+                            newSubject.CustCode = item.Subject;
+                        }
+                        else
+                        {
+                            newSubject.Code = newCode;
+                            newSubject.CustTypeId = Convert.ToInt32(item.Subject);
+                        }
+
+                        Db.PromoSubjects.Add(newSubject);
+                    }
+                }
+
                 // Save changes
                 Db.SaveChanges();
 
@@ -149,6 +175,12 @@ namespace ERP.Web.API.Domain.Services.Sales
                     .ToList();
 
                 Db.PromoDetails.RemoveRange(delDetails);
+
+                var delSubject = Db.PromoSubjects
+                    .Where(d => d.Code == data.Code && !data.SubjectDetails.Select(x => x.Id).Contains(d.Id))
+                    .ToList();
+
+                Db.PromoSubjects.RemoveRange(delSubject);
 
                 short i = 0;
                 foreach (var item in data.ItemDetails)
@@ -229,6 +261,45 @@ namespace ERP.Web.API.Domain.Services.Sales
                                 trItem.PaymentTermId = tItem.PaymentTermId;
 
                                 Db.PromoDetailTiers.Update(trItem);
+                            }
+                        }
+                    }
+                }
+
+                if (data.ApplyTo != 1)
+                {
+                    foreach (var item in data.SubjectDetails)
+                    {
+                        if (data.ApplyTo == 2)
+                        {
+                            if (item.Id < 0)
+                            {
+                                Db.PromoSubjects.Add(new PromoSubject
+                                {
+                                    Code = data.Code,
+                                    CustCode = item.Subject
+                                });
+                            }
+                            else
+                            {
+                                item.CustCode = item.Subject;
+                                Db.PromoSubjects.Update(item);
+                            }
+                        }
+                        else
+                        {
+                            if (item.Id < 0)
+                            {
+                                Db.PromoSubjects.Add(new PromoSubject
+                                {
+                                    Code = data.Code,
+                                    CustTypeId = Convert.ToInt32(item.Subject)
+                                });
+                            }
+                            else
+                            {
+                                item.CustTypeId = Convert.ToInt32(item.Subject);
+                                Db.PromoSubjects.Update(item);
                             }
                         }
                     }
