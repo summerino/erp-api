@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using ERP.Entity.Sales;
 
 namespace ERP.Web.API.Model.Sales
@@ -8,5 +9,7 @@ namespace ERP.Web.API.Model.Sales
         public IEnumerable<VisitOrderCustomer> CustomerDetails { get; set; }
 
         public IEnumerable<VisitOrderInvoice> InvoiceDetails { get; set; }
+
+        public DateTime? OriginalDate { get; set; }
     }
 }

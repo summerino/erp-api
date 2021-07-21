@@ -13,6 +13,8 @@ namespace ERP.Web.API.Model.Accounting
         public decimal TotalDebit { get; set; }
 
         public decimal TotalCredit { get; set; }
+
+        public DateTime? OriginalDate { get; set; }
     }
 
     public class GeneralJournalDetailRequest : GeneralJournalDetail

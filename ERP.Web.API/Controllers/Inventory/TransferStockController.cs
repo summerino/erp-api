@@ -12,6 +12,7 @@ using ERP.Web.API.Domain.Interfaces.SystemManagement;
 using ERP.Web.API.Model;
 using ERP.Web.API.Model.Inventory;
 using Newtonsoft.Json;
+using ERP.Web.API.Domain.Interfaces.Accounting;
 
 namespace ERP.Web.API.Controllers.Inventory
 {
@@ -24,17 +25,18 @@ namespace ERP.Web.API.Controllers.Inventory
         private readonly ISystemParameterService _sysPar;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
-
+        private readonly IClosingMonthService _closingMonth;
         private const int _menuId = (int)Menu.TransferStock;
 
         public TransferStockController(ITransferStockService ts, IUnitOfMeasurementService uom,
-            ISystemParameterService sysPar, IClaimService claim, IAuthService auth)
+            ISystemParameterService sysPar, IClaimService claim, IAuthService auth, IClosingMonthService closingMonthService)
         {
             _ts = ts;
             _uom = uom;
             _sysPar = sysPar;
             _claim = claim;
             _auth = auth;
+            _closingMonth = closingMonthService;
         }
 
         [HttpGet]
@@ -153,28 +155,44 @@ namespace ERP.Web.API.Controllers.Inventory
         }
 
         [HttpDelete("{code}")]
-        public IActionResult OnDelete(string code)
+        public IActionResult OnDelete(string code, TransferStockRequest data)
         {
             // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Void }).Any())
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
-            var result = _ts.Delete(code, _claim.UserId);
+            // Validate process
+            var (isValid, message) = Validate(data);
+            if (!isValid)
+                return Ok(new SaveResult(false, message));
+
+            var result = _ts.Delete(data.Code, _claim.UserId);
             return Ok(result);
         }
 
         private (bool, string) Validate(TransferStockRequest data)
         {
+            var periods = new List<string> { data.Date.ToString("yyyyMM") };
+            if (data.OriginalDate.HasValue)
+                periods.Add(data.OriginalDate.Value.ToString("yyyyMM"));
+
+            if (_closingMonth.IsMonthClosed(periods))
+                return (false, "Periode sudah ditutup. Silakan hubungi departemen akuntansi.");
+
             // Checking data start date validity
             if (!_sysPar.IsStartDateValid(data.Date))
                 return (false, "Tanggal tidak boleh lebih kecil dari tanggal mulai data.");
 
-            if (!data.ItemDetails.Any())
-                return (false, "Detail tidak boleh kosong.");
+            if (data.ItemDetails != null)
+            {
+                if (!data.ItemDetails.Any())
+                    return (false, "Detail tidak boleh kosong.");
 
-            return data.ItemDetails.GroupBy(x => new { x.ItemId, x.UnitId }).Any(x => x.Count() > 1)
-                ? (false, "Terdapat barang dengan satuan yang sama pada bagian detail.")
-                : (true, "");
+                if (data.ItemDetails.GroupBy(x => new { x.ItemId, x.UnitId }).Any(x => x.Count() > 1))
+                    return (false, "Terdapat barang dengan satuan yang sama pada bagian detail.");
+            }
+
+            return (true, "");
         }
     }
 }

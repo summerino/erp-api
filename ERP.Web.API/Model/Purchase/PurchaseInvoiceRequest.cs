@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using ERP.Entity.Purchase;
 
 namespace ERP.Web.API.Model.Purchase
@@ -6,5 +7,9 @@ namespace ERP.Web.API.Model.Purchase
     public class PurchaseInvoiceRequest : PurchaseInvoiceHeader
     {
         public IEnumerable<PurchaseInvoiceDetail> Details { get; set; }
+
+        public DateTime? OriginalDate { get; set; }
+
+        public DateTime? OriginalDueDate { get; set; }
     }
 }

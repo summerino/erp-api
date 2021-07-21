@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using ERP.Entity.Sales;
 
 namespace ERP.Web.API.Model.Sales
@@ -6,6 +7,10 @@ namespace ERP.Web.API.Model.Sales
     public class PromoRequest : PromoHeader
     {
         public IEnumerable<PromoDetailRequest> ItemDetails { get; set; }
+
+        public DateTime? OriginalStartDate { get; set; }
+
+        public DateTime? OriginalEndDate { get; set; }
     }
 
     public class PromoDetailRequest : PromoDetail

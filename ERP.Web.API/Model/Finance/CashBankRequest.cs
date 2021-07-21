@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using ERP.Entity.Finance;
 
 namespace ERP.Web.API.Model.Finance
@@ -11,5 +12,7 @@ namespace ERP.Web.API.Model.Finance
         }
 
         public List<GeneralCashBankDetail> ItemDetails { get; set; }
+
+        public DateTime? OriginalDate { get; set; }
     }
 }

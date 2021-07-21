@@ -12,6 +12,7 @@ using ERP.Web.API.Domain.Interfaces.Auth;
 using ERP.Web.API.Domain.Interfaces.SystemManagement;
 using ERP.Web.API.Model;
 using Newtonsoft.Json;
+using ERP.Web.API.Model.Accounting;
 
 namespace ERP.Web.API.Controllers.Accounting
 {
@@ -23,15 +24,16 @@ namespace ERP.Web.API.Controllers.Accounting
         private readonly ISystemParameterService _sysPar;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
-
+        private readonly IClosingMonthService _closingMonth;
         private const int _menuId = (int)Menu.BeginningBalanceCreditMemo;
 
         public BeginningBalanceCreditMemoController(IBeginningBalanceCreditMemoService bbCm,
-            ISystemParameterService sysPar, IClaimService claim, IAuthService auth)
+            ISystemParameterService sysPar, IClaimService claim, IAuthService auth, IClosingMonthService closingMonthService)
         {
             _bbCm = bbCm;
             _claim = claim;
             _auth = auth;
+            _closingMonth = closingMonthService;
         }
 
         [HttpGet]
@@ -52,15 +54,16 @@ namespace ERP.Web.API.Controllers.Accounting
         }
 
         [HttpPost]
-        public IActionResult OnPost(BeginningBalanceCreditMemo data)
+        public IActionResult OnPost(BeginningBalanceCreditMemoRequest data)
         {
             // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Insert }).Any())
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
-            // Checking data start date validity
-            if (_sysPar.IsStartDateValid(data.Date))
-                return Ok(new SaveResult(false, "Tanggal tidak boleh lebih besar dari tanggal mulai data."));
+            // Validate process
+            var (isValid, message) = Validate(data);
+            if (!isValid)
+                return Ok(new SaveResult(false, message));
 
             data.IsActive = true;
             data.CreatedBy = _claim.UserId;
@@ -74,15 +77,16 @@ namespace ERP.Web.API.Controllers.Accounting
         }
 
         [HttpPut("{id}")]
-        public IActionResult OnPut(string id, BeginningBalanceCreditMemo data)
+        public IActionResult OnPut(string id, BeginningBalanceCreditMemoRequest data)
         {
             // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Update }).Any())
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
-            // Checking data start date validity
-            if (_sysPar.IsStartDateValid(data.Date))
-                return Ok(new SaveResult(false, "Tanggal tidak boleh lebih besar dari tanggal mulai data."));
+            // Validate process
+            var (isValid, message) = Validate(data);
+            if (!isValid)
+                return Ok(new SaveResult(false, message));
 
             data.UpdatedBy = _claim.UserId;
             data.UpdatedDate = DateTime.Now;
@@ -93,15 +97,35 @@ namespace ERP.Web.API.Controllers.Accounting
         }
 
         [HttpDelete("{id}")]
-        public IActionResult OnDelete(int id)
+        public IActionResult OnDelete(int id, BeginningBalanceCreditMemoRequest data)
         {
             // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Delete }).Any())
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
-            var result = _bbCm.Delete(id, _claim.UserId);
+            // Validate process
+            var (isValid, message) = Validate(data);
+            if (!isValid)
+                return Ok(new SaveResult(false, message));
+
+            var result = _bbCm.Delete(data.Id, _claim.UserId);
 
             return Ok(result);
+        }
+
+        private (bool, string) Validate(BeginningBalanceCreditMemoRequest data)
+        {
+            var periods = new List<string> { data.Date.ToString("yyyyMM") };
+            if (data.OriginalDate.HasValue)
+                periods.Add(data.OriginalDate.Value.ToString("yyyyMM"));
+
+            if (_closingMonth.IsMonthClosed(periods))
+                return (false, "Periode sudah ditutup. Silakan hubungi departemen akuntansi.");
+
+            // Checking data start date validity
+            return _sysPar.IsStartDateValid(data.Date)
+                ? (false, "Tanggal tidak boleh lebih besar dari tanggal mulai data.")
+                : (true, "");
         }
     }
 }

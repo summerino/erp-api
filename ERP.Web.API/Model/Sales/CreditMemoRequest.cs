@@ -6,13 +6,8 @@ using System.Threading.Tasks;
 
 namespace ERP.Web.API.Model.Sales
 {
-    public class SalesReturnRequest : SalesReturnHeader
+    public class CreditMemoRequest : CreditMemo
     {
-        public IEnumerable<SalesReturnDetail> ItemDetails { get; set; }
-
-        public IEnumerable<SalesReturnDetailExchDiffItem> DiffItemDetails { get; set; }
-
         public DateTime? OriginalDate { get; set; }
-
     }
 }

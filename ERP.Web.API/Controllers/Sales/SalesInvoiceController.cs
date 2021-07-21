@@ -12,6 +12,7 @@ using ERP.Web.API.Domain.Interfaces.SystemManagement;
 using ERP.Web.API.Model;
 using ERP.Web.API.Model.Sales;
 using Newtonsoft.Json;
+using ERP.Web.API.Domain.Interfaces.Accounting;
 
 namespace ERP.Web.API.Controllers.Sales
 {
@@ -23,16 +24,17 @@ namespace ERP.Web.API.Controllers.Sales
         private readonly ISystemParameterService _sysPar;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
-
+        private readonly IClosingMonthService _closingMonth;
         private const int _menuId = (int)Menu.SalesInvoice;
 
         public SalesInvoiceController(ISalesInvoiceService inv, ISystemParameterService sysPar,
-            IClaimService claim, IAuthService auth)
+            IClaimService claim, IAuthService auth, IClosingMonthService closingMonthService)
         {
             _inv = inv;
             _sysPar = sysPar;
             _claim = claim;
             _auth = auth;
+            _closingMonth = closingMonthService;
         }
 
         [HttpGet]
@@ -136,19 +138,33 @@ namespace ERP.Web.API.Controllers.Sales
         }
 
         [HttpDelete("{code}")]
-        public IActionResult OnDelete(string code)
+        public IActionResult OnDelete(string code, SalesInvoiceRequest data)
         {
             // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Void }).Any())
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
-            var result = _inv.Delete(code, _claim.UserId);
+            // Validate process
+            var (isValid, message) = Validate(data);
+            if (!isValid)
+                return Ok(new SaveResult(false, message));
+
+            var result = _inv.Delete(data.Code, _claim.UserId);
 
             return Ok(result);
         }
 
         private (bool, string) Validate(SalesInvoiceRequest data)
         {
+            var periods = new List<string> { data.Date.ToString("yyyyMM"), data.DueDate.ToString("yyyyMM") };
+            if (data.OriginalDate.HasValue)
+                periods.Add(data.OriginalDate.Value.ToString("yyyyMM"));
+            if (data.OriginalDueDate.HasValue)
+                periods.Add(data.OriginalDueDate.Value.ToString("yyyyMM"));
+
+            if (_closingMonth.IsMonthClosed(periods))
+                return (false, "Periode sudah ditutup. Silakan hubungi departemen akuntansi.");
+
             // Checking data start date validity
             if (!_sysPar.IsStartDateValid(data.Date))
                 return (false, "Tanggal Transaksi tidak boleh lebih kecil dari tanggal mulai data.");
@@ -156,13 +172,16 @@ namespace ERP.Web.API.Controllers.Sales
             // Checking data start date validity
             if (!_sysPar.IsStartDateValid(data.DueDate))
                 return (false, "Tanggal Jatuh Tempo tidak boleh lebih kecil dari tanggal mulai data.");
+            if (data.Details != null)
+            {
+                if (!data.Details.Any())
+                    return (false, "Detail tidak boleh kosong.");
 
-            if (!data.Details.Any())
-                return (false, "Detail tidak boleh kosong.");
+                if (data.Details.GroupBy(x => new { x.DoCode }).Any(x => x.Count() > 1))
+                    return (false, "Terdapat kode pengiriman yang sama pada bagian detail.");
+            }
 
-            return data.Details.GroupBy(x => new { x.DoCode }).Any(x => x.Count() > 1)
-                ? (false, "Terdapat kode pengiriman yang sama pada bagian detail.")
-                : (true, "");
+            return (true, "");
         }
     }
 }
