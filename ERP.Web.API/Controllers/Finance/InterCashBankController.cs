@@ -111,8 +111,8 @@ namespace ERP.Web.API.Controllers.Finance
             return Ok(result);
         }
 
-        [HttpDelete]
-        public IActionResult OnDelete(CashBankRequest data)
+        [HttpDelete("{code}")]
+        public IActionResult OnDelete(string code, CashBankRequest data)
         {
             // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Void }).Any())

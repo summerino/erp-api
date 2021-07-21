@@ -137,8 +137,8 @@ namespace ERP.Web.API.Controllers.Sales
             return Ok(result);
         }
 
-        [HttpDelete]
-        public IActionResult OnDelete(SalesInvoiceRequest data)
+        [HttpDelete("{code}")]
+        public IActionResult OnDelete(string code, SalesInvoiceRequest data)
         {
             // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Void }).Any())

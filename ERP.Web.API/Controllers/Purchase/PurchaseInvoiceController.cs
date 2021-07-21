@@ -138,8 +138,8 @@ namespace ERP.Web.API.Controllers.Purchase
             return Ok(result);
         }
 
-        [HttpDelete]
-        public IActionResult OnDelete(PurchaseInvoiceRequest data)
+        [HttpDelete("{code}")]
+        public IActionResult OnDelete(string code, PurchaseInvoiceRequest data)
         {
             // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Void }).Any())

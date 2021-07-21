@@ -150,8 +150,8 @@ namespace ERP.Web.API.Controllers.Sales
             return Ok(result);
         }
 
-        [HttpDelete]
-        public IActionResult OnDelete(DeliveryPlanRequest data)
+        [HttpDelete("{code}")]
+        public IActionResult OnDelete(string code, DeliveryPlanRequest data)
         {
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Void }).Any())
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));

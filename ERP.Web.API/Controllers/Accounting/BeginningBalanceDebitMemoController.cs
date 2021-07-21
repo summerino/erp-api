@@ -97,8 +97,8 @@ namespace ERP.Web.API.Controllers.Accounting
             return Ok(result);
         }
 
-        [HttpDelete]
-        public IActionResult OnDelete(BeginningBalanceDebitMemoRequest data)
+        [HttpDelete("{id}")]
+        public IActionResult OnDelete(int id, BeginningBalanceDebitMemoRequest data)
         {
             // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Delete }).Any())

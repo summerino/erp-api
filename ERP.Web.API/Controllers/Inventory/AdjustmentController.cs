@@ -177,8 +177,8 @@ namespace ERP.Web.API.Controllers.Inventory
             return Ok(result);
         }
 
-        [HttpDelete]
-        public IActionResult OnDelete(AdjustmentRequest data)
+        [HttpDelete("{code}")]
+        public IActionResult OnDelete(string code, AdjustmentRequest data)
         {
             // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Void }).Any())
