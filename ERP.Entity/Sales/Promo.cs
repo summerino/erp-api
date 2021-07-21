@@ -62,6 +62,20 @@ namespace ERP.Entity.Sales
         public string Status { get; set; }
     }
 
+    [Table("PromoSubject", Schema = Schema.Sales)]
+    public class PromoSubject
+    {
+        public long Id { get; set; }
+
+        [StringLength(17)]
+        public string Code { get; set; }
+
+        [StringLength(8)]
+        public string CustCode { get; set; }
+
+        public int? CustTypeId { get; set; }
+    }
+    
     [Table("PromoDetail", Schema = Schema.Sales)]
     public class PromoDetail
     {

@@ -170,9 +170,11 @@ AS
 
             // Drop view Accounting.vwBeginningBalanceDebitMemo
             var sql = @"DROP VIEW [Accounting].[vwBeginningBalanceDebitMemo]";
+            migrationBuilder.Sql(sql);
 
-            // Drop view Accounting.vwBeginningBalanceCreditMemo
-            sql = @"DROP VIEW [Accounting].[vwBeginningBalanceCreditMemo]";
+			// Drop view Accounting.vwBeginningBalanceCreditMemo
+			sql = @"DROP VIEW [Accounting].[vwBeginningBalanceCreditMemo]";
+            migrationBuilder.Sql(sql);
         }
-    }
+	}
 }

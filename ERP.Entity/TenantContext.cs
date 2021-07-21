@@ -157,6 +157,7 @@ namespace ERP.Entity
         public DbSet<DeliveryPlanUndeliveredItem> DeliveryPlanUndeliveredItems { get; set; }
         public DbSet<PromoHeader> PromoHeaders { get; set; }
         public DbSet<VwPromoHeader> VwPromoHeaders { get; set; }
+        public DbSet<PromoSubject> PromoSubjects { get; set; }
         public DbSet<PromoDetail> PromoDetails { get; set; }
         public DbSet<PromoDetailTier> PromoDetailTiers { get; set; }
         public DbSet<SalesDeliveryHeader> SalesDeliveryHeaders { get; set; }
@@ -1221,10 +1222,45 @@ namespace ERP.Entity
                 .HasNoKey()
                 .ToView("vwPromoHeader", Schema.Sales);
 
-            modelBuilder.Entity<PromoDetail>(entity =>
+            modelBuilder.Entity<PromoSubject>(entity =>
+            {
                 entity.Property(e => e.Code)
-                    .IsRequired()
-            );
+                    .IsRequired();
+
+                entity.HasOne<PromoHeader>()
+                    .WithMany()
+                    .HasForeignKey(d => d.Code)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Customer>()
+                    .WithMany()
+                    .HasForeignKey(d => d.CustCode)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<CustomerType>()
+                    .WithMany()
+                    .HasForeignKey(d => d.CustTypeId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            modelBuilder.Entity<PromoDetail>(entity =>
+            {
+                entity.Property(e => e.Code)
+                    .IsRequired();
+
+                entity.HasOne<PromoHeader>()
+                    .WithMany()
+                    .HasForeignKey(d => d.Code)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            modelBuilder.Entity<PromoDetailTier>(entity =>
+            {
+                entity.HasOne<PromoDetail>()
+                    .WithMany()
+                    .HasForeignKey(d => d.PromoDetailId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
 
             // Sales Delivery entities
             modelBuilder.Entity<SalesDeliveryHeader>(entity =>

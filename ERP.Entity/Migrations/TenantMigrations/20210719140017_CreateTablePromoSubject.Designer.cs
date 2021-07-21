@@ -4,14 +4,16 @@ using ERP.Entity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ERP.Entity.Migrations.TenantMigrations
 {
     [DbContext(typeof(TenantContext))]
-    partial class TenantContextModelSnapshot : ModelSnapshot
+    [Migration("20210719140017_CreateTablePromoSubject")]
+    partial class CreateTablePromoSubject
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -48,6 +50,9 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .IsUnicode(false)
                         .HasColumnType("varchar(3)");
 
+                    b.Property<decimal>("CurrRate")
+                        .HasColumnType("decimal(19,6)");
+
                     b.Property<DateTime>("Date")
                         .HasColumnType("date");
 
@@ -63,9 +68,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(256)");
 
                     b.Property<decimal>("PaidAmount")
-                        .HasColumnType("decimal(19,6)");
-
-                    b.Property<decimal>("Rate")
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<string>("SupCode")
@@ -120,6 +122,9 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .IsUnicode(false)
                         .HasColumnType("varchar(3)");
 
+                    b.Property<decimal>("CurrRate")
+                        .HasColumnType("decimal(19,6)");
+
                     b.Property<string>("CustCode")
                         .IsRequired()
                         .HasMaxLength(8)
@@ -141,9 +146,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(256)");
 
                     b.Property<decimal>("PaidAmount")
-                        .HasColumnType("decimal(19,6)");
-
-                    b.Property<decimal>("Rate")
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<int>("UpdatedBy")
@@ -192,6 +194,9 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .IsUnicode(false)
                         .HasColumnType("varchar(3)");
 
+                    b.Property<decimal>("CurrRate")
+                        .HasColumnType("decimal(19,6)");
+
                     b.Property<string>("CustCode")
                         .IsRequired()
                         .HasMaxLength(8)
@@ -208,9 +213,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasMaxLength(256)
                         .IsUnicode(false)
                         .HasColumnType("varchar(256)");
-
-                    b.Property<decimal>("Rate")
-                        .HasColumnType("decimal(19,6)");
 
                     b.Property<short>("Type")
                         .HasColumnType("smallint");
@@ -264,6 +266,9 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .IsUnicode(false)
                         .HasColumnType("varchar(3)");
 
+                    b.Property<decimal>("CurrRate")
+                        .HasColumnType("decimal(19,6)");
+
                     b.Property<DateTime>("Date")
                         .HasColumnType("date");
 
@@ -274,9 +279,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasMaxLength(256)
                         .IsUnicode(false)
                         .HasColumnType("varchar(256)");
-
-                    b.Property<decimal>("Rate")
-                        .HasColumnType("decimal(19,6)");
 
                     b.Property<string>("SupCode")
                         .IsRequired()
@@ -389,6 +391,10 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasMaxLength(4)
                         .IsUnicode(false)
                         .HasColumnType("varchar(4)");
+
+                    b.Property<byte>("Lod")
+                        .HasColumnType("tinyint")
+                        .HasColumnName("LOD");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -743,6 +749,9 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
 
+                    b.Property<decimal>("CurrRate")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
@@ -760,9 +769,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(max)");
 
                     b.Property<decimal>("PaidAmount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("Rate")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("SupCode")
@@ -809,6 +815,9 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
 
+                    b.Property<decimal>("CurrRate")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<string>("CustCode")
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
@@ -834,9 +843,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(max)");
 
                     b.Property<decimal>("PaidAmount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("Rate")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("UpdatedBy")
@@ -875,6 +881,9 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
 
+                    b.Property<decimal>("CurrRate")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<string>("CustCode")
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
@@ -895,9 +904,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.Property<string>("Notes")
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
-
-                    b.Property<decimal>("Rate")
-                        .HasColumnType("decimal(18,2)");
 
                     b.Property<short>("Type")
                         .HasColumnType("smallint");
@@ -941,6 +947,9 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
 
+                    b.Property<decimal>("CurrRate")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
@@ -953,9 +962,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.Property<string>("Notes")
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
-
-                    b.Property<decimal>("Rate")
-                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("SupCode")
                         .IsUnicode(false)
@@ -1035,6 +1041,10 @@ namespace ERP.Entity.Migrations.TenantMigrations
 
                     b.Property<int>("IsParent")
                         .HasColumnType("int");
+
+                    b.Property<byte>("Lod")
+                        .HasColumnType("tinyint")
+                        .HasColumnName("LOD");
 
                     b.Property<string>("Name")
                         .IsUnicode(false)
