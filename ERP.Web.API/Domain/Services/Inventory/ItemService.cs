@@ -7,11 +7,8 @@ using ERP.Common.Extensions;
 using ERP.Common.Models;
 using ERP.Entity;
 using ERP.Entity.Inventory;
-using ERP.Entity.Inventory;
-using ERP.Entity.Purchase;
-using ERP.Entity.Sales;
 using ERP.Web.API.Domain.Interfaces.Inventory;
-using ERP.Web.API.Domain.Models;
+using Microsoft.Data.SqlClient;
 
 namespace ERP.Web.API.Domain.Services.Inventory
 {
@@ -207,16 +204,19 @@ namespace ERP.Web.API.Domain.Services.Inventory
             var data = Db.Items.Find(id);
             if (data != null)
             {
-                //Check if any warehouse already have this item
-                if (Db.WarehouseQuantities.Any(x => x.ItemId == data.Id))
+                try
                 {
-                    result.Message = "Tidak bisa menghapus data barang karena telah digunakan pada data gudang.";
+                    Db.Items.Remove(data);
+                    Db.SaveChanges();
+                }
+                catch (Exception e)
+                {
+                    var ex = e?.InnerException as SqlException;
+                    if (ex?.Number != 547) throw;
+
+                    result.Message = "Data tidak bisa dihapus karena sedang digunakan oleh data lain.";
                     return result;
                 }
-
-                Db.Items.Remove(data);
-
-                Db.SaveChanges();
             }
 
             result.Success = true;

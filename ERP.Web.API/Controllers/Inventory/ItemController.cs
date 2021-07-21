@@ -2,14 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
+using Microsoft.AspNetCore.Mvc;
 using ERP.Common;
 using ERP.Common.Models;
-using Microsoft.AspNetCore.Mvc;
 using ERP.Entity;
 using ERP.Entity.Inventory;
 using ERP.Web.API.Domain.Interfaces.Auth;
 using ERP.Web.API.Domain.Interfaces.Inventory;
-using ERP.Web.API.Domain.Models;
 using ERP.Web.API.Model;
 using Newtonsoft.Json;
 
@@ -140,17 +139,10 @@ namespace ERP.Web.API.Controllers.Inventory
 
         private void MapNull(VwItem data) 
         {
-            if (data.QtyOnHand == null)
-                data.QtyOnHand = 0;
-
-            if (data.QtyOnIndent == null)
-                data.QtyOnIndent = 0;
-
-            if (data.QtyOnOrder == null)
-                data.QtyOnOrder = 0;
-
-            if (data.QtyOnTransfer == null)
-                data.QtyOnTransfer = 0;
+            data.QtyOnHand ??= 0;
+            data.QtyOnIndent ??= 0;
+            data.QtyOnOrder ??= 0;
+            data.QtyOnTransfer ??= 0;
         }
     }
 }
