@@ -81,6 +81,18 @@ namespace ERP.Web.API.Controllers.Sales
             });
         }
 
+        [HttpGet("subject")]
+        public IActionResult GetSubjectData(string code)
+        {
+            var data = _promo.GetSubjectData(code).ToList<dynamic>();
+
+            return Ok(new ApiResponse
+            {
+                RowCount = data.Count,
+                TableData = data
+            });
+        }
+
         [HttpPost]
         public IActionResult OnPost(PromoRequest data)
         {
