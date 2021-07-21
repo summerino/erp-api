@@ -34,6 +34,9 @@ namespace ERP.Web.API.Domain.Services.Accounting
         public DataSourceResult GetLists(IEnumerable<Filter> filters, IEnumerable<Sort> sorts)
         {
             var data = Db.Coas.Where(x => x.IsActive);
+            var dataT = data;
+
+            data = data.Where(x => !dataT.Select(t => t.ParentId).Contains(x.Id));
 
             return data.ToDataSourceResult(0, -1, filters, sorts);
         }
