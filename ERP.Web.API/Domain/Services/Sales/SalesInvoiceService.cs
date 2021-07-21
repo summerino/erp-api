@@ -328,7 +328,7 @@ namespace ERP.Web.API.Domain.Services.Sales
         {
             return (from h in Db.GeneralCashBankHeaders
                     join d in Db.GeneralCashBankDetails on h.Code equals d.Code
-                    where h.Mark == "A"
+                    where h.Mark == "A" && d.TransCode == code
                     select h.Code).Any();
         }
 
