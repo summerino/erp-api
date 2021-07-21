@@ -851,6 +851,10 @@ namespace ERP.Web.API.Domain.Services.Sales
                         }
                     }
                 }
+                else
+                {
+                    result = true;
+                }
             }
             return result;
         }
