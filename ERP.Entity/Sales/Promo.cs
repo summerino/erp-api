@@ -24,11 +24,6 @@ namespace ERP.Entity.Sales
 
         public short ApplyTo { get; set; }
 
-        [StringLength(8)]
-        public string CustCode { get; set; }
-
-        public int? CustTypeId { get; set; }
-
         [Required]
         [StringLength(6)]
         public string CoaCost { get; set; }
@@ -45,10 +40,6 @@ namespace ERP.Entity.Sales
         public DateTime EndDate { get; set; }
 
         public short ApplyTo { get; set; }
-
-        public string CustCode { get; set; }
-
-        public int? CustTypeId { get; set; }
 
         public string CoaCost { get; set; }
 
