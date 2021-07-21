@@ -86,10 +86,18 @@ namespace ERP.Web.API.Domain.Services.Sales
         public SaveResult Insert(SalesInvoiceRequest data)
         {
             var result = new SaveResult(false);
+            List<long> idOrderDetail = new();
 
             using var transaction = Db.Database.BeginTransaction();
             try
             {
+                // Checking deliver qty is excess or not
+                if (IsQtyExcess(data.WarehouseCode, data.ItemDetails, null))
+                {
+                    result.Message = "Data penjualan langsung tidak bisa disimpan karena qty yg diterima lebih besar dari qty yang tersedia.";
+                    return result;
+                }
+
                 // Sales Order
                 var newCode = GetNewCode("DI_NUM_FMT", data.Date);
                 Db.SalesOrderHeaders.Add(new SalesOrderHeader
@@ -152,6 +160,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                     };
 
                     Db.SalesOrderDetails.Add(orderDetail);
+                    idOrderDetail.Add(orderDetail.Id);
 
                     if (item.FreeItemDetails.Any() || item.DiscountItemDetails.Any())
                     {
@@ -208,6 +217,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                 {
                     Code = newCode,
                     Date = data.Date,
+                    SrcTrans = 1,
                     TransCode = newCode,
                     CustCode = data.CustCode,
                     WarehouseCode = data.WarehouseCode,
@@ -237,6 +247,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                     {
                         Code = newCode,
                         LineNo = ++j,
+                        SoDetailId = idOrderDetail[j - 1],
                         ItemId = item.ItemId,
                         UomId = item.UomId,
                         UnitId = item.UnitId,
@@ -375,6 +386,13 @@ namespace ERP.Web.API.Domain.Services.Sales
                     return result;
                 }
 
+                // Checking deliver qty is excess or not
+                if (IsQtyExcess(data.WarehouseCode, data.ItemDetails, data.Code))
+                {
+                    result.Message = "Data penjualan langsung tidak bisa disimpan karena qty yg diterima lebih besar dari qty yang tersedia.";
+                    return result;
+                }
+
                 data.ApprovedBy = null;
                 data.ApprovedDate = null;
 
@@ -432,6 +450,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                 DeliveryData.UpdatedDate = data.UpdatedDate;
                 Db.SalesDeliveryHeaders.Update(DeliveryData);
                 Db.Entry(DeliveryData).Property(e => e.Code).IsModified = false;
+                Db.Entry(DeliveryData).Property(e => e.SrcTrans).IsModified = false;
                 Db.Entry(DeliveryData).Property(e => e.CreatedBy).IsModified = false;
                 Db.Entry(DeliveryData).Property(e => e.CreatedDate).IsModified = false;
 
@@ -779,6 +798,61 @@ namespace ERP.Web.API.Domain.Services.Sales
                     join d in Db.GeneralCashBankDetails on h.Code equals d.Code
                     where h.Mark == "A"
                     select h.Code).Any();
+        }
+
+        private bool IsQtyExcess(string warehouseCode, IEnumerable<SalesOrderDetail> items, string code)
+        {
+            var result = false;
+            foreach (var item in items)
+            {
+                var uom = Db.UoMConversions.FirstOrDefault(x => x.Id == item.UnitId);
+                var stock = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == warehouseCode && x.ItemId == item.ItemId);
+                if (stock != null)
+                {
+                    if (code == null)
+                    {
+                        if (uom.IsBaseUnit)
+                        {
+                            if (item.Qty > (stock.QtyOnHand - stock.QtyOnOrder))
+                            {
+                                result = true;
+                            }
+                        }
+                        else
+                        {
+                            var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= uom.Seq).Select(x => x.Conversion).ToList();
+                            var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
+                            var baseQty = item.Qty * multipliedQty;
+                            if (baseQty > (stock.QtyOnHand - stock.QtyOnOrder))
+                            {
+                                result = true;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        var oldStock = Db.StockMutations.FirstOrDefault(x => x.ItemId == item.ItemId && x.RefCode1 == code);
+                        if (uom.IsBaseUnit)
+                        {
+                            if (item.Qty > (stock.QtyOnHand - (stock.QtyOnOrder - oldStock.BaseQty)))
+                            {
+                                result = true;
+                            }
+                        }
+                        else
+                        {
+                            var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= uom.Seq).Select(x => x.Conversion).ToList();
+                            var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
+                            var baseQty = item.Qty * multipliedQty;
+                            if (baseQty > (stock.QtyOnHand - (stock.QtyOnOrder - oldStock.BaseQty)))
+                            {
+                                result = true;
+                            }
+                        }
+                    }
+                }
+            }
+            return result;
         }
     }
 }
