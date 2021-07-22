@@ -6,13 +6,13 @@ using Microsoft.AspNetCore.Mvc;
 using ERP.Common;
 using ERP.Common.Models;
 using ERP.Entity;
+using ERP.Web.API.Domain.Interfaces.Accounting;
 using ERP.Web.API.Domain.Interfaces.Auth;
 using ERP.Web.API.Domain.Interfaces.Inventory;
 using ERP.Web.API.Domain.Interfaces.SystemManagement;
 using ERP.Web.API.Model;
 using ERP.Web.API.Model.Inventory;
 using Newtonsoft.Json;
-using ERP.Web.API.Domain.Interfaces.Accounting;
 
 namespace ERP.Web.API.Controllers.Inventory
 {
@@ -22,21 +22,23 @@ namespace ERP.Web.API.Controllers.Inventory
     {
         private readonly ITransferStockService _ts;
         private readonly IUnitOfMeasurementService _uom;
+        private readonly IClosingMonthService _closingMonth;
         private readonly ISystemParameterService _sysPar;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
-        private readonly IClosingMonthService _closingMonth;
+
         private const int _menuId = (int)Menu.TransferStock;
 
         public TransferStockController(ITransferStockService ts, IUnitOfMeasurementService uom,
-            ISystemParameterService sysPar, IClaimService claim, IAuthService auth, IClosingMonthService closingMonthService)
+            IClosingMonthService closingMonth, ISystemParameterService sysPar,
+            IClaimService claim, IAuthService auth)
         {
             _ts = ts;
             _uom = uom;
+            _closingMonth = closingMonth;
             _sysPar = sysPar;
             _claim = claim;
             _auth = auth;
-            _closingMonth = closingMonthService;
         }
 
         [HttpGet]
@@ -122,6 +124,7 @@ namespace ERP.Web.API.Controllers.Inventory
                 return Ok(new SaveResult(false, message));
 
             // Insert process
+            data.Type = data.Type.ToUpper();
             data.Mark = "A";
             data.CreatedBy = _claim.UserId;
             data.CreatedDate = DateTime.Now;
@@ -146,6 +149,7 @@ namespace ERP.Web.API.Controllers.Inventory
                 return Ok(new SaveResult(false, message));
 
             // Update process
+            data.Type = data.Type.ToUpper();
             data.UpdatedBy = _claim.UserId;
             data.UpdatedDate = DateTime.Now;
 

@@ -15,7 +15,9 @@ namespace ERP.Entity.Inventory
         [Column(TypeName = "date")]
         public DateTime Date { get; set; }
 
-        public short Type { get; set; }
+        [Required]
+        [StringLength(5)]
+        public string Type { get; set; }
 
         [StringLength(17)]
         public string OriginTransferCode { get; set; }
@@ -28,6 +30,8 @@ namespace ERP.Entity.Inventory
 
         [StringLength(256)]
         public string Notes { get; set; }
+
+        public bool IsConsignee { get; set; }
     }
 
     public class VwTransferStockHeader : BaseEntityWithMarkAndApproved
@@ -36,7 +40,7 @@ namespace ERP.Entity.Inventory
 
         public DateTime Date { get; set; }
 
-        public short Type { get; set; }
+        public string Type { get; set; }
 
         public string OriginTransferCode { get; set; }
 
@@ -45,6 +49,8 @@ namespace ERP.Entity.Inventory
         public string WarehouseCodeTo { get; set; }
 
         public string Notes { get; set; }
+
+        public bool IsConsignee { get; set; }
 
 
         public string WarehouseInitialFrom { get; set; }

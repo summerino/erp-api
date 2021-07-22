@@ -2,15 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
+using Microsoft.EntityFrameworkCore;
 using ERP.Common;
 using ERP.Common.Extensions;
 using ERP.Common.Models;
 using ERP.Entity;
 using ERP.Entity.Inventory;
 using ERP.Web.API.Domain.Interfaces.Inventory;
-using ERP.Web.API.Domain.Models;
 using ERP.Web.API.Model.Inventory;
-using Microsoft.EntityFrameworkCore;
 
 namespace ERP.Web.API.Domain.Services.Inventory
 {
@@ -84,13 +83,13 @@ namespace ERP.Web.API.Domain.Services.Inventory
                     }
 
                     // Checking qty and item existing on source warehouse
-                    if (!IsWarehouseItemExists(data.WarehouseCodeFrom, item.ItemId) && data.Type != 2)
+                    if (!IsWarehouseItemExists(data.WarehouseCodeFrom, item.ItemId) && data.Type != "IN")
                     {
                         existListItemId.Add(item.ItemId);
                     }
 
                     // Try to guessing qty amount after insert/update?
-                    if (!IsWarehouseItemQtyExists(data.WarehouseCodeFrom, item.ItemId, item.UomId, item.UnitId, item.Qty) && data.Type != 2)
+                    if (!IsWarehouseItemQtyExists(data.WarehouseCodeFrom, item.ItemId, item.UomId, item.UnitId, item.Qty) && data.Type != "IN")
                     {
                         if (existListItemId.Count > 0)
                         {
@@ -225,13 +224,13 @@ namespace ERP.Web.API.Domain.Services.Inventory
                     }
 
                     // Checking qty and item existing on source warehouse
-                    if (!IsWarehouseItemExists(data.WarehouseCodeFrom, item.ItemId) && data.Type != 2)
+                    if (!IsWarehouseItemExists(data.WarehouseCodeFrom, item.ItemId) && data.Type != "IN")
                     {
                         existListItemId.Add(item.ItemId);
                     }
 
                     // Try to guessing qty amount after insert/update?
-                    if (!IsWarehouseItemQtyExists(data.WarehouseCodeFrom, item.ItemId, item.UomId, item.UnitId, item.Qty) && data.Type != 2)
+                    if (!IsWarehouseItemQtyExists(data.WarehouseCodeFrom, item.ItemId, item.UomId, item.UnitId, item.Qty) && data.Type != "IN")
                     {
                         if (existListItemId.Count > 0)
                         {
@@ -335,7 +334,7 @@ namespace ERP.Web.API.Domain.Services.Inventory
                 }
 
                 // Checking void ordered for type 1 only
-                if (data.Type == 1 && !IsInventoryInAlreadyVoid(data.Code))
+                if (data.Type == "OUT" && !IsInventoryInAlreadyVoid(data.Code))
                 {
                     result.Message = "Data transfer stok tidak bisa ditandai sebagai void karena transfer persediaan pada barang masuk masih aktif.";
                     return result;
