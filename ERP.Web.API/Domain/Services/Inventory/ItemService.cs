@@ -287,7 +287,7 @@ namespace ERP.Web.API.Domain.Services.Inventory
         public IEnumerable<dynamic> GetRelatedTransferTrans(string whid, int itemid)
         {
             var stockM = Db.StockMutations.Where(x => x.WarehouseCode == whid && x.ItemId == itemid && x.Type == "OT").ToList();
-            var header = Db.VwTransferStockHeaders.Where(s => s.Mark == "A" && s.Type == 1 && stockM.Select(x => x.RefCode1).Contains(s.Code)).ToList();
+            var header = Db.VwTransferStockHeaders.Where(s => s.Mark == "A" && s.Type == "OUT" && stockM.Select(x => x.RefCode1).Contains(s.Code)).ToList();
             var details = Db.VwTransferStockDetails.Where(r => header.Select(x => x.Code).Contains(r.Code) && r.ItemId == itemid).ToList();
             var result = (from h in header
                           join d in details on h.Code equals d.Code
