@@ -13,4 +13,15 @@ namespace ERP.Entity.Accounting
 
         public bool IsClose { get; set; }
     }
+
+    public class VwClosingMonth : BaseEntity
+    {
+        public string Period { get; set; }
+
+        public bool IsClose { get; set; }
+
+        public string CreatedInitial { get; set; }
+
+        public string UpdatedInitial { get; set; }
+    }
 }
