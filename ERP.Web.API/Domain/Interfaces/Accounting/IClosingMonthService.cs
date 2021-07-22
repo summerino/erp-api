@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using ERP.Common;
 using ERP.Common.Models;
 using ERP.Entity.Accounting;
@@ -15,6 +14,5 @@ namespace ERP.Web.API.Domain.Interfaces.Accounting
         SaveResult Insert(ClosingMonthRequest data);
 
         bool IsMonthClosed(List<string> periods);
-
     }
 }

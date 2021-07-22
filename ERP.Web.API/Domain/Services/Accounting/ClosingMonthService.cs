@@ -1,14 +1,13 @@
-﻿using ERP.Common;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using ERP.Common;
 using ERP.Common.Extensions;
 using ERP.Common.Models;
 using ERP.Entity;
 using ERP.Entity.Accounting;
 using ERP.Web.API.Domain.Interfaces.Accounting;
 using ERP.Web.API.Model.Accounting;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace ERP.Web.API.Domain.Services.Accounting
 {
@@ -17,7 +16,6 @@ namespace ERP.Web.API.Domain.Services.Accounting
         public ClosingMonthService(TenantContext db)
             :base(db)
         {
-                
         }
 
         public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string search)
@@ -29,6 +27,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 data = data.Where(x =>
                         x.Period.Contains(search));
             }
+
             return data.ToDataSourceResult(skip, take, filters, sorts);
         }
 

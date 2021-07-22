@@ -6,13 +6,13 @@ using Microsoft.AspNetCore.Mvc;
 using ERP.Common;
 using ERP.Common.Models;
 using ERP.Entity;
+using ERP.Web.API.Domain.Interfaces.Accounting;
 using ERP.Web.API.Domain.Interfaces.Auth;
 using ERP.Web.API.Domain.Interfaces.Finance;
 using ERP.Web.API.Domain.Interfaces.SystemManagement;
 using ERP.Web.API.Model;
 using ERP.Web.API.Model.Finance;
 using Newtonsoft.Json;
-using ERP.Web.API.Domain.Interfaces.Accounting;
 
 namespace ERP.Web.API.Controllers.Finance
 {
@@ -21,20 +21,21 @@ namespace ERP.Web.API.Controllers.Finance
     public class InterCashBankController : ControllerBase
     {
         private readonly IInterCashBankService _interCb;
+        private readonly IClosingMonthService _closingMonth;
         private readonly ISystemParameterService _sysPar;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
-        private readonly IClosingMonthService _closingMonth;
+
         private const int _menuId = (int)Menu.CashBankInter;
 
-        public InterCashBankController(IInterCashBankService interCb, ISystemParameterService sysPar,
-            IClaimService claim, IAuthService auth, IClosingMonthService closingMonthService)
+        public InterCashBankController(IInterCashBankService interCb, IClosingMonthService closingMonth,
+            ISystemParameterService sysPar, IClaimService claim, IAuthService auth)
         {
             _interCb = interCb;
+            _closingMonth = closingMonth;
             _sysPar = sysPar;
             _claim = claim;
             _auth = auth;
-            _closingMonth = closingMonthService;
         }
 
         [HttpGet]
@@ -73,6 +74,10 @@ namespace ERP.Web.API.Controllers.Finance
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Insert }).Any())
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
+            // Checking coa code from & to can't be same
+            if (data.ItemDetails.GroupBy(x => x.CoaCode).Any(g => g.Count() > 1))
+                return Ok(new SaveResult(false, "Akun asal dan akun tujuan tidak boleh sama."));
+
             // Validate process
             var (isValid, message) = Validate(data);
             if (!isValid)
@@ -96,6 +101,10 @@ namespace ERP.Web.API.Controllers.Finance
             // Checking role authorization
             if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Update }).Any())
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+
+            // Checking coa code from & to can't be same
+            if (data.ItemDetails.GroupBy(x => x.CoaCode).Any(g => g.Count() > 1))
+                return Ok(new SaveResult(false, "Akun asal dan akun tujuan tidak boleh sama."));
 
             // Validate process
             var (isValid, message) = Validate(data);
