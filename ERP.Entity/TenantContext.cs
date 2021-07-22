@@ -39,6 +39,7 @@ namespace ERP.Entity
         public DbSet<BeginningBalanceDebitMemo> BeginningBalanceDebitMemos { get; set; }
         public DbSet<VwBeginningBalanceDebitMemo> VwBeginningBalanceDebitMemos { get; set; }
         public DbSet<ClosingMonth> ClosingMonths { get; set; }
+        public DbSet<VwClosingMonth> VwClosingMonths { get; set; }
         public DbSet<Coa> Coas { get; set; }
         public DbSet<VwCoa> VwCoas { get; set; }
         public DbSet<CoaType> CoaTypes { get; set; }
@@ -343,6 +344,11 @@ namespace ERP.Entity
             modelBuilder.Entity<VwBeginningBalanceDebitMemo>()
                 .HasNoKey()
                 .ToView("vwBeginningBalanceDebitMemo", Schema.Accounting);
+
+            // Closing Month entities
+            modelBuilder.Entity<VwClosingMonth>()
+                .HasNoKey()
+                .ToView("vwClosingMonth", Schema.Accounting);
 
             // COA entities
             modelBuilder.Entity<Coa>(entity =>
