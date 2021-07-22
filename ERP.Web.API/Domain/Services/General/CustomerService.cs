@@ -122,8 +122,8 @@ namespace ERP.Web.API.Domain.Services.General
                     Db.Warehouses.Add(new Warehouse
                     {
                         Code = data.Code,
-                        Initial = data.Initial,
-                        Name = data.Name,
+                        Initial = String.IsNullOrWhiteSpace(Db.SystemParameters.FirstOrDefault(x => x.Code == "CNEE_PREFIX_WHS_INITIAL")?.Value) ? data.Initial : $"{Db.SystemParameters.FirstOrDefault(x => x.Code == "CNEE_PREFIX_WHS_INITIAL")?.Value} - {data.Initial}",
+                        Name = String.IsNullOrWhiteSpace(Db.SystemParameters.FirstOrDefault(x => x.Code == "CNEE_PREFIX_WHS_NAME")?.Value) ? data.Name : $"{Db.SystemParameters.FirstOrDefault(x => x.Code == "CNEE_PREFIX_WHS_NAME")?.Value} - {data.Name}",
                         IsActive = true,
                         CreatedBy = data.CreatedBy,
                         CreatedDate = data.CreatedDate,
@@ -243,8 +243,8 @@ namespace ERP.Web.API.Domain.Services.General
                 if (dataWH != null)
                 {
                     dataWH.IsActive = true;
-                    dataWH.Initial = data.Initial;
-                    dataWH.Name = data.Name;
+                    dataWH.Initial = String.IsNullOrWhiteSpace(Db.SystemParameters.FirstOrDefault(x => x.Code == "CNEE_PREFIX_WHS_INITIAL")?.Value) ? data.Initial : $"{Db.SystemParameters.FirstOrDefault(x => x.Code == "CNEE_PREFIX_WHS_INITIAL")?.Value} - {data.Initial}";
+                    dataWH.Name = String.IsNullOrWhiteSpace(Db.SystemParameters.FirstOrDefault(x => x.Code == "CNEE_PREFIX_WHS_NAME")?.Value) ? data.Name : $"{Db.SystemParameters.FirstOrDefault(x => x.Code == "CNEE_PREFIX_WHS_NAME")?.Value} - {data.Name}";
                     dataWH.UpdatedBy = data.UpdatedBy;
                     dataWH.UpdatedDate = data.UpdatedDate;
                     Db.Warehouses.Update(dataWH);
@@ -254,8 +254,8 @@ namespace ERP.Web.API.Domain.Services.General
                     Db.Warehouses.Add(new Warehouse
                     {
                         Code = data.Code,
-                        Initial = data.Initial,
-                        Name = data.Name,
+                        Initial = String.IsNullOrWhiteSpace(Db.SystemParameters.FirstOrDefault(x => x.Code == "CNEE_PREFIX_WHS_INITIAL")?.Value) ? data.Initial : $"{Db.SystemParameters.FirstOrDefault(x => x.Code == "CNEE_PREFIX_WHS_INITIAL")?.Value} - {data.Initial}",
+                        Name = String.IsNullOrWhiteSpace(Db.SystemParameters.FirstOrDefault(x => x.Code == "CNEE_PREFIX_WHS_NAME")?.Value) ? data.Name : $"{Db.SystemParameters.FirstOrDefault(x => x.Code == "CNEE_PREFIX_WHS_NAME")?.Value} - {data.Name}",
                         IsActive = true,
                         CreatedBy = data.CreatedBy,
                         CreatedDate = data.CreatedDate,
