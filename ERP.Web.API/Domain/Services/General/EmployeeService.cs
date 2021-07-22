@@ -8,7 +8,6 @@ using ERP.Entity;
 using ERP.Entity.General;
 using ERP.Entity.Sales;
 using ERP.Web.API.Domain.Interfaces.General;
-using ERP.Web.API.Domain.Models;
 using ERP.Web.API.Model.General;
 
 namespace ERP.Web.API.Domain.Services.General
@@ -74,7 +73,7 @@ namespace ERP.Web.API.Domain.Services.General
                 Db.SaveChanges();
 
                 // Insert schedule for penjual
-                if (data.ScheduleDetails.Any())
+                if (data.ScheduleDetails?.Any() ?? false)
                 {
                     foreach (var item in data.ScheduleDetails)
                     {
@@ -98,7 +97,7 @@ namespace ERP.Web.API.Domain.Services.General
                         listIdDetail.Add(itemSchedule.Id);
                     }
 
-                    if (data.CustomerListDetails.Any())
+                    if (data.CustomerListDetails?.Any() ?? false)
                     {
                         foreach (var itemDetail in data.CustomerListDetails)
                         {
@@ -173,7 +172,7 @@ namespace ERP.Web.API.Domain.Services.General
                 }
 
                 // Insert schedule for penjual
-                if (data.ScheduleDetails.Any())
+                if (data.ScheduleDetails?.Any() ?? false)
                 {
                     foreach (var item in data.ScheduleDetails)
                     {
@@ -197,7 +196,7 @@ namespace ERP.Web.API.Domain.Services.General
                         listIdDetail.Add(itemSchedule.Id);
                     }
 
-                    if (data.CustomerListDetails.Any())
+                    if (data.CustomerListDetails?.Any() ?? false)
                     {
                         foreach (var itemDetail in data.CustomerListDetails)
                         {

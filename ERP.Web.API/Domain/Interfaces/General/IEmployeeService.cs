@@ -2,7 +2,6 @@
 using ERP.Common;
 using ERP.Common.Models;
 using ERP.Entity.General;
-using ERP.Web.API.Domain.Models;
 using ERP.Web.API.Model.General;
 
 namespace ERP.Web.API.Domain.Interfaces.General

@@ -8,8 +8,11 @@ namespace ERP.Web.API.Domain.Interfaces.Auth
     public interface IAuthService
     {
         AuthResult Login(UserCatalog data);
+
         AuthResult Logout();
+
         IEnumerable<int> GetActions(int menuId, int roleId, Actions[] actions);
+
         IEnumerable<int> GetActions(int menuId, int roleId, List<int> actions);
     }
 }
