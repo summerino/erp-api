@@ -7,7 +7,6 @@ using ERP.Common.Models;
 using ERP.Entity;
 using ERP.Entity.SystemManagement;
 using ERP.Web.API.Domain.Interfaces.SystemManagement;
-using ERP.Web.API.Domain.Models;
 using ERP.Web.API.Model.SystemManagement;
 
 namespace ERP.Web.API.Domain.Services.SystemManagement
@@ -124,7 +123,7 @@ namespace ERP.Web.API.Domain.Services.SystemManagement
 
                 // Delete existing item detail 1
                 var delRoleMenus = Db.RoleMenus
-                        .Where(d => d.RoleId == id && !data.RoleMenus.Select(x => x.Id).Contains(d.Id))
+                        .Where(d => d.RoleId == id)
                         .ToList();
 
                 Db.RoleMenus.RemoveRange(delRoleMenus);
@@ -139,23 +138,14 @@ namespace ERP.Web.API.Domain.Services.SystemManagement
                 // Update detail data 1
                 foreach (var item in data.RoleMenus)
                 {
-                    if (item.Id < 0)
+                    Db.RoleMenus.Add(new RoleMenu
                     {
-                        Db.RoleMenus.Add(new RoleMenu
-                        {
-                            RoleId = data.Id,
-                            MenuId = item.MenuId,
-                            IsActive = item.IsActive,
-                            UpdatedBy = data.UpdatedBy,
-                            UpdatedDate = item.UpdatedDate
-                        });
-                    }
-                    else
-                    {
-                        Db.RoleMenus.Update(item);
-                        Db.Entry(item).Property(e => e.Id).IsModified = false;
-                        Db.Entry(item).Property(e => e.RoleId).IsModified = false;
-                    }
+                        RoleId = data.Id,
+                        MenuId = item.MenuId,
+                        IsActive = item.IsActive,
+                        UpdatedBy = data.UpdatedBy,
+                        UpdatedDate = item.UpdatedDate
+                    });
                 }
 
                 // Update detail data 2
