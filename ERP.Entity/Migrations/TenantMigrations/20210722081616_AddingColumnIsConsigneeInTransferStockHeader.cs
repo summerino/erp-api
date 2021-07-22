@@ -28,17 +28,17 @@ namespace ERP.Entity.Migrations.TenantMigrations
             // Update transfer stock type
             var sql = @"UPDATE Inventory.TransferStockHeader
 SET Type = 'OUT'
-WHERE Type = 1";
+WHERE Type = '1'";
             migrationBuilder.Sql(sql);
 
             sql = @"UPDATE Inventory.TransferStockHeader
 SET Type = 'IN'
-WHERE Type = 2";
+WHERE Type = '2'";
             migrationBuilder.Sql(sql);
 
             sql = @"UPDATE Inventory.TransferStockHeader
 SET Type = 'DT'
-WHERE Type = 3";
+WHERE Type = '3'";
             migrationBuilder.Sql(sql);
 
             //// Reorder column Inventory.TransferStockHeader
