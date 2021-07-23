@@ -46,6 +46,12 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     return result;
                 }
 
+                if(Db.ClosingMonths.Where(x => Convert.ToInt32(x.Period) < Convert.ToInt32($"{startDate.Year}{(startDate.Month > 9 ? startDate.Month : "0" + startDate.Month)}") && x.IsClose == false).Any())
+                {
+                    result.Message = "Tidak bisa melakukan tutup bulan karena bulan sebelumnya ada yang belum ditutup.";
+                    return result;
+                }
+
                 // Insert data
                 for (var dataMonth = startDate; dataMonth.Date <= endDate.Date; dataMonth = dataMonth.AddMonths(1))
                 {
@@ -84,6 +90,12 @@ namespace ERP.Web.API.Domain.Services.Accounting
         public override SaveResult Update(ClosingMonth data)
         {
             var result = new SaveResult(false);
+
+            if (Db.ClosingMonths.Where(x => Convert.ToInt32(x.Period) < Convert.ToInt32(data.Period) && x.IsClose == false).Any())
+            {
+                result.Message = "Tidak bisa melakukan tutup bulan karena bulan sebelumnya ada yang belum ditutup.";
+                return result;
+            }
 
             // Update data
             Db.ClosingMonths.Update(data);
