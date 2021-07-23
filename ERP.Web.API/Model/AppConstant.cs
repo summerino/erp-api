@@ -72,7 +72,8 @@
         BeginningBalanceDebitMemo = 89,
         BeginningBalanceCreditMemo = 90,
         ClosingMonth = 88,
-        VisitOrder = 55
+        VisitOrder = 55,
+        Consignee = 91
     }
     public static class ApprovalType
     {

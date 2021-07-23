@@ -183,6 +183,7 @@ namespace ERP.Web.API
             services.AddScoped<IUoMConversionService, UoMConversionService>();
             services.AddScoped<IWarehouseQuantityService, WarehouseQuantityService>();
             services.AddScoped<IWarehouseService, WarehouseService>();
+            services.AddScoped<IConsigneeService, ConsigneeService>();
 
             // Purchase services
             services.AddScoped<IDebitMemoService, DebitMemoService>();
