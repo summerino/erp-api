@@ -34,12 +34,10 @@ AS
     LEFT JOIN SystemManagement.[User] u_a
         ON u_a.Id = ts_h.ApprovedBy";
             migrationBuilder.Sql(sql);
-
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-
         }
     }
 }
