@@ -18,6 +18,7 @@ namespace ERP.Web.API.Domain.Services.Finance
             : base(db)
         {
         }
+
         public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string search)
         {
             var data = Db.VwGeneralCashBankHeaders.AsQueryable();
@@ -188,7 +189,7 @@ namespace ERP.Web.API.Domain.Services.Finance
 
             result.Success = true;
             result.Data = data.Code;
-            result.Message = "Data bank tunai berhasil disimpan.";
+            result.Message = "Data kas bank berhasil disimpan.";
             return result;
         }
         public SaveResult Update(CashBankRequest data)
@@ -206,7 +207,7 @@ namespace ERP.Web.API.Domain.Services.Finance
                 // Checking mark header data
                 if (Db.GeneralCashBankHeaders.Any(x => x.Code == data.Code && x.Mark == "V"))
                 {
-                    result.Message = "Data bank tunai tidak bisa diubah karena sudah ditandai sebagai void.";
+                    result.Message = "Data kas bank tidak bisa diubah karena sudah ditandai sebagai void.";
                     return result;
                 }
 
@@ -280,7 +281,7 @@ namespace ERP.Web.API.Domain.Services.Finance
 
             result.Success = true;
             result.Data = data.Code;
-            result.Message = "Data bank tunai berhasil diperbarui.";
+            result.Message = "Data kas bank berhasil diperbarui.";
             return result;
         }
         public SaveResult Delete(string code, int userId)
@@ -293,7 +294,7 @@ namespace ERP.Web.API.Domain.Services.Finance
                 // Checking mark header data
                 if (data.Mark == "V")
                 {
-                    result.Message = "Data bank tunai tidak bisa ditandai sebagai void karena sudah ditandai sebagai void.";
+                    result.Message = "Data kas bank tidak bisa ditandai sebagai void karena sudah ditandai sebagai void.";
                     return result;
                 }
 
@@ -308,7 +309,7 @@ namespace ERP.Web.API.Domain.Services.Finance
             }
 
             result.Success = true;
-            result.Message = "Data bank tunai berhasil ditandai sebagai void.";
+            result.Message = "Data kas bank berhasil ditandai sebagai void.";
             return result;
         }
         private (string, bool, List<string>) Validate(CashBankRequest data) 

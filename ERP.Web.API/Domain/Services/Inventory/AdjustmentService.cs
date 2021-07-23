@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
 using ERP.Common;
 using ERP.Common.Extensions;
 using ERP.Common.Models;
 using ERP.Entity;
 using ERP.Entity.Inventory;
-using Microsoft.EntityFrameworkCore;
-using ERP.Entity.Inventory;
 using ERP.Web.API.Domain.Interfaces.Inventory;
-using ERP.Web.API.Domain.Models;
 using ERP.Web.API.Model.Inventory;
 
 namespace ERP.Web.API.Domain.Services.Inventory
