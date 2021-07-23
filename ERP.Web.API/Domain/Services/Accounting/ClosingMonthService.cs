@@ -46,9 +46,31 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     return result;
                 }
 
+                // Check if previous month and dataStartDate is valid
+                var lastPeriod = Db.ClosingMonths.Max(x => x.Period);
+                var startDataDate = Convert.ToDateTime(Db.SystemParameters.FirstOrDefault(x => x.Code == "DATA_START_DATE").Value).ToString("yyyyMM");
+                var numStartDate = Convert.ToInt32($"{startDate.Year}{(startDate.Month > 9 ? startDate.Month : "0" + startDate.Month)}");
+                if (!string.IsNullOrEmpty(lastPeriod))
+                {
+                    if (Convert.ToInt32(lastPeriod) != numStartDate - 1)
+                    {
+                        result.Message = "Tidak bisa melakukan tutup bulan karena data periode sebelumnya tidak ada.";
+                        return result;
+                    }
+                } 
+                else if (!string.IsNullOrEmpty(startDataDate))
+                {
+                    if (Convert.ToInt32(startDataDate) != numStartDate - 1)
+                    {
+                        result.Message = "Tidak bisa melakukan tutup bulan karena data periode sebelumnya tidak ada.";
+                        return result;
+                    }
+                }
+
+                // Check if previous month still open
                 if(Db.ClosingMonths.Where(x => Convert.ToInt32(x.Period) < Convert.ToInt32($"{startDate.Year}{(startDate.Month > 9 ? startDate.Month : "0" + startDate.Month)}") && x.IsClose == false).Any())
                 {
-                    result.Message = "Tidak bisa melakukan tutup bulan karena bulan sebelumnya ada yang belum ditutup.";
+                    result.Message = "Tidak bisa melakukan tutup bulan karena terdapat periode sebelumnya yang belum ditutup.";
                     return result;
                 }
 
@@ -93,7 +115,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
 
             if (Db.ClosingMonths.Where(x => Convert.ToInt32(x.Period) < Convert.ToInt32(data.Period) && x.IsClose == false).Any())
             {
-                result.Message = "Tidak bisa melakukan tutup bulan karena bulan sebelumnya ada yang belum ditutup.";
+                result.Message = "Tidak bisa melakukan tutup bulan karena terdapat periode sebelumnya yang belum ditutup.";
                 return result;
             }
 
