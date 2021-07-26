@@ -85,6 +85,8 @@ namespace ERP.Entity.Finance
 
         public string ApprovedInitial { get; set; }
         public string Status { get; set; }
+
+        public string TypeName { get; set; }
     }
 
     [Table("GeneralCashBankDetail", Schema = Schema.Finance)]
