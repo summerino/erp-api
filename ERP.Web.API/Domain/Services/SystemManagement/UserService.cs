@@ -1,18 +1,15 @@
-﻿using ERP.Entity.SystemManagement;
-using ERP.Web.API.Domain.Interfaces.SystemManagement;
-using ERP.Web.API.Domain.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Identity;
 using ERP.Common;
 using ERP.Common.Extensions;
 using ERP.Common.Models;
 using ERP.Entity;
+using ERP.Web.API.Domain.Interfaces.SystemManagement;
 using ERP.Web.API.Model.SystemManagement;
-using UserTenant = ERP.Entity.SystemManagement.User;
 using UserCatalog = ERP.Entity.Catalog.User;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Identity;
+using UserTenant = ERP.Entity.SystemManagement.User;
 
 namespace ERP.Web.API.Domain.Services.SystemManagement
 {
@@ -180,7 +177,7 @@ namespace ERP.Web.API.Domain.Services.SystemManagement
 
             result.Success = true;
             result.Data = data.CatalogUserId;
-            result.Message = "Data pengguna berhasil diubah.";
+            result.Message = "Data pengguna berhasil diperbarui.";
             return result;
         }
 
@@ -235,7 +232,7 @@ namespace ERP.Web.API.Domain.Services.SystemManagement
 
                 if (data.NewPassword != data.ConfirmPassword)
                 {
-                    result.Message = "Konfirmasi kata sandi tidak sama.";
+                    result.Message = "Konfirmasi kata sandi baru tidak sama dengan kata sandi baru.";
                     return result;
                 }
 
@@ -248,7 +245,7 @@ namespace ERP.Web.API.Domain.Services.SystemManagement
 
                     if (isCorrect != PasswordVerificationResult.Success)
                     {
-                        result.Message = "Kata sandi tidak sesuai.";
+                        result.Message = "Kata sandi lama tidak sesuai.";
                         return result;
                     }
 
@@ -267,7 +264,7 @@ namespace ERP.Web.API.Domain.Services.SystemManagement
 
             result.Success = true;
             result.Data = data.CatalogUserId;
-            result.Message = "Kata sandi berhasil diubah.";
+            result.Message = "Kata sandi berhasil diperbarui.";
             return result;
         }
     }

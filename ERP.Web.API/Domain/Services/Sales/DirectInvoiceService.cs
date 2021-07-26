@@ -1,15 +1,13 @@
 ﻿using System;
-using System.Linq;
-using Microsoft.EntityFrameworkCore;
-using ERP.Entity.Sales;
-using ERP.Web.API.Domain.Interfaces.Sales;
-using ERP.Web.API.Domain.Models;
-using ERP.Web.API.Domain.Models.Sales;
-using ERP.Web.API.Model.Sales;
 using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Dynamic.Core;
+using Microsoft.EntityFrameworkCore;
 using ERP.Common;
 using ERP.Entity;
-using System.Linq.Dynamic.Core;
+using ERP.Entity.Sales;
+using ERP.Web.API.Domain.Interfaces.Sales;
+using ERP.Web.API.Model.Sales;
 
 namespace ERP.Web.API.Domain.Services.Sales
 {
@@ -725,7 +723,7 @@ namespace ERP.Web.API.Domain.Services.Sales
             }
             result.Success = true;
             result.Data = data.Code;
-            result.Message = "Data penjualan langsung berhasil diubah.";
+            result.Message = "Data penjualan langsung berhasil diperbarui.";
             return result;
         }
 
