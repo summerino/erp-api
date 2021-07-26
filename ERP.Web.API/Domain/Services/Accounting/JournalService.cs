@@ -61,14 +61,29 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     _db.RemoveRange(removedBBAR);
                 }
 
+                var removedBBDM = _db.Journals.Where(x => x.SrcTrans == "BB_DM").ToList();
+                if (removedBBDM != null)
+                {
+                    _db.RemoveRange(removedBBDM);
+                }
+
                 var journalAP = ProcessPurchaseJournal(data.Date, systemParam, items, taxes);
-                _db.AddRange(journalAP);
+                if (journalAP != null)
+                {
+                    _db.AddRange(journalAP);
+                }
 
                 var journalAR = ProcessSaleJournal(data.Date, systemParam, items, taxes);
-                _db.AddRange(journalAR);
+                if (journalAR != null)
+                {
+                    _db.AddRange(journalAR);
+                }
 
                 var journalCB = ProcessCashBankJournal(data.Date, systemParam);
-                _db.AddRange(journalCB);
+                if (journalCB != null)
+                {
+                    _db.AddRange(journalCB);
+                }
 
                 var journalBBAP = ProcessBBAPJournal(systemParam);
                 if (journalBBAP != null)
@@ -80,6 +95,18 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 if (journalBBAR != null)
                 {
                     _db.AddRange(journalBBAR);
+                }
+
+                var journalBBDM = ProcessBBDebitMemoJournal(systemParam);
+                if (journalBBDM != null)
+                {
+                    _db.AddRange(journalBBDM);
+                }
+
+                var journalBBCM = ProcessBBCreditMemoJournal(systemParam);
+                if (journalBBCM != null)
+                {
+                    _db.AddRange(journalBBCM);
                 }
 
                 _db.SaveChanges();
@@ -503,7 +530,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
         private IEnumerable<Journal> ProcessBBAPJournal(List<SystemParameter> systemParam)
         {
             List<Journal> journals = new();
-            var startDate = Convert.ToDateTime(systemParam.FirstOrDefault(x => x.Code == "DATA_START_DATE").Value);
+            var startDate = Convert.ToDateTime(systemParam.FirstOrDefault(x => x.Code == "DATA_START_DATE").Value).AddDays(-1);
             var latestData = _db.VwBeginningBalanceAPs.OrderByDescending(x => x.Date).FirstOrDefault();
             if (latestData.Date.Month == startDate.Month && latestData.Date.Year == startDate.Year)
             {
@@ -552,7 +579,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
         private IEnumerable<Journal> ProcessBBARJournal(List<SystemParameter> systemParam)
         {
             List<Journal> journals = new();
-            var startDate = Convert.ToDateTime(systemParam.FirstOrDefault(x => x.Code == "DATA_START_DATE").Value);
+            var startDate = Convert.ToDateTime(systemParam.FirstOrDefault(x => x.Code == "DATA_START_DATE").Value).AddDays(-1);
             var latestData = _db.VwBeginningBalanceARs.OrderByDescending(x => x.Date).FirstOrDefault();
             if (latestData.Date.Month == startDate.Month && latestData.Date.Year == startDate.Year)
             {
@@ -593,6 +620,104 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     Type = "C",
                     Amount = journals.Sum(x => x.Amount),
                     SrcTrans = "BB_AR"
+                });
+            }
+            return journals;
+        }
+
+        private IEnumerable<Journal> ProcessBBDebitMemoJournal(List<SystemParameter> systemParam)
+        {
+            List<Journal> journals = new();
+            var startDate = Convert.ToDateTime(systemParam.FirstOrDefault(x => x.Code == "DATA_START_DATE").Value).AddDays(-1);
+            var latestData = _db.VwBeginningBalanceDebitMemos.Where(t => t.Type == 1).OrderByDescending(x => x.Date).FirstOrDefault();
+            if (latestData.Date.Month == startDate.Month && latestData.Date.Year == startDate.Year)
+            {
+                var bbapData = _db.VwBeginningBalanceDebitMemos.ToList();
+                short i = 0;
+                foreach (var item in bbapData)
+                {
+                    journals.Add(new Journal
+                    {
+                        Code = "BB-DM-" + startDate.ToString("yyMMdd"),
+                        LineNo = ++i,
+                        Date = item.Date,
+                        CoaCode = systemParam.FirstOrDefault(x => x.Code == "AP_COA")?.Value ?? "",
+                        TypeCode = "BB_DM",
+                        Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_AP")?.Value ?? ""} {item.SupName}").Trim(),
+                        RefCode1 = item.Code,
+                        Group = 2,
+                        CurrCode = "IDR",
+                        Period = item.Date.ToString("yyyyMMdd"),
+                        Type = "C",
+                        Amount = item.Amount,
+                        SrcTrans = "BB_DM"
+                    });
+                }
+
+                journals.Add(new Journal
+                {
+                    Code = "BB-DM-" + startDate.ToString("yyMMdd"),
+                    LineNo = 1,
+                    Date = startDate,
+                    CoaCode = systemParam.FirstOrDefault(x => x.Code == "BB_COA")?.Value ?? "",
+                    TypeCode = "BB_DM",
+                    Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_BB_AP")?.Value ?? ""}").Trim(),
+                    RefCode1 = "BB-DM-" + startDate.ToString("yyMMdd"),
+                    Group = 1,
+                    CurrCode = "IDR",
+                    Period = startDate.ToString("yyyyMMdd"),
+                    Type = "D",
+                    Amount = journals.Sum(x => x.Amount),
+                    SrcTrans = "BB_DM"
+                });
+            }
+            return journals;
+        }
+
+        private IEnumerable<Journal> ProcessBBCreditMemoJournal(List<SystemParameter> systemParam)
+        {
+            List<Journal> journals = new();
+            var startDate = Convert.ToDateTime(systemParam.FirstOrDefault(x => x.Code == "DATA_START_DATE").Value).AddDays(-1);
+            var latestData = _db.VwBeginningBalanceCreditMemos.Where(t => t.Type == 1).OrderByDescending(x => x.Date).FirstOrDefault();
+            if (latestData.Date.Month == startDate.Month && latestData.Date.Year == startDate.Year)
+            {
+                var bbapData = _db.VwBeginningBalanceCreditMemos.ToList();
+                short i = 0;
+                foreach (var item in bbapData)
+                {
+                    journals.Add(new Journal
+                    {
+                        Code = "BB-CM-" + startDate.ToString("yyMMdd"),
+                        LineNo = ++i,
+                        Date = item.Date,
+                        CoaCode = systemParam.FirstOrDefault(x => x.Code == "AR_COA")?.Value ?? "",
+                        TypeCode = "BB_CM",
+                        Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_AR")?.Value ?? ""} {item.CustName}").Trim(),
+                        RefCode1 = item.Code,
+                        Group = 2,
+                        CurrCode = "IDR",
+                        Period = item.Date.ToString("yyyyMMdd"),
+                        Type = "D",
+                        Amount = item.Amount,
+                        SrcTrans = "BB_CM"
+                    });
+                }
+
+                journals.Add(new Journal
+                {
+                    Code = "BB-CM-" + startDate.ToString("yyMMdd"),
+                    LineNo = 1,
+                    Date = startDate,
+                    CoaCode = systemParam.FirstOrDefault(x => x.Code == "BB_COA")?.Value ?? "",
+                    TypeCode = "BB_CM",
+                    Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_BB_AR")?.Value ?? ""}").Trim(),
+                    RefCode1 = "BB-CM-" + startDate.ToString("yyMMdd"),
+                    Group = 1,
+                    CurrCode = "IDR",
+                    Period = startDate.ToString("yyyyMMdd"),
+                    Type = "C",
+                    Amount = journals.Sum(x => x.Amount),
+                    SrcTrans = "BB_CM"
                 });
             }
             return journals;
