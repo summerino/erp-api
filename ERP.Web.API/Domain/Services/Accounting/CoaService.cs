@@ -89,6 +89,13 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 return result;
             }
 
+            // Checking if coa type is cash bank
+            if (data.TypeId == 2)
+            {
+                result.Message = "Data akun dengan tipe kas & bank tidak bisa diperbarui.";
+                return result;
+            }
+
             // Update data
             if (data.ParentId != null)
             {
@@ -127,6 +134,14 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     result.Message = "Tidak bisa menghapus data akun karena telah digunakan pada data promo.";
                     return result;
                 }
+
+                // Checking if coa type is cash bank
+                if (data.TypeId == 2)
+                {
+                    result.Message = "Data akun dengan tipe kas & bank tidak bisa dihapus.";
+                    return result;
+                }
+
                 // Delete data
                 Db.Coas.Remove(data);
 
