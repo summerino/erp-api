@@ -81,6 +81,7 @@ namespace ERP.Web.API.Domain.Services.Sales
 
             return data.ToDynamicList();
         }
+
         public SaveResult Insert(SalesInvoiceRequest data)
         {
             var result = new SaveResult(false);
@@ -378,9 +379,9 @@ namespace ERP.Web.API.Domain.Services.Sales
             using var transaction = Db.Database.BeginTransaction();
             try
             {
-                if (Db.SalesInvoiceHeaders.Any(x => x.Code == data.Code && x.Mark == "V"))
+                if (Db.SalesInvoiceHeaders.Any(x => x.Code == data.Code && x.Mark != "A"))
                 {
-                    result.Message = "Data faktur penjualan tidak bisa diubah karena sudah ditandai sebagai void.";
+                    result.Message = "Data penjualan langsung tidak bisa diubah karena status data bukan aktif.";
                     return result;
                 }
 
@@ -733,7 +734,7 @@ namespace ERP.Web.API.Domain.Services.Sales
 
             if (IsAlreadyInTransaction(code)) 
             {
-                result.Message = "Data faktur penjualan tidak bisa ditandai sebagai void karena sudah ada ditransaksi.";
+                result.Message = "Data penjualan langsung tidak bisa ditandai sebagai void karena sudah ada di transaksi kas bank.";
                 return result;
             }
 
@@ -743,7 +744,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                 // Checking mark header data
                 if (data.Mark == "V")
                 {
-                    result.Message = "Data faktur penjualan tidak bisa ditandai sebagai void karena sudah ditandai sebagai void.";
+                    result.Message = "Data penjualan langsung tidak bisa ditandai sebagai void karena sudah ditandai sebagai void.";
                     return result;
                 }
 

@@ -1,16 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Dynamic.Core;
+using Microsoft.EntityFrameworkCore;
 using ERP.Common;
 using ERP.Common.Extensions;
 using ERP.Common.Models;
 using ERP.Entity;
-using Microsoft.EntityFrameworkCore;
 using ERP.Entity.Sales;
 using ERP.Web.API.Domain.Interfaces.Sales;
-using ERP.Web.API.Domain.Models;
 using ERP.Web.API.Model.Sales;
-using System.Linq.Dynamic.Core;
 
 namespace ERP.Web.API.Domain.Services.Sales
 {
@@ -42,6 +41,7 @@ namespace ERP.Web.API.Domain.Services.Sales
         {
             return Db.SalesInvoiceDetails.Where(x => x.Code == code).OrderBy(x => x.LineNo);
         }
+
         public List<dynamic> GetRelatedTransactions(string code)
         {
 
@@ -138,9 +138,9 @@ namespace ERP.Web.API.Domain.Services.Sales
             try
             {
                 // Checking mark header data
-                if (Db.SalesInvoiceHeaders.Any(x => x.Code == data.Code && x.Mark == "V"))
+                if (Db.SalesInvoiceHeaders.Any(x => x.Code == data.Code && x.Mark != "A"))
                 {
-                    result.Message = "Data faktur penjualan tidak bisa diubah karena sudah ditandai sebagai void.";
+                    result.Message = "Data faktur penjualan tidak bisa diubah karena status data bukan aktif.";
                     return result;
                 }
 
@@ -263,7 +263,7 @@ namespace ERP.Web.API.Domain.Services.Sales
 
             if (IsAlreadyInTransaction(code))
             {
-                result.Message = "Data faktur penjualan tidak bisa ditandai sebagai void karena sudah ada ditransaksi";
+                result.Message = "Data faktur penjualan tidak bisa ditandai sebagai void karena sudah ada di transaksi kas bank.";
                 return result;
             }
 
@@ -324,6 +324,7 @@ namespace ERP.Web.API.Domain.Services.Sales
         {
             return Db.SalesOrderHeaders.Any(x => x.Code == soCode && !new[] { "PS", "CMP" }.Contains(x.Mark));
         }
+
         private bool IsAlreadyInTransaction(string code)
         {
             return (from h in Db.GeneralCashBankHeaders
@@ -331,6 +332,5 @@ namespace ERP.Web.API.Domain.Services.Sales
                     where h.Mark == "A" && d.TransCode == code
                     select h.Code).Any();
         }
-
     }
 }

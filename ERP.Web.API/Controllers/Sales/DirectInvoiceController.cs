@@ -1,15 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
-using ERP.Common;
 using Microsoft.AspNetCore.Mvc;
+using ERP.Common;
 using ERP.Entity;
+using ERP.Web.API.Domain.Interfaces.Accounting;
 using ERP.Web.API.Domain.Interfaces.Auth;
 using ERP.Web.API.Domain.Interfaces.Sales;
 using ERP.Web.API.Domain.Interfaces.SystemManagement;
 using ERP.Web.API.Model;
 using ERP.Web.API.Model.Sales;
-using ERP.Web.API.Domain.Interfaces.Accounting;
-using System.Collections.Generic;
 
 namespace ERP.Web.API.Controllers.Sales
 {
@@ -18,20 +18,21 @@ namespace ERP.Web.API.Controllers.Sales
     public class DirectInvoiceController : ControllerBase
     {
         private readonly IDirectInvoiceService _inv;
+        private readonly IClosingMonthService _closingMonth;
         private readonly ISystemParameterService _sysPar;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
-        private readonly IClosingMonthService _closingMonth;
+
         private const int _menuId = (int)Menu.DirectInvoice;
 
-        public DirectInvoiceController(IDirectInvoiceService inv, ISystemParameterService sysPar,
-            IClaimService claim, IAuthService auth, IClosingMonthService closingMonthService)
+        public DirectInvoiceController(IDirectInvoiceService inv, IClosingMonthService closingMonth,
+            ISystemParameterService sysPar, IClaimService claim, IAuthService auth)
         {
             _inv = inv;
+            _closingMonth = closingMonth;
             _sysPar = sysPar;
             _claim = claim;
             _auth = auth;
-            _closingMonth = closingMonthService;
         }
         
         [HttpGet("{code}")]
