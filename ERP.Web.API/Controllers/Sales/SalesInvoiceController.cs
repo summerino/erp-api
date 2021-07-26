@@ -146,7 +146,7 @@ namespace ERP.Web.API.Controllers.Sales
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
             // Validate process
-            var (isValid, message) = Validate(data);
+            var (isValid, message) = Validate(data, true);
             if (!isValid)
                 return Ok(new SaveResult(false, message));
 
@@ -155,7 +155,7 @@ namespace ERP.Web.API.Controllers.Sales
             return Ok(result);
         }
 
-        private (bool, string) Validate(SalesInvoiceRequest data)
+        private (bool, string) Validate(SalesInvoiceRequest data, bool onDelete = false)
         {
             var periods = new List<string> { data.Date.ToString("yyyyMM"), data.DueDate.ToString("yyyyMM") };
             if (data.OriginalDate.HasValue)
@@ -174,7 +174,7 @@ namespace ERP.Web.API.Controllers.Sales
             if (!_sysPar.IsStartDateValid(data.DueDate))
                 return (false, "Tanggal Jatuh Tempo tidak boleh lebih kecil dari tanggal mulai data.");
 
-            if (data.Details != null)
+            if (!onDelete)
             {
                 if (!data.Details.Any())
                     return (false, "Detail tidak boleh kosong.");

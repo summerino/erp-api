@@ -176,7 +176,7 @@ namespace ERP.Web.API.Controllers.Purchase
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
             // Validate process
-            var (isValid, message) = Validate(data);
+            var (isValid, message) = Validate(data, true);
             if (!isValid)
                 return Ok(new SaveResult(false, message));
 
@@ -185,7 +185,7 @@ namespace ERP.Web.API.Controllers.Purchase
             return Ok(result);
         }
 
-        private (bool, string) Validate(PurchaseOrderRequest data)
+        private (bool, string) Validate(PurchaseOrderRequest data, bool onDelete = false)
         {
             var periods = new List<string> { data.Date.ToString("yyyyMM") };
             if (data.OriginalDate.HasValue)
@@ -198,7 +198,7 @@ namespace ERP.Web.API.Controllers.Purchase
             if (!_sysPar.IsStartDateValid(data.Date))
                 return (false, "Tanggal tidak boleh lebih kecil dari tanggal mulai data.");
 
-            if (data.ItemDetails != null)
+            if (!onDelete)
             {
                 if (!data.ItemDetails.Any())
                     return (false, "Detail tidak boleh kosong.");
