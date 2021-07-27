@@ -6,14 +6,13 @@ using Microsoft.AspNetCore.Mvc;
 using ERP.Common;
 using ERP.Common.Models;
 using ERP.Entity;
-using ERP.Entity.AssetManagement;
+using ERP.Web.API.Domain.Interfaces.Accounting;
 using ERP.Web.API.Domain.Interfaces.AssetManagement;
 using ERP.Web.API.Domain.Interfaces.Auth;
 using ERP.Web.API.Domain.Interfaces.SystemManagement;
 using ERP.Web.API.Model;
-using Newtonsoft.Json;
-using ERP.Web.API.Domain.Interfaces.Accounting;
 using ERP.Web.API.Model.AssetManagement;
+using Newtonsoft.Json;
 
 namespace ERP.Web.API.Controllers.AssetManagement
 {
@@ -22,20 +21,21 @@ namespace ERP.Web.API.Controllers.AssetManagement
     public class FixedAssetController : ControllerBase
     {
         private readonly IFixedAssetService _fixedAsset;
+        private readonly IClosingMonthService _closingMonth;
         private readonly ISystemParameterService _sysPar;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
-        private readonly IClosingMonthService _closingMonth;
+
         private const int _menuId = (int)Menu.FixedAsset;
 
-        public FixedAssetController(IFixedAssetService fixedAsset, ISystemParameterService sysPar, 
-            IClaimService claim, IAuthService auth, IClosingMonthService closingMonthService)
+        public FixedAssetController(IFixedAssetService fixedAsset, IClosingMonthService closingMonth,
+            ISystemParameterService sysPar, IClaimService claim, IAuthService auth)
         {
             _fixedAsset = fixedAsset;
+            _closingMonth = closingMonth;
             _sysPar = sysPar;
             _claim = claim;
             _auth = auth;
-            _closingMonth = closingMonthService;
         }
 
         [HttpGet]

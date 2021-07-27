@@ -2,7 +2,6 @@
 using ERP.Common;
 using ERP.Common.Models;
 using ERP.Entity.AssetManagement;
-using ERP.Web.API.Domain.Models;
 
 namespace ERP.Web.API.Domain.Interfaces.AssetManagement
 {
