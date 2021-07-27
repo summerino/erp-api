@@ -2,14 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
+using Microsoft.EntityFrameworkCore;
 using ERP.Common;
 using ERP.Common.Extensions;
 using ERP.Common.Models;
 using ERP.Entity;
-using Microsoft.EntityFrameworkCore;
 using ERP.Entity.Sales;
 using ERP.Web.API.Domain.Interfaces.Sales;
-using ERP.Web.API.Domain.Models;
 using ERP.Web.API.Model.Sales;
 
 namespace ERP.Web.API.Domain.Services.Sales
@@ -31,8 +30,8 @@ namespace ERP.Web.API.Domain.Services.Sales
                 data = DateTime.TryParse(search, out var searchDate)
                     ? data.Where(x => x.Date == searchDate)
                     : data.Where(x =>
-                        x.Code.Contains(search) || x.SalesInitial.Contains(search) || x.CustName.Contains(search) ||
-                        x.CurrCode == search);
+                        x.Code.Contains(search) || x.SalesInitial.Contains(search) || x.CustCode.StartsWith(search) ||
+                        x.CustName.Contains(search));
             }
 
             return data.ToDataSourceResult(skip, take, filter, sort);

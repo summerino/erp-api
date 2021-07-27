@@ -30,8 +30,8 @@ namespace ERP.Web.API.Domain.Services.Sales
                 data = DateTime.TryParse(search, out var searchDate)
                     ? data.Where(x => x.Date == searchDate)
                     : data.Where(x =>
-                        x.Code.Contains(search) || x.CustName.Contains(search) || x.SoCode == search ||
-                        x.IssuedInitial.Contains(search));
+                        x.Code.Contains(search) || x.CustCode.StartsWith(search) || x.CustName.Contains(search) ||
+                        x.SoCode == search || x.IssuedInitial.Contains(search));
             }
 
             return data.ToDataSourceResult(skip, take, filter, sort);
