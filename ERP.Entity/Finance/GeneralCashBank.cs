@@ -1,8 +1,8 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using ERP.Entity.Core;
 using Microsoft.EntityFrameworkCore;
+using ERP.Entity.Core;
 
 namespace ERP.Entity.Finance
 {
@@ -166,9 +166,10 @@ namespace ERP.Entity.Finance
     }
 
     [Table("CashBankType", Schema = Schema.Finance)]
+    [Index(nameof(SysParCode))]
     public class CashBankType
     {
-        [Key]
+        [Key]   
         [StringLength(5)]
         public string Code { get; set; }
 
@@ -176,9 +177,30 @@ namespace ERP.Entity.Finance
         [StringLength(50)]
         public string Name { get; set; }
 
+        [StringLength(50)]
+        public string SysParCode { get; set; }
+
         public short Seq { get; set; }
 
         public bool IsActive { get; set; }
+    }
+
+    public class VwCashBankType
+    {
+        public string Code { get; set; }
+
+        public string Name { get; set; }
+
+        public string SysParCode { get; set; }
+
+        public short Seq { get; set; }
+
+        public bool IsActive { get; set; }
+
+
+        public string CoaCode { get; set; }
+
+        public string CoaName { get; set; }
     }
 
     public class VwAP 

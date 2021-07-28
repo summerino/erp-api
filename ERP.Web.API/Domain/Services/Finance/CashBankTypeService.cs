@@ -1,7 +1,7 @@
-﻿using ERP.Web.API.Domain.Interfaces.Finance;
-using System.Linq;
+﻿using System.Linq;
 using ERP.Entity;
 using ERP.Entity.Finance;
+using ERP.Web.API.Domain.Interfaces.Finance;
 
 namespace ERP.Web.API.Domain.Services.Finance
 {
@@ -13,9 +13,10 @@ namespace ERP.Web.API.Domain.Services.Finance
         {
             _tenantCtx = tenantCtx;
         }
-        public IQueryable<CashBankType> GetList()
+
+        public IQueryable<VwCashBankType> GetLists()
         {
-            return _tenantCtx.CashBankTypes.Where(x=>x.IsActive).OrderBy(x => x.Seq);
+            return _tenantCtx.VwCashBankTypes.Where(x => x.IsActive).OrderBy(x => x.Seq);
         }
     }
 }

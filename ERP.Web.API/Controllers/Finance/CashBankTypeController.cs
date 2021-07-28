@@ -1,38 +1,36 @@
 ﻿using System.Linq;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ERP.Entity;
-using ERP.Web.API.Domain.Interfaces.Auth;
 using ERP.Web.API.Domain.Interfaces.Finance;
 using ERP.Web.API.Model;
 
 namespace ERP.Web.API.Controllers.Finance
 {
-    [Route("general-cash-bank-type")]
+    [Route("cash-bank-type")]
     [ApiController]
-    [AllowAnonymous]
     public class CashBankTypeController : ControllerBase
     {
-        private readonly ICashBankTypeService _cashBankType;
-        private readonly IClaimService _claim;
-        private readonly IAuthService _auth;
+        private readonly ICashBankTypeService _type;
 
-        public CashBankTypeController(ICashBankTypeService cashBank, IClaimService claim, IAuthService auth)
+        public CashBankTypeController(ICashBankTypeService type)
         {
-            _cashBankType = cashBank;
-            _claim = claim;
-            _auth = auth;
+            _type = type;
         }
+
         [HttpGet("lists")]
         public IActionResult GetLists()
         {
-            var data = _cashBankType.GetList().ToList<dynamic>();
+            var data = _type.GetLists()
+                            .Select(x => new
+                            {
+                                x.Code, x.Name,
+                                x.CoaCode, x.CoaName
+                            }).ToList<dynamic>();
+
             return Ok(new ApiResponse
             {
                 RowCount = data.Count,
                 TableData = data
             });
         }
-
     }
 }
