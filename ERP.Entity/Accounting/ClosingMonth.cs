@@ -23,5 +23,7 @@ namespace ERP.Entity.Accounting
         public string CreatedInitial { get; set; }
 
         public string UpdatedInitial { get; set; }
+
+        public string PeriodName { get; set; }
     }
 }
