@@ -2,7 +2,6 @@
 using ERP.Common;
 using ERP.Common.Models;
 using ERP.Entity.Sales;
-using ERP.Web.API.Domain.Models;
 using ERP.Web.API.Model.Sales;
 
 namespace ERP.Web.API.Domain.Interfaces.Sales
@@ -13,7 +12,9 @@ namespace ERP.Web.API.Domain.Interfaces.Sales
             string search);
 
         IEnumerable<SalesInvoiceDetail> GetDetailData(string code);
+
         List<dynamic> GetRelatedTransactions(string code);
+
         SaveResult Insert(SalesInvoiceRequest data);
 
         SaveResult Update(SalesInvoiceRequest data);

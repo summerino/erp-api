@@ -2,7 +2,6 @@
 using ERP.Common;
 using ERP.Common.Models;
 using ERP.Entity.Purchase;
-using ERP.Web.API.Domain.Models;
 using ERP.Web.API.Model.Purchase;
 
 namespace ERP.Web.API.Domain.Interfaces.Purchase

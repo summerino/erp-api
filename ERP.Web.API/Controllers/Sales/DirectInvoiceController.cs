@@ -1,15 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
-using ERP.Common;
 using Microsoft.AspNetCore.Mvc;
+using ERP.Common;
 using ERP.Entity;
+using ERP.Web.API.Domain.Interfaces.Accounting;
 using ERP.Web.API.Domain.Interfaces.Auth;
 using ERP.Web.API.Domain.Interfaces.Sales;
 using ERP.Web.API.Domain.Interfaces.SystemManagement;
 using ERP.Web.API.Model;
 using ERP.Web.API.Model.Sales;
-using ERP.Web.API.Domain.Interfaces.Accounting;
-using System.Collections.Generic;
 
 namespace ERP.Web.API.Controllers.Sales
 {
@@ -18,20 +18,21 @@ namespace ERP.Web.API.Controllers.Sales
     public class DirectInvoiceController : ControllerBase
     {
         private readonly IDirectInvoiceService _inv;
+        private readonly IClosingMonthService _closingMonth;
         private readonly ISystemParameterService _sysPar;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
-        private readonly IClosingMonthService _closingMonth;
+
         private const int _menuId = (int)Menu.DirectInvoice;
 
-        public DirectInvoiceController(IDirectInvoiceService inv, ISystemParameterService sysPar,
-            IClaimService claim, IAuthService auth, IClosingMonthService closingMonthService)
+        public DirectInvoiceController(IDirectInvoiceService inv, IClosingMonthService closingMonth,
+            ISystemParameterService sysPar, IClaimService claim, IAuthService auth)
         {
             _inv = inv;
+            _closingMonth = closingMonth;
             _sysPar = sysPar;
             _claim = claim;
             _auth = auth;
-            _closingMonth = closingMonthService;
         }
         
         [HttpGet("{code}")]
@@ -112,7 +113,7 @@ namespace ERP.Web.API.Controllers.Sales
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
             // Validate process
-            var (isValid, message) = Validate(data);
+            var (isValid, message) = Validate(data, true);
             if (!isValid)
                 return Ok(new SaveResult(false, message));
 
@@ -121,7 +122,7 @@ namespace ERP.Web.API.Controllers.Sales
             return Ok(result);
         }
 
-        private (bool, string) Validate(SalesInvoiceRequest data)
+        private (bool, string) Validate(SalesInvoiceRequest data, bool onDelete = false)
         {
             var periods = new List<string> { data.Date.ToString("yyyyMM"), data.DueDate.ToString("yyyyMM") };
             if (data.OriginalDate.HasValue)
@@ -140,7 +141,7 @@ namespace ERP.Web.API.Controllers.Sales
             if (!_sysPar.IsStartDateValid(data.DueDate))
                 return (false, "Tanggal Jatuh Tempo tidak boleh lebih kecil dari tanggal mulai data.");
 
-            if (data.ItemDetails != null)
+            if (!onDelete)
             {
                 if (!data.ItemDetails.Any())
                     return (false, "Detail tidak boleh kosong.");

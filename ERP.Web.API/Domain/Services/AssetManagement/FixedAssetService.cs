@@ -7,7 +7,6 @@ using ERP.Common.Models;
 using ERP.Entity;
 using ERP.Entity.AssetManagement;
 using ERP.Web.API.Domain.Interfaces.AssetManagement;
-using ERP.Web.API.Domain.Models;
 
 namespace ERP.Web.API.Domain.Services.AssetManagement
 {
@@ -27,7 +26,8 @@ namespace ERP.Web.API.Domain.Services.AssetManagement
                 data = DateTime.TryParse(search, out var searchDate)
                     ? data.Where(x => x.PurchaseDate == searchDate || x.StartDepreciateOn == searchDate)
                     : data.Where(x =>
-                            x.Code.Contains(search) || x.Name.Contains(search) || x.SupName.Contains(search) || x.PurchaseOrderNo.Contains(search) || x.InvoiceNo.Contains(search) || x.PaymentVoucherNo.Contains(search));
+                        x.Code.Contains(search) || x.Name.Contains(search) || x.SupName.Contains(search) ||
+                        x.PurchaseOrderNo.Contains(search) || x.InvoiceNo.Contains(search) || x.PaymentVoucherNo.Contains(search));
             }
 
             return data.ToDataSourceResult(skip, take, filter, sort);
@@ -48,12 +48,10 @@ namespace ERP.Web.API.Domain.Services.AssetManagement
             try
             {
                 // Get new code
-                var currentDate = DateTime.Now;
-                var newCode = GetNewCode("FIXED_ASSET_NUM_FMT", currentDate);
+                var newCode = GetNewCode("FIXED_ASSET_NUM_FMT", data.PurchaseDate);
 
                 // Insert header data
                 data.Code = newCode;
-                // Insert data
                 Db.FixedAssets.Add(data);
 
                 Db.SaveChanges();
@@ -64,6 +62,7 @@ namespace ERP.Web.API.Domain.Services.AssetManagement
                 result.Message = ex.InnerException?.Message ?? ex.Message;
                 return result;
             }
+
             result.Data = data.Code;
             result.Success = true;
             result.Message = "Data aktiva tetap berhasil disimpan.";
@@ -80,6 +79,7 @@ namespace ERP.Web.API.Domain.Services.AssetManagement
             // Update data
             Db.FixedAssets.Update(data);
             Db.Entry(data).Property(e => e.Code).IsModified = false;
+            Db.Entry(data).Property(e => e.BookValue).IsModified = false;
             Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
             Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
 
@@ -97,7 +97,6 @@ namespace ERP.Web.API.Domain.Services.AssetManagement
             var data = Db.FixedAssets.SingleOrDefault(x=>x.Code.Equals(code));
             if (data != null)
             {
-
                 // Checking mark header data
                 if (data.Mark == "V")
                 {

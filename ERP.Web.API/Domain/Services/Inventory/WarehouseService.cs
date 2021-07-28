@@ -7,7 +7,6 @@ using ERP.Common.Models;
 using ERP.Entity;
 using ERP.Entity.Inventory;
 using ERP.Web.API.Domain.Interfaces.Inventory;
-using ERP.Web.API.Domain.Models;
 
 namespace ERP.Web.API.Domain.Services.Inventory
 {
@@ -21,7 +20,7 @@ namespace ERP.Web.API.Domain.Services.Inventory
         public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
             List<int> category, string search)
         {
-            var data = Db.VwWarehouses.Where(x=>x.IsActive).AsQueryable();
+            var data = Db.VwWarehouses.Where(x => x.IsActive).AsQueryable();
 
             if (!string.IsNullOrEmpty(search))
             {

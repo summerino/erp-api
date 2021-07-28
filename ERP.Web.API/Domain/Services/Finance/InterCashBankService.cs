@@ -27,7 +27,8 @@ namespace ERP.Web.API.Domain.Services.Finance
                 data = DateTime.TryParse(search, out var searchDate)
                     ? data.Where(x => x.Date == searchDate)
                     : data.Where(x =>
-                        x.Code.Contains(search) || x.Type.Contains(search));
+                        x.Code.Contains(search) || x.CoaCode.Contains(search) || x.CoaNameFrom.Contains(search) ||
+                        x.CoaDetail.Contains(search) || x.CoaNameTo.Contains(search));
             }
 
             return data.ToDataSourceResult(skip, take, filters, sorts);

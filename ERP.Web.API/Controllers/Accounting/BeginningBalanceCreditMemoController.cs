@@ -2,17 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
+using Microsoft.AspNetCore.Mvc;
 using ERP.Common;
 using ERP.Common.Models;
-using Microsoft.AspNetCore.Mvc;
 using ERP.Entity;
-using ERP.Entity.Accounting;
 using ERP.Web.API.Domain.Interfaces.Accounting;
 using ERP.Web.API.Domain.Interfaces.Auth;
 using ERP.Web.API.Domain.Interfaces.SystemManagement;
 using ERP.Web.API.Model;
-using Newtonsoft.Json;
 using ERP.Web.API.Model.Accounting;
+using Newtonsoft.Json;
 
 namespace ERP.Web.API.Controllers.Accounting
 {
@@ -21,19 +20,22 @@ namespace ERP.Web.API.Controllers.Accounting
     public class BeginningBalanceCreditMemoController : ControllerBase
     {
         private readonly IBeginningBalanceCreditMemoService _bbCm;
+        private readonly IClosingMonthService _closingMonth;
         private readonly ISystemParameterService _sysPar;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
-        private readonly IClosingMonthService _closingMonth;
+
         private const int _menuId = (int)Menu.BeginningBalanceCreditMemo;
 
         public BeginningBalanceCreditMemoController(IBeginningBalanceCreditMemoService bbCm,
-            ISystemParameterService sysPar, IClaimService claim, IAuthService auth, IClosingMonthService closingMonthService)
+            IClosingMonthService closingMonth, ISystemParameterService sysPar,
+            IClaimService claim, IAuthService auth)
         {
             _bbCm = bbCm;
+            _closingMonth = closingMonth;
+            _sysPar = sysPar;
             _claim = claim;
             _auth = auth;
-            _closingMonth = closingMonthService;
         }
 
         [HttpGet]

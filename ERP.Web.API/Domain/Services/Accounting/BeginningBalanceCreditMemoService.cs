@@ -23,8 +23,10 @@ namespace ERP.Web.API.Domain.Services.Accounting
 
             if (!string.IsNullOrEmpty(search))
             {
-                data = data.Where(x =>
-                        x.Code.Contains(search) || x.CustName.Contains(search) || x.CurrCode.Contains(search));
+                data = DateTime.TryParse(search, out var searchDate)
+                    ? data.Where(x => x.Date == searchDate)
+                    : data.Where(x =>
+                        x.Code.Contains(search) || x.CustCode.StartsWith(search) || x.CustName.Contains(search));
             }
 
             return data.ToDataSourceResult(skip, take, filters, sorts);

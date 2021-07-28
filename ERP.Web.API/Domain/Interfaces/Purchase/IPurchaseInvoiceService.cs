@@ -2,7 +2,6 @@
 using ERP.Common;
 using ERP.Common.Models;
 using ERP.Entity.Purchase;
-using ERP.Web.API.Domain.Models;
 using ERP.Web.API.Model.Purchase;
 
 namespace ERP.Web.API.Domain.Interfaces.Purchase
@@ -13,6 +12,7 @@ namespace ERP.Web.API.Domain.Interfaces.Purchase
             string search);
 
         IEnumerable<PurchaseInvoiceDetail> GetDetailData(string code);
+
         List<dynamic> GetRelatedTransactions(string code);
 
         SaveResult Insert(PurchaseInvoiceRequest data);

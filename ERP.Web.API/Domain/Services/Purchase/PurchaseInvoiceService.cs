@@ -1,16 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Dynamic.Core;
+using Microsoft.EntityFrameworkCore;
 using ERP.Common;
 using ERP.Common.Extensions;
 using ERP.Common.Models;
 using ERP.Entity;
-using Microsoft.EntityFrameworkCore;
 using ERP.Entity.Purchase;
 using ERP.Web.API.Domain.Interfaces.Purchase;
-using ERP.Web.API.Domain.Models;
 using ERP.Web.API.Model.Purchase;
-using System.Linq.Dynamic.Core;
 
 namespace ERP.Web.API.Domain.Services.Purchase
 {
@@ -123,9 +122,9 @@ namespace ERP.Web.API.Domain.Services.Purchase
             try
             {
                 // Checking mark header data
-                if (Db.PurchaseInvoiceHeaders.Any(x => x.Code == data.Code && x.Mark == "V"))
+                if (Db.PurchaseInvoiceHeaders.Any(x => x.Code == data.Code && x.Mark != "A"))
                 {
-                    result.Message = "Data faktur pembelian tidak bisa diubah karena sudah ditandai sebagai void.";
+                    result.Message = "Data faktur pembelian tidak bisa diubah karena status data bukan aktif.";
                     return result;
                 }
 
@@ -248,7 +247,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
 
             if (IsAlreadyInTransaction(code))
             {
-                result.Message = "Data faktur pembelian tidak bisa ditandai sebagai void karena sudah ada ditransaksi";
+                result.Message = "Data faktur pembelian tidak bisa ditandai sebagai void karena sudah ada di transaksi kas bank.";
                 return result;
             }
 

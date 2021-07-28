@@ -6,13 +6,13 @@ using Microsoft.AspNetCore.Mvc;
 using ERP.Common;
 using ERP.Common.Models;
 using ERP.Entity;
+using ERP.Web.API.Domain.Interfaces.Accounting;
 using ERP.Web.API.Domain.Interfaces.Auth;
 using ERP.Web.API.Domain.Interfaces.Finance;
 using ERP.Web.API.Domain.Interfaces.SystemManagement;
 using ERP.Web.API.Model;
 using ERP.Web.API.Model.Finance;
 using Newtonsoft.Json;
-using ERP.Web.API.Domain.Interfaces.Accounting;
 
 namespace ERP.Web.API.Controllers.Finance
 {
@@ -21,20 +21,21 @@ namespace ERP.Web.API.Controllers.Finance
     public class CashBankController : ControllerBase
     {
         private readonly ICashBankService _cb;
+        private readonly IClosingMonthService _closingMonth;
         private readonly ISystemParameterService _sysPar;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
-        private readonly IClosingMonthService _closingMonth;
+
         private const int _menuId = (int)Menu.CashBank;
 
-        public CashBankController(ICashBankService cb, ISystemParameterService sysPar, IClaimService claim,
-            IAuthService auth, IClosingMonthService closingMonthService)
+        public CashBankController(ICashBankService cb, IClosingMonthService closingMonth,
+            ISystemParameterService sysPar, IClaimService claim, IAuthService auth)
         {
             _cb = cb;
+            _closingMonth = closingMonth;
             _sysPar = sysPar;
             _claim = claim;
             _auth = auth;
-            _closingMonth = closingMonthService;
         }
 
         [HttpGet]
@@ -99,6 +100,7 @@ namespace ERP.Web.API.Controllers.Finance
                 TableData = data.Data.ToDynamicList()
             });
         }
+
         [HttpGet("debit-memo")]
         public IActionResult GetDataDebitMemo(string type, string cashbankCode, string search, string filters, string sorts, int skip, int take)
         {
@@ -192,7 +194,7 @@ namespace ERP.Web.API.Controllers.Finance
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
             // Validate process
-            var (isValid, message) = Validate(data);
+            var (isValid, message) = Validate(data, true);
             if (!isValid)
                 return Ok(new SaveResult(false, message));
 
@@ -200,7 +202,8 @@ namespace ERP.Web.API.Controllers.Finance
 
             return Ok(result);
         }
-        private (bool, string) Validate(CashBankRequest data)
+
+        private (bool, string) Validate(CashBankRequest data, bool onDelete = false)
         {
             var periods = new List<string> { data.Date.ToString("yyyyMM") };
             if (data.OriginalDate.HasValue)
@@ -213,13 +216,9 @@ namespace ERP.Web.API.Controllers.Finance
             if (!_sysPar.IsStartDateValid(data.Date))
                 return (false, "Tanggal tidak boleh lebih kecil dari tanggal mulai data.");
 
-            if (data.ItemDetails != null)
-            {
-                if (!data.ItemDetails.Any())
-                    return (false, "Detail tidak boleh kosong.");
-            }
-
-            return (true, "");
+            return !onDelete && !data.ItemDetails.Any()
+                ? (false, "Detail tidak boleh kosong.")
+                : (true, "");
         }
     }
 }

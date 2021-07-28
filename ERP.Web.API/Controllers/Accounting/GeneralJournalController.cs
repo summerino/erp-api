@@ -129,7 +129,7 @@ namespace ERP.Web.API.Controllers.Accounting
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
             // Validate process
-            var (isValid, message) = Validate(data);
+            var (isValid, message) = Validate(data, true);
             if (!isValid)
                 return Ok(new SaveResult(false, message));
 
@@ -138,7 +138,7 @@ namespace ERP.Web.API.Controllers.Accounting
             return Ok(result);
         }
 
-        private (bool, string) Validate(GeneralJournalRequest data)
+        private (bool, string) Validate(GeneralJournalRequest data, bool onDelete = false)
         {
             var periods = new List<string> { data.Date.ToString("yyyyMM") };
             if (data.OriginalDate.HasValue)
@@ -151,13 +151,9 @@ namespace ERP.Web.API.Controllers.Accounting
             if (!_sysPar.IsStartDateValid(data.Date))
                 return (false, "Tanggal tidak boleh lebih kecil dari tanggal mulai data.");
 
-            if (data.Details != null)
-            {
-                if (!data.Details.Any())
-                    return (false, "Detail tidak boleh kosong.");
-            }
-
-            return (true, "");
+            return !onDelete && !data.Details.Any()
+                ? (false, "Detail tidak boleh kosong.")
+                : (true, "");
         }
     }
 }

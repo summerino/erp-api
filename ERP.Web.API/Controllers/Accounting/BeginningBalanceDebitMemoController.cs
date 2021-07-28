@@ -6,13 +6,12 @@ using Microsoft.AspNetCore.Mvc;
 using ERP.Common;
 using ERP.Common.Models;
 using ERP.Entity;
-using ERP.Entity.Accounting;
 using ERP.Web.API.Domain.Interfaces.Accounting;
 using ERP.Web.API.Domain.Interfaces.Auth;
 using ERP.Web.API.Domain.Interfaces.SystemManagement;
 using ERP.Web.API.Model;
-using Newtonsoft.Json;
 using ERP.Web.API.Model.Accounting;
+using Newtonsoft.Json;
 
 namespace ERP.Web.API.Controllers.Accounting
 {
@@ -21,20 +20,22 @@ namespace ERP.Web.API.Controllers.Accounting
     public class BeginningBalanceDebitMemoController : ControllerBase
     {
         private readonly IBeginningBalanceDebitMemoService _bbDm;
+        private readonly IClosingMonthService _closingMonth;
         private readonly ISystemParameterService _sysPar;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
-        private readonly IClosingMonthService _closingMonth;
+
         private const int _menuId = (int)Menu.BeginningBalanceDebitMemo;
 
         public BeginningBalanceDebitMemoController(IBeginningBalanceDebitMemoService bbDm,
-            ISystemParameterService sysPar, IClaimService claim, IAuthService auth, IClosingMonthService closingMonthService)
+            IClosingMonthService closingMonth, ISystemParameterService sysPar,
+            IClaimService claim, IAuthService auth)
         {
             _bbDm = bbDm;
+            _closingMonth = closingMonth;
             _sysPar = sysPar;
             _claim = claim;
             _auth = auth;
-            _closingMonth = closingMonthService;
         }
 
         [HttpGet]

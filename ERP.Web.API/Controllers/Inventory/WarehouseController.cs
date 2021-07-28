@@ -2,14 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
+using Microsoft.AspNetCore.Mvc;
 using ERP.Common;
 using ERP.Common.Models;
-using Microsoft.AspNetCore.Mvc;
 using ERP.Entity;
 using ERP.Entity.Inventory;
 using ERP.Web.API.Domain.Interfaces.Auth;
 using ERP.Web.API.Domain.Interfaces.Inventory;
-using ERP.Web.API.Domain.Models;
 using ERP.Web.API.Model;
 using Newtonsoft.Json;
 
@@ -22,13 +21,14 @@ namespace ERP.Web.API.Controllers.Inventory
         private readonly IWarehouseService _warehouse;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
+
         private const int _menuId = (int)Menu.Warehouse;
 
-        public WarehouseController(IWarehouseService warehouse, IAuthService auth, IClaimService claim)
+        public WarehouseController(IWarehouseService warehouse, IClaimService claim, IAuthService auth)
         {
-            _auth = auth;
             _warehouse = warehouse;
             _claim = claim;
+            _auth = auth;
         }
 
         [HttpGet]
