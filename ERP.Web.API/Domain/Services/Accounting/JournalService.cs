@@ -71,6 +71,10 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 if (journalBBCM != null)
                     _db.AddRange(journalBBCM);
 
+                var journalEXP= ProcessExpeditionJournal(data.Date, systemParam);
+                if (journalEXP != null)
+                    _db.AddRange(journalEXP);
+
                 _db.SaveChanges();
 
                 transaction.Commit();
