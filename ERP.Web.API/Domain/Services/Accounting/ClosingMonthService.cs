@@ -25,7 +25,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
             if (!string.IsNullOrEmpty(search))
             {
                 data = data.Where(x =>
-                        x.Period.Contains(search));
+                        x.PeriodName.Contains(search));
             }
 
             return data.ToDataSourceResult(skip, take, filters, sorts);
