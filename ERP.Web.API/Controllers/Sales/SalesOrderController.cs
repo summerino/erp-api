@@ -177,7 +177,7 @@ namespace ERP.Web.API.Controllers.Sales
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
             // Validate process
-            var (isValid, message) = Validate(data);
+            var (isValid, message) = Validate(data, true);
             if (!isValid)
                 return Ok(new SaveResult(false, message));
 

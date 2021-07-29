@@ -874,6 +874,11 @@ namespace ERP.Web.API.Domain.Services.Sales
                 data.UpdatedDate = DateTime.Now;
 
                 Db.SaveChanges();
+
+                // Execute sp_update_stock_mutation_from_so
+                Db.Database.ExecuteSqlRaw(
+                    "EXEC sp_update_stock_mutation_from_so {0}, {1}, {2}",
+                    data.Code, data.Date, true);
             }
 
             result.Success = true;

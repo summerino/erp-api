@@ -1311,7 +1311,46 @@ namespace ERP.Web.API.Domain.Services.Accounting
                         }
                         if (itemData.RtnHeader.Type == 3)
                         {
-                            //TO DO Jika Terjadi Selisih
+                            if (itemDlvData.DlvHeader.Total > totalHeader)
+                            {
+                                //Beban Lain-lain
+                                journals.Add(new Journal
+                                {
+                                    Code = itemDlvData.DlvHeader.Code,
+                                    LineNo = 1,
+                                    Date = itemDlvData.DlvHeader.Date,
+                                    CoaCode = systemParam.FirstOrDefault(x => x.Code == "OTH_EXPENSE_COA")?.Value ?? "",
+                                    TypeCode = "OTH_EXPENSE",
+                                    Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_OTH_EXPENSE")?.Value ?? ""} {itemDlvData.Customer.Initial}").Trim(),
+                                    RefCode1 = itemData.RtnHeader.Code,
+                                    Group = 6,
+                                    CurrCode = itemDlvData.DlvHeader.CurrCode,
+                                    Period = itemDlvData.DlvHeader.Date.ToString("yyyyMMdd"),
+                                    Type = "D",
+                                    Amount = itemDlvData.DlvHeader.Total - totalHeader,
+                                    SrcTrans = "DLV"
+                                });
+                            }
+                            else if (totalHeader > itemDlvData.DlvHeader.Total)
+                            {
+                                //Pendapatan Lain-Lain
+                                journals.Add(new Journal
+                                {
+                                    Code = itemDlvData.DlvHeader.Code,
+                                    LineNo = 1,
+                                    Date = itemDlvData.DlvHeader.Date,
+                                    CoaCode = systemParam.FirstOrDefault(x => x.Code == "OTH_INCOME_COA")?.Value ?? "",
+                                    TypeCode = "OTH_INCOME",
+                                    Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_OTH_INCOME")?.Value ?? ""} {itemDlvData.Customer.Initial}").Trim(),
+                                    RefCode1 = itemData.RtnHeader.Code,
+                                    Group = 6,
+                                    CurrCode = itemDlvData.DlvHeader.CurrCode,
+                                    Period = itemDlvData.DlvHeader.Date.ToString("yyyyMMdd"),
+                                    Type = "D",
+                                    Amount = Math.Abs(totalHeader - itemDlvData.DlvHeader.Total),
+                                    SrcTrans = "DLV"
+                                });
+                            }
                         }
                         //Piutang - AR
                         journals.Add(new Journal
