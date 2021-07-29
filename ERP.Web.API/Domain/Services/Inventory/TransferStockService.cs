@@ -23,7 +23,7 @@ namespace ERP.Web.API.Domain.Services.Inventory
         public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
             string search)
         {
-            var data = Db.VwTransferStockHeaders.AsQueryable();
+            var data = Db.VwTransferStockHeaders.Where(x => x.IsConsignee == false).AsQueryable();
 
             if (!string.IsNullOrEmpty(search))
             {

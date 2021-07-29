@@ -112,12 +112,16 @@ namespace ERP.Web.API.Domain.Services.Accounting
         public override SaveResult Update(ClosingMonth data)
         {
             var result = new SaveResult(false);
-
-            if (Db.ClosingMonths.Where(x => Convert.ToInt32(x.Period) < Convert.ToInt32(data.Period) && x.IsClose == false).Any())
+            
+            if (data.IsClose)
             {
-                result.Message = "Tidak bisa melakukan tutup bulan karena terdapat periode sebelumnya yang belum ditutup.";
-                return result;
+                if (Db.ClosingMonths.Where(x => Convert.ToInt32(x.Period) < Convert.ToInt32(data.Period) && x.IsClose == false).Any())
+                {
+                    result.Message = "Tidak bisa melakukan tutup bulan karena terdapat periode sebelumnya yang belum ditutup.";
+                    return result;
+                }
             }
+            
 
             // Update data
             Db.ClosingMonths.Update(data);
