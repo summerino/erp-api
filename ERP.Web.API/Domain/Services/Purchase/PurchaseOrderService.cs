@@ -735,6 +735,11 @@ namespace ERP.Web.API.Domain.Services.Purchase
                 data.UpdatedDate = DateTime.Now;
 
                 Db.SaveChanges();
+
+                // Execute sp_update_stock_mutation_from_po
+                Db.Database.ExecuteSqlRaw(
+                    "EXEC sp_update_stock_mutation_from_po {0}, {1}, {2}",
+                    data.Code, data.Date, true);
             }
 
             result.Success = true;
