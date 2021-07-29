@@ -25,7 +25,7 @@ namespace ERP.Web.API.Controllers.Accounting
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
 
-        private const int _menuId = (int)Menu.AccountReceivable;
+        private const int _menuId = (int)Menu.BeginningBalanceAccountReceivable;
 
         public BeginningBalanceAccountReceivableController(IBeginningBalanceAccountReceivableService bbAr,
             IClosingMonthService closingMonth, ISystemParameterService sysPar,

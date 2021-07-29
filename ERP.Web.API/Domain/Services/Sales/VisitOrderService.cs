@@ -7,7 +7,6 @@ using ERP.Common.Models;
 using ERP.Entity;
 using ERP.Entity.Sales;
 using ERP.Web.API.Domain.Interfaces.Sales;
-using ERP.Web.API.Domain.Models;
 using ERP.Web.API.Model.Sales;
 
 namespace ERP.Web.API.Domain.Services.Sales

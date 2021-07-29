@@ -21,59 +21,78 @@
 
     public enum Menu 
     {
-        Warehouse = 32,
-        Adjustment = 34,
-        ItemCategory = 29,
-        Item = 28,
-        ItemGroup = 30,
-        TransferStock = 33,
-        Uom = 31,
-        Currency = 8,
+        // General
         Customer = 17,
         CustomerType = 18,
-        Employee = 22,
         Supplier = 20,
         SupplierType = 21,
-        Tax = 26,
+        Employee = 22,
         Vehicle = 24,
         VehicleType = 25,
-        COA = 66,
-        CurrencyRate = 18,
-        DebitMemo = 40,
-        CreditMemo = 49,
-        PurchaseInvoice = 38,
+        Tax = 26,
+        Currency = 8,
+        PaymentTerm = 57,
+        Approval = 72,
+
+        // Inventory
+        Item = 28,
+        ItemCategory = 29,
+        ItemGroup = 30,
+        Uom = 31,
+        Warehouse = 32,
+        TransferStock = 33,
+        Consignee = 91,
+        Adjustment = 34,
+
+        // Purchase
         PurchaseOrder = 36,
         PurchaseReceive = 37,
+        PurchaseInvoice = 38,
         PurchaseReturn = 39,
+        DebitMemo = 40,
+
+        // Sales
         Area = 42,
-        DeliveryPlan = 48,
-        DirectInvoice = 46,
+        SalesmanGroup = 58,
         Promo = 56,
+        SalesOrder = 44,
         SalesDelivery = 45,
         SalesInvoice = 46,
-        SalesOrder = 44,
+        DirectInvoice = 46,
         SalesReturn = 47,
-        Role = 52,
-        User = 51,
-        AssetType = 62, 
-        SalesmanGroup = 58,
-        FixedAsset = 63,
-        COAType = 67,
+        DeliveryPlan = 48,
+        CreditMemo = 49,
+        VisitPlan = 54,
+        VisitOrder = 55,
+
+        // Expedition
         ExpeditionInvoice = 70,
-        CompanyProfile = 75,
-        Parameter = 73,
-        Approval = 72,
-        AccountPayable = 78,
-        AccountReceivable = 79,
-        GeneralJournal = 84,
+
+        // Finance
         CashBank = 82,
-        CashBankInter = 83,
-        Journal = 86,
+        InterCashBank = 83,
+
+        // Accounting
+        COA = 66,
+        COAType = 67,
+        CurrencyRate = 18,
+        GeneralJournal = 84,
+        BeginningBalanceAccountPayable = 78,
+        BeginningBalanceAccountReceivable = 79,
         BeginningBalanceDebitMemo = 89,
         BeginningBalanceCreditMemo = 90,
+        Posting = 86,
         ClosingMonth = 88,
-        VisitOrder = 55,
-        Consignee = 91
+
+        // Asset Management
+        AssetType = 62,
+        FixedAsset = 63,
+
+        // System Management
+        CompanyProfile = 75,
+        User = 51,
+        Role = 52,
+        Parameter = 73
     }
     public static class ApprovalType
     {

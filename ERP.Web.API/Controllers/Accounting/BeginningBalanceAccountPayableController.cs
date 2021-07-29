@@ -25,7 +25,7 @@ namespace ERP.Web.API.Controllers.Accounting
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
 
-        private const int _menuId = (int)Menu.AccountPayable;
+        private const int _menuId = (int)Menu.BeginningBalanceAccountPayable;
 
         public BeginningBalanceAccountPayableController(IBeginningBalanceAccountPayableService BbAp,
             IClosingMonthService closingMonth, ISystemParameterService sysPar,

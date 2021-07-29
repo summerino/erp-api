@@ -1,6 +1,4 @@
-﻿using ERP.Web.API.Domain.Interfaces.General;
-using ERP.Web.API.Domain.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using ERP.Common;
@@ -8,12 +6,12 @@ using ERP.Common.Extensions;
 using ERP.Common.Models;
 using ERP.Entity;
 using ERP.Entity.General;
+using ERP.Web.API.Domain.Interfaces.General;
 
 namespace ERP.Web.API.Domain.Services.General
 {
     public class PaymentTermService : GeneralService<PaymentTerm>, IPaymentTermService
     {
-
         public PaymentTermService(TenantContext db)
             :base(db)
         {
@@ -66,7 +64,7 @@ namespace ERP.Web.API.Domain.Services.General
 
             result.Success = true;
             result.Data = data.Id;
-            result.Message = "Data pembayaran berhasil disimpan.";
+            result.Message = "Data syarat pembayaran berhasil disimpan.";
             return result;
         }
 
@@ -91,7 +89,7 @@ namespace ERP.Web.API.Domain.Services.General
 
             result.Success = true;
             result.Data = data.Id;
-            result.Message = "Data pembayaran berhasil diperbarui.";
+            result.Message = "Data syarat pembayaran berhasil diperbarui.";
             return result;
         }
 
@@ -105,14 +103,14 @@ namespace ERP.Web.API.Domain.Services.General
                 // Checking active
                 if (data.IsActive == false)
                 {
-                    result.Message = "Tidak bisa menghapus data pembayaran karena data sudah dihapus.";
+                    result.Message = "Tidak bisa menghapus data syarat pembayaran karena data sudah dihapus.";
                     return result;
                 }
 
                 //Check if any customers already using this type
                 if (Db.Customers.Any(x => x.PaymentTermId == data.Id))
                 {
-                    result.Message = "Tidak bisa menghapus data pembayaran karena telah digunakan pada data pelanggan.";
+                    result.Message = "Tidak bisa menghapus data syarat pembayaran karena telah digunakan pada data pelanggan.";
                     return result;
                 }
 
@@ -122,13 +120,13 @@ namespace ERP.Web.API.Domain.Services.General
             }
 
             result.Success = true;
-            result.Message = "Data pembayaran berhasil dihapus.";
+            result.Message = "Data syarat pembayaran berhasil dihapus.";
             return result;
         }
 
         private bool IsInitialExists(string initial, int id)
         {
-            return Db.PaymentTerms.Any(x => x.Initial == initial && x.Id != id && x.IsActive == true);
+            return Db.PaymentTerms.Any(x => x.Initial == initial && x.Id != id && x.IsActive);
         }
     }
 }

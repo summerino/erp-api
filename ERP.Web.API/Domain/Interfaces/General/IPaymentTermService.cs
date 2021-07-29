@@ -1,8 +1,4 @@
-﻿using ERP.Web.API.Domain.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using ERP.Common;
 using ERP.Common.Models;
 using ERP.Entity.General;
@@ -17,6 +13,5 @@ namespace ERP.Web.API.Domain.Interfaces.General
             string search);
 
         SaveResult Delete(int id, int userId);
-
     }
 }

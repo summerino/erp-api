@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
-using ERP.Common.Models;
 using Microsoft.AspNetCore.Mvc;
+using ERP.Common;
+using ERP.Common.Models;
 using ERP.Entity;
 using ERP.Entity.General;
 using ERP.Web.API.Domain.Interfaces.Auth;
 using ERP.Web.API.Domain.Interfaces.General;
-using ERP.Web.API.Domain.Models;
 using ERP.Web.API.Model;
 using Newtonsoft.Json;
 
@@ -22,11 +22,13 @@ namespace ERP.Web.API.Controllers.General
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
 
-        public PaymentTermController(IPaymentTermService paymentTermService, IClaimService claimService, IAuthService authService)
+        private const int _menuId = (int)Menu.PaymentTerm;
+
+        public PaymentTermController(IPaymentTermService paymentTerm, IClaimService claim, IAuthService auth)
         {
-            _paymentTerm = paymentTermService;
-            _claim = claimService;
-            _auth = authService;
+            _paymentTerm = paymentTerm;
+            _claim = claim;
+            _auth = auth;
         }
 
         [HttpGet("lists")]
@@ -73,11 +75,11 @@ namespace ERP.Web.API.Controllers.General
         [HttpPost]
         public IActionResult OnPost(PaymentTerm data)
         {
-
-            //if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Insert }).Any())
-            //{
-            //    return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            //}
+            // Checking role authorization
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Insert }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
 
             data.IsActive = true;
             data.CreatedBy = _claim.UserId;
@@ -93,11 +95,11 @@ namespace ERP.Web.API.Controllers.General
         [HttpPut("{id}")]
         public IActionResult OnPut(string id, PaymentTerm data)
         {
-
-            //if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Update }).Any())
-            //{
-            //    return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            //}
+            // Checking role authorization
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Update }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
 
             data.UpdatedBy = _claim.UserId;
             data.UpdatedDate = DateTime.Now;
@@ -110,10 +112,11 @@ namespace ERP.Web.API.Controllers.General
         [HttpDelete("{id}")]
         public IActionResult OnDelete(int id)
         {
-            //if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Delete }).Any())
-            //{
-            //    return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            //}
+            // Checking role authorization
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Delete }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
 
             var result = _paymentTerm.Delete(id, _claim.UserId);
             return Ok(result);

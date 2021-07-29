@@ -17,7 +17,7 @@ namespace ERP.Web.API.Controllers.Accounting
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
 
-        private const int _menuId = (int)Menu.Journal;
+        private const int _menuId = (int)Menu.Posting;
 
         public JournalController(IJournalService journalService, IClaimService claimService, IAuthService authService)
         {

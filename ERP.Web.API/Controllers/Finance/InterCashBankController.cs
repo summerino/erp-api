@@ -26,7 +26,7 @@ namespace ERP.Web.API.Controllers.Finance
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
 
-        private const int _menuId = (int)Menu.CashBankInter;
+        private const int _menuId = (int)Menu.InterCashBank;
 
         public InterCashBankController(IInterCashBankService interCb, IClosingMonthService closingMonth,
             ISystemParameterService sysPar, IClaimService claim, IAuthService auth)
