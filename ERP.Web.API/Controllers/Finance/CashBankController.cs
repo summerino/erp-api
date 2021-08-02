@@ -68,14 +68,14 @@ namespace ERP.Web.API.Controllers.Finance
         }
 
         [HttpGet("ap")]
-        public IActionResult GetDataAP(string cashbankCode, string search, string filters, string sorts, int skip, int take)
+        public IActionResult GetDataAP(string cbCode, string search, string filters, string sorts, int skip, int take)
         {
             var data =
                 _cb.GetDataAP(
                     skip, take,
                     JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
                     JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
-                    search, cashbankCode);
+                    search, cbCode);
 
             return Ok(new ApiResponse
             {
@@ -85,14 +85,14 @@ namespace ERP.Web.API.Controllers.Finance
         }
 
         [HttpGet("ar")]
-        public IActionResult GetDataAR(string cashbankCode, string search, string filters, string sorts, int skip, int take)
+        public IActionResult GetDataAR(string cbCode, string search, string filters, string sorts, int skip, int take)
         {
             var data =
                 _cb.GetDataAR(
                     skip, take,
                     JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
                     JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
-                    search, cashbankCode);
+                    search, cbCode);
 
             return Ok(new ApiResponse
             {
@@ -102,14 +102,14 @@ namespace ERP.Web.API.Controllers.Finance
         }
 
         [HttpGet("debit-memo")]
-        public IActionResult GetDataDebitMemo(string type, string cashbankCode, string search, string filters, string sorts, int skip, int take)
+        public IActionResult GetDataDebitMemo(string type, string cbCode, string search, string filters, string sorts, int skip, int take)
         {
             var data =
                 _cb.GetDataDebitMemo(
                     skip, take,
                     JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
                     JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
-                    search, cashbankCode, type);
+                    search, cbCode, type);
 
             return Ok(new ApiResponse
             {
@@ -119,14 +119,14 @@ namespace ERP.Web.API.Controllers.Finance
         }
 
         [HttpGet("credit-memo")]
-        public IActionResult GetDataCreditMemo(string type, string cashbankCode, string search, string filters, string sorts, int skip, int take)
+        public IActionResult GetDataCreditMemo(string type, string cbCode, string search, string filters, string sorts, int skip, int take)
         {
             var data =
                 _cb.GetDataCreditMemo(
                     skip, take,
                     JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
                     JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
-                    search, cashbankCode, type);
+                    search, cbCode, type);
 
             return Ok(new ApiResponse
             {
@@ -139,7 +139,7 @@ namespace ERP.Web.API.Controllers.Finance
         public IActionResult OnPost(CashBankRequest data)
         {
             // Checking role authorization
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Insert }).Any())
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Insert }).Any())
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
             // Validate process
@@ -166,7 +166,7 @@ namespace ERP.Web.API.Controllers.Finance
         public IActionResult OnPut(string code, CashBankRequest data)
         {
             // Checking role authorization
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Update }).Any())
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Update }).Any())
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
             // Validate process
@@ -190,7 +190,7 @@ namespace ERP.Web.API.Controllers.Finance
         public IActionResult OnDelete(string code, CashBankRequest data)
         {
             // Checking role authorization
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Void }).Any())
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Void }).Any())
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
             // Validate process

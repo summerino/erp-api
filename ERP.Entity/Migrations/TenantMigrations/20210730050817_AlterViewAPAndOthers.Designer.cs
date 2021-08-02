@@ -4,14 +4,16 @@ using ERP.Entity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ERP.Entity.Migrations.TenantMigrations
 {
     [DbContext(typeof(TenantContext))]
-    partial class TenantContextModelSnapshot : ModelSnapshot
+    [Migration("20210730050817_AlterViewAPAndOthers")]
+    partial class AlterViewAPAndOthers
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -898,9 +900,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.Property<decimal>("Rate")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<decimal>("Remaining")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<short>("Type")
                         .HasColumnType("smallint");
 
@@ -957,9 +956,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(max)");
 
                     b.Property<decimal>("Rate")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("Remaining")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("SupCode")
@@ -1878,11 +1874,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.Property<decimal>("Rate")
                         .HasColumnType("decimal(19,6)");
 
-                    b.Property<string>("Src")
-                        .HasMaxLength(5)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(5)");
-
                     b.Property<decimal>("TransAmount")
                         .HasColumnType("decimal(18,2)");
 
@@ -2159,10 +2150,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.Property<decimal>("Rate")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<string>("Src")
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
-
                     b.Property<decimal>("TransAmount")
                         .HasColumnType("decimal(18,2)");
 
@@ -2404,54 +2391,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.ToView("vwInterCashBankHeader", "Finance");
                 });
 
-            modelBuilder.Entity("ERP.Entity.Finance.VwOutstandingCreditMemo", b =>
-                {
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("Code")
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
-
-                    b.Property<string>("CurrCode")
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
-
-                    b.Property<string>("CustCode")
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
-
-                    b.Property<string>("CustName")
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
-
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Notes")
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
-
-                    b.Property<decimal>("Rate")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("Remaining")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("Src")
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
-
-                    b.Property<short>("Type")
-                        .HasColumnType("smallint");
-
-                    b.Property<decimal>("Used")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.ToView("vwOutstandingCreditMemo", "Finance");
-                });
-
-            modelBuilder.Entity("ERP.Entity.Finance.VwOutstandingDebitMemo", b =>
+            modelBuilder.Entity("ERP.Entity.Finance.VwPR", b =>
                 {
                     b.Property<decimal>("Amount")
                         .HasColumnType("decimal(18,2)");
@@ -2489,13 +2429,54 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
 
-                    b.Property<short>("Type")
-                        .HasColumnType("smallint");
+                    b.Property<decimal>("Used")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.ToView("vwPR", "Finance");
+                });
+
+            modelBuilder.Entity("ERP.Entity.Finance.VwSR", b =>
+                {
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Code")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<string>("CurrCode")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<string>("CustCode")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<string>("CustName")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Notes")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<decimal>("Rate")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("Remaining")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Src")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
 
                     b.Property<decimal>("Used")
                         .HasColumnType("decimal(18,2)");
 
-                    b.ToView("vwOutstandingDebitMemo", "Finance");
+                    b.ToView("vwSR", "Finance");
                 });
 
             modelBuilder.Entity("ERP.Entity.General.Currency", b =>

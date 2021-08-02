@@ -84,9 +84,10 @@ namespace ERP.Entity.Finance
         public string UpdatedInitial { get; set; }
 
         public string ApprovedInitial { get; set; }
-        public string Status { get; set; }
 
         public string TypeName { get; set; }
+
+        public string Status { get; set; }
     }
 
     [Table("GeneralCashBankDetail", Schema = Schema.Finance)]
@@ -133,6 +134,9 @@ namespace ERP.Entity.Finance
         [Required]
         [StringLength(256)]
         public string Notes { get; set; }
+
+        [StringLength(5)]
+        public string Src { get; set; }
     }
 
     public class VwGeneralCashBankDetail
@@ -160,76 +164,11 @@ namespace ERP.Entity.Finance
         public decimal TransAmount { get; set; }
 
         public string Notes { get; set; }
-        
+
+        public string Src { get; set; }
+
 
         public string CoaName { get; set; }
-    }
-
-    [Table("CashBankType", Schema = Schema.Finance)]
-    [Index(nameof(SysParCode))]
-    public class CashBankType
-    {
-        [Key]   
-        [StringLength(5)]
-        public string Code { get; set; }
-
-        [Required]
-        [StringLength(50)]
-        public string Name { get; set; }
-
-        [StringLength(50)]
-        public string SysParCode { get; set; }
-
-        public short Seq { get; set; }
-
-        public bool IsActive { get; set; }
-    }
-
-    public class VwCashBankType
-    {
-        public string Code { get; set; }
-
-        public string Name { get; set; }
-
-        public string SysParCode { get; set; }
-
-        public short Seq { get; set; }
-
-        public bool IsActive { get; set; }
-
-
-        public string CoaCode { get; set; }
-
-        public string CoaName { get; set; }
-    }
-
-    public class VwAP 
-    {
-        public string Code { get; set; }
-        public string SupCode { get; set; }
-        public string SupName { get; set; }
-        public string CurrCode { get; set; }
-        public decimal Rate { get; set; }
-        public DateTime Date { get; set; }
-        public decimal Amount { get; set; }
-        public decimal PaidAmount { get; set; }
-        public decimal Remaining { get; set; }
-        public string Notes { get; set; }
-    }
-
-    public class VwAR
-    {
-        public string Code { get; set; }
-        public string CustCode { get; set; }
-        public string CustName { get; set; }
-        
-        public string CurrCode { get; set; }
-        public decimal Rate { get; set; }
-        public DateTime Date { get; set; }
-        public decimal Amount { get; set; }
-        public decimal PaidAmount { get; set; }
-        public decimal Remaining { get; set; }
-        public string Notes { get; set; }
     }
 
     public class VwInterCashBankHeader : BaseEntityWithMarkAndApproved
@@ -290,30 +229,145 @@ namespace ERP.Entity.Finance
         public string Status { get; set; }
     }
 
-    public class VwPR
+    [Table("CashBankType", Schema = Schema.Finance)]
+    [Index(nameof(SysParCode))]
+    public class CashBankType
     {
+        [Key]   
+        [StringLength(5)]
         public string Code { get; set; }
-        public string SupCode { get; set; }
-        public string SupName { get; set; }
-        public string CurrCode { get; set; }
-        public decimal Rate { get; set; }
-        public DateTime Date { get; set; }
-        public decimal Amount { get; set; }
-        public decimal Used { get; set; }
-        public decimal Remaining { get; set; }
-        public string Notes { get; set; }
+
+        [Required]
+        [StringLength(50)]
+        public string Name { get; set; }
+
+        [StringLength(50)]
+        public string SysParCode { get; set; }
+
+        public short Seq { get; set; }
+
+        public bool IsActive { get; set; }
     }
-    public class VwSR 
+
+    public class VwCashBankType
     {
         public string Code { get; set; }
+
+        public string Name { get; set; }
+
+        public string SysParCode { get; set; }
+
+        public short Seq { get; set; }
+
+        public bool IsActive { get; set; }
+
+
+        public string CoaCode { get; set; }
+
+        public string CoaName { get; set; }
+    }
+
+    public class VwAR
+    {
+        public string Code { get; set; }
+
         public string CustCode { get; set; }
+
         public string CustName { get; set; }
+        
         public string CurrCode { get; set; }
+
         public decimal Rate { get; set; }
+
         public DateTime Date { get; set; }
+
         public decimal Amount { get; set; }
-        public decimal Used { get; set; }
+
+        public decimal PaidAmount { get; set; }
+
         public decimal Remaining { get; set; }
+
         public string Notes { get; set; }
+
+        public string Src { get; set; }
+    }
+
+    public class VwAP
+    {
+        public string Code { get; set; }
+
+        public string SupCode { get; set; }
+
+        public string SupName { get; set; }
+
+        public string CurrCode { get; set; }
+
+        public decimal Rate { get; set; }
+
+        public DateTime Date { get; set; }
+
+        public decimal Amount { get; set; }
+
+        public decimal PaidAmount { get; set; }
+
+        public decimal Remaining { get; set; }
+
+        public string Notes { get; set; }
+
+        public string Src { get; set; }
+    }
+
+    public class VwOutstandingCreditMemo
+    {
+        public string Code { get; set; }
+
+        public DateTime Date { get; set; }
+
+        public string CustCode { get; set; }
+
+        public string CustName { get; set; }
+
+        public short Type { get; set; }
+
+        public string CurrCode { get; set; }
+
+        public decimal Rate { get; set; }
+
+        public decimal Amount { get; set; }
+
+        public decimal Used { get; set; }
+
+        public decimal Remaining { get; set; }
+
+        public string Notes { get; set; }
+
+        public string Src { get; set; }
+    }
+
+    public class VwOutstandingDebitMemo
+    {
+        public string Code { get; set; }
+
+        public DateTime Date { get; set; }
+
+        public string SupCode { get; set; }
+
+        public string SupName { get; set; }
+
+        public short Type { get; set; }
+
+        public string CurrCode { get; set; }
+
+        public decimal Rate { get; set; }
+
+        public decimal Amount { get; set; }
+
+        public decimal Used { get; set; }
+
+        public decimal Remaining { get; set; }
+
+        public string Notes { get; set; }
+
+        public string Src { get; set; }
     }
 }
