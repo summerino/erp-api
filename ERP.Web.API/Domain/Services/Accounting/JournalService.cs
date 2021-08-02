@@ -50,7 +50,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
 
                 var journalSR = ProcessSalesReturnJournal(data.Date, systemParam, items, taxes);
                 if (journalSR != null)
-                        _db.AddRange(journalSR);
+                    _db.AddRange(journalSR);
 
                 var journalCB = ProcessCashBankJournal(data.Date, systemParam);
                 if (journalCB != null)
@@ -72,13 +72,21 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 if (journalBBCM != null)
                     _db.AddRange(journalBBCM);
 
-                var journalEXP= ProcessExpeditionJournal(data.Date, systemParam);
+                var journalEXP = ProcessExpeditionJournal(data.Date, systemParam);
                 if (journalEXP != null)
                     _db.AddRange(journalEXP);
 
                 var journalFA = ProcessFixedAssetJournal(data.Date, systemParam);
                 if (journalFA != null)
-                    _db.AddRange(journalFA); 
+                    _db.AddRange(journalFA);
+
+                var journalDFA = ProcessDepreciationFixedAssetJournal(data.Date, systemParam);
+                if (journalDFA != null)
+                    _db.AddRange(journalDFA);
+
+                var journalEY = ProcessEndYearAssetJournal(data.Date, systemParam, journalDFA);
+                if (journalEY != null)
+                    _db.AddRange(journalEY);
 
                 _db.SaveChanges();
 
@@ -1532,9 +1540,9 @@ namespace ERP.Web.API.Domain.Services.Accounting
         {
             List<Journal> journals = new();
             var expeditionData = (from expheader in _db.ExpeditionInvoiceHeaders
-                                join supplier in _db.Suppliers on expheader.SupCode equals supplier.Code
-                                where expheader.Date.Month == dateTime.Month && expheader.Date.Year == dateTime.Year
-                                select new { ExpHeader = expheader, Supplier = supplier }).ToList();
+                                  join supplier in _db.Suppliers on expheader.SupCode equals supplier.Code
+                                  where expheader.Date.Month == dateTime.Month && expheader.Date.Year == dateTime.Year
+                                  select new { ExpHeader = expheader, Supplier = supplier }).ToList();
             short i = 0;
             short j = 0;
             foreach (var itemData in expeditionData)
@@ -1623,19 +1631,31 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     Amount = itemData.FixedAsset.PurchaseValue,
                     SrcTrans = "ASSET"
                 });
+            }
 
-                if (itemData.FixedAsset.DepreciationMethod == 2 &&
-                    itemData.FixedAsset.StartDepreciateOn.Month <= dateTime.Month &&
-                    itemData.FixedAsset.StartDepreciateOn.Month + itemData.FixedAsset.EstimatedLife >= dateTime.Month)
+            return journals;
+        }
+        private IEnumerable<Journal> ProcessDepreciationFixedAssetJournal(DateTime dateTime, List<SystemParameter> systemParam)
+        {
+            List<Journal> journals = new();
+            var fixedAssetData = (from fixedAsset in _db.FixedAssets
+                                  join supplier in _db.Suppliers on fixedAsset.SupCode equals supplier.Code
+                                  join assetType in _db.AssetTypes on fixedAsset.TypeId equals assetType.Id
+                                  where fixedAsset.DepreciationMethod == 2 && fixedAsset.StartDepreciateOn.Month <= dateTime.Month &&
+                                  fixedAsset.StartDepreciateOn.Month + fixedAsset.EstimatedLife >= dateTime.Month && fixedAsset.PurchaseDate.Year == dateTime.Year
+                                  select new { FixedAsset = fixedAsset, Supplier = supplier, AssetType = assetType }).ToList();
+
+            foreach (var itemData in fixedAssetData)
+            {
+                decimal depreciationValue = (itemData.FixedAsset.PurchaseValue - itemData.FixedAsset.AcquiredValue) / itemData.FixedAsset.EstimatedLife;
+                decimal bookValue = itemData.FixedAsset.PurchaseValue - depreciationValue;
+                var startDate = itemData.FixedAsset.StartDepreciateOn;
+                var endDate = startDate.AddMonths(itemData.FixedAsset.EstimatedLife);
+                short j = 0;
+
+                for (var dataMonth = startDate; dataMonth.Date < endDate.Date; dataMonth = dataMonth.AddMonths(1))
                 {
-                    //int depreciationMonth = dateTime.Month - itemData.FixedAsset.StartDepreciateOn.Month;
-                    decimal depreciationValue = (itemData.FixedAsset.PurchaseValue - itemData.FixedAsset.AcquiredValue) / itemData.FixedAsset.EstimatedLife;
-                    decimal bookValue = itemData.FixedAsset.PurchaseValue - depreciationValue;
-                    var startDate = itemData.FixedAsset.StartDepreciateOn;
-                    var endDate = startDate.AddMonths(itemData.FixedAsset.EstimatedLife);
-                    short j = 0;
-
-                    for (var dataMonth = startDate; dataMonth.Date < endDate.Date; dataMonth = dataMonth.AddMonths(1))
+                    if (dataMonth.Month == dateTime.Month)
                     {
                         var hData = _db.FixedAssetHistories.FirstOrDefault(x => x.Code == itemData.FixedAsset.Code && x.NumberOfMonth == dataMonth.Month);
                         if (hData == null)
@@ -1661,88 +1681,125 @@ namespace ERP.Web.API.Domain.Services.Accounting
                         }
                         _db.SaveChanges();
 
-                        if (dataMonth.Month == dateTime.Month)
+                        //Beban Depresiasi
+                        journals.Add(new Journal
                         {
-                            //Beban Depresiasi
-                            journals.Add(new Journal
-                            {
-                                Code = itemData.FixedAsset.Code,
-                                LineNo = ++j,
-                                Date = itemData.FixedAsset.PurchaseDate,
-                                CoaCode = itemData.AssetType.CoaDeprecExpense ?? "",
-                                TypeCode = "ASSET",
-                                Notes = ($"Beban Depresiasi {itemData.Supplier.Initial}").Trim(),
-                                RefCode1 = "",
-                                Group = 3,
-                                CurrCode = "IDR",
-                                Period = itemData.FixedAsset.PurchaseDate.ToString("yyyyMMdd"),
-                                Type = "D",
-                                Amount = bookValue,
-                                SrcTrans = "ASSET"
-                            });
-                            //Akumulasi Depresiasi
-                            journals.Add(new Journal
-                            {
-                                Code = itemData.FixedAsset.Code,
-                                LineNo = j,
-                                Date = itemData.FixedAsset.PurchaseDate,
-                                CoaCode = itemData.AssetType.CoaAccumDeprec ?? "",
-                                TypeCode = "ASSET",
-                                Notes = ($"Akumulasi Depresiasi {itemData.Supplier.Initial}").Trim(),
-                                RefCode1 = "",
-                                Group = 4,
-                                CurrCode = "IDR",
-                                Period = itemData.FixedAsset.PurchaseDate.ToString("yyyyMMdd"),
-                                Type = "C",
-                                Amount = bookValue,
-                                SrcTrans = "ASSET"
-                            });
-                        }
-
-                        if (dataMonth.Month == 12)
+                            Code = itemData.FixedAsset.Code,
+                            LineNo = ++j,
+                            Date = itemData.FixedAsset.PurchaseDate,
+                            CoaCode = itemData.AssetType.CoaDeprecExpense ?? "",
+                            TypeCode = "ASSET",
+                            Notes = ($"Beban Depresiasi {itemData.Supplier.Initial}").Trim(),
+                            RefCode1 = "",
+                            Group = 3,
+                            CurrCode = "IDR",
+                            Period = itemData.FixedAsset.PurchaseDate.ToString("yyyyMMdd"),
+                            Type = "D",
+                            Amount = bookValue,
+                            SrcTrans = "ASSET"
+                        });
+                        //Akumulasi Depresiasi
+                        journals.Add(new Journal
                         {
-                            var historyJournal = _db.Journals.Where(x => x.TypeCode == "ASSET" && new[] { 1, 4 }.Contains(x.Group) && x.Date.Year == dataMonth.Year).ToList();
-                            historyJournal.AddRange(journals.Where(x => new[] { 1, 4 }.Contains(x.Group)).ToList());
-
-                            //Akumulasi Depresiasi
-                            journals.Add(new Journal
-                            {
-                                Code = "ASSET-END-YEAR-" + dataMonth.Year.ToString(),
-                                LineNo = 1,
-                                Date = new DateTime(dataMonth.Year, dataMonth.Month, dataMonth.Day),
-                                CoaCode = itemData.AssetType.CoaAccumDeprec ?? "",
-                                TypeCode = "ASSET",
-                                Notes = "Akumulasi Depresiasi Tahun " + dataMonth.Year.ToString(),
-                                RefCode1 = "",
-                                Group = 5,
-                                CurrCode = "IDR",
-                                Period = new DateTime(dataMonth.Year, dataMonth.Month, dataMonth.Day).ToString("yyyyMMdd"),
-                                Type = "D",
-                                Amount = historyJournal.Where(x => x.Group == 4).Sum(x => x.Amount),
-                                SrcTrans = "END_YEAR"
-                            });
-                            //Aktiva
-                            journals.Add(new Journal
-                            {
-                                Code = "ASSET-END-YEAR-" + dataMonth.Year.ToString(),
-                                LineNo = 1,
-                                Date = new DateTime(dataMonth.Year, dataMonth.Month, dataMonth.Day),
-                                CoaCode = itemData.AssetType.CoaAsset ?? "",
-                                TypeCode = "ASSET",
-                                Notes = "Aktiva Tahun " + dataMonth.Year.ToString(),
-                                RefCode1 = "",
-                                Group = 6,
-                                CurrCode = "IDR",
-                                Period = new DateTime(dataMonth.Year, dataMonth.Month, dataMonth.Day).ToString("yyyyMMdd"),
-                                Type = "C",
-                                Amount = historyJournal.Where(x => x.Group == 1).Sum(x => x.Amount),
-                                SrcTrans = "END_YEAR"
-                            });
-                        }
-
-                        bookValue -= depreciationValue;
+                            Code = itemData.FixedAsset.Code,
+                            LineNo = j,
+                            Date = itemData.FixedAsset.PurchaseDate,
+                            CoaCode = itemData.AssetType.CoaAccumDeprec ?? "",
+                            TypeCode = "ASSET",
+                            Notes = ($"Akumulasi Depresiasi {itemData.Supplier.Initial}").Trim(),
+                            RefCode1 = "",
+                            Group = 4,
+                            CurrCode = "IDR",
+                            Period = itemData.FixedAsset.PurchaseDate.ToString("yyyyMMdd"),
+                            Type = "C",
+                            Amount = bookValue,
+                            SrcTrans = "ASSET"
+                        });
                     }
+                    bookValue -= depreciationValue;
                 }
+            }
+            return journals;
+        }
+
+        private IEnumerable<Journal> ProcessEndYearAssetJournal(DateTime dateTime, List<SystemParameter> systemParam, IEnumerable<Journal> depreJournals)
+        {
+            List<Journal> journals = new();
+
+            if (dateTime.Month == 12)
+            {
+                var historyJournal = _db.Journals.Where(x => x.TypeCode == "ASSET" && new[] { 1, 4 }.Contains(x.Group) && x.Date.Year == dateTime.Year).ToList();
+                historyJournal.AddRange(depreJournals.Where(x => new[] { 1, 4 }.Contains(x.Group)).ToList());
+
+                //Akumulasi Depresiasi
+                journals.Add(new Journal
+                {
+                    Code = "ASSET-END-YEAR-" + dateTime.Year.ToString(),
+                    LineNo = 1,
+                    Date = new DateTime(dateTime.Year, dateTime.Month, dateTime.Day),
+                    CoaCode = "CoaAccumDeprec",
+                    TypeCode = "ASSET",
+                    Notes = "Akumulasi Depresiasi Tahun " + dateTime.Year.ToString(),
+                    RefCode1 = "",
+                    Group = 1,
+                    CurrCode = "IDR",
+                    Period = new DateTime(dateTime.Year, dateTime.Month, dateTime.Day).ToString("yyyyMMdd"),
+                    Type = "D",
+                    Amount = historyJournal.Where(x => x.Group == 4).Sum(x => x.Amount),
+                    SrcTrans = "END_YEAR"
+                });
+                //Aktiva
+                journals.Add(new Journal
+                {
+                    Code = "ASSET-END-YEAR-" + dateTime.Year.ToString(),
+                    LineNo = 1,
+                    Date = new DateTime(dateTime.Year, dateTime.Month, dateTime.Day),
+                    CoaCode = "CoaAsset",
+                    TypeCode = "ASSET",
+                    Notes = "Aktiva Tahun " + dateTime.Year.ToString(),
+                    RefCode1 = "",
+                    Group = 2,
+                    CurrCode = "IDR",
+                    Period = new DateTime(dateTime.Year, dateTime.Month, dateTime.Day).ToString("yyyyMMdd"),
+                    Type = "C",
+                    Amount = historyJournal.Where(x => x.Group == 1).Sum(x => x.Amount),
+                    SrcTrans = "END_YEAR"
+                });
+
+                //Last Year Akumulasi Depresiasi
+                journals.Add(new Journal
+                {
+                    Code = "ASSET-LAST-YEAR-" + dateTime.Year.ToString(),
+                    LineNo = 1,
+                    Date = new DateTime(dateTime.Year, dateTime.Month, dateTime.Day),
+                    CoaCode = "CoaAccumDeprec",
+                    TypeCode = "ASSET",
+                    Notes = "Akumulasi Depresiasi Tahun " + dateTime.Year.ToString(),
+                    RefCode1 = "",
+                    Group = 3,
+                    CurrCode = "IDR",
+                    Period = new DateTime(dateTime.Year, dateTime.Month, dateTime.Day).ToString("yyyyMMdd"),
+                    Type = "D",
+                    Amount = historyJournal.Where(x => x.Group == 4).Sum(x => x.Amount),
+                    SrcTrans = "END_YEAR"
+                });
+                //Last Year Aktiva
+                journals.Add(new Journal
+                {
+                    Code = "ASSET-LAST-YEAR-" + dateTime.Year.ToString(),
+                    LineNo = 1,
+                    Date = new DateTime(dateTime.Year, dateTime.Month, dateTime.Day),
+                    CoaCode = "CoaAsset",
+                    TypeCode = "ASSET",
+                    Notes = "Aktiva Tahun " + dateTime.Year.ToString(),
+                    RefCode1 = "",
+                    Group = 4,
+                    CurrCode = "IDR",
+                    Period = new DateTime(dateTime.Year, dateTime.Month, dateTime.Day).ToString("yyyyMMdd"),
+                    Type = "C",
+                    Amount = historyJournal.Where(x => x.Group == 1).Sum(x => x.Amount),
+                    SrcTrans = "END_YEAR"
+                });
             }
 
             return journals;
