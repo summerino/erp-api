@@ -147,7 +147,9 @@ namespace ERP.Entity
         public DbSet<VwPurchaseReturnDetail> VwPurchaseReturnDetails { get; set; }
         public DbSet<PurchaseReturnDetailExchDiffItem> PurchaseReturnDetailExchDiffItems { get; set; }
         public DbSet<VwPurchaseReturnDetailExchDiffItem> VwPurchaseReturnDetailExchDiffItems { get; set; }
+        public DbSet<ReportBySupplier> ReportBySuppliers { get; set; }
 
+        public DbSet<ReportByReceive> ReportByReceives { get; set; }
         // Sales entities
         public DbSet<Area> Areas { get; set; }
         public DbSet<VwArea> VwAreas { get; set; }
@@ -1111,6 +1113,15 @@ namespace ERP.Entity
             modelBuilder.Entity<VwPurchaseReturnDetailExchDiffItem>()
                 .HasNoKey()
                 .ToView("vwPurchaseReturnDetailExchDiffItem", Schema.Purchasing);
+
+            // Purchase Report
+            modelBuilder.Entity<ReportBySupplier>()
+                .HasNoKey()
+                .ToTable("ReportBySupplier", t => t.ExcludeFromMigrations());
+
+            modelBuilder.Entity<ReportByReceive>()
+               .HasNoKey()
+               .ToTable("ReportByReceive", t => t.ExcludeFromMigrations());
 
             // Sales entities
             // Area entities
