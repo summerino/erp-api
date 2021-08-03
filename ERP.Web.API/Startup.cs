@@ -191,6 +191,7 @@ namespace ERP.Web.API
             services.AddScoped<IPurchaseOrderService, PurchaseOrderService>();
             services.AddScoped<IPurchaseReceiveService, PurchaseReceiveService>();
             services.AddScoped<IPurchaseReturnService, PurchaseReturnService>();
+            services.AddScoped<IAPReportService, APReportService>();
 
             // Sales services
             services.AddScoped<IAreaService, AreaService>();
