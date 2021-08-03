@@ -10,6 +10,8 @@ namespace ERP.Entity.Purchase
     {
         public string Code { get; set; }
 
+        public string Initial { get; set; }
+
         public string Name { get; set; }
 
         public int TotalTrans { get; set; }
