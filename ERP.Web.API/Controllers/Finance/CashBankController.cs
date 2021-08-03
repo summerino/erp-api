@@ -147,9 +147,6 @@ namespace ERP.Web.API.Controllers.Finance
             if (!isValid)
                 return Ok(new SaveResult(false, message));
 
-            // make abs
-            data.Amount = Math.Abs(data.Amount);
-
             // Insert process
             data.Mark = "A";
             data.CreatedBy = _claim.UserId;
@@ -173,9 +170,6 @@ namespace ERP.Web.API.Controllers.Finance
             var (isValid, message) = Validate(data);
             if (!isValid)
                 return Ok(new SaveResult(false, message));
-
-            // make abs
-            data.Amount = Math.Abs(data.Amount);
 
             // Update process
             data.UpdatedBy = _claim.UserId;
@@ -216,9 +210,21 @@ namespace ERP.Web.API.Controllers.Finance
             if (!_sysPar.IsStartDateValid(data.Date))
                 return (false, "Tanggal tidak boleh lebih kecil dari tanggal mulai data.");
 
-            return !onDelete && !data.ItemDetails.Any()
-                ? (false, "Detail tidak boleh kosong.")
-                : (true, "");
+            if (!onDelete)
+            {
+                switch (data.Type)
+                {
+                    case "D" when data.Amount < 0:
+                        return (false, "Total nilai tidak boleh minus untuk tipe kas bank masuk.");
+                    case "C" when data.Amount > 0:
+                        return (false, "Total nilai tidak boleh plus untuk tipe kas bank keluar.");
+                }
+
+                if (!data.ItemDetails.Any())
+                    return (false, "Detail tidak boleh kosong.");
+            }
+
+            return (true, "");
         }
     }
 }
