@@ -117,7 +117,6 @@ namespace ERP.Entity.Purchase
         public string ApprovedInitial { get; set; }
 
         public string Status { get; set; }
-
     }
 
     [Table("PurchaseOrderDetail", Schema = Schema.Purchasing)]

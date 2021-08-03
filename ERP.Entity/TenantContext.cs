@@ -66,13 +66,13 @@ namespace ERP.Entity
         public DbSet<GeneralCashBankDetail> GeneralCashBankDetails { get; set; }
         public DbSet<VwGeneralCashBankHeader> VwGeneralCashBankHeaders { get; set; }
         public DbSet<VwGeneralCashBankDetail> VwGeneralCashBankDetails { get; set; }
+        public DbSet<VwInterCashBankHeader> VwInterCashBankHeaders { get; set; }
         public DbSet<CashBankType> CashBankTypes { get; set; }
         public DbSet<VwCashBankType> VwCashBankTypes { get; set; }
-        public DbSet<VwAP> VwAPs { get; set; }
         public DbSet<VwAR> VwARs { get; set; }
-        public DbSet<VwSR> VwSRs { get; set; }
-        public DbSet<VwPR> VwPRs { get; set; }
-        public DbSet<VwInterCashBankHeader> VwInterCashBankHeaders { get; set; }
+        public DbSet<VwAP> VwAPs { get; set; }
+        public DbSet<VwOutstandingCreditMemo> VwOutstandingCreditMemos { get; set; }
+        public DbSet<VwOutstandingDebitMemo> VwOutstandingDebitMemos { get; set; }
 
         // General entities
         public DbSet<Currency> Currencies { get; set; }
@@ -494,30 +494,6 @@ namespace ERP.Entity
                 .HasNoKey()
                 .ToView("vwGeneralCashBankHeader", Schema.Finance);
 
-            modelBuilder.Entity<VwCashBankType>()
-                .HasNoKey()
-                .ToView("vwCashBankType", Schema.Finance);
-
-            modelBuilder.Entity<VwAP>()
-                .HasNoKey()
-                .ToView("vwAP", Schema.Finance);
-
-            modelBuilder.Entity<VwAR>()
-                .HasNoKey()
-                .ToView("vwAR", Schema.Finance);
-
-            modelBuilder.Entity<VwPR>()
-                .HasNoKey()
-                .ToView("VwPR", Schema.Finance);
-
-            modelBuilder.Entity<VwSR>()
-                .HasNoKey()
-                .ToView("VwSR", Schema.Finance);
-
-            modelBuilder.Entity<VwInterCashBankHeader>()
-                .HasNoKey()
-                .ToView("vwInterCashBankHeader", Schema.Finance);
-
             modelBuilder.Entity<GeneralCashBankDetail>(entity =>
             {
                 entity.Property(e => e.Code)
@@ -542,6 +518,30 @@ namespace ERP.Entity
             modelBuilder.Entity<VwGeneralCashBankDetail>()
                 .HasNoKey()
                 .ToView("vwGeneralCashBankDetail", Schema.Finance);
+
+            modelBuilder.Entity<VwInterCashBankHeader>()
+                .HasNoKey()
+                .ToView("vwInterCashBankHeader", Schema.Finance);
+
+            modelBuilder.Entity<VwCashBankType>()
+                .HasNoKey()
+                .ToView("vwCashBankType", Schema.Finance);
+
+            modelBuilder.Entity<VwAR>()
+                .HasNoKey()
+                .ToView("vwAR", Schema.Finance);
+
+            modelBuilder.Entity<VwAP>()
+                .HasNoKey()
+                .ToView("vwAP", Schema.Finance);
+
+            modelBuilder.Entity<VwOutstandingCreditMemo>()
+                .HasNoKey()
+                .ToView("vwOutstandingCreditMemo", Schema.Finance);
+
+            modelBuilder.Entity<VwOutstandingDebitMemo>()
+                .HasNoKey()
+                .ToView("vwOutstandingDebitMemo", Schema.Finance);
 
             // General entities
             // Employee entities

@@ -68,14 +68,14 @@ namespace ERP.Web.API.Controllers.Finance
         }
 
         [HttpGet("ap")]
-        public IActionResult GetDataAP(string cashbankCode, string search, string filters, string sorts, int skip, int take)
+        public IActionResult GetDataAP(string cbCode, string search, string filters, string sorts, int skip, int take)
         {
             var data =
                 _cb.GetDataAP(
                     skip, take,
                     JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
                     JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
-                    search, cashbankCode);
+                    search, cbCode);
 
             return Ok(new ApiResponse
             {
@@ -85,14 +85,14 @@ namespace ERP.Web.API.Controllers.Finance
         }
 
         [HttpGet("ar")]
-        public IActionResult GetDataAR(string cashbankCode, string search, string filters, string sorts, int skip, int take)
+        public IActionResult GetDataAR(string cbCode, string search, string filters, string sorts, int skip, int take)
         {
             var data =
                 _cb.GetDataAR(
                     skip, take,
                     JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
                     JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
-                    search, cashbankCode);
+                    search, cbCode);
 
             return Ok(new ApiResponse
             {
@@ -102,14 +102,14 @@ namespace ERP.Web.API.Controllers.Finance
         }
 
         [HttpGet("debit-memo")]
-        public IActionResult GetDataDebitMemo(string type, string cashbankCode, string search, string filters, string sorts, int skip, int take)
+        public IActionResult GetDataDebitMemo(string type, string cbCode, string search, string filters, string sorts, int skip, int take)
         {
             var data =
                 _cb.GetDataDebitMemo(
                     skip, take,
                     JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
                     JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
-                    search, cashbankCode, type);
+                    search, cbCode, type);
 
             return Ok(new ApiResponse
             {
@@ -119,14 +119,14 @@ namespace ERP.Web.API.Controllers.Finance
         }
 
         [HttpGet("credit-memo")]
-        public IActionResult GetDataCreditMemo(string type, string cashbankCode, string search, string filters, string sorts, int skip, int take)
+        public IActionResult GetDataCreditMemo(string type, string cbCode, string search, string filters, string sorts, int skip, int take)
         {
             var data =
                 _cb.GetDataCreditMemo(
                     skip, take,
                     JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
                     JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
-                    search, cashbankCode, type);
+                    search, cbCode, type);
 
             return Ok(new ApiResponse
             {
@@ -139,16 +139,13 @@ namespace ERP.Web.API.Controllers.Finance
         public IActionResult OnPost(CashBankRequest data)
         {
             // Checking role authorization
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Insert }).Any())
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Insert }).Any())
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
             // Validate process
             var (isValid, message) = Validate(data);
             if (!isValid)
                 return Ok(new SaveResult(false, message));
-
-            // make abs
-            data.Amount = Math.Abs(data.Amount);
 
             // Insert process
             data.Mark = "A";
@@ -166,16 +163,13 @@ namespace ERP.Web.API.Controllers.Finance
         public IActionResult OnPut(string code, CashBankRequest data)
         {
             // Checking role authorization
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Update }).Any())
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Update }).Any())
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
             // Validate process
             var (isValid, message) = Validate(data);
             if (!isValid)
                 return Ok(new SaveResult(false, message));
-
-            // make abs
-            data.Amount = Math.Abs(data.Amount);
 
             // Update process
             data.UpdatedBy = _claim.UserId;
@@ -190,7 +184,7 @@ namespace ERP.Web.API.Controllers.Finance
         public IActionResult OnDelete(string code, CashBankRequest data)
         {
             // Checking role authorization
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Void }).Any())
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Void }).Any())
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
             // Validate process
@@ -216,9 +210,21 @@ namespace ERP.Web.API.Controllers.Finance
             if (!_sysPar.IsStartDateValid(data.Date))
                 return (false, "Tanggal tidak boleh lebih kecil dari tanggal mulai data.");
 
-            return !onDelete && !data.ItemDetails.Any()
-                ? (false, "Detail tidak boleh kosong.")
-                : (true, "");
+            if (!onDelete)
+            {
+                switch (data.Type)
+                {
+                    case "D" when data.Amount < 0:
+                        return (false, "Total nilai tidak boleh minus untuk tipe kas bank masuk.");
+                    case "C" when data.Amount > 0:
+                        return (false, "Total nilai tidak boleh plus untuk tipe kas bank keluar.");
+                }
+
+                if (!data.ItemDetails.Any())
+                    return (false, "Detail tidak boleh kosong.");
+            }
+
+            return (true, "");
         }
     }
 }

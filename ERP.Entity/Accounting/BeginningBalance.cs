@@ -196,6 +196,8 @@ namespace ERP.Entity.Accounting
 
         public decimal Used { get; set; }
 
+        public decimal Remaining { get; set; }
+
         public string Notes { get; set; }
 
         public string CustName { get; set; }
@@ -261,6 +263,8 @@ namespace ERP.Entity.Accounting
 
         public decimal Used { get; set; }
 
+        public decimal Remaining { get; set; }
+
         public string Notes { get; set; }
 
         public string SupName { get; set; }
@@ -269,5 +273,4 @@ namespace ERP.Entity.Accounting
 
         public string UpdatedInitial { get; set; }
     }
-
 }

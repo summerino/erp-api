@@ -12,14 +12,15 @@ using ERP.Web.API.Model.Finance;
 
 namespace ERP.Web.API.Domain.Services.Finance
 {
-    public class CashBankService : GeneralService<CashBankRequest>, ICashBankService
+    public class CashBankService : GeneralService<GeneralCashBankHeader>, ICashBankService
     {
         public CashBankService(TenantContext db)
             : base(db)
         {
         }
 
-        public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string search)
+        public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
+            string search)
         {
             var data = Db.VwGeneralCashBankHeaders.AsQueryable();
 
@@ -34,103 +35,156 @@ namespace ERP.Web.API.Domain.Services.Finance
 
             return data.ToDataSourceResult(skip, take, filters, sorts);
         }
-        public DataSourceResult GetDataAP(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string search, string cashBankCode)
-        {
-            var data = Db.VwAPs.AsQueryable();
-            if (!string.IsNullOrEmpty(cashBankCode) && !string.IsNullOrWhiteSpace(cashBankCode))
-            {
-                var listExistingTransactions = Db.GeneralCashBankDetails.Where(x => x.Code.Equals(cashBankCode)).Select(x => x.TransCode).ToList();
-                data = data.Where(x => !listExistingTransactions.Contains(x.Code));
-            }
-            return data.ToDataSourceResult(skip, take, filters, sorts);
-        }
-        public DataSourceResult GetDataAR(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string search, string cashBankCode)
+
+        public DataSourceResult GetDataAR(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
+            string search, string cbCode)
         {
             var data = Db.VwARs.AsQueryable();
-            if (!string.IsNullOrEmpty(cashBankCode) && !string.IsNullOrWhiteSpace(cashBankCode))
+            if (!string.IsNullOrWhiteSpace(cbCode))
             {
-                var listExistingTransactions = Db.GeneralCashBankDetails.Where(x => x.Code.Equals(cashBankCode)).Select(x => x.TransCode).ToList();
+                var listExistingTransactions = 
+                    Db.GeneralCashBankDetails
+                        .Where(x => x.Code.Equals(cbCode))
+                        .Select(x => x.TransCode).ToList();
                 data = data.Where(x => !listExistingTransactions.Contains(x.Code));
             }
 
             return data.ToDataSourceResult(skip, take, filters, sorts);
         }
-        public DataSourceResult GetDataDebitMemo(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string search, string cashBankCode, string type)
+
+        public DataSourceResult GetDataAP(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
+            string search, string cbCode)
         {
-            var listExistingTransactions = new List<string>();
-            var data = Db.VwDebitMemos.Where(x => x.Used < x.Amount).AsQueryable();
-            if (type == "RDPS")
+            var data = Db.VwAPs.AsQueryable();
+            if (!string.IsNullOrWhiteSpace(cbCode))
             {
-                if (!string.IsNullOrEmpty(cashBankCode) && !string.IsNullOrWhiteSpace(cashBankCode))
-                {
-                    listExistingTransactions = Db.GeneralCashBankDetails.Where(x => x.Code.Equals(cashBankCode)).Select(x => x.TransCode).ToList();
-                    data = data.Where(x => !listExistingTransactions.Contains(x.Code));
-                }
-                data.Where(x => x.SrcTrans == 1 && x.Remaining > 0 && (x.Mark == "A" || x.Mark == "PU"));
-                return data.ToDataSourceResult(skip, take, filters, sorts);
-            }
-            else if (type == "DPS")
-            {
-                if (!string.IsNullOrEmpty(cashBankCode) && !string.IsNullOrWhiteSpace(cashBankCode))
-                {
-                    listExistingTransactions = Db.GeneralCashBankDetails.Where(x => x.Code.Equals(cashBankCode)).Select(x => x.TransCode).ToList();
-                    data = data.Where(x => !listExistingTransactions.Contains(x.Code));
-                }
-                data.Where(x => x.SrcTrans == 1 && x.Mark == "PP");
-            }
-            else if (type == "PR")
-            {
-                var pr = Db.VwPRs.AsQueryable();
-                if (!string.IsNullOrEmpty(cashBankCode) && !string.IsNullOrWhiteSpace(cashBankCode))
-                {
-                    listExistingTransactions = Db.GeneralCashBankDetails.Where(x => x.Code.Equals(cashBankCode)).Select(x => x.TransCode).ToList();
-                    pr = pr.Where(x => !listExistingTransactions.Contains(x.Code));
-                }
-                return pr.ToDataSourceResult(skip, take, filters, sorts);
+                var listExistingTransactions = 
+                    Db.GeneralCashBankDetails
+                        .Where(x => x.Code.Equals(cbCode))
+                        .Select(x => x.TransCode).ToList();
+                data = data.Where(x => !listExistingTransactions.Contains(x.Code));
             }
             return data.ToDataSourceResult(skip, take, filters, sorts);
         }
-        public DataSourceResult GetDataCreditMemo(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string search, string cashBankCode, string type)
+
+        public DataSourceResult GetDataCreditMemo(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
+            string search, string cbCode, string type)
         {
-           
-            var listExistingTransactions = new List<string>();
-            var data = Db.VwCreditMemos.Where(x => x.Used < x.Amount).AsQueryable();
-            if (type == "RDPC")
+            var transLists = new List<string>();
+            if (!string.IsNullOrWhiteSpace(cbCode))
             {
-                if (!string.IsNullOrEmpty(cashBankCode) && !string.IsNullOrWhiteSpace(cashBankCode))
-                {
-                    listExistingTransactions = Db.GeneralCashBankDetails.Where(x => x.Code.Equals(cashBankCode)).Select(x => x.TransCode).ToList();
-                    data = data.Where(x => !listExistingTransactions.Contains(x.Code));
-                }
-                data.Where(x => x.SrcTrans == 1 && x.Remaining > 0 && (x.Mark == "A" || x.Mark == "PU"));
-                return data.ToDataSourceResult(skip, take, filters, sorts);
+                transLists =
+                    Db.GeneralCashBankDetails
+                        .Where(x => x.Code.Equals(cbCode))
+                        .Select(x => x.TransCode).ToList();
             }
-            else if (type == "DPC")
+
+            switch (type)
             {
-                if (!string.IsNullOrEmpty(cashBankCode) && !string.IsNullOrWhiteSpace(cashBankCode))
+                case "DPC":
                 {
-                    listExistingTransactions = Db.GeneralCashBankDetails.Where(x => x.Code.Equals(cashBankCode)).Select(x => x.TransCode).ToList();
-                    data = data.Where(x => !listExistingTransactions.Contains(x.Code));
+                    var data = Db.VwCreditMemos.Where(x => x.SrcTrans == 1 && x.Mark == "PP");
+
+                    if (!string.IsNullOrWhiteSpace(cbCode))
+                        data = data.Where(x => !transLists.Contains(x.Code));
+                    
+                    return data.ToDataSourceResult(skip, take, filters, sorts);
                 }
-                data.Where(x => x.SrcTrans == 1 && x.Mark == "PP");
-            }
-            else if (type == "SR")
-            {
-                var pr = Db.VwSRs.AsQueryable();
-                if (!string.IsNullOrEmpty(cashBankCode) && !string.IsNullOrWhiteSpace(cashBankCode))
+                case "RDPC":
                 {
-                    listExistingTransactions = Db.GeneralCashBankDetails.Where(x => x.Code.Equals(cashBankCode)).Select(x => x.TransCode).ToList();
-                    pr = pr.Where(x => !listExistingTransactions.Contains(x.Code));
+                    //var data = (from bb in Db.BeginningBalanceCreditMemos
+                    //        join c in Db.Customers on bb.CustCode equals c.Code into cs
+                    //        from c in cs.DefaultIfEmpty()
+                    //        where bb.Type == 1 && bb.Used < bb.Amount && bb.IsActive
+                    //        select new
+                    //        {
+                    //            bb.Code, bb.Date, bb.CustCode, CustName = c != null ? c.Name : "",
+                    //            bb.CurrCode, bb.Rate,
+                    //            bb.Amount, bb.Used, Remaining = bb.Amount - bb.Used, bb.Notes, Src = "BB"
+                    //        })
+                    //    .Union(
+                    //        from cm in Db.VwCreditMemos
+                    //        where cm.SrcTrans == 1 && cm.Remaining > 0 && new[] { "A", "PU" }.Contains(cm.Mark)
+                    //        select new
+                    //        {
+                    //            cm.Code, cm.Date, cm.CustCode, cm.CustName,
+                    //            cm.CurrCode, Rate = 1m,
+                    //            cm.Amount, cm.Used, cm.Remaining, cm.Notes, Src = "CM"
+                    //        });
+
+                    var data = Db.VwOutstandingCreditMemos.Where(x => x.Type ==  1);
+
+                    if (!string.IsNullOrWhiteSpace(cbCode))
+                        data = data.Where(x => !transLists.Contains(x.Code));
+
+                    return data.ToDataSourceResult(skip, take, filters, sorts);
                 }
-                return pr.ToDataSourceResult(skip, take, filters, sorts);
+                case "SR":
+                {
+                    var data = Db.VwOutstandingCreditMemos.Where(x => x.Type == 2);
+
+                    if (!string.IsNullOrWhiteSpace(cbCode))
+                        data = data.Where(x => !transLists.Contains(x.Code));
+
+                    return data.ToDataSourceResult(skip, take, filters, sorts);
+                }
+                default:
+                    return null;
             }
-            return data.ToDataSourceResult(skip, take, filters, sorts);
         }
+
+        public DataSourceResult GetDataDebitMemo(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
+            string search, string cbCode, string type)
+        {
+            var transLists = new List<string>();
+            if (!string.IsNullOrWhiteSpace(cbCode))
+            {
+                transLists =
+                    Db.GeneralCashBankDetails
+                        .Where(x => x.Code.Equals(cbCode))
+                        .Select(x => x.TransCode).ToList();
+            }
+
+            switch (type)
+            {
+                case "DPS":
+                {
+                    var data = Db.VwDebitMemos.Where(x => x.SrcTrans == 1 && x.Mark == "PP");
+                    
+                    if (!string.IsNullOrWhiteSpace(cbCode))
+                        data = data.Where(x => !transLists.Contains(x.Code));
+                    
+                    return data.ToDataSourceResult(skip, take, filters, sorts);
+                }
+                case "RDPS":
+                {
+                    var data = Db.VwOutstandingDebitMemos.Where(x => x.Type == 1);
+
+                    if (!string.IsNullOrWhiteSpace(cbCode))
+                        data = data.Where(x => !transLists.Contains(x.Code));
+                    
+                    return data.ToDataSourceResult(skip, take, filters, sorts);
+                }
+                case "PR":
+                {
+                    var data = Db.VwOutstandingDebitMemos.Where(x => x.Type == 2);
+
+                    if (!string.IsNullOrWhiteSpace(cbCode))
+                        data = data.Where(x => !transLists.Contains(x.Code));
+
+                    return data.ToDataSourceResult(skip, take, filters, sorts);
+                }
+                default:
+                    return null;
+            }
+        }
+
         public IEnumerable<VwGeneralCashBankDetail> GetDetailData(string code)
         {
             var data = Db.VwGeneralCashBankDetails.Where(x => x.Code.Equals(code));
             return data;
         }
+
         public SaveResult Insert(CashBankRequest data)
         {
             var result = new SaveResult(false);
@@ -138,8 +192,8 @@ namespace ERP.Web.API.Domain.Services.Finance
             using var transaction = Db.Database.BeginTransaction();
             try
             {
-                var querys = new List<string>();
-                (result.Message, result.Success, querys) = Validate(data);
+                List<string> queries;
+                (result.Message, result.Success, queries) = Validate(data);
                 if (!result.Success) return result;
 
                 // Get new code
@@ -164,13 +218,15 @@ namespace ERP.Web.API.Domain.Services.Finance
                         Amount = item.Amount,
                         TypeAmount = item.TypeAmount,
                         TransAmount = item.TransAmount,
-                        Notes = item.Notes
+                        Notes = item.Notes,
+                        Src = item.Src
                     });
                     j++;
                 }
 
-                if (querys.Any()) {
-                    string query = Convert(querys);
+                if (queries.Any())
+                {
+                    string query = string.Join("", queries);
                     if (!string.IsNullOrEmpty(query))
                     {
                         Db.Database.ExecuteSqlRaw(query);
@@ -189,9 +245,10 @@ namespace ERP.Web.API.Domain.Services.Finance
 
             result.Success = true;
             result.Data = data.Code;
-            result.Message = "Data kas bank berhasil disimpan.";
+            result.Message = "Data kas bank umum berhasil disimpan.";
             return result;
         }
+
         public SaveResult Update(CashBankRequest data)
         {
             var result = new SaveResult(false);
@@ -200,14 +257,14 @@ namespace ERP.Web.API.Domain.Services.Finance
             using var transaction = Db.Database.BeginTransaction();
             try
             {
-                var querys = new List<string>();
-                (result.Message, result.Success, querys) = Validate(data);
+                var queries = new List<string>();
+                (result.Message, result.Success, queries) = Validate(data);
                 if (!result.Success) return result;
 
                 // Checking mark header data
                 if (Db.GeneralCashBankHeaders.Any(x => x.Code == data.Code && x.Mark == "V"))
                 {
-                    result.Message = "Data kas bank tidak bisa diubah karena sudah ditandai sebagai void.";
+                    result.Message = "Data kas bank umum tidak bisa diubah karena sudah ditandai sebagai void.";
                     return result;
                 }
 
@@ -249,7 +306,8 @@ namespace ERP.Web.API.Domain.Services.Finance
                             Amount = item.Amount,
                             TypeAmount = item.TypeAmount,
                             TransAmount = item.TransAmount,
-                            Notes = item.Notes
+                            Notes = item.Notes,
+                            Src = item.Src
                         });
                     }
                     else
@@ -257,12 +315,14 @@ namespace ERP.Web.API.Domain.Services.Finance
                         item.LineNo = ++i;
                         Db.GeneralCashBankDetails.Update(item);
                         Db.Entry(item).Property(e => e.Code).IsModified = false;
+                        Db.Entry(item).Property(e => e.Type).IsModified = false;
+                        Db.Entry(item).Property(e => e.Src).IsModified = false;
                     }
                 }
 
-                if (querys.Any())
+                if (queries.Any())
                 {
-                    string query = Convert(querys);
+                    var query = string.Join("", queries);
                     if (!string.IsNullOrEmpty(query))
                     {
                         Db.Database.ExecuteSqlRaw(query);
@@ -281,9 +341,10 @@ namespace ERP.Web.API.Domain.Services.Finance
 
             result.Success = true;
             result.Data = data.Code;
-            result.Message = "Data kas bank berhasil diperbarui.";
+            result.Message = "Data kas bank umum berhasil diperbarui.";
             return result;
         }
+
         public SaveResult Delete(string code, int userId)
         {
             var result = new SaveResult(false);
@@ -294,7 +355,7 @@ namespace ERP.Web.API.Domain.Services.Finance
                 // Checking mark header data
                 if (data.Mark == "V")
                 {
-                    result.Message = "Data kas bank tidak bisa ditandai sebagai void karena sudah ditandai sebagai void.";
+                    result.Message = "Data kas bank umum tidak bisa ditandai sebagai void karena sudah ditandai sebagai void.";
                     return result;
                 }
 
@@ -309,165 +370,202 @@ namespace ERP.Web.API.Domain.Services.Finance
             }
 
             result.Success = true;
-            result.Message = "Data kas bank berhasil ditandai sebagai void.";
+            result.Message = "Data kas bank umum berhasil ditandai sebagai void.";
             return result;
         }
+
         private (string, bool, List<string>) Validate(CashBankRequest data) 
         {
             var listTransCode = data.ItemDetails.Select(x => x.TransCode).ToList();
             
-            // validasi hutang
             var oldTransactions = (from h in Db.GeneralCashBankHeaders
                                   join d in Db.GeneralCashBankDetails on h.Code equals d.Code
                                   where h.Mark == "A" && listTransCode.Contains(d.TransCode) && h.Code != data.Code
                                   select d).ToList();
             
-            var querys = new List<string>();
+            var queries = new List<string>();
             
             foreach (var item in data.ItemDetails)
             {
-                
-
-                if (item.Type == "AP") 
+                if (item.Type == "AR")
                 {
+                    var prevTransaction = oldTransactions.Where(x => x.TransCode == item.TransCode).Sum(x => x.Amount);
+                    var totalAmount = prevTransaction + item.Amount;
 
-                    decimal prevTransaction = oldTransactions.Where(x => x.TransCode.Equals(item.TransCode)).Sum(x => x.Amount);
-                    decimal totalAmount = prevTransaction + item.Amount;
-
-                    //validasi hutang
-                    var header = Db.PurchaseInvoiceHeaders.SingleOrDefault(x => x.Code.Equals(item.TransCode));
-                    if (header != null) {
-                        if (totalAmount <= header.Total)
-                        {
-                            string mark = header.Total == totalAmount ? "CMP" : "PP";
-                            string queryHeader = $"UPDATE Purchasing.PurchaseInvoiceHeader SET PaidAmount='{totalAmount}', Mark='{mark}' WHERE Code='{item.TransCode}';";
-                            querys.Add(queryHeader);
-
-                            var detail = Db.PurchaseInvoiceDetails.Where(x => x.Code.Equals(item.TransCode));
-                            foreach (var item2 in detail)
-                            {
-                                var proRateValue = totalAmount * item2.Total / header.Total;
-                                string queryDetail = $"UPDATE Purchasing.PurchaseReceiveHeader SET PaidAmount='{proRateValue}' WHERE Code='{item2.RcvCode}';";
-                                querys.Add(queryDetail);
-                            }
-                        }
-                        else
-                        {
-                            return ($"Lebih bayar untuk transaksi dengan kode {header.Code}.", false, new List<string>());
-                        }
-                    }
-                    
-                } 
-                else if (item.Type == "AR") 
-                {
-
-                    decimal prevTransaction = oldTransactions.Where(x => x.TransCode.Equals(item.TransCode)).Sum(x => x.Amount);
-                    decimal totalAmount = prevTransaction + item.Amount;
-                    // validasi piutang
-                    var header = Db.SalesInvoiceHeaders.SingleOrDefault(x => x.Code.Equals(item.TransCode));
-
-                    if (header != null) 
+                    // Validasi piutang
+                    if (item.Src == "BB")
                     {
-                        if (totalAmount <= header.Total)
-                        {
-                            string mark = header.Total == totalAmount ? "CMP" : "PP";
-                            string queryHeader = $"UPDATE Sales.SalesInvoiceHeader SET PaidAmount='{totalAmount}', Mark='{mark}' WHERE Code='{item.TransCode}';";
-                            querys.Add(queryHeader);
+                        var bbData = Db.BeginningBalanceARs.SingleOrDefault(x => x.Code == item.TransCode);
 
-                            var detail = Db.SalesInvoiceDetails.Where(x => x.Code.Equals(item.TransCode));
-                            foreach (var item2 in detail)
-                            {
-                                var proRateValue = totalAmount * item2.Total / header.Total;
-                                string queryDetail = $"UPDATE Sales.SalesDeliveryHeader SET PaidAmount='{proRateValue}' WHERE Code='{item2.DoCode}';";
-                                querys.Add(queryDetail);
-                            }
-                        }
-                        else
-                        {
+                        if (bbData == null)
+                            continue;
+
+                        if (totalAmount > data.Amount)
+                            return ($"Lebih bayar untuk transaksi dengan kode {bbData.Code}.", false, new List<string>());
+
+                        queries.Add(
+                            $"UPDATE Accounting.BeginningBalanceAR SET PaidAmount='{totalAmount}' WHERE Code='{item.TransCode}';");
+                    }
+                    else
+                    {
+                        var header = Db.SalesInvoiceHeaders.SingleOrDefault(x => x.Code == item.TransCode);
+                        
+                        if (header == null)
+                            continue;
+
+                        if (totalAmount > header.Total)
                             return ($"Lebih bayar untuk transaksi dengan kode {header.Code}.", false, new List<string>());
+
+                        var mark = header.Total == totalAmount ? "CMP" : "PP";
+
+                        queries.Add(
+                            $"UPDATE Sales.SalesInvoiceHeader SET PaidAmount='{totalAmount}', Mark='{mark}' WHERE Code='{item.TransCode}';");
+
+                        var detail = Db.SalesInvoiceDetails.Where(x => x.Code == item.TransCode);
+                        foreach (var item2 in detail)
+                        {
+                            var proRateValue = totalAmount * item2.Total / header.Total;
+                            queries.Add(
+                                $"UPDATE Sales.SalesDeliveryHeader SET PaidAmount='{proRateValue}' WHERE Code='{item2.DoCode}';");
                         }
                     }
                 }
-                else if (item.Type == "DPC" || item.Type == "DPS") 
+                else if (item.Type == "AP") 
                 {
-                    string query = QueryBuilder(item.Type, item.TransCode);
-                    querys.Add(query);
-                }
-                else if (item.Type == "PR" || item.Type == "RDPS" || item.Type == "RDPC" || item.Type == "SR")
-                {
-                    decimal tempTotalAmount = 0;
-                    string mark = "";
-                    // validasi retur uang muka pembelian dan retur pembelian
-                    if (item.Type == "PR" || item.Type == "RDPS")
-                    {
-                        decimal prevTransaction = oldTransactions.Where(x => x.TransCode.Equals(item.TransCode) && x.TypeAmount.Equals("C")).Sum(x => x.Amount);
-                        decimal totalAmount = prevTransaction + item.Amount;
-                        tempTotalAmount = totalAmount;
+                    var prevTransaction = oldTransactions.Where(x => x.TransCode == item.TransCode).Sum(x => x.Amount);
+                    var totalAmount = prevTransaction + item.Amount;
 
-                        var memo = Db.DebitMemos.SingleOrDefault(x => x.Code.Equals(item.TransCode));
-                        if (memo != null) 
+                    // Validasi hutang
+                    if (item.Src == "BB")
+                    {
+                        var bbData = Db.BeginningBalanceAPs.SingleOrDefault(x => x.Code == item.TransCode);
+                        
+                        if (bbData == null)
+                            continue;
+
+                        if (totalAmount > data.Amount)
+                            return ($"Lebih bayar untuk transaksi dengan kode {bbData.Code}.", false, new List<string>());
+
+                        queries.Add(
+                            $"UPDATE Accounting.BeginningBalanceAP SET PaidAmount='{totalAmount}' WHERE Code='{item.TransCode}';");
+                    }
+                    else
+                    {
+                        var header = Db.PurchaseInvoiceHeaders.SingleOrDefault(x => x.Code == item.TransCode);
+                        if (header == null)
+                            continue;
+
+                        if (totalAmount > header.Total)
+                            return ($"Lebih bayar untuk transaksi dengan kode {header.Code}.", false, new List<string>());
+                        
+                        var mark = header.Total == totalAmount ? "CMP" : "PP";
+
+                        queries.Add(
+                            $"UPDATE Purchasing.PurchaseInvoiceHeader SET PaidAmount='{totalAmount}', Mark='{mark}' WHERE Code='{item.TransCode}';");
+
+                        var detail = Db.PurchaseInvoiceDetails.Where(x => x.Code == item.TransCode);
+                        foreach (var item2 in detail)
                         {
-                            mark = tempTotalAmount == memo.Amount ? "FU" : "PU";
-                            //decimal remaining = memo.Amount - memo.Used;
+                            var proRateValue = totalAmount * item2.Total / header.Total;
+                            queries.Add(
+                                $"UPDATE Purchasing.PurchaseReceiveHeader SET PaidAmount='{proRateValue}' WHERE Code='{item2.RcvCode}';");
+                        }
+                    }
+                }
+                else if (item.Type is "DPC" or "DPS") 
+                {
+                    var query = QueryBuilder(item.Type, item.TransCode);
+                    queries.Add(query);
+                }
+                else if (item.Type is "PR" or "RDPS" or "RDPC" or "SR")
+                {
+                    // Validasi retur uang muka pembelian dan retur pembelian
+                    if (item.Type is "RDPS" or "PR")
+                    {
+                        var prevTransaction = oldTransactions.Where(x => x.TransCode == item.TransCode && x.TypeAmount == "C").Sum(x => x.Amount);
+                        var totalAmount = prevTransaction + item.Amount;
+
+                        if (item.Src == "BB")
+                        {
+                            var bbData = Db.BeginningBalanceDebitMemos.SingleOrDefault(x => x.Code.Equals(item.TransCode));
+
+                            if (bbData == null)
+                                continue;
+
+                            if (totalAmount > data.Amount)
+                                return ($"Lebih bayar untuk transaksi dengan kode {bbData.Code}.", false, new List<string>());
+
+                            queries.Add(
+                                $"UPDATE Accounting.BeginningBalanceDebitMemo SET Used='{totalAmount}' WHERE Code='{item.TransCode}';");
+                        }
+                        else
+                        {
+                            var memo = Db.DebitMemos.SingleOrDefault(x => x.Code == item.TransCode);
+                            if (memo != null)
+                                continue;
+
                             if (totalAmount > memo.Amount) 
-                            {
                                 return ($"Lebih bayar untuk transaksi dengan kode {memo.Code}.", false, new List<string>());
-                            }
+                            
+                            var mark = totalAmount == memo.Amount ? "FU" : "PU";
+
+                            queries.Add(
+                                $"UPDATE Purchasing.DebitMemo SET Used='{totalAmount}', Mark='{mark}' WHERE Code='{item.TransCode}';");
                         }
                     }
-                    else if(item.Type == "RDPC" || item.Type == "SR")
+                    else if(item.Type is "RDPC" or "SR")
                     {
+                        var prevTransaction = oldTransactions.Where(x => x.TransCode == item.TransCode && x.TypeAmount == "D").Sum(x => x.Amount);
+                        var totalAmount = prevTransaction + item.Amount;
 
-                        decimal prevTransaction = oldTransactions.Where(x => x.TransCode.Equals(item.TransCode) && x.TypeAmount.Equals("D")).Sum(x => x.Amount);
-                        decimal totalAmount = prevTransaction + item.Amount;
-                        tempTotalAmount = totalAmount;
-
-                        var memo = Db.CreditMemos.SingleOrDefault(x => x.Code.Equals(item.TransCode));
-                        if (memo != null)
+                        if (item.Src == "BB")
                         {
-                            mark = tempTotalAmount == memo.Amount ? "FU" : "PU";
-                            //decimal remaining = memo.Amount - memo.Used;
+                            var bbData = Db.BeginningBalanceCreditMemos.SingleOrDefault(x => x.Code == item.TransCode);
+
+                            if (bbData == null)
+                                continue;
+
+                            if (totalAmount > data.Amount)
+                                return ($"Lebih bayar untuk transaksi dengan kode {bbData.Code}.", false, new List<string>());
+
+                            queries.Add(
+                                $"UPDATE Accounting.BeginningBalanceCreditMemo SET Used='{totalAmount}' WHERE Code='{item.TransCode}';");
+                        }
+                        else
+                        {
+                            var memo = Db.CreditMemos.SingleOrDefault(x => x.Code == item.TransCode);
+                            
+                            if (memo == null)
+                                continue;
+
                             if (totalAmount > memo.Amount)
-                            {
                                 return ($"Lebih bayar untuk transaksi dengan kode {memo.Code}.", false, new List<string>());
-                            }
+
+                            var mark = totalAmount == memo.Amount ? "FU" : "PU";
+
+                            queries.Add(
+                                $"UPDATE Sales.CreditMemo SET Used='{totalAmount}', Mark='{mark}' WHERE Code='{item.TransCode}';");
                         }
                     }
-                    string query = QueryBuilder(item.Type, item.TransCode, tempTotalAmount, mark);
-                    querys.Add(query);
                 }
             }
-            return ("", true, querys);
+
+            return ("", true, queries);
         }
-        private string QueryBuilder(string type, string code, decimal amount = 0, string mark = "") 
+
+        private string QueryBuilder(string type, string code, decimal amount = 0, string mark = "")
         {
-            string query = "";
-             if (type == "DPC")
+            return type switch
             {
-                query = $"UPDATE Sales.CreditMemo SET Mark='A' WHERE Code='{code}';";
-            }
-            else if (type == "DPS")
-            {
-                query = $"UPDATE Purchasing.DebitMemo SET Mark='A' WHERE Code='{code}';";
-            }
-            else if (type == "PR" || type == "RDPS")
-            {
-                query = $"UPDATE Purchasing.DebitMemo SET Used='{amount}',Mark='{mark}' WHERE Code='{code}';";
-            }
-            else if (type == "RDPC" || type == "SR")
-            {
-                query = $"UPDATE Sales.CreditMemo SET Used='{amount}',Mark='{mark}' WHERE Code='{code}';";
-            }
-            return query;
+                "DPC" => $"UPDATE Sales.CreditMemo SET Mark='A' WHERE Code='{code}';",
+                "DPS" => $"UPDATE Purchasing.DebitMemo SET Mark='A' WHERE Code='{code}';",
+                _ => ""
+            };
         }
-        private string Convert(List<string> querys) 
+
+        private string Convert(List<string> queries)
         {
-            string query = "";
-            foreach (var item in querys)
-            {
-                query += item;
-            }
-            return query;
+            return queries.Aggregate("", (current, item) => current + item);
         }
     }
 }
