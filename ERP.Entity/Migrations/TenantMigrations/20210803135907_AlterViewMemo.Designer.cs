@@ -4,14 +4,16 @@ using ERP.Entity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ERP.Entity.Migrations.TenantMigrations
 {
     [DbContext(typeof(TenantContext))]
-    partial class TenantContextModelSnapshot : ModelSnapshot
+    [Migration("20210803135907_AlterViewMemo")]
+    partial class AlterViewMemo
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -904,10 +906,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.Property<short>("Type")
                         .HasColumnType("smallint");
 
-                    b.Property<string>("TypeName")
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
-
                     b.Property<int>("UpdatedBy")
                         .HasColumnType("int");
 
@@ -976,10 +974,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
 
                     b.Property<short>("Type")
                         .HasColumnType("smallint");
-
-                    b.Property<string>("TypeName")
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
 
                     b.Property<int>("UpdatedBy")
                         .HasColumnType("int");

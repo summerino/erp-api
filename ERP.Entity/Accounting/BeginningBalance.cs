@@ -186,6 +186,8 @@ namespace ERP.Entity.Accounting
 
         public short Type { get; set; }
 
+        public string TypeName { get; set; }
+
         public string CustCode { get; set; }
 
         public string CurrCode { get; set; }
@@ -252,6 +254,8 @@ namespace ERP.Entity.Accounting
         public DateTime Date { get; set; }
 
         public short Type { get; set; }
+
+        public string TypeName { get; set; }
 
         public string SupCode { get; set; }
 

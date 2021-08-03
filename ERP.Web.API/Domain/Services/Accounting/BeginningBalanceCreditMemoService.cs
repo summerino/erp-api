@@ -17,9 +17,10 @@ namespace ERP.Web.API.Domain.Services.Accounting
         {
         }
 
-        public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string search)
+        public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
+            string search)
         {
-            var data = Db.VwBeginningBalanceCreditMemos.AsQueryable();
+            var data = Db.VwBeginningBalanceCreditMemos.Where(x => x.IsActive);
 
             if (!string.IsNullOrEmpty(search))
             {
