@@ -148,7 +148,6 @@ namespace ERP.Entity
         public DbSet<PurchaseReturnDetailExchDiffItem> PurchaseReturnDetailExchDiffItems { get; set; }
         public DbSet<VwPurchaseReturnDetailExchDiffItem> VwPurchaseReturnDetailExchDiffItems { get; set; }
         public DbSet<ReportBySupplier> ReportBySuppliers { get; set; }
-
         public DbSet<ReportByReceive> ReportByReceives { get; set; }
         // Sales entities
         public DbSet<Area> Areas { get; set; }
@@ -203,6 +202,8 @@ namespace ERP.Entity
         public DbSet<VwVisitPlanHeader> VwVisitPlanHeaders { get; set; }
         public DbSet<VwVisitPlanDetail> VwVisitPlanDetails { get; set; }
         public DbSet<VwVisitPlanDetailCustomer> VwVisitPlanDetailCustomers { get; set; }
+        public DbSet<ReportByCustomer> ReportByCustomers { get; set; }
+        public DbSet<ReportByDelivery> ReportByDeliveries { get; set; }
 
         // System Management Entities
         public DbSet<SystemManagement.Action> Actions { get; set; }
@@ -1480,6 +1481,15 @@ namespace ERP.Entity
             modelBuilder.Entity<VwVisitPlanDetailCustomer>()
                 .HasNoKey()
                 .ToView("vwVisitPlanDetailCustomer", Schema.Sales);
+
+            // Sales Report
+            modelBuilder.Entity<ReportByCustomer>()
+                .HasNoKey()
+                .ToTable("ReportByCustomer", t => t.ExcludeFromMigrations());
+
+            modelBuilder.Entity<ReportByDelivery>()
+               .HasNoKey()
+               .ToTable("ReportByDelivery", t => t.ExcludeFromMigrations());
 
             // System Management entities
             // Company entities
