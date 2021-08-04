@@ -49,7 +49,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                       select dt.Code;
 
             var data = from piH in Db.PurchaseInvoiceHeaders
-                       where piD.Contains(piH.Code) && piH.Mark == "A"
+                       where piD.Contains(piH.Code) && piH.Mark != "V"
                        select new { piH.Code, piH.Date, piH.Total };
 
             return data.ToDynamicList();

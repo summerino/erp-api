@@ -54,7 +54,7 @@ namespace ERP.Web.API.Domain.Services.Sales
         public List<dynamic> GetRelatedTransactions(string code)
         {
             var data = from dlv in Db.SalesDeliveryHeaders
-                       where dlv.TransCode == code && dlv.Mark == "A"
+                       where dlv.TransCode == code && dlv.Mark != "V"
                        select new { dlv.Code, dlv.Date, dlv.Mark };
 
             return data.ToDynamicList();

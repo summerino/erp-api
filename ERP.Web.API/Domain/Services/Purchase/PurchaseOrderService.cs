@@ -53,7 +53,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
         public List<dynamic> GetRelatedTransactions(string code)
         {
             var data = from pr in Db.PurchaseReceiveHeaders
-                       where pr.TransCode == code && pr.Mark == "A"
+                       where pr.TransCode == code && pr.Mark != "V"
                        select new { pr.Code, pr.Date, pr.Mark };
 
             return data.ToDynamicList();

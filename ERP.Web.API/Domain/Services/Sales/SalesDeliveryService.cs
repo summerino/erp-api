@@ -49,7 +49,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                       select dt.Code;
 
             var data = from siH in Db.SalesInvoiceHeaders
-                       where siD.Contains(siH.Code) && siH.Mark == "A"
+                       where siD.Contains(siH.Code) && siH.Mark != "V"
                        select new { siH.Code, siH.Date, siH.Total };
 
             return data.ToDynamicList();
