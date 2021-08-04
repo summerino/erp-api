@@ -234,8 +234,12 @@ namespace ERP.Web.API.Domain.Services.Auth
 
         public IEnumerable<int> GetActions(int menuId, int roleId, List<int> actions)
         {
-            var query = _tenantCtx.RoleMenuActions.Where(x => x.MenuId.Equals(menuId) && x.RoleId.Equals(roleId) && actions.Contains(x.ActionId));
-            return query.Select(x=>x.ActionId);
+            var data = _tenantCtx.RoleMenuActions.Where(x => x.MenuId == menuId && x.RoleId == roleId);
+            
+            if (actions.Any())
+                data = data.Where(x => actions.Contains(x.ActionId));
+            
+            return data.Select(x => x.ActionId);
         }
     }
 }

@@ -7,7 +7,8 @@ namespace ERP.Web.API.Domain.Models.General
     public class Approval
     {
         public string TableName { get; set; }
-        public string Description { get; set; }
+
+        public int ActionId { get; set; }
     }
 
     public class MapApproval
@@ -15,26 +16,42 @@ namespace ERP.Web.API.Domain.Models.General
         public MapApproval()
         {
             Approvals = new List<Approval>();
-            Approvals.Add(new Approval { TableName = $"{Schema.AssetManagement}.FixedAsset ", Description = ApprovalType.FixedAsset });
-            Approvals.Add(new Approval { TableName = $"{Schema.Expedition}.ExpeditionInvoiceHeader", Description = ApprovalType.ExpeditionInvoice });
 
-            Approvals.Add(new Approval { TableName = $"{Schema.Inventory}.AdjustmentHeader", Description = ApprovalType.Adjustment });
-            Approvals.Add(new Approval { TableName = $"{Schema.Inventory}.TransferStockHeader", Description = ApprovalType.TransferStock });
+            // Inventory
+            Approvals.Add(new Approval { TableName = $"{Schema.Inventory}.TransferStockHeader", ActionId = (int) Actions.ApproveTransferStock });
+            Approvals.Add(new Approval { TableName = $"{Schema.Inventory}.TransferStockHeader", ActionId = (int) Actions.ApproveConsignee });
+            Approvals.Add(new Approval { TableName = $"{Schema.Inventory}.AdjustmentHeader", ActionId = (int) Actions.ApproveAdjustment });
 
-            Approvals.Add(new Approval { TableName = $"{Schema.Purchasing}.PurchaseOrderHeader", Description = ApprovalType.PurchaseOrder });
-            Approvals.Add(new Approval { TableName = $"{Schema.Purchasing}.PurchaseInvoiceHeader", Description = ApprovalType.PurchaseInvoice });
-            Approvals.Add(new Approval { TableName = $"{Schema.Purchasing}.PurchaseReceiveHeader", Description = ApprovalType.PurchaseReceive });
-            Approvals.Add(new Approval { TableName = $"{Schema.Purchasing}.PurchaseReturnHeader", Description = ApprovalType.PurchaseReturn });
+            // Purchase
+            Approvals.Add(new Approval { TableName = $"{Schema.Purchasing}.PurchaseOrderHeader", ActionId = (int) Actions.ApprovePurchaseOrder });
+            Approvals.Add(new Approval { TableName = $"{Schema.Purchasing}.PurchaseReceiveHeader", ActionId = (int) Actions.ApprovePurchaseReceive });
+            Approvals.Add(new Approval { TableName = $"{Schema.Purchasing}.PurchaseInvoiceHeader", ActionId = (int) Actions.ApprovePurchaseInvoice });
+            Approvals.Add(new Approval { TableName = $"{Schema.Purchasing}.PurchaseReturnHeader", ActionId = (int) Actions.ApprovePurchaseReturn });
 
-            Approvals.Add(new Approval { TableName = $"{Schema.Sales}.SalesOrderHeader", Description = ApprovalType.SalesOrder });
-            Approvals.Add(new Approval { TableName = $"{Schema.Sales}.SalesReturnHeader", Description = ApprovalType.SalesReturn });
-            Approvals.Add(new Approval { TableName = $"{Schema.Sales}.SalesInvoiceHeader", Description = ApprovalType.SalesInvoice });
-            Approvals.Add(new Approval { TableName = $"{Schema.Sales}.SalesDeliveryHeader", Description = ApprovalType.SalesDelivery });
-            Approvals.Add(new Approval { TableName = $"{Schema.Sales}.DeliveryPlanHeader", Description = ApprovalType.SalesDeliveryPlan });
-            Approvals.Add(new Approval { TableName = $"{Schema.Sales}.PromoHeader", Description = ApprovalType.Promo });
-            Approvals.Add(new Approval { TableName = $"{Schema.Sales}.VisitPlanHeader", Description = ApprovalType.VisitPlan });
-            Approvals.Add(new Approval { TableName = $"{Schema.Sales}.VisitOrder", Description = ApprovalType.VisitOrder });
+            // Sales
+            Approvals.Add(new Approval { TableName = $"{Schema.Sales}.PromoHeader", ActionId = (int) Actions.ApprovePromo });
+            Approvals.Add(new Approval { TableName = $"{Schema.Sales}.SalesOrderHeader", ActionId = (int) Actions.ApproveSalesOrder });
+            Approvals.Add(new Approval { TableName = $"{Schema.Sales}.SalesDeliveryHeader", ActionId = (int) Actions.ApproveDeliveryOrder });
+            Approvals.Add(new Approval { TableName = $"{Schema.Sales}.SalesInvoiceHeader", ActionId = (int) Actions.ApproveSalesInvoice });
+            Approvals.Add(new Approval { TableName = $"{Schema.Sales}.SalesReturnHeader", ActionId = (int) Actions.ApproveSalesReturn });
+            Approvals.Add(new Approval { TableName = $"{Schema.Sales}.DeliveryPlanHeader", ActionId = (int) Actions.ApproveDeliveryPlan });
+            //Approvals.Add(new Approval { TableName = $"{Schema.Sales}.VisitPlanHeader", ActionId = (int) Actions.ApproveVisitPlan });
+            Approvals.Add(new Approval { TableName = $"{Schema.Sales}.VisitOrder", ActionId = (int) Actions.ApproveVisitOrder });
+
+            // Expedition
+            Approvals.Add(new Approval { TableName = $"{Schema.Expedition}.ExpeditionInvoiceHeader", ActionId = (int) Actions.ApproveExpeditionInvoice });
+
+            // Finance
+            Approvals.Add(new Approval { TableName = $"{Schema.Finance}.GeneralCashBankHeader", ActionId = (int) Actions.ApproveGeneralCashBank });
+            Approvals.Add(new Approval { TableName = $"{Schema.Finance}.GeneralCashBankHeader", ActionId = (int) Actions.ApproveInterCashBank });
+
+            // Accounting
+            Approvals.Add(new Approval { TableName = $"{Schema.Accounting}.GeneralJournalHeader", ActionId = (int) Actions.ApproveGeneralJournal });
+
+            // Asset Management
+            Approvals.Add(new Approval { TableName = $"{Schema.AssetManagement}.FixedAsset", ActionId = (int) Actions.ApproveFixedAsset });
         }
+
         public List<Approval> Approvals { get; set; }
     }
 }

@@ -4,6 +4,6 @@
     {
         public string Code { get; set; }
 
-        public string SourceTrans { get; set; }
+        public int ActionId { get; set; }
     }
 }

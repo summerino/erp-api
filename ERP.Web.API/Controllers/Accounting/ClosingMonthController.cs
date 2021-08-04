@@ -118,6 +118,7 @@ namespace ERP.Web.API.Controllers.Accounting
                     0, 1,
                     JsonConvert.DeserializeObject<List<Filter>>(filters),
                     JsonConvert.DeserializeObject<List<Sort>>("[]"),
+                    null,
                     null);
             if (approvalData.Data.ToDynamicList().Count > 0 && data.IsClose)
                 return (false, "Tidak bisa tutup bulan karena terdapat transaksi yang belum disetujui.");

@@ -15,8 +15,29 @@
         ViewRelatedTrans = 6,
         Close = 7,
         ChangeDate = 8,
-        Approve = 9,
-        Post = 10
+        ApproveTransferStock = 9,
+        Post = 10,
+        PayWithDebitMemo = 11,
+        PayWithCreditMemoost = 12,
+        ApproveConsignee = 13,
+        ApproveAdjustment = 14,
+        ApprovePurchaseOrder = 15,
+        ApprovePurchaseReceive = 16,
+        ApprovePurchaseInvoice = 17,
+        ApprovePurchaseReturn = 18,
+        ApprovePromo = 19,
+        ApproveSalesOrder = 20,
+        ApproveDeliveryOrder = 21,
+        ApproveSalesInvoice = 22,
+        ApproveSalesReturn = 23,
+        ApproveDeliveryPlan = 24,
+        ApproveVisitOrder = 25,
+        ApproveExpeditionInvoice = 26,
+        ApproveGeneralCashBank = 27,
+        ApproveInterCashBank = 28,
+        ApproveGeneralJournal = 29,
+        ApproveFixedAsset = 30,
+        Print = 41
     }
 
     public enum Menu 
@@ -94,30 +115,41 @@
         Role = 52,
         Parameter = 73
     }
+
     public static class ApprovalType
     {
-        public static string FixedAsset = "Aktiva Tetap";
-
-        public static string ExpeditionInvoice = "Expedition Invoice";
         // Inventory
-        public static string Adjustment = "Penyesuaian";
         public static string TransferStock = "Transfer Persediaan";
+        public static string Consignee = "Konsinyasi";
+        public static string Adjustment = "Penyesuaian";
+
         // Purchase
         public static string PurchaseOrder = "Order Pembelian";
-        public static string PurchaseInvoice = "Faktur Pembelian";
         public static string PurchaseReceive = "Penerimaan";
+        public static string PurchaseInvoice = "Faktur Pembelian";
         public static string PurchaseReturn = "Retur Pembelian";
+
         // Sales
-        public static string SalesOrder = "Order Penjualan";
-        public static string SalesReturn = "Retur Penjualan";
-        public static string SalesInvoice = "Faktur Penjualan";
-        public static string SalesDelivery = "Surat Jalan";
-        public static string SalesDeliveryPlan = "Rencana Pengiriman"; 
         public static string Promo = "Promo";
+        public static string SalesOrder = "Order Penjualan";
+        public static string SalesDelivery = "Surat Jalan";
+        public static string SalesInvoice = "Faktur Penjualan";
+        public static string SalesReturn = "Retur Penjualan";
+        public static string DeliveryPlan = "Rencana Pengiriman"; 
         public static string VisitPlan = "Rencana Kunjungan";
         public static string VisitOrder = "Perintah Kunjungan";
 
-      
-    }
+        // Expedition
+        public static string ExpeditionInvoice = "Expedition Invoice";
 
+        // Finance
+        public static string CashBank = "Kas Bank Umum";
+        public static string InterCashBank = "Pemindahan Dana";
+
+        // Accounting
+        public static string GeneralJournal = "Jurnal Umum";
+
+        // Asset Management
+        public static string FixedAsset = "Aktiva Tetap";
+    }
 }

@@ -1,16 +1,14 @@
-﻿using ERP.Web.API.Domain.Interfaces.General;
-using ERP.Web.API.Domain.Models;
-using ERP.Web.API.Model.General;
-using Microsoft.EntityFrameworkCore;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
 using ERP.Common;
 using ERP.Common.Extensions;
 using ERP.Common.Models;
 using ERP.Entity;
-using ERP.Entity.Core;
+using ERP.Web.API.Domain.Interfaces.General;
 using ERP.Web.API.Domain.Models.General;
+using ERP.Web.API.Model.General;
 
 namespace ERP.Web.API.Domain.Services.General
 {
@@ -23,14 +21,22 @@ namespace ERP.Web.API.Domain.Services.General
             _tenantCtx = tenantCtx;
         }
 
-        public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, string search)
+        public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
+            List<int> actionId, string search)
         {
             var data = _tenantCtx.VwApprovals.AsQueryable();
 
+            if (actionId?.Any() ?? false)
+            {
+                data = data.Where(x => actionId.Contains(x.ActionId));
+            }
+
             if (!string.IsNullOrEmpty(search))
             {
-                data = data.Where(x =>
-                        x.Code.Contains(search) || x.Name.Contains(search) || x.SourceTrans.Contains(search));
+                data = DateTime.TryParse(search, out var searchDate)
+                    ? data.Where(x => x.Date == searchDate)
+                    : data.Where(x =>
+                        x.Code.Contains(search) || x.Descr.Contains(search) || x.SourceTrans.Contains(search));
             }
 
             return data.ToDataSourceResult(skip, take, filter, sort);
@@ -39,13 +45,9 @@ namespace ERP.Web.API.Domain.Services.General
         public SaveResult SaveChanges(List<ApprovalRequest> data, int userId)
         {
             var result = new SaveResult(false);
-            var listQuery = new List<string>();
-            foreach (var item in data)
-            {
-                listQuery.Add(GenerateQuery(item.SourceTrans, item.Code, userId));
-            }
+            var listQuery = data.Select(item => GenerateQuery(item.ActionId, item.Code, userId));
 
-            var query = string.Join(';',listQuery);
+            var query = string.Join(';', listQuery);
             using var transaction = _tenantCtx.Database.BeginTransaction();
             try
             {
@@ -59,16 +61,16 @@ namespace ERP.Web.API.Domain.Services.General
             }
 
             result.Success = true;
-            result.Message = "Data berhasil di approve.";
+            result.Message = "Data persetujuan berhasil di setujui.";
             return result;
         }
 
-        private string GenerateQuery(string sourceTrans, string code, int user) 
+        private string GenerateQuery(int actionId, string code, int user) 
         {
             var map = new MapApproval();
-            string tableName = "";
-            string query = "Update [TABLE] set ApprovedBy='[USER]', ApprovedDate=GETDATE() Where Code = '[CODE]'";
-            var temp = map.Approvals.SingleOrDefault(x => x.Description.Equals(sourceTrans));
+            var tableName = "";
+            var query = "UPDATE [TABLE] SET ApprovedBy='[USER]', ApprovedDate=GETDATE() WHERE Code='[CODE]'";
+            var temp = map.Approvals.SingleOrDefault(x => x.ActionId == actionId);
             if (temp != null) 
             {
                 tableName = temp.TableName;

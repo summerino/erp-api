@@ -2,10 +2,6 @@
 using ERP.Common;
 using ERP.Common.Models;
 using ERP.Entity.Inventory;
-using ERP.Entity.Inventory;
-using ERP.Entity.Purchase;
-using ERP.Entity.Sales;
-using ERP.Web.API.Domain.Models;
 
 namespace ERP.Web.API.Domain.Interfaces.Inventory
 {

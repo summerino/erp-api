@@ -2,14 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
+using Microsoft.AspNetCore.Mvc;
 using ERP.Common;
 using ERP.Common.Models;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
 using ERP.Entity;
 using ERP.Web.API.Domain.Interfaces.Auth;
 using ERP.Web.API.Domain.Interfaces.SystemManagement;
-using ERP.Web.API.Domain.Models;
 using ERP.Web.API.Model;
 using ERP.Web.API.Model.SystemManagement;
 using Newtonsoft.Json;
@@ -23,7 +21,9 @@ namespace ERP.Web.API.Controllers.SystemManagement
         private readonly IRoleService _role;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
+
         private const int _menuId = (int)Menu.Role;
+
         public RoleController(IRoleService role, IClaimService claim, IAuthService auth)
         {
             _role = role;
@@ -76,6 +76,19 @@ namespace ERP.Web.API.Controllers.SystemManagement
             });
         }
 
+        [HttpGet("get-action")]
+        public IActionResult GetAction(int menuId, string actions)
+        {
+            var result =
+                _auth.GetActions(
+                    menuId,
+                    _claim.RoleId,
+                    JsonConvert.DeserializeObject<List<int>>(!string.IsNullOrWhiteSpace(actions) ? actions : "[]")
+                );
+
+            return Ok(result);
+        }
+
         [HttpPost]
         public IActionResult OnPost(RoleRequest data)
         {
@@ -122,19 +135,6 @@ namespace ERP.Web.API.Controllers.SystemManagement
 
             var result = _role.Delete(id, 1);
 
-            return Ok(result);
-        }
-
-        [HttpGet]
-        [Route("get-action")]
-        [AllowAnonymous]
-        public IActionResult GetAction(int menuId, string actions)
-        {
-            var result = _auth.GetActions(
-                menuId, 
-                _claim.RoleId, 
-                JsonConvert.DeserializeObject<List<int>>(actions)
-                );
             return Ok(result);
         }
     }

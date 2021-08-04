@@ -209,6 +209,7 @@ namespace ERP.Web.API
             services.AddScoped<IVisitPlanService, VisitPlanService>();
 
             // System Management services
+            services.AddScoped<IActionService, ActionService>();
             services.AddScoped<ICompanyProfileService, CompanyProfileService>();
             services.AddScoped<IMenuService, MenuService>();
             services.AddScoped<IRoleService, RoleService>();
