@@ -52,7 +52,7 @@ namespace ERP.Web.API.Controllers.SystemManagement
         public IActionResult OnPost(UserRequest data)
         {
 
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Insert }).Any())
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Insert }).Any())
             {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
             }
@@ -72,7 +72,7 @@ namespace ERP.Web.API.Controllers.SystemManagement
         public IActionResult OnPut(UserRequest data)
         {
 
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Update }).Any())
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Update }).Any())
             {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
             }
@@ -88,7 +88,7 @@ namespace ERP.Web.API.Controllers.SystemManagement
         public IActionResult OnDelete(int id)
         {
 
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Delete }).Any())
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Delete }).Any())
             {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
             }

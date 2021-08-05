@@ -52,7 +52,7 @@ namespace ERP.Web.API.Controllers.SystemManagement
         public IActionResult OnPut(string id, Company data)
         {
 
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Update }).Any())
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Update }).Any())
             {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
             }

@@ -50,7 +50,7 @@ namespace ERP.Web.API.Controllers.General
         [HttpPost]
         public IActionResult OnPost(Vehicle data)
         {
-            if (!_auth.GetActions(_menuId, _claimService.RoleId, new Actions[] { Actions.Insert }).Any())
+            if (!_auth.GetActions(_menuId, _claimService.RoleId, new[] { Actions.Insert }).Any())
             {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
             }
@@ -68,7 +68,7 @@ namespace ERP.Web.API.Controllers.General
         [HttpPut("{id}")]
         public IActionResult OnPut(int id, Vehicle data)
         {
-            if (!_auth.GetActions(_menuId, _claimService.RoleId, new Actions[] { Actions.Update }).Any())
+            if (!_auth.GetActions(_menuId, _claimService.RoleId, new[] { Actions.Update }).Any())
             {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
             }
@@ -84,7 +84,7 @@ namespace ERP.Web.API.Controllers.General
         [HttpDelete("{id}")]
         public IActionResult OnDelete(int id)
         {
-            if (!_auth.GetActions(_menuId, _claimService.RoleId, new Actions[] { Actions.Delete }).Any())
+            if (!_auth.GetActions(_menuId, _claimService.RoleId, new[] { Actions.Delete }).Any())
             {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
             }

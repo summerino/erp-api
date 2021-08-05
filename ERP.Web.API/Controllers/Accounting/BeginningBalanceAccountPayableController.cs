@@ -59,7 +59,7 @@ namespace ERP.Web.API.Controllers.Accounting
         public IActionResult OnPost(BeginningBalanceAPRequest data)
         {
             // Checking role authorization
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Insert }).Any())
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Insert }).Any())
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
             // Validate process
@@ -82,7 +82,7 @@ namespace ERP.Web.API.Controllers.Accounting
         public IActionResult OnPut(string id, BeginningBalanceAPRequest data)
         {
             // Checking role authorization
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Update }).Any())
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Update }).Any())
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
             // Validate process
@@ -102,7 +102,7 @@ namespace ERP.Web.API.Controllers.Accounting
         public IActionResult OnDelete(int id, BeginningBalanceAPRequest data)
         {
             // Checking role authorization
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Delete }).Any())
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Delete }).Any())
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
             // Validate process

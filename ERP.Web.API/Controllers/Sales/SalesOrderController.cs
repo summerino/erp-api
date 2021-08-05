@@ -128,7 +128,7 @@ namespace ERP.Web.API.Controllers.Sales
         public IActionResult OnPost(SalesOrderRequest data)
         {
             // Checking role authorization
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Insert }).Any())
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Insert }).Any())
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
             // Validate process
@@ -152,7 +152,7 @@ namespace ERP.Web.API.Controllers.Sales
         public IActionResult OnPut(string code, SalesOrderRequest data)
         {
             // Checking role authorization
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Update }).Any())
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Update }).Any())
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
             // Validate process
@@ -173,7 +173,7 @@ namespace ERP.Web.API.Controllers.Sales
         public IActionResult OnDelete(string code, SalesOrderRequest data)
         {
             // Checking role authorization
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Void }).Any())
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Void }).Any())
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
             // Validate process
@@ -191,7 +191,7 @@ namespace ERP.Web.API.Controllers.Sales
         public IActionResult OnClose(string code, SalesOrderRequest data)
         {
             // Checking role authorization
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Close }).Any())
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Close }).Any())
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
             // Validate process

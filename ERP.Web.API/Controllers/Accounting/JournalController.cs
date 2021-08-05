@@ -29,7 +29,7 @@ namespace ERP.Web.API.Controllers.Accounting
         [HttpPost]
         public IActionResult OnPost(JournalRequest data)
         {
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Post }).Any())
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Post }).Any())
             {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
             }
