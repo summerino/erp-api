@@ -1,15 +1,13 @@
-﻿using ERP.Web.API.Domain.Interfaces.Expedition;
-using ERP.Web.API.Domain.Models;
-using ERP.Web.API.Model.Expedition;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using ERP.Common;
 using ERP.Common.Extensions;
 using ERP.Common.Models;
 using ERP.Entity;
 using ERP.Entity.Expedition;
+using ERP.Web.API.Domain.Interfaces.Expedition;
+using ERP.Web.API.Model.Expedition;
 
 namespace ERP.Web.API.Domain.Services.Expedition
 {
@@ -18,10 +16,10 @@ namespace ERP.Web.API.Domain.Services.Expedition
         public ExpeditionInvoiceService(TenantContext db)
             :base(db)
         {
-
         }
        
-        public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, string search)
+        public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
+            string search)
         {
             var data = Db.VwExpeditionInvoiceHeaders.AsQueryable();
 
@@ -30,7 +28,7 @@ namespace ERP.Web.API.Domain.Services.Expedition
                 data = DateTime.TryParse(search, out var searchDate)
                     ? data.Where(x => x.Date == searchDate)
                     : data.Where(x =>
-                        x.Code.Contains(search) || x.RefNo.Contains(search) || x.SupplierInitial.Contains(search));
+                        x.Code.Contains(search) || x.RefNo.Contains(search) || x.SupInitial.Contains(search));
             }
 
             return data.ToDataSourceResult(skip, take, filter, sort);
@@ -104,6 +102,7 @@ namespace ERP.Web.API.Domain.Services.Expedition
                 // Update header data
                 Db.ExpeditionInvoiceHeaders.Update(data);
                 Db.Entry(data).Property(e => e.Code).IsModified = false;
+                Db.Entry(data).Property(e => e.PaidAmount).IsModified = false;
                 Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
                 Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
 

@@ -2,7 +2,6 @@
 using ERP.Common;
 using ERP.Common.Models;
 using ERP.Entity.Expedition;
-using ERP.Web.API.Domain.Models;
 using ERP.Web.API.Model.Expedition;
 
 namespace ERP.Web.API.Domain.Interfaces.Expedition

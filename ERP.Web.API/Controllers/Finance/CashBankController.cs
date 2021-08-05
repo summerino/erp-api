@@ -67,6 +67,23 @@ namespace ERP.Web.API.Controllers.Finance
             });
         }
 
+        [HttpGet("ar")]
+        public IActionResult GetDataAR(string cbCode, string search, string filters, string sorts, int skip, int take)
+        {
+            var data =
+                _cb.GetDataAR(
+                    skip, take,
+                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
+                    search, cbCode);
+
+            return Ok(new ApiResponse
+            {
+                RowCount = data.Total,
+                TableData = data.Data.ToDynamicList()
+            });
+        }
+
         [HttpGet("ap")]
         public IActionResult GetDataAP(string cbCode, string search, string filters, string sorts, int skip, int take)
         {
@@ -84,11 +101,11 @@ namespace ERP.Web.API.Controllers.Finance
             });
         }
 
-        [HttpGet("ar")]
-        public IActionResult GetDataAR(string cbCode, string search, string filters, string sorts, int skip, int take)
+        [HttpGet("ep-ap")]
+        public IActionResult GetDataEPAP(string cbCode, string search, string filters, string sorts, int skip, int take)
         {
             var data =
-                _cb.GetDataAR(
+                _cb.GetDataEPAP(
                     skip, take,
                     JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
                     JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),

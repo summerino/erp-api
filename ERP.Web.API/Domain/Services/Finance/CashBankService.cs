@@ -67,6 +67,23 @@ namespace ERP.Web.API.Domain.Services.Finance
             return data.ToDataSourceResult(skip, take, filters, sorts);
         }
 
+        public DataSourceResult GetDataEPAP(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
+            string search, string cbCode)
+        {
+            var data = Db.VwExpeditionInvoiceHeaders.Where(x => x.PaidAmount < x.Amount && x.Mark != "V");
+
+            if (!string.IsNullOrWhiteSpace(cbCode))
+            {
+                var listExistingTransactions =
+                    Db.GeneralCashBankDetails
+                        .Where(x => x.Code.Equals(cbCode))
+                        .Select(x => x.TransCode).ToList();
+                data = data.Where(x => !listExistingTransactions.Contains(x.Code));
+            }
+
+            return data.ToDataSourceResult(skip, take, filters, sorts);
+        }
+
         public DataSourceResult GetDataCreditMemo(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
             string search, string cbCode, string type)
         {
@@ -400,7 +417,7 @@ namespace ERP.Web.API.Domain.Services.Finance
                         if (bbData == null)
                             continue;
 
-                        if (totalAmount > data.Amount)
+                        if (totalAmount > bbData.Amount)
                             return ($"Lebih bayar untuk transaksi dengan kode {bbData.Code}.", false, new List<string>());
 
                         queries.Add(
@@ -443,7 +460,7 @@ namespace ERP.Web.API.Domain.Services.Finance
                         if (bbData == null)
                             continue;
 
-                        if (totalAmount > data.Amount)
+                        if (totalAmount > bbData.Amount)
                             return ($"Lebih bayar untuk transaksi dengan kode {bbData.Code}.", false, new List<string>());
 
                         queries.Add(
@@ -472,6 +489,23 @@ namespace ERP.Web.API.Domain.Services.Finance
                         }
                     }
                 }
+                else if (item.Type == "EPAP")
+                {
+                    var prevTransaction = oldTransactions.Where(x => x.TransCode == item.TransCode).Sum(x => x.Amount);
+                    var totalAmount = prevTransaction + item.Amount;
+
+                    // Validasi hutang ekspedisi
+                    var ep = Db.ExpeditionInvoiceHeaders.SingleOrDefault(x => x.Code == item.TransCode);
+
+                    if (ep == null)
+                        continue;
+
+                    if (totalAmount > ep.Amount)
+                        return ($"Lebih bayar untuk transaksi dengan kode {ep.Code}.", false, new List<string>());
+
+                    queries.Add(
+                        $"UPDATE Expedition.ExpeditionInvoiceHeader SET PaidAmount='{totalAmount}' WHERE Code='{item.TransCode}';");
+                }
                 else if (item.Type is "DPC" or "DPS") 
                 {
                     var query = QueryBuilder(item.Type, item.TransCode);
@@ -492,7 +526,7 @@ namespace ERP.Web.API.Domain.Services.Finance
                             if (bbData == null)
                                 continue;
 
-                            if (totalAmount > data.Amount)
+                            if (totalAmount > bbData.Amount)
                                 return ($"Lebih bayar untuk transaksi dengan kode {bbData.Code}.", false, new List<string>());
 
                             queries.Add(
@@ -525,7 +559,7 @@ namespace ERP.Web.API.Domain.Services.Finance
                             if (bbData == null)
                                 continue;
 
-                            if (totalAmount > data.Amount)
+                            if (totalAmount > bbData.Amount)
                                 return ($"Lebih bayar untuk transaksi dengan kode {bbData.Code}.", false, new List<string>());
 
                             queries.Add(
