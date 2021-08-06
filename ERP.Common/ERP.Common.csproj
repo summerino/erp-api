@@ -6,13 +6,13 @@
 	  <Company>Sahassa Panca Manunggal</Company>
 	  <Product>Sahassa® ERP</Product>
 	  <Copyright>© Sahassa. All rights reserved.</Copyright>
-	  <Version>21.8.4</Version>
+	  <Version>21.8.6</Version>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.7" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.8" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="System.Linq.Dynamic.Core" Version="1.2.10" />
+    <PackageReference Include="System.Linq.Dynamic.Core" Version="1.2.12" />
   </ItemGroup>
 
 </Project>
