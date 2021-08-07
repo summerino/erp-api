@@ -125,6 +125,9 @@ namespace ERP.Entity
         public DbSet<VwWarehouse> VwWarehouses { get; set; }
         public DbSet<WarehouseQuantity> WarehouseQuantities { get; set; }
         public DbSet<VwWarehouseQuantity> VwWarehouseQuantities { get; set; }
+        public DbSet<ReportByStockMutation> ReportByStockMutations { get; set; }
+        public DbSet<ReportByItem> ReportByItems { get; set; }
+        public DbSet<ReportByWarehouse> ReportByWarehouses { get; set; }
 
         // Purchase entities
         public DbSet<DebitMemo> DebitMemos { get; set; }
@@ -963,6 +966,19 @@ namespace ERP.Entity
             modelBuilder.Entity<VwWarehouseQuantity>()
                 .HasNoKey()
                 .ToView("vwWarehouseQuantity", Schema.Inventory);
+
+            // Sales Report
+            modelBuilder.Entity<ReportByStockMutation>()
+                .HasNoKey()
+                .ToTable("ReportByStockMutation", t => t.ExcludeFromMigrations());
+
+            modelBuilder.Entity<ReportByItem>()
+               .HasNoKey()
+               .ToTable("ReportByItem", t => t.ExcludeFromMigrations());
+
+            modelBuilder.Entity<ReportByWarehouse>()
+               .HasNoKey()
+               .ToTable("ReportByWarehouse", t => t.ExcludeFromMigrations());
 
             // Purchase entities
             // Debit Memo entities
