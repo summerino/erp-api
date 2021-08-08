@@ -59,7 +59,7 @@ namespace ERP.Web.API.Controllers.SystemManagement
         [HttpPost]
         public IActionResult OnPost(List<SystemParameterRequest> data)
         {
-            //if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Insert }).Any())
+            //if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Insert }).Any())
             //{
             //    return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
             //}

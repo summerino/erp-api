@@ -17,6 +17,9 @@ namespace ERP.Web.API.Domain.Interfaces.Finance
         DataSourceResult GetDataAP(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
             string search, string cbCode);
 
+        DataSourceResult GetDataEPAP(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
+            string search, string cbCode);
+
         DataSourceResult GetDataCreditMemo(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
             string search, string cbCode, string type);
 

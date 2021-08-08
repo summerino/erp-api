@@ -6,13 +6,13 @@ using Microsoft.AspNetCore.Mvc;
 using ERP.Common;
 using ERP.Common.Models;
 using ERP.Entity;
+using ERP.Web.API.Domain.Interfaces.Accounting;
 using ERP.Web.API.Domain.Interfaces.Auth;
 using ERP.Web.API.Domain.Interfaces.Expedition;
 using ERP.Web.API.Domain.Interfaces.SystemManagement;
 using ERP.Web.API.Model;
 using ERP.Web.API.Model.Expedition;
 using Newtonsoft.Json;
-using ERP.Web.API.Domain.Interfaces.Accounting;
 
 namespace ERP.Web.API.Controllers.Expedition
 {
@@ -21,20 +21,21 @@ namespace ERP.Web.API.Controllers.Expedition
     public class ExpeditionInvoiceController : ControllerBase
     {
         private readonly IExpeditionInvoiceService _inv;
+        private readonly IClosingMonthService _closingMonth;
         private readonly ISystemParameterService _sysPar;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
-        private readonly IClosingMonthService _closingMonth;
+
         private const int _menuId = (int)Menu.ExpeditionInvoice;
 
-        public ExpeditionInvoiceController(IExpeditionInvoiceService inv, ISystemParameterService sysPar,
-            IClaimService claim, IAuthService auth, IClosingMonthService closingMonthService)
+        public ExpeditionInvoiceController(IExpeditionInvoiceService inv, IClosingMonthService closingMonth,
+            ISystemParameterService sysPar, IClaimService claim, IAuthService auth)
         {
             _inv = inv;
+            _closingMonth = closingMonth;
             _sysPar = sysPar;
             _claim = claim;
             _auth = auth;
-            _closingMonth = closingMonthService;
         }
 
         [HttpGet]
@@ -78,7 +79,7 @@ namespace ERP.Web.API.Controllers.Expedition
         public IActionResult OnPost(ExpeditionInvoiceRequest data)
         {
             // Checking role authorization
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Insert }).Any())
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Insert }).Any())
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
             // Validate process
@@ -102,7 +103,7 @@ namespace ERP.Web.API.Controllers.Expedition
         public IActionResult OnPut(string code, ExpeditionInvoiceRequest data)
         {
             // Checking role authorization
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Update }).Any())
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Update }).Any())
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
             
             // Validate process
@@ -123,7 +124,7 @@ namespace ERP.Web.API.Controllers.Expedition
         public IActionResult OnDelete(string code, ExpeditionInvoiceRequest data)
         {
             // Checking role authorization
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new Actions[] { Actions.Void }).Any())
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Void }).Any())
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
             // Validate process

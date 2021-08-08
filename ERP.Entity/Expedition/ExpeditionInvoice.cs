@@ -37,6 +37,9 @@ namespace ERP.Entity.Expedition
         [Column(TypeName = "decimal(18, 2)")]
         public decimal Amount { get; set; }
 
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal PaidAmount { get; set; }
+
         [StringLength(256)]
         public string Notes { get; set; }
     }
@@ -61,10 +64,16 @@ namespace ERP.Entity.Expedition
 
         public decimal Amount { get; set; }
 
+        public decimal PaidAmount { get; set; }
+
         public string Notes { get; set; }
 
 
-        public string SupplierInitial { get; set; }
+        public decimal Remaining { get; set; }
+
+        public string SupInitial { get; set; }
+
+        public string SupName { get; set; }
 
         public string CreatedInitial { get; set; }
 
