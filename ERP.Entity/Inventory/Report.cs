@@ -19,6 +19,8 @@ namespace ERP.Entity.Inventory
         public decimal QtyOut { get; set; }
 
         public decimal QtyEnd { get; set; }
+
+        public decimal HPP { get; set; }
     }
 
     public class ReportByItem
