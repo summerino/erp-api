@@ -16,7 +16,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
         {
             _db = db;
         }
-        public DataSourceResult GetData(int type, string date, string supCode, IEnumerable<Sort> sorts, string search)
+        public DataSourceResult GetData(int type, string date, string supCode, IEnumerable<Sort> sorts)
         {
             var supData = _db.ReportBySuppliers.FromSqlRaw("select sp.Code, sp.Initial, sp.Name, count(*) as TotalTrans, sum(rcv.Total) as TotalAmount, sum(cbd.TransAmount) as PaidAmount, (sum(rcv.Total) - sum(cbd.TransAmount)) as RemainderAmount" +
                 " from General.Supplier sp" +
@@ -39,21 +39,17 @@ namespace ERP.Web.API.Domain.Services.Purchase
 
             if (type == 1)
             {
-                if (!string.IsNullOrEmpty(search) || !string.IsNullOrEmpty(supCode))
+                if (!string.IsNullOrEmpty(supCode))
                 {
-                    rcvData = DateTime.TryParse(search, out var searchDate)
-                    ? rcvData.Where(x => x.Date == searchDate || x.DueDate == searchDate)
-                    : rcvData.Where(x =>
-                        x.Code.Contains(search) || x.SupName.Contains(search) || x.SrcCode.Contains(search) ||
-                        x.InvCode.Contains(search) || x.SupCode.Contains(search) || x.SupCode == supCode);
+                    rcvData = rcvData.Where(x => x.SupCode == supCode);
                 }
                 return rcvData.ToDataSourceResult(0, rcvData.Count(), null, sorts);
             }
             else
             {
-                if (!string.IsNullOrEmpty(search) || !string.IsNullOrEmpty(supCode))
+                if (!string.IsNullOrEmpty(supCode))
                 {
-                    supData = supData.Where(x => x.Code.Contains(search) || x.Name.Contains(search) || x.Code == supCode);
+                    supData = supData.Where(x => x.Code == supCode);
                 }
                 return supData.ToDataSourceResult(0, supData.Count(), null, sorts);
             }

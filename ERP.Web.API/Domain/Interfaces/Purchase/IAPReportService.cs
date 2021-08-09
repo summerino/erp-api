@@ -5,6 +5,6 @@ namespace ERP.Web.API.Domain.Interfaces.Purchase
 {
     public interface IAPReportService
     {
-        DataSourceResult GetData(int type, string date, string supCode, IEnumerable<Sort> sorts, string search);
+        DataSourceResult GetData(int type, string date, string supCode, IEnumerable<Sort> sorts);
     }
 }

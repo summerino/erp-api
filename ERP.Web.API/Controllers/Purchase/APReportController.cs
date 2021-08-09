@@ -19,9 +19,9 @@ namespace ERP.Web.API.Controllers.Purchase
         }
 
         [HttpGet]
-        public IActionResult GetData(string search, int type, string supCode, string date, string sorts)
+        public IActionResult GetData(int type, string supCode, string date, string sorts)
         {
-            var result = _ap.GetData(type, date, supCode, JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"), search);
+            var result = _ap.GetData(type, date, supCode, JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"));
 
             return Ok(new ApiResponse
             {

@@ -184,6 +184,7 @@ namespace ERP.Web.API
             services.AddScoped<IWarehouseQuantityService, WarehouseQuantityService>();
             services.AddScoped<IWarehouseService, WarehouseService>();
             services.AddScoped<IConsigneeService, ConsigneeService>();
+            services.AddScoped<ISMReportService, SMReportService>();
 
             // Purchase services
             services.AddScoped<IDebitMemoService, DebitMemoService>();

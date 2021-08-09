@@ -16,7 +16,7 @@ namespace ERP.Web.API.Domain.Services.Sales
         {
             _db = db;
         }
-        public DataSourceResult GetData(int type, string date, string custCode, int slsId, IEnumerable<Sort> sorts, string search)
+        public DataSourceResult GetData(int type, string date, string custCode, int slsId, IEnumerable<Sort> sorts)
         {
             var cusData = _db.ReportByCustomers.FromSqlRaw("select cs.Code, cs.Initial, cs.Name, count(*) as TotalTrans, sum(dlv.Total) as TotalAmount, sum(cbd.TransAmount) as PaidAmount, (sum(dlv.Total) - sum(cbd.TransAmount)) as RemainderAmount" +
                         " from General.Customer cs" +
@@ -45,22 +45,17 @@ namespace ERP.Web.API.Domain.Services.Sales
 
             if (type == 1)
             {
-                if (!string.IsNullOrEmpty(search) || !string.IsNullOrEmpty(custCode))
+                if (!string.IsNullOrEmpty(custCode))
                 {
-                    dlvData = DateTime.TryParse(search, out var searchDate)
-                    ? dlvData.Where(x => x.Date == searchDate || x.DueDate == searchDate)
-                    : dlvData.Where(x =>
-                        x.Code.Contains(search) || x.CustName.Contains(search) || x.SrcCode.Contains(search) ||
-                        x.InvCode.Contains(search) || x.CustCode.Contains(search) || x.SlsInitial.Contains(search) || 
-                        x.SlsName.Contains(search) || x.CustCode == custCode);
+                    dlvData = dlvData.Where(x => x.CustCode == custCode);
                 }
                 return dlvData.ToDataSourceResult(0, dlvData.Count(), null, sorts);
             }
             else
             {
-                if (!string.IsNullOrEmpty(search) || !string.IsNullOrEmpty(custCode))
+                if (!string.IsNullOrEmpty(custCode))
                 {
-                    cusData = cusData.Where(x => x.Code.Contains(search) || x.Name.Contains(search) || x.Code == custCode);
+                    cusData = cusData.Where(x => x.Code == custCode);
                 }
                 return cusData.ToDataSourceResult(0, cusData.Count(), null, sorts);
             }
