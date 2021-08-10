@@ -78,7 +78,10 @@ namespace ERP.Web.API.Domain.Services.Inventory
 						WHEN @Unit = 2 THEN abs(sm.BaseNettPrice) * ( SELECT EXP(SUM(LOG(Conversion))) FROM Inventory.UoMConversion WHERE UomId = im.UomId AND Seq <= (SELECT Seq FROM Inventory.UoMConversion WHERE Id = im.UomBuyId))
 						WHEN @Unit = 3 THEN abs(sm.BaseNettPrice) * ( SELECT EXP(SUM(LOG(Conversion))) FROM Inventory.UoMConversion WHERE UomId = im.UomId AND Seq <= (SELECT Seq FROM Inventory.UoMConversion WHERE Id = im.UomSellId))
 						END AS decimal)
-					AS HPP
+					AS HPP,
+					CAST (0 AS decimal) AS InvIn,
+					CAST (0 AS decimal) AS InvOut,
+					CAST (0 AS decimal) AS InvEnd
 				FROM Inventory.StockMutation sm
 				LEFT JOIN Inventory.Item im on im.Id = sm.ItemId
 				WHERE sm.Src IN ('RCV','DO','TS','ADJ') AND sm.[Type] = 'OH' " + (string.IsNullOrEmpty(whCode) ? "" : $"AND sm.WarehouseCode = '{whCode}'") + " ORDER BY sm.Date").ToList();
@@ -93,7 +96,11 @@ namespace ERP.Web.API.Domain.Services.Inventory
 					CAST (0 AS decimal) AS QtyBegin,
 					CAST (0 AS decimal) AS QtyIn,
 					CAST (0 AS decimal) AS QtyOut,
-					CAST (0 AS decimal) AS QtyEnd
+					CAST (0 AS decimal) AS QtyEnd,
+					CAST (0 AS decimal) AS InvBegin,
+					CAST (0 AS decimal) AS InvIn,
+					CAST (0 AS decimal) AS InvOut,
+					CAST (0 AS decimal) AS InvEnd
 				FROM Inventory.Item im " +
 				(string.IsNullOrEmpty(whCode) ? "WHERE Id IN (SELECT ItemId FROM Inventory.WarehouseQuantity)" : $"WHERE Id IN (SELECT itemId FROM Inventory.WarehouseQuantity WHERE WarehouseCode = '{whCode}')")).ToList();
 
@@ -101,7 +108,11 @@ namespace ERP.Web.API.Domain.Services.Inventory
 							CAST (0 AS decimal) AS QtyBegin,
 							CAST (0 AS decimal) AS QtyIn,
 							CAST (0 AS decimal) AS QtyOut,
-							CAST (0 AS decimal) AS QtyEnd
+							CAST (0 AS decimal) AS QtyEnd,
+							CAST (0 AS decimal) AS InvBegin,
+							CAST (0 AS decimal) AS InvIn,
+							CAST (0 AS decimal) AS InvOut,
+							CAST (0 AS decimal) AS InvEnd
 						FROM Inventory.Warehouse wh").ToList();
 
 			var initData = smData.Where(x => x.Date < Convert.ToDateTime(startDate)).ToList();
@@ -127,6 +138,10 @@ namespace ERP.Web.API.Domain.Services.Inventory
 				item.QtyIn = smData.Where(x => x.ItemId == item.Id).Sum(x => x.QtyIn);
 				item.QtyOut = smData.Where(x => x.ItemId == item.Id).Sum(x => x.QtyOut);
 				item.QtyEnd = item.QtyBegin + (item.QtyIn - item.QtyOut);
+				item.InvBegin = (initData.Where(x => x.ItemId == item.Id).Sum(x => x.QtyIn * x.HPP) - initData.Where(x => x.ItemId == item.Id).Sum(x => x.QtyOut * x.HPP));
+				item.InvIn = smData.Where(x => x.ItemId == item.Id).Sum(x => x.QtyIn * x.HPP);
+				item.InvOut = smData.Where(x => x.ItemId == item.Id).Sum(x => x.QtyOut * x.HPP);
+				item.InvEnd = item.InvBegin + (item.InvIn - item.InvOut);
 			}
 
 			foreach (var wh in whData)
@@ -135,6 +150,10 @@ namespace ERP.Web.API.Domain.Services.Inventory
 				wh.QtyIn = smData.Where(x => x.WarehouseCode == wh.Code).Sum(x => x.QtyIn);
 				wh.QtyOut = smData.Where(x => x.WarehouseCode == wh.Code).Sum(x => x.QtyOut);
 				wh.QtyEnd = wh.QtyBegin + (wh.QtyIn - wh.QtyOut);
+				wh.InvBegin = (initData.Where(x => x.WarehouseCode == wh.Code).Sum(x => x.QtyIn * x.HPP) - initData.Where(x => x.WarehouseCode == wh.Code).Sum(x => x.QtyOut * x.HPP));
+				wh.InvIn = smData.Where(x => x.WarehouseCode == wh.Code).Sum(x => x.QtyIn * x.HPP);
+				wh.InvOut = smData.Where(x => x.WarehouseCode == wh.Code).Sum(x => x.QtyOut * x.HPP);
+				wh.InvEnd = wh.InvBegin + (wh.InvIn - wh.InvOut);
 			}
 
 			if (type == 1)
@@ -146,7 +165,11 @@ namespace ERP.Web.API.Domain.Services.Inventory
 					foreach (var item in smItemData)
                     {
 						item.QtyEnd = item.QtyIn > 0 ? selectedItem.QtyBegin + item.QtyIn : selectedItem.QtyBegin - item.QtyOut;
+						item.InvIn = item.QtyIn * item.HPP;
+						item.InvOut = item.QtyOut * item.HPP;
+						item.InvEnd = (selectedItem.InvBegin + item.InvIn) - item.InvOut;
 						selectedItem.QtyBegin = item.QtyEnd;
+						selectedItem.InvBegin = item.InvEnd;
                     }
 
 					return smItemData.AsQueryable().ToDataSourceResult(0, smItemData.Count(), null, sorts);
