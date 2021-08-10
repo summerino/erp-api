@@ -21,6 +21,12 @@ namespace ERP.Entity.Inventory
         public decimal QtyEnd { get; set; }
 
         public decimal HPP { get; set; }
+
+        public decimal InvIn { get; set; }
+
+        public decimal InvOut { get; set; }
+
+        public decimal InvEnd { get; set; }
     }
 
     public class ReportByItem
@@ -40,6 +46,14 @@ namespace ERP.Entity.Inventory
         public decimal QtyOut { get; set; }
 
         public decimal QtyEnd { get; set; }
+
+        public decimal InvBegin { get; set; }
+
+        public decimal InvIn { get; set; }
+
+        public decimal InvOut { get; set; }
+
+        public decimal InvEnd { get; set; }
     }
 
     public class ReportByWarehouse
@@ -57,5 +71,13 @@ namespace ERP.Entity.Inventory
         public decimal QtyOut { get; set; }
 
         public decimal QtyEnd { get; set; }
+
+        public decimal InvBegin { get; set; }
+
+        public decimal InvIn { get; set; }
+
+        public decimal InvOut { get; set; }
+
+        public decimal InvEnd { get; set; }
     }
 }
