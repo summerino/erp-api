@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace ERP.Entity.Sales
+namespace ERP.Entity.Purchase
 {
-    public class ReportByCustomer
+    public class ReportBySupplier
     {
         public string Code { get; set; }
 
@@ -23,7 +19,7 @@ namespace ERP.Entity.Sales
         public decimal RemainderAmount { get; set; }
     }
 
-    public class ReportByDelivery
+    public class ReportByReceive
     {
         public DateTime Date { get; set; }
 
@@ -35,13 +31,9 @@ namespace ERP.Entity.Sales
 
         public string InvCode { get; set; }
 
-        public string SlsInitial { get; set; }
+        public string SupCode { get; set; }
 
-        public string SlsName { get; set; }
-
-        public string CustCode { get; set; }
-
-        public string CustName { get; set; }
+        public string SupName { get; set; }
 
         public decimal TotalAmount { get; set; }
 

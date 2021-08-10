@@ -11,6 +11,7 @@ using ERP.Entity.Inventory;
 using ERP.Entity.Purchase;
 using ERP.Entity.Sales;
 using ERP.Entity.SystemManagement;
+using ERP.Entity.MobileSales;
 
 namespace ERP.Entity
 {
@@ -26,10 +27,10 @@ namespace ERP.Entity
             _claim = claim;
         }
 
-        // Core Entities
+        // Core entities
         public DbSet<BaseNewCodeEntity> NewCodes { get; set; }
 
-        // Accounting Entities
+        // Accounting entities
         public DbSet<BeginningBalanceAP> BeginningBalanceAPs { get; set; }
         public DbSet<VwBeginningBalanceAP> VwBeginningBalanceAPs { get; set; }
         public DbSet<BeginningBalanceAR> BeginningBalanceARs { get; set; }
@@ -49,7 +50,7 @@ namespace ERP.Entity
         public DbSet<VwGeneralJournalHeader> VwGeneralJournalHeaders { get; set; }
         public DbSet<Journal> Journals { get; set; }
 
-        // Asset Management Entities
+        // Asset Management entities
         public DbSet<FixedAsset> FixedAssets { get; set; }
         public DbSet<FixedAssetDepartment> FixedAssetDepartments { get; set; }
         public DbSet<FixedAssetHistory> FixedAssetHistories { get; set; }
@@ -75,6 +76,7 @@ namespace ERP.Entity
         public DbSet<VwOutstandingDebitMemo> VwOutstandingDebitMemos { get; set; }
 
         // General entities
+        public DbSet<VwApproval> VwApprovals { get; set; }
         public DbSet<Currency> Currencies { get; set; }
         public DbSet<Customer> Customers { get; set; }
         public DbSet<VwCustomer> VwCustomers { get; set; }
@@ -95,7 +97,9 @@ namespace ERP.Entity
         public DbSet<VwVehicle> VwVehicles { get; set; }
         public DbSet<VehicleType> VehicleTypes { get; set; }
         public DbSet<VwVehicleType> VwVehicleTypes { get; set; }
-        public DbSet<VwApproval> VwApprovals { get; set; }
+
+        // Human Resource entities
+        public DbSet<Attendance> Attendances { get; set; }
 
         // Inventory entities
         public DbSet<AdjustmentHeader> AdjustmentHeaders { get; set; }
@@ -129,6 +133,16 @@ namespace ERP.Entity
         public DbSet<ReportByItem> ReportByItems { get; set; }
         public DbSet<ReportByWarehouse> ReportByWarehouses { get; set; }
 
+        // Mobile Sales entities
+        public DbSet<MobileCustomer> MobileCustomers { get; set; }
+        public DbSet<MobileOrderHeader> MobileOrderHeaders { get; set; }
+        public DbSet<MobileOrderDetail> MobileOrderDetail { get; set; }
+        public DbSet<MobileOrderDetailDiscount> MobileOrderDetailDiscounts { get; set; }
+        public DbSet<MobileOrderDetailFreeGood> MobileOrderDetailFreeGoods { get; set; }
+        public DbSet<MobilePaymentInvoice> MobilePaymentInvoices { get; set; }
+        public DbSet<MobileReason> MobileReasons { get; set; }
+        public DbSet<MobileVisitLog> MobileVisitLogs { get; set; }
+
         // Purchase entities
         public DbSet<DebitMemo> DebitMemos { get; set; }
         public DbSet<VwDebitMemo> VwDebitMemos { get; set; }
@@ -152,6 +166,7 @@ namespace ERP.Entity
         public DbSet<VwPurchaseReturnDetailExchDiffItem> VwPurchaseReturnDetailExchDiffItems { get; set; }
         public DbSet<ReportBySupplier> ReportBySuppliers { get; set; }
         public DbSet<ReportByReceive> ReportByReceives { get; set; }
+
         // Sales entities
         public DbSet<Area> Areas { get; set; }
         public DbSet<VwArea> VwAreas { get; set; }
@@ -208,7 +223,7 @@ namespace ERP.Entity
         public DbSet<ReportByCustomer> ReportByCustomers { get; set; }
         public DbSet<ReportByDelivery> ReportByDeliveries { get; set; }
 
-        // System Management Entities
+        // System Management entities
         public DbSet<SystemManagement.Action> Actions { get; set; }
         public DbSet<Company> Companies { get; set; }
         public DbSet<VwCompany> VwCompanies { get; set; }
@@ -280,7 +295,7 @@ namespace ERP.Entity
                 .ToTable("BaseNewCodeEntity", t => t.ExcludeFromMigrations());
 
             // Accounting entities
-            // Beginning Balance AP entities
+            // Beginning Balance AP model
             modelBuilder.Entity<BeginningBalanceAP>(entity =>
             {
                 entity.HasOne<Supplier>()
@@ -298,7 +313,7 @@ namespace ERP.Entity
                 .HasNoKey()
                 .ToView("vwBeginningBalanceAP", Schema.Accounting);
 
-            // Beginning Balance AR entities
+            // Beginning Balance AR model
             modelBuilder.Entity<BeginningBalanceAR>(entity =>
             {
                 entity.HasOne<Customer>()
@@ -316,7 +331,7 @@ namespace ERP.Entity
                 .HasNoKey()
                 .ToView("vwBeginningBalanceAR", Schema.Accounting);
 
-            // Beginning Balance Credit Memo entities
+            // Beginning Balance Credit Memo model
             modelBuilder.Entity<BeginningBalanceCreditMemo>(entity =>
             {
                 entity.HasOne<Customer>()
@@ -334,7 +349,7 @@ namespace ERP.Entity
                 .HasNoKey()
                 .ToView("vwBeginningBalanceCreditMemo", Schema.Accounting);
 
-            // Beginning Balance Debit Memo entities
+            // Beginning Balance Debit Memo model
             modelBuilder.Entity<BeginningBalanceDebitMemo>(entity =>
             {
                 entity.HasOne<Supplier>()
@@ -352,12 +367,12 @@ namespace ERP.Entity
                 .HasNoKey()
                 .ToView("vwBeginningBalanceDebitMemo", Schema.Accounting);
 
-            // Closing Month entities
+            // Closing Month model
             modelBuilder.Entity<VwClosingMonth>()
                 .HasNoKey()
                 .ToView("vwClosingMonth", Schema.Accounting);
 
-            // COA entities
+            // COA model
             modelBuilder.Entity<Coa>(entity =>
             {
                 entity.HasOne<CoaType>()
@@ -375,7 +390,7 @@ namespace ERP.Entity
                 .HasNoKey()
                 .ToView("vwCoa", Schema.Accounting);
 
-            // General Journal entities
+            // General Journal model
             modelBuilder.Entity<GeneralJournalHeader>(entity =>
             {
                 entity.Property(e => e.Mark)
@@ -397,7 +412,7 @@ namespace ERP.Entity
                     .IsRequired();
             });
 
-            // Journal entities
+            // Journal model
             modelBuilder.Entity<Journal>(entity =>
                 entity.HasOne<Currency>()
                     .WithMany()
@@ -406,12 +421,12 @@ namespace ERP.Entity
             );
 
             // Asset Management entities
-            // Asset Type entities
+            // Asset Type model
             modelBuilder.Entity<VwAssetType>()
                 .HasNoKey()
                 .ToView("vwAssetType", Schema.AssetManagement);
 
-            // Fixed Asset entities
+            // Fixed Asset model
             modelBuilder.Entity<FixedAsset>(entity =>
             {
                 entity.Property(e => e.Mark)
@@ -482,7 +497,7 @@ namespace ERP.Entity
             });
 
             // Finance entities
-            // General Cash Bank entities
+            // General Cash Bank model
             modelBuilder.Entity<GeneralCashBankHeader>(entity =>
             {
                 entity.Property(e => e.Mark)
@@ -548,30 +563,12 @@ namespace ERP.Entity
                 .ToView("vwOutstandingDebitMemo", Schema.Finance);
 
             // General entities
-            // Employee entities
-            modelBuilder.Entity<Employee>(entity =>
-            {
-                entity.HasOne<SalesmanGroup>()
-                    .WithMany()
-                    .HasForeignKey(d => d.SalesGroupId)
-                    .OnDelete(DeleteBehavior.NoAction);
+            // Approval model
+            modelBuilder.Entity<VwApproval>()
+               .HasNoKey()
+               .ToView("vwApproval", Schema.General);
 
-                entity.HasOne<Warehouse>()
-                    .WithMany()
-                    .HasForeignKey(d => d.WarehouseCode)
-                    .OnDelete(DeleteBehavior.NoAction);
-            });
-
-            modelBuilder.Entity<VwEmployee>()
-                .HasNoKey()
-                .ToView("vwEmployee", Schema.General);
-
-            // Payment Term entities
-            modelBuilder.Entity<VwPaymentTerm>()
-                .HasNoKey()
-                .ToView("vwPaymentTerm", Schema.General);
-
-            // Customer entities
+            // Customer model
             modelBuilder.Entity<Customer>(entity =>
             {
                 entity.HasOne<CustomerType>()
@@ -639,7 +636,30 @@ namespace ERP.Entity
                 .HasNoKey()
                 .ToView("vwCustomerType", Schema.General);
 
-            // Supplier entities
+            // Employee model
+            modelBuilder.Entity<Employee>(entity =>
+            {
+                entity.HasOne<SalesmanGroup>()
+                    .WithMany()
+                    .HasForeignKey(d => d.SalesGroupId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Warehouse>()
+                    .WithMany()
+                    .HasForeignKey(d => d.WarehouseCode)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            modelBuilder.Entity<VwEmployee>()
+                .HasNoKey()
+                .ToView("vwEmployee", Schema.General);
+
+            // Payment Term model
+            modelBuilder.Entity<VwPaymentTerm>()
+                .HasNoKey()
+                .ToView("vwPaymentTerm", Schema.General);
+
+            // Supplier model
             modelBuilder.Entity<Supplier>(entity =>
                 entity.HasOne<SupplierType>()
                     .WithMany()
@@ -659,7 +679,7 @@ namespace ERP.Entity
                 .HasNoKey()
                 .ToView("vwTax", Schema.General);
 
-            // Vehicle entities
+            // Vehicle model
             modelBuilder.Entity<Vehicle>(entity =>
             {
                 entity.HasOne<VehicleType>()
@@ -681,13 +701,17 @@ namespace ERP.Entity
                 .HasNoKey()
                 .ToView("vwVehicleType", Schema.General);
 
-            // Approval entities
-            modelBuilder.Entity<VwApproval>()
-               .HasNoKey()
-               .ToView("vwApproval", Schema.General);
+            // Human Resource entities
+            modelBuilder.Entity<Attendance>(entity =>
+            {
+                entity.HasOne<Employee>()
+                    .WithMany()
+                    .HasForeignKey(d => d.EmployeeId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
 
             // Inventory entities
-            // Adjustment entities
+            // Adjustment model
             modelBuilder.Entity<AdjustmentHeader>(entity =>
             {
                 entity.Property(e => e.Mark)
@@ -750,7 +774,7 @@ namespace ERP.Entity
                 .HasNoKey()
                 .ToView("vwAdjustmentItem", Schema.Inventory);
 
-            // Beginning Balance Stock entities
+            // Beginning Balance Stock model
             modelBuilder.Entity<BeginningBalanceStockHeader>(entity =>
                 entity.HasOne<Warehouse>()
                     .WithMany()
@@ -784,7 +808,7 @@ namespace ERP.Entity
                     .OnDelete(DeleteBehavior.NoAction);
             });
 
-            // Item entities
+            // Item model
             modelBuilder.Entity<Item>(entity =>
             {
                 entity.HasOne<ItemCategory>()
@@ -822,7 +846,7 @@ namespace ERP.Entity
                 .HasNoKey()
                 .ToView("vwItem", Schema.Inventory);
 
-            // Item Category entities
+            // Item Category model
             modelBuilder.Entity<ItemCategory>(entity =>
                 entity.HasOne<ItemGroup>()
                     .WithMany()
@@ -834,7 +858,7 @@ namespace ERP.Entity
                 .HasNoKey()
                 .ToView("vwItemCategory", Schema.Inventory);
 
-            // Item Group entities
+            // Item Group model
             modelBuilder.Entity<VwItemGroup>()
                 .HasNoKey()
                 .ToView("vwItemGroup", Schema.Inventory);
@@ -846,7 +870,7 @@ namespace ERP.Entity
                     .OnDelete(DeleteBehavior.NoAction)
             );
 
-            // Stock Mutation entities
+            // Stock Mutation model
             modelBuilder.Entity<StockMutation>(entity =>
             {
                 entity.HasOne<Warehouse>()
@@ -875,7 +899,7 @@ namespace ERP.Entity
                     .OnDelete(DeleteBehavior.NoAction);
             });
 
-            // Transfer Stock entities
+            // Transfer Stock model
             modelBuilder.Entity<TransferStockHeader>(entity =>
             {
                 entity.Property(e => e.Mark)
@@ -926,7 +950,7 @@ namespace ERP.Entity
                 .HasNoKey()
                 .ToView("vwTransferStockDetail", Schema.Inventory);
 
-            // UoM entities
+            // UoM model
             modelBuilder.Entity<VwUoM>()
                 .HasNoKey()
                 .ToView("vwUoM", Schema.Inventory);
@@ -938,7 +962,7 @@ namespace ERP.Entity
                     .OnDelete(DeleteBehavior.NoAction)
             );
 
-            // Warehouse entities
+            // Warehouse model
             modelBuilder.Entity<Warehouse>(entity =>
                 entity.HasOne<Customer>()
                     .WithMany()
@@ -967,7 +991,7 @@ namespace ERP.Entity
                 .HasNoKey()
                 .ToView("vwWarehouseQuantity", Schema.Inventory);
 
-            // Sales Report
+            // Inventory Report model
             modelBuilder.Entity<ReportByStockMutation>()
                 .HasNoKey()
                 .ToTable("ReportByStockMutation", t => t.ExcludeFromMigrations());
@@ -980,8 +1004,231 @@ namespace ERP.Entity
                .HasNoKey()
                .ToTable("ReportByWarehouse", t => t.ExcludeFromMigrations());
 
+            // Mobile Sales entities
+            // Mobile Customer model
+            modelBuilder.Entity<MobileCustomer>(entity =>
+            {
+                entity.HasOne<Customer>()
+                    .WithMany()
+                    .HasForeignKey(d => d.CustCode)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<CustomerType>()
+                    .WithMany()
+                    .HasForeignKey(d => d.TypeId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Area>()
+                    .WithMany()
+                    .HasForeignKey(d => d.AreaId1)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Area>()
+                    .WithMany()
+                    .HasForeignKey(d => d.AreaId2)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Area>()
+                    .WithMany()
+                    .HasForeignKey(d => d.AreaId3)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Area>()
+                    .WithMany()
+                    .HasForeignKey(d => d.AreaId4)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Area>()
+                    .WithMany()
+                    .HasForeignKey(d => d.AreaId5)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            // Mobile Order model
+            modelBuilder.Entity<MobileOrderHeader>(entity =>
+            {
+                entity.Property(e => e.Mark)
+                    .IsRequired();
+
+                entity.HasOne<MobileVisitLog>()
+                    .WithMany()
+                    .HasForeignKey(d => d.VisitLogCode)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<SalesOrderHeader>()
+                    .WithMany()
+                    .HasForeignKey(d => d.SalesOrderCode)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Employee>()
+                    .WithMany()
+                    .HasForeignKey(d => d.SalesBy)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<PaymentTerm>()
+                    .WithMany()
+                    .HasForeignKey(d => d.PaymentTermId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            modelBuilder.Entity<MobileOrderDetail>(entity =>
+            {
+                entity.Property(e => e.Code)
+                    .IsRequired();
+
+                entity.HasOne<MobileOrderHeader>()
+                    .WithMany()
+                    .HasForeignKey(d => d.Code)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Item>()
+                    .WithMany()
+                    .HasForeignKey(d => d.ItemId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<UoM>()
+                    .WithMany()
+                    .HasForeignKey(d => d.UomId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<UoMConversion>()
+                    .WithMany()
+                    .HasForeignKey(d => d.UnitId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Tax>()
+                    .WithMany()
+                    .HasForeignKey(d => d.TaxId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            modelBuilder.Entity<MobileOrderDetailDiscount>(entity =>
+            {
+                entity.Property(e => e.Code)
+                    .IsRequired();
+
+                entity.HasOne<MobileOrderHeader>()
+                    .WithMany()
+                    .HasForeignKey(d => d.Code)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<MobileOrderDetail>()
+                    .WithMany()
+                    .HasForeignKey(d => d.OrderDetailId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<PromoHeader>()
+                    .WithMany()
+                    .HasForeignKey(d => d.PromoCode)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<PromoDetail>()
+                    .WithMany()
+                    .HasForeignKey(d => d.PromoDetailId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            modelBuilder.Entity<MobileOrderDetailFreeGood>(entity =>
+            {
+                entity.Property(e => e.Code)
+                    .IsRequired();
+
+                entity.HasOne<MobileOrderHeader>()
+                    .WithMany()
+                    .HasForeignKey(d => d.Code)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<MobileOrderDetail>()
+                    .WithMany()
+                    .HasForeignKey(d => d.OrderDetailId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<PromoHeader>()
+                    .WithMany()
+                    .HasForeignKey(d => d.PromoCode)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Item>()
+                    .WithMany()
+                    .HasForeignKey(d => d.ItemId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<UoM>()
+                    .WithMany()
+                    .HasForeignKey(d => d.UomId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<UoMConversion>()
+                    .WithMany()
+                    .HasForeignKey(d => d.UnitId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            // Mobile Payment Invoice model
+            modelBuilder.Entity<MobilePaymentInvoice>(entity =>
+            {
+                entity.Property(e => e.Mark)
+                    .IsRequired();
+
+                entity.HasOne<MobileVisitLog>()
+                    .WithMany()
+                    .HasForeignKey(d => d.VisitLogCode)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Employee>()
+                    .WithMany()
+                    .HasForeignKey(d => d.SalesmanId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            // Mobile Visit Log model
+            modelBuilder.Entity<MobileVisitLog>(entity =>
+            {
+                entity.Property(e => e.Mark)
+                    .IsRequired();
+
+                entity.HasOne<VisitOrder>()
+                    .WithMany()
+                    .HasForeignKey(d => d.VisitOrderCode)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Employee>()
+                    .WithMany()
+                    .HasForeignKey(d => d.SalesmanId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<MobileReason>()
+                    .WithMany()
+                    .HasForeignKey(d => d.UnscheduledVisitReasonId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<MobileReason>()
+                    .WithMany()
+                    .HasForeignKey(d => d.NoVisitReasonId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<MobileReason>()
+                    .WithMany()
+                    .HasForeignKey(d => d.NoOrderReasonId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            // Mobile Visit Reason model
+            modelBuilder.Entity<MobileVisitReason>(entity =>
+            {
+                entity.HasOne<MobileVisitLog>()
+                    .WithMany()
+                    .HasForeignKey(d => d.VisitLogCode)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<MobileReason>()
+                    .WithMany()
+                    .HasForeignKey(d => d.VisitReasonId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
             // Purchase entities
-            // Debit Memo entities
+            // Debit Memo model
             modelBuilder.Entity<DebitMemo>(entity =>
             {
                 entity.Property(e => e.Mark)
@@ -1002,7 +1249,7 @@ namespace ERP.Entity
                 .HasNoKey()
                 .ToView("vwDebitMemo", Schema.Purchasing);
 
-            // Purchase Invoice entities
+            // Purchase Invoice model
             modelBuilder.Entity<PurchaseInvoiceHeader>(entity =>
             {
                 entity.Property(e => e.Mark)
@@ -1065,7 +1312,7 @@ namespace ERP.Entity
                     .OnDelete(DeleteBehavior.NoAction);
             });
 
-            // Purchase Order entities
+            // Purchase Order model
             modelBuilder.Entity<PurchaseOrderHeader>(entity =>
                 entity.Property(e => e.Mark)
                     .IsRequired()
@@ -1084,7 +1331,7 @@ namespace ERP.Entity
                 .HasNoKey()
                 .ToView("vwPurchaseOrderDetail", Schema.Purchasing);
             
-            // Purchase Receive entities
+            // Purchase Receive model
             modelBuilder.Entity<PurchaseReceiveHeader>(entity =>
                 entity.Property(e => e.Mark)
                     .IsRequired()
@@ -1103,7 +1350,7 @@ namespace ERP.Entity
                 .HasNoKey()
                 .ToView("vwPurchaseReceiveDetail", Schema.Purchasing);
 
-            // Purchase Return entities
+            // Purchase Return model
             modelBuilder.Entity<PurchaseReturnHeader>(entity =>
                 entity.Property(e => e.Mark)
                     .IsRequired()
@@ -1131,7 +1378,7 @@ namespace ERP.Entity
                 .HasNoKey()
                 .ToView("vwPurchaseReturnDetailExchDiffItem", Schema.Purchasing);
 
-            // Purchase Report
+            // Purchase Report model
             modelBuilder.Entity<ReportBySupplier>()
                 .HasNoKey()
                 .ToTable("ReportBySupplier", t => t.ExcludeFromMigrations());
@@ -1141,12 +1388,12 @@ namespace ERP.Entity
                .ToTable("ReportByReceive", t => t.ExcludeFromMigrations());
 
             // Sales entities
-            // Area entities
+            // Area model
             modelBuilder.Entity<VwArea>()
                 .HasNoKey()
                 .ToView("vwArea", Schema.Sales);
 
-            // Credit Memo entities
+            // Credit Memo model
             modelBuilder.Entity<CreditMemo>(entity =>
             {
                 entity.Property(e => e.Mark)
@@ -1167,7 +1414,7 @@ namespace ERP.Entity
                 .HasNoKey()
                 .ToView("vwCreditMemo", Schema.Sales);
 
-            // Delivery Plan entities
+            // Delivery Plan model
             modelBuilder.Entity<DeliveryPlanHeader>(entity =>
             {
                 entity.Property(e => e.Mark)
@@ -1240,7 +1487,7 @@ namespace ERP.Entity
                     .OnDelete(DeleteBehavior.NoAction);
             });
 
-            // Promo entities
+            // Promo model
             modelBuilder.Entity<PromoHeader>(entity =>
                 entity.Property(e => e.Mark)
                     .IsRequired()
@@ -1290,7 +1537,7 @@ namespace ERP.Entity
                     .OnDelete(DeleteBehavior.NoAction);
             });
 
-            // Sales Delivery entities
+            // Sales Delivery model
             modelBuilder.Entity<SalesDeliveryHeader>(entity =>
                 entity.Property(e => e.Mark)
                     .IsRequired()
@@ -1314,7 +1561,7 @@ namespace ERP.Entity
                     .IsRequired()
             );
 
-            // Sales Invoice entities
+            // Sales Invoice model
             modelBuilder.Entity<SalesInvoiceHeader>(entity =>
             {
                 entity.Property(e => e.Mark)
@@ -1377,7 +1624,7 @@ namespace ERP.Entity
                     .OnDelete(DeleteBehavior.NoAction);
             });
 
-            // Salesman Group entities
+            // Salesman Group model
             modelBuilder.Entity<VwSalesmanGroup>()
                 .HasNoKey()
                 .ToView("vwSalesmanGroup", Schema.Sales);
@@ -1390,11 +1637,27 @@ namespace ERP.Entity
                 .HasNoKey()
                 .ToView("vwSalesmanScheduleCustomer", Schema.Sales);
 
-            // Sales Order entities
+            // Sales Order model
             modelBuilder.Entity<SalesOrderHeader>(entity =>
+            {
                 entity.Property(e => e.Mark)
-                    .IsRequired()
-            );
+                    .IsRequired();
+
+                entity.HasOne<Customer>()
+                    .WithMany()
+                    .HasForeignKey(d => d.CustCode)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Employee>()
+                    .WithMany()
+                    .HasForeignKey(d => d.SalesBy)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<PaymentTerm>()
+                    .WithMany()
+                    .HasForeignKey(d => d.PaymentTermId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
 
             modelBuilder.Entity<VwSalesOrderHeader>()
                 .HasNoKey()
@@ -1419,7 +1682,7 @@ namespace ERP.Entity
                     .IsRequired()
             );
 
-            // Sales Return entities
+            // Sales Return model
             modelBuilder.Entity<SalesReturnHeader>(entity =>
                 entity.Property(e => e.Mark)
                     .IsRequired()
@@ -1447,7 +1710,7 @@ namespace ERP.Entity
                 .HasNoKey()
                 .ToView("vwSalesReturnDetailExchDiffItem", Schema.Sales);
 
-            // Visit Order entities
+            // Visit Order model
             modelBuilder.Entity<VisitOrder>(entity =>
                 entity.Property(e => e.Mark)
                     .IsRequired()
@@ -1475,7 +1738,7 @@ namespace ERP.Entity
                 .HasNoKey()
                 .ToView("vwVisitOrderInvoice", Schema.Sales);
 
-            // Visit Plan entities
+            // Visit Plan model
             modelBuilder.Entity<VisitPlanHeader>(entity =>
                 entity.Property(e => e.Mark)
                     .IsRequired()
@@ -1498,7 +1761,7 @@ namespace ERP.Entity
                 .HasNoKey()
                 .ToView("vwVisitPlanDetailCustomer", Schema.Sales);
 
-            // Sales Report
+            // Sales Report model
             modelBuilder.Entity<ReportByCustomer>()
                 .HasNoKey()
                 .ToTable("ReportByCustomer", t => t.ExcludeFromMigrations());
@@ -1508,12 +1771,12 @@ namespace ERP.Entity
                .ToTable("ReportByDelivery", t => t.ExcludeFromMigrations());
 
             // System Management entities
-            // Company entities
+            // Company model
             modelBuilder.Entity<VwCompany>()
                 .HasNoKey()
                 .ToView("vwCompany", Schema.SystemManagement);
 
-            // Menu entities
+            // Menu model
             modelBuilder.Entity<MenuAction>(entity =>
             {
                 entity.HasOne<Menu>()
@@ -1527,7 +1790,7 @@ namespace ERP.Entity
                     .OnDelete(DeleteBehavior.NoAction);
             });
 
-            // Role entities
+            // Role model
             modelBuilder.Entity<VwRole>()
                 .HasNoKey()
                 .ToView("vwRole", Schema.SystemManagement);
@@ -1563,7 +1826,7 @@ namespace ERP.Entity
                     .OnDelete(DeleteBehavior.NoAction);
             });
 
-            // System Parameter entities
+            // System Parameter model
             modelBuilder.Entity<SystemParameter>(entity =>
                 entity.HasOne<SystemParameterModule>()
                     .WithMany()
@@ -1571,7 +1834,7 @@ namespace ERP.Entity
                     .OnDelete(DeleteBehavior.NoAction)
             );
 
-            // User entities
+            // User model
             modelBuilder.Entity<User>(entity =>
             {
                 entity.HasOne<Role>()

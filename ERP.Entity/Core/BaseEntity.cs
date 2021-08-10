@@ -69,6 +69,32 @@ namespace ERP.Entity.Core
         public DateTime? ApprovedDate { get; set; }
     }
 
+    public class BaseEntityWithApproved
+    {
+        public int CreatedBy { get; set; }
+
+        [Column(TypeName = "datetime")]
+        public DateTime CreatedDate { get; set; }
+
+        public int UpdatedBy { get; set; }
+
+        [Column(TypeName = "datetime")]
+        public DateTime UpdatedDate { get; set; }
+
+        public int? ApprovedBy { get; set; }
+
+        [Column(TypeName = "datetime")]
+        public DateTime? ApprovedDate { get; set; }
+    }
+
+    public class BaseCreatedEntity
+    {
+        public int CreatedBy { get; set; }
+
+        [Column(TypeName = "datetime")]
+        public DateTime CreatedDate { get; set; }
+    }
+
     public class BaseNewCodeEntity
     {
         public string Value { get; set; }
