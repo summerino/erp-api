@@ -2,11 +2,11 @@
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
-	<Authors>Sahassa Dev. Team</Authors>
-	<Company>Sahassa Panca Manunggal</Company>
-	<Product>Sahassa® ERP</Product>
-	<Copyright>© Sahassa. All rights reserved.</Copyright>
-	<Version>1.0.0-dev</Version>
+	  <Authors>Sahassa Dev. Team</Authors>
+	  <Company>Sahassa Panca Manunggal</Company>
+	  <Product>Sahassa® ERP</Product>
+	  <Copyright>© Sahassa. All rights reserved.</Copyright>
+	  <Version>1.0.0-dev</Version>
   </PropertyGroup>
 
   <ItemGroup>
