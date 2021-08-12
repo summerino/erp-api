@@ -159,6 +159,7 @@ namespace ERP.Web.API
             services.AddScoped<ICashBankService, CashBankService>();
             services.AddScoped<ICashBankTypeService, CashBankTypeService>();
             services.AddScoped<IInterCashBankService, InterCashBankService>();
+            services.AddScoped<ICBReportService, CBReportService>();
 
             // General services
             services.AddScoped<IApprovalService, ApprovalService>();
