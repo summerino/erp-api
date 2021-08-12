@@ -301,7 +301,7 @@ namespace ERP.Web.API.Controllers
             return result;
         }
 
-        private (string[]? value, string message) GetUniqueColumns(Swift.Framework.Dtos.MasterConfig.ParameterDto parameterDto) 
+        private (string[] value, string message) GetUniqueColumns(Swift.Framework.Dtos.MasterConfig.ParameterDto parameterDto) 
         {
             if (!string.IsNullOrEmpty(parameterDto.UniqueColumnName))
             {

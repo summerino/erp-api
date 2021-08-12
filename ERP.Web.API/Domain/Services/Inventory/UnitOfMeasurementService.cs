@@ -7,7 +7,6 @@ using ERP.Common.Models;
 using ERP.Entity;
 using ERP.Entity.Inventory;
 using ERP.Web.API.Domain.Interfaces.Inventory;
-using ERP.Web.API.Domain.Models;
 using ERP.Web.API.Model.Inventory;
 
 namespace ERP.Web.API.Domain.Services.Inventory
@@ -136,7 +135,6 @@ namespace ERP.Web.API.Domain.Services.Inventory
                 Db.UoMConversions.RemoveRange(delDetails);
 
                 // Update detail data
-                short i = 0;
                 foreach (var item in data.Details)
                 {
                     if (item.Id < 0)

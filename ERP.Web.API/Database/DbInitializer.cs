@@ -11,7 +11,7 @@ namespace ERP.Web.API.Database
     {
         public void EnsureSeeded(TenantContext dbContext)
         {
-            var resourceString = "ERP.Web.API.Data.{0}.json";
+            //var resourceString = "ERP.Web.API.Data.{0}.json";
 
             //SeedEntity<Supplier>(string.Format(resourceString, "Supplier"), dbContext);
         }

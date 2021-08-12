@@ -87,9 +87,9 @@ namespace ERP.Web.API.Utils
                     return string.Format("CREATE DATABASE {0}", databaseName);
                 }
             } 
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw ex;
+                throw;
             }
         }
     }
