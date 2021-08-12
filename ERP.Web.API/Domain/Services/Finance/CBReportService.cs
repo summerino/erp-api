@@ -1,17 +1,18 @@
-﻿using ERP.Common.Extensions;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using ERP.Common.Extensions;
 using ERP.Common.Models;
 using ERP.Entity;
 using ERP.Entity.Finance;
 using ERP.Web.API.Domain.Interfaces.Finance;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace ERP.Web.API.Domain.Services.Finance
 {
     public class CBReportService : ICBReportService
     {
         private readonly TenantContext _db;
+
         public CBReportService(TenantContext db)
         {
             _db = db;
@@ -52,7 +53,7 @@ namespace ERP.Web.API.Domain.Services.Finance
             }
 
 
-            if(type == 1)
+            if (type == 1)
             {
                 var endBalance = initCBHeader.Sum(x => x.Amount);
                 reportA.Add(new ReportByAccount

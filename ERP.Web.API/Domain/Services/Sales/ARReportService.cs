@@ -1,21 +1,22 @@
-﻿using ERP.Common.Extensions;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
+using ERP.Common.Extensions;
 using ERP.Common.Models;
 using ERP.Entity;
 using ERP.Web.API.Domain.Interfaces.Sales;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace ERP.Web.API.Domain.Services.Sales
 {
     public class ARReportService : IARReportService
     {
         private readonly TenantContext _db;
+
         public ARReportService(TenantContext db)
         {
             _db = db;
         }
+
         public DataSourceResult GetData(int type, string date, string custCode, int slsId, IEnumerable<Sort> sorts)
         {
             var cusData = _db.ReportByCustomers.FromSqlRaw("select cs.Code, cs.Initial, cs.Name, count(*) as TotalTrans, sum(dlv.Total) as TotalAmount, sum(cbd.TransAmount) as PaidAmount, (sum(dlv.Total) - sum(cbd.TransAmount)) as RemainderAmount" +

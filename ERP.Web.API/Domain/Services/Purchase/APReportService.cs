@@ -1,21 +1,22 @@
-﻿using ERP.Common.Extensions;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
+using ERP.Common.Extensions;
 using ERP.Common.Models;
 using ERP.Entity;
 using ERP.Web.API.Domain.Interfaces.Purchase;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace ERP.Web.API.Domain.Services.Purchase
 {
     public class APReportService : IAPReportService
     {
         private readonly TenantContext _db;
+
         public APReportService(TenantContext db)
         {
             _db = db;
         }
+
         public DataSourceResult GetData(int type, string date, string supCode, IEnumerable<Sort> sorts)
         {
             var supData = _db.ReportBySuppliers.FromSqlRaw("select sp.Code, sp.Initial, sp.Name, count(*) as TotalTrans, sum(rcv.Total) as TotalAmount, sum(cbd.TransAmount) as PaidAmount, (sum(rcv.Total) - sum(cbd.TransAmount)) as RemainderAmount" +
