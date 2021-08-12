@@ -265,6 +265,8 @@ namespace ERP.Entity.Finance
         public string CoaCode { get; set; }
 
         public string CoaName { get; set; }
+
+        public int ActionId { get; set; }
     }
 
     public class VwAR

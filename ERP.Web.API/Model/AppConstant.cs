@@ -37,6 +37,16 @@
         ApproveInterCashBank = 28,
         ApproveGeneralJournal = 29,
         ApproveFixedAsset = 30,
+        CbTypeAccountReceivable = 31,
+        CbTypeAccountPayable = 32,
+        CbTypeExpeditionDebt = 33,
+        CbTypeGeneralTransaction = 34,
+        CbTypeSalesDownPayment = 35,
+        CbTypeSalesDownPaymentReturn = 36,
+        CbTypePurchaseDownPayment = 37,
+        CbTypePurchaseDownPaymentReturn = 38,
+        CbTypeSalesReturn = 39,
+        CbTypePurchaseReturn = 40,
         Print = 41
     }
 

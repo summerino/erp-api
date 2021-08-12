@@ -22,7 +22,7 @@ namespace ERP.Web.API.Controllers.SystemManagement
         private readonly ICompanyProfileService _comp;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
-        private const int _menuId = (int)ERP.Web.API.Model.Menu.CompanyProfile;
+        private const int MenuId = (int)ERP.Web.API.Model.Menu.CompanyProfile;
 
         public CompanyProfileController(ICompanyProfileService companyProfileService, IClaimService claim, IAuthService auth)
         {
@@ -52,7 +52,7 @@ namespace ERP.Web.API.Controllers.SystemManagement
         public IActionResult OnPut(string id, Company data)
         {
 
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Update }).Any())
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
             {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
             }

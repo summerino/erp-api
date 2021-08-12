@@ -22,7 +22,7 @@ namespace ERP.Web.API.Controllers.AssetManagement
         private readonly IClaimService _claim;
         private readonly IAssetTypeService _assetType;
         private readonly IAuthService _auth;
-        private const int _menuId = (int)Menu.AssetType;
+        private const int MenuId = (int)Menu.AssetType;
 
         public AssetTypeController(IAssetTypeService assetType, IAuthService auth, IClaimService claim)
         {
@@ -72,7 +72,7 @@ namespace ERP.Web.API.Controllers.AssetManagement
         [HttpPost]
         public IActionResult OnPost(AssetType data)
         {
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Insert }).Any())
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Insert }).Any())
             {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
             }
@@ -89,7 +89,7 @@ namespace ERP.Web.API.Controllers.AssetManagement
         [HttpPut("{id}")]
         public IActionResult OnPut(string id, AssetType data)
         {
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Update }).Any())
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
             {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
             }
@@ -106,7 +106,7 @@ namespace ERP.Web.API.Controllers.AssetManagement
         public IActionResult OnDelete(int id)
         {
 
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Delete }).Any())
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Delete }).Any())
             {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
             }

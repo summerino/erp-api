@@ -22,7 +22,7 @@ namespace ERP.Web.API.Controllers.SystemManagement
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
 
-        private const int _menuId = (int)Menu.Role;
+        private const int MenuId = (int)Menu.Role;
 
         public RoleController(IRoleService role, IClaimService claim, IAuthService auth)
         {
@@ -92,7 +92,7 @@ namespace ERP.Web.API.Controllers.SystemManagement
         [HttpPost]
         public IActionResult OnPost(RoleRequest data)
         {
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Insert }).Any())
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Insert }).Any())
             {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
             }
@@ -111,7 +111,7 @@ namespace ERP.Web.API.Controllers.SystemManagement
         public IActionResult OnPut(int id, RoleRequest data)
         {
 
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Update }).Any())
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
             {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
             }
@@ -128,7 +128,7 @@ namespace ERP.Web.API.Controllers.SystemManagement
         public IActionResult OnDelete(int id)
         {
 
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Delete }).Any())
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Delete }).Any())
             {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
             }

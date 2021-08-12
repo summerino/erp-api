@@ -24,7 +24,7 @@ namespace ERP.Web.API.Controllers.Accounting
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
         private readonly IClosingMonthService _closingMonth;
-        private const int _menuId = (int)Menu.GeneralJournal;
+        private const int MenuId = (int)Menu.GeneralJournal;
 
         public GeneralJournalController(IGeneralJournalService gj, ISystemParameterService sysPar,
             IClaimService claim, IAuthService auth, IClosingMonthService closingMonthService)
@@ -80,7 +80,7 @@ namespace ERP.Web.API.Controllers.Accounting
         public IActionResult OnPost(GeneralJournalRequest data)
         {
             // Checking role authorization
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Insert }).Any())
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Insert }).Any())
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
             // Validate process
@@ -104,7 +104,7 @@ namespace ERP.Web.API.Controllers.Accounting
         public IActionResult OnPut(string code, GeneralJournalRequest data)
         {
             // Checking role authorization
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Update }).Any())
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
             // Validate process
@@ -125,7 +125,7 @@ namespace ERP.Web.API.Controllers.Accounting
         public IActionResult OnDelete(string code, GeneralJournalRequest data)
         {
             // Checking role authorization
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Void }).Any())
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Void }).Any())
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
             // Validate process

@@ -17,7 +17,7 @@ namespace ERP.Web.API.Controllers.Accounting
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
 
-        private const int _menuId = (int)Menu.Posting;
+        private const int MenuId = (int)Menu.Posting;
 
         public JournalController(IJournalService journalService, IClaimService claimService, IAuthService authService)
         {
@@ -29,7 +29,7 @@ namespace ERP.Web.API.Controllers.Accounting
         [HttpPost]
         public IActionResult OnPost(JournalRequest data)
         {
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Post }).Any())
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Post }).Any())
             {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
             }

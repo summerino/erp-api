@@ -10,10 +10,10 @@ namespace ERP.Web.API.Controllers.Purchase
 {
     [Route("ap-report")]
     [ApiController]
-    public class APReportController : ControllerBase
+    public class ApReportController : ControllerBase
     {
         private readonly IAPReportService _ap;
-        public APReportController(IAPReportService ap)
+        public ApReportController(IAPReportService ap)
         {
             _ap = ap;
         }

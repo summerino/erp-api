@@ -22,7 +22,7 @@ namespace ERP.Web.API.Controllers.Inventory
         private readonly IUnitOfMeasurementService _uom;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
-        private const int _menuId = (int)Menu.Item;
+        private const int MenuId = (int)Menu.Item;
         public ItemController(IItemService item, IUnitOfMeasurementService uom, IClaimService claim, IAuthService auth)
         {
             _uom = uom;
@@ -92,7 +92,7 @@ namespace ERP.Web.API.Controllers.Inventory
         public IActionResult OnPost(Item data)
         {
 
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Insert }).Any())
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Insert }).Any())
             {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
             }
@@ -112,7 +112,7 @@ namespace ERP.Web.API.Controllers.Inventory
         public IActionResult OnPut(string id, Item data)
         {
 
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Update }).Any())
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
             {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
             }
@@ -128,7 +128,7 @@ namespace ERP.Web.API.Controllers.Inventory
         [HttpDelete("{id}")]
         public IActionResult OnDelete(int id)
         {
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Delete }).Any())
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Delete }).Any())
             {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
             }

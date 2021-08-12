@@ -21,7 +21,7 @@ namespace ERP.Web.API.Controllers.Sales
         private readonly IAreaService _area;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
-        private const int _menuId = (int)Menu.Area;
+        private const int MenuId = (int)Menu.Area;
         public AreaController(IAreaService area, IClaimService claim, IAuthService auth)
         {
             _area = area;
@@ -78,7 +78,7 @@ namespace ERP.Web.API.Controllers.Sales
         public IActionResult OnPost(Area data)
         {
 
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Insert }).Any())
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Insert }).Any())
             {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
             }
@@ -98,7 +98,7 @@ namespace ERP.Web.API.Controllers.Sales
         public IActionResult OnPut(int id, Area data)
         {
 
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Update }).Any())
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
             {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
             }
@@ -115,7 +115,7 @@ namespace ERP.Web.API.Controllers.Sales
         public IActionResult OnDelete(int id)
         {
 
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Delete }).Any())
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Delete }).Any())
             {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
             }

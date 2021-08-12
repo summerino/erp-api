@@ -22,7 +22,7 @@ namespace ERP.Web.API.Controllers.General
         private readonly ITaxService _tax;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
-        private const int _menuId = (int)Menu.Tax;
+        private const int MenuId = (int)Menu.Tax;
         public TaxController(ITaxService tax, IClaimService claim, IAuthService auth)
         {
             _tax = tax;
@@ -72,7 +72,7 @@ namespace ERP.Web.API.Controllers.General
         public IActionResult OnPost(Tax data)
         {
 
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Insert }).Any())
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Insert }).Any())
             {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
             }
@@ -92,7 +92,7 @@ namespace ERP.Web.API.Controllers.General
         public IActionResult OnPut(string id, Tax data)
         {
 
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Update }).Any())
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
             {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
             }
@@ -108,7 +108,7 @@ namespace ERP.Web.API.Controllers.General
         [HttpDelete("{id}")]
         public IActionResult OnDelete(int id)
         {
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Delete }).Any())
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Delete }).Any())
             {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
             }

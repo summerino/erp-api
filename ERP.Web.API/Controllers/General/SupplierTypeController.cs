@@ -22,7 +22,7 @@ namespace ERP.Web.API.Controllers.General
         private readonly ISupplierTypeService _supplierType;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
-        private const int _menuId = (int)Menu.SupplierType;
+        private const int MenuId = (int)Menu.SupplierType;
         public SupplierTypeController(ISupplierTypeService supplierTypes, IClaimService claim, IAuthService auth)
         {
             _supplierType = supplierTypes;
@@ -74,7 +74,7 @@ namespace ERP.Web.API.Controllers.General
         public IActionResult OnPost(SupplierType data)
         {
 
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Insert }).Any())
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Insert }).Any())
             {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
             }
@@ -94,7 +94,7 @@ namespace ERP.Web.API.Controllers.General
         public IActionResult OnPut(string id, SupplierType data)
         {
 
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Update }).Any())
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
             {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
             }
@@ -110,7 +110,7 @@ namespace ERP.Web.API.Controllers.General
         [HttpDelete("{id}")]
         public IActionResult OnDelete(int id)
         {
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Delete }).Any())
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Delete }).Any())
             {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
             }

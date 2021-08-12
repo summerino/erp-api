@@ -10,10 +10,10 @@ namespace ERP.Web.API.Controllers.Sales
 {
     [Route("ar-report")]
     [ApiController]
-    public class ARReportController : ControllerBase
+    public class ArReportController : ControllerBase
     {
         private readonly IARReportService _ar;
-        public ARReportController(IARReportService ar)
+        public ArReportController(IARReportService ar)
         {
             _ar = ar;
         }

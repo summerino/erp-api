@@ -26,7 +26,7 @@ namespace ERP.Web.API.Controllers.Finance
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
 
-        private const int _menuId = (int)Menu.InterCashBank;
+        private const int MenuId = (int)Menu.InterCashBank;
 
         public InterCashBankController(IInterCashBankService interCb, IClosingMonthService closingMonth,
             ISystemParameterService sysPar, IClaimService claim, IAuthService auth)
@@ -71,7 +71,7 @@ namespace ERP.Web.API.Controllers.Finance
         public IActionResult OnPost(CashBankRequest data)
         {
             // Checking role authorization
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Insert }).Any())
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Insert }).Any())
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
             // Checking coa code from & to can't be same
@@ -99,7 +99,7 @@ namespace ERP.Web.API.Controllers.Finance
         public IActionResult OnPut(string code, CashBankRequest data)
         {
             // Checking role authorization
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Update }).Any())
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
             // Checking coa code from & to can't be same
@@ -124,7 +124,7 @@ namespace ERP.Web.API.Controllers.Finance
         public IActionResult OnDelete(string code, CashBankRequest data)
         {
             // Checking role authorization
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Void }).Any())
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Void }).Any())
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
             // Validate process

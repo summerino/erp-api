@@ -26,7 +26,7 @@ namespace ERP.Web.API.Controllers.Accounting
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
         private readonly IApprovalService _apv;
-        private const int _menuId = (int)Menu.ClosingMonth;
+        private const int MenuId = (int)Menu.ClosingMonth;
 
         public ClosingMonthController(IClosingMonthService closingMonth, IClaimService claim, IAuthService auth, IApprovalService approvalService)
         {
@@ -57,7 +57,7 @@ namespace ERP.Web.API.Controllers.Accounting
         public IActionResult OnPost(ClosingMonthRequest data)
         {
 
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Insert }).Any())
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Insert }).Any())
             {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
             }
@@ -80,7 +80,7 @@ namespace ERP.Web.API.Controllers.Accounting
         [HttpPut]
         public IActionResult OnPut(ClosingMonthRequest data)
         {
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Update }).Any())
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
             {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
             }

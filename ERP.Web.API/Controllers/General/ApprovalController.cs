@@ -21,7 +21,7 @@ namespace ERP.Web.API.Controllers.General
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
 
-        private const int _menuId = (int)Menu.Approval;
+        private const int MenuId = (int)Menu.Approval;
 
         public ApprovalController(IApprovalService approval, IClaimService claim, IAuthService auth)
         {
@@ -38,7 +38,7 @@ namespace ERP.Web.API.Controllers.General
                     skip, take,
                     JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
                     JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
-                    _auth.GetActions(_menuId, _claim.RoleId, new List<int>()).ToList(),
+                    _auth.GetActions(MenuId, _claim.RoleId, new List<int>()).ToList(),
                     search);
 
             return Ok(new ApiResponse
@@ -54,7 +54,7 @@ namespace ERP.Web.API.Controllers.General
         {
             var actionIdLists = data.GroupBy(x => x.ActionId).Select(x => x.Key).ToList();
 
-            if (_auth.GetActions(_menuId, _claim.RoleId, actionIdLists).Count() != actionIdLists.Count)
+            if (_auth.GetActions(MenuId, _claim.RoleId, actionIdLists).Count() != actionIdLists.Count)
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
             var result = _approval.SaveChanges(data, _claim.UserId);

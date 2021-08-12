@@ -22,7 +22,7 @@ namespace ERP.Web.API.Controllers.Accounting
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
 
-        private const int _menuId = (int)Menu.COA;
+        private const int MenuId = (int)Menu.COA;
 
         public CoaController(ICoaService coa, IClaimService claim, IAuthService auth)
         {
@@ -73,7 +73,7 @@ namespace ERP.Web.API.Controllers.Accounting
         public IActionResult OnPost(Coa data)
         {
 
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Insert }).Any())
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Insert }).Any())
             {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
             }
@@ -93,7 +93,7 @@ namespace ERP.Web.API.Controllers.Accounting
         public IActionResult OnPut(string id, Coa data)
         {
 
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Update }).Any())
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
             {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
             }
@@ -110,7 +110,7 @@ namespace ERP.Web.API.Controllers.Accounting
         public IActionResult OnDelete(int id)
         {
 
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Delete }).Any())
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Delete }).Any())
             {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
             }

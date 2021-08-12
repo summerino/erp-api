@@ -19,7 +19,7 @@ namespace ERP.Web.API.Controllers.SystemManagement
         private readonly IAuthService _auth;
         private readonly ISystemParameterService _sysParam;
         private readonly IClaimService _claim;
-        private const int _menuId = (int)Menu.Parameter;
+        private const int MenuId = (int)Menu.Parameter;
 
         public SystemParameterController(ISystemParameterService sysParam, IClaimService claimService, IAuthService auth)
         {

@@ -27,7 +27,7 @@ namespace ERP.Web.API.Controllers.Inventory
         private readonly ISystemParameterService _sysPar;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
-        private const int _menuId = (int)Menu.Consignee;
+        private const int MenuId = (int)Menu.Consignee;
 
 
         public ConsigneeController(IConsigneeService consignee, IUnitOfMeasurementService uom,
@@ -104,7 +104,7 @@ namespace ERP.Web.API.Controllers.Inventory
         public IActionResult OnPost(TransferStockRequest data)
         {
             // Checking role authorization
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Insert }).Any())
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Insert }).Any())
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
             // Validate process
@@ -129,7 +129,7 @@ namespace ERP.Web.API.Controllers.Inventory
         public IActionResult OnPut(string code, TransferStockRequest data)
         {
             // Checking role authorization
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Update }).Any())
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
             // Validate process
@@ -151,7 +151,7 @@ namespace ERP.Web.API.Controllers.Inventory
         public IActionResult OnDelete(string code, TransferStockRequest data)
         {
             // Checking role authorization
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Void }).Any())
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Void }).Any())
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
             // Validate process

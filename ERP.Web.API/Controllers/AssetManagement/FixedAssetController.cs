@@ -26,7 +26,7 @@ namespace ERP.Web.API.Controllers.AssetManagement
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
 
-        private const int _menuId = (int)Menu.FixedAsset;
+        private const int MenuId = (int)Menu.FixedAsset;
 
         public FixedAssetController(IFixedAssetService fixedAsset, IClosingMonthService closingMonth,
             ISystemParameterService sysPar, IClaimService claim, IAuthService auth)
@@ -59,7 +59,7 @@ namespace ERP.Web.API.Controllers.AssetManagement
         public IActionResult OnPost(FixedAssetRequest data)
         {
             // Checking role authorization
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Insert }).Any())
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Insert }).Any())
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
             // Validate process
@@ -82,7 +82,7 @@ namespace ERP.Web.API.Controllers.AssetManagement
         public IActionResult OnPut(string code, FixedAssetRequest data)
         {
             // Checking role authorization
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Update }).Any())
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
             
             // Validate process
@@ -102,7 +102,7 @@ namespace ERP.Web.API.Controllers.AssetManagement
         public IActionResult OnDelete(string code, FixedAssetRequest data)
         {
             // Checking role authorization
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Void }).Any())
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Void }).Any())
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
             // Validate process

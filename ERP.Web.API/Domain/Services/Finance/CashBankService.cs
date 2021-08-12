@@ -8,6 +8,8 @@ using ERP.Common.Models;
 using ERP.Entity;
 using ERP.Entity.Finance;
 using ERP.Web.API.Domain.Interfaces.Finance;
+using ERP.Web.API.Domain.Models.Finance;
+using ERP.Web.API.Model;
 using ERP.Web.API.Model.Finance;
 
 namespace ERP.Web.API.Domain.Services.Finance
@@ -362,7 +364,7 @@ namespace ERP.Web.API.Domain.Services.Finance
             return result;
         }
 
-        public SaveResult Delete(string code, int userId)
+        public SaveResult Delete(string code, int userId, int menuId, int roleId)
         {
             var result = new SaveResult(false);
 
@@ -376,6 +378,28 @@ namespace ERP.Web.API.Domain.Services.Finance
                     return result;
                 }
 
+                // Checking role authorization for item details
+                var map = new MapCbTypeToAction();
+                var types =
+                    Db.GeneralCashBankDetails
+                        .Where(x => x.Code == code)
+                        .Select(x => x.Type).Distinct().ToList();
+                var actionIdLists =
+                    map.CbTypeToActions
+                        .Where(t => types.Contains(t.Code))
+                        .Select(t => t.ActionId).ToList();
+
+                var countRoleMenuAction =
+                    Db.RoleMenuActions
+                        .Count(x => x.MenuId == menuId && x.RoleId == roleId && actionIdLists.Contains(x.ActionId));
+
+                if (countRoleMenuAction != actionIdLists.Count)
+                {
+                    result.Message = AppConstant.UnAuthMessage;
+                    return result;
+                }
+
+                // restore cash bank transaction
                 Db.Database.ExecuteSqlRaw($"sp_restore_cash_bank_transaction '{code}';");
 
                 // Update header data

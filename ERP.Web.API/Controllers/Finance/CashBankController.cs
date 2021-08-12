@@ -10,6 +10,7 @@ using ERP.Web.API.Domain.Interfaces.Accounting;
 using ERP.Web.API.Domain.Interfaces.Auth;
 using ERP.Web.API.Domain.Interfaces.Finance;
 using ERP.Web.API.Domain.Interfaces.SystemManagement;
+using ERP.Web.API.Domain.Models.Finance;
 using ERP.Web.API.Model;
 using ERP.Web.API.Model.Finance;
 using Newtonsoft.Json;
@@ -26,7 +27,7 @@ namespace ERP.Web.API.Controllers.Finance
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
 
-        private const int _menuId = (int)Menu.CashBank;
+        private const int MenuId = (int)Menu.CashBank;
 
         public CashBankController(ICashBankService cb, IClosingMonthService closingMonth,
             ISystemParameterService sysPar, IClaimService claim, IAuthService auth)
@@ -68,8 +69,12 @@ namespace ERP.Web.API.Controllers.Finance
         }
 
         [HttpGet("ar")]
-        public IActionResult GetDataAR(string cbCode, string search, string filters, string sorts, int skip, int take)
+        public IActionResult GetDataAr(string cbCode, string search, string filters, string sorts, int skip, int take)
         {
+            // Checking role authorization
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.CbTypeAccountReceivable }).Any())
+                return Ok(new ApiResponse{ TableData = new List<dynamic>() });
+
             var data =
                 _cb.GetDataAR(
                     skip, take,
@@ -85,8 +90,12 @@ namespace ERP.Web.API.Controllers.Finance
         }
 
         [HttpGet("ap")]
-        public IActionResult GetDataAP(string cbCode, string search, string filters, string sorts, int skip, int take)
+        public IActionResult GetDataAp(string cbCode, string search, string filters, string sorts, int skip, int take)
         {
+            // Checking role authorization
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.CbTypeAccountPayable }).Any())
+                return Ok(new ApiResponse { TableData = new List<dynamic>() });
+
             var data =
                 _cb.GetDataAP(
                     skip, take,
@@ -102,8 +111,12 @@ namespace ERP.Web.API.Controllers.Finance
         }
 
         [HttpGet("ep-ap")]
-        public IActionResult GetDataEPAP(string cbCode, string search, string filters, string sorts, int skip, int take)
+        public IActionResult GetDataEpap(string cbCode, string search, string filters, string sorts, int skip, int take)
         {
+            // Checking role authorization
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.CbTypeExpeditionDebt }).Any())
+                return Ok(new ApiResponse { TableData = new List<dynamic>() });
+
             var data =
                 _cb.GetDataEPAP(
                     skip, take,
@@ -118,45 +131,71 @@ namespace ERP.Web.API.Controllers.Finance
             });
         }
 
-        [HttpGet("debit-memo")]
-        public IActionResult GetDataDebitMemo(string type, string cbCode, string search, string filters, string sorts, int skip, int take)
-        {
-            var data =
-                _cb.GetDataDebitMemo(
-                    skip, take,
-                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
-                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
-                    search, cbCode, type);
-
-            return Ok(new ApiResponse
-            {
-                RowCount = data.Total,
-                TableData = data.Data.ToDynamicList()
-            });
-        }
-
         [HttpGet("credit-memo")]
         public IActionResult GetDataCreditMemo(string type, string cbCode, string search, string filters, string sorts, int skip, int take)
         {
-            var data =
-                _cb.GetDataCreditMemo(
-                    skip, take,
-                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
-                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
-                    search, cbCode, type);
-
-            return Ok(new ApiResponse
+            switch (type)
             {
-                RowCount = data.Total,
-                TableData = data.Data.ToDynamicList()
-            });
+                // Checking role authorization
+                case "DPC" when !_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.CbTypeSalesDownPayment }).Any():
+                    return Ok(new ApiResponse { TableData = new List<dynamic>() });
+                case "RDPC" when !_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.CbTypeSalesDownPaymentReturn }).Any():
+                    return Ok(new ApiResponse { TableData = new List<dynamic>() });
+                case "SR" when !_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.CbTypeSalesReturn }).Any():
+                    return Ok(new ApiResponse { TableData = new List<dynamic>() });
+                default:
+                {
+                    var data =
+                        _cb.GetDataCreditMemo(
+                            skip, take,
+                            JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                            JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
+                            search, cbCode, type);
+
+                    return Ok(new ApiResponse
+                    {
+                        RowCount = data.Total,
+                        TableData = data.Data.ToDynamicList()
+                    });
+                }
+            }
+        }
+
+        [HttpGet("debit-memo")]
+        public IActionResult GetDataDebitMemo(string type, string cbCode, string search, string filters, string sorts, int skip, int take)
+        {
+            switch (type)
+            {
+                // Checking role authorization
+                case "DPS" when !_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.CbTypePurchaseDownPayment }).Any():
+                    return Ok(new ApiResponse { TableData = new List<dynamic>() });
+                case "RDPS" when !_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.CbTypePurchaseDownPaymentReturn }).Any():
+                    return Ok(new ApiResponse { TableData = new List<dynamic>() });
+                case "PR" when !_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.CbTypePurchaseReturn }).Any():
+                    return Ok(new ApiResponse { TableData = new List<dynamic>() });
+                default:
+                {
+                    var data =
+                        _cb.GetDataDebitMemo(
+                            skip, take,
+                            JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                            JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
+                            search, cbCode, type);
+
+                    return Ok(new ApiResponse
+                    {
+                        RowCount = data.Total,
+                        TableData = data.Data.ToDynamicList()
+                    });
+                }
+            }
         }
 
         [HttpPost]
         public IActionResult OnPost(CashBankRequest data)
         {
             // Checking role authorization
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Insert }).Any())
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Insert }).Any())
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
             // Validate process
@@ -180,7 +219,7 @@ namespace ERP.Web.API.Controllers.Finance
         public IActionResult OnPut(string code, CashBankRequest data)
         {
             // Checking role authorization
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Update }).Any())
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
             // Validate process
@@ -201,7 +240,7 @@ namespace ERP.Web.API.Controllers.Finance
         public IActionResult OnDelete(string code, CashBankRequest data)
         {
             // Checking role authorization
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Void }).Any())
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Void }).Any())
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
             // Validate process
@@ -209,7 +248,7 @@ namespace ERP.Web.API.Controllers.Finance
             if (!isValid)
                 return Ok(new SaveResult(false, message));
 
-            var result = _cb.Delete(data.Code, _claim.UserId);
+            var result = _cb.Delete(data.Code, _claim.UserId, MenuId, _claim.RoleId);
 
             return Ok(result);
         }
@@ -239,6 +278,16 @@ namespace ERP.Web.API.Controllers.Finance
 
                 if (!data.ItemDetails.Any())
                     return (false, "Detail tidak boleh kosong.");
+
+                // Checking role authorization for item details
+                var map = new MapCbTypeToAction();
+                var actionIdLists =
+                    map.CbTypeToActions
+                        .Where(t => data.ItemDetails.Select(i => i.Type).Distinct().Contains(t.Code))
+                        .Select(t => t.ActionId).ToList();
+
+                if (_auth.GetActions(MenuId, _claim.RoleId, actionIdLists).Count() != actionIdLists.Count)
+                    return (false, AppConstant.UnAuthMessage);
             }
 
             return (true, "");

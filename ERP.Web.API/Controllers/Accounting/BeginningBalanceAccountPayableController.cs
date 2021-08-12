@@ -19,19 +19,19 @@ namespace ERP.Web.API.Controllers.Accounting
     [ApiController]
     public class BeginningBalanceAccountPayableController : ControllerBase
     {
-        private readonly IBeginningBalanceAccountPayableService _BbAp;
+        private readonly IBeginningBalanceAccountPayableService _bbAp;
         private readonly IClosingMonthService _closingMonth;
         private readonly ISystemParameterService _sysPar;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
 
-        private const int _menuId = (int)Menu.BeginningBalanceAccountPayable;
+        private const int MenuId = (int)Menu.BeginningBalanceAccountPayable;
 
-        public BeginningBalanceAccountPayableController(IBeginningBalanceAccountPayableService BbAp,
+        public BeginningBalanceAccountPayableController(IBeginningBalanceAccountPayableService bbAp,
             IClosingMonthService closingMonth, ISystemParameterService sysPar,
             IClaimService claim, IAuthService auth)
         {
-            _BbAp = BbAp;
+            _bbAp = bbAp;
             _closingMonth = closingMonth;
             _sysPar = sysPar;
             _claim = claim;
@@ -42,7 +42,7 @@ namespace ERP.Web.API.Controllers.Accounting
         public IActionResult GetData(string search, string filters, string sorts, int skip, int take)
         {
             var data =
-                _BbAp.GetData(
+                _bbAp.GetData(
                     skip, take,
                     JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
                     JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
@@ -59,7 +59,7 @@ namespace ERP.Web.API.Controllers.Accounting
         public IActionResult OnPost(BeginningBalanceAPRequest data)
         {
             // Checking role authorization
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Insert }).Any())
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Insert }).Any())
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
             // Validate process
@@ -73,7 +73,7 @@ namespace ERP.Web.API.Controllers.Accounting
             data.UpdatedBy = data.CreatedBy;
             data.UpdatedDate = data.CreatedDate;
 
-            var result = _BbAp.Insert(data);
+            var result = _bbAp.Insert(data);
 
             return Ok(result);
         }
@@ -82,7 +82,7 @@ namespace ERP.Web.API.Controllers.Accounting
         public IActionResult OnPut(string id, BeginningBalanceAPRequest data)
         {
             // Checking role authorization
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Update }).Any())
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
             // Validate process
@@ -93,7 +93,7 @@ namespace ERP.Web.API.Controllers.Accounting
             data.UpdatedBy = _claim.UserId;
             data.UpdatedDate = DateTime.Now;
 
-            var result = _BbAp.Update(data);
+            var result = _bbAp.Update(data);
 
             return Ok(result);
         }
@@ -102,7 +102,7 @@ namespace ERP.Web.API.Controllers.Accounting
         public IActionResult OnDelete(int id, BeginningBalanceAPRequest data)
         {
             // Checking role authorization
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Delete }).Any())
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Delete }).Any())
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
             // Validate process
@@ -110,7 +110,7 @@ namespace ERP.Web.API.Controllers.Accounting
             if (!isValid)
                 return Ok(new SaveResult(false, message));
 
-            var result = _BbAp.Delete(data.Id, _claim.UserId);
+            var result = _bbAp.Delete(data.Id, _claim.UserId);
 
             return Ok(result);
         }
