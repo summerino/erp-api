@@ -74,6 +74,7 @@
         TransferStock = 33,
         Consignee = 91,
         Adjustment = 34,
+        BeginningBalanceStock = 87,
 
         // Purchase
         PurchaseOrder = 36,

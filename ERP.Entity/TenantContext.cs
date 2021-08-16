@@ -109,7 +109,10 @@ namespace ERP.Entity
         public DbSet<AdjustmentDetailDiffUnit> AdjustmentDetailDiffUnits { get; set; }
         public DbSet<VwAdjustmentItem> VwAdjustmentItems { get; set; }
         public DbSet<BeginningBalanceStockHeader> BeginningBalanceStockHeaders { get; set; }
+        public DbSet<VwBeginningBalanceStockHeader> VwBeginningBalanceStockHeaders { get; set; }
         public DbSet<BeginningBalanceStockDetail> BeginningBalanceStockDetails { get; set; }
+        public DbSet<VwBeginningBalanceStockDetail> VwBeginningBalanceStockDetails { get; set; }
+        public DbSet<VwBeginningBalanceItem> VwBeginningBalanceItems { get; set; }
         public DbSet<Item> Items { get; set; }
         public DbSet<VwItem> VwItems { get; set; }
         public DbSet<ItemCategory> ItemCategories { get; set; }
@@ -786,6 +789,18 @@ namespace ERP.Entity
                     .HasForeignKey(d => d.WarehouseCode)
                     .OnDelete(DeleteBehavior.NoAction)
             );
+
+            modelBuilder.Entity<VwBeginningBalanceStockHeader>()
+                .HasNoKey()
+                .ToView("VwBeginningBalanceStockHeader", Schema.Inventory);
+
+            modelBuilder.Entity<VwBeginningBalanceStockDetail>()
+                .HasNoKey()
+                .ToView("VwBeginningBalanceStockDetail", Schema.Inventory);
+
+            modelBuilder.Entity<VwBeginningBalanceItem>()
+                .HasNoKey()
+                .ToView("VwBeginningBalanceItem", Schema.Inventory);
 
             modelBuilder.Entity<BeginningBalanceStockDetail>(entity =>
             {
