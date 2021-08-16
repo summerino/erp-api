@@ -27,7 +27,7 @@ namespace ERP.Web.API.Controllers.Inventory
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
         private readonly IClosingMonthService _closingMonth;
-        private const int _menuId = (int)Menu.Adjustment;
+        private const int _menuId = (int)Menu.BeginningBalanceStock;
 
         public BeginningBalanceStockController(IBeginningBalanceStockService bb, IUnitOfMeasurementService uom,
             ISystemParameterService sysPar, IClaimService claim, IAuthService auth, IClosingMonthService closingMonthService)
@@ -72,6 +72,7 @@ namespace ERP.Web.API.Controllers.Inventory
                     x.Notes,
                     x.Qty,
                     x.Amount,
+                    InitAmount = x.Qty > 1 ? x.Amount / x.Qty : x.Amount,
                     Units = uomC.Where(u => u.UomId == x.UomId)
                         .Select(u => new
                         {

@@ -68,14 +68,22 @@ namespace ERP.Web.API.Domain.Services.Inventory
             using var transaction = Db.Database.BeginTransaction();
             try
             {
+                var validationResult = Validate(data);
+                if (!validationResult.Item1)
+                {
+                    result.Message = validationResult.Item2;
+                    return result;
+                }
+
                 // Get new code
-                var newCode = GetNewCode("ADJ_NUM_FMT", data.Date);
+                var newCode = GetNewCode("BB_INVT_NUM_FMT", data.Date);
 
                 // Insert header data
                 data.Code = newCode;
+                data.IsActive = true;
                 Db.BeginningBalanceStockHeaders.Add(data);
 
-                // Insert detail data - different unit in a batch
+                // Insert detail data
                 short i = 0;
                 var details = new List<BeginningBalanceStockDetail>();
                 foreach (var item in data.ItemDetails)
@@ -90,7 +98,6 @@ namespace ERP.Web.API.Domain.Services.Inventory
                         UnitId = item.UnitId,
                         UomId = item.UomId
                     };
-
                     details.Add(beginningBalanceDetail);
                 }
                 if (details.Any()) {
@@ -127,15 +134,12 @@ namespace ERP.Web.API.Domain.Services.Inventory
             try
             {
 
-                // Checking mark header data
-                //if (Db.BeginningBalanceStockHeaders.Any(x => x.Code == data.Code && x.Mark == "V"))
-                //{
-                //    result.Message = "Data saldo awal tidak bisa di ubah karena sudah ditandai sebagai void.";
-                //    return result;
-                //}
-
-                //data.ApprovedBy = null;
-                //data.ApprovedDate = null;
+                var validationResult = Validate(data);
+                if (!validationResult.Item1)
+                {
+                    result.Message = validationResult.Item2;
+                    return result;
+                }
 
                 // Update header data
                 Db.BeginningBalanceStockHeaders.Update(data);
@@ -205,27 +209,24 @@ namespace ERP.Web.API.Domain.Services.Inventory
             using var transaction = Db.Database.BeginTransaction();
             try
             {
+                var validationResult = ValidateDelete(code);
+                if (!validationResult.Item1)
+                {
+                    result.Message = validationResult.Item2;
+                    return result;
+                }
+
                 var data = Db.BeginningBalanceStockHeaders.Find(code);
                 if (data != null)
                 {
-
                     // Execute sp_update_stock_mutation_from_bb
                     Db.Database.ExecuteSqlRaw(
                         "EXEC sp_restore_stock_mutation_from_bb {0}, {1}",
                         data.Code, data.Date);
 
-                    // Checking mark header data
-                    //if (data.Mark == "V")
-                    //{
-                    //    result.Message = "Data penyesuaian tidak bisa di ubah karena sudah ditandai sebagai void.";
-                    //    return result;
-                    //}
-
-                    // Update header data
-                    // data.Mark = "V";
-                    data.UpdatedBy = userId;
-                    data.UpdatedDate = DateTime.Now;
-
+                    var detail = Db.BeginningBalanceStockDetails.Where(x => x.Code.Equals(code)).ToList();
+                    Db.RemoveRange(detail);
+                    Db.Remove(data);
                     Db.SaveChanges();
                     transaction.Commit();
                 }
@@ -235,40 +236,78 @@ namespace ERP.Web.API.Domain.Services.Inventory
                 result.Message = ex.InnerException?.Message ?? ex.Message;
                 return result;
             }
-            
-
             result.Success = true;
-            result.Message = "Data saldo awal berhasil ditandai sebagai void.";
+            result.Message = "Data saldo awal berhasil dihapus.";
             return result;
         }
 
-        private StockMutation GetStockMutation(BeginningBalanceRequest data, BeginningBalanceStockDetail item)
+        private (bool, string) ValidateDelete(string code) 
         {
-            return new StockMutation
+            var listItem = Db.BeginningBalanceStockDetails.Where(x=>x.Code.Equals(code)).Select(x=>x.ItemId).ToList();
+
+            if (Db.SalesOrderDetails.Where(x => listItem.Contains(x.ItemId)).Any())
             {
-                WarehouseCode = data.WarehouseCode,
-                Date = data.Date,
-                ItemId = item.ItemId,
-                Qty = item.Qty,
-                RefCode1 = data.Code,
-                RefDetailId1 = item.Id,
-                Src = "BB",
-                RefCode2 = null,
-                UnitId = item.UnitId,
-                UomId = item.UomId,
-                Type = "OH",
-                BaseQty = item.Qty, // will be update to baseqty on sp
-                BaseUnit = item.UnitId // will be update to base unit on sp
-            };
-        }
-        private void AddStockMutation(BeginningBalanceRequest data, BeginningBalanceStockDetail item) {
-            if (item.Qty > 0)
-            {
-                var stockMutation = GetStockMutation(data, item);
-                Db.StockMutations.Add(stockMutation);
+                var items = (from d in Db.SalesOrderDetails
+                             join i in Db.Items on d.ItemId equals i.Id
+                             where listItem.Contains(i.Id)
+                             select i.Name).Distinct().ToList();
+                if (items.Count > 0)
+                {
+                    var temp = string.Join(", ",items);
+                    string msg = $"Data {temp} sudah digunakan ditransaksi, saldo awal tidak bisa dihapus.";
+                    return (false, msg);
+                }
             }
+
+            return (true, "");
         }
-      
-        
+
+        private (bool, string) Validate(BeginningBalanceRequest data)
+        {
+            IEnumerable<dynamic> listItemForSpesificWarehouse;
+            var query = (from h in Db.BeginningBalanceStockHeaders
+                         join d in Db.BeginningBalanceStockDetails on h.Code equals d.Code
+                         join i in Db.Items on d.ItemId equals i.Id
+                         join u in Db.UoMConversions on d.UnitId equals u.Id
+                         where h.WarehouseCode == data.WarehouseCode
+                         select new
+                         {
+                             Code = d.Code,
+                             ItemID = d.ItemId,
+                             ItemName = i.Name,
+                             UnitID = d.UnitId,
+                             UnitName = u.UnitToConvert
+                         }).AsQueryable();
+            if (data.Code == null)
+            {
+                //validate insert
+                listItemForSpesificWarehouse = query.ToList();
+            }
+            else
+            {
+                //validate update
+                listItemForSpesificWarehouse = query.Where(x=>x.Code != data.Code).ToList();
+            }
+
+            if (listItemForSpesificWarehouse.Count() > 0)
+            {
+                string message = "";
+                List<string> items = new List<string>();
+                foreach (var detail in data.ItemDetails)
+                {
+                    var temp = listItemForSpesificWarehouse.FirstOrDefault(x => x.ItemID.Equals(detail.ItemId) && x.UnitID.Equals(detail.UnitId));
+                    if (temp != null)
+                        items.Add($"{temp.ItemName} - [{temp.UnitName}]");
+                }
+                if (items.Count > 0)
+                {
+                    string temp = string.Join(", ", items);
+                    message = $"Data {temp} sudah ada ditransaksi sebelumnya.";
+                    return (false, message);
+                }
+            }
+            return (true, "");
+        }
     }
+
 }

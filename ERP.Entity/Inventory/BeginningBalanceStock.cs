@@ -72,7 +72,6 @@ namespace ERP.Entity.Inventory
         public decimal Amount { get; set; }
         public string Notes { get; set; }
         public string ItemName { get; set; }
-        public string UnitName { get; set; }
     }
 
     public class VwBeginningBalanceItem : BaseEntityWithActive
