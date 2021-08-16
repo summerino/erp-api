@@ -99,7 +99,6 @@ namespace ERP.Web.API
             {
                 options.AddPolicy("ValidateToken", policy =>
                     policy.Requirements.Add(new UserSessionRequirement()));
-
             });
 
             // Add authentication service
