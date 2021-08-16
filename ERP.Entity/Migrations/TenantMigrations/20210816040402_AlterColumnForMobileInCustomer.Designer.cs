@@ -4,14 +4,16 @@ using ERP.Entity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ERP.Entity.Migrations.TenantMigrations
 {
     [DbContext(typeof(TenantContext))]
-    partial class TenantContextModelSnapshot : ModelSnapshot
+    [Migration("20210816040402_AlterColumnForMobileInCustomer")]
+    partial class AlterColumnForMobileInCustomer
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2647,9 +2649,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.Property<int?>("BillingAddressId")
                         .HasColumnType("int");
 
-                    b.Property<Guid?>("CatalogUserId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<int>("CreatedBy")
                         .HasColumnType("int");
 
@@ -2699,10 +2698,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.Property<string>("MobileTokenId")
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
-
-                    b.Property<string>("MobileUsername")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -3341,9 +3336,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.Property<int?>("BillingAddressId")
                         .HasColumnType("int");
 
-                    b.Property<Guid?>("CatalogUserId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<string>("Code")
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
@@ -3401,10 +3393,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("bit");
 
                     b.Property<string>("MobileTokenId")
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
-
-                    b.Property<string>("MobileUsername")
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
 
