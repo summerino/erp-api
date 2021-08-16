@@ -505,7 +505,28 @@ COMMIT";
             // Refresh view General.Customer
             sql = @"execute sp_refreshview 'General.vwCustomer'";
             migrationBuilder.Sql(sql);
-        }
+
+			// Alter view Sales.vwCreditMemo
+			sql = @"ALTER VIEW [Sales].[vwCreditMemo]
+AS
+	SELECT m.*,
+		m.Amount - m.Used AS Remaining,
+		c.Initial AS CustInitial,
+		c.[Name] AS CustName,
+		CASE m.SrcTrans
+			WHEN 1 THEN 'Deposit'
+			WHEN 2 THEN 'Retur' END AS SrcTransName,
+		CASE m.Mark
+			WHEN 'A' THEN 'Active'
+			WHEN 'V' THEN 'Void'
+			WHEN 'PP' THEN 'Pending Payment'
+			WHEN 'PU' THEN 'Partial Used'
+			WHEN 'FU' THEN 'Full Used' END AS [Status]
+	FROM Sales.CreditMemo m
+	LEFT JOIN General.Customer c
+		ON c.Code = m.CustCode";
+            migrationBuilder.Sql(sql);
+		}
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {

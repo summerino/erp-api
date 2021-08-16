@@ -65,9 +65,11 @@ namespace ERP.Entity.Sales
 
         public string Notes { get; set; }
 
+
         public decimal Remaining { get; set; }
 
         public string CustInitial { get; set; }
+
         public string CustName { get; set; }
 
         public string SrcTransName { get; set; }
