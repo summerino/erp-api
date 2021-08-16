@@ -167,7 +167,7 @@ namespace ERP.Web.API.Controllers.Inventory
         public IActionResult OnDelete(string code, BeginningBalanceRequest data)
         {
             // Checking role authorization
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Void }).Any())
+            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Delete }).Any())
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
             // Validate process

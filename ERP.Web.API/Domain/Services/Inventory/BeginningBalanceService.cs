@@ -250,7 +250,7 @@ namespace ERP.Web.API.Domain.Services.Inventory
                 var items = (from d in Db.SalesOrderDetails
                              join i in Db.Items on d.ItemId equals i.Id
                              where listItem.Contains(i.Id)
-                             select i.Name).Distinct().ToList();
+                             select i.Initial).Distinct().ToList();
                 if (items.Count > 0)
                 {
                     var temp = string.Join(", ",items);
@@ -274,7 +274,7 @@ namespace ERP.Web.API.Domain.Services.Inventory
                          {
                              Code = d.Code,
                              ItemID = d.ItemId,
-                             ItemName = i.Name,
+                             ItemInitial = i.Initial,
                              UnitID = d.UnitId,
                              UnitName = u.UnitToConvert
                          }).AsQueryable();
@@ -297,7 +297,7 @@ namespace ERP.Web.API.Domain.Services.Inventory
                 {
                     var temp = listItemForSpesificWarehouse.FirstOrDefault(x => x.ItemID.Equals(detail.ItemId) && x.UnitID.Equals(detail.UnitId));
                     if (temp != null)
-                        items.Add($"{temp.ItemName} - [{temp.UnitName}]");
+                        items.Add($"{temp.ItemInitial} - [{temp.UnitName}]");
                 }
                 if (items.Count > 0)
                 {
