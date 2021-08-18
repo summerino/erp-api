@@ -20,7 +20,7 @@ namespace ERP.Web.API.Domain.Services.Inventory
         }
 		public DataSourceResult GetData(int type, string startDate, string endDate, string whCode, int itemId, int typeUnit, bool isSM, IEnumerable<Sort> sorts)
 		{
-			var qsetUnit = $"DECLARE @Unit int; SET @Unit = {typeUnit}; ";
+			var qsetUnit = $"DECLARE @Unit int; SET @Unit = '{typeUnit.ToString().Replace("'", "''")}'; ";
 
 			var smData = _db.ReportByStockMutations.FromSqlRaw(qsetUnit + @"SELECT sm.WarehouseCode, sm.ItemId, sm.Date, sm.RefCode1 as TransCode, 
 					CASE 
@@ -84,7 +84,7 @@ namespace ERP.Web.API.Domain.Services.Inventory
 					CAST (0 AS decimal) AS InvEnd
 				FROM Inventory.StockMutation sm
 				LEFT JOIN Inventory.Item im on im.Id = sm.ItemId
-				WHERE sm.Src IN ('RCV','DO','TS','ADJ') AND sm.[Type] = 'OH' " + (string.IsNullOrEmpty(whCode) ? "" : $"AND sm.WarehouseCode = '{whCode}'") + " ORDER BY sm.Date").ToList();
+				WHERE sm.Src IN ('RCV','DO','TS','ADJ') AND sm.[Type] = 'OH' " + (string.IsNullOrEmpty(whCode) ? "" : $"AND sm.WarehouseCode = '{whCode.Replace("'", "''")}'") + " ORDER BY sm.Date").ToList();
 
 			var itemData = _db.ReportByItems.FromSqlRaw(qsetUnit +
 				@"SELECT im.Id, im.Initial, im.[Name],
