@@ -61,6 +61,8 @@ namespace ERP.Entity
         public DbSet<ExpeditionInvoiceHeader> ExpeditionInvoiceHeaders { get; set; }
         public DbSet<VwExpeditionInvoiceHeader> VwExpeditionInvoiceHeaders { get; set; }
         public DbSet<ExpeditionInvoiceDetail> ExpeditionInvoiceDetails { get; set; }
+        public DbSet<ReportByExpeditionSupplier> ReportByExpeditionSuppliers { get; set; }
+        public DbSet<ReportByExpeditionInvoice> ReportByExpeditionInvoices { get; set; }
 
         // Finance entities
         public DbSet<GeneralCashBankHeader> GeneralCashBankHeaders { get; set; }
@@ -503,6 +505,15 @@ namespace ERP.Entity
                     .HasForeignKey(d => d.Code)
                     .OnDelete(DeleteBehavior.NoAction);
             });
+
+            // Expedition Report model
+            modelBuilder.Entity<ReportByExpeditionSupplier>()
+                .HasNoKey()
+                .ToTable("ReportByExpeditionSupplier", t => t.ExcludeFromMigrations());
+
+            modelBuilder.Entity<ReportByExpeditionInvoice>()
+               .HasNoKey()
+               .ToTable("ReportByExpeditionInvoice", t => t.ExcludeFromMigrations());
 
             // Finance entities
             // General Cash Bank model

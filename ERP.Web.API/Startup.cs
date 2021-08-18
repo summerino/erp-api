@@ -153,6 +153,7 @@ namespace ERP.Web.API
 
             // Expedition services
             services.AddScoped<IExpeditionInvoiceService, ExpeditionInvoiceService>();
+            services.AddScoped<IEPAPReportService, EPAPReportService>();
 
             // Finance services
             services.AddScoped<ICashBankService, CashBankService>();
