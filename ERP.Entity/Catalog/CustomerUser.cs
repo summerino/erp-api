@@ -10,7 +10,7 @@ namespace ERP.Entity.Catalog
     public class CustomerUser
     {
         public Guid Id { get; set; }
-
+        
         public int TenantId { get; set; }
 
         [Required]

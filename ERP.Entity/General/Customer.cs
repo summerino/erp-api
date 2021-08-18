@@ -33,6 +33,9 @@ namespace ERP.Entity.General
         [Column(TypeName = "decimal(18, 2)")]
         public decimal CreditLimit { get; set; }
 
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal CreditUsed { get; set; }
+
         [StringLength(30)]
         public string RefNo { get; set; }
 
@@ -107,6 +110,8 @@ namespace ERP.Entity.General
         public int PaymentTermId { get; set; }
 
         public decimal CreditLimit { get; set; }
+
+        public decimal CreditUsed { get; set; }
 
         public string RefNo { get; set; }
 
