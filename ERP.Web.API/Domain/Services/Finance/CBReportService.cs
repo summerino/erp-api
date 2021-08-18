@@ -33,7 +33,7 @@ namespace ERP.Web.API.Domain.Services.Finance
             var dataCBHeader = _db.GeneralCashBankHeaders.Where(x => x.Mark == "A").ToList();
             var dataCBDetail = _db.GeneralCashBankDetails.ToList();
 
-            var initCBHeader = dataCBHeader.Where(x => x.Date <= Convert.ToDateTime(startDate)).ToList();
+            var initCBHeader = dataCBHeader.Where(x => x.Date < Convert.ToDateTime(startDate)).ToList();
 
             if (!string.IsNullOrEmpty(startDate) && !string.IsNullOrEmpty(endDate))
             {
