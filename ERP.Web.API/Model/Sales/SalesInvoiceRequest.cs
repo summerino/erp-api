@@ -8,7 +8,7 @@ namespace ERP.Web.API.Model.Sales
     public class SalesInvoiceRequest : SalesInvoiceHeader
     {
         public IEnumerable<SalesInvoiceDetail> Details { get; set; }
-
+        public IEnumerable<SalesInvoiceCreditMemo> Memos { get; set; }
         public IEnumerable<SalesOrderDetailRequest> ItemDetails { get; set; }
 
         // Direct Invoice

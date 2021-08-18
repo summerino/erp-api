@@ -55,6 +55,24 @@ namespace ERP.Web.API.Controllers.Purchase
             });
         }
 
+        [HttpGet]
+        [Route("outstanding")]
+        public IActionResult GetDataOutstandingDebitMemo(string search, string filters, string sorts, int skip, int take)
+        {
+            var data =
+                _memo.GetDataOutstandingDebitMemo(
+                    skip, take,
+                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
+                    search);
+
+            return Ok(new ApiResponse
+            {
+                RowCount = data.Total,
+                TableData = data.Data.ToDynamicList()
+            });
+        }
+
         [HttpGet("related-trans")]
         public IActionResult GetRelatedTransactions(string code)
         {

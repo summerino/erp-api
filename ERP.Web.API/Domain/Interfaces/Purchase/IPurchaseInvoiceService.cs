@@ -14,6 +14,7 @@ namespace ERP.Web.API.Domain.Interfaces.Purchase
         IEnumerable<PurchaseInvoiceDetail> GetDetailData(string code);
 
         List<dynamic> GetRelatedTransactions(string code);
+        List<dynamic> GetDataMemo(string code);
 
         SaveResult Insert(PurchaseInvoiceRequest data);
 

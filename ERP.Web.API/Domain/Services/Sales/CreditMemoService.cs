@@ -37,7 +37,21 @@ namespace ERP.Web.API.Domain.Services.Sales
 
             return data.ToDataSourceResult(skip, take, filter, sort);
         }
+        public DataSourceResult GetDataOutstandingCreditMemo(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
+            string search)
+        {
+            var data = Db.VwOutstandingCreditMemos.AsQueryable();
 
+            if (!string.IsNullOrEmpty(search))
+            {
+                data = DateTime.TryParse(search, out var searchDate)
+                    ? data.Where(x => x.Date == searchDate)
+                    : data.Where(x =>
+                        x.Code.Contains(search));
+            }
+
+            return data.ToDataSourceResult(skip, take, filter, sort);
+        }
         public List<dynamic> GetRelatedTransactions(string code)
         {
             //var piD = from dt in Db.SalesInvoiceDetails

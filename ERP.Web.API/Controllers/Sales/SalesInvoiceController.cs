@@ -92,7 +92,27 @@ namespace ERP.Web.API.Controllers.Sales
                 TableData = data
             });
         }
-        
+
+        [HttpGet("memo")]
+        public IActionResult GetDataMemo(string code)
+        {
+            var data = _inv.GetDataMemo(code)
+                .Select(x => new
+                {
+                    x.Id,
+                    x.CreditMemoCode,
+                    x.Date,
+                    x.Type,
+                    x.CreditMemoAmount
+                }).ToList<dynamic>();
+
+            return Ok(new ApiResponse
+            {
+                RowCount = data.Count,
+                TableData = data
+            });
+        }
+
         [HttpPost]
         public IActionResult OnPost(SalesInvoiceRequest data)
         {
@@ -162,7 +182,7 @@ namespace ERP.Web.API.Controllers.Sales
                 periods.Add(data.OriginalDate.Value.ToString("yyyyMM"));
             if (data.OriginalDueDate.HasValue)
                 periods.Add(data.OriginalDueDate.Value.ToString("yyyyMM"));
-
+            
             if (_closingMonth.IsMonthClosed(periods))
                 return (false, "Periode sudah ditutup. Silakan hubungi departemen akuntansi.");
 
@@ -181,6 +201,13 @@ namespace ERP.Web.API.Controllers.Sales
 
                 if (data.Details.GroupBy(x => new { x.DoCode }).Any(x => x.Count() > 1))
                     return (false, "Terdapat kode pengiriman yang sama pada bagian detail.");
+
+                if (data.Memos.Any())
+                {
+                    var paidAmount = data.Memos.Sum(x => x.CreditMemoAmount);
+                    if (paidAmount > data.Total)
+                        return (false, "Nilai pembayaran lebih besar dari pada nilai transaksi.");
+                }
             }
 
             return (true, "");

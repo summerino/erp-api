@@ -313,6 +313,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                     Total = data.Total,
                     Notes = data.Notes,
                     Mark = data.Mark,
+                    PaidAmount = data.Memos.Sum(x => x.CreditMemoAmount),
                     CreatedBy = data.CreatedBy,
                     CreatedDate = data.CreatedDate,
                     UpdatedBy = data.UpdatedBy,
@@ -331,6 +332,18 @@ namespace ERP.Web.API.Domain.Services.Sales
                     Total = data.Total,
                     Dpp = data.Dpp
                 });
+
+                // insert memo
+                foreach (var item in data.Memos)
+                {
+                    Db.SalesInvoiceCreditMemos.Add(new SalesInvoiceCreditMemo
+                    {
+                        InvCode = newCode,
+                        InvAmount = data.Total,
+                        CreditMemoAmount = item.CreditMemoAmount,
+                        CreditMemoCode = item.CreditMemoCode
+                    });
+                }
 
                 Db.SaveChanges();
 
@@ -356,6 +369,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                     Db.Database.ExecuteSqlRaw(
                         "UPDATE Sales.SalesOrderHeader SET Mark='CLS' WHERE Code={0} AND Mark='CMP'", newCode);
                 }
+                UpdateCreditMemo(data);
 
                 transaction.Commit();
             }
@@ -463,13 +477,19 @@ namespace ERP.Web.API.Domain.Services.Sales
                 Db.SalesInvoiceDetails.Update(InvoiceDetailData);
                 Db.Entry(InvoiceDetailData).Property(e => e.Code).IsModified = false;
 
+
+                // Restore Credit Note
+                RestoreCreditMemo(data.Code);
+
                 //Update Order Detail data
                     // Get detail data that exists in order before
                 var delOrderDetails = Db.SalesOrderDetails
                     .Where(d => d.Code == data.SoCode && !data.ItemDetails.Select(x => x.Id).Contains(d.Id))
                     .ToList();
 
-                    // Delete detail data that exists in order before
+               
+
+                // Delete detail data that exists in order before
                 Db.SalesOrderDetails.RemoveRange(delOrderDetails);
 
                 short i = 0;
@@ -682,6 +702,30 @@ namespace ERP.Web.API.Domain.Services.Sales
                 }
 
 
+                // Get detail data that exists in invoice before
+                var delMemos = Db.SalesInvoiceCreditMemos
+                    .Where(d => d.InvCode == data.Code && !data.Memos.Select(x => x.Id).Contains(d.Id))
+                    .ToList();
+
+                // Delete memo data that exists in invoice before
+                Db.SalesInvoiceCreditMemos.RemoveRange(delMemos);
+
+                var newMemos = new List<SalesInvoiceCreditMemo>();
+                foreach (var item in data.Memos)
+                {
+                    newMemos.Add(new SalesInvoiceCreditMemo
+                    {
+                        InvCode = data.Code,
+                        InvAmount = data.Total,
+                        CreditMemoAmount = item.CreditMemoAmount,
+                        CreditMemoCode = item.CreditMemoCode
+                    });
+                }
+
+                // Insert detail if new data exists
+                if (newMemos.Any())
+                    Db.SalesInvoiceCreditMemos.AddRange(newMemos);
+
                 // Save changes
                 Db.SaveChanges();
 
@@ -714,7 +758,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                     Db.Database.ExecuteSqlRaw(
                         "UPDATE Sales.SalesOrderHeader SET Mark={0} WHERE Code={1}", soMark, data.SoCode);
                 }
-
+                UpdateCreditMemo(data);
                 transaction.Commit();
             }
             catch (Exception ex)
@@ -777,6 +821,8 @@ namespace ERP.Web.API.Domain.Services.Sales
                     Db.Database.ExecuteSqlRaw(
                         "UPDATE Sales.SalesOrderHeader SET Mark={0} WHERE Code={1}", soMark, data.SoCode);
 
+                    // Restore Credit Note
+                    RestoreCreditMemo(code);
                     transaction.Commit();
                 }
                 catch (Exception ex)
@@ -857,5 +903,69 @@ namespace ERP.Web.API.Domain.Services.Sales
             }
             return result;
         }
+
+        #region Update & Restore Credit Memo
+        private void UpdateCreditMemo(SalesInvoiceRequest data)
+        {
+            var listQuery = new List<string>();
+            if (data.Memos.Any())
+            {
+                var listCodeMemo = data.Memos.Select(x => x.CreditMemoCode).ToList();
+                var listCreditMemo = GetListCreditMemo(listCodeMemo);
+                foreach (var item in data.Memos)
+                {
+                    var selectedMemo = listCreditMemo.FirstOrDefault(x => x.Code.Equals(item.CreditMemoCode));
+                    if (selectedMemo != null)
+                    {
+                        decimal used = selectedMemo.Used + item.CreditMemoAmount;
+                        string status = used == selectedMemo.Amount ? "FU" : "PU";
+                        string query = selectedMemo.Source == "cm" ? $"update Sales.CreditMemo set Mark = '{status}', Used = {used} where code = '{selectedMemo.Code}'" : $"update Accounting.BeginningBalanceCreditMemo set Used = {used} where code = '{selectedMemo.Code}'";
+                        listQuery.Add(query);
+                    }
+                }
+                ExecuteQuery(listQuery);
+            }
+        }
+        private void RestoreCreditMemo(string code)
+        {
+            var listQuery = new List<string>();
+            var usedMemo = Db.SalesInvoiceCreditMemos.Where(x => x.InvCode.Equals(code)).ToList();
+            if (usedMemo.Any())
+            {
+                var listCodeMemo = usedMemo.Select(x => x.CreditMemoCode).ToList();
+                var listCreditMemo = GetListCreditMemo(listCodeMemo);
+                foreach (var item in usedMemo)
+                {
+                    var selectedMemo = listCreditMemo.FirstOrDefault(x => x.Code.Equals(item.CreditMemoCode));
+                    if (selectedMemo != null)
+                    {
+                        decimal used = selectedMemo.Used - item.CreditMemoAmount;
+                        string status = used > 0 ? "PU" : "A";
+                        string query = selectedMemo.Source == "cm" ? $"update Sales.CreditMemo set Mark = '{status}', Used = {used} where code = '{selectedMemo.Code}'" : $"update Accounting.BeginningBalanceCreditMemo set Used = {used} where code = '{selectedMemo.Code}'";
+                        listQuery.Add(query);
+                    }
+                }
+                ExecuteQuery(listQuery);
+            }
+        }
+        private List<dynamic> GetListCreditMemo(List<string> listCodeMemo)
+        {
+            return (from cm in Db.CreditMemos
+                    where listCodeMemo.Contains(cm.Code)
+                    select new { cm.Code, cm.Amount, cm.Used, Source = "cm" })
+                        .Union
+                        (from cm in Db.BeginningBalanceCreditMemos
+                         where listCodeMemo.Contains(cm.Code)
+                         select new { cm.Code, cm.Amount, cm.Used, Source = "bb" }).ToList<dynamic>();
+        }
+        private void ExecuteQuery(List<string> listQuery)
+        {
+            if (listQuery.Any())
+            {
+                var querys = string.Join(";", listQuery);
+                Db.Database.ExecuteSqlRaw(querys);
+            }
+        }
+        #endregion
     }
 }
