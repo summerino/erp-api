@@ -62,6 +62,21 @@ namespace ERP.Web.API.Domain.Services.Purchase
 
             return data.ToDataSourceResult(skip, take, filter, sort);
         }
+        public DataSourceResult GetDataOutstandingDebitMemo(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
+            string search)
+        {
+            var data = Db.VwOutstandingDebitMemos.AsQueryable();
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                data = DateTime.TryParse(search, out var searchDate)
+                    ? data.Where(x => x.Date == searchDate)
+                    : data.Where(x =>
+                        x.Code.Contains(search));
+            }
+
+            return data.ToDataSourceResult(skip, take, filter, sort);
+        }
 
         public List<dynamic> GetRelatedTransactions(string code)
         {

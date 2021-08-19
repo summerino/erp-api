@@ -61,6 +61,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                     
                 // Insert header data
                 data.Code = newCode;
+                data.PaidAmount = data.Memos.Sum(x => x.DebitMemoAmount);
                 Db.PurchaseInvoiceHeaders.Add(data);
 
                 // Insert detail data
@@ -82,6 +83,16 @@ namespace ERP.Web.API.Domain.Services.Purchase
                     });
                 }
 
+                foreach (var item in data.Memos)
+                {
+                    Db.PurchaseInvoiceDebitMemos.Add(new PurchaseInvoiceDebitMemo { 
+                        InvCode = newCode,
+                        InvAmount = data.Total,
+                        DebitMemoAmount = item.DebitMemoAmount,
+                        DebitMemoCode = item.DebitMemoCode
+                    });
+                }
+
                 // Save changes
                 Db.SaveChanges();
 
@@ -99,6 +110,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                     Db.Database.ExecuteSqlRaw(
                         "UPDATE Purchasing.PurchaseOrderHeader SET Mark='CLS' WHERE Code={0} AND Mark='CMP'", data.PoCode);
                 }
+                UpdateDebitMemo(data);
 
                 transaction.Commit();
             }
@@ -144,6 +156,9 @@ namespace ERP.Web.API.Domain.Services.Purchase
                 Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
                 Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
 
+                // Restore Debit Memo
+                RestoreDebitMemo(data.Code);
+
                 // Get receive code that exists in invoice before
                 var rcvCodeList = Db.PurchaseInvoiceDetails
                     .Where(d => d.Code == data.Code && !data.Details.Select(x => x.RcvCode).Contains(d.RcvCode))
@@ -161,8 +176,18 @@ namespace ERP.Web.API.Domain.Services.Purchase
                     .Where(d => d.Code == data.Code && !data.Details.Select(x => x.Id).Contains(d.Id))
                     .ToList();
 
+                // Get detail data that exists in invoice before
+                var delMemos = Db.PurchaseInvoiceDebitMemos
+                    .Where(d => d.InvCode == data.Code && !data.Memos.Select(x => x.Id).Contains(d.Id))
+                    .ToList();
+
                 // Delete detail data that exists in invoice before
                 Db.PurchaseInvoiceDetails.RemoveRange(delDetails);
+
+                // Delete detail data that exists in invoice before
+                Db.PurchaseInvoiceDebitMemos.RemoveRange(delMemos);
+
+                
 
                 // Update detail data
                 short i = 0;
@@ -194,9 +219,28 @@ namespace ERP.Web.API.Domain.Services.Purchase
                     }
                 }
 
+                var newMemos = new List<PurchaseInvoiceDebitMemo>();
+                foreach (var item in data.Memos)
+                {
+                    newMemos.Add(new PurchaseInvoiceDebitMemo
+                    {
+                        InvCode = data.Code,
+                        InvAmount = data.Total,
+                        DebitMemoAmount = item.DebitMemoAmount,
+                        DebitMemoCode = item.DebitMemoCode
+                    });
+                }
+
                 // Insert detail if new data exists
                 if (newInvDetails.Any())
                     Db.PurchaseInvoiceDetails.AddRange(newInvDetails);
+
+                // Insert detail if new data exists
+                if (newMemos.Any())
+                    Db.PurchaseInvoiceDebitMemos.AddRange(newMemos);
+                
+                // Update Debit Memo
+                UpdateDebitMemo(data);
 
                 // Save changes
                 Db.SaveChanges();
@@ -290,6 +334,9 @@ namespace ERP.Web.API.Domain.Services.Purchase
                     Db.Database.ExecuteSqlRaw(
                         "UPDATE Purchasing.PurchaseOrderHeader SET Mark={0} WHERE Code={1}", poMark, data.PoCode);
 
+                    // update credit memo
+                    RestoreDebitMemo(code);
+
                     transaction.Commit();
                 }
                 catch (Exception ex)
@@ -331,5 +378,98 @@ namespace ERP.Web.API.Domain.Services.Purchase
 
             return data.ToDynamicList();
         }
+        public List<dynamic> GetDataMemo(string code)
+        {
+
+            var data = (from h in Db.PurchaseInvoiceDebitMemos
+                        join d in Db.DebitMemos on h.DebitMemoCode equals d.Code
+                        where h.InvCode == code
+                        select new
+                        {
+                            h.Id,
+                            DebitMemoCode = d.Code,
+                            d.Date,
+                            Type = d.SrcTrans,
+                            DebitMemoAmount = h.DebitMemoAmount
+                        }).Union(from h in Db.PurchaseInvoiceDebitMemos
+                                 join d in Db.BeginningBalanceDebitMemos on h.DebitMemoCode equals d.Code
+                                 where h.InvCode == code
+                                 select new
+                                 {
+                                     h.Id,
+                                     DebitMemoCode = d.Code,
+                                     d.Date,
+                                     d.Type,
+                                     DebitMemoAmount = h.DebitMemoAmount
+                                 });
+
+            return data.ToDynamicList();
+        }
+
+        #region Update & Restore Debit Memo
+        private void UpdateDebitMemo(PurchaseInvoiceRequest data)
+        {
+            var listQuery = new List<string>();
+            if (data.Memos.Any())
+            {
+                var listCodeMemo = data.Memos.Select(x => x.DebitMemoCode).ToList();
+                var listDebitMemo = GetListDebitMemo(listCodeMemo);
+                foreach (var item in data.Memos)
+                {
+                    var selectedMemo = listDebitMemo.FirstOrDefault(x => x.Code.Equals(item.DebitMemoCode));
+                    if (selectedMemo != null)
+                    {
+                        decimal used = selectedMemo.Used + item.DebitMemoAmount;
+                        string status = used == selectedMemo.Amount ? "FU" : "PU";
+                        string query = selectedMemo.Source == "dm" ? $"update Purchasing.DebitMemo set Mark = '{status}', Used = {used} where code = '{selectedMemo.Code}'" : $"update Accounting.BeginningBalanceDebitMemo set Mark = '{status}', Used = {used} where code = '{selectedMemo.Code}'";
+                        listQuery.Add(query);
+                    }
+                }
+                ExecuteQuery(listQuery);
+            }
+        }
+        private void RestoreDebitMemo(string code)
+        {
+            var listQuery = new List<string>();
+            var usedMemo = Db.PurchaseInvoiceDebitMemos.Where(x => x.InvCode.Equals(code)).ToList();
+            if (usedMemo.Any())
+            {
+                var listCodeMemo = usedMemo.Select(x => x.DebitMemoCode).ToList();
+                var listDebitMemo = GetListDebitMemo(listCodeMemo);
+                foreach (var item in usedMemo)
+                {
+                    var selectedMemo = listDebitMemo.FirstOrDefault(x => x.Code.Equals(item.DebitMemoCode));
+                    if (selectedMemo != null)
+                    {
+                        decimal used = selectedMemo.Used - item.DebitMemoAmount;
+                        string status = used > 0 ? "PU" : "A";
+                        string query = selectedMemo.Source == "dm" ? $"update Purchasing.DebitMemo set Mark = '{status}', Used = {used} where code = '{selectedMemo.Code}'" : $"update Accounting.BeginningBalanceDebitMemo set Mark = '{status}', Used = {used} where code = '{selectedMemo.Code}'";
+                        listQuery.Add(query);
+                    }
+                }
+                ExecuteQuery(listQuery);
+            }
+        }
+        private List<dynamic> GetListDebitMemo(List<string> listCodeMemo)
+        {
+            return (from cm in Db.DebitMemos
+                    where listCodeMemo.Contains(cm.Code)
+                    select new { cm.Code, cm.Amount, cm.Used, Source = "dm" })
+                        .Union
+                        (from cm in Db.BeginningBalanceDebitMemos
+                         where listCodeMemo.Contains(cm.Code)
+                         select new { cm.Code, cm.Amount, cm.Used, Source = "bb" }).ToList<dynamic>();
+        }
+        private void ExecuteQuery(List<string> listQuery)
+        {
+            if (listQuery.Any())
+            {
+                var querys = string.Join(";", listQuery);
+                Db.Database.ExecuteSqlRaw(querys);
+            }
+        }
+        #endregion
+
+
     }
 }

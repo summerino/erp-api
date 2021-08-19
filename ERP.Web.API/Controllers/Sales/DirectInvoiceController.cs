@@ -129,7 +129,7 @@ namespace ERP.Web.API.Controllers.Sales
                 periods.Add(data.OriginalDate.Value.ToString("yyyyMM"));
             if (data.OriginalDueDate.HasValue)
                 periods.Add(data.OriginalDueDate.Value.ToString("yyyyMM"));
-
+            
             if (_closingMonth.IsMonthClosed(periods))
                 return (false, "Periode sudah ditutup. Silakan hubungi departemen akuntansi.");
 
@@ -148,6 +148,13 @@ namespace ERP.Web.API.Controllers.Sales
 
                 if (data.ItemDetails.GroupBy(x => new { x.ItemId }).Any(x => x.Count() > 1))
                     return(false, "Terdapat kode pengiriman yang sama pada bagian detail.");
+
+                if (data.Memos.Any())
+                {
+                    var paidAmount = data.Memos.Sum(x => x.CreditMemoAmount);
+                    if (paidAmount > data.Total)
+                        return (false, "Nilai pembayaran lebih besar dari pada nilai transaksi.");
+                }
             }
 
             return (true, "");

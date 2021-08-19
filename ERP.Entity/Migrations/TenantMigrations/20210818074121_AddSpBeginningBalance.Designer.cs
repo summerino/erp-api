@@ -4,14 +4,16 @@ using ERP.Entity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ERP.Entity.Migrations.TenantMigrations
 {
     [DbContext(typeof(TenantContext))]
-    partial class TenantContextModelSnapshot : ModelSnapshot
+    [Migration("20210818074121_AddSpBeginningBalance")]
+    partial class AddSpBeginningBalance
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -398,9 +400,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
 
                     b.Property<int?>("ParentId")
                         .HasColumnType("int");
-
-                    b.Property<bool>("ShowInMobile")
-                        .HasColumnType("bit");
 
                     b.Property<int>("TypeId")
                         .HasColumnType("int");
@@ -1094,9 +1093,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
 
                     b.Property<int?>("ParentId")
                         .HasColumnType("int");
-
-                    b.Property<bool>("ShowInMobile")
-                        .HasColumnType("bit");
 
                     b.Property<int>("TypeId")
                         .HasColumnType("int");
@@ -2123,9 +2119,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
 
             modelBuilder.Entity("ERP.Entity.Finance.VwCashBankType", b =>
                 {
-                    b.Property<int>("ActionId")
-                        .HasColumnType("int");
-
                     b.Property<string>("CoaCode")
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
@@ -2153,22 +2146,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(max)");
 
                     b.ToView("vwCashBankType", "Finance");
-                });
-
-            modelBuilder.Entity("ERP.Entity.Finance.VwDebitCreditPayment", b =>
-                {
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("TransCode")
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
-
-                    b.Property<string>("TypeAmount")
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
-
-                    b.ToView("VwDebitCreditPayment", "Finance");
                 });
 
             modelBuilder.Entity("ERP.Entity.Finance.VwGeneralCashBankDetail", b =>
@@ -2663,9 +2640,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.Property<int?>("BillingAddressId")
                         .HasColumnType("int");
 
-                    b.Property<Guid?>("CatalogUserId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<int>("CreatedBy")
                         .HasColumnType("int");
 
@@ -2673,9 +2647,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("datetime");
 
                     b.Property<decimal>("CreditLimit")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("CreditUsed")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Email")
@@ -2694,34 +2665,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
 
                     b.Property<bool>("IsConsignee")
                         .HasColumnType("bit");
-
-                    b.Property<bool>("IsMobileLoggedIn")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("MobileIpAddress")
-                        .HasMaxLength(40)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(40)")
-                        .HasColumnName("MobileIPAddress");
-
-                    b.Property<DateTime?>("MobileLastLogin")
-                        .HasColumnType("datetime");
-
-                    b.Property<string>("MobileSessionId")
-                        .HasMaxLength(50)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(50)");
-
-                    b.Property<bool>("MobileSignIn")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("MobileTokenId")
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
-
-                    b.Property<string>("MobileUsername")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -3360,9 +3303,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.Property<int?>("BillingAddressId")
                         .HasColumnType("int");
 
-                    b.Property<Guid?>("CatalogUserId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<string>("Code")
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
@@ -3378,9 +3318,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("datetime");
 
                     b.Property<decimal>("CreditLimit")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("CreditUsed")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Email")
@@ -3404,31 +3341,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
 
                     b.Property<bool>("IsConsignee")
                         .HasColumnType("bit");
-
-                    b.Property<bool>("IsMobileLoggedIn")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("MobileIpAddress")
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
-
-                    b.Property<DateTime?>("MobileLastLogin")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("MobileSessionId")
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
-
-                    b.Property<bool>("MobileSignIn")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("MobileTokenId")
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
-
-                    b.Property<string>("MobileUsername")
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
 
                     b.Property<string>("Name")
                         .IsUnicode(false)
@@ -6197,131 +6109,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.ToTable("WarehouseQuantity", "Inventory");
                 });
 
-            modelBuilder.Entity("ERP.Entity.MobileSales.MobileCostDetail", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("CoaCode")
-                        .IsRequired()
-                        .HasMaxLength(6)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(6)");
-
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasMaxLength(17)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(17)");
-
-                    b.Property<short>("LineNo")
-                        .HasColumnType("smallint");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CoaCode");
-
-                    b.HasIndex("Code");
-
-                    b.ToTable("MobileCostDetail", "MobileSales");
-                });
-
-            modelBuilder.Entity("ERP.Entity.MobileSales.MobileCostHeader", b =>
-                {
-                    b.Property<string>("Code")
-                        .HasMaxLength(17)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(17)");
-
-                    b.Property<int?>("ApprovedBy")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("ApprovedDate")
-                        .HasColumnType("datetime");
-
-                    b.Property<string>("CashBankCode")
-                        .HasMaxLength(17)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(17)");
-
-                    b.Property<int>("CreatedBy")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime");
-
-                    b.Property<string>("CurrCode")
-                        .IsRequired()
-                        .HasMaxLength(3)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(3)");
-
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("date");
-
-                    b.Property<string>("Mark")
-                        .IsRequired()
-                        .HasMaxLength(3)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(3)");
-
-                    b.Property<decimal>("Rate")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<long>("SalesmanId")
-                        .HasColumnType("bigint");
-
-                    b.Property<decimal>("Total")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("UpdatedBy")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("datetime");
-
-                    b.HasKey("Code");
-
-                    b.HasIndex("CashBankCode");
-
-                    b.HasIndex("SalesmanId");
-
-                    b.ToTable("MobileCostHeader", "MobileSales");
-                });
-
-            modelBuilder.Entity("ERP.Entity.MobileSales.MobileCostImage", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasMaxLength(17)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(17)");
-
-                    b.Property<string>("Image")
-                        .IsRequired()
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
-
-                    b.Property<short>("LineNo")
-                        .HasColumnType("smallint");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Code");
-
-                    b.ToTable("MobileCostImage", "MobileSales");
-                });
-
             modelBuilder.Entity("ERP.Entity.MobileSales.MobileCustomer", b =>
                 {
                     b.Property<string>("Code")
@@ -6432,118 +6219,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.HasIndex("TypeId");
 
                     b.ToTable("MobileCustomer", "MobileSales");
-                });
-
-            modelBuilder.Entity("ERP.Entity.MobileSales.MobileItemRequestDetail", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasMaxLength(17)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(17)");
-
-                    b.Property<int>("ItemId")
-                        .HasColumnType("int");
-
-                    b.Property<short>("LineNo")
-                        .HasColumnType("smallint");
-
-                    b.Property<decimal>("Qty")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("UnitId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Code");
-
-                    b.HasIndex("ItemId");
-
-                    b.HasIndex("UnitId");
-
-                    b.ToTable("MobileItemRequestDetail", "MobileSales");
-                });
-
-            modelBuilder.Entity("ERP.Entity.MobileSales.MobileItemRequestHeader", b =>
-                {
-                    b.Property<string>("Code")
-                        .HasMaxLength(17)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(17)");
-
-                    b.Property<int?>("ApprovedBy")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("ApprovedDate")
-                        .HasColumnType("datetime");
-
-                    b.Property<int?>("AreaId1")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("AreaId2")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("AreaId3")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("AreaId4")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("AreaId5")
-                        .HasColumnType("int");
-
-                    b.Property<int>("CreatedBy")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime");
-
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("date");
-
-                    b.Property<string>("Mark")
-                        .IsRequired()
-                        .HasMaxLength(3)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(3)");
-
-                    b.Property<long>("SalesmanId")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("TransferCode")
-                        .HasMaxLength(17)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(17)");
-
-                    b.Property<int>("UpdatedBy")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("datetime");
-
-                    b.HasKey("Code");
-
-                    b.HasIndex("AreaId1");
-
-                    b.HasIndex("AreaId2");
-
-                    b.HasIndex("AreaId3");
-
-                    b.HasIndex("AreaId4");
-
-                    b.HasIndex("AreaId5");
-
-                    b.HasIndex("SalesmanId");
-
-                    b.HasIndex("TransferCode");
-
-                    b.ToTable("MobileItemRequestHeader", "MobileSales");
                 });
 
             modelBuilder.Entity("ERP.Entity.MobileSales.MobileOrderDetail", b =>
@@ -13898,38 +13573,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ERP.Entity.MobileSales.MobileCostDetail", b =>
-                {
-                    b.HasOne("ERP.Entity.MobileSales.MobileItemRequestHeader", null)
-                        .WithMany()
-                        .HasForeignKey("Code")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("ERP.Entity.MobileSales.MobileCostHeader", b =>
-                {
-                    b.HasOne("ERP.Entity.Finance.GeneralCashBankHeader", null)
-                        .WithMany()
-                        .HasForeignKey("CashBankCode")
-                        .OnDelete(DeleteBehavior.NoAction);
-
-                    b.HasOne("ERP.Entity.General.Employee", null)
-                        .WithMany()
-                        .HasForeignKey("SalesmanId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("ERP.Entity.MobileSales.MobileCostImage", b =>
-                {
-                    b.HasOne("ERP.Entity.MobileSales.MobileItemRequestHeader", null)
-                        .WithMany()
-                        .HasForeignKey("Code")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("ERP.Entity.MobileSales.MobileCustomer", b =>
                 {
                     b.HasOne("ERP.Entity.Sales.Area", null)
@@ -13967,66 +13610,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasForeignKey("TypeId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("ERP.Entity.MobileSales.MobileItemRequestDetail", b =>
-                {
-                    b.HasOne("ERP.Entity.MobileSales.MobileItemRequestHeader", null)
-                        .WithMany()
-                        .HasForeignKey("Code")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("ERP.Entity.Inventory.Item", null)
-                        .WithMany()
-                        .HasForeignKey("ItemId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("ERP.Entity.Inventory.UoMConversion", null)
-                        .WithMany()
-                        .HasForeignKey("UnitId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("ERP.Entity.MobileSales.MobileItemRequestHeader", b =>
-                {
-                    b.HasOne("ERP.Entity.Sales.Area", null)
-                        .WithMany()
-                        .HasForeignKey("AreaId1")
-                        .OnDelete(DeleteBehavior.NoAction);
-
-                    b.HasOne("ERP.Entity.Sales.Area", null)
-                        .WithMany()
-                        .HasForeignKey("AreaId2")
-                        .OnDelete(DeleteBehavior.NoAction);
-
-                    b.HasOne("ERP.Entity.Sales.Area", null)
-                        .WithMany()
-                        .HasForeignKey("AreaId3")
-                        .OnDelete(DeleteBehavior.NoAction);
-
-                    b.HasOne("ERP.Entity.Sales.Area", null)
-                        .WithMany()
-                        .HasForeignKey("AreaId4")
-                        .OnDelete(DeleteBehavior.NoAction);
-
-                    b.HasOne("ERP.Entity.Sales.Area", null)
-                        .WithMany()
-                        .HasForeignKey("AreaId5")
-                        .OnDelete(DeleteBehavior.NoAction);
-
-                    b.HasOne("ERP.Entity.General.Employee", null)
-                        .WithMany()
-                        .HasForeignKey("SalesmanId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("ERP.Entity.Inventory.TransferStockHeader", null)
-                        .WithMany()
-                        .HasForeignKey("TransferCode")
-                        .OnDelete(DeleteBehavior.NoAction);
                 });
 
             modelBuilder.Entity("ERP.Entity.MobileSales.MobileOrderDetail", b =>

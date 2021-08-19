@@ -93,6 +93,26 @@ namespace ERP.Web.API.Controllers.Purchase
             });
         }
 
+        [HttpGet("memo")]
+        public IActionResult GetDataMemo(string code)
+        {
+            var data = _inv.GetDataMemo(code)
+                .Select(x => new
+                {
+                    x.Id,
+                    x.DebitMemoCode,
+                    x.Date,
+                    x.Type,
+                    x.DebitMemoAmount
+                }).ToList<dynamic>();
+
+            return Ok(new ApiResponse
+            {
+                RowCount = data.Count,
+                TableData = data
+            });
+        }
+
         [HttpPost]
         public IActionResult OnPost(PurchaseInvoiceRequest data)
         {
@@ -162,7 +182,7 @@ namespace ERP.Web.API.Controllers.Purchase
                 periods.Add(data.OriginalDate.Value.ToString("yyyyMM"));
             if (data.OriginalDueDate.HasValue)
                 periods.Add(data.OriginalDueDate.Value.ToString("yyyyMM"));
-
+            
             if (_closingMonth.IsMonthClosed(periods))
                 return (false, "Periode sudah ditutup. Silakan hubungi departemen akuntansi.");
 
@@ -176,11 +196,18 @@ namespace ERP.Web.API.Controllers.Purchase
 
             if (!onDelete)
             {
+                
                 if (!data.Details.Any())
                     return (false, "Detail tidak boleh kosong.");
 
                 if (data.Details.GroupBy(x => new { x.RcvCode }).Any(x => x.Count() > 1))
                     return (false, "Terdapat kode penerimaan yang sama pada bagian detail.");
+                if (data.Memos.Any())
+                {
+                    var paidAmount = data.Memos.Sum(x => x.DebitMemoAmount);
+                    if (paidAmount > data.Total)
+                        return (false, "Nilai pembayaran lebih besar dari pada nilai transaksi.");
+                }
             }
 
             return (true, "");

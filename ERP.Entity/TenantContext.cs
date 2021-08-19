@@ -76,6 +76,7 @@ namespace ERP.Entity
         public DbSet<VwAP> VwAPs { get; set; }
         public DbSet<VwOutstandingCreditMemo> VwOutstandingCreditMemos { get; set; }
         public DbSet<VwOutstandingDebitMemo> VwOutstandingDebitMemos { get; set; }
+        public DbSet<VwDebitCreditPayment> VwDebitCreditPayments { get; set; }
 
         // General entities
         public DbSet<VwApproval> VwApprovals { get; set; }
@@ -580,6 +581,10 @@ namespace ERP.Entity
             modelBuilder.Entity<VwOutstandingDebitMemo>()
                 .HasNoKey()
                 .ToView("vwOutstandingDebitMemo", Schema.Finance);
+
+            modelBuilder.Entity<VwDebitCreditPayment>()
+                .HasNoKey()
+                .ToView("VwDebitCreditPayment", Schema.Finance);
 
             // General entities
             // Approval model
