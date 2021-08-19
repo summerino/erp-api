@@ -4,14 +4,16 @@ using ERP.Entity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ERP.Entity.Migrations.TenantMigrations
 {
     [DbContext(typeof(TenantContext))]
-    partial class TenantContextModelSnapshot : ModelSnapshot
+    [Migration("20210819063831_AlterTblCustomer")]
+    partial class AlterTblCustomer
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -3335,9 +3337,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("datetime");
 
                     b.Property<decimal>("CreditLimit")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("CreditUsed")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Email")

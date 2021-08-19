@@ -69,7 +69,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                             CreditMemoCode = d.Code,
                             d.Date,
                             Type = d.SrcTrans,
-                            CreditMemoAmount = h.CreditMemoCode
+                            CreditMemoAmount = h.CreditMemoAmount
                         }).Union(from h in Db.SalesInvoiceCreditMemos
                                  join d in Db.BeginningBalanceCreditMemos on h.CreditMemoCode equals d.Code
                                  where h.InvCode == code
@@ -79,7 +79,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                                      CreditMemoCode = d.Code,
                                      d.Date,
                                      d.Type,
-                                     CreditMemoAmount = h.CreditMemoCode
+                                     CreditMemoAmount = h.CreditMemoAmount
                                  });
 
             return data.ToDynamicList();
@@ -105,6 +105,9 @@ namespace ERP.Web.API.Domain.Services.Sales
                 data.Code = newCode;
                 data.PaidAmount = data.Memos.Sum(x => x.CreditMemoAmount);
                 Db.SalesInvoiceHeaders.Add(data);
+
+                // Decrease CreditUsed
+                UpdateCreditUsed(data.CustCode, data.PaidAmount);
 
                 // Insert detail data
                 short i = 0;
@@ -193,6 +196,9 @@ namespace ERP.Web.API.Domain.Services.Sales
 
                 data.ApprovedBy = null;
                 data.ApprovedDate = null;
+
+                // Restore CreditUsed
+                RestoreCreditUsed(data.Code, data.CustCode);
 
                 // Update header data
                 Db.SalesInvoiceHeaders.Update(data);
@@ -310,6 +316,9 @@ namespace ERP.Web.API.Domain.Services.Sales
                         "UPDATE Sales.SalesOrderHeader SET Mark={0} WHERE Code={1}", soMark, data.SoCode);
                 }
 
+                // Decrease CreditUsed
+                UpdateCreditUsed(data.CustCode, data.PaidAmount);
+                
                 UpdateCreditMemo(data);
 
                 transaction.Commit();
@@ -405,6 +414,19 @@ namespace ERP.Web.API.Domain.Services.Sales
                     select h.Code).Any();
         }
 
+        #region Credit Used - Limit
+        private void RestoreCreditUsed(string transCode, string custCode)
+        {
+            var prevAmount = Db.SalesInvoiceHeaders.AsNoTracking().FirstOrDefault(x => x.Code.Equals(transCode))?.Total;
+            string query = $"update General.Customer set CreditUsed= (CreditUsed + {prevAmount}) where code = '{custCode}'";
+            Db.Database.ExecuteSqlRaw(query);
+        }
+        private void UpdateCreditUsed(string custCode, decimal total)
+        {
+            string query = $"update General.Customer set CreditUsed= (CreditUsed - {total}) where code = '{custCode}'";
+            Db.Database.ExecuteSqlRaw(query);
+        }
+        #endregion
 
         #region Update & Restore Credit Memo
         private void UpdateCreditMemo(SalesInvoiceRequest data)
