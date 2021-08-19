@@ -42,7 +42,7 @@ namespace ERP.Web.API.Domain.Services.Finance
             var data = Db.VwARs.AsQueryable();
             if (!string.IsNullOrWhiteSpace(cbCode))
             {
-                var listExistingTransactions = 
+                var listExistingTransactions =
                     Db.GeneralCashBankDetails
                         .Where(x => x.Code.Equals(cbCode))
                         .Select(x => x.TransCode).ToList();
@@ -58,7 +58,7 @@ namespace ERP.Web.API.Domain.Services.Finance
             var data = Db.VwAPs.AsQueryable();
             if (!string.IsNullOrWhiteSpace(cbCode))
             {
-                var listExistingTransactions = 
+                var listExistingTransactions =
                     Db.GeneralCashBankDetails
                         .Where(x => x.Code.Equals(cbCode))
                         .Select(x => x.TransCode).ToList();
@@ -99,52 +99,52 @@ namespace ERP.Web.API.Domain.Services.Finance
             switch (type)
             {
                 case "DPC":
-                {
-                    var data = Db.VwCreditMemos.Where(x => x.SrcTrans == 1 && x.Mark == "PP");
+                    {
+                        var data = Db.VwCreditMemos.Where(x => x.SrcTrans == 1 && x.Mark == "PP");
 
-                    if (!string.IsNullOrWhiteSpace(cbCode))
-                        data = data.Where(x => !transLists.Contains(x.Code));
-                    
-                    return data.ToDataSourceResult(skip, take, filters, sorts);
-                }
+                        if (!string.IsNullOrWhiteSpace(cbCode))
+                            data = data.Where(x => !transLists.Contains(x.Code));
+
+                        return data.ToDataSourceResult(skip, take, filters, sorts);
+                    }
                 case "RDPC":
-                {
-                    //var data = (from bb in Db.BeginningBalanceCreditMemos
-                    //        join c in Db.Customers on bb.CustCode equals c.Code into cs
-                    //        from c in cs.DefaultIfEmpty()
-                    //        where bb.Type == 1 && bb.Used < bb.Amount && bb.IsActive
-                    //        select new
-                    //        {
-                    //            bb.Code, bb.Date, bb.CustCode, CustName = c != null ? c.Name : "",
-                    //            bb.CurrCode, bb.Rate,
-                    //            bb.Amount, bb.Used, Remaining = bb.Amount - bb.Used, bb.Notes, Src = "BB"
-                    //        })
-                    //    .Union(
-                    //        from cm in Db.VwCreditMemos
-                    //        where cm.SrcTrans == 1 && cm.Remaining > 0 && new[] { "A", "PU" }.Contains(cm.Mark)
-                    //        select new
-                    //        {
-                    //            cm.Code, cm.Date, cm.CustCode, cm.CustName,
-                    //            cm.CurrCode, Rate = 1m,
-                    //            cm.Amount, cm.Used, cm.Remaining, cm.Notes, Src = "CM"
-                    //        });
+                    {
+                        //var data = (from bb in Db.BeginningBalanceCreditMemos
+                        //        join c in Db.Customers on bb.CustCode equals c.Code into cs
+                        //        from c in cs.DefaultIfEmpty()
+                        //        where bb.Type == 1 && bb.Used < bb.Amount && bb.IsActive
+                        //        select new
+                        //        {
+                        //            bb.Code, bb.Date, bb.CustCode, CustName = c != null ? c.Name : "",
+                        //            bb.CurrCode, bb.Rate,
+                        //            bb.Amount, bb.Used, Remaining = bb.Amount - bb.Used, bb.Notes, Src = "BB"
+                        //        })
+                        //    .Union(
+                        //        from cm in Db.VwCreditMemos
+                        //        where cm.SrcTrans == 1 && cm.Remaining > 0 && new[] { "A", "PU" }.Contains(cm.Mark)
+                        //        select new
+                        //        {
+                        //            cm.Code, cm.Date, cm.CustCode, cm.CustName,
+                        //            cm.CurrCode, Rate = 1m,
+                        //            cm.Amount, cm.Used, cm.Remaining, cm.Notes, Src = "CM"
+                        //        });
 
-                    var data = Db.VwOutstandingCreditMemos.Where(x => x.Type ==  1);
+                        var data = Db.VwOutstandingCreditMemos.Where(x => x.Type == 1);
 
-                    if (!string.IsNullOrWhiteSpace(cbCode))
-                        data = data.Where(x => !transLists.Contains(x.Code));
+                        if (!string.IsNullOrWhiteSpace(cbCode))
+                            data = data.Where(x => !transLists.Contains(x.Code));
 
-                    return data.ToDataSourceResult(skip, take, filters, sorts);
-                }
+                        return data.ToDataSourceResult(skip, take, filters, sorts);
+                    }
                 case "SR":
-                {
-                    var data = Db.VwOutstandingCreditMemos.Where(x => x.Type == 2);
+                    {
+                        var data = Db.VwOutstandingCreditMemos.Where(x => x.Type == 2);
 
-                    if (!string.IsNullOrWhiteSpace(cbCode))
-                        data = data.Where(x => !transLists.Contains(x.Code));
+                        if (!string.IsNullOrWhiteSpace(cbCode))
+                            data = data.Where(x => !transLists.Contains(x.Code));
 
-                    return data.ToDataSourceResult(skip, take, filters, sorts);
-                }
+                        return data.ToDataSourceResult(skip, take, filters, sorts);
+                    }
                 default:
                     return null;
             }
@@ -165,32 +165,32 @@ namespace ERP.Web.API.Domain.Services.Finance
             switch (type)
             {
                 case "DPS":
-                {
-                    var data = Db.VwDebitMemos.Where(x => x.SrcTrans == 1 && x.Mark == "PP");
-                    
-                    if (!string.IsNullOrWhiteSpace(cbCode))
-                        data = data.Where(x => !transLists.Contains(x.Code));
-                    
-                    return data.ToDataSourceResult(skip, take, filters, sorts);
-                }
+                    {
+                        var data = Db.VwDebitMemos.Where(x => x.SrcTrans == 1 && x.Mark == "PP");
+
+                        if (!string.IsNullOrWhiteSpace(cbCode))
+                            data = data.Where(x => !transLists.Contains(x.Code));
+
+                        return data.ToDataSourceResult(skip, take, filters, sorts);
+                    }
                 case "RDPS":
-                {
-                    var data = Db.VwOutstandingDebitMemos.Where(x => x.Type == 1);
+                    {
+                        var data = Db.VwOutstandingDebitMemos.Where(x => x.Type == 1);
 
-                    if (!string.IsNullOrWhiteSpace(cbCode))
-                        data = data.Where(x => !transLists.Contains(x.Code));
-                    
-                    return data.ToDataSourceResult(skip, take, filters, sorts);
-                }
+                        if (!string.IsNullOrWhiteSpace(cbCode))
+                            data = data.Where(x => !transLists.Contains(x.Code));
+
+                        return data.ToDataSourceResult(skip, take, filters, sorts);
+                    }
                 case "PR":
-                {
-                    var data = Db.VwOutstandingDebitMemos.Where(x => x.Type == 2);
+                    {
+                        var data = Db.VwOutstandingDebitMemos.Where(x => x.Type == 2);
 
-                    if (!string.IsNullOrWhiteSpace(cbCode))
-                        data = data.Where(x => !transLists.Contains(x.Code));
+                        if (!string.IsNullOrWhiteSpace(cbCode))
+                            data = data.Where(x => !transLists.Contains(x.Code));
 
-                    return data.ToDataSourceResult(skip, take, filters, sorts);
-                }
+                        return data.ToDataSourceResult(skip, take, filters, sorts);
+                    }
                 default:
                     return null;
             }
@@ -251,7 +251,7 @@ namespace ERP.Web.API.Domain.Services.Finance
                 }
 
                 Db.SaveChanges();
-                               
+
                 transaction.Commit();
             }
             catch (Exception ex)
@@ -346,7 +346,7 @@ namespace ERP.Web.API.Domain.Services.Finance
                     }
                 }
 
-                Db.SaveChanges();          
+                Db.SaveChanges();
 
                 transaction.Commit();
             }
@@ -391,17 +391,13 @@ namespace ERP.Web.API.Domain.Services.Finance
             return result;
         }
 
-        private (string, bool, List<string>) Validate(CashBankRequest data) 
+        private (string, bool, List<string>) Validate(CashBankRequest data)
         {
             var listTransCode = data.ItemDetails.Select(x => x.TransCode).ToList();
-            
-            var oldTransactions = (from h in Db.GeneralCashBankHeaders
-                                  join d in Db.GeneralCashBankDetails on h.Code equals d.Code
-                                  where h.Mark == "A" && listTransCode.Contains(d.TransCode) && h.Code != data.Code
-                                  select d).ToList();
-            
+            var oldTransactions = Db.VwDebitCreditPayments.Where(x => listTransCode.Contains(x.TransCode)).ToList();
+
             var queries = new List<string>();
-            
+
             foreach (var item in data.ItemDetails)
             {
                 if (item.Type == "AR")
@@ -426,7 +422,7 @@ namespace ERP.Web.API.Domain.Services.Finance
                     else
                     {
                         var header = Db.SalesInvoiceHeaders.SingleOrDefault(x => x.Code == item.TransCode);
-                        
+
                         if (header == null)
                             continue;
 
@@ -447,7 +443,7 @@ namespace ERP.Web.API.Domain.Services.Finance
                         }
                     }
                 }
-                else if (item.Type == "AP") 
+                else if (item.Type == "AP")
                 {
                     var prevTransaction = oldTransactions.Where(x => x.TransCode == item.TransCode).Sum(x => x.Amount);
                     var totalAmount = prevTransaction + item.Amount;
@@ -456,7 +452,7 @@ namespace ERP.Web.API.Domain.Services.Finance
                     if (item.Src == "BB")
                     {
                         var bbData = Db.BeginningBalanceAPs.SingleOrDefault(x => x.Code == item.TransCode);
-                        
+
                         if (bbData == null)
                             continue;
 
@@ -474,7 +470,7 @@ namespace ERP.Web.API.Domain.Services.Finance
 
                         if (totalAmount > header.Total)
                             return ($"Lebih bayar untuk transaksi dengan kode {header.Code}.", false, new List<string>());
-                        
+
                         var mark = header.Total == totalAmount ? "CMP" : "PP";
 
                         queries.Add(
@@ -506,7 +502,7 @@ namespace ERP.Web.API.Domain.Services.Finance
                     queries.Add(
                         $"UPDATE Expedition.ExpeditionInvoiceHeader SET PaidAmount='{totalAmount}' WHERE Code='{item.TransCode}';");
                 }
-                else if (item.Type is "DPC" or "DPS") 
+                else if (item.Type is "DPC" or "DPS")
                 {
                     var query = QueryBuilder(item.Type, item.TransCode);
                     queries.Add(query);
@@ -538,16 +534,16 @@ namespace ERP.Web.API.Domain.Services.Finance
                             if (memo != null)
                                 continue;
 
-                            if (totalAmount > memo.Amount) 
+                            if (totalAmount > memo.Amount)
                                 return ($"Lebih bayar untuk transaksi dengan kode {memo.Code}.", false, new List<string>());
-                            
+
                             var mark = totalAmount == memo.Amount ? "FU" : "PU";
 
                             queries.Add(
                                 $"UPDATE Purchasing.DebitMemo SET Used='{totalAmount}', Mark='{mark}' WHERE Code='{item.TransCode}';");
                         }
                     }
-                    else if(item.Type is "RDPC" or "SR")
+                    else if (item.Type is "RDPC" or "SR")
                     {
                         var prevTransaction = oldTransactions.Where(x => x.TransCode == item.TransCode && x.TypeAmount == "D").Sum(x => x.Amount);
                         var totalAmount = prevTransaction + item.Amount;
@@ -568,7 +564,7 @@ namespace ERP.Web.API.Domain.Services.Finance
                         else
                         {
                             var memo = Db.CreditMemos.SingleOrDefault(x => x.Code == item.TransCode);
-                            
+
                             if (memo == null)
                                 continue;
 
@@ -595,11 +591,6 @@ namespace ERP.Web.API.Domain.Services.Finance
                 "DPS" => $"UPDATE Purchasing.DebitMemo SET Mark='A' WHERE Code='{code}';",
                 _ => ""
             };
-        }
-
-        private string Convert(List<string> queries)
-        {
-            return queries.Aggregate("", (current, item) => current + item);
         }
     }
 }
