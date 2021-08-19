@@ -38,9 +38,13 @@ namespace ERP.Web.API.Domain.Services.Purchase
 
             var cbDetail = _db.GeneralCashBankDetails.Where(x => cbData.Select(c => c.Code).Contains(x.Code)).ToList();
 
+            rcvData = rcvData.Where(x => x.Date <= Convert.ToDateTime(date)).ToList();
+
             foreach (var itemRcv in rcvData)
             {
-                itemRcv.PaidAmount = cbDetail.Where(x => x.TransCode == itemRcv.InvCode).Sum(x => x.TransAmount);
+                var totInv = rcvData.Where(x => x.InvCode == itemRcv.InvCode).Sum(x => x.TotalAmount);
+                var totCb = cbDetail.Where(x => x.TransCode == itemRcv.InvCode).Sum(x => x.TransAmount);
+                itemRcv.PaidAmount = totCb * itemRcv.TotalAmount / totInv;
                 itemRcv.RemainderAmount = itemRcv.TotalAmount - itemRcv.PaidAmount;
             }
 
