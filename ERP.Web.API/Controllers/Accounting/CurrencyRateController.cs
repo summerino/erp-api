@@ -24,7 +24,7 @@ namespace ERP.Web.API.Controllers.Accounting
         private readonly ICurrencyRateService _currencyRate;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
-        private const int _menuId = (int)Menu.CurrencyRate;
+        private const int MenuId = (int)Menu.CurrencyRate;
 
         public CurrencyRateController(ICurrencyRateService currencyRate, IClaimService claim, IAuthService auth)
         {
@@ -54,7 +54,7 @@ namespace ERP.Web.API.Controllers.Accounting
         public IActionResult OnPost(CurrencyRateRequest data)
         {
 
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Insert }).Any())
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Insert }).Any())
             {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
             }
@@ -72,7 +72,7 @@ namespace ERP.Web.API.Controllers.Accounting
         [HttpPut("{id}")]
         public IActionResult OnPut(string id, CurrencyRate data)
         {
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Update }).Any())
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
             {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
             }

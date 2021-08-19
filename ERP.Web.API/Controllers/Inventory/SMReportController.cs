@@ -13,18 +13,18 @@ namespace ERP.Web.API.Controllers.Inventory
 {
     [Route("sm-report")]
     [ApiController]
-    public class SMReportController : ControllerBase
+    public class SmReportController : ControllerBase
     {
         private readonly ISMReportService _sm;
-        public SMReportController(ISMReportService sm)
+        public SmReportController(ISMReportService sm)
         {
             _sm = sm;
         }
 
         [HttpGet]
-        public IActionResult GetData(int type, string startDate, string endDate, string whCode, int itemId, int typeUnit, bool isSM, string sorts)
+        public IActionResult GetData(int type, string startDate, string endDate, string whCode, int itemId, int typeUnit, bool isSm, string sorts)
         {
-            var result = _sm.GetData(type, startDate, endDate, whCode, itemId, typeUnit, isSM, JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"));
+            var result = _sm.GetData(type, startDate, endDate, whCode, itemId, typeUnit, isSm, JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"));
 
             return Ok(new ApiResponse
             {

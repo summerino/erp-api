@@ -45,6 +45,8 @@ namespace ERP.Entity.Accounting
 
         [StringLength(4)]
         public string IsDetCode { get; set; }
+
+        public bool ShowInMobile { get; set; }
     }
 
     public class VwCoa : BaseEntityWithActive
@@ -75,8 +77,10 @@ namespace ERP.Entity.Accounting
 
         public string IsDetCode { get; set; }
 
-        public string TypeName { get; set; }
+        public bool ShowInMobile { get; set; }
 
+
+        public string TypeName { get; set; }
 
         public string CreatedInitial { get; set; }
 

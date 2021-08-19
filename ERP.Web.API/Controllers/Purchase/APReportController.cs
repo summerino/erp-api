@@ -1,19 +1,20 @@
-﻿using ERP.Common.Models;
+﻿using System.Collections.Generic;
+using System.Linq.Dynamic.Core;
+using Microsoft.AspNetCore.Mvc;
+using ERP.Common.Models;
 using ERP.Web.API.Domain.Interfaces.Purchase;
 using ERP.Web.API.Model;
-using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using System.Collections.Generic;
-using System.Linq.Dynamic.Core;
 
 namespace ERP.Web.API.Controllers.Purchase
 {
     [Route("ap-report")]
     [ApiController]
-    public class APReportController : ControllerBase
+    public class ApReportController : ControllerBase
     {
         private readonly IAPReportService _ap;
-        public APReportController(IAPReportService ap)
+
+        public ApReportController(IAPReportService ap)
         {
             _ap = ap;
         }

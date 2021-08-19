@@ -25,7 +25,7 @@ namespace ERP.Web.API.Controllers.Sales
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
         private readonly IClosingMonthService _closingMonth;
-        private const int _menuId = (int)Menu.Promo;
+        private const int MenuId = (int)Menu.Promo;
 
         public PromoController(IPromoService promo, ISystemParameterService sysPar, IClaimService claim, IAuthService auth, IClosingMonthService closingMonthService)
         {
@@ -97,7 +97,7 @@ namespace ERP.Web.API.Controllers.Sales
         public IActionResult OnPost(PromoRequest data)
         {
             // Checking role authorization
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Insert }).Any())
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Insert }).Any())
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
             // Validate process
@@ -121,7 +121,7 @@ namespace ERP.Web.API.Controllers.Sales
         public IActionResult OnPut(PromoRequest data)
         {
             // Checking role authorization
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Update }).Any())
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
             // Validate process
@@ -142,7 +142,7 @@ namespace ERP.Web.API.Controllers.Sales
         public IActionResult OnDelete(string code, PromoRequest data)
         {
             // Checking role authorization
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Void }).Any())
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Void }).Any())
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
             // Validate process

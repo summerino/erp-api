@@ -1,19 +1,20 @@
-﻿using ERP.Common.Models;
+﻿using System.Collections.Generic;
+using System.Linq.Dynamic.Core;
+using Microsoft.AspNetCore.Mvc;
+using ERP.Common.Models;
 using ERP.Web.API.Domain.Interfaces.Sales;
 using ERP.Web.API.Model;
-using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using System.Collections.Generic;
-using System.Linq.Dynamic.Core;
 
 namespace ERP.Web.API.Controllers.Sales
 {
     [Route("ar-report")]
     [ApiController]
-    public class ARReportController : ControllerBase
+    public class ArReportController : ControllerBase
     {
         private readonly IARReportService _ar;
-        public ARReportController(IARReportService ar)
+
+        public ArReportController(IARReportService ar)
         {
             _ar = ar;
         }

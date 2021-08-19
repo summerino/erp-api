@@ -99,7 +99,6 @@ namespace ERP.Web.API
             {
                 options.AddPolicy("ValidateToken", policy =>
                     policy.Requirements.Add(new UserSessionRequirement()));
-
             });
 
             // Add authentication service
@@ -154,11 +153,13 @@ namespace ERP.Web.API
 
             // Expedition services
             services.AddScoped<IExpeditionInvoiceService, ExpeditionInvoiceService>();
+            services.AddScoped<IEPAPReportService, EPAPReportService>();
 
             // Finance services
             services.AddScoped<ICashBankService, CashBankService>();
             services.AddScoped<ICashBankTypeService, CashBankTypeService>();
             services.AddScoped<IInterCashBankService, InterCashBankService>();
+            services.AddScoped<ICBReportService, CBReportService>();
 
             // General services
             services.AddScoped<IApprovalService, ApprovalService>();

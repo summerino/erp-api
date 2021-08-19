@@ -1,6 +1,6 @@
 ﻿using System.Linq;
-using ERP.Entity.Catalog;
 using Microsoft.EntityFrameworkCore;
+using ERP.Entity.Catalog;
 
 namespace ERP.Entity
 {
@@ -11,6 +11,7 @@ namespace ERP.Entity
         {
         }
 
+        public DbSet<CustomerUser> CustomerUsers { get; set; }
         public DbSet<Tenant> Tenants { get; set; }
         public DbSet<User> Users { get; set; }
 

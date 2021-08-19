@@ -22,7 +22,7 @@ namespace ERP.Web.API.Controllers.General
         private readonly ICurrencyService _currency;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
-        private const int _menuId = (int)Menu.Currency;
+        private const int MenuId = (int)Menu.Currency;
         public CurrencyController(ICurrencyService currency, IClaimService claim, IAuthService auth)
         {
             _currency = currency;
@@ -79,7 +79,7 @@ namespace ERP.Web.API.Controllers.General
         [HttpPost]
         public IActionResult OnPost(CurrencyRequest data)
         {
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Insert }).Any())
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Insert }).Any())
             {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
             }
@@ -97,7 +97,7 @@ namespace ERP.Web.API.Controllers.General
         [HttpPut("{code}")]
         public IActionResult OnPut(string code, CurrencyRequest data)
         {
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Update }).Any())
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
             {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
             }
@@ -112,7 +112,7 @@ namespace ERP.Web.API.Controllers.General
         [HttpDelete("{code}")]
         public IActionResult OnDelete(string code)
         {
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Delete }).Any())
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Delete }).Any())
             {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
             }

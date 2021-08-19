@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using ERP.Entity.Core;
 
@@ -32,6 +33,9 @@ namespace ERP.Entity.General
         [Column(TypeName = "decimal(18, 2)")]
         public decimal CreditLimit { get; set; }
 
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal CreditUsed { get; set; }
+
         [StringLength(30)]
         public string RefNo { get; set; }
 
@@ -53,6 +57,28 @@ namespace ERP.Entity.General
         public int? AreaId5 { get; set; }
 
         public bool IsConsignee { get; set; }
+
+        public bool MobileSignIn { get; set; }
+
+        public Guid? CatalogUserId { get; set; }
+
+        [Column(TypeName = "nvarchar")]
+        [StringLength(50)]
+        public string MobileUsername { get; set; }
+
+        public bool IsMobileLoggedIn { get; set; }
+
+        [Column(TypeName = "datetime")]
+        public DateTime? MobileLastLogin { get; set; }
+
+        [StringLength(50)]
+        public string MobileSessionId { get; set; }
+
+        public string MobileTokenId { get; set; }
+
+        [Column("MobileIPAddress")]
+        [StringLength(40)]
+        public string MobileIpAddress { get; set; }
     }
 
     public class VwCustomer : BaseEntityWithActive
@@ -85,6 +111,8 @@ namespace ERP.Entity.General
 
         public decimal CreditLimit { get; set; }
 
+        public decimal CreditUsed { get; set; }
+
         public string RefNo { get; set; }
 
         public string Notes { get; set; }
@@ -104,12 +132,36 @@ namespace ERP.Entity.General
         public int? AreaId5 { get; set; }
 
         public bool IsConsignee { get; set; }
+
+        public bool MobileSignIn { get; set; }
+
+        public Guid? CatalogUserId { get; set; }
+
+        public string MobileUsername { get; set; }
+
+        public bool IsMobileLoggedIn { get; set; }
+
+        public DateTime? MobileLastLogin { get; set; }
+
+        public string MobileSessionId { get; set; }
+
+        public string MobileTokenId { get; set; }
+
+        public string MobileIpAddress { get; set; }
+
+
         public string TypeName { get; set; }
+
         public string UpdatedInitial { get; set; }
+
         public string AreaName1 { get; set; }
+
         public string AreaName2 { get; set; }
+
         public string AreaName3 { get; set; }
+
         public string AreaName4 { get; set; }
+
         public string AreaName5 { get; set; }
     }
 

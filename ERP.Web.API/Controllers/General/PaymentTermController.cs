@@ -22,7 +22,7 @@ namespace ERP.Web.API.Controllers.General
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
 
-        private const int _menuId = (int)Menu.PaymentTerm;
+        private const int MenuId = (int)Menu.PaymentTerm;
 
         public PaymentTermController(IPaymentTermService paymentTerm, IClaimService claim, IAuthService auth)
         {
@@ -76,7 +76,7 @@ namespace ERP.Web.API.Controllers.General
         public IActionResult OnPost(PaymentTerm data)
         {
             // Checking role authorization
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Insert }).Any())
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Insert }).Any())
             {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
             }
@@ -96,7 +96,7 @@ namespace ERP.Web.API.Controllers.General
         public IActionResult OnPut(string id, PaymentTerm data)
         {
             // Checking role authorization
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Update }).Any())
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
             {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
             }
@@ -113,7 +113,7 @@ namespace ERP.Web.API.Controllers.General
         public IActionResult OnDelete(int id)
         {
             // Checking role authorization
-            if (!_auth.GetActions(_menuId, _claim.RoleId, new[] { Actions.Delete }).Any())
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Delete }).Any())
             {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
             }

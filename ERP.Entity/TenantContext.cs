@@ -61,6 +61,8 @@ namespace ERP.Entity
         public DbSet<ExpeditionInvoiceHeader> ExpeditionInvoiceHeaders { get; set; }
         public DbSet<VwExpeditionInvoiceHeader> VwExpeditionInvoiceHeaders { get; set; }
         public DbSet<ExpeditionInvoiceDetail> ExpeditionInvoiceDetails { get; set; }
+        public DbSet<ReportByExpeditionSupplier> ReportByExpeditionSuppliers { get; set; }
+        public DbSet<ReportByExpeditionInvoice> ReportByExpeditionInvoices { get; set; }
 
         // Finance entities
         public DbSet<GeneralCashBankHeader> GeneralCashBankHeaders { get; set; }
@@ -138,9 +140,14 @@ namespace ERP.Entity
         public DbSet<ReportByWarehouse> ReportByWarehouses { get; set; }
 
         // Mobile Sales entities
+        public DbSet<MobileCostHeader> MobileCostHeaders { get; set; }
+        public DbSet<MobileCostDetail> MobileCostDetails { get; set; }
+        public DbSet<MobileCostImage> MobileCostImages { get; set; }
         public DbSet<MobileCustomer> MobileCustomers { get; set; }
+        public DbSet<MobileItemRequestHeader> MobileItemRequestHeaders { get; set; }
+        public DbSet<MobileItemRequestDetail> MobileItemRequestDetails { get; set; }
         public DbSet<MobileOrderHeader> MobileOrderHeaders { get; set; }
-        public DbSet<MobileOrderDetail> MobileOrderDetail { get; set; }
+        public DbSet<MobileOrderDetail> MobileOrderDetails { get; set; }
         public DbSet<MobileOrderDetailDiscount> MobileOrderDetailDiscounts { get; set; }
         public DbSet<MobileOrderDetailFreeGood> MobileOrderDetailFreeGoods { get; set; }
         public DbSet<MobilePaymentInvoice> MobilePaymentInvoices { get; set; }
@@ -499,6 +506,15 @@ namespace ERP.Entity
                     .HasForeignKey(d => d.Code)
                     .OnDelete(DeleteBehavior.NoAction);
             });
+
+            // Expedition Report model
+            modelBuilder.Entity<ReportByExpeditionSupplier>()
+                .HasNoKey()
+                .ToTable("ReportByExpeditionSupplier", t => t.ExcludeFromMigrations());
+
+            modelBuilder.Entity<ReportByExpeditionInvoice>()
+               .HasNoKey()
+               .ToTable("ReportByExpeditionInvoice", t => t.ExcludeFromMigrations());
 
             // Finance entities
             // General Cash Bank model
@@ -1025,6 +1041,45 @@ namespace ERP.Entity
                .ToTable("ReportByWarehouse", t => t.ExcludeFromMigrations());
 
             // Mobile Sales entities
+            // Mobile Cost model
+            modelBuilder.Entity<MobileCostHeader>(entity =>
+            {
+                entity.Property(e => e.Mark)
+                    .IsRequired();
+
+                entity.HasOne<GeneralCashBankHeader>()
+                    .WithMany()
+                    .HasForeignKey(d => d.CashBankCode)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Employee>()
+                    .WithMany()
+                    .HasForeignKey(d => d.SalesmanId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            modelBuilder.Entity<MobileCostDetail>(entity =>
+            {
+                entity.Property(e => e.Code)
+                    .IsRequired();
+
+                entity.HasOne<MobileItemRequestHeader>()
+                    .WithMany()
+                    .HasForeignKey(d => d.Code)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            modelBuilder.Entity<MobileCostImage>(entity =>
+            {
+                entity.Property(e => e.Code)
+                    .IsRequired();
+
+                entity.HasOne<MobileItemRequestHeader>()
+                    .WithMany()
+                    .HasForeignKey(d => d.Code)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
             // Mobile Customer model
             modelBuilder.Entity<MobileCustomer>(entity =>
             {
@@ -1061,6 +1116,69 @@ namespace ERP.Entity
                 entity.HasOne<Area>()
                     .WithMany()
                     .HasForeignKey(d => d.AreaId5)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            // Mobile Item Request model
+            modelBuilder.Entity<MobileItemRequestHeader>(entity =>
+            {
+                entity.Property(e => e.Mark)
+                    .IsRequired();
+
+                entity.HasOne<TransferStockHeader>()
+                    .WithMany()
+                    .HasForeignKey(d => d.TransferCode)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Employee>()
+                    .WithMany()
+                    .HasForeignKey(d => d.SalesmanId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Area>()
+                    .WithMany()
+                    .HasForeignKey(d => d.AreaId1)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Area>()
+                    .WithMany()
+                    .HasForeignKey(d => d.AreaId2)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Area>()
+                    .WithMany()
+                    .HasForeignKey(d => d.AreaId3)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Area>()
+                    .WithMany()
+                    .HasForeignKey(d => d.AreaId4)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Area>()
+                    .WithMany()
+                    .HasForeignKey(d => d.AreaId5)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            modelBuilder.Entity<MobileItemRequestDetail>(entity =>
+            {
+                entity.Property(e => e.Code)
+                    .IsRequired();
+
+                entity.HasOne<MobileItemRequestHeader>()
+                    .WithMany()
+                    .HasForeignKey(d => d.Code)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Item>()
+                    .WithMany()
+                    .HasForeignKey(d => d.ItemId)
+                    .OnDelete(DeleteBehavior.NoAction);
+                
+                entity.HasOne<UoMConversion>()
+                    .WithMany()
+                    .HasForeignKey(d => d.UnitId)
                     .OnDelete(DeleteBehavior.NoAction);
             });
 

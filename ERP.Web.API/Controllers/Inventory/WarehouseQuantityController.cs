@@ -14,12 +14,12 @@ namespace ERP.Web.API.Controllers.Inventory
     [ApiController]
     public class WarehouseQuantityController : ControllerBase
     {
-        private readonly IWarehouseQuantityService _warehouse_quantity;
+        private readonly IWarehouseQuantityService _warehouseQuantity;
         private readonly IClaimService _claim;
 
-        public WarehouseQuantityController(IWarehouseQuantityService warehouse_quantity, IClaimService claim)
+        public WarehouseQuantityController(IWarehouseQuantityService warehouseQuantity, IClaimService claim)
         {
-            _warehouse_quantity = warehouse_quantity;
+            _warehouseQuantity = warehouseQuantity;
             _claim = claim;
         }
 
@@ -27,7 +27,7 @@ namespace ERP.Web.API.Controllers.Inventory
         public IActionResult GetData(string search, string category, string filters, string sorts, int skip, int take)
         {
             var data =
-                _warehouse_quantity.GetData(
+                _warehouseQuantity.GetData(
                     skip, take,
                     JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
                     JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),

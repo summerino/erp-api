@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using ERP.Entity;
 using ERP.Entity.Finance;
 using ERP.Web.API.Domain.Interfaces.Finance;
@@ -14,9 +15,16 @@ namespace ERP.Web.API.Domain.Services.Finance
             _tenantCtx = tenantCtx;
         }
 
-        public IQueryable<VwCashBankType> GetLists()
+        public IQueryable<VwCashBankType> GetLists(List<int> actionId)
         {
-            return _tenantCtx.VwCashBankTypes.Where(x => x.IsActive).OrderBy(x => x.Seq);
+            var data = _tenantCtx.VwCashBankTypes.Where(x => x.IsActive);
+
+            if (actionId?.Any() ?? false)
+            {
+                data = data.Where(x => actionId.Contains(x.ActionId));
+            }
+
+            return data.OrderBy(x => x.Seq);
         }
     }
 }
