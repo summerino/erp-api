@@ -924,6 +924,8 @@ namespace ERP.Web.API.Domain.Services.Sales
                 data.UpdatedBy = userId;
                 data.UpdatedDate = DateTime.Now;
                 Db.SaveChanges();
+
+                RestoreCreditUsedFromCloseAction(code, data.CustCode);
             }
             result.Success = true;
             result.Message = "Data order penjualan berhasil ditutup.";
@@ -1027,6 +1029,14 @@ namespace ERP.Web.API.Domain.Services.Sales
         {
             var prevAmount = Db.SalesOrderHeaders.AsNoTracking().FirstOrDefault(x => x.Code.Equals(transCode))?.Total;
             string query = $"update General.Customer set CreditUsed= (CreditUsed - {prevAmount}) where code = '{custCode}'";
+            Db.Database.ExecuteSqlRaw(query);
+        }
+        private void RestoreCreditUsedFromCloseAction(string transCode, string custCode)
+        {
+            var amount = (from x in Db.SalesInvoiceHeaders
+                          where x.SoCode == transCode
+                          select x.Total - x.PaidAmount).FirstOrDefault();
+            string query = $"update General.Customer set CreditUsed= (CreditUsed - {amount}) where code = '{custCode}'";
             Db.Database.ExecuteSqlRaw(query);
         }
         private void UpdateCreditUsed(string custCode, decimal total)
