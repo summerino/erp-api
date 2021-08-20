@@ -49,6 +49,7 @@ namespace ERP.Entity
         public DbSet<GeneralJournalDetail> GeneralJournalDetails { get; set; }
         public DbSet<VwGeneralJournalHeader> VwGeneralJournalHeaders { get; set; }
         public DbSet<Journal> Journals { get; set; }
+        public DbSet<ReportJournalResult> ReportJournalResults { get; set; }
 
         // Asset Management entities
         public DbSet<FixedAsset> FixedAssets { get; set; }
@@ -430,6 +431,11 @@ namespace ERP.Entity
                     .HasForeignKey(d => d.CurrCode)
                     .OnDelete(DeleteBehavior.NoAction)
             );
+
+            // Journal Report model
+            modelBuilder.Entity<ReportJournalResult>()
+                .HasNoKey()
+                .ToTable("ReportJournalResult", t => t.ExcludeFromMigrations());
 
             // Asset Management entities
             // Asset Type model

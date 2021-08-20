@@ -44,9 +44,9 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 if (journalPR != null)
                     _db.AddRange(journalPR);
 
-                var journalDO = ProcessSaleJournal(data.Date, systemParam, items, taxes);
-                if (journalDO != null)
-                    _db.AddRange(journalDO);
+                //var journalDO = ProcessSaleJournal(data.Date, systemParam, items, taxes);
+                //if (journalDO != null)
+                //    _db.AddRange(journalDO);
 
                 var journalSR = ProcessSalesReturnJournal(data.Date, systemParam, items, taxes);
                 if (journalSR != null)
