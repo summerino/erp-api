@@ -20,6 +20,7 @@ steps:
     arguments: '--configuration $(BuildConfiguration) --output $(build.artifactstagingdirectory)'
     zipAfterPublish: false
     modifyOutputPath: false
+  displayName: 'dotnet publish'
 
 - task: PublishBuildArtifacts@1
   inputs:
