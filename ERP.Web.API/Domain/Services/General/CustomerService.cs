@@ -8,16 +8,22 @@ using ERP.Entity;
 using ERP.Entity.General;
 using ERP.Entity.Inventory;
 using ERP.Web.API.Domain.Interfaces.General;
-using ERP.Web.API.Domain.Models;
 using ERP.Web.API.Model.General;
+using Microsoft.AspNetCore.Identity;
+using UserCatalog = ERP.Entity.Catalog.CustomerUser;
 
 namespace ERP.Web.API.Domain.Services.General
 {
     public class CustomerService : GeneralService<Customer>, ICustomerService
     {
-        public CustomerService(TenantContext db)
+        private readonly CatalogContext _catalogCtx;
+        private readonly IClaimService _claim;
+
+        public CustomerService(TenantContext db, CatalogContext catalogCtx, IClaimService claim)
             : base(db)
         {
+            _catalogCtx = catalogCtx;
+            _claim = claim;
         }
 
         public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
@@ -57,6 +63,7 @@ namespace ERP.Web.API.Domain.Services.General
             var result = new SaveResult(false);
 
             using var transaction = Db.Database.BeginTransaction();
+
             try
             {
                 // Checking initial already exists or not
@@ -65,6 +72,8 @@ namespace ERP.Web.API.Domain.Services.General
                     result.Message = "Inisial sudah terdaftar. Tolong gunakan inisial lain.";
                     return result;
                 }
+                // handling mobile sign in
+                AddOrUpdateMobileSignIn(data);
 
                 // Get new code
                 var newCode = GetNewCode("CUST_NUM_FMT", data.CreatedDate);
@@ -171,6 +180,9 @@ namespace ERP.Web.API.Domain.Services.General
                 result.Message = "Inisial sudah terdaftar. Tolong gunakan inisial lain.";
                 return result;
             }
+
+            // handling mobile sign in
+            AddOrUpdateMobileSignIn(data);
 
             // Update data
             Db.Customers.Update(data);
@@ -382,6 +394,104 @@ namespace ERP.Web.API.Domain.Services.General
             {
                 return 0;
             }
+        }
+
+        private SaveResult AddOrUpdateMobileSignIn(CustomerRequest data) 
+        {
+            var result = new SaveResult(false);
+            if (data.MobileSignIn)
+            {
+                result = UpdateMobileSignIn(data);
+            }
+            else 
+            {
+                DeleteMobileSignIn(data);   
+            }
+            result.Success = true;
+            return result;
+        }
+        private SaveResult UpdateMobileSignIn(CustomerRequest data) 
+        {
+            var result = new SaveResult(false);
+
+            var tenant = _catalogCtx.Tenants.FirstOrDefault(x => x.Id == _claim.TenantId);
+            if (tenant == null)
+            {
+                result.Message = "Tenant tidak terdaftar.";
+                return result;
+            }
+
+            if (data.CatalogUserId == null)
+            {
+
+                if (string.IsNullOrWhiteSpace(data.MobileUsername) || string.IsNullOrWhiteSpace(data.MobilePassword))
+                {
+                    result.Message = "Username atau password tidak boleh kosong.";
+                    return result;
+                }
+                var userCtg = _catalogCtx.CustomerUsers.FirstOrDefault(x => x.Username == data.MobileUsername);
+                if (userCtg != null)
+                {
+                    result.Message = "Username sudah terdaftar.";
+                    return result;
+                }
+
+                var pwh = new PasswordHasher<UserCatalog>();
+                var newCatalogUser = new UserCatalog()
+                {
+                    Id = new Guid(),
+                    TenantId = _claim.TenantId,
+                    Username = data.MobileUsername
+                };
+                var hashPwd = pwh.HashPassword(newCatalogUser, data.MobilePassword);
+                newCatalogUser.Password = hashPwd;
+
+                _catalogCtx.Add(newCatalogUser);
+                _catalogCtx.SaveChanges();
+                data.CatalogUserId = newCatalogUser.Id;
+            }
+            else 
+            {
+                if (!string.IsNullOrWhiteSpace(data.MobileUsername) && !string.IsNullOrWhiteSpace(data.MobilePassword))
+                {
+
+                    var pwh = new PasswordHasher<UserCatalog>();
+                    var newCatalogUser = new UserCatalog()
+                    {
+                        Id = new Guid(),
+                        TenantId = _claim.TenantId,
+                        Username = data.MobileUsername
+                    };
+                    var hashPwd = pwh.HashPassword(newCatalogUser, data.MobilePassword);
+
+                    var customerUser = _catalogCtx.CustomerUsers.FirstOrDefault(x => x.Id.Equals(data.CatalogUserId));
+                    if (customerUser != null)
+                    {
+                        customerUser.Username = data.MobileUsername;
+                        customerUser.Password = hashPwd;
+                        _catalogCtx.SaveChanges();
+                    }
+                }
+            }
+            
+            result.Success = true;
+            return result;
+        }
+        public void DeleteMobileSignIn(CustomerRequest data) 
+        {
+            if (data.CatalogUserId != null) {
+                var custUser = _catalogCtx.CustomerUsers.FirstOrDefault(x => x.TenantId.Equals(_claim.TenantId) && x.Id.Equals(data.CatalogUserId));
+                if (custUser != null)
+                {
+                    _catalogCtx.Remove(custUser);
+                    _catalogCtx.SaveChanges();
+                    data.CatalogUserId = null;
+                    data.MobileSignIn = false;
+                    data.MobileUsername = null;
+                }
+                
+            }
+            
         }
     }
 }
