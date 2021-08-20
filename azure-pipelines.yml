@@ -7,16 +7,12 @@ trigger:
 - development
 
 pool:
-  vmImage: ubuntu-latest
+  vmImage: windows-latest
 
 variables:
   buildConfiguration: 'Release'
 
 steps:
-- script:
-    dotnet restore
-  displayName: 'dotnet restore'
-
 - task: DotNetCoreCLI@2
   inputs:
     command: 'publish'
