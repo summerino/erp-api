@@ -125,6 +125,9 @@ namespace ERP.Web.API.Domain.Services.Sales
                     FromDirectInvoice = true
                 });
 
+                // Credit Used
+                UpdateCreditUsed(data.CustCode, data.Total);
+
                 short i = 0;
                 foreach (var item in data.ItemDetails)
                 {
@@ -406,8 +409,17 @@ namespace ERP.Web.API.Domain.Services.Sales
                     return result;
                 }
 
+                if (!CheckCreditLimit(data.CustCode, data.Total))
+                {
+                    result.Message = "Nilai transaksi lebih besar dari nilai batas kredit.";
+                    return result;
+                }
+
                 data.ApprovedBy = null;
                 data.ApprovedDate = null;
+
+                // Restore Credit Used
+                RestoreCreditUsed(data.Code, data.CustCode);
 
                 // Update Invoice header data
                 Db.SalesInvoiceHeaders.Update(data);
@@ -729,6 +741,9 @@ namespace ERP.Web.API.Domain.Services.Sales
                 // Save changes
                 Db.SaveChanges();
 
+                // Credit Used
+                UpdateCreditUsed(data.CustCode, data.Total);
+
                 // Execute sp_update_stock_mutation_from_so
                 Db.Database.ExecuteSqlRaw(
                     "EXEC sp_update_stock_mutation_from_so {0}, {1}",
@@ -758,6 +773,8 @@ namespace ERP.Web.API.Domain.Services.Sales
                     Db.Database.ExecuteSqlRaw(
                         "UPDATE Sales.SalesOrderHeader SET Mark={0} WHERE Code={1}", soMark, data.SoCode);
                 }
+
+                
                 UpdateCreditMemo(data);
                 transaction.Commit();
             }
@@ -903,6 +920,21 @@ namespace ERP.Web.API.Domain.Services.Sales
             }
             return result;
         }
+
+        #region Credit Used - Limit
+        private bool CheckCreditLimit(string custCode, decimal total) => Db.Customers.Any(c => c.Code.Equals(custCode) && (c.CreditLimit - c.CreditUsed) >= total);
+        private void RestoreCreditUsed(string transCode, string custCode)
+        {
+            var prevAmount = Db.SalesOrderHeaders.AsNoTracking().FirstOrDefault(x => x.Code.Equals(transCode))?.Total;
+            string query = $"update General.Customer set CreditUsed= (CreditUsed - {prevAmount}) where code = '{custCode}'";
+            Db.Database.ExecuteSqlRaw(query);
+        }
+        private void UpdateCreditUsed(string custCode, decimal total)
+        {
+            string query = $"update General.Customer set CreditUsed= (CreditUsed + {total}) where code = '{custCode}'";
+            Db.Database.ExecuteSqlRaw(query);
+        }
+        #endregion
 
         #region Update & Restore Credit Memo
         private void UpdateCreditMemo(SalesInvoiceRequest data)

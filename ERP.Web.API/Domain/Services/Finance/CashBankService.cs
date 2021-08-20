@@ -243,6 +243,7 @@ namespace ERP.Web.API.Domain.Services.Finance
                     j++;
                 }
 
+
                 if (queries.Any())
                 {
                     string query = string.Join("", queries);
@@ -253,6 +254,9 @@ namespace ERP.Web.API.Domain.Services.Finance
                 }
 
                 Db.SaveChanges();
+
+                var listTransCodeAndAmount = data.ItemDetails.Select(x => new { x.TransCode, x.TransAmount }).ToList<dynamic>();
+                UpdateCreditUsed(listTransCodeAndAmount);
 
                 transaction.Commit();
             }
@@ -290,6 +294,9 @@ namespace ERP.Web.API.Domain.Services.Finance
                 data.ApprovedBy = null;
                 data.ApprovedDate = null;
 
+                // Restore Credit Used
+                RestoreCreditUsed(data.Code);
+
                 // Restore transaction to precious data. (roll back data menjadi ketika sebelum edit)
                 Db.Database.ExecuteSqlRaw($"sp_restore_cash_bank_transaction '{data.Code}';");
 
@@ -309,6 +316,7 @@ namespace ERP.Web.API.Domain.Services.Finance
 
                 // Update detail data
                 short i = 0;
+                var listTransCodeAndTransAmount = new List<dynamic>();
                 foreach (var item in data.ItemDetails)
                 {
                     if (item.Id <= 0)
@@ -336,7 +344,9 @@ namespace ERP.Web.API.Domain.Services.Finance
                         Db.Entry(item).Property(e => e.Code).IsModified = false;
                         Db.Entry(item).Property(e => e.Type).IsModified = false;
                         Db.Entry(item).Property(e => e.Src).IsModified = false;
+
                     }
+                    listTransCodeAndTransAmount.Add(new { TransCode = item.TransCode, TransAmount = item.TransAmount });
                 }
 
                 if (queries.Any())
@@ -349,6 +359,8 @@ namespace ERP.Web.API.Domain.Services.Finance
                 }
 
                 Db.SaveChanges();
+
+                UpdateCreditUsed(listTransCodeAndTransAmount);
 
                 transaction.Commit();
             }
@@ -616,5 +628,49 @@ namespace ERP.Web.API.Domain.Services.Finance
                 _ => ""
             };
         }
+
+
+        #region Credit Used - Limit
+        private void RestoreCreditUsed(string cashBankCode)
+        {
+            var listTransactions = (from cd in Db.GeneralCashBankDetails
+                                    join si in Db.SalesInvoiceHeaders on cd.TransCode equals si.Code
+                                    join so in Db.SalesOrderHeaders on si.SoCode equals so.Code
+                                    where cd.Type == "AR"
+                                    select new { so.CustCode , cd.TransAmount }).ToList();
+            var listQuery = new List<string>();
+            foreach (var item in listTransactions)
+            {
+                string query = $"update General.Customer set CreditUsed= (CreditUsed + {item.TransAmount}) where code = '{item.CustCode}'";
+                listQuery.Add(query);
+            }
+            if (listQuery.Any())
+            {
+                Db.Database.ExecuteSqlRaw(string.Join(";", listQuery));
+            }
+        }
+        private void UpdateCreditUsed(List<dynamic> listTransCodeAndTransAmount)
+        {
+            var listTransCodeOnly = listTransCodeAndTransAmount.Select(x => x.TransCode).ToList();
+            var listTransactions = (from so in Db.SalesOrderHeaders
+                                    join si in Db.SalesInvoiceHeaders on so.Code equals si.SoCode
+                                    where listTransCodeOnly.Contains(si.Code)
+                                    select new { si.Code, so.CustCode }).ToList();
+
+            var listQuery = new List<string>();
+            foreach (var item in listTransCodeAndTransAmount)
+            {
+                string custCode = listTransactions.SingleOrDefault(x => x.Code.Equals(item.TransCode))?.CustCode;
+                if (custCode != null) {
+                    string query = $"update General.Customer set CreditUsed= (CreditUsed - {item.TransAmount}) where code = '{custCode}'";
+                    listQuery.Add(query);
+                }
+                
+            }
+            if (listQuery.Any()) { 
+                Db.Database.ExecuteSqlRaw(string.Join(";",listQuery));
+            }
+        }
+        #endregion
     }
 }
