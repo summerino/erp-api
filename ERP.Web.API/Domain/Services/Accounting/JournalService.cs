@@ -44,9 +44,9 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 if (journalPR != null)
                     _db.AddRange(journalPR);
 
-                //var journalDO = ProcessSaleJournal(data.Date, systemParam, items, taxes);
-                //if (journalDO != null)
-                //    _db.AddRange(journalDO);
+                var journalDO = ProcessSaleJournal(data.Date, systemParam, items, taxes);
+                if (journalDO != null)
+                    _db.AddRange(journalDO);
 
                 var journalSR = ProcessSalesReturnJournal(data.Date, systemParam, items, taxes);
                 if (journalSR != null)
@@ -71,6 +71,10 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 var journalBBCM = ProcessBBCreditMemoJournal(systemParam);
                 if (journalBBCM != null)
                     _db.AddRange(journalBBCM);
+
+                var journalINVT = ProcessBBInventoryJournal(systemParam);
+                if (journalINVT != null)
+                    _db.AddRange(journalINVT);
 
                 var journalEXP = ProcessExpeditionJournal(data.Date, systemParam);
                 if (journalEXP != null)
@@ -1802,6 +1806,60 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 });
             }
 
+            return journals;
+        }
+
+        private IEnumerable<Journal> ProcessBBInventoryJournal(List<SystemParameter> systemParam)
+        {
+            List<Journal> journals = new();
+            var startDate = Convert.ToDateTime(systemParam.FirstOrDefault(x => x.Code == "DATA_START_DATE").Value).AddDays(-1);
+            var latestData = _db.VwBeginningBalanceStockHeaders.OrderByDescending(x => x.Date).FirstOrDefault();
+            if (latestData?.Date.Month == startDate.Month && latestData?.Date.Year == startDate.Year)
+            {
+                var bbapData = _db.VwBeginningBalanceStockHeaders.ToList();
+                foreach (var item in bbapData)
+                {
+                    var detailData = _db.VwBeginningBalanceStockDetails.Where(x => x.Code == item.Code).ToList();
+
+                    short i = 0;
+                    foreach (var itemDetail in detailData)
+                    {
+                        journals.Add(new Journal
+                        {
+                            Code = "BB-INVT-" + startDate.ToString("yyyyMMdd"),
+                            LineNo = ++i,
+                            Date = item.Date,
+                            CoaCode = systemParam.FirstOrDefault(x => x.Code == "INVENTORY_COA")?.Value ?? "",
+                            TypeCode = "BB_INVT",
+                            Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_INVENTORY")?.Value ?? ""} {itemDetail.ItemName}").Trim(),
+                            RefCode1 = itemDetail.ItemInitial,
+                            Group = 2,
+                            CurrCode = "IDR",
+                            Period = item.Date.ToString("yyyyMMdd"),
+                            Type = "D",
+                            Amount = itemDetail.Amount,
+                            SrcTrans = "BB_INVT"
+                        });
+                    }
+                }
+
+                journals.Add(new Journal
+                {
+                    Code = "BB-INVT-" + startDate.ToString("yyyyMMdd"),
+                    LineNo = 1,
+                    Date = startDate,
+                    CoaCode = systemParam.FirstOrDefault(x => x.Code == "BB_COA")?.Value ?? "",
+                    TypeCode = "BB_INVT",
+                    Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_BB_INVT")?.Value ?? ""}").Trim(),
+                    RefCode1 = "",
+                    Group = 1,
+                    CurrCode = "IDR",
+                    Period = startDate.ToString("yyyyMMdd"),
+                    Type = "C",
+                    Amount = journals.Where(x => x.Code == "BB-AR-" + startDate.ToString("yyyyMMdd")).Sum(x => x.Amount),
+                    SrcTrans = "BB_INVT"
+                });
+            }
             return journals;
         }
 
