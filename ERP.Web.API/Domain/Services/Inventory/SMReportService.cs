@@ -1,6 +1,7 @@
 ﻿using ERP.Common.Extensions;
 using ERP.Common.Models;
 using ERP.Entity;
+using ERP.Entity.Inventory;
 using ERP.Web.API.Domain.Interfaces.Inventory;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -20,6 +21,7 @@ namespace ERP.Web.API.Domain.Services.Inventory
         }
 		public DataSourceResult GetData(int type, string startDate, string endDate, string whCode, int itemId, int typeUnit, bool isSM, IEnumerable<Sort> sorts)
 		{
+			List<ReportByStockMutation> smListData = new();
 			var qsetUnit = $"DECLARE @Unit int; SET @Unit = '{typeUnit.ToString().Replace("'", "''")}'; ";
 
 			var smData = _db.ReportByStockMutations.FromSqlRaw(qsetUnit + @"SELECT sm.WarehouseCode, sm.ItemId, sm.Date, sm.RefCode1 as TransCode, 
@@ -29,6 +31,7 @@ namespace ERP.Web.API.Domain.Services.Inventory
 					WHEN sm.Src = 'DO' THEN 'Surat Jalan'
 					WHEN sm.Src = 'TS' THEN 'Transfer Persediaan'
 					WHEN sm.Src = 'ADJ' THEN 'Penyesuaian'
+					WHEN sm.Src = 'BB' THEN 'Saldo Awal Persediaan'
 					END AS SrcTrans,
 					CASE
 					WHEN sm.Src = 'ADJ' AND sm.BaseQty > 0 THEN 
@@ -37,7 +40,7 @@ namespace ERP.Web.API.Domain.Services.Inventory
 						WHEN @Unit = 2 THEN abs(sm.BaseQty) / ( SELECT EXP(SUM(LOG(Conversion))) FROM Inventory.UoMConversion WHERE UomId = im.UomId AND Seq <= (SELECT Seq FROM Inventory.UoMConversion WHERE Id = im.UomBuyId))
 						WHEN @Unit = 3 THEN abs(sm.BaseQty) / ( SELECT EXP(SUM(LOG(Conversion))) FROM Inventory.UoMConversion WHERE UomId = im.UomId AND Seq <= (SELECT Seq FROM Inventory.UoMConversion WHERE Id = im.UomSellId))
 						END AS decimal)
-					WHEN sm.Src = 'RCV' THEN 
+					WHEN sm.Src IN ('RCV','BB') THEN 
 						CAST (CASE 
 						WHEN @Unit = 1 THEN abs(sm.BaseQty) 
 						WHEN @Unit = 2 THEN abs(sm.BaseQty) / ( SELECT EXP(SUM(LOG(Conversion))) FROM Inventory.UoMConversion WHERE UomId = im.UomId AND Seq <= (SELECT Seq FROM Inventory.UoMConversion WHERE Id = im.UomBuyId))
@@ -81,7 +84,8 @@ namespace ERP.Web.API.Domain.Services.Inventory
 					AS HPP,
 					CAST (0 AS decimal) AS InvIn,
 					CAST (0 AS decimal) AS InvOut,
-					CAST (0 AS decimal) AS InvEnd
+					CAST (0 AS decimal) AS InvEnd,
+					CAST (0 AS bit) AS IsBold
 				FROM Inventory.StockMutation sm
 				LEFT JOIN Inventory.Item im on im.Id = sm.ItemId
 				WHERE sm.Src IN ('RCV','DO','TS','ADJ','BB') AND sm.[Type] = 'OH' " + (string.IsNullOrEmpty(whCode) ? "" : $"AND sm.WarehouseCode = '{whCode.Replace("'", "''")}'") + " ORDER BY sm.Date").ToList();
@@ -162,6 +166,15 @@ namespace ERP.Web.API.Domain.Services.Inventory
                 {
 					var selectedItem = itemData.FirstOrDefault(x => x.Id == itemId);
 					var smItemData = smData.Where(x => x.ItemId == itemId);
+
+					smListData.Add(new ReportByStockMutation
+					{
+						TransCode = "Nilai Awal",
+						QtyEnd = selectedItem.QtyBegin,
+						InvEnd = selectedItem.InvBegin,
+						IsBold = true
+					});
+
 					foreach (var item in smItemData)
                     {
 						item.QtyEnd = item.QtyIn > 0 ? selectedItem.QtyBegin + item.QtyIn : selectedItem.QtyBegin - item.QtyOut;
@@ -170,9 +183,24 @@ namespace ERP.Web.API.Domain.Services.Inventory
 						item.InvEnd = (selectedItem.InvBegin + item.InvIn) - item.InvOut;
 						selectedItem.QtyBegin = item.QtyEnd;
 						selectedItem.InvBegin = item.InvEnd;
+
+						smListData.Add(item);
                     }
 
-					return smItemData.AsQueryable().ToDataSourceResult(0, smItemData.Count(), null, sorts);
+					smListData.Add(new ReportByStockMutation
+					{
+						Date = DateTime.MaxValue,
+						TransCode = "Total",
+						QtyIn = smListData.Where(x => !x.IsBold).Sum(x => x.QtyIn),
+						QtyOut = smListData.Where(x => !x.IsBold).Sum(x => x.QtyOut),
+						QtyEnd = selectedItem.QtyEnd,
+						InvIn = smListData.Where(x => !x.IsBold).Sum(x => x.InvIn),
+						InvOut = smListData.Where(x => !x.IsBold).Sum(x => x.InvOut),
+						InvEnd = selectedItem.InvEnd,
+						IsBold = true
+					});
+
+					return smListData.AsQueryable().ToDataSourceResult(0, smListData.Count(), null, sorts);
 				}
 				else
                 {
