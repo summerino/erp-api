@@ -12,7 +12,9 @@ namespace ERP.Web.API.Domain.Interfaces.Accounting
             string search);
 
         DataSourceResult GetLists(IEnumerable<Filter> filters, IEnumerable<Sort> sorts);
-        
+
+        DataSourceResult GetListsNonSysPar(IEnumerable<Filter> filters, IEnumerable<Sort> sorts);
+
         SaveResult Delete(int id, int userId);
     }
 }

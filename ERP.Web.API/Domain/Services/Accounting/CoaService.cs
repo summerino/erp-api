@@ -40,7 +40,21 @@ namespace ERP.Web.API.Domain.Services.Accounting
 
             return data.ToDataSourceResult(0, -1, filters, sorts);
         }
-        
+
+        public DataSourceResult GetListsNonSysPar(IEnumerable<Filter> filters, IEnumerable<Sort> sorts)
+        {
+            var data = Db.Coas.Where(x => x.IsActive);
+            var dataT = data;
+
+            var sysParData = Db.SystemParameters.Where(x => x.Code.Contains("COA")).ToList();
+
+            data = data.Where(x => !dataT.Select(t => t.ParentId).Contains(x.Id));
+
+            data = data.Where(x => !sysParData.Select(c => c.Value).Contains(x.Code));
+
+            return data.ToDataSourceResult(0, -1, filters, sorts);
+        }
+
         public override SaveResult Insert(Coa data)
         {
             var result = new SaveResult(false);

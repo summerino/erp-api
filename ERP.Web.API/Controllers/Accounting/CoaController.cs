@@ -69,6 +69,27 @@ namespace ERP.Web.API.Controllers.Accounting
             });
         }
 
+        [HttpGet("lists-non-syspar")]
+        public IActionResult GetListNonSysPar(string filters, string sorts) 
+        {
+            var data =
+                _coa.GetListsNonSysPar(
+                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]")).Data
+                    .ToDynamicList()
+                    .Select(x => new
+                    {
+                        x.Id, x.Code, x.Name, x.ParentId, x.CurrCode, x.VouCode
+                    })
+                    .ToList<dynamic>();
+
+            return Ok(new ApiResponse
+            {
+                RowCount = data.Count,
+                TableData = data
+            });
+        }
+
         [HttpPost]
         public IActionResult OnPost(Coa data)
         {
