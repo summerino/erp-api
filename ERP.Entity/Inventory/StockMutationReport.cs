@@ -27,6 +27,8 @@ namespace ERP.Entity.Inventory
         public decimal InvOut { get; set; }
 
         public decimal InvEnd { get; set; }
+
+        public bool IsBold { get; set; }
     }
 
     public class ReportByItem
