@@ -38,5 +38,24 @@ namespace ERP.Web.API.Controllers.Accounting
 
             return Ok(result);
         }
+
+        [HttpPost("end-year")]
+        public IActionResult OnPostEY(JournalRequest data)
+        {
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Post }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
+
+            if (data.Date.Month != 12)
+            {
+                string message = "Tidak bisa posting akhir tahun karena bukan akhir tahun";
+                return Ok(new SaveResult(false, message));
+            }
+
+            var result = _js.PostingEndYearJournal(data);
+
+            return Ok(result);
+        }
     }
 }
