@@ -172,7 +172,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                         CurrCode = itemData.RcvHeader.CurrCode,
                         Period = itemData.RcvHeader.Date.ToString("yyyyMMdd"),
                         Type = "D",
-                        Amount = itemData.RcvHeader.IncludeTax ? ((itemDetail.RcvDetail.NettPrice - prorateHeaderDisc) * itemDetail.RcvDetail.Qty) - (itemDetail.RcvDetail.TaxAmount * itemDetail.RcvDetail.Qty) : ((itemDetail.RcvDetail.NettPrice - prorateHeaderDisc) * itemDetail.RcvDetail.Qty),
+                        Amount = !itemData.RcvHeader.IncludeTax ? ((itemDetail.RcvDetail.NettPrice - prorateHeaderDisc) * itemDetail.RcvDetail.Qty) - (itemDetail.RcvDetail.TaxAmount * itemDetail.RcvDetail.Qty) : ((itemDetail.RcvDetail.NettPrice - prorateHeaderDisc) * itemDetail.RcvDetail.Qty),
                         SrcTrans = "RCV"
                     });
 
@@ -235,7 +235,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     CurrCode = itemData.RcvHeader.CurrCode,
                     Period = itemData.RcvHeader.Date.ToString("yyyyMMdd"),
                     Type = "C",
-                    Amount = itemData.RcvHeader.Total,
+                    Amount = itemData.RcvHeader.IncludeTax ? itemData.RcvHeader.Total - journals.Where(x => x.Code == itemData.RcvHeader.Code && x.Group == 2).Sum(x => x.Amount) : itemData.RcvHeader.Total,
                     SrcTrans = "RCV"
                 });
             }
@@ -1955,42 +1955,48 @@ namespace ERP.Web.API.Domain.Services.Accounting
 
             var currentSM = stockMutations.FirstOrDefault(x => x.WarehouseCode == whCode && x.ItemId == itemId && x.RefDetailId1 == id);
 
-            latestStockValue += firstSM.BaseNettPrice * firstSM.BaseQty;
-            latestQty += firstSM.BaseQty;
-            hpp = latestStockValue / latestQty;
-
-            var listSM = stockMutations.Where(x => x.WarehouseCode == whCode && x.ItemId == itemId && x.Id > firstId && x.Id <= currentSM.Id).OrderBy(x => x.Id).ToList();
-            foreach (var item in listSM)
+            if (firstSM.BaseNettPrice != 0)
             {
-                if (item.Src == "RCV" && item.Src == "SR")
-                {
-                    latestStockValue += item.BaseNettPrice * item.BaseQty;
-                    latestQty += item.BaseQty;
-                }
-                else if (item.Src == "DO")
-                {
-                    var srcTrans = stockMutations.FirstOrDefault(x => x.ItemId == item.ItemId && x.RefCode1 == item.RefCode2);                    
-                    if (srcTrans?.Src == "SR")
-                    {
-                        item.BaseNettPrice = srcTrans.BaseNettPrice;
-                        item.NettPrice = srcTrans.NettPrice;
-                        latestStockValue -= item.BaseNettPrice * item.BaseQty;
-                        latestQty -= item.BaseQty;
-                    }
-                    else
-                    {
-                        item.BaseNettPrice = hpp;
-                        item.NettPrice = (hpp * item.BaseQty) / item.Qty;
-                        latestStockValue -= item.BaseNettPrice * item.BaseQty;
-                        latestQty -= item.BaseQty;
-                    }
-                    _db.StockMutations.Update(item);
-                }
+                latestStockValue += firstSM.BaseNettPrice * firstSM.BaseQty;
+                latestQty += firstSM.BaseQty;
                 hpp = latestStockValue / latestQty;
-            }
 
-            _db.SaveChanges();
-            return hpp * currentSM.BaseQty;
+                var listSM = stockMutations.Where(x => x.WarehouseCode == whCode && x.ItemId == itemId && x.Id > firstId && x.Id <= currentSM.Id).OrderBy(x => x.Id).ToList();
+                foreach (var item in listSM)
+                {
+                    if (item.Src == "RCV" && item.Src == "SR")
+                    {
+                        latestStockValue += item.BaseNettPrice * item.BaseQty;
+                        latestQty += item.BaseQty;
+                    }
+                    else if (item.Src == "DO")
+                    {
+                        var srcTrans = stockMutations.FirstOrDefault(x => x.ItemId == item.ItemId && x.RefCode1 == item.RefCode2);
+                        if (srcTrans?.Src == "SR")
+                        {
+                            item.BaseNettPrice = srcTrans.BaseNettPrice;
+                            item.NettPrice = srcTrans.NettPrice;
+                            latestStockValue -= item.BaseNettPrice * item.BaseQty;
+                            latestQty -= item.BaseQty;
+                        }
+                        else
+                        {
+                            item.BaseNettPrice = hpp;
+                            item.NettPrice = (hpp * item.BaseQty) / item.Qty;
+                            latestStockValue -= item.BaseNettPrice * item.BaseQty;
+                            latestQty -= item.BaseQty;
+                        }
+                        _db.StockMutations.Update(item);
+                    }
+                    hpp = latestStockValue / latestQty;
+                }
+                _db.SaveChanges();
+                return hpp * currentSM.BaseQty;
+            }
+            else
+            {
+                return 0;
+            }
         }
     }
 }
