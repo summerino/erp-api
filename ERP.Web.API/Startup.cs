@@ -35,6 +35,8 @@ using ERP.Web.API.Domain.Services.SystemManagement;
 using ERP.Web.API.Model.Auth;
 using Newtonsoft.Json.Serialization;
 using Swift.Framework;
+using ERP.Web.API.Domain.Interfaces.HumanResources;
+using ERP.Web.API.Domain.Services.HumanResources;
 
 namespace ERP.Web.API
 {
@@ -173,6 +175,9 @@ namespace ERP.Web.API
             services.AddScoped<ITaxService, TaxService>();
             services.AddScoped<IVehicleService, VehicleService>();
             services.AddScoped<IVehicleTypeService, VehicleTypeService>();
+
+            // Human Resource Services
+            services.AddScoped<IAttendanceService, AttendanceService>();
 
             // Inventory services
             services.AddScoped<IAdjustmentService, AdjustmentService>();
