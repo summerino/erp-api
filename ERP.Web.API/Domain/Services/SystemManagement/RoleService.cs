@@ -32,11 +32,14 @@ namespace ERP.Web.API.Domain.Services.SystemManagement
             return data.ToDataSourceResult(skip, take, filter, sort);
         }
 
-        public object GetRoleMenu(int id)
+        public object GetRoleMenu(int id, int? menuId)
         {
-            var data = Db.RoleMenus.Where(x => x.RoleId == id && x.IsActive).Select(x => x.MenuId);
+            var data = Db.RoleMenus.Where(x => x.RoleId == id && x.IsActive);
 
-            return data;
+            if (menuId.HasValue)
+                data = data.Where(x => x.MenuId == menuId);
+
+            return data.Select(x => x.MenuId);
         }
 
         public IEnumerable<RoleMenuAction> GetRoleMenuAction(int id)

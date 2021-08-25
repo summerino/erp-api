@@ -1,11 +1,12 @@
-﻿using ERP.Entity.Accounting;
-using ERP.Web.API.Domain.Interfaces.Accounting;
-using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using ERP.Entity;
+using ERP.Entity.Accounting;
+using ERP.Web.API.Domain.Interfaces.Accounting;
+using ERP.Web.API.Domain.Interfaces.SystemManagement;
+using ERP.Web.API.Model;
 
 namespace ERP.Web.API.Controllers.Accounting
 {
@@ -14,23 +15,28 @@ namespace ERP.Web.API.Controllers.Accounting
     public class JournalReportController : ControllerBase
     {
         private readonly IJournalReportService _jr;
+        private readonly IRoleService _role;
+        private readonly IClaimService _claim;
 
-        public JournalReportController(IJournalReportService jr)
+        private const int MenuId = (int)Menu.JournalReport;
+
+        public JournalReportController(IJournalReportService jr, IRoleService role, IClaimService claim)
         {
             _jr = jr;
+            _role = role;
+            _claim = claim;
         }
 
         [HttpPost("lists")]
-        public List<JournalReportWrapper> Listing(JournalReportModel data)
+        public List<JournalReportWrapper> Listing(JournalReportModel data, int? caller)
         {
             var result = new List<JournalReportWrapper>();
 
-            //if (!_action.GetDatas(CompanyId, RoleId, caller ?? MenuId, "search").Any())
-            //    return result;
+            // Checking role authorization
+            if (!((List<object>) _role.GetRoleMenu(_claim.RoleId, caller ?? MenuId)).Any())
+                return result;
 
-            /*
-            * Get lists
-            */
+            // Get lists
             var records =
                 _jr.GetLists(data.RptBy, data.DateFrom, data.DateTo,
                     data.VouFrom, data.RptDet, data.Src, data.CoaCode, data.Sort).ToList();

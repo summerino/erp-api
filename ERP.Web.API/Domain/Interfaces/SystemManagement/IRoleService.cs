@@ -11,7 +11,7 @@ namespace ERP.Web.API.Domain.Interfaces.SystemManagement
         DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
             List<int> category, string search);
 
-        object GetRoleMenu(int id);
+        object GetRoleMenu(int id, int? menuId = null);
 
         IEnumerable<RoleMenuAction> GetRoleMenuAction(int id);
 

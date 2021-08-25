@@ -113,6 +113,9 @@
         BeginningBalanceAccountReceivable = 79,
         BeginningBalanceDebitMemo = 89,
         BeginningBalanceCreditMemo = 90,
+        JournalReport = 100,
+        GeneralLedgerReport = 104,
+        TrialBalanceReport = 105,
         Posting = 86,
         ClosingMonth = 88,
 

@@ -27,8 +27,8 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 if (rptBy.ToUpper() == "N")
                     dateFrom = dateTo = null;
 
-                if (rptBy.ToUpper() == "DT")
-                    vouFrom = null;
+                //if (rptBy.ToUpper() == "DT")
+                //    vouFrom = null;
 
                 if (!string.IsNullOrEmpty(vouFrom))
                 {
