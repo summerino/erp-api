@@ -104,6 +104,7 @@ namespace ERP.Entity
 
         // Human Resource entities
         public DbSet<Attendance> Attendances { get; set; }
+        public DbSet<VwAttendanceReport> VwAttendanceReports { get; set; }
 
         // Inventory entities
         public DbSet<AdjustmentHeader> AdjustmentHeaders { get; set; }
@@ -683,6 +684,11 @@ namespace ERP.Entity
             modelBuilder.Entity<VwEmployee>()
                 .HasNoKey()
                 .ToView("vwEmployee", Schema.General);
+
+            // Human Resources
+            modelBuilder.Entity<VwAttendanceReport>()
+                .HasNoKey()
+                .ToView("VwAttendanceReport", Schema.HumanResource);
 
             // Payment Term model
             modelBuilder.Entity<VwPaymentTerm>()

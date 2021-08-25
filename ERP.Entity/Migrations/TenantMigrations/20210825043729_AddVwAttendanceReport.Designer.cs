@@ -4,14 +4,16 @@ using ERP.Entity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ERP.Entity.Migrations.TenantMigrations
 {
     [DbContext(typeof(TenantContext))]
-    partial class TenantContextModelSnapshot : ModelSnapshot
+    [Migration("20210825043729_AddVwAttendanceReport")]
+    partial class AddVwAttendanceReport
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -720,59 +722,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.HasIndex("TypeCode");
 
                     b.ToTable("Journal", "Accounting");
-                });
-
-            modelBuilder.Entity("ERP.Entity.Accounting.ReportJournalResult", b =>
-                {
-                    b.Property<string>("CoaCode")
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
-
-                    b.Property<string>("CoaName")
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
-
-                    b.Property<string>("Code")
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
-
-                    b.Property<decimal>("CreditOc")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("CurrCode")
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
-
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("datetime2");
-
-                    b.Property<decimal>("DebetOc")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("Notes")
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
-
-                    b.Property<decimal>("Rate")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("RefCode1")
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
-
-                    b.Property<string>("RefCode2")
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
-
-                    b.Property<string>("RefCode3")
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
-
-                    b.Property<string>("RefCode4")
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
-
-                    b.ToTable("ReportJournalResult", t => t.ExcludeFromMigrations());
                 });
 
             modelBuilder.Entity("ERP.Entity.Accounting.VwBeginningBalanceAP", b =>
@@ -4698,9 +4647,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.Property<decimal>("InvOut")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<bool>("IsBold")
-                        .HasColumnType("bit");
-
                     b.Property<int>("ItemId")
                         .HasColumnType("int");
 
@@ -5660,10 +5606,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
 
                     b.Property<int>("ItemId")
                         .HasColumnType("int");
-
-                    b.Property<string>("ItemInitial")
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
 
                     b.Property<string>("ItemName")
                         .IsUnicode(false)
