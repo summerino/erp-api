@@ -39,9 +39,9 @@ namespace ERP.Web.API.Domain.Services.Finance
             {
                 dataCBHeader = dataCBHeader.Where(x => x.Date >= Convert.ToDateTime(startDate) && x.Date <= Convert.ToDateTime(endDate)).ToList();
             }
-            else if (!string.IsNullOrEmpty(startDate))
+            else if (!string.IsNullOrEmpty(endDate))
             {
-                dataCBHeader = dataCBHeader.Where(x => x.Date >= Convert.ToDateTime(startDate)).ToList();
+                dataCBHeader = dataCBHeader.Where(x => x.Date <= Convert.ToDateTime(endDate)).ToList();
             }
 
             if (!string.IsNullOrEmpty(coaCode))
