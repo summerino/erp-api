@@ -107,6 +107,36 @@ namespace ERP.Web.API.Domain.Services.Accounting
             return result;
         }
 
+        public SaveResult PostingEndYearJournal(JournalRequest data)
+        {
+            var result = new SaveResult(false);
+
+            using var transaction = _db.Database.BeginTransaction();
+            try
+            {
+                var removed = _db.Journals.Where(x => x.Code == "ENDYEAR-" + data.Date.Year.ToString()).ToList();
+                if (removed != null)
+                    _db.RemoveRange(removed);
+
+                var journalEY = ProcessEndYearJournal(data.Date);
+                if (journalEY != null)
+                    _db.AddRange(journalEY);
+
+                _db.SaveChanges();
+
+                transaction.Commit();
+            }
+            catch (Exception ex)
+            {
+                result.Message = ex.InnerException?.Message ?? ex.Message;
+                return result;
+            }
+
+            result.Success = true;
+            result.Message = "Posting jurnal akhir tahun selesai.";
+            return result;
+        }
+
         private IEnumerable<Journal> ProcessPurchaseJournal(DateTime dateTime, List<SystemParameter> systemParam, List<Item> items, List<Tax> taxes)
         {
             List<Journal> journals = new();
@@ -1859,6 +1889,57 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     Amount = journals.Where(x => x.Code == "BB-AR-" + startDate.ToString("yyyyMMdd")).Sum(x => x.Amount),
                     SrcTrans = "BB_INVT"
                 });
+            }
+            return journals;
+        }
+
+        private IEnumerable<Journal> ProcessEndYearJournal(DateTime dateTime)
+        {
+            List<Journal> journals = new();
+            if (dateTime.Month == 12)
+            {
+                var nonSpecialAcc = _db.Journals.Where(x => Convert.ToInt32(x.CoaCode) < 400000).ToList();
+                var holdAmount = nonSpecialAcc.Where(x => x.Type == "D").Sum(x => x.Amount) - nonSpecialAcc.Where(x => x.Type == "C").Sum(x => x.Amount);
+
+                var specialAcc = _db.Journals.Where(x => Convert.ToInt32(x.CoaCode) >= 400000).ToList();
+
+                journals.Add(new Journal
+                {
+                    Code = "ENDYEAR-" + dateTime.Year.ToString(),
+                    LineNo = 1,
+                    Date = new DateTime(dateTime.Year, dateTime.Month, DateTime.DaysInMonth(dateTime.Year, dateTime.Month)),
+                    CoaCode = "",
+                    TypeCode = "ADJ_END_YEAR",
+                    Notes = "Laba Ditahan",
+                    RefCode1 = "",
+                    Group = 1,
+                    CurrCode = "IDR",
+                    Period = new DateTime(dateTime.Year, dateTime.Month, DateTime.DaysInMonth(dateTime.Year, dateTime.Month)).ToString("yyyyMMdd"),
+                    Type = holdAmount > 0 ? "D" : "C",
+                    Amount = holdAmount,
+                    SrcTrans = "END_YEAR"
+                });
+
+                short i = 0;
+                foreach (var item in specialAcc)
+                {
+                    journals.Add(new Journal
+                    {
+                        Code = "ENDYEAR-" + dateTime.Year.ToString(),
+                        LineNo = i++,
+                        Date = new DateTime(dateTime.Year, dateTime.Month, DateTime.DaysInMonth(dateTime.Year, dateTime.Month)),
+                        CoaCode = item.CoaCode,
+                        TypeCode = "ADJ_END_YEAR",
+                        Notes = item.Notes,
+                        RefCode1 = "",
+                        Group = 2,
+                        CurrCode = "IDR",
+                        Period = new DateTime(dateTime.Year, dateTime.Month, DateTime.DaysInMonth(dateTime.Year, dateTime.Month)).ToString("yyyyMMdd"),
+                        Type = item.Type,
+                        Amount = item.Amount,
+                        SrcTrans = "END_YEAR"
+                    });
+                }
             }
             return journals;
         }
