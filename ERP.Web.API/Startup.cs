@@ -149,6 +149,7 @@ namespace ERP.Web.API
             services.AddScoped<IBeginningBalanceCreditMemoService, BeginningBalanceCreditMemoService>();
             services.AddScoped<IClosingMonthService, ClosingMonthService>();
             services.AddScoped<IJournalReportService, JournalReportService>();
+            services.AddScoped<IGeneralLedgerReportService, GeneralLedgerReportService>();
 
             // Asset Management services
             services.AddScoped<IAssetTypeService, AssetTypeService>();

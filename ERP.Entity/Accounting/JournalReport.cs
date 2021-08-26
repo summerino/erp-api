@@ -47,6 +47,12 @@ namespace ERP.Entity.Accounting
 
         public string Src { get; set; }
 
+        public string Acc { get; set; }
+
+        public string Acc2 { get; set; }
+
+        public string Curr { get; set; }
+
         public string Sort { get; set; }
 
         public string DateFrom { get; set; }
@@ -77,6 +83,8 @@ namespace ERP.Entity.Accounting
         public string DebetOc { get; set; }
 
         public string CreditOc { get; set; }
+
+        public string EndBalOc { get; set; }
 
         public byte IsBold { get; set; }
     }
