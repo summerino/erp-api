@@ -22,9 +22,8 @@ namespace ERP.Web.API.Domain.Services.Sales
                             from General.Customer cs
                             left join Sales.SalesDeliveryHeader dlv on dlv.CustCode = cs.Code
                             left join Sales.SalesInvoiceDetail invD on invD.DOCode = dlv.Code
-                            left join Sales.SalesInvoiceHeader inv on inv.Code = invD.Code
-                            Where dlv.Mark IN('A', 'INV') and inv.Mark IN('A', 'PP', 'CMP')
-                            Group by cs.Code, cs.Initial, cs.Name").ToList();
+                            left join Sales.SalesInvoiceHeader inv on inv.Code = invD.Code and inv.Mark IN('A', 'PP', 'CMP')
+                            Where dlv.Mark IN('A', 'INV') Group by cs.Code, cs.Initial, cs.Name").ToList();
 
             var dlvData = _db.ReportByDeliveries.FromSqlRaw(@"select dlv.Date, inv.DueDate, dlv.Code, dlv.TransCode as SrcCode, inv.Code as InvCode, sls.Initial as SlsInitial, sls.FirstName as SlsName, dlv.CustCode, sp.[Name] as CustName, dlv.Total as TotalAmount, cast(0 as decimal) as PaidAmount, cast(0 as decimal) as RemainderAmount
                             from Sales.SalesDeliveryHeader dlv
@@ -32,9 +31,8 @@ namespace ERP.Web.API.Domain.Services.Sales
                             left join General.Employee sls on sls.Id = so.SalesBy
                             left join General.Customer sp on sp.Code = dlv.CustCode
                             left join Sales.SalesInvoiceDetail invD on invD.DOCode = dlv.Code
-                            left join Sales.SalesInvoiceHeader inv on inv.Code = invD.Code
-                            Where dlv.Mark IN('A','INV') and inv.Mark IN('A','PP','CMP')" + (slsId > 0 ? $" and so.SalesBy = {slsId} " : " ") +
-                            "group by dlv.Date, inv.DueDate, dlv.Code, dlv.TransCode, inv.Code, sls.Initial, sls.FirstName, dlv.CustCode, sp.[Name], dlv.Total").ToList();
+                            left join Sales.SalesInvoiceHeader inv on inv.Code = invD.Code and inv.Mark IN('A','PP','CMP')
+                            Where dlv.Mark IN('A','INV')" + (slsId > 0 ? $" and so.SalesBy = {slsId} " : " ") + "").ToList();
 
             var cbData = _db.GeneralCashBankHeaders.Where(x => x.Mark != "V" && x.Date <= Convert.ToDateTime(date)).ToList();
 
