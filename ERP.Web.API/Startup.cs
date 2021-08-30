@@ -1,5 +1,6 @@
 using System;
 using System.Text;
+using Bold.Licensing;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -37,6 +38,8 @@ using Newtonsoft.Json.Serialization;
 using Swift.Framework;
 using ERP.Web.API.Domain.Interfaces.HumanResources;
 using ERP.Web.API.Domain.Services.HumanResources;
+using ERP.Web.API.Domain.Interfaces.Catalog;
+using ERP.Web.API.Domain.Services.Catalog;
 
 namespace ERP.Web.API
 {
@@ -96,6 +99,9 @@ namespace ERP.Web.API
             // Add http context accessor service
             services.AddHttpContextAccessor();
 
+            // Add memory cache service
+            services.AddMemoryCache();
+
             // Add authorization service
             services.AddAuthorization(options =>
             {
@@ -133,6 +139,7 @@ namespace ERP.Web.API
             // Add application service
             // Core services
             services.AddScoped<IAuthorizationHandler, UserSessionHandler>();
+            services.AddScoped<ITenantService, TenantService>();
             services.AddScoped<IShardingService, ShardingService>();
             services.AddScoped<IClaimService, ClaimService>();
             services.AddScoped<IAuthService, AuthService>();
@@ -248,6 +255,9 @@ namespace ERP.Web.API
             app.UseCors();
             app.UseAuthentication();
             app.UseAuthorization();
+
+            //Register Bold license
+            BoldLicenseProvider.RegisterLicense(Configuration["BoldLic"]);
 
             app.UseEndpoints(endpoints =>
             {
