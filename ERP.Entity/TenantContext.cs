@@ -51,6 +51,7 @@ namespace ERP.Entity
         public DbSet<Journal> Journals { get; set; }
         public DbSet<ReportJournalResult> ReportJournalResults { get; set; }
         public DbSet<GeneralLedgerResult> GeneralLedgerResults { get; set; }
+        public DbSet<TrialBalanceResult> TrialBalanceResults { get; set; }
 
         // Asset Management entities
         public DbSet<FixedAsset> FixedAssets { get; set; }
@@ -443,6 +444,11 @@ namespace ERP.Entity
             modelBuilder.Entity<GeneralLedgerResult>()
                 .HasNoKey()
                 .ToTable("GeneralLedgerResult", t => t.ExcludeFromMigrations());
+
+            // Trial Balance Report model
+            modelBuilder.Entity<TrialBalanceResult>()
+                .HasNoKey()
+                .ToTable("TrialBalanceResult", t => t.ExcludeFromMigrations());
 
             // Asset Management entities
             // Asset Type model
