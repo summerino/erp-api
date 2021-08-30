@@ -23,7 +23,7 @@ namespace ERP.Entity.Purchase
     {
         public DateTime Date { get; set; }
 
-        public DateTime DueDate { get; set; }
+        public DateTime? DueDate { get; set; }
 
         public string Code { get; set; }
 
