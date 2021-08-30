@@ -33,7 +33,7 @@ namespace ERP.Web.API.Controllers.Accounting
             var result = new List<JournalReportWrapper>();
 
             // Checking role authorization
-            if (!((List<object>) _role.GetRoleMenu(_claim.RoleId, caller ?? MenuId)).Any())
+            if (!((IEnumerable<int>)_role.GetRoleMenu(_claim.RoleId, caller ?? MenuId)).Any())
                 return result;
 
             // Get lists

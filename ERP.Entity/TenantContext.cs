@@ -50,6 +50,7 @@ namespace ERP.Entity
         public DbSet<VwGeneralJournalHeader> VwGeneralJournalHeaders { get; set; }
         public DbSet<Journal> Journals { get; set; }
         public DbSet<ReportJournalResult> ReportJournalResults { get; set; }
+        public DbSet<GeneralLedgerResult> GeneralLedgerResults { get; set; }
 
         // Asset Management entities
         public DbSet<FixedAsset> FixedAssets { get; set; }
@@ -437,6 +438,11 @@ namespace ERP.Entity
             modelBuilder.Entity<ReportJournalResult>()
                 .HasNoKey()
                 .ToTable("ReportJournalResult", t => t.ExcludeFromMigrations());
+
+            // General ledger Report model
+            modelBuilder.Entity<GeneralLedgerResult>()
+                .HasNoKey()
+                .ToTable("GeneralLedgerResult", t => t.ExcludeFromMigrations());
 
             // Asset Management entities
             // Asset Type model
