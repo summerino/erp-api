@@ -26,7 +26,7 @@ namespace ERP.Web.API.Domain.Services.Inventory
 
 			var smData = _db.ReportByStockMutations.FromSqlRaw(qsetUnit + @"SELECT sm.WarehouseCode, sm.ItemId, sm.Date, sm.RefCode1 as TransCode, 
 					CASE 
-					WHEN sm.Src IN ('DO','RCV') AND LEFT(sm.RefCode1,2) = 'DI' THEN 'Penjualan Langsung'
+					WHEN sm.Src = 'DO' AND LEFT(sm.RefCode1,2) = 'DI' THEN 'Penjualan Langsung'
 					WHEN sm.Src = 'RCV' THEN 'Penerimaan'
 					WHEN sm.Src = 'DO' THEN 'Surat Jalan'
 					WHEN sm.Src = 'TS' THEN 'Transfer Persediaan'
@@ -130,6 +130,8 @@ namespace ERP.Web.API.Domain.Services.Inventory
 				smData = smData.Where(x => x.Date >= Convert.ToDateTime(startDate)).ToList();
 			}
 
+			smData = RemoveVoidSM(smData);
+
 			if(itemId > 0)
             {
 				itemData = itemData.Where(x => x.Id == itemId).ToList();
@@ -212,5 +214,21 @@ namespace ERP.Web.API.Domain.Services.Inventory
 				return whData.AsQueryable().ToDataSourceResult(0, whData.Count(), null, sorts);
 			}
 		}
+
+		private List<ReportByStockMutation> RemoveVoidSM(List<ReportByStockMutation> data)
+        {
+			var result = data;
+			var listVoid = new List<string>();
+
+			listVoid.AddRange(_db.PurchaseReceiveHeaders.Where(x => x.Mark == "V").Select(x => x.Code).ToList());
+			listVoid.AddRange(_db.SalesDeliveryHeaders.Where(x => x.Mark == "V").Select(x => x.Code).ToList());
+			listVoid.AddRange(_db.AdjustmentHeaders.Where(x => x.Mark == "V").Select(x => x.Code).ToList());
+			listVoid.AddRange(_db.TransferStockHeaders.Where(x => x.Mark == "V").Select(x => x.Code).ToList());
+
+			result = result.Where(x => !listVoid.Contains(x.TransCode)).ToList();
+			var removed = result.Where(x => listVoid.Contains(x.TransCode)).ToList();
+
+			return result;
+        }
     }
 }
