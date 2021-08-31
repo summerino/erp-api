@@ -88,9 +88,24 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 if (journalDFA != null)
                     _db.AddRange(journalDFA);
 
-                var journalEY = ProcessEndYearAssetJournal(data.Date, systemParam, journalDFA);
-                if (journalEY != null)
-                    _db.AddRange(journalEY);
+                var journalEYAS = ProcessEndYearAssetJournal(data.Date, systemParam, journalDFA);
+                if (journalEYAS != null)
+                    _db.AddRange(journalEYAS);
+
+                var journalADJ = ProcessAdjustmentJournal(data.Date, systemParam);
+                if (journalADJ != null)
+                    _db.AddRange(journalADJ);
+
+                if (data.Date.Month == 12)
+                {
+                    var removedEY = _db.Journals.Where(x => x.Code == "ENDYEAR-" + data.Date.Year.ToString()).ToList();
+                    if (removedEY != null)
+                        _db.RemoveRange(removedEY);
+
+                    var journalEY = ProcessEndYearJournal(data.Date);
+                    if (journalEY != null)
+                        _db.AddRange(journalEY);
+                }
 
                 _db.SaveChanges();
 
@@ -107,43 +122,13 @@ namespace ERP.Web.API.Domain.Services.Accounting
             return result;
         }
 
-        public SaveResult PostingEndYearJournal(JournalRequest data)
-        {
-            var result = new SaveResult(false);
-
-            using var transaction = _db.Database.BeginTransaction();
-            try
-            {
-                var removed = _db.Journals.Where(x => x.Code == "ENDYEAR-" + data.Date.Year.ToString()).ToList();
-                if (removed != null)
-                    _db.RemoveRange(removed);
-
-                var journalEY = ProcessEndYearJournal(data.Date);
-                if (journalEY != null)
-                    _db.AddRange(journalEY);
-
-                _db.SaveChanges();
-
-                transaction.Commit();
-            }
-            catch (Exception ex)
-            {
-                result.Message = ex.InnerException?.Message ?? ex.Message;
-                return result;
-            }
-
-            result.Success = true;
-            result.Message = "Posting jurnal akhir tahun selesai.";
-            return result;
-        }
-
         private IEnumerable<Journal> ProcessPurchaseJournal(DateTime dateTime, List<SystemParameter> systemParam, List<Item> items, List<Tax> taxes)
         {
             List<Journal> journals = new();
 
             var RcvData = (from rcvheader in _db.PurchaseReceiveHeaders
                            join supplier in _db.Suppliers on rcvheader.SupCode equals supplier.Code
-                           where rcvheader.Date.Month == dateTime.Month && rcvheader.Date.Year == dateTime.Year && rcvheader.SrcTrans == 1
+                           where rcvheader.Date.Month == dateTime.Month && rcvheader.Date.Year == dateTime.Year && rcvheader.SrcTrans == 1 && rcvheader.Mark != "V"
                            select new { RcvHeader = rcvheader, Supplier = supplier }).ToList();
 
             foreach (var itemData in RcvData)
@@ -249,7 +234,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
 
             var DlvData = (from dlvheader in _db.SalesDeliveryHeaders
                            join customer in _db.Customers on dlvheader.CustCode equals customer.Code
-                           where dlvheader.Date.Month == dateTime.Month && dlvheader.Date.Year == dateTime.Year && dlvheader.SrcTrans == 1
+                           where dlvheader.Date.Month == dateTime.Month && dlvheader.Date.Year == dateTime.Year && dlvheader.SrcTrans == 1 && dlvheader.Mark != "V"
                            select new { Dlvheader = dlvheader, Customer = customer }).ToList();
 
             var stockMutations = _db.StockMutations.Where(x => new[] { "RCV", "DO", "SR" }.Contains(x.Src));
@@ -279,7 +264,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 short Nhpp = 0;
                 foreach (var itemDetail in DlvDetailData)
                 {
-                    var resultHpp = CalculateHPP(stockMutations, itemData.Dlvheader.WarehouseCode, itemDetail.DlvDetail.ItemId, itemDetail.DlvDetail.Id);
+                    var smData = _db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.DlvDetail.Id && x.RefCode1 == itemDetail.DlvDetail.Code);
                     var prorateHeaderDisc = itemData.Dlvheader.FinalDisc > 0 ? (itemData.Dlvheader.FinalDisc * itemDetail.DlvDetail.NettPrice) / DlvDetailData.Sum(x => x.DlvDetail.NettPrice) : 0;
 
                     //Discount - Diskon
@@ -339,7 +324,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                         CurrCode = itemData.Dlvheader.CurrCode,
                         Period = itemData.Dlvheader.Date.ToString("yyyyMMdd"),
                         Type = "C",
-                        Amount = resultHpp,
+                        Amount = smData.BaseNettPrice * smData.BaseQty,
                         SrcTrans = "DLV"
                     });
 
@@ -358,7 +343,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                         CurrCode = itemData.Dlvheader.CurrCode,
                         Period = itemData.Dlvheader.Date.ToString("yyyyMMdd"),
                         Type = "D",
-                        Amount = resultHpp,
+                        Amount = smData.BaseNettPrice * smData.BaseQty,
                         SrcTrans = "DLV"
                     });
 
@@ -494,7 +479,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
         private IEnumerable<Journal> ProcessCashBankJournal(DateTime dateTime, List<SystemParameter> systemParam)
         {
             List<Journal> journals = new();
-            var cashBankData = _db.GeneralCashBankHeaders.Where(x => x.Date.Month == dateTime.Month && x.Date.Year == dateTime.Year).ToList();
+            var cashBankData = _db.GeneralCashBankHeaders.Where(x => x.Date.Month == dateTime.Month && x.Date.Year == dateTime.Year && x.Mark != "V").ToList();
             foreach (var itemData in cashBankData)
             {
                 var cashBankDetailData = _db.GeneralCashBankDetails.Where(x => x.Code == itemData.Code).ToList();
@@ -777,7 +762,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
             List<Journal> journals = new();
             var RtnData = (from rtnheader in _db.PurchaseReturnHeaders
                            join supplier in _db.Suppliers on rtnheader.SupCode equals supplier.Code
-                           where rtnheader.Date.Month == dateTime.Month && rtnheader.Date.Year == dateTime.Year
+                           where rtnheader.Date.Month == dateTime.Month && rtnheader.Date.Year == dateTime.Year && rtnheader.Mark != "V"
                            select new { RtnHeader = rtnheader, Supplier = supplier }).ToList();
 
             foreach (var itemData in RtnData)
@@ -985,7 +970,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
             List<Journal> journals = new();
             var RtnData = (from rtnheader in _db.SalesReturnHeaders
                            join customer in _db.Customers on rtnheader.CustCode equals customer.Code
-                           where rtnheader.Date.Month == dateTime.Month && rtnheader.Date.Year == dateTime.Year
+                           where rtnheader.Date.Month == dateTime.Month && rtnheader.Date.Year == dateTime.Year && rtnheader.Mark != "V"
                            select new { RtnHeader = rtnheader, Customer = customer }).ToList();
 
             var stockMutations = _db.StockMutations.Where(x => new[] { "RCV", "DO", "SR" }.Contains(x.Src));
@@ -1272,7 +1257,6 @@ namespace ERP.Web.API.Domain.Services.Accounting
                         short k = 0;
                         foreach (var itemDetail in DlvDetailData)
                         {
-                            var resultHpp = CalculateHPP(stockMutations, itemDlvData.DlvHeader.WarehouseCode, itemDetail.DlvDetail.ItemId, itemDetail.DlvDetail.Id);
                             //Inventory using COGS for Amount
                             journals.Add(new Journal
                             {
@@ -1575,7 +1559,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
             List<Journal> journals = new();
             var expeditionData = (from expheader in _db.ExpeditionInvoiceHeaders
                                   join supplier in _db.Suppliers on expheader.SupCode equals supplier.Code
-                                  where expheader.Date.Month == dateTime.Month && expheader.Date.Year == dateTime.Year
+                                  where expheader.Date.Month == dateTime.Month && expheader.Date.Year == dateTime.Year && expheader.Mark != "V"
                                   select new { ExpHeader = expheader, Supplier = supplier }).ToList();
             short i = 0;
             short j = 0;
@@ -1626,7 +1610,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
             var fixedAssetData = (from fixedAsset in _db.FixedAssets
                                   join supplier in _db.Suppliers on fixedAsset.SupCode equals supplier.Code
                                   join assetType in _db.AssetTypes on fixedAsset.TypeId equals assetType.Id
-                                  where fixedAsset.PurchaseDate.Month == dateTime.Month && fixedAsset.PurchaseDate.Year == dateTime.Year
+                                  where fixedAsset.PurchaseDate.Month == dateTime.Month && fixedAsset.PurchaseDate.Year == dateTime.Year && fixedAsset.Mark != "V"
                                   select new { FixedAsset = fixedAsset, Supplier = supplier, AssetType = assetType }).ToList();
             short i = 0;
             foreach (var itemData in fixedAssetData)
@@ -1676,7 +1660,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                                   join supplier in _db.Suppliers on fixedAsset.SupCode equals supplier.Code
                                   join assetType in _db.AssetTypes on fixedAsset.TypeId equals assetType.Id
                                   where fixedAsset.DepreciationMethod == 2 && fixedAsset.StartDepreciateOn.Month <= dateTime.Month &&
-                                  fixedAsset.StartDepreciateOn.Month + fixedAsset.EstimatedLife >= dateTime.Month && fixedAsset.PurchaseDate.Year == dateTime.Year
+                                  fixedAsset.StartDepreciateOn.Month + fixedAsset.EstimatedLife >= dateTime.Month && fixedAsset.PurchaseDate.Year == dateTime.Year && fixedAsset.Mark != "V"
                                   select new { FixedAsset = fixedAsset, Supplier = supplier, AssetType = assetType }).ToList();
 
             foreach (var itemData in fixedAssetData)
@@ -1944,59 +1928,109 @@ namespace ERP.Web.API.Domain.Services.Accounting
             return journals;
         }
 
-        private decimal CalculateHPP(IEnumerable<StockMutation> stockMutations, string whCode, int itemId, long id)
+        private IEnumerable<Journal> ProcessAdjustmentJournal(DateTime dateTime, List<SystemParameter> systemParam)
         {
-            decimal latestQty = 0;
-            decimal latestStockValue = 0;
-            decimal hpp = 0;
+            List<Journal> journals = new();
 
-            var firstId = stockMutations.Where(x => x.WarehouseCode == whCode && x.ItemId == itemId).Min(x => x.Id);
-            var firstSM = stockMutations.FirstOrDefault(x => x.Id == firstId);
+            var adjData = _db.AdjustmentHeaders.Where(x => x.Date.Month == dateTime.Month && x.Date.Year == dateTime.Year && x.Mark != "V").ToList();
 
-            var currentSM = stockMutations.FirstOrDefault(x => x.WarehouseCode == whCode && x.ItemId == itemId && x.RefDetailId1 == id);
-
-            if (firstSM.BaseNettPrice != 0)
+            short i = 0;
+            short j = 0;
+            foreach (var itemData in adjData)
             {
-                latestStockValue += firstSM.BaseNettPrice * firstSM.BaseQty;
-                latestQty += firstSM.BaseQty;
-                hpp = latestStockValue / latestQty;
+                var adjDetailData = (from adjdetail in _db.AdjustmentDetails
+                                join item in _db.Items on adjdetail.ItemId equals item.Id
+                                where adjdetail.Code == itemData.Code
+                                select new { AdjDetail = adjdetail, Item = item }).ToList();
 
-                var listSM = stockMutations.Where(x => x.WarehouseCode == whCode && x.ItemId == itemId && x.Id > firstId && x.Id <= currentSM.Id).OrderBy(x => x.Id).ToList();
-                foreach (var item in listSM)
+                short k = 0;
+                short l = 0;
+                foreach (var itemDetail in adjDetailData)
                 {
-                    if (item.Src == "RCV" && item.Src == "SR")
+                    if (itemDetail.AdjDetail.QtyAdjust > itemDetail.AdjDetail.QtyOnHand)
                     {
-                        latestStockValue += item.BaseNettPrice * item.BaseQty;
-                        latestQty += item.BaseQty;
+                        var qty = (itemDetail.AdjDetail.QtyAdjust - itemDetail.AdjDetail.QtyOnHand);
+                        journals.Add(new Journal
+                        {
+                            Code = itemData.Code,
+                            LineNo = ++k,
+                            Date = itemData.Date,
+                            CoaCode = systemParam.FirstOrDefault(x => x.Code == "INVENTORY_COA")?.Value ?? "",
+                            TypeCode = "ADJ_DT",
+                            Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_ADJ_PLUS")?.Value ?? ""} {itemDetail.Item.Initial}").Trim(),
+                            RefCode1 = itemDetail.Item.Initial,
+                            Group = 1,
+                            CurrCode = "IDR",
+                            Period = itemData.Date.ToString("yyyyMMdd"),
+                            Type = "D",
+                            Amount = qty * itemDetail.AdjDetail.COGS,
+                            SrcTrans = "ADJ"
+                        });
                     }
-                    else if (item.Src == "DO")
+                    else if (itemDetail.AdjDetail.QtyOnHand > itemDetail.AdjDetail.QtyAdjust)
                     {
-                        var srcTrans = stockMutations.FirstOrDefault(x => x.ItemId == item.ItemId && x.RefCode1 == item.RefCode2);
-                        if (srcTrans?.Src == "SR")
+                        var qty = (itemDetail.AdjDetail.QtyOnHand - itemDetail.AdjDetail.QtyAdjust);
+                        journals.Add(new Journal
                         {
-                            item.BaseNettPrice = srcTrans.BaseNettPrice;
-                            item.NettPrice = srcTrans.NettPrice;
-                            latestStockValue -= item.BaseNettPrice * item.BaseQty;
-                            latestQty -= item.BaseQty;
-                        }
-                        else
-                        {
-                            item.BaseNettPrice = hpp;
-                            item.NettPrice = (hpp * item.BaseQty) / item.Qty;
-                            latestStockValue -= item.BaseNettPrice * item.BaseQty;
-                            latestQty -= item.BaseQty;
-                        }
-                        _db.StockMutations.Update(item);
+                            Code = itemData.Code,
+                            LineNo = ++l,
+                            Date = itemData.Date,
+                            CoaCode = systemParam.FirstOrDefault(x => x.Code == "INVENTORY_COA")?.Value ?? "",
+                            TypeCode = "ADJ_DT",
+                            Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_ADJ_MINUS")?.Value ?? ""} {itemDetail.Item.Initial}").Trim(),
+                            RefCode1 = itemDetail.Item.Initial,
+                            Group = 2,
+                            CurrCode = "IDR",
+                            Period = itemData.Date.ToString("yyyyMMdd"),
+                            Type = "C",
+                            Amount = qty * itemDetail.AdjDetail.COGS,
+                            SrcTrans = "ADJ"
+                        });
                     }
-                    hpp = latestStockValue / latestQty;
                 }
-                _db.SaveChanges();
-                return hpp * currentSM.BaseQty;
+
+                if(journals.Where(x => x.Group == 1).Any())
+                {
+                    journals.Add(new Journal
+                    {
+                        Code = itemData.Code,
+                        LineNo = ++i,
+                        Date = itemData.Date,
+                        CoaCode = systemParam.FirstOrDefault(x => x.Code == "OTH_INCOME_COA")?.Value ?? "",
+                        TypeCode = "ADJ_INCOME",
+                        Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_OTH_INCOME")?.Value ?? ""}").Trim(),
+                        RefCode1 = "",
+                        Group = 3,
+                        CurrCode = "IDR",
+                        Period = itemData.Date.ToString("yyyyMMdd"),
+                        Type = "C",
+                        Amount = journals.Where(x => x.Code == itemData.Code && x.Group == 1).Sum(x => x.Amount),
+                        SrcTrans = "ADJ"
+                    });
+                }
+
+                if (journals.Where(x => x.Group == 2).Any())
+                {
+                    journals.Add(new Journal
+                    {
+                        Code = itemData.Code,
+                        LineNo = ++j,
+                        Date = itemData.Date,
+                        CoaCode = systemParam.FirstOrDefault(x => x.Code == "OTH_EXPENSE_COA")?.Value ?? "",
+                        TypeCode = "ADJ_COST",
+                        Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_OTH_EXPENSE")?.Value ?? ""}").Trim(),
+                        RefCode1 = "",
+                        Group = 4,
+                        CurrCode = "IDR",
+                        Period = itemData.Date.ToString("yyyyMMdd"),
+                        Type = "D",
+                        Amount = journals.Where(x => x.Code == itemData.Code && x.Group == 2).Sum(x => x.Amount),
+                        SrcTrans = "ADJ"
+                    });
+                }
             }
-            else
-            {
-                return 0;
-            }
+
+            return journals;
         }
     }
 }

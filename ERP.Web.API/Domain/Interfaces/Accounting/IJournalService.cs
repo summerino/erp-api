@@ -7,6 +7,5 @@ namespace ERP.Web.API.Domain.Interfaces.Accounting
     {
         SaveResult PostingJournal(JournalRequest data);
 
-        SaveResult PostingEndYearJournal(JournalRequest data);
     }
 }
