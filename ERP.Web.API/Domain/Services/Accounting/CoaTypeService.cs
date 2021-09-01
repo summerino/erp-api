@@ -74,6 +74,13 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 return result;
             }
 
+            //Check if type is cash bank
+            if (data.Id == 2)
+            {
+                result.Message = "Tipe akun kas & bank tidak dapat diubah.";
+                return result;
+            }
+
             // Update data
             Db.CoaTypes.Update(data);
             Db.Entry(data).Property(e => e.Id).IsModified = false;
@@ -106,6 +113,13 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 if (Db.Coas.Any(x => x.TypeId == data.Id))
                 {
                     result.Message = "Tidak bisa menghapus data tipe akun karena telah digunakan pada data akun.";
+                    return result;
+                }
+
+                //Check if type is cash bank
+                if (id == 2)
+                {
+                    result.Message = "Tipe akun kas & bank tidak dapat dihapus.";
                     return result;
                 }
 
