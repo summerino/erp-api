@@ -127,7 +127,10 @@
         CompanyProfile = 75,
         User = 51,
         Role = 52,
-        Parameter = 73
+        Parameter = 73,
+
+        // Mobile Sales
+        MobileReason = 108
     }
 
     public static class ApprovalType

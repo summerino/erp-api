@@ -40,6 +40,8 @@ using ERP.Web.API.Domain.Interfaces.HumanResources;
 using ERP.Web.API.Domain.Services.HumanResources;
 using ERP.Web.API.Domain.Interfaces.Catalog;
 using ERP.Web.API.Domain.Services.Catalog;
+using ERP.Web.API.Domain.Interfaces.MobileSales;
+using ERP.Web.API.Domain.Services.MobileSales;
 
 namespace ERP.Web.API
 {
@@ -202,6 +204,9 @@ namespace ERP.Web.API
             services.AddScoped<IConsigneeService, ConsigneeService>();
             services.AddScoped<ISMReportService, SMReportService>();
             services.AddScoped<IBeginningBalanceStockService, BeginningBalanceStockService>();
+
+            // Mobile Sales services
+            services.AddScoped<IMobileReasonService, MobileReasonService>();
 
             // Purchase services
             services.AddScoped<IDebitMemoService, DebitMemoService>();

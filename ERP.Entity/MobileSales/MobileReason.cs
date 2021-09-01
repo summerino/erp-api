@@ -19,4 +19,17 @@ namespace ERP.Entity.MobileSales
         [StringLength(50)]
         public string Name { get; set; }
     }
+
+    public class VwMobileReason : BaseEntityWithActive
+    {
+        public int Id { get; set; }
+
+        public string Type { get; set; }
+
+        public string Name { get; set; }
+
+        public string TypeName { get; set; }
+
+        public string UpdatedInitial { get; set; }
+    }
 }
