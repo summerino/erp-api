@@ -90,7 +90,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                     result.Message = "Terdapat barang yang tidak tersedia pada gudang yang dipilih";
                     return result;
                 }
-                else if(IsQtyAvailable(null, data.WarehouseCode, data.ItemDetails) == 2)
+                else if (IsQtyAvailable(null, data.WarehouseCode, data.ItemDetails) == 2)
                 {
                     result.Message = "Terdapat barang yang qty-nya melebihi ketersediaan pada gudang yang dipilih";
                     return result;
@@ -105,7 +105,7 @@ namespace ERP.Web.API.Domain.Services.Sales
 
                 // Get new code
                 var newCode = GetNewCode("DO_NUM_FMT", data.Date);
-                    
+
                 // Insert header data
                 data.Code = newCode;
                 Db.SalesDeliveryHeaders.Add(data);
@@ -650,7 +650,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                     {
                         if (uom.IsBaseUnit)
                         {
-                            if (item.Qty > (stock.QtyOnHand - stock.QtyOnOrder))
+                            if (item.Qty > stock.QtyOnOrder)
                             {
                                 result = 2;
                             }
@@ -660,7 +660,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                             var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= uom.Seq).Select(x => x.Conversion).ToList();
                             var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
                             var baseQty = item.Qty * multipliedQty;
-                            if (baseQty > (stock.QtyOnHand - stock.QtyOnOrder))
+                            if (baseQty > stock.QtyOnOrder)
                             {
                                 result = 2;
                             }
@@ -671,7 +671,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                         var oldStock = Db.StockMutations.FirstOrDefault(x => x.ItemId == item.ItemId && x.RefCode1 == code);
                         if (uom.IsBaseUnit)
                         {
-                            if (item.Qty > (stock.QtyOnHand - (stock.QtyOnOrder - oldStock.BaseQty)))
+                            if (item.Qty > (stock.QtyOnOrder - oldStock.BaseQty))
                             {
                                 result = 2;
                             }
@@ -681,7 +681,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                             var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= uom.Seq).Select(x => x.Conversion).ToList();
                             var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
                             var baseQty = item.Qty * multipliedQty;
-                            if (baseQty > (stock.QtyOnHand - (stock.QtyOnOrder - oldStock.BaseQty)))
+                            if (baseQty > (stock.QtyOnOrder - oldStock.BaseQty))
                             {
                                 result = 2;
                             }
@@ -708,13 +708,13 @@ namespace ERP.Web.API.Domain.Services.Sales
 
             var currentSM = stockMutations.FirstOrDefault(x => x.WarehouseCode == whCode && x.ItemId == itemId && x.RefDetailId1 == id);
 
-            if (firstSM.BaseNettPrice != 0)
+            if (firstSM != null || firstSM.BaseNettPrice != 0)
             {
                 latestStockValue += firstSM.BaseNettPrice * firstSM.BaseQty;
                 latestQty += firstSM.BaseQty;
                 hpp = latestStockValue / latestQty;
 
-                var listSM = stockMutations.Where(x => x.WarehouseCode == whCode && x.ItemId == itemId && x.Id > firstId && x.Id <= currentSM.Id).OrderBy(x => x.Id).ToList();
+                var listSM = stockMutations.Where(x => new[] { "RCV", "DO", "SR" }.Contains(x.Src) && x.WarehouseCode == whCode && x.ItemId == itemId && x.Id > firstId && x.Id <= currentSM.Id).OrderBy(x => x.Id).ToList();
                 foreach (var item in listSM)
                 {
                     if (item.Src == "RCV" && item.Src == "SR")
@@ -741,7 +741,8 @@ namespace ERP.Web.API.Domain.Services.Sales
                         }
                         Db.StockMutations.Update(item);
                     }
-                    hpp = latestStockValue / latestQty;
+                    if (latestStockValue > 0 && latestQty > 0)
+                        hpp = latestStockValue / latestQty;
                 }
                 Db.SaveChanges();
             }
@@ -758,7 +759,6 @@ namespace ERP.Web.API.Domain.Services.Sales
             listVoid.AddRange(Db.TransferStockHeaders.Where(x => x.Mark == "V").Select(x => x.Code).ToList());
 
             result = result.Where(x => !listVoid.Contains(x.RefCode1)).ToList();
-            var removed = result.Where(x => listVoid.Contains(x.RefCode1)).ToList();
 
             return result;
         }
