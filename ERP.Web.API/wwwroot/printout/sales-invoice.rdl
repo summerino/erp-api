@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Report xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner" xmlns:cl="http://schemas.microsoft.com/sqlserver/reporting/2010/01/componentdefinition" xmlns="http://schemas.microsoft.com/sqlserver/reporting/2010/01/reportdefinition">
+<Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner">
   <AutoRefresh>0</AutoRefresh>
   <DataSources>
     <DataSource Name="ERPTenant">
@@ -355,11 +355,10 @@ ORDER BY Sort, Id, DOCode, DlvDetailId, DlvDetailLineNo</CommandText>
                           <Style>
                             <Border>
                               <Style>None</Style>
-                              <Width>2pt</Width>
                             </Border>
                             <TopBorder>
                               <Style>Solid</Style>
-                              <Width>2pt</Width>
+                              <Width>1pt</Width>
                             </TopBorder>
                             <BottomBorder>
                               <Style>Solid</Style>
@@ -394,11 +393,10 @@ ORDER BY Sort, Id, DOCode, DlvDetailId, DlvDetailLineNo</CommandText>
                           <Style>
                             <Border>
                               <Style>None</Style>
-                              <Width>2pt</Width>
                             </Border>
                             <TopBorder>
                               <Style>Solid</Style>
-                              <Width>2pt</Width>
+                              <Width>1pt</Width>
                             </TopBorder>
                             <BottomBorder>
                               <Style>Solid</Style>
@@ -435,11 +433,10 @@ ORDER BY Sort, Id, DOCode, DlvDetailId, DlvDetailLineNo</CommandText>
                           <Style>
                             <Border>
                               <Style>None</Style>
-                              <Width>2pt</Width>
                             </Border>
                             <TopBorder>
                               <Style>Solid</Style>
-                              <Width>2pt</Width>
+                              <Width>1pt</Width>
                             </TopBorder>
                             <BottomBorder>
                               <Style>Solid</Style>
@@ -474,11 +471,10 @@ ORDER BY Sort, Id, DOCode, DlvDetailId, DlvDetailLineNo</CommandText>
                           <Style>
                             <Border>
                               <Style>None</Style>
-                              <Width>2pt</Width>
                             </Border>
                             <TopBorder>
                               <Style>Solid</Style>
-                              <Width>2pt</Width>
+                              <Width>1pt</Width>
                             </TopBorder>
                             <BottomBorder>
                               <Style>Solid</Style>
@@ -515,11 +511,10 @@ ORDER BY Sort, Id, DOCode, DlvDetailId, DlvDetailLineNo</CommandText>
                           <Style>
                             <Border>
                               <Style>None</Style>
-                              <Width>2pt</Width>
                             </Border>
                             <TopBorder>
                               <Style>Solid</Style>
-                              <Width>2pt</Width>
+                              <Width>1pt</Width>
                             </TopBorder>
                             <BottomBorder>
                               <Style>Solid</Style>
@@ -556,11 +551,10 @@ ORDER BY Sort, Id, DOCode, DlvDetailId, DlvDetailLineNo</CommandText>
                           <Style>
                             <Border>
                               <Style>None</Style>
-                              <Width>2pt</Width>
                             </Border>
                             <TopBorder>
                               <Style>Solid</Style>
-                              <Width>2pt</Width>
+                              <Width>1pt</Width>
                             </TopBorder>
                             <BottomBorder>
                               <Style>Solid</Style>
@@ -597,11 +591,10 @@ ORDER BY Sort, Id, DOCode, DlvDetailId, DlvDetailLineNo</CommandText>
                           <Style>
                             <Border>
                               <Style>None</Style>
-                              <Width>2pt</Width>
                             </Border>
                             <TopBorder>
                               <Style>Solid</Style>
-                              <Width>2pt</Width>
+                              <Width>1pt</Width>
                             </TopBorder>
                             <BottomBorder>
                               <Style>Solid</Style>
@@ -638,11 +631,10 @@ ORDER BY Sort, Id, DOCode, DlvDetailId, DlvDetailLineNo</CommandText>
                           <Style>
                             <Border>
                               <Style>None</Style>
-                              <Width>2pt</Width>
                             </Border>
                             <TopBorder>
                               <Style>Solid</Style>
-                              <Width>2pt</Width>
+                              <Width>1pt</Width>
                             </TopBorder>
                             <BottomBorder>
                               <Style>Solid</Style>
@@ -955,6 +947,7 @@ ORDER BY Sort, Id, DOCode, DlvDetailId, DlvDetailLineNo</CommandText>
               </TablixMembers>
             </TablixRowHierarchy>
             <DataSetName>SalesInvoiceDetail</DataSetName>
+            <Top>0in</Top>
             <Height>0.5in</Height>
             <Width>8.3in</Width>
             <Style>
@@ -1010,7 +1003,7 @@ ORDER BY Sort, Id, DOCode, DlvDetailId, DlvDetailLineNo</CommandText>
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>=First(Fields!TotalInWord.Value, "SalesInvoiceHeader")</Value>
+                    <Value>=First(Fields!TotalInWord.Value, "SalesInvoiceHeader") &amp; " " &amp; First(Fields!CurrCode.Value, "SalesInvoiceHeader")</Value>
                     <Style>
                       <FontSize>9pt</FontSize>
                     </Style>
@@ -1217,7 +1210,7 @@ ORDER BY Sort, Id, DOCode, DlvDetailId, DlvDetailLineNo</CommandText>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>= "Telp. : " &amp; First(Fields!Phone.Value, "Company") &amp; IIf(Len(First(Fields!Fax.Value, "Company")) &lt;= 0, "", " Fax : " &amp; First(Fields!Fax.Value, "Company"))</Value>
+                      <Value>= "Telp. : " &amp; First(Fields!Phone.Value, "Company") &amp; IIf(Len(First(Fields!Fax.Value, "Company")) &lt;= 0, "", ", Fax : " &amp; First(Fields!Fax.Value, "Company"))</Value>
                       <Style />
                     </TextRun>
                   </TextRuns>
@@ -1760,6 +1753,19 @@ ORDER BY Sort, Id, DOCode, DlvDetailId, DlvDetailLineNo</CommandText>
       <Prompt>code</Prompt>
     </ReportParameter>
   </ReportParameters>
+  <ReportParametersLayout>
+    <GridLayoutDefinition>
+      <NumberOfColumns>1</NumberOfColumns>
+      <NumberOfRows>1</NumberOfRows>
+      <CellDefinitions>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>code</ParameterName>
+        </CellDefinition>
+      </CellDefinitions>
+    </GridLayoutDefinition>
+  </ReportParametersLayout>
   <ConsumeContainerWhitespace>true</ConsumeContainerWhitespace>
   <rd:ReportUnitType>Inch</rd:ReportUnitType>
   <rd:ReportID>70650568-7dd4-4ef4-aeaa-67502de11b4f</rd:ReportID>
