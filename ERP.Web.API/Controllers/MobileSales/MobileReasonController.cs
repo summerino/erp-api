@@ -1,19 +1,18 @@
-﻿using ERP.Common;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Dynamic.Core;
+using Microsoft.AspNetCore.Mvc;
+using ERP.Common;
 using ERP.Common.Models;
 using ERP.Entity;
 using ERP.Entity.MobileSales;
 using ERP.Web.API.Domain.Interfaces.Auth;
 using ERP.Web.API.Domain.Interfaces.MobileSales;
 using ERP.Web.API.Model;
-using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Dynamic.Core;
-using System.Threading.Tasks;
 
-namespace ERP.Web.API.Controllers
+namespace ERP.Web.API.Controllers.MobileSales
 {
     [Route("mobile-reason")]
     [ApiController]
