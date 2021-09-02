@@ -890,6 +890,7 @@ FROM SystemManagement.Company</CommandText>
               </TablixMembers>
             </TablixRowHierarchy>
             <DataSetName>PurchaseInvoiceDetail</DataSetName>
+            <Top>0in</Top>
             <Height>0.5in</Height>
             <Width>8.3in</Width>
             <Style>
@@ -1743,11 +1744,6 @@ FROM SystemManagement.Company</CommandText>
   <ReportParameters>
     <ReportParameter Name="code">
       <DataType>String</DataType>
-      <DefaultValue>
-        <Values>
-          <Value>PI-210726-A001</Value>
-        </Values>
-      </DefaultValue>
       <Prompt>code</Prompt>
     </ReportParameter>
     <ReportParameter Name="centToWord">
