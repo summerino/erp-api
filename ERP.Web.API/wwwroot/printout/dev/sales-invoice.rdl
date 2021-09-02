@@ -49,36 +49,7 @@ FROM SystemManagement.Company</CommandText>
             <Value>=Parameters!code.Value</Value>
           </QueryParameter>
         </QueryParameters>
-        <CommandText>SELECT si_h.*,
-	dbo.udf_num_to_words_id(si_h.Total, 1) AS TotalInWord,
-	e.Initial AS SalesInitial,
-	c.Initial AS CustInitial,
-	c.[Name] AS CustName,
-	CASE WHEN c.BillingAddressId IS NULL THEN ca_d.Address1
-		ELSE ca_b.Address1 END AS CustAddress1,
-	CASE WHEN c.BillingAddressId IS NULL THEN ca_d.Phone
-		ELSE ca_b.Phone END AS CustPhone,
-	CASE WHEN c.BillingAddressId IS NULL THEN ca_d.ContactPerson
-		ELSE ca_b.ContactPerson END AS CustContactPerson
-FROM (
-	SELECT *
-	FROM Sales.SalesInvoiceHeader 
-	WHERE Code = @code
-) si_h
-LEFT JOIN Sales.SalesOrderHeader so_h
-	ON so_h.Code = si_h.SOCode
-LEFT JOIN General.Employee e
-	ON e.Id = so_h.SalesBy
-LEFT JOIN General.Customer c
-	ON c.Code = si_h.CustCode
-LEFT JOIN General.CustomerAddress ca_d
-	ON ca_d.Code = c.Code
-	AND ca_d.IsDefault = 1
-	AND c.BillingAddressId IS NULL
-LEFT JOIN General.CustomerAddress ca_b
-	ON ca_b.Code = c.Code
-	AND ca_b.Id = c.BillingAddressId
-	AND c.BillingAddressId IS NOT NULL</CommandText>
+        <CommandText>EXEC sp_get_si_print_data @code, 'HEADER', 1</CommandText>
       </Query>
       <Fields>
         <Field Name="Code">
@@ -191,78 +162,36 @@ LEFT JOIN General.CustomerAddress ca_b
             <Value>=Parameters!code.Value</Value>
           </QueryParameter>
         </QueryParameters>
-        <CommandText>SELECT si_d.Id,si_d.Code,si_d.DOCode,
-	dlv_d.Id AS DlvDetailId, dlv_d.[LineNo] AS DlvDetailLineNo,
-	dlv_d.Qty, dlv_d.UnitPrice, dlv_d.Disc, dlv_d.TaxAmount, dlv_d.Total,
-	i.Initial AS ItemInitial,
-	i.[Name] AS ItemName,
-	uom_c.UnitToConvert AS ItemUnitName,
-	1 AS Sort
-FROM (
-	SELECT Id,Code,DOCode
-	FROM Sales.SalesInvoiceDetail
-	WHERE Code = @code
-) si_d
-LEFT JOIN Sales.SalesDeliveryHeader dlv_h
-	ON dlv_h.Code = si_d.DOCode
-LEFT JOIN Sales.SalesDeliveryDetail dlv_d
-	ON dlv_d.Code = dlv_h.Code
-LEFT JOIN Inventory.Item i
-	ON i.Id = dlv_d.ItemId
-LEFT JOIN Inventory.UoMConversion uom_c
-	ON uom_c.Id = dlv_d.UnitId
-UNION ALL
-SELECT 0, '', dlv_d_fg.Code,
-	dlv_d_fg.DlvOrderDetailId, dlv_d_fg.[LineNo],
-	dlv_d_fg.Qty, dlv_d_fg.UnitPrice, dlv_d_fg.UnitPrice, 0, 0,
-	i.Initial AS ItemInitial,
-	i.[Name] AS ItemName,
-	uom_c.UnitToConvert AS ItemUnitName,
-	2 AS Sort
-FROM (
-	SELECT *
-	FROM Sales.SalesDeliveryDetailFreeGood
-	WHERE EXISTS (
-		SELECT Id,Code,DOCode
-		FROM Sales.SalesInvoiceDetail
-		WHERE Code = @code
-		AND DOCode = Code
-	)
-) dlv_d_fg
-LEFT JOIN Inventory.Item i
-	ON i.Id = dlv_d_fg.ItemId
-LEFT JOIN Inventory.UoMConversion uom_c
-	ON uom_c.Id = dlv_d_fg.UnitId
-ORDER BY Sort, Id, DOCode, DlvDetailId, DlvDetailLineNo</CommandText>
+        <CommandText>EXEC sp_get_si_print_data @code, 'DETAIL'</CommandText>
       </Query>
       <Fields>
         <Field Name="Id">
           <DataField>Id</DataField>
-          <rd:TypeName>System.Int64</rd:TypeName>
-        </Field>
-        <Field Name="Code">
-          <DataField>Code</DataField>
           <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Date">
+          <DataField>Date</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
         </Field>
         <Field Name="DOCode">
           <DataField>DOCode</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
+          <rd:TypeName>System.DateTime</rd:TypeName>
         </Field>
         <Field Name="DlvDetailId">
           <DataField>DlvDetailId</DataField>
-          <rd:TypeName>System.Int64</rd:TypeName>
+          <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="DlvDetailLineNo">
           <DataField>DlvDetailLineNo</DataField>
-          <rd:TypeName>System.Int16</rd:TypeName>
+          <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="Qty">
           <DataField>Qty</DataField>
-          <rd:TypeName>System.Decimal</rd:TypeName>
+          <rd:TypeName>System.Int64</rd:TypeName>
         </Field>
         <Field Name="UnitPrice">
           <DataField>UnitPrice</DataField>
-          <rd:TypeName>System.Decimal</rd:TypeName>
+          <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="Disc">
           <DataField>Disc</DataField>
@@ -274,11 +203,11 @@ ORDER BY Sort, Id, DOCode, DlvDetailId, DlvDetailLineNo</CommandText>
         </Field>
         <Field Name="Total">
           <DataField>Total</DataField>
-          <rd:TypeName>System.Decimal</rd:TypeName>
+          <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="ItemInitial">
           <DataField>ItemInitial</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
+          <rd:TypeName>System.Boolean</rd:TypeName>
         </Field>
         <Field Name="ItemName">
           <DataField>ItemName</DataField>
@@ -286,11 +215,11 @@ ORDER BY Sort, Id, DOCode, DlvDetailId, DlvDetailLineNo</CommandText>
         </Field>
         <Field Name="ItemUnitName">
           <DataField>ItemUnitName</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
+          <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
         <Field Name="Sort">
           <DataField>Sort</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
+          <rd:TypeName>System.DateTime</rd:TypeName>
         </Field>
       </Fields>
     </DataSet>

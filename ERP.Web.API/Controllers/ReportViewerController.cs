@@ -45,13 +45,6 @@ namespace ERP.Web.API.Controllers
         public void OnInitReportOptions(ReportViewerOptions reportOption)
         {
             reportOption.ReportModel.EmbedImageData = true;
-
-            var reportStream =
-                new FileStream(
-                    $@"{_env.WebRootPath}\printout\{reportOption.ReportModel.ReportPath}",
-                    FileMode.Open, FileAccess.Read);
-
-            reportOption.ReportModel.Stream = reportStream;
         }
 
         // Method will be called when reported is loaded with internally to start to layout process with ReportHelper.
@@ -82,6 +75,13 @@ namespace ERP.Web.API.Controllers
                             DataSourceCredentials
                         };
                     }
+
+                    var reportStream =
+                        new FileStream(
+                            $@"{_env.WebRootPath}\printout\{tenant.Initial.ToLower()}\{reportOption.ReportModel.ReportPath}",
+                            FileMode.Open, FileAccess.Read);
+
+                    reportOption.ReportModel.Stream = reportStream;
                 }
             }
         }
