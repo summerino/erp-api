@@ -156,8 +156,9 @@ namespace ERP.Entity
         public DbSet<MobileOrderDetailFreeGood> MobileOrderDetailFreeGoods { get; set; }
         public DbSet<MobilePaymentInvoice> MobilePaymentInvoices { get; set; }
         public DbSet<MobileReason> MobileReasons { get; set; }
-        public DbSet<MobileVisitLog> MobileVisitLogs { get; set; }
         public DbSet<VwMobileReason> VwMobileReasons { get; set; }
+        public DbSet<MobileVisitLog> MobileVisitLogs { get; set; }
+        public DbSet<MobileVisitReason> MobileVisitReasons { get; set; }
 
         // Purchase entities
         public DbSet<DebitMemo> DebitMemos { get; set; }
@@ -1344,6 +1345,11 @@ namespace ERP.Entity
                     .OnDelete(DeleteBehavior.NoAction);
             });
 
+            // Mobile Reason model
+            modelBuilder.Entity<VwMobileReason>()
+                .HasNoKey()
+                .ToView("vwMobileReason", Schema.MobileSales);
+
             // Mobile Visit Log model
             modelBuilder.Entity<MobileVisitLog>(entity =>
             {
@@ -1389,10 +1395,6 @@ namespace ERP.Entity
                     .HasForeignKey(d => d.VisitReasonId)
                     .OnDelete(DeleteBehavior.NoAction);
             });
-
-            modelBuilder.Entity<VwMobileReason>()
-                .HasNoKey()
-                .ToView("vwMobileReason", Schema.MobileSales);
 
             // Purchase entities
             // Debit Memo model

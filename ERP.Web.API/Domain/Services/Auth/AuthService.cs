@@ -116,7 +116,7 @@ namespace ERP.Web.API.Domain.Services.Auth
             tenantUser.IsLoggedIn = true;
             tenantUser.LastLogin = DateTime.Now;
             tenantUser.SessionId = Guid.NewGuid().ToString();
-            tenantUser.TokenId = GenerateJwtToken(tenantUser, catalogUser.TenantId, defaultWarehouseCode);
+            tenantUser.TokenId = GenerateJwtToken(tenantUser, catalogUser.TenantId, tenant.Initial, defaultWarehouseCode);
             tenantUser.IpAddress = _claim.IpAddress;
 
             tenantCtx.Users.Update(tenantUser);
@@ -195,7 +195,8 @@ namespace ERP.Web.API.Domain.Services.Auth
             };
         }
 
-        private string GenerateJwtToken(UserTenant data, int tenantId, string defaultWarehouseCode)
+        private string GenerateJwtToken(UserTenant data, int tenantId, string tenantInitial,
+            string defaultWarehouseCode)
         {
             var jwtTokenHandler = new JwtSecurityTokenHandler();
 
@@ -212,6 +213,7 @@ namespace ERP.Web.API.Domain.Services.Auth
                     new Claim("RoleId", data.RoleId.ToString()),
                     new Claim("CatalogUserId", data.CatalogUserId.ToString()),
                     new Claim("TenantId", tenantId.ToString()),
+                    new Claim("TenantInitial", tenantInitial),
                     new Claim("WarehouseCode", defaultWarehouseCode == null ? string.Empty : defaultWarehouseCode)
                 }),
                 Expires = data.LastLogin.GetValueOrDefault(DateTime.Now).AddMinutes(_jwtConfig.TimeInMinute),

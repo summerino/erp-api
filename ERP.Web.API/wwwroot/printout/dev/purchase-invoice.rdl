@@ -41,7 +41,7 @@ FROM SystemManagement.Company</CommandText>
         </Field>
       </Fields>
     </DataSet>
-    <DataSet Name="SalesInvoiceHeader">
+    <DataSet Name="PurchaseInvoiceHeader">
       <Query>
         <DataSourceName>ERPTenant</DataSourceName>
         <QueryParameters>
@@ -50,15 +50,13 @@ FROM SystemManagement.Company</CommandText>
           </QueryParameter>
           <QueryParameter Name="@displayType">
             <Value>HEADER</Value>
-            <rd:UserDefined>true</rd:UserDefined>
           </QueryParameter>
           <QueryParameter Name="@centToWord">
             <Value>1</Value>
-            <rd:UserDefined>true</rd:UserDefined>
           </QueryParameter>
         </QueryParameters>
         <CommandType>StoredProcedure</CommandType>
-        <CommandText>sp_get_si_print_data</CommandText>
+        <CommandText>sp_get_pi_print_data</CommandText>
       </Query>
       <Fields>
         <Field Name="Code">
@@ -73,12 +71,16 @@ FROM SystemManagement.Company</CommandText>
           <DataField>DueDate</DataField>
           <rd:TypeName>System.DateTime</rd:TypeName>
         </Field>
-        <Field Name="SOCode">
-          <DataField>SOCode</DataField>
+        <Field Name="POCode">
+          <DataField>POCode</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="CustCode">
-          <DataField>CustCode</DataField>
+        <Field Name="RefNo">
+          <DataField>RefNo</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="SupCode">
+          <DataField>SupCode</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="IssuedBy">
@@ -100,10 +102,6 @@ FROM SystemManagement.Company</CommandText>
         <Field Name="Notes">
           <DataField>Notes</DataField>
           <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="FromDirectInvoice">
-          <DataField>FromDirectInvoice</DataField>
-          <rd:TypeName>System.Boolean</rd:TypeName>
         </Field>
         <Field Name="Mark">
           <DataField>Mark</DataField>
@@ -137,33 +135,33 @@ FROM SystemManagement.Company</CommandText>
           <DataField>TotalInWord</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="SalesInitial">
-          <DataField>SalesInitial</DataField>
+        <Field Name="RequestInitial">
+          <DataField>RequestInitial</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="CustInitial">
-          <DataField>CustInitial</DataField>
+        <Field Name="SupInitial">
+          <DataField>SupInitial</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="CustName">
-          <DataField>CustName</DataField>
+        <Field Name="SupName">
+          <DataField>SupName</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="CustAddress1">
-          <DataField>CustAddress1</DataField>
+        <Field Name="SupAddress1">
+          <DataField>SupAddress1</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="CustPhone">
-          <DataField>CustPhone</DataField>
+        <Field Name="SupPhone">
+          <DataField>SupPhone</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="CustContactPerson">
-          <DataField>CustContactPerson</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
+        <Field Name="IssuedInitial">
+          <DataField>IssuedInitial</DataField>
+          <rd:UserDefined>true</rd:UserDefined>
         </Field>
       </Fields>
     </DataSet>
-    <DataSet Name="SalesInvoiceDetail">
+    <DataSet Name="PurchaseInvoiceDetail">
       <Query>
         <DataSourceName>ERPTenant</DataSourceName>
         <QueryParameters>
@@ -172,44 +170,46 @@ FROM SystemManagement.Company</CommandText>
           </QueryParameter>
           <QueryParameter Name="@displayType">
             <Value>DETAIL</Value>
-            <rd:UserDefined>true</rd:UserDefined>
+          </QueryParameter>
+          <QueryParameter Name="@centToWord">
+            <Value>=Parameters!centToWord.Value</Value>
           </QueryParameter>
         </QueryParameters>
         <CommandType>StoredProcedure</CommandType>
-        <CommandText>sp_get_si_print_data</CommandText>
+        <CommandText>sp_get_pi_print_data</CommandText>
       </Query>
       <Fields>
         <Field Name="Id">
           <DataField>Id</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="Date">
-          <DataField>Date</DataField>
           <rd:TypeName>System.DateTime</rd:TypeName>
         </Field>
-        <Field Name="DOCode">
-          <DataField>DOCode</DataField>
-          <rd:TypeName>System.DateTime</rd:TypeName>
-        </Field>
-        <Field Name="DlvDetailId">
-          <DataField>DlvDetailId</DataField>
+        <Field Name="Code">
+          <DataField>Code</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="DlvDetailLineNo">
-          <DataField>DlvDetailLineNo</DataField>
+        <Field Name="RcvCode">
+          <DataField>RcvCode</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="RcvDetailId">
+          <DataField>RcvDetailId</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="RcvDetailLineNo">
+          <DataField>RcvDetailLineNo</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="Qty">
           <DataField>Qty</DataField>
-          <rd:TypeName>System.Int64</rd:TypeName>
+          <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="UnitPrice">
           <DataField>UnitPrice</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
+          <rd:TypeName>System.Int64</rd:TypeName>
         </Field>
         <Field Name="Disc">
           <DataField>Disc</DataField>
-          <rd:TypeName>System.Decimal</rd:TypeName>
+          <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="TaxAmount">
           <DataField>TaxAmount</DataField>
@@ -217,23 +217,23 @@ FROM SystemManagement.Company</CommandText>
         </Field>
         <Field Name="Total">
           <DataField>Total</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
+          <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
         <Field Name="ItemInitial">
           <DataField>ItemInitial</DataField>
-          <rd:TypeName>System.Boolean</rd:TypeName>
+          <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="ItemName">
           <DataField>ItemName</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
+          <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
         <Field Name="ItemUnitName">
           <DataField>ItemUnitName</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
+          <rd:TypeName>System.DateTime</rd:TypeName>
         </Field>
         <Field Name="Sort">
           <DataField>Sort</DataField>
-          <rd:TypeName>System.DateTime</rd:TypeName>
+          <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
       </Fields>
     </DataSet>
@@ -604,7 +604,7 @@ FROM SystemManagement.Company</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=RowNumber("SalesInvoiceDetail")</Value>
+                                  <Value>=RowNumber("PurchaseInvoiceDetail")</Value>
                                   <Style>
                                     <FontSize>9pt</FontSize>
                                   </Style>
@@ -889,7 +889,7 @@ FROM SystemManagement.Company</CommandText>
                 </TablixMember>
               </TablixMembers>
             </TablixRowHierarchy>
-            <DataSetName>SalesInvoiceDetail</DataSetName>
+            <DataSetName>PurchaseInvoiceDetail</DataSetName>
             <Height>0.5in</Height>
             <Width>8.3in</Width>
             <Style>
@@ -945,7 +945,7 @@ FROM SystemManagement.Company</CommandText>
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>=First(Fields!TotalInWord.Value, "SalesInvoiceHeader") &amp; " " &amp; First(Fields!CurrCode.Value, "SalesInvoiceHeader")</Value>
+                    <Value>=First(Fields!TotalInWord.Value, "PurchaseInvoiceHeader") &amp; " " &amp; First(Fields!CurrCode.Value, "PurchaseInvoiceHeader")</Value>
                     <Style>
                       <FontSize>9pt</FontSize>
                     </Style>
@@ -1004,7 +1004,7 @@ FROM SystemManagement.Company</CommandText>
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>=Format(First(Fields!Total.Value, "SalesInvoiceHeader"), "#,##0.00")</Value>
+                    <Value>=Format(First(Fields!Total.Value, "PurchaseInvoiceHeader"), "#,##0.00")</Value>
                     <Style>
                       <FontFamily>Courier New</FontFamily>
                       <FontWeight>Bold</FontWeight>
@@ -1063,7 +1063,7 @@ FROM SystemManagement.Company</CommandText>
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>=First(Fields!Notes.Value, "SalesInvoiceHeader")</Value>
+                    <Value>=First(Fields!Notes.Value, "PurchaseInvoiceHeader")</Value>
                     <Style>
                       <FontSize>9pt</FontSize>
                     </Style>
@@ -1107,7 +1107,7 @@ FROM SystemManagement.Company</CommandText>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>Faktur Penjualan</Value>
+                      <Value>Faktur Pembelian</Value>
                       <Style>
                         <FontSize>14pt</FontSize>
                         <FontWeight>Bold</FontWeight>
@@ -1314,7 +1314,7 @@ FROM SystemManagement.Company</CommandText>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>=First(Fields!Code.Value, "SalesInvoiceHeader")</Value>
+                      <Value>=First(Fields!Code.Value, "PurchaseInvoiceHeader")</Value>
                       <Style>
                         <FontWeight>Bold</FontWeight>
                       </Style>
@@ -1394,7 +1394,7 @@ FROM SystemManagement.Company</CommandText>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>=Format(First(Fields!Date.Value, "SalesInvoiceHeader"), "dd-MMM-yyyy")</Value>
+                      <Value>=Format(First(Fields!Date.Value, "PurchaseInvoiceHeader"), "dd-MMM-yyyy")</Value>
                       <Style />
                     </TextRun>
                   </TextRuns>
@@ -1472,7 +1472,7 @@ FROM SystemManagement.Company</CommandText>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>=Format(First(Fields!DueDate.Value, "SalesInvoiceHeader"), "dd-MMM-yyyy")</Value>
+                      <Value>=Format(First(Fields!DueDate.Value, "PurchaseInvoiceHeader"), "dd-MMM-yyyy")</Value>
                       <Style />
                     </TextRun>
                   </TextRuns>
@@ -1510,7 +1510,7 @@ FROM SystemManagement.Company</CommandText>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>Pelanggan :</Value>
+                      <Value>Pemasok :</Value>
                       <Style>
                         <FontSize>9pt</FontSize>
                       </Style>
@@ -1537,7 +1537,7 @@ FROM SystemManagement.Company</CommandText>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>=First(Fields!CustName.Value, "SalesInvoiceHeader") &amp; " (" &amp;First(Fields!CustCode.Value, "SalesInvoiceHeader") &amp; ")"</Value>
+                      <Value>=First(Fields!SupName.Value, "PurchaseInvoiceHeader") &amp; " (" &amp;First(Fields!SupCode.Value, "PurchaseInvoiceHeader") &amp; ")"</Value>
                       <Style>
                         <FontSize>9pt</FontSize>
                         <FontWeight>Bold</FontWeight>
@@ -1566,7 +1566,7 @@ FROM SystemManagement.Company</CommandText>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>=First(Fields!CustAddress1.Value, "SalesInvoiceHeader")</Value>
+                      <Value>=First(Fields!SupAddress1.Value, "PurchaseInvoiceHeader")</Value>
                       <Style>
                         <FontSize>9pt</FontSize>
                       </Style>
@@ -1594,7 +1594,7 @@ FROM SystemManagement.Company</CommandText>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>="Telp. " &amp; First(Fields!CustPhone.Value, "SalesInvoiceHeader") &amp; IIf(Len(First(Fields!CustContactPerson.Value, "SalesInvoiceHeader")) &lt;= 0, "", " Attn. " &amp; First(Fields!CustContactPerson.Value, "SalesInvoiceHeader"))</Value>
+                      <Value>="Telp. " &amp; First(Fields!SupPhone.Value, "PurchaseInvoiceHeader")</Value>
                       <Style>
                         <FontSize>9pt</FontSize>
                       </Style>
@@ -1634,7 +1634,7 @@ FROM SystemManagement.Company</CommandText>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>Pelanggan</Value>
+                      <Value>Dikeluarkan Oleh</Value>
                       <Style>
                         <FontSize>9pt</FontSize>
                         <FontWeight>Normal</FontWeight>
@@ -1664,7 +1664,7 @@ FROM SystemManagement.Company</CommandText>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>=First(Fields!CustInitial.Value, "SalesInvoiceHeader")</Value>
+                      <Value>=First(Fields!IssuedInitial.Value, "PurchaseInvoiceHeader")</Value>
                       <Style>
                         <FontSize>9pt</FontSize>
                         <FontWeight>Normal</FontWeight>
@@ -1695,7 +1695,7 @@ FROM SystemManagement.Company</CommandText>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>=First(Fields!SalesInitial.Value, "SalesInvoiceHeader")</Value>
+                      <Value>=First(Fields!RequestInitial.Value, "PurchaseInvoiceHeader")</Value>
                       <Style>
                         <FontSize>9pt</FontSize>
                         <FontWeight>Normal</FontWeight>
@@ -1743,18 +1743,33 @@ FROM SystemManagement.Company</CommandText>
   <ReportParameters>
     <ReportParameter Name="code">
       <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>PI-210726-A001</Value>
+        </Values>
+      </DefaultValue>
       <Prompt>code</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="centToWord">
+      <DataType>Boolean</DataType>
+      <Nullable>true</Nullable>
+      <Prompt>cent To Word</Prompt>
     </ReportParameter>
   </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
       <NumberOfColumns>1</NumberOfColumns>
-      <NumberOfRows>1</NumberOfRows>
+      <NumberOfRows>2</NumberOfRows>
       <CellDefinitions>
         <CellDefinition>
           <ColumnIndex>0</ColumnIndex>
           <RowIndex>0</RowIndex>
           <ParameterName>code</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>centToWord</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>

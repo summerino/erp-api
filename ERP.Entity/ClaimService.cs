@@ -13,6 +13,8 @@ namespace ERP.Entity
 
         int TenantId { get; }
 
+        string TenantInitial { get; }
+
         string CatalogUserId { get; }
 
         string KeyToken { get; }
@@ -49,6 +51,9 @@ namespace ERP.Entity
                 out var tenantId)
                 ? tenantId
                 : 0;
+
+        public string TenantInitial =>
+            _accessor.HttpContext?.User?.Claims?.SingleOrDefault(x => x.Type == "TenantInitial")?.Value.ToString();
 
         public string CatalogUserId =>
             _accessor.HttpContext?.User?.Claims?.SingleOrDefault(x => x.Type == "CatalogUserId")?.Value.ToString();
