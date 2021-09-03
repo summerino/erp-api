@@ -7,6 +7,7 @@ using ERP.Common.Models;
 using ERP.Entity;
 using ERP.Entity.Accounting;
 using ERP.Web.API.Domain.Interfaces.Accounting;
+using ERP.Web.API.Model.Accounting;
 
 namespace ERP.Web.API.Domain.Services.Accounting
 {
@@ -59,7 +60,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
 
             result.Success = true;
             result.Data = data.Id;
-            result.Message = "Data piutang berhasil disimpan.";
+            result.Message = "Data saldo awal hutang berhasil disimpan.";
             return result;
         }
 
@@ -85,7 +86,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
 
             result.Success = true;
             result.Data = data.Id;
-            result.Message = "Data piutang berhasil diperbarui.";
+            result.Message = "Data saldo awal hutang berhasil diperbarui.";
             return result;
         }
 
@@ -105,7 +106,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 {
                     if (item.Header.Mark == "A")
                     {
-                        result.Message = "Tidak bisa menghapus data hutang karena telah digunakan pada data bank tunai.";
+                        result.Message = "Tidak bisa menghapus data saldo awal hutang karena telah digunakan pada data bank tunai.";
                         return result;
                     }
                 }
@@ -117,7 +118,110 @@ namespace ERP.Web.API.Domain.Services.Accounting
             }
 
             result.Success = true;
-            result.Message = "Data hutang berhasil dihapus.";
+            result.Message = "Data saldo awal hutang berhasil dihapus.";
+            return result;
+        }
+
+        public IEnumerable<UploadBBAPRequest> VerifyUpload(IEnumerable<UploadBBAPRequest> data)
+        {
+            foreach (var item in data)
+            {
+                var result = Db.BeginningBalanceAPs.FirstOrDefault(x => x.Code == item.Kode);
+                if (result != null)
+                {
+                    if ((item.Nilai - result.PaidAmount) < 0)
+                    {
+                        item.Mark = true;
+                    }
+                    else
+                    {
+                        item.Mark = false;
+                    }
+                }
+                else
+                {
+                    item.Mark = false;
+                }
+            }
+
+            return data;
+        }
+        public SaveResult Posting(IEnumerable<UploadBBAPRequest> data, int userId)
+        {
+            var result = new SaveResult(false);
+
+            using var transaction = Db.Database.BeginTransaction();
+            try
+            {
+                var verified = VerifyUpload(data).ToList();
+
+                var verifyDupe = verified.GroupBy(x => x.Kode).Any(g => g.Count() > 1);
+
+                if (verifyDupe)
+                {
+                    result.Message = "Terdapat kode duplikat pada data import.";
+                    return result;
+                }
+
+                var removed = Db.BeginningBalanceAPs
+                    .Where(x => !verified.Select(y => y.Kode).Contains(x.Code))
+                    .ToList();
+
+                if (removed.Any())
+                    Db.BeginningBalanceAPs.RemoveRange(removed);
+
+                foreach (var item in verified)
+                {
+                    if (!item.Mark)
+                    {
+                        var dataAp = Db.BeginningBalanceAPs.FirstOrDefault(x => x.Code == item.Kode);
+                        if (dataAp != null)
+                        {
+                            dataAp.Date = item.Tanggal ?? DateTime.MinValue;
+                            dataAp.DueDate = item.Tgljatuhtempo ?? DateTime.MaxValue;
+                            dataAp.SupCode = item.Kodepemasok;
+                            dataAp.Amount = item.Nilai;
+                            dataAp.Notes = item.Catatan;
+                            dataAp.IsActive = true;
+                            dataAp.UpdatedBy = userId;
+                            dataAp.UpdatedDate = DateTime.Now;
+
+                            Db.BeginningBalanceAPs.Update(dataAp);
+                        }
+                        else
+                        {
+                            Db.BeginningBalanceAPs.Add(new BeginningBalanceAP
+                            {
+                                Code = item.Kode,
+                                Date = item.Tanggal ?? DateTime.MinValue,
+                                DueDate = item.Tgljatuhtempo ?? DateTime.MaxValue,
+                                SupCode = item.Kodepemasok,
+                                CurrCode = "IDR",
+                                Rate = 1,
+                                Amount = item.Nilai,
+                                Notes = item.Catatan,
+                                IsActive = true,
+                                CreatedBy = userId,
+                                CreatedDate = DateTime.Now,
+                                UpdatedBy = userId,
+                                UpdatedDate = DateTime.Now,
+                            });
+                        }
+
+                    }
+                }
+
+                Db.SaveChanges();
+                transaction.Commit();
+            }
+            catch (Exception ex)
+            {
+                result.Message = ex.InnerException?.Message ?? ex.Message;
+                return result;
+            }
+
+            result.Success = true;
+            result.Message = "Import data saldo awal hutang berhasil disimpan.";
             return result;
         }
 
@@ -125,5 +229,6 @@ namespace ERP.Web.API.Domain.Services.Accounting
         {
             return Db.BeginningBalanceAPs.Any(x => x.Code == code && x.Id != id);
         }
+
     }
 }
