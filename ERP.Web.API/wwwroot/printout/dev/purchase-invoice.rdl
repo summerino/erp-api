@@ -41,7 +41,7 @@ FROM SystemManagement.Company</CommandText>
         </Field>
       </Fields>
     </DataSet>
-    <DataSet Name="PurchaseInvoiceHeader">
+    <DataSet Name="Header">
       <Query>
         <DataSourceName>ERPTenant</DataSourceName>
         <QueryParameters>
@@ -161,7 +161,7 @@ FROM SystemManagement.Company</CommandText>
         </Field>
       </Fields>
     </DataSet>
-    <DataSet Name="PurchaseInvoiceDetail">
+    <DataSet Name="Detail">
       <Query>
         <DataSourceName>ERPTenant</DataSourceName>
         <QueryParameters>
@@ -604,7 +604,7 @@ FROM SystemManagement.Company</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=RowNumber("PurchaseInvoiceDetail")</Value>
+                                  <Value>=RowNumber("Detail")</Value>
                                   <Style>
                                     <FontSize>9pt</FontSize>
                                   </Style>
@@ -889,7 +889,7 @@ FROM SystemManagement.Company</CommandText>
                 </TablixMember>
               </TablixMembers>
             </TablixRowHierarchy>
-            <DataSetName>PurchaseInvoiceDetail</DataSetName>
+            <DataSetName>Detail</DataSetName>
             <Top>0in</Top>
             <Height>0.5in</Height>
             <Width>8.3in</Width>
@@ -946,7 +946,7 @@ FROM SystemManagement.Company</CommandText>
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>=First(Fields!TotalInWord.Value, "PurchaseInvoiceHeader") &amp; " " &amp; First(Fields!CurrCode.Value, "PurchaseInvoiceHeader")</Value>
+                    <Value>=First(Fields!TotalInWord.Value, "Header") &amp; " " &amp; First(Fields!CurrCode.Value, "Header")</Value>
                     <Style>
                       <FontSize>9pt</FontSize>
                     </Style>
@@ -1005,7 +1005,7 @@ FROM SystemManagement.Company</CommandText>
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>=Format(First(Fields!Total.Value, "PurchaseInvoiceHeader"), "#,##0.00")</Value>
+                    <Value>=Format(First(Fields!Total.Value, "Header"), "#,##0.00")</Value>
                     <Style>
                       <FontFamily>Courier New</FontFamily>
                       <FontWeight>Bold</FontWeight>
@@ -1064,7 +1064,7 @@ FROM SystemManagement.Company</CommandText>
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>=First(Fields!Notes.Value, "PurchaseInvoiceHeader")</Value>
+                    <Value>=First(Fields!Notes.Value, "Header")</Value>
                     <Style>
                       <FontSize>9pt</FontSize>
                     </Style>
@@ -1315,7 +1315,7 @@ FROM SystemManagement.Company</CommandText>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>=First(Fields!Code.Value, "PurchaseInvoiceHeader")</Value>
+                      <Value>=First(Fields!Code.Value, "Header")</Value>
                       <Style>
                         <FontWeight>Bold</FontWeight>
                       </Style>
@@ -1395,7 +1395,7 @@ FROM SystemManagement.Company</CommandText>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>=Format(First(Fields!Date.Value, "PurchaseInvoiceHeader"), "dd-MMM-yyyy")</Value>
+                      <Value>=Format(First(Fields!Date.Value, "Header"), "dd-MMM-yyyy")</Value>
                       <Style />
                     </TextRun>
                   </TextRuns>
@@ -1473,7 +1473,7 @@ FROM SystemManagement.Company</CommandText>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>=Format(First(Fields!DueDate.Value, "PurchaseInvoiceHeader"), "dd-MMM-yyyy")</Value>
+                      <Value>=Format(First(Fields!DueDate.Value, "Header"), "dd-MMM-yyyy")</Value>
                       <Style />
                     </TextRun>
                   </TextRuns>
@@ -1538,7 +1538,7 @@ FROM SystemManagement.Company</CommandText>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>=First(Fields!SupName.Value, "PurchaseInvoiceHeader") &amp; " (" &amp;First(Fields!SupCode.Value, "PurchaseInvoiceHeader") &amp; ")"</Value>
+                      <Value>=First(Fields!SupName.Value, "Header") &amp; " (" &amp;First(Fields!SupCode.Value, "Header") &amp; ")"</Value>
                       <Style>
                         <FontSize>9pt</FontSize>
                         <FontWeight>Bold</FontWeight>
@@ -1567,7 +1567,7 @@ FROM SystemManagement.Company</CommandText>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>=First(Fields!SupAddress1.Value, "PurchaseInvoiceHeader")</Value>
+                      <Value>=First(Fields!SupAddress1.Value, "Header")</Value>
                       <Style>
                         <FontSize>9pt</FontSize>
                       </Style>
@@ -1595,7 +1595,7 @@ FROM SystemManagement.Company</CommandText>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>="Telp. " &amp; First(Fields!SupPhone.Value, "PurchaseInvoiceHeader")</Value>
+                      <Value>="Telp. " &amp; First(Fields!SupPhone.Value, "Header")</Value>
                       <Style>
                         <FontSize>9pt</FontSize>
                       </Style>
@@ -1665,7 +1665,7 @@ FROM SystemManagement.Company</CommandText>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>=First(Fields!IssuedInitial.Value, "PurchaseInvoiceHeader")</Value>
+                      <Value>=First(Fields!IssuedInitial.Value, "Header")</Value>
                       <Style>
                         <FontSize>9pt</FontSize>
                         <FontWeight>Normal</FontWeight>
@@ -1696,7 +1696,7 @@ FROM SystemManagement.Company</CommandText>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>=First(Fields!RequestInitial.Value, "PurchaseInvoiceHeader")</Value>
+                      <Value>=First(Fields!RequestInitial.Value, "Header")</Value>
                       <Style>
                         <FontSize>9pt</FontSize>
                         <FontWeight>Normal</FontWeight>

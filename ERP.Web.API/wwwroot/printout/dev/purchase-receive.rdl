@@ -52,13 +52,9 @@ FROM SystemManagement.Company</CommandText>
             <Value>HEADER</Value>
             <rd:UserDefined>true</rd:UserDefined>
           </QueryParameter>
-          <QueryParameter Name="@centToWord">
-            <Value>1</Value>
-            <rd:UserDefined>true</rd:UserDefined>
-          </QueryParameter>
         </QueryParameters>
         <CommandType>StoredProcedure</CommandType>
-        <CommandText>sp_get_si_print_data</CommandText>
+        <CommandText>sp_get_rcv_print_data</CommandText>
       </Query>
       <Fields>
         <Field Name="Code">
@@ -69,41 +65,73 @@ FROM SystemManagement.Company</CommandText>
           <DataField>Date</DataField>
           <rd:TypeName>System.DateTime</rd:TypeName>
         </Field>
-        <Field Name="DueDate">
-          <DataField>DueDate</DataField>
-          <rd:TypeName>System.DateTime</rd:TypeName>
-        </Field>
-        <Field Name="SOCode">
-          <DataField>SOCode</DataField>
+        <Field Name="TransCode">
+          <DataField>TransCode</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="CustCode">
-          <DataField>CustCode</DataField>
+        <Field Name="RefNo">
+          <DataField>RefNo</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="IssuedBy">
-          <DataField>IssuedBy</DataField>
+        <Field Name="SrcTrans">
+          <DataField>SrcTrans</DataField>
+          <rd:TypeName>System.Int16</rd:TypeName>
+        </Field>
+        <Field Name="SupCode">
+          <DataField>SupCode</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="ReceiveBy">
+          <DataField>ReceiveBy</DataField>
           <rd:TypeName>System.Int64</rd:TypeName>
         </Field>
         <Field Name="CurrCode">
           <DataField>CurrCode</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="PaidAmount">
-          <DataField>PaidAmount</DataField>
+        <Field Name="Rate">
+          <DataField>Rate</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="ShipmentFee">
+          <DataField>ShipmentFee</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="HandlingFee">
+          <DataField>HandlingFee</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="SubTotal">
+          <DataField>SubTotal</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="FinalDiscPercent">
+          <DataField>FinalDiscPercent</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="FinalDisc">
+          <DataField>FinalDisc</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="IncludeTax">
+          <DataField>IncludeTax</DataField>
+          <rd:TypeName>System.Boolean</rd:TypeName>
+        </Field>
+        <Field Name="TaxAmount">
+          <DataField>TaxAmount</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
         <Field Name="Total">
           <DataField>Total</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
-        <Field Name="Notes">
-          <DataField>Notes</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
+        <Field Name="DPP">
+          <DataField>DPP</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
-        <Field Name="FromDirectInvoice">
-          <DataField>FromDirectInvoice</DataField>
-          <rd:TypeName>System.Boolean</rd:TypeName>
+        <Field Name="PaidAmount">
+          <DataField>PaidAmount</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
         <Field Name="Mark">
           <DataField>Mark</DataField>
@@ -133,33 +161,33 @@ FROM SystemManagement.Company</CommandText>
           <DataField>ApprovedDate</DataField>
           <rd:TypeName>System.DateTime</rd:TypeName>
         </Field>
-        <Field Name="TotalInWord">
-          <DataField>TotalInWord</DataField>
+        <Field Name="RequestInitial">
+          <DataField>RequestInitial</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="SalesInitial">
-          <DataField>SalesInitial</DataField>
+        <Field Name="SupInitial">
+          <DataField>SupInitial</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="CustInitial">
-          <DataField>CustInitial</DataField>
+        <Field Name="SupName">
+          <DataField>SupName</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="CustName">
-          <DataField>CustName</DataField>
+        <Field Name="SupAddress1">
+          <DataField>SupAddress1</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="CustAddress1">
-          <DataField>CustAddress1</DataField>
+        <Field Name="SupPhone">
+          <DataField>SupPhone</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="CustPhone">
-          <DataField>CustPhone</DataField>
+        <Field Name="ReceiveInitial">
+          <DataField>ReceiveInitial</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="CustContactPerson">
-          <DataField>CustContactPerson</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
+        <Field Name="CreatedInitial">
+          <DataField>CreatedInitial</DataField>
+          <rd:UserDefined>true</rd:UserDefined>
         </Field>
       </Fields>
     </DataSet>
@@ -176,48 +204,20 @@ FROM SystemManagement.Company</CommandText>
           </QueryParameter>
         </QueryParameters>
         <CommandType>StoredProcedure</CommandType>
-        <CommandText>sp_get_si_print_data</CommandText>
+        <CommandText>sp_get_rcv_print_data</CommandText>
       </Query>
       <Fields>
         <Field Name="Id">
           <DataField>Id</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="Date">
-          <DataField>Date</DataField>
-          <rd:TypeName>System.DateTime</rd:TypeName>
-        </Field>
-        <Field Name="DOCode">
-          <DataField>DOCode</DataField>
-          <rd:TypeName>System.DateTime</rd:TypeName>
-        </Field>
-        <Field Name="DlvDetailId">
-          <DataField>DlvDetailId</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="DlvDetailLineNo">
-          <DataField>DlvDetailLineNo</DataField>
+        <Field Name="LineNo">
+          <DataField>LineNo</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="Qty">
           <DataField>Qty</DataField>
           <rd:TypeName>System.Int64</rd:TypeName>
-        </Field>
-        <Field Name="UnitPrice">
-          <DataField>UnitPrice</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="Disc">
-          <DataField>Disc</DataField>
-          <rd:TypeName>System.Decimal</rd:TypeName>
-        </Field>
-        <Field Name="TaxAmount">
-          <DataField>TaxAmount</DataField>
-          <rd:TypeName>System.Decimal</rd:TypeName>
-        </Field>
-        <Field Name="Total">
-          <DataField>Total</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="ItemInitial">
           <DataField>ItemInitial</DataField>
@@ -249,25 +249,13 @@ FROM SystemManagement.Company</CommandText>
                   <Width>0.3755in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>2.83522in</Width>
+                  <Width>6.98446in</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>0.38743in</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>0.55057in</Width>
-                </TablixColumn>
-                <TablixColumn>
-                  <Width>0.93712in</Width>
-                </TablixColumn>
-                <TablixColumn>
-                  <Width>0.93712in</Width>
-                </TablixColumn>
-                <TablixColumn>
-                  <Width>0.93712in</Width>
-                </TablixColumn>
-                <TablixColumn>
-                  <Width>1.33992in</Width>
                 </TablixColumn>
               </TablixColumns>
               <TablixRows>
@@ -430,166 +418,6 @@ FROM SystemManagement.Company</CommandText>
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox49">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>Hrg. Satuan</Value>
-                                  <Style>
-                                    <FontWeight>Bold</FontWeight>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Right</TextAlign>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox49</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Style>None</Style>
-                            </Border>
-                            <TopBorder>
-                              <Style>Solid</Style>
-                              <Width>1pt</Width>
-                            </TopBorder>
-                            <BottomBorder>
-                              <Style>Solid</Style>
-                            </BottomBorder>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox47">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>Diskon</Value>
-                                  <Style>
-                                    <FontWeight>Bold</FontWeight>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Right</TextAlign>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox47</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Style>None</Style>
-                            </Border>
-                            <TopBorder>
-                              <Style>Solid</Style>
-                              <Width>1pt</Width>
-                            </TopBorder>
-                            <BottomBorder>
-                              <Style>Solid</Style>
-                            </BottomBorder>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox6">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>Pajak</Value>
-                                  <Style>
-                                    <FontWeight>Bold</FontWeight>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Right</TextAlign>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox6</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Style>None</Style>
-                            </Border>
-                            <TopBorder>
-                              <Style>Solid</Style>
-                              <Width>1pt</Width>
-                            </TopBorder>
-                            <BottomBorder>
-                              <Style>Solid</Style>
-                            </BottomBorder>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox51">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>Total</Value>
-                                  <Style>
-                                    <FontWeight>Bold</FontWeight>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Right</TextAlign>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox51</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Style>None</Style>
-                            </Border>
-                            <TopBorder>
-                              <Style>Solid</Style>
-                              <Width>1pt</Width>
-                            </TopBorder>
-                            <BottomBorder>
-                              <Style>Solid</Style>
-                            </BottomBorder>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
                   </TablixCells>
                 </TablixRow>
                 <TablixRow>
@@ -607,6 +435,7 @@ FROM SystemManagement.Company</CommandText>
                                   <Value>=RowNumber("Detail")</Value>
                                   <Style>
                                     <FontSize>9pt</FontSize>
+                                    <Format>#,##0</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -638,7 +467,7 @@ FROM SystemManagement.Company</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!ItemInitial.Value &amp; " " &amp; Fields!ItemName.Value</Value>
+                                  <Value>=Fields!ItemInitial.Value &amp; " " &amp; Fields!ItemName.Value &amp; IIf(Fields!Sort.Value = 2, " *", "")</Value>
                                   <Style />
                                 </TextRun>
                               </TextRuns>
@@ -668,9 +497,10 @@ FROM SystemManagement.Company</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Format(Fields!Qty.Value, "#,##0")</Value>
+                                  <Value>=Fields!Qty.Value</Value>
                                   <Style>
                                     <FontFamily>Courier New</FontFamily>
+                                    <Format>#,##0</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -723,152 +553,12 @@ FROM SystemManagement.Company</CommandText>
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="UnitPrice">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Format(Fields!UnitPrice.Value, "#,##0.00")</Value>
-                                  <Style>
-                                    <FontFamily>Courier New</FontFamily>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Right</TextAlign>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>UnitPrice</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>None</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Disc">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Format(Fields!Disc.Value, "#,##0.00")</Value>
-                                  <Style>
-                                    <FontFamily>Courier New</FontFamily>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Right</TextAlign>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Disc</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>None</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="TaxAmount">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Format(Fields!TaxAmount.Value, "#,##0.00")</Value>
-                                  <Style>
-                                    <FontFamily>Courier New</FontFamily>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Right</TextAlign>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>TaxAmount</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>None</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Total">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Format(Fields!Total.Value, "#,##0.00")</Value>
-                                  <Style>
-                                    <FontFamily>Courier New</FontFamily>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Right</TextAlign>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Total</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>None</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
                   </TablixCells>
                 </TablixRow>
               </TablixRows>
             </TablixBody>
             <TablixColumnHierarchy>
               <TablixMembers>
-                <TablixMember />
-                <TablixMember />
-                <TablixMember />
-                <TablixMember />
                 <TablixMember />
                 <TablixMember />
                 <TablixMember />
@@ -890,8 +580,9 @@ FROM SystemManagement.Company</CommandText>
               </TablixMembers>
             </TablixRowHierarchy>
             <DataSetName>Detail</DataSetName>
+            <Top>0in</Top>
             <Height>0.5in</Height>
-            <Width>8.3in</Width>
+            <Width>8.29796in</Width>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -910,182 +601,8 @@ FROM SystemManagement.Company</CommandText>
               </Border>
             </Style>
           </Line>
-          <Textbox Name="Textbox18">
-            <CanShrink>true</CanShrink>
-            <KeepTogether>true</KeepTogether>
-            <Paragraphs>
-              <Paragraph>
-                <TextRuns>
-                  <TextRun>
-                    <Value>Terbilang :</Value>
-                    <Style>
-                      <FontSize>9pt</FontSize>
-                    </Style>
-                  </TextRun>
-                </TextRuns>
-                <Style />
-              </Paragraph>
-            </Paragraphs>
-            <Top>0.5625in</Top>
-            <Height>0.18694in</Height>
-            <Width>0.67937in</Width>
-            <ZIndex>2</ZIndex>
-            <Style>
-              <Border>
-                <Style>None</Style>
-              </Border>
-              <VerticalAlign>Top</VerticalAlign>
-            </Style>
-          </Textbox>
-          <Textbox Name="Textbox19">
-            <CanGrow>true</CanGrow>
-            <CanShrink>true</CanShrink>
-            <KeepTogether>true</KeepTogether>
-            <Paragraphs>
-              <Paragraph>
-                <TextRuns>
-                  <TextRun>
-                    <Value>=First(Fields!TotalInWord.Value, "Header") &amp; " " &amp; First(Fields!CurrCode.Value, "Header")</Value>
-                    <Style>
-                      <FontSize>9pt</FontSize>
-                    </Style>
-                  </TextRun>
-                </TextRuns>
-                <Style />
-              </Paragraph>
-            </Paragraphs>
-            <Top>0.5625in</Top>
-            <Left>0.67937in</Left>
-            <Height>0.18694in</Height>
-            <Width>5.21859in</Width>
-            <ZIndex>3</ZIndex>
-            <Style>
-              <Border>
-                <Style>None</Style>
-              </Border>
-              <VerticalAlign>Top</VerticalAlign>
-            </Style>
-          </Textbox>
-          <Textbox Name="Textbox23">
-            <CanShrink>true</CanShrink>
-            <KeepTogether>true</KeepTogether>
-            <Paragraphs>
-              <Paragraph>
-                <TextRuns>
-                  <TextRun>
-                    <Value>Total :</Value>
-                    <Style>
-                      <FontSize>9pt</FontSize>
-                      <FontWeight>Bold</FontWeight>
-                    </Style>
-                  </TextRun>
-                </TextRuns>
-                <Style>
-                  <TextAlign>Right</TextAlign>
-                </Style>
-              </Paragraph>
-            </Paragraphs>
-            <Top>0.5625in</Top>
-            <Left>6.02859in</Left>
-            <Height>0.18694in</Height>
-            <Width>0.67937in</Width>
-            <ZIndex>4</ZIndex>
-            <Style>
-              <Border>
-                <Style>None</Style>
-              </Border>
-              <VerticalAlign>Top</VerticalAlign>
-            </Style>
-          </Textbox>
-          <Textbox Name="Textbox24">
-            <CanShrink>true</CanShrink>
-            <KeepTogether>true</KeepTogether>
-            <Paragraphs>
-              <Paragraph>
-                <TextRuns>
-                  <TextRun>
-                    <Value>=Format(First(Fields!Total.Value, "Header"), "#,##0.00")</Value>
-                    <Style>
-                      <FontFamily>Courier New</FontFamily>
-                      <FontWeight>Bold</FontWeight>
-                    </Style>
-                  </TextRun>
-                </TextRuns>
-                <Style>
-                  <TextAlign>Right</TextAlign>
-                </Style>
-              </Paragraph>
-            </Paragraphs>
-            <Top>0.5625in</Top>
-            <Left>6.70796in</Left>
-            <Height>0.18694in</Height>
-            <Width>1.59in</Width>
-            <ZIndex>5</ZIndex>
-            <Style>
-              <Border>
-                <Style>None</Style>
-              </Border>
-              <VerticalAlign>Top</VerticalAlign>
-            </Style>
-          </Textbox>
-          <Textbox Name="Textbox28">
-            <CanShrink>true</CanShrink>
-            <KeepTogether>true</KeepTogether>
-            <Paragraphs>
-              <Paragraph>
-                <TextRuns>
-                  <TextRun>
-                    <Value>Catatan :</Value>
-                    <Style>
-                      <FontSize>9pt</FontSize>
-                    </Style>
-                  </TextRun>
-                </TextRuns>
-                <Style />
-              </Paragraph>
-            </Paragraphs>
-            <Top>0.87326in</Top>
-            <Height>0.18694in</Height>
-            <Width>0.67937in</Width>
-            <ZIndex>6</ZIndex>
-            <Style>
-              <Border>
-                <Style>None</Style>
-              </Border>
-              <VerticalAlign>Top</VerticalAlign>
-            </Style>
-          </Textbox>
-          <Textbox Name="Textbox29">
-            <CanGrow>true</CanGrow>
-            <CanShrink>true</CanShrink>
-            <KeepTogether>true</KeepTogether>
-            <Paragraphs>
-              <Paragraph>
-                <TextRuns>
-                  <TextRun>
-                    <Value>=First(Fields!Notes.Value, "Header")</Value>
-                    <Style>
-                      <FontSize>9pt</FontSize>
-                    </Style>
-                  </TextRun>
-                </TextRuns>
-                <Style />
-              </Paragraph>
-            </Paragraphs>
-            <Top>0.87326in</Top>
-            <Left>0.67937in</Left>
-            <Height>0.18694in</Height>
-            <Width>5.21859in</Width>
-            <ZIndex>7</ZIndex>
-            <Style>
-              <Border>
-                <Style>None</Style>
-              </Border>
-              <VerticalAlign>Top</VerticalAlign>
-            </Style>
-          </Textbox>
         </ReportItems>
-        <Height>1.0602in</Height>
+        <Height>0.52778in</Height>
         <Style>
           <Border>
             <Style>None</Style>
@@ -1107,7 +624,7 @@ FROM SystemManagement.Company</CommandText>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>Faktur Penjualan</Value>
+                      <Value>Bukti Terima Barang</Value>
                       <Style>
                         <FontSize>14pt</FontSize>
                         <FontWeight>Bold</FontWeight>
@@ -1120,7 +637,7 @@ FROM SystemManagement.Company</CommandText>
               <Top>0.2793in</Top>
               <Left>3.27994in</Left>
               <Height>0.27778in</Height>
-              <Width>1.72184in</Width>
+              <Width>2.03434in</Width>
               <Style />
             </Textbox>
             <Textbox Name="Textbox1">
@@ -1262,7 +779,7 @@ FROM SystemManagement.Company</CommandText>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>Kd. Faktur</Value>
+                      <Value>Kode</Value>
                       <Style />
                     </TextRun>
                   </TextRuns>
@@ -1342,7 +859,7 @@ FROM SystemManagement.Company</CommandText>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>Tgl. Faktur</Value>
+                      <Value>Tanggal</Value>
                       <Style />
                     </TextRun>
                   </TextRuns>
@@ -1420,7 +937,7 @@ FROM SystemManagement.Company</CommandText>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>Jth. Tempo</Value>
+                      <Value>=IIf(First(Fields!SrcTrans.Value, "Header") = 1, "Kd. Order", " Kd. Retur")</Value>
                       <Style />
                     </TextRun>
                   </TextRuns>
@@ -1472,7 +989,7 @@ FROM SystemManagement.Company</CommandText>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>=Format(First(Fields!DueDate.Value, "Header"), "dd-MMM-yyyy")</Value>
+                      <Value>=First(Fields!TransCode.Value, "Header")</Value>
                       <Style />
                     </TextRun>
                   </TextRuns>
@@ -1510,7 +1027,7 @@ FROM SystemManagement.Company</CommandText>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>Pelanggan :</Value>
+                      <Value>Pemasok :</Value>
                       <Style>
                         <FontSize>9pt</FontSize>
                       </Style>
@@ -1537,7 +1054,7 @@ FROM SystemManagement.Company</CommandText>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>=First(Fields!CustName.Value, "Header") &amp; " (" &amp;First(Fields!CustCode.Value, "Header") &amp; ")"</Value>
+                      <Value>=First(Fields!SupName.Value, "Header") &amp; " (" &amp;First(Fields!SupCode.Value, "Header") &amp; ")"</Value>
                       <Style>
                         <FontSize>9pt</FontSize>
                         <FontWeight>Bold</FontWeight>
@@ -1566,7 +1083,7 @@ FROM SystemManagement.Company</CommandText>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>=First(Fields!CustAddress1.Value, "Header")</Value>
+                      <Value>=First(Fields!SupAddress1.Value, "Header")</Value>
                       <Style>
                         <FontSize>9pt</FontSize>
                       </Style>
@@ -1594,7 +1111,7 @@ FROM SystemManagement.Company</CommandText>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>="Telp. " &amp; First(Fields!CustPhone.Value, "Header") &amp; IIf(Len(First(Fields!CustContactPerson.Value, "Header")) &lt;= 0, "", " Attn. " &amp; First(Fields!CustContactPerson.Value, "Header"))</Value>
+                      <Value>="Telp. " &amp; First(Fields!SupPhone.Value, "Header")</Value>
                       <Style>
                         <FontSize>9pt</FontSize>
                       </Style>
@@ -1634,7 +1151,7 @@ FROM SystemManagement.Company</CommandText>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>Pelanggan</Value>
+                      <Value>Dibuat Oleh</Value>
                       <Style>
                         <FontSize>9pt</FontSize>
                         <FontWeight>Normal</FontWeight>
@@ -1664,7 +1181,7 @@ FROM SystemManagement.Company</CommandText>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>=First(Fields!CustInitial.Value, "Header")</Value>
+                      <Value>=First(Fields!CreatedInitial.Value, "Header")</Value>
                       <Style>
                         <FontSize>9pt</FontSize>
                         <FontWeight>Normal</FontWeight>
@@ -1695,7 +1212,7 @@ FROM SystemManagement.Company</CommandText>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>=First(Fields!SalesInitial.Value, "Header")</Value>
+                      <Value>=First(Fields!RequestInitial.Value, "Header")</Value>
                       <Style>
                         <FontSize>9pt</FontSize>
                         <FontWeight>Normal</FontWeight>
@@ -1707,11 +1224,73 @@ FROM SystemManagement.Company</CommandText>
                   </Style>
                 </Paragraph>
               </Paragraphs>
-              <Top>0.71174in</Top>
-              <Left>5.27421in</Left>
+              <Top>0.71089in</Top>
+              <Left>3.79707in</Left>
               <Height>0.18694in</Height>
               <Width>1.47715in</Width>
               <ZIndex>2</ZIndex>
+              <Style>
+                <Border>
+                  <Style>None</Style>
+                </Border>
+                <VerticalAlign>Top</VerticalAlign>
+              </Style>
+            </Textbox>
+            <Textbox Name="Textbox28">
+              <CanShrink>true</CanShrink>
+              <KeepTogether>true</KeepTogether>
+              <Paragraphs>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>Diterima Oleh</Value>
+                      <Style>
+                        <FontSize>9pt</FontSize>
+                        <FontWeight>Normal</FontWeight>
+                      </Style>
+                    </TextRun>
+                  </TextRuns>
+                  <Style>
+                    <TextAlign>Center</TextAlign>
+                  </Style>
+                </Paragraph>
+              </Paragraphs>
+              <Top>0.06165in</Top>
+              <Left>5.34366in</Left>
+              <Height>0.18694in</Height>
+              <Width>1.47715in</Width>
+              <ZIndex>3</ZIndex>
+              <Style>
+                <Border>
+                  <Style>None</Style>
+                </Border>
+                <VerticalAlign>Top</VerticalAlign>
+              </Style>
+            </Textbox>
+            <Textbox Name="Textbox29">
+              <CanShrink>true</CanShrink>
+              <KeepTogether>true</KeepTogether>
+              <Paragraphs>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>=First(Fields!ReceiveInitial.Value, "Header")</Value>
+                      <Style>
+                        <FontSize>9pt</FontSize>
+                        <FontWeight>Normal</FontWeight>
+                      </Style>
+                    </TextRun>
+                  </TextRuns>
+                  <Style>
+                    <TextAlign>Center</TextAlign>
+                  </Style>
+                </Paragraph>
+              </Paragraphs>
+              <Top>0.71089in</Top>
+              <Left>5.34366in</Left>
+              <Height>0.18694in</Height>
+              <Width>1.47715in</Width>
+              <ZIndex>4</ZIndex>
               <Style>
                 <Border>
                   <Style>None</Style>
