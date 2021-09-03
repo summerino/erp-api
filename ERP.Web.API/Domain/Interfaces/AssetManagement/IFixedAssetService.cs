@@ -11,6 +11,8 @@ namespace ERP.Web.API.Domain.Interfaces.AssetManagement
 
         DataSourceResult GetLists(IEnumerable<Filter> filters, IEnumerable<Sort> sorts);
 
+        DataSourceResult GetListHistories(IEnumerable<Filter> filters, IEnumerable<Sort> sorts);
+
         SaveResult Delete(string code, int userId);
     }
 }
