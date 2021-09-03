@@ -639,7 +639,7 @@ FROM SystemManagement.Company</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!ItemInitial.Value &amp; " " &amp; Fields!ItemName.Value</Value>
+                                  <Value>=Fields!ItemInitial.Value &amp; " " &amp; Fields!ItemName.Value &amp; IIf(Fields!Sort.Value = 2, " *", "")</Value>
                                   <Style />
                                 </TextRun>
                               </TextRuns>
@@ -658,6 +658,7 @@ FROM SystemManagement.Company</CommandText>
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
                         </Textbox>
+                        <rd:Selected>true</rd:Selected>
                       </CellContents>
                     </TablixCell>
                     <TablixCell>

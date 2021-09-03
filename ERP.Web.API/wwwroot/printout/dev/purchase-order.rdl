@@ -50,15 +50,13 @@ FROM SystemManagement.Company</CommandText>
           </QueryParameter>
           <QueryParameter Name="@displayType">
             <Value>HEADER</Value>
-            <rd:UserDefined>true</rd:UserDefined>
           </QueryParameter>
           <QueryParameter Name="@centToWord">
             <Value>1</Value>
-            <rd:UserDefined>true</rd:UserDefined>
           </QueryParameter>
         </QueryParameters>
         <CommandType>StoredProcedure</CommandType>
-        <CommandText>sp_get_si_print_data</CommandText>
+        <CommandText>sp_get_po_print_data</CommandText>
       </Query>
       <Fields>
         <Field Name="Code">
@@ -69,41 +67,65 @@ FROM SystemManagement.Company</CommandText>
           <DataField>Date</DataField>
           <rd:TypeName>System.DateTime</rd:TypeName>
         </Field>
-        <Field Name="DueDate">
-          <DataField>DueDate</DataField>
-          <rd:TypeName>System.DateTime</rd:TypeName>
-        </Field>
-        <Field Name="SOCode">
-          <DataField>SOCode</DataField>
+        <Field Name="SupCode">
+          <DataField>SupCode</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="CustCode">
-          <DataField>CustCode</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="IssuedBy">
-          <DataField>IssuedBy</DataField>
+        <Field Name="RequestBy">
+          <DataField>RequestBy</DataField>
           <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+        <Field Name="WarehouseCode">
+          <DataField>WarehouseCode</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="CurrCode">
           <DataField>CurrCode</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="PaidAmount">
-          <DataField>PaidAmount</DataField>
+        <Field Name="Rate">
+          <DataField>Rate</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="ShipmentFee">
+          <DataField>ShipmentFee</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="HandlingFee">
+          <DataField>HandlingFee</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="SubTotal">
+          <DataField>SubTotal</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="FinalDiscPercent">
+          <DataField>FinalDiscPercent</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="FinalDisc">
+          <DataField>FinalDisc</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="IncludeTax">
+          <DataField>IncludeTax</DataField>
+          <rd:TypeName>System.Boolean</rd:TypeName>
+        </Field>
+        <Field Name="TaxAmount">
+          <DataField>TaxAmount</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
         <Field Name="Total">
           <DataField>Total</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
+        <Field Name="DPP">
+          <DataField>DPP</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
         <Field Name="Notes">
           <DataField>Notes</DataField>
           <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="FromDirectInvoice">
-          <DataField>FromDirectInvoice</DataField>
-          <rd:TypeName>System.Boolean</rd:TypeName>
         </Field>
         <Field Name="Mark">
           <DataField>Mark</DataField>
@@ -137,28 +159,28 @@ FROM SystemManagement.Company</CommandText>
           <DataField>TotalInWord</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="SalesInitial">
-          <DataField>SalesInitial</DataField>
+        <Field Name="RequestInitial">
+          <DataField>RequestInitial</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="CustInitial">
-          <DataField>CustInitial</DataField>
+        <Field Name="SupInitial">
+          <DataField>SupInitial</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="CustName">
-          <DataField>CustName</DataField>
+        <Field Name="SupName">
+          <DataField>SupName</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="CustAddress1">
-          <DataField>CustAddress1</DataField>
+        <Field Name="SupAddress1">
+          <DataField>SupAddress1</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="CustPhone">
-          <DataField>CustPhone</DataField>
+        <Field Name="SupPhone">
+          <DataField>SupPhone</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="CustContactPerson">
-          <DataField>CustContactPerson</DataField>
+        <Field Name="CreatedInitial">
+          <DataField>CreatedInitial</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
       </Fields>
@@ -172,44 +194,34 @@ FROM SystemManagement.Company</CommandText>
           </QueryParameter>
           <QueryParameter Name="@displayType">
             <Value>DETAIL</Value>
-            <rd:UserDefined>true</rd:UserDefined>
+          </QueryParameter>
+          <QueryParameter Name="@centToWord">
+            <Value>=Parameters!centToWord.Value</Value>
           </QueryParameter>
         </QueryParameters>
         <CommandType>StoredProcedure</CommandType>
-        <CommandText>sp_get_si_print_data</CommandText>
+        <CommandText>sp_get_po_print_data</CommandText>
       </Query>
       <Fields>
         <Field Name="Id">
           <DataField>Id</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="Date">
-          <DataField>Date</DataField>
           <rd:TypeName>System.DateTime</rd:TypeName>
         </Field>
-        <Field Name="DOCode">
-          <DataField>DOCode</DataField>
-          <rd:TypeName>System.DateTime</rd:TypeName>
-        </Field>
-        <Field Name="DlvDetailId">
-          <DataField>DlvDetailId</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="DlvDetailLineNo">
-          <DataField>DlvDetailLineNo</DataField>
+        <Field Name="LineNo">
+          <DataField>LineNo</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="Qty">
           <DataField>Qty</DataField>
-          <rd:TypeName>System.Int64</rd:TypeName>
+          <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="UnitPrice">
           <DataField>UnitPrice</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
+          <rd:TypeName>System.Int64</rd:TypeName>
         </Field>
         <Field Name="Disc">
           <DataField>Disc</DataField>
-          <rd:TypeName>System.Decimal</rd:TypeName>
+          <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="TaxAmount">
           <DataField>TaxAmount</DataField>
@@ -217,23 +229,23 @@ FROM SystemManagement.Company</CommandText>
         </Field>
         <Field Name="Total">
           <DataField>Total</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
+          <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
         <Field Name="ItemInitial">
           <DataField>ItemInitial</DataField>
-          <rd:TypeName>System.Boolean</rd:TypeName>
+          <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="ItemName">
           <DataField>ItemName</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
+          <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
         <Field Name="ItemUnitName">
           <DataField>ItemUnitName</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
+          <rd:TypeName>System.DateTime</rd:TypeName>
         </Field>
         <Field Name="Sort">
           <DataField>Sort</DataField>
-          <rd:TypeName>System.DateTime</rd:TypeName>
+          <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
       </Fields>
     </DataSet>
@@ -658,7 +670,6 @@ FROM SystemManagement.Company</CommandText>
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
                         </Textbox>
-                        <rd:Selected>true</rd:Selected>
                       </CellContents>
                     </TablixCell>
                     <TablixCell>
@@ -1116,7 +1127,7 @@ FROM SystemManagement.Company</CommandText>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>Faktur Penjualan</Value>
+                      <Value>Pesanan Pembelian</Value>
                       <Style>
                         <FontSize>14pt</FontSize>
                         <FontWeight>Bold</FontWeight>
@@ -1129,7 +1140,7 @@ FROM SystemManagement.Company</CommandText>
               <Top>0.2793in</Top>
               <Left>3.27994in</Left>
               <Height>0.27778in</Height>
-              <Width>1.72184in</Width>
+              <Width>1.94059in</Width>
               <Style />
             </Textbox>
             <Textbox Name="Textbox1">
@@ -1422,89 +1433,11 @@ FROM SystemManagement.Company</CommandText>
                 <VerticalAlign>Top</VerticalAlign>
               </Style>
             </Textbox>
-            <Textbox Name="Textbox20">
-              <CanShrink>true</CanShrink>
-              <KeepTogether>true</KeepTogether>
-              <Paragraphs>
-                <Paragraph>
-                  <TextRuns>
-                    <TextRun>
-                      <Value>Jth. Tempo</Value>
-                      <Style />
-                    </TextRun>
-                  </TextRuns>
-                  <Style />
-                </Paragraph>
-              </Paragraphs>
-              <Top>0.6254in</Top>
-              <Left>6.00055in</Left>
-              <Height>0.18694in</Height>
-              <Width>0.78359in</Width>
-              <ZIndex>12</ZIndex>
-              <Style>
-                <Border>
-                  <Style>None</Style>
-                </Border>
-                <VerticalAlign>Top</VerticalAlign>
-              </Style>
-            </Textbox>
-            <Textbox Name="Textbox21">
-              <CanShrink>true</CanShrink>
-              <KeepTogether>true</KeepTogether>
-              <Paragraphs>
-                <Paragraph>
-                  <TextRuns>
-                    <TextRun>
-                      <Value>:</Value>
-                      <Style />
-                    </TextRun>
-                  </TextRuns>
-                  <Style />
-                </Paragraph>
-              </Paragraphs>
-              <Top>0.6254in</Top>
-              <Left>6.78414in</Left>
-              <Height>0.18694in</Height>
-              <Width>0.12284in</Width>
-              <ZIndex>13</ZIndex>
-              <Style>
-                <Border>
-                  <Style>None</Style>
-                </Border>
-                <VerticalAlign>Top</VerticalAlign>
-              </Style>
-            </Textbox>
-            <Textbox Name="Textbox22">
-              <CanShrink>true</CanShrink>
-              <KeepTogether>true</KeepTogether>
-              <Paragraphs>
-                <Paragraph>
-                  <TextRuns>
-                    <TextRun>
-                      <Value>=Format(First(Fields!DueDate.Value, "Header"), "dd-MMM-yyyy")</Value>
-                      <Style />
-                    </TextRun>
-                  </TextRuns>
-                  <Style />
-                </Paragraph>
-              </Paragraphs>
-              <Top>0.6254in</Top>
-              <Left>6.90698in</Left>
-              <Height>0.18694in</Height>
-              <Width>1.39098in</Width>
-              <ZIndex>14</ZIndex>
-              <Style>
-                <Border>
-                  <Style>None</Style>
-                </Border>
-                <VerticalAlign>Top</VerticalAlign>
-              </Style>
-            </Textbox>
             <Line Name="Line1">
               <Top>0.87484in</Top>
               <Height>0in</Height>
               <Width>8.3in</Width>
-              <ZIndex>15</ZIndex>
+              <ZIndex>12</ZIndex>
               <Style>
                 <Border>
                   <Style>Solid</Style>
@@ -1519,7 +1452,7 @@ FROM SystemManagement.Company</CommandText>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>Pelanggan :</Value>
+                      <Value>Pemasok :</Value>
                       <Style>
                         <FontSize>9pt</FontSize>
                       </Style>
@@ -1531,7 +1464,7 @@ FROM SystemManagement.Company</CommandText>
               <Top>0.93734in</Top>
               <Height>0.18694in</Height>
               <Width>0.75352in</Width>
-              <ZIndex>16</ZIndex>
+              <ZIndex>13</ZIndex>
               <Style>
                 <Border>
                   <Style>None</Style>
@@ -1546,7 +1479,7 @@ FROM SystemManagement.Company</CommandText>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>=First(Fields!CustName.Value, "Header") &amp; " (" &amp;First(Fields!CustCode.Value, "Header") &amp; ")"</Value>
+                      <Value>=First(Fields!SupName.Value, "Header") &amp; " (" &amp;First(Fields!SupCode.Value, "Header") &amp; ")"</Value>
                       <Style>
                         <FontSize>9pt</FontSize>
                         <FontWeight>Bold</FontWeight>
@@ -1560,7 +1493,7 @@ FROM SystemManagement.Company</CommandText>
               <Left>0.75352in</Left>
               <Height>0.18694in</Height>
               <Width>7.54444in</Width>
-              <ZIndex>17</ZIndex>
+              <ZIndex>14</ZIndex>
               <Style>
                 <Border>
                   <Style>None</Style>
@@ -1575,7 +1508,7 @@ FROM SystemManagement.Company</CommandText>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>=First(Fields!CustAddress1.Value, "Header")</Value>
+                      <Value>=First(Fields!SupAddress1.Value, "Header")</Value>
                       <Style>
                         <FontSize>9pt</FontSize>
                       </Style>
@@ -1588,7 +1521,7 @@ FROM SystemManagement.Company</CommandText>
               <Left>0.75352in</Left>
               <Height>0.18694in</Height>
               <Width>7.54444in</Width>
-              <ZIndex>18</ZIndex>
+              <ZIndex>15</ZIndex>
               <Style>
                 <Border>
                   <Style>None</Style>
@@ -1603,7 +1536,7 @@ FROM SystemManagement.Company</CommandText>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>="Telp. " &amp; First(Fields!CustPhone.Value, "Header") &amp; IIf(Len(First(Fields!CustContactPerson.Value, "Header")) &lt;= 0, "", ", Attn. " &amp; First(Fields!CustContactPerson.Value, "Header"))</Value>
+                      <Value>="Telp. " &amp; First(Fields!SupPhone.Value, "Header")</Value>
                       <Style>
                         <FontSize>9pt</FontSize>
                       </Style>
@@ -1616,7 +1549,7 @@ FROM SystemManagement.Company</CommandText>
               <Left>0.75352in</Left>
               <Height>0.18694in</Height>
               <Width>7.54444in</Width>
-              <ZIndex>19</ZIndex>
+              <ZIndex>16</ZIndex>
               <Style>
                 <Border>
                   <Style>None</Style>
@@ -1643,7 +1576,7 @@ FROM SystemManagement.Company</CommandText>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>Pelanggan</Value>
+                      <Value>Dibuat Oleh</Value>
                       <Style>
                         <FontSize>9pt</FontSize>
                         <FontWeight>Normal</FontWeight>
@@ -1673,7 +1606,7 @@ FROM SystemManagement.Company</CommandText>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>=First(Fields!CustInitial.Value, "Header")</Value>
+                      <Value>=First(Fields!CreatedInitial.Value, "Header")</Value>
                       <Style>
                         <FontSize>9pt</FontSize>
                         <FontWeight>Normal</FontWeight>
@@ -1704,7 +1637,7 @@ FROM SystemManagement.Company</CommandText>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>=First(Fields!SalesInitial.Value, "Header")</Value>
+                      <Value>Diminta Oleh</Value>
                       <Style>
                         <FontSize>9pt</FontSize>
                         <FontWeight>Normal</FontWeight>
@@ -1712,15 +1645,46 @@ FROM SystemManagement.Company</CommandText>
                     </TextRun>
                   </TextRuns>
                   <Style>
-                    <TextAlign>Right</TextAlign>
+                    <TextAlign>Center</TextAlign>
                   </Style>
                 </Paragraph>
               </Paragraphs>
-              <Top>0.71174in</Top>
-              <Left>5.27421in</Left>
+              <Top>0.06165in</Top>
+              <Left>5.34366in</Left>
               <Height>0.18694in</Height>
               <Width>1.47715in</Width>
               <ZIndex>2</ZIndex>
+              <Style>
+                <Border>
+                  <Style>None</Style>
+                </Border>
+                <VerticalAlign>Top</VerticalAlign>
+              </Style>
+            </Textbox>
+            <Textbox Name="Textbox30">
+              <CanShrink>true</CanShrink>
+              <KeepTogether>true</KeepTogether>
+              <Paragraphs>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>=First(Fields!RequestInitial.Value, "Header")</Value>
+                      <Style>
+                        <FontSize>9pt</FontSize>
+                        <FontWeight>Normal</FontWeight>
+                      </Style>
+                    </TextRun>
+                  </TextRuns>
+                  <Style>
+                    <TextAlign>Center</TextAlign>
+                  </Style>
+                </Paragraph>
+              </Paragraphs>
+              <Top>0.71089in</Top>
+              <Left>5.34366in</Left>
+              <Height>0.18694in</Height>
+              <Width>1.47715in</Width>
+              <ZIndex>3</ZIndex>
               <Style>
                 <Border>
                   <Style>None</Style>
@@ -1754,16 +1718,26 @@ FROM SystemManagement.Company</CommandText>
       <DataType>String</DataType>
       <Prompt>code</Prompt>
     </ReportParameter>
+    <ReportParameter Name="centToWord">
+      <DataType>Boolean</DataType>
+      <Nullable>true</Nullable>
+      <Prompt>cent To Word</Prompt>
+    </ReportParameter>
   </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
       <NumberOfColumns>1</NumberOfColumns>
-      <NumberOfRows>1</NumberOfRows>
+      <NumberOfRows>2</NumberOfRows>
       <CellDefinitions>
         <CellDefinition>
           <ColumnIndex>0</ColumnIndex>
           <RowIndex>0</RowIndex>
           <ParameterName>code</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>centToWord</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>
