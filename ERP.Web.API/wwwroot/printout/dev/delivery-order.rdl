@@ -1175,7 +1175,7 @@ FROM SystemManagement.Company</CommandText>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>="Telp. " &amp; First(Fields!CustPhone.Value, "Header") &amp; IIf(Len(First(Fields!CustContactPerson.Value, "Header")) &lt;= 0, "", " Attn. " &amp; First(Fields!CustContactPerson.Value, "Header"))</Value>
+                      <Value>="Telp. " &amp; First(Fields!CustPhone.Value, "Header") &amp; IIf(Len(First(Fields!CustContactPerson.Value, "Header")) &lt;= 0, "", ", Attn. " &amp; First(Fields!CustContactPerson.Value, "Header"))</Value>
                       <Style>
                         <FontSize>9pt</FontSize>
                       </Style>

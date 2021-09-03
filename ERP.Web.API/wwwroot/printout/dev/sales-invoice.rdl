@@ -607,6 +607,7 @@ FROM SystemManagement.Company</CommandText>
                                   <Value>=RowNumber("Detail")</Value>
                                   <Style>
                                     <FontSize>9pt</FontSize>
+                                    <Format>#,##0</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -668,9 +669,10 @@ FROM SystemManagement.Company</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Format(Fields!Qty.Value, "#,##0")</Value>
+                                  <Value>=Fields!Qty.Value</Value>
                                   <Style>
                                     <FontFamily>Courier New</FontFamily>
+                                    <Format>#,##0</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -732,9 +734,10 @@ FROM SystemManagement.Company</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Format(Fields!UnitPrice.Value, "#,##0.00")</Value>
+                                  <Value>=Fields!UnitPrice.Value</Value>
                                   <Style>
                                     <FontFamily>Courier New</FontFamily>
+                                    <Format>#,##0.00</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -766,9 +769,10 @@ FROM SystemManagement.Company</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Format(Fields!Disc.Value, "#,##0.00")</Value>
+                                  <Value>=Fields!Disc.Value</Value>
                                   <Style>
                                     <FontFamily>Courier New</FontFamily>
+                                    <Format>#,##0.00</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -800,9 +804,10 @@ FROM SystemManagement.Company</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Format(Fields!TaxAmount.Value, "#,##0.00")</Value>
+                                  <Value>=Fields!TaxAmount.Value</Value>
                                   <Style>
                                     <FontFamily>Courier New</FontFamily>
+                                    <Format>#,##0.00</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -834,9 +839,10 @@ FROM SystemManagement.Company</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Format(Fields!Total.Value, "#,##0.00")</Value>
+                                  <Value>=Fields!Total.Value</Value>
                                   <Style>
                                     <FontFamily>Courier New</FontFamily>
+                                    <Format>#,##0.00</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -890,6 +896,7 @@ FROM SystemManagement.Company</CommandText>
               </TablixMembers>
             </TablixRowHierarchy>
             <DataSetName>Detail</DataSetName>
+            <Top>0in</Top>
             <Height>0.5in</Height>
             <Width>8.3in</Width>
             <Style>
@@ -1004,10 +1011,11 @@ FROM SystemManagement.Company</CommandText>
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>=Format(First(Fields!Total.Value, "Header"), "#,##0.00")</Value>
+                    <Value>=First(Fields!Total.Value, "Header")</Value>
                     <Style>
                       <FontFamily>Courier New</FontFamily>
                       <FontWeight>Bold</FontWeight>
+                      <Format>#,##0.00</Format>
                     </Style>
                   </TextRun>
                 </TextRuns>
@@ -1594,7 +1602,7 @@ FROM SystemManagement.Company</CommandText>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>="Telp. " &amp; First(Fields!CustPhone.Value, "Header") &amp; IIf(Len(First(Fields!CustContactPerson.Value, "Header")) &lt;= 0, "", " Attn. " &amp; First(Fields!CustContactPerson.Value, "Header"))</Value>
+                      <Value>="Telp. " &amp; First(Fields!CustPhone.Value, "Header") &amp; IIf(Len(First(Fields!CustContactPerson.Value, "Header")) &lt;= 0, "", ", Attn. " &amp; First(Fields!CustContactPerson.Value, "Header"))</Value>
                       <Style>
                         <FontSize>9pt</FontSize>
                       </Style>
