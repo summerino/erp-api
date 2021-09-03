@@ -40,6 +40,13 @@ namespace ERP.Web.API.Domain.Services.AssetManagement
             return data.ToDataSourceResult(0, -1, filters, sorts);
         }
 
+        public DataSourceResult GetListHistories(IEnumerable<Filter> filters, IEnumerable<Sort> sorts)
+        {
+            var data = Db.FixedAssetHistories;
+
+            return data.ToDataSourceResult(0, -1, filters, sorts);
+        }
+
         public override SaveResult Insert(FixedAsset data)
         {
             var result = new SaveResult(false);

@@ -55,6 +55,22 @@ namespace ERP.Web.API.Controllers.AssetManagement
             });
         }
 
+        [HttpGet("lists-history")]
+        public IActionResult GetListHistory(string filters, string sorts)
+        {
+            var data =
+                _fixedAsset.GetListHistories(
+                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]")).Data
+                    .ToDynamicList();
+
+            return Ok(new ApiResponse
+            {
+                RowCount = data.Count,
+                TableData = data
+            });
+        }
+
         [HttpPost]
         public IActionResult OnPost(FixedAssetRequest data)
         {
