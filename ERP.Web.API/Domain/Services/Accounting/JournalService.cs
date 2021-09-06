@@ -96,6 +96,10 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 if (journalADJ != null)
                     _db.AddRange(journalADJ);
 
+                var journalGJ = ProcessGeneralJournal(data.Date);
+                if (journalGJ != null)
+                    _db.AddRange(journalGJ);
+
                 if (data.Date.Month == 12)
                 {
                     var removedEY = _db.Journals.Where(x => x.Code == "ENDYEAR-" + data.Date.Year.ToString()).ToList();
@@ -1939,9 +1943,9 @@ namespace ERP.Web.API.Domain.Services.Accounting
             foreach (var itemData in adjData)
             {
                 var adjDetailData = (from adjdetail in _db.AdjustmentDetails
-                                join item in _db.Items on adjdetail.ItemId equals item.Id
-                                where adjdetail.Code == itemData.Code
-                                select new { AdjDetail = adjdetail, Item = item }).ToList();
+                                     join item in _db.Items on adjdetail.ItemId equals item.Id
+                                     where adjdetail.Code == itemData.Code
+                                     select new { AdjDetail = adjdetail, Item = item }).ToList();
 
                 short k = 0;
                 short l = 0;
@@ -1989,7 +1993,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     }
                 }
 
-                if(journals.Where(x => x.Group == 1).Any())
+                if (journals.Where(x => x.Group == 1).Any())
                 {
                     journals.Add(new Journal
                     {
@@ -2027,6 +2031,43 @@ namespace ERP.Web.API.Domain.Services.Accounting
                         Amount = journals.Where(x => x.Code == itemData.Code && x.Group == 2).Sum(x => x.Amount),
                         SrcTrans = "ADJ"
                     });
+                }
+            }
+
+            return journals;
+        }
+        private IEnumerable<Journal> ProcessGeneralJournal(DateTime dateTime)
+        {
+            List<Journal> journals = new();
+
+            var dataHeader = _db.GeneralJournalHeaders
+                .Where(x => x.Date.Month == dateTime.Month && x.Date.Year == dateTime.Year && x.Mark != "V")
+                .ToList();
+
+            foreach (var itemData in dataHeader)
+            {
+                var dataDetail = _db.GeneralJournalDetails.Where(x => x.Code == itemData.Code).ToList();
+
+                short i = 0;
+                short j = 0;
+                foreach (var itemDetail in dataDetail)
+                {
+                    journals.Add(new Journal
+                    {
+                        Code = itemData.Code,
+                        LineNo = itemDetail.Type == "D" ? ++i : ++j,
+                        Date = itemData.Date,
+                        CoaCode = itemDetail.CoaCode,
+                        TypeCode = "GJ_DT",
+                        Notes = itemDetail.Notes,
+                        RefCode1 = "",
+                        Group = (short)(itemDetail.Type == "D" ? 1 : 2),
+                        CurrCode = itemData.CurrCode,
+                        Period = itemData.Date.ToString("yyyyMMdd"),
+                        Type = itemDetail.Type,
+                        Amount = itemDetail.Amount,
+                        SrcTrans = "GJ"
+                    }); ;
                 }
             }
 
