@@ -7,6 +7,7 @@ using ERP.Common.Models;
 using ERP.Entity;
 using ERP.Entity.Accounting;
 using ERP.Web.API.Domain.Interfaces.Accounting;
+using ERP.Web.API.Model.Accounting;
 
 namespace ERP.Web.API.Domain.Services.Accounting
 {
@@ -119,6 +120,101 @@ namespace ERP.Web.API.Domain.Services.Accounting
 
             result.Success = true;
             result.Message = "Data piutang berhasil dihapus.";
+            return result;
+        }
+
+        public IEnumerable<UploadBBARRequest> VerifyUpload(IEnumerable<UploadBBARRequest> data)
+        {
+            foreach (var item in data)
+            {
+                var result = Db.BeginningBalanceARs.FirstOrDefault(x => x.Code == item.Kode);
+                if (result != null)
+                {
+                    if ((item.Nilai - result.PaidAmount) < 0)
+                    {
+                        item.Mark = true;
+                    }
+                    else
+                    {
+                        item.Mark = false;
+                    }
+                }
+                else
+                {
+                    item.Mark = false;
+                }
+            }
+            return data;
+        }
+
+        public SaveResult Posting(IEnumerable<UploadBBARRequest> data, int userId)
+        {
+            var result = new SaveResult(false);
+            using var transaction = Db.Database.BeginTransaction();
+            try
+            {
+                var verified = VerifyUpload(data).ToList();
+                var verifyDupe = verified.GroupBy(x => x.Kode).Any(g => g.Count() > 1);
+                if (verifyDupe)
+                {
+                    result.Message = "Terdapat kode duplikat pada data import.";
+                    return result;
+                }
+
+                var removed = Db.BeginningBalanceARs
+                    .Where(x => !verified.Select(y => y.Kode).Contains(x.Code))
+                    .ToList();
+                if (removed.Any())
+                    Db.BeginningBalanceARs.RemoveRange(removed);
+
+                foreach (var item in verified)
+                {
+                    if (!item.Mark)
+                    {
+                        var dataAr = Db.BeginningBalanceARs.FirstOrDefault(x => x.Code == item.Kode);
+                        if (dataAr != null)
+                        {
+                            dataAr.Date = item.Tanggal ?? DateTime.MinValue;
+                            dataAr.DueDate = item.Tgljatuhtempo ?? DateTime.MaxValue;
+                            dataAr.CustCode = item.Kodepelanggan.ToUpper();
+                            dataAr.Amount = item.Nilai;
+                            dataAr.Notes = item.Catatan;
+                            dataAr.IsActive = true;
+                            dataAr.UpdatedBy = userId;
+                            dataAr.UpdatedDate = DateTime.Now;
+                            Db.BeginningBalanceARs.Update(dataAr);
+                        }
+                        else
+                        {
+                            Db.BeginningBalanceARs.Add(new BeginningBalanceAR
+                            {
+                                Code = item.Kode,
+                                Date = item.Tanggal ?? DateTime.MinValue,
+                                DueDate = item.Tgljatuhtempo ?? DateTime.MaxValue,
+                                CustCode = item.Kodepelanggan.ToUpper(),
+                                CurrCode = "IDR",
+                                Rate = 1,
+                                Amount = item.Nilai,
+                                Notes = item.Catatan,
+                                IsActive = true,
+                                CreatedBy = userId,
+                                CreatedDate = DateTime.Now,
+                                UpdatedBy = userId,
+                                UpdatedDate = DateTime.Now,
+                            });
+                        }
+                    }
+                }
+                Db.SaveChanges();
+                transaction.Commit();
+            }
+            catch (Exception ex)
+            {
+                result.Message = ex.InnerException?.Message ?? ex.Message;
+                return result;
+            }
+            result.Success = true;
+            result.Message = "Import data saldo awal piutang berhasil disimpan.";
             return result;
         }
 

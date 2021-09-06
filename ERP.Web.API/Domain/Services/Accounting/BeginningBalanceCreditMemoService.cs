@@ -7,6 +7,7 @@ using ERP.Common.Models;
 using ERP.Entity;
 using ERP.Entity.Accounting;
 using ERP.Web.API.Domain.Interfaces.Accounting;
+using ERP.Web.API.Model.Accounting;
 
 namespace ERP.Web.API.Domain.Services.Accounting
 {
@@ -118,6 +119,101 @@ namespace ERP.Web.API.Domain.Services.Accounting
 
             result.Success = true;
             result.Message = "Data saldo awal nota kredit berhasil dihapus.";
+            return result;
+        }
+
+        public IEnumerable<UploadBBCMRequest> VerifyUpload(IEnumerable<UploadBBCMRequest> data)
+        {
+            foreach (var item in data)
+            {
+                var result = Db.BeginningBalanceCreditMemos.FirstOrDefault(x => x.Code == item.Kode);
+                if (result != null)
+                {
+                    if ((item.Nilai - result.Used) < 0)
+                    {
+                        item.Mark = true;
+                    }
+                    else
+                    {
+                        item.Mark = false;
+                    }
+                }
+                else
+                {
+                    item.Mark = false;
+                }
+            }
+            return data;
+        }
+
+        public SaveResult Posting(IEnumerable<UploadBBCMRequest> data, int userId)
+        {
+            var result = new SaveResult(false);
+            using var transaction = Db.Database.BeginTransaction();
+            try
+            {
+                var verified = VerifyUpload(data).ToList();
+                var verifyDupe = verified.GroupBy(x => x.Kode).Any(g => g.Count() > 1);
+                if (verifyDupe)
+                {
+                    result.Message = "Terdapat kode duplikat pada data import.";
+                    return result;
+                }
+
+                var removed = Db.BeginningBalanceCreditMemos
+                    .Where(x => !verified.Select(y => y.Kode).Contains(x.Code))
+                    .ToList();
+                if (removed.Any())
+                    Db.BeginningBalanceCreditMemos.RemoveRange(removed);
+
+                foreach (var item in verified)
+                {
+                    if (!item.Mark)
+                    {
+                        var dataCm = Db.BeginningBalanceCreditMemos.FirstOrDefault(x => x.Code == item.Kode);
+                        if (dataCm != null)
+                        {
+                            dataCm.Date = item.Tanggal ?? DateTime.MinValue;
+                            dataCm.Type = (short)(item.Tipe.ToLower() == "deposit" ? 1 : item.Tipe.ToLower() == "retur" ? 2 : 0);
+                            dataCm.CustCode = item.Kodepelanggan.ToUpper();
+                            dataCm.Amount = item.Nilai;
+                            dataCm.Notes = item.Catatan;
+                            dataCm.IsActive = true;
+                            dataCm.UpdatedBy = userId;
+                            dataCm.UpdatedDate = DateTime.Now;
+                            Db.BeginningBalanceCreditMemos.Update(dataCm);
+                        }
+                        else
+                        {
+                            Db.BeginningBalanceCreditMemos.Add(new BeginningBalanceCreditMemo
+                            {
+                                Code = item.Kode,
+                                Date = item.Tanggal ?? DateTime.MinValue,
+                                Type = (short)(item.Tipe.ToLower() == "deposit" ?  1 : item.Tipe.ToLower() == "retur" ? 2 : 0),
+                                CustCode = item.Kodepelanggan.ToUpper(),
+                                CurrCode = "IDR",
+                                Rate = 1,
+                                Amount = item.Nilai,
+                                Notes = item.Catatan,
+                                IsActive = true,
+                                CreatedBy = userId,
+                                CreatedDate = DateTime.Now,
+                                UpdatedBy = userId,
+                                UpdatedDate = DateTime.Now,
+                            });
+                        }
+                    }
+                }
+                Db.SaveChanges();
+                transaction.Commit();
+            }
+            catch (Exception ex)
+            {
+                result.Message = ex.InnerException?.Message ?? ex.Message;
+                return result;
+            }
+            result.Success = true;
+            result.Message = "Import data saldo awal nota kredit berhasil disimpan.";
             return result;
         }
 
