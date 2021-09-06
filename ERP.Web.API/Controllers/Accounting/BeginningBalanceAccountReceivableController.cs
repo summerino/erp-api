@@ -115,6 +115,23 @@ namespace ERP.Web.API.Controllers.Accounting
             return Ok(result);
         }
 
+        [HttpPost("upload")]
+        public IActionResult OnUpload(IEnumerable<UploadBBARRequest> data)
+        {
+            var result = _bbAr.VerifyUpload(data);
+            return Ok(new ApiResponse
+            {
+                RowCount = result.Count(),
+                TableData = result.ToDynamicList()
+            });
+        }
+        [HttpPost("posting")]
+        public IActionResult OnPosting(IEnumerable<UploadBBARRequest> data)
+        {
+            var result = _bbAr.Posting(data, _claim.UserId);
+            return Ok(result);
+        }
+
         private (bool, string) Validate(BeginningBalanceARRequest data)
         {
             var periods = new List<string> { data.Date.ToString("yyyyMM") };

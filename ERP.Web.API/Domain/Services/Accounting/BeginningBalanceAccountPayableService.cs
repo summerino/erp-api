@@ -179,7 +179,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                         {
                             dataAp.Date = item.Tanggal ?? DateTime.MinValue;
                             dataAp.DueDate = item.Tgljatuhtempo ?? DateTime.MaxValue;
-                            dataAp.SupCode = item.Kodepemasok;
+                            dataAp.SupCode = item.Kodepemasok.ToUpper();
                             dataAp.Amount = item.Nilai;
                             dataAp.Notes = item.Catatan;
                             dataAp.IsActive = true;
@@ -195,7 +195,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                                 Code = item.Kode,
                                 Date = item.Tanggal ?? DateTime.MinValue,
                                 DueDate = item.Tgljatuhtempo ?? DateTime.MaxValue,
-                                SupCode = item.Kodepemasok,
+                                SupCode = item.Kodepemasok.ToUpper(),
                                 CurrCode = "IDR",
                                 Rate = 1,
                                 Amount = item.Nilai,

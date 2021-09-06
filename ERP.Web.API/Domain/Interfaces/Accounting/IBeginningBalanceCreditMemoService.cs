@@ -2,6 +2,7 @@
 using ERP.Common;
 using ERP.Common.Models;
 using ERP.Entity.Accounting;
+using ERP.Web.API.Model.Accounting;
 
 namespace ERP.Web.API.Domain.Interfaces.Accounting
 {
@@ -11,5 +12,9 @@ namespace ERP.Web.API.Domain.Interfaces.Accounting
             string search);
 
         SaveResult Delete(long id, int userId);
+
+        IEnumerable<UploadBBCMRequest> VerifyUpload(IEnumerable<UploadBBCMRequest> data);
+
+        SaveResult Posting(IEnumerable<UploadBBCMRequest> data, int userId);
     }
 }

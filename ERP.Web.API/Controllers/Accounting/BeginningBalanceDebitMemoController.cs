@@ -115,6 +115,23 @@ namespace ERP.Web.API.Controllers.Accounting
             return Ok(result);
         }
 
+        [HttpPost("upload")]
+        public IActionResult OnUpload(IEnumerable<UploadBBDMRequest> data)
+        {
+            var result = _bbDm.VerifyUpload(data);
+            return Ok(new ApiResponse
+            {
+                RowCount = result.Count(),
+                TableData = result.ToDynamicList()
+            });
+        }
+        [HttpPost("posting")]
+        public IActionResult OnPosting(IEnumerable<UploadBBDMRequest> data)
+        {
+            var result = _bbDm.Posting(data, _claim.UserId);
+            return Ok(result);
+        }
+
         private (bool, string) Validate(BeginningBalanceDebitMemoRequest data)
         {
             var periods = new List<string> { data.Date.ToString("yyyyMM") };
