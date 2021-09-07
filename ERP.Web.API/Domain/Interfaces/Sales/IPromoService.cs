@@ -22,6 +22,8 @@ namespace ERP.Web.API.Domain.Interfaces.Sales
 
         IEnumerable<PromoSubject> GetSubjectData(string code);
 
+        IEnumerable<string> GetListPromo(string code);
+
         SaveResult Insert(PromoRequest data);
 
         SaveResult Update(PromoRequest data);
