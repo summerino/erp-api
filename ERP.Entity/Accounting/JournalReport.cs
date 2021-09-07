@@ -83,5 +83,7 @@ namespace ERP.Entity.Accounting
         public string EndBalOc { get; set; }
 
         public byte IsBold { get; set; }
+
+        public DateTime? Date { get; set; }
     }
 }
