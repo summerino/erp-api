@@ -66,7 +66,7 @@ namespace ERP.Web.API.Controllers.Accounting
 
                     result.Add(new JournalReportWrapper
                     {
-                        AccCode = item.Date.ToString("dd MMM yyyy"),
+                        AccCode = item.Date.ToString("dd-MMM-yyyy"),
                         AccName = item.Code,
                         IsBold = 1
                     });

@@ -89,7 +89,7 @@ namespace ERP.Web.API.Controllers.Accounting
 
                 result.Add(new JournalReportWrapper
                 {
-                    AccCode = item.Date?.ToString("dd-MM-yyyy"),
+                    AccCode = item.Date?.ToString("dd-MMM-yyyy"),
                     AccName = item.Code,
                     Notes = item.Notes,
                     RefCode1 = item.RefCode1,
@@ -101,7 +101,8 @@ namespace ERP.Web.API.Controllers.Accounting
                     DebetOc = item.DebetOc?.ToString(),
                     CreditOc = item.CreditOc?.ToString(),
                     EndBalOc = totalMutOc?.ToString(),
-                    IsBold = (byte)(item.IsBold == "1" ? 1 : 0)
+                    IsBold = (byte)(item.IsBold == "1" ? 1 : 0),
+                    Date = item.Date
                 });
             }
 
