@@ -155,6 +155,18 @@ namespace ERP.Web.API.Controllers.Sales
             return Ok(result);
         }
 
+        [HttpGet("list")]
+        public IActionResult GetListPromo(string code)
+        {
+            var data = _promo.GetListPromo(code).ToList<dynamic>();
+
+            return Ok(new ApiResponse
+            {
+                RowCount = data.Count,
+                TableData = data
+            });
+        }
+
         private (bool, string) Validate(PromoRequest data, bool onDelete = false)
         {
             var periods = new List<string> { data.StartDate.ToString("yyyyMM"), data.EndDate.ToString("yyyyMM") };

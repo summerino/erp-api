@@ -349,5 +349,33 @@ namespace ERP.Web.API.Domain.Services.Sales
             result.Message = "Data promo berhasil ditandai sebagai void.";
             return result;
         }
+
+        public IEnumerable<string> GetListPromo(string code)
+        {
+            var result = new List<string>();
+
+            var data = (from d in Db.SalesOrderDetailDiscounts
+                        where d.Code == code
+                        group d by new { d.Code, d.PromoCode } into dt
+                        select new { dt.Key.Code, dt.Key.PromoCode }).Union(
+                        from f in Db.SalesOrderDetailFreeGoods
+                        where f.Code == code
+                        group f by new { f.Code, f.PromoCode } into ft
+                        select new { ft.Key.Code, ft.Key.PromoCode })
+                        .Distinct()
+                        .ToList();
+            
+            if (data.Any())
+            {
+                foreach (var item in data)
+                {
+                    var promoData = Db.PromoHeaders.FirstOrDefault(x => x.Code == item.PromoCode);
+                    if (promoData != null)
+                        result.Add(promoData.Name);
+                }
+            }
+
+            return result;
+        }
     }
 }
