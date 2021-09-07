@@ -1089,7 +1089,7 @@ namespace ERP.Entity
                 entity.Property(e => e.Code)
                     .IsRequired();
 
-                entity.HasOne<MobileItemRequestHeader>()
+                entity.HasOne<MobileCostHeader>()
                     .WithMany()
                     .HasForeignKey(d => d.Code)
                     .OnDelete(DeleteBehavior.NoAction);
@@ -1100,7 +1100,7 @@ namespace ERP.Entity
                 entity.Property(e => e.Code)
                     .IsRequired();
 
-                entity.HasOne<MobileItemRequestHeader>()
+                entity.HasOne<MobileCostHeader>()
                     .WithMany()
                     .HasForeignKey(d => d.Code)
                     .OnDelete(DeleteBehavior.NoAction);
