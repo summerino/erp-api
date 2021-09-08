@@ -1649,7 +1649,7 @@ FROM SystemManagement.Company</CommandText>
                   </Style>
                 </Paragraph>
               </Paragraphs>
-              <Top>0.06165in</Top>
+              <Top>0.0625in</Top>
               <Left>5.34366in</Left>
               <Height>0.18694in</Height>
               <Width>1.47715in</Width>
@@ -1680,7 +1680,7 @@ FROM SystemManagement.Company</CommandText>
                   </Style>
                 </Paragraph>
               </Paragraphs>
-              <Top>0.71089in</Top>
+              <Top>0.71174in</Top>
               <Left>5.34366in</Left>
               <Height>0.18694in</Height>
               <Width>1.47715in</Width>
