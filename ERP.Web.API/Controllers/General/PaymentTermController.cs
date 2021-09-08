@@ -77,9 +77,7 @@ namespace ERP.Web.API.Controllers.General
         {
             // Checking role authorization
             if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Insert }).Any())
-            {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
 
             data.IsActive = true;
             data.CreatedBy = _claim.UserId;
@@ -97,9 +95,7 @@ namespace ERP.Web.API.Controllers.General
         {
             // Checking role authorization
             if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
-            {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
 
             data.UpdatedBy = _claim.UserId;
             data.UpdatedDate = DateTime.Now;
@@ -114,9 +110,7 @@ namespace ERP.Web.API.Controllers.General
         {
             // Checking role authorization
             if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Delete }).Any())
-            {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
 
             var result = _paymentTerm.Delete(id, _claim.UserId);
             return Ok(result);

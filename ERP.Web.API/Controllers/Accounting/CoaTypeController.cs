@@ -2,14 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
+using Microsoft.AspNetCore.Mvc;
 using ERP.Common;
 using ERP.Common.Models;
-using Microsoft.AspNetCore.Mvc;
 using ERP.Entity;
 using ERP.Entity.Accounting;
 using ERP.Web.API.Domain.Interfaces.Accounting;
 using ERP.Web.API.Domain.Interfaces.Auth;
-using ERP.Web.API.Domain.Models;
 using ERP.Web.API.Model;
 using Newtonsoft.Json;
 
@@ -22,6 +21,7 @@ namespace ERP.Web.API.Controllers.Accounting
         private readonly ICoaTypeService _coaType;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
+
         private const int MenuId = (int)Menu.COAType;
         public CoaTypeController(ICoaTypeService coaType, IClaimService claim, IAuthService auth)
         {
@@ -50,11 +50,9 @@ namespace ERP.Web.API.Controllers.Accounting
         [HttpPost]
         public IActionResult OnPost(CoaType data)
         {
-
+            // Checking role authorization
             if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Insert }).Any())
-            {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
 
             data.IsActive = true;
             data.CreatedBy = _claim.UserId;
@@ -70,11 +68,9 @@ namespace ERP.Web.API.Controllers.Accounting
         [HttpPut("{id}")]
         public IActionResult OnPut(string id, CoaType data)
         {
-
+            // Checking role authorization
             if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
-            {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
 
             data.UpdatedBy = _claim.UserId;
             data.UpdatedDate = DateTime.Now;
@@ -87,11 +83,9 @@ namespace ERP.Web.API.Controllers.Accounting
         [HttpDelete("{id}")]
         public IActionResult OnDelete(int id)
         {
-
+            // Checking role authorization
             if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Delete }).Any())
-            {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
 
             var result = _coaType.Delete(id, _claim.UserId);
 

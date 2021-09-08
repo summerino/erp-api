@@ -79,6 +79,13 @@ namespace ERP.Web.API.Domain.Services.General
                 return result;
             }
 
+            //Check if payment term is cash
+            if (data.Id == 1)
+            {
+                result.Message = "Syarat pembayaran cash tidak dapat diubah.";
+                return result;
+            }
+
             // Update data
             Db.PaymentTerms.Update(data);
             Db.Entry(data).Property(e => e.Id).IsModified = false;
@@ -111,6 +118,13 @@ namespace ERP.Web.API.Domain.Services.General
                 if (Db.Customers.Any(x => x.PaymentTermId == data.Id))
                 {
                     result.Message = "Tidak bisa menghapus data syarat pembayaran karena telah digunakan pada data pelanggan.";
+                    return result;
+                }
+
+                //Check if payment term is cash
+                if (data.Id == 1)
+                {
+                    result.Message = "Syarat pembayaran cash tidak dapat diubah.";
                     return result;
                 }
 
