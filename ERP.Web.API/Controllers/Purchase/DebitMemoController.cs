@@ -6,14 +6,13 @@ using Microsoft.AspNetCore.Mvc;
 using ERP.Common;
 using ERP.Common.Models;
 using ERP.Entity;
-using ERP.Entity.Purchase;
+using ERP.Web.API.Domain.Interfaces.Accounting;
 using ERP.Web.API.Domain.Interfaces.Auth;
 using ERP.Web.API.Domain.Interfaces.Purchase;
 using ERP.Web.API.Domain.Interfaces.SystemManagement;
 using ERP.Web.API.Model;
-using Newtonsoft.Json;
-using ERP.Web.API.Domain.Interfaces.Accounting;
 using ERP.Web.API.Model.Purchase;
+using Newtonsoft.Json;
 
 namespace ERP.Web.API.Controllers.Purchase
 {
@@ -22,20 +21,21 @@ namespace ERP.Web.API.Controllers.Purchase
     public class DebitMemoController : ControllerBase
     {
         private readonly IDebitMemoService _memo;
+        private readonly IClosingMonthService _closingMonth;
         private readonly ISystemParameterService _sysPar;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
-        private readonly IClosingMonthService _closingMonth;
+
         private const int MenuId = (int)Menu.DebitMemo;
 
-        public DebitMemoController(IDebitMemoService memo, ISystemParameterService sysPar,
-            IClaimService claim, IAuthService auth, IClosingMonthService closingMonthService)
+        public DebitMemoController(IDebitMemoService memo, IClosingMonthService closingMonth,
+            ISystemParameterService sysPar, IClaimService claim, IAuthService auth)
         {
             _memo = memo;
+            _closingMonth = closingMonth;
             _sysPar = sysPar;
             _claim = claim;
             _auth= auth;
-            _closingMonth = closingMonthService;
         }
 
         [HttpGet]
@@ -153,6 +153,9 @@ namespace ERP.Web.API.Controllers.Purchase
 
             if (_closingMonth.IsMonthClosed(periods))
                 return (false, "Periode sudah ditutup. Silakan hubungi departemen akuntansi.");
+
+            if (data.SrcTrans == 2)
+                return (false, "data tidak dapat disimpan karena sumber transaksi adalah retur.");
 
             // Checking data start date validity
             return (!_sysPar.IsStartDateValid(data.Date))

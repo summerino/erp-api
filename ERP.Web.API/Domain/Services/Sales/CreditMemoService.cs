@@ -8,7 +8,6 @@ using ERP.Common.Models;
 using ERP.Entity;
 using ERP.Entity.Sales;
 using ERP.Web.API.Domain.Interfaces.Sales;
-using ERP.Web.API.Domain.Models;
 
 namespace ERP.Web.API.Domain.Services.Sales
 {
@@ -18,8 +17,6 @@ namespace ERP.Web.API.Domain.Services.Sales
             : base(db)
         {
         }
-
-        
 
         public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
             string search)
@@ -87,7 +84,6 @@ namespace ERP.Web.API.Domain.Services.Sales
 
                 // Insert data
                 data.Code = newCode;
-                // Insert data
                 Db.CreditMemos.Add(data);
 
                 Db.SaveChanges();
@@ -101,7 +97,7 @@ namespace ERP.Web.API.Domain.Services.Sales
 
             result.Success = true;
             result.Data = data.Code;
-            result.Message = "Data nota debit berhasil disimpan.";
+            result.Message = "Data nota kredit berhasil disimpan.";
             return result;
         }
 
@@ -112,17 +108,20 @@ namespace ERP.Web.API.Domain.Services.Sales
             // Update data
             Db.CreditMemos.Update(data);
             Db.Entry(data).Property(e => e.Code).IsModified = false;
+            Db.Entry(data).Property(e => e.SrcTrans).IsModified = false;
+            Db.Entry(data).Property(e => e.Used).IsModified = false;
+            Db.Entry(data).Property(e => e.Mark).IsModified = false;
             Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
             Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
 
             Db.SaveChanges();
 
-
             result.Success = true;
             result.Data = data.Code;
-            result.Message = "Data nota debit berhasil diperbarui.";
+            result.Message = "Data nota kredit berhasil diperbarui.";
             return result;
         }
+
         public SaveResult Delete(string code, int userId)
         {
             var result = new SaveResult(false);
@@ -133,7 +132,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                 // Checking mark header data
                 if (data.Mark == "V")
                 {
-                    result.Message = "Data nota debit tidak bisa ditandai sebagai void karena sudah ditandai sebagai void.";
+                    result.Message = "Data nota kredit tidak bisa ditandai sebagai void karena sudah ditandai sebagai void.";
                     return result;
                 }
 
@@ -146,7 +145,7 @@ namespace ERP.Web.API.Domain.Services.Sales
             }
 
             result.Success = true;
-            result.Message = "Data nota debit berhasil ditandai sebagai void.";
+            result.Message = "Data nota kredit berhasil ditandai sebagai void.";
             return result;
         }
     }

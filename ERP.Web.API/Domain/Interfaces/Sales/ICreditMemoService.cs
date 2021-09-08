@@ -2,7 +2,6 @@
 using ERP.Common;
 using ERP.Common.Models;
 using ERP.Entity.Sales;
-using ERP.Web.API.Domain.Models;
 
 namespace ERP.Web.API.Domain.Interfaces.Sales
 {
@@ -10,9 +9,12 @@ namespace ERP.Web.API.Domain.Interfaces.Sales
     {
         DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
             string search);
+        
         DataSourceResult GetDataOutstandingCreditMemo(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
             string search);
+        
         List<dynamic> GetRelatedTransactions(string code);
+        
         SaveResult Delete(string code, int userId);
     }
 }

@@ -18,7 +18,7 @@
         ApproveTransferStock = 9,
         Post = 10,
         PayWithDebitMemo = 11,
-        PayWithCreditMemoost = 12,
+        PayWithCreditMemo = 12,
         ApproveConsignee = 13,
         ApproveAdjustment = 14,
         ApprovePurchaseOrder = 15,
@@ -123,14 +123,14 @@
         AssetType = 62,
         FixedAsset = 63,
 
+        // Mobile Sales
+        MobileReason = 108,
+
         // System Management
         CompanyProfile = 75,
         User = 51,
         Role = 52,
-        Parameter = 73,
-
-        // Mobile Sales
-        MobileReason = 108
+        Parameter = 73
     }
 
     public static class ApprovalType
