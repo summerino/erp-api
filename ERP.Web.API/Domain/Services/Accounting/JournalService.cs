@@ -328,7 +328,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                         CurrCode = itemData.Dlvheader.CurrCode,
                         Period = itemData.Dlvheader.Date.ToString("yyyyMMdd"),
                         Type = "C",
-                        Amount = smData.BaseNettPrice * smData.BaseQty,
+                        Amount = smData != null ? smData.BaseNettPrice * smData.BaseQty : 0,
                         SrcTrans = "DLV"
                     });
 
@@ -347,7 +347,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                         CurrCode = itemData.Dlvheader.CurrCode,
                         Period = itemData.Dlvheader.Date.ToString("yyyyMMdd"),
                         Type = "D",
-                        Amount = smData.BaseNettPrice * smData.BaseQty,
+                        Amount = smData != null ? smData.BaseNettPrice * smData.BaseQty : 0,
                         SrcTrans = "DLV"
                     });
 
@@ -1918,7 +1918,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                         Date = new DateTime(dateTime.Year, dateTime.Month, DateTime.DaysInMonth(dateTime.Year, dateTime.Month)),
                         CoaCode = item.CoaCode,
                         TypeCode = "ADJ_END_YEAR",
-                        Notes = item.Notes,
+                        Notes = item.Notes ?? "",
                         RefCode1 = "",
                         Group = 2,
                         CurrCode = "IDR",
@@ -2059,7 +2059,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                         Date = itemData.Date,
                         CoaCode = itemDetail.CoaCode,
                         TypeCode = "GJ_DT",
-                        Notes = itemDetail.Notes,
+                        Notes = itemDetail.Notes ?? "",
                         RefCode1 = "",
                         Group = (short)(itemDetail.Type == "D" ? 1 : 2),
                         CurrCode = itemData.CurrCode,
