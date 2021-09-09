@@ -116,6 +116,7 @@
         JournalReport = 100,
         GeneralLedgerReport = 104,
         TrialBalanceReport = 105,
+        BalanceSheetReport = 109,
         Posting = 86,
         ClosingMonth = 88,
 

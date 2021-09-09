@@ -54,6 +54,8 @@ namespace ERP.Entity.Accounting
         public string DateFrom { get; set; }
 
         public string DateTo { get; set; }
+
+        public DateTime Date { get; set; }
     }
 
     public class JournalReportWrapper
