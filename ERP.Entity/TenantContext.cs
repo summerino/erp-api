@@ -52,6 +52,9 @@ namespace ERP.Entity
         public DbSet<ReportJournalResult> ReportJournalResults { get; set; }
         public DbSet<GeneralLedgerResult> GeneralLedgerResults { get; set; }
         public DbSet<TrialBalanceResult> TrialBalanceResults { get; set; }
+        public DbSet<IncomeStatementFormat> IncomeStatementFormats { get; set; }
+        public DbSet<IncomeStatementFormatSubtotal> IncomeStatementFormatSubtotals { get; set; }
+        public DbSet<VwIncomeStatementFormatSubtotal> VwIncomeStatementFormatSubtotals { get; set; }
 
         // Asset Management entities
         public DbSet<FixedAsset> FixedAssets { get; set; }
@@ -451,6 +454,24 @@ namespace ERP.Entity
             modelBuilder.Entity<TrialBalanceResult>()
                 .HasNoKey()
                 .ToTable("TrialBalanceResult", t => t.ExcludeFromMigrations());
+
+            // Income Statement Format model
+            modelBuilder.Entity<IncomeStatementFormatSubtotal>(entity =>
+            {
+                entity.HasOne<IncomeStatementFormat>()
+                    .WithMany()
+                    .HasForeignKey(d => d.Code)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<IncomeStatementFormat>()
+                    .WithMany()
+                    .HasForeignKey(d => d.SubCode)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            modelBuilder.Entity<VwIncomeStatementFormatSubtotal>()
+                .HasNoKey()
+                .ToView("vwIncomeStatementFormatSubtotal", Schema.Accounting);
 
             // Asset Management entities
             // Asset Type model
