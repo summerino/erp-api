@@ -609,22 +609,25 @@ namespace ERP.Web.API.Domain.Services.Purchase
             {
                 foreach (var item in items)
                 {
-                    var dataPODetail = Db.PurchaseOrderDetails.FirstOrDefault(x => x.Code == transCode && x.ItemId == item.ItemId);
-                    if (code == null)
+                    if (item.Type == 0)
                     {
-                        var availableStock = dataPODetail.Qty - dataPODetail.QtyRcv;
-                        if (item.Qty > availableStock)
+                        var dataPODetail = Db.PurchaseOrderDetails.FirstOrDefault(x => x.Code == transCode && x.ItemId == item.ItemId && x.Type == 0);
+                        if (code == null)
                         {
-                            result = true;
+                            var availableStock = dataPODetail.Qty - dataPODetail.QtyRcv;
+                            if (item.Qty > availableStock)
+                            {
+                                result = true;
+                            }
                         }
-                    }
-                    else
-                    {
-                        var oldPRD = Db.PurchaseReceiveDetails.AsNoTracking().FirstOrDefault(x => x.Code == code && x.ItemId == item.ItemId);
-                        var availableStock = dataPODetail.Qty - (dataPODetail.QtyRcv - oldPRD.Qty) ;
-                        if (item.Qty > availableStock)
+                        else
                         {
-                            result = true;
+                            var oldPRD = Db.PurchaseReceiveDetails.AsNoTracking().FirstOrDefault(x => x.Code == code && x.ItemId == item.ItemId);
+                            var availableStock = dataPODetail.Qty - (dataPODetail.QtyRcv - oldPRD.Qty);
+                            if (item.Qty > availableStock)
+                            {
+                                result = true;
+                            }
                         }
                     }
                 }
