@@ -1294,7 +1294,7 @@ FROM SystemManagement.Company</CommandText>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>Kd. Faktur</Value>
+                      <Value>Kode</Value>
                       <Style />
                     </TextRun>
                   </TextRuns>
@@ -1374,7 +1374,7 @@ FROM SystemManagement.Company</CommandText>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>Tgl. Faktur</Value>
+                      <Value>Tanggal</Value>
                       <Style />
                     </TextRun>
                   </TextRuns>
