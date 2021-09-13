@@ -27,7 +27,6 @@ namespace ERP.Entity.Accounting
         [StringLength(1)]
         public string Type { get; set; }
 
-        [Required]
         [StringLength(5)]
         public string PercentOf { get; set; }
 
