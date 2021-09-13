@@ -1024,7 +1024,7 @@ namespace ERP.Web.API.Domain.Services.Sales
         }
 
         #region Credit Used - Limit
-        private bool CheckCreditLimit(string custCode, decimal total) => Db.Customers.Any(c => c.Code.Equals(custCode) && c.PaymentTermId > 1 && (c.CreditLimit - c.CreditUsed) >= total); 
+        private bool CheckCreditLimit(string custCode, decimal total) => Db.Customers.Any(c => c.Code.Equals(custCode) && (c.PaymentTermId == 1 || (c.CreditLimit - c.CreditUsed) >= total)); 
         private void RestoreCreditUsed(string transCode, string custCode)
         {
             var prevAmount = Db.SalesOrderHeaders.AsNoTracking().FirstOrDefault(x => x.Code.Equals(transCode))?.Total;

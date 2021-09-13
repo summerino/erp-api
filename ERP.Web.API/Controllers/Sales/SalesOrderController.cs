@@ -6,6 +6,7 @@ using ERP.Common;
 using ERP.Common.Models;
 using Microsoft.AspNetCore.Mvc;
 using ERP.Entity;
+using ERP.Web.API.Domain.Interfaces.Accounting;
 using ERP.Web.API.Domain.Interfaces.Auth;
 using ERP.Web.API.Domain.Interfaces.Inventory;
 using ERP.Web.API.Domain.Interfaces.Sales;
@@ -13,7 +14,6 @@ using ERP.Web.API.Domain.Interfaces.SystemManagement;
 using ERP.Web.API.Model;
 using ERP.Web.API.Model.Sales;
 using Newtonsoft.Json;
-using ERP.Web.API.Domain.Interfaces.Accounting;
 
 namespace ERP.Web.API.Controllers.Sales
 {
@@ -23,21 +23,23 @@ namespace ERP.Web.API.Controllers.Sales
     {
         private readonly ISalesOrderService _so;
         private readonly IUnitOfMeasurementService _uom;
+        private readonly IClosingMonthService _closingMonth;
         private readonly ISystemParameterService _sysPar;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
-        private readonly IClosingMonthService _closingMonth;
+
         private const int MenuId = (int)Menu.SalesOrder;
 
         public SalesOrderController(ISalesOrderService so, IUnitOfMeasurementService uom,
-            ISystemParameterService sysPar, IClaimService claim, IAuthService auth, IClosingMonthService closingMonthService)
+            IClosingMonthService closingMonth, ISystemParameterService sysPar,
+            IClaimService claim, IAuthService auth)
         {
             _so = so;
             _uom = uom;
+            _closingMonth = closingMonth;
             _sysPar = sysPar;
-            _claim = claim;
             _auth = auth;
-            _closingMonth = closingMonthService;
+            _claim = claim;
         }
 
         [HttpGet]
