@@ -55,6 +55,8 @@ namespace ERP.Entity
         public DbSet<IncomeStatementFormat> IncomeStatementFormats { get; set; }
         public DbSet<IncomeStatementFormatSubtotal> IncomeStatementFormatSubtotals { get; set; }
         public DbSet<VwIncomeStatementFormatSubtotal> VwIncomeStatementFormatSubtotals { get; set; }
+        public DbSet<IncomeStatementResult> IncomeStatementResults { get; set; }
+        public DbSet<BsIsDetailResult> BsIsDetailResults { get; set; }
 
         // Asset Management entities
         public DbSet<FixedAsset> FixedAssets { get; set; }
@@ -454,6 +456,15 @@ namespace ERP.Entity
             modelBuilder.Entity<TrialBalanceResult>()
                 .HasNoKey()
                 .ToTable("TrialBalanceResult", t => t.ExcludeFromMigrations());
+
+            // Income Statement Report model
+            modelBuilder.Entity<IncomeStatementResult>()
+                .HasNoKey()
+                .ToTable("IncomeStatementResult", t => t.ExcludeFromMigrations());
+
+            modelBuilder.Entity<BsIsDetailResult>()
+                .HasNoKey()
+                .ToTable("BsIsDetailResult", t => t.ExcludeFromMigrations());
 
             // Income Statement Format model
             modelBuilder.Entity<IncomeStatementFormatSubtotal>(entity =>

@@ -55,6 +55,10 @@ namespace ERP.Entity.Accounting
 
         public string DateTo { get; set; }
 
+        public string PlusMinus { get; set; }
+
+        public string PeriodType { get; set; }
+
         public DateTime Date { get; set; }
     }
 
