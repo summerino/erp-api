@@ -43,7 +43,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
             typeFormat = typeFormat.Replace("'", "''");
             code = code.Replace("'", "''");
 
-            var dataCoa = _db.NewCodes.FromSqlInterpolated($"exec sp_bsisdt_getcoa {typeFormat}, {code.Replace("Z", "")}").ToList();
+            var dataCoa = _db.NewCodes.FromSqlInterpolated($"exec sp_get_bsisdt_coa {typeFormat}, {code.Replace("Z", "")}").ToList();
             if (!dataCoa.Any())
                 return Enumerable.Empty<BsIsDetailResult>();
 
