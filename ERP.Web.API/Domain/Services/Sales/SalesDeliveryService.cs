@@ -650,7 +650,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                     {
                         if (uom.IsBaseUnit)
                         {
-                            if (item.Qty > stock.QtyOnOrder)
+                            if (item.Qty > stock.QtyOnHand)
                             {
                                 result = 2;
                             }
@@ -660,7 +660,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                             var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= uom.Seq).Select(x => x.Conversion).ToList();
                             var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
                             var baseQty = item.Qty * multipliedQty;
-                            if (baseQty > stock.QtyOnOrder)
+                            if (baseQty > stock.QtyOnHand)
                             {
                                 result = 2;
                             }
@@ -671,7 +671,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                         var oldStock = Db.StockMutations.FirstOrDefault(x => x.ItemId == item.ItemId && x.RefCode1 == code);
                         if (uom.IsBaseUnit)
                         {
-                            if (item.Qty > (stock.QtyOnOrder - oldStock.BaseQty))
+                            if (item.Qty > (stock.QtyOnHand - oldStock.BaseQty))
                             {
                                 result = 2;
                             }
@@ -681,7 +681,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                             var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= uom.Seq).Select(x => x.Conversion).ToList();
                             var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
                             var baseQty = item.Qty * multipliedQty;
-                            if (baseQty > (stock.QtyOnOrder - oldStock.BaseQty))
+                            if (baseQty > (stock.QtyOnHand - oldStock.BaseQty))
                             {
                                 result = 2;
                             }
