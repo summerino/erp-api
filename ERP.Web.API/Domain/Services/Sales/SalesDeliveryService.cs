@@ -703,7 +703,9 @@ namespace ERP.Web.API.Domain.Services.Sales
             decimal latestStockValue = 0;
             decimal hpp = 0;
 
-            var firstId = stockMutations.Where(x => x.WarehouseCode == whCode && x.ItemId == itemId && x.Src == "RCV").Min(x => x.Id);
+            var firstId = stockMutations.FirstOrDefault(x => x.WarehouseCode == whCode && x.ItemId == itemId && x.Src == "RCV")?.Id;
+            if (firstId == null)
+                return;
             var firstSM = stockMutations.FirstOrDefault(x => x.Id == firstId);
 
             var currentSM = stockMutations.FirstOrDefault(x => x.WarehouseCode == whCode && x.ItemId == itemId && x.RefDetailId1 == id);
