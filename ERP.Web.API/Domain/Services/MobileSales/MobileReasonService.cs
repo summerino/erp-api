@@ -4,12 +4,10 @@ using ERP.Common.Models;
 using ERP.Entity;
 using ERP.Entity.MobileSales;
 using ERP.Web.API.Domain.Interfaces.MobileSales;
-using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Threading.Tasks;
+using Microsoft.Data.SqlClient;
 
 namespace ERP.Web.API.Domain.Services.MobileSales
 {
@@ -18,7 +16,6 @@ namespace ERP.Web.API.Domain.Services.MobileSales
         public MobileReasonService(TenantContext db)
             :base(db)
         {
-
         }
 
         public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string search)

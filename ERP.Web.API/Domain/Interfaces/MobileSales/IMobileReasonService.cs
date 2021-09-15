@@ -1,10 +1,7 @@
-﻿using ERP.Common;
+﻿using System.Collections.Generic;
+using ERP.Common;
 using ERP.Common.Models;
 using ERP.Entity.MobileSales;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace ERP.Web.API.Domain.Interfaces.MobileSales
 {

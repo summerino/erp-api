@@ -1,6 +1,5 @@
 using System;
 using System.Text;
-using Bold.Licensing;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -11,14 +10,18 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
+using Bold.Licensing;
 using ERP.Entity;
 using ERP.Web.API.Domain.Interfaces.Accounting;
 using ERP.Web.API.Domain.Interfaces.AssetManagement;
 using ERP.Web.API.Domain.Interfaces.Auth;
+using ERP.Web.API.Domain.Interfaces.Catalog;
 using ERP.Web.API.Domain.Interfaces.Expedition;
 using ERP.Web.API.Domain.Interfaces.Finance;
 using ERP.Web.API.Domain.Interfaces.General;
+using ERP.Web.API.Domain.Interfaces.HumanResource;
 using ERP.Web.API.Domain.Interfaces.Inventory;
+using ERP.Web.API.Domain.Interfaces.MobileSales;
 using ERP.Web.API.Domain.Interfaces.Purchase;
 using ERP.Web.API.Domain.Interfaces.Sales;
 using ERP.Web.API.Domain.Interfaces.SystemManagement;
@@ -26,22 +29,19 @@ using ERP.Web.API.Domain.Services;
 using ERP.Web.API.Domain.Services.Accounting;
 using ERP.Web.API.Domain.Services.AssetManagement;
 using ERP.Web.API.Domain.Services.Auth;
+using ERP.Web.API.Domain.Services.Catalog;
 using ERP.Web.API.Domain.Services.Expedition;
 using ERP.Web.API.Domain.Services.Finance;
 using ERP.Web.API.Domain.Services.General;
+using ERP.Web.API.Domain.Services.HumanResource;
 using ERP.Web.API.Domain.Services.Inventory;
+using ERP.Web.API.Domain.Services.MobileSales;
 using ERP.Web.API.Domain.Services.Purchase;
 using ERP.Web.API.Domain.Services.Sales;
 using ERP.Web.API.Domain.Services.SystemManagement;
 using ERP.Web.API.Model.Auth;
 using Newtonsoft.Json.Serialization;
 using Swift.Framework;
-using ERP.Web.API.Domain.Interfaces.HumanResources;
-using ERP.Web.API.Domain.Services.HumanResources;
-using ERP.Web.API.Domain.Interfaces.Catalog;
-using ERP.Web.API.Domain.Services.Catalog;
-using ERP.Web.API.Domain.Interfaces.MobileSales;
-using ERP.Web.API.Domain.Services.MobileSales;
 
 namespace ERP.Web.API
 {
@@ -191,7 +191,7 @@ namespace ERP.Web.API
             services.AddScoped<IVehicleTypeService, VehicleTypeService>();
 
             // Human Resource Services
-            services.AddScoped<IAttendanceService, AttendanceService>();
+            services.AddScoped<IAttendanceReportService, AttendanceReportService>();
 
             // Inventory services
             services.AddScoped<IAdjustmentService, AdjustmentService>();
