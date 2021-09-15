@@ -210,6 +210,58 @@ namespace ERP.Web.API.Domain.Services.Accounting
                         }
                     }
                 }
+
+                var invDetData = _db.PurchaseInvoiceDetails.Where(x => x.RcvCode == itemData.RcvHeader.Code).ToList();
+                if (invDetData.Any())
+                {
+                    foreach (var item in invDetData)
+                    {
+                        var invData = _db.PurchaseInvoiceHeaders.FirstOrDefault(x => x.Code == item.Code);
+                        if (invData.Mark != "V")
+                        {
+                            var invMemo = _db.PurchaseInvoiceDebitMemos.Where(x => x.InvCode == item.Code).ToList();
+                            if (invMemo.Any())
+                            {
+                                short k = 0;
+                                foreach (var itemMemo in invMemo)
+                                {
+                                    var memoData = _db.DebitMemos.FirstOrDefault(x => x.Code == itemMemo.DebitMemoCode);
+                                    if(memoData != null || memoData.Mark != "V")
+                                    {
+                                        journals.Add(new Journal
+                                        {
+                                            Code = itemData.RcvHeader.Code,
+                                            LineNo = ++k,
+                                            Date = itemData.RcvHeader.Date,
+                                            CoaCode = systemParam.FirstOrDefault(x => x.Code == "DPS_COA")?.Value ?? "",
+                                            TypeCode = "DN",
+                                            Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_DPS")?.Value ?? ""} {itemData.Supplier.Initial}").Trim(),
+                                            RefCode1 = itemMemo.DebitMemoCode,
+                                            Group = 4,
+                                            CurrCode = itemData.RcvHeader.CurrCode,
+                                            Period = itemData.RcvHeader.Date.ToString("yyyyMMdd"),
+                                            Type = "C",
+                                            Amount = itemMemo.DebitMemoAmount,
+                                            SrcTrans = "PI"
+                                        });
+                                    }                                    
+                                }
+                            }
+                        }
+                    }
+                }
+
+                var apValue = itemData.RcvHeader.IncludeTax ?
+                    itemData.RcvHeader.Total -
+                    journals.Where(x => x.Code == itemData.RcvHeader.Code && x.Group == 2).Sum(x => x.Amount)
+                    : itemData.RcvHeader.Total;
+
+                var dmValue = journals.Where(x => x.Code == itemData.RcvHeader.Code && x.Group == 4).Sum(x => x.Amount);
+                if (dmValue > 0)
+                {
+                    apValue -= dmValue;
+                }
+
                 //Hutang - AP
                 journals.Add(new Journal
                 {
@@ -224,7 +276,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     CurrCode = itemData.RcvHeader.CurrCode,
                     Period = itemData.RcvHeader.Date.ToString("yyyyMMdd"),
                     Type = "C",
-                    Amount = itemData.RcvHeader.IncludeTax ? itemData.RcvHeader.Total - journals.Where(x => x.Code == itemData.RcvHeader.Code && x.Group == 2).Sum(x => x.Amount) : itemData.RcvHeader.Total,
+                    Amount = apValue,
                     SrcTrans = "RCV"
                 });
             }
@@ -252,6 +304,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
 
                 var DlvDetailFreeData = (from fg in _db.SalesDeliveryDetailFreeGoods
                                          join item in _db.Items on fg.ItemId equals item.Id
+                                         where fg.Code == itemData.Dlvheader.Code
                                          group new { fg, item } by new { fg.CoaCode, fg.ItemId, item.Initial } into grp
                                          select new
                                          {
@@ -397,6 +450,53 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     }
                 }
 
+                var invDetData = _db.SalesInvoiceDetails.Where(x => x.DoCode == itemData.Dlvheader.Code).ToList();
+                if (invDetData.Any())
+                {
+                    foreach (var item in invDetData)
+                    {
+                        var invData = _db.SalesInvoiceHeaders.FirstOrDefault(x => x.Code == item.Code);
+                        if (invData.Mark != "V")
+                        {
+                            var invMemo = _db.SalesInvoiceCreditMemos.Where(x => x.InvCode == item.Code).ToList();
+                            if (invMemo.Any())
+                            {
+                                short k = 0;
+                                foreach (var itemMemo in invMemo)
+                                {
+                                    var memoData = _db.CreditMemos.FirstOrDefault(x => x.Code == itemMemo.CreditMemoCode);
+                                    if (memoData != null || memoData.Mark != "V")
+                                    {
+                                        journals.Add(new Journal
+                                        {
+                                            Code = itemData.Dlvheader.Code,
+                                            LineNo = ++k,
+                                            Date = itemData.Dlvheader.Date,
+                                            CoaCode = systemParam.FirstOrDefault(x => x.Code == "DPC_COA")?.Value ?? "",
+                                            TypeCode = "CN",
+                                            Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_DPC")?.Value ?? ""} {itemData.Customer.Initial}").Trim(),
+                                            RefCode1 = itemMemo.CreditMemoCode,
+                                            Group = 9,
+                                            CurrCode = itemData.Dlvheader.CurrCode,
+                                            Period = itemData.Dlvheader.Date.ToString("yyyyMMdd"),
+                                            Type = "D",
+                                            Amount = itemMemo.CreditMemoAmount,
+                                            SrcTrans = "SI"
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                var arValue = itemData.Dlvheader.Total;
+                var cmValue = journals.Where(x => x.Code == itemData.Dlvheader.Code && x.Group == 9).Sum(x => x.Amount);
+                if (cmValue > 0)
+                {
+                    arValue -= cmValue;
+                }
+
                 //Piutang - AR
                 journals.Add(new Journal
                 {
@@ -411,7 +511,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     CurrCode = itemData.Dlvheader.CurrCode,
                     Period = itemData.Dlvheader.Date.ToString("yyyyMMdd"),
                     Type = "D",
-                    Amount = itemData.Dlvheader.Total,
+                    Amount = arValue,
                     SrcTrans = "DLV"
                 });
 
