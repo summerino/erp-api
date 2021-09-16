@@ -15,7 +15,7 @@ namespace ERP.Web.API.Domain.Interfaces.Sales
 
         List<dynamic> GetRelatedTransactions(string code);
 
-        IEnumerable<DetailFreeGoodData> GetFreeDetailData(string code);
+        IEnumerable<DetailFreeGoodData> GetFreeDetailData(string code, bool? fullDlv);
 
         IEnumerable<SalesOrderDetailDiscount> GetDiscDetailData(string code);
 

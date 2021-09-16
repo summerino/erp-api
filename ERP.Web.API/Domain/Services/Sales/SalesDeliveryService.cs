@@ -557,6 +557,9 @@ namespace ERP.Web.API.Domain.Services.Sales
                     {
                         // Execute sp_update_so_dlv_qty
                         Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", data.TransCode);
+
+                        Db.Database.ExecuteSqlRaw("EXEC sp_update_so_free_dlv_qty {0}", data.TransCode);
+
                     }
                     else
                     {

@@ -991,7 +991,7 @@ namespace ERP.Web.API.Domain.Services.Sales
             return result;
         }
 
-        public IEnumerable<DetailFreeGoodData> GetFreeDetailData(string code)
+        public IEnumerable<DetailFreeGoodData> GetFreeDetailData(string code, bool? fullDlv)
         {
             var result = (from dc in Db.SalesOrderDetailFreeGoods
                           join i in Db.Items on dc.ItemId equals i.Id
@@ -1015,6 +1015,13 @@ namespace ERP.Web.API.Domain.Services.Sales
                               Name = i.Name,
                               UnitName = u.UnitEquivalent
                           }).ToList();
+
+            if (fullDlv.HasValue)
+            {
+                result = (bool)fullDlv
+                    ? result.Where(x => x.Qty <= x.QtyClosed).ToList()
+                    : result.Where(x => x.Qty > x.QtyClosed).ToList();
+            }
             return result;
         }
 
