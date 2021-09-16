@@ -1,14 +1,14 @@
-﻿using ERP.Entity.SystemManagement;
-using ERP.Web.API.Domain.Models;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using ERP.Common;
 using ERP.Common.Models;
+using ERP.Entity.SystemManagement;
 
 namespace ERP.Web.API.Domain.Interfaces.SystemManagement
 {
     public interface ICompanyProfileService
     {
-        DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,  string search);
+        DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
+            string search);
 
         SaveResult Update(Company data);
     }

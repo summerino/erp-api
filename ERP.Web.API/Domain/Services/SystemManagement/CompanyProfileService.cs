@@ -1,13 +1,12 @@
-﻿using ERP.Entity.SystemManagement;
-using ERP.Web.API.Domain.Interfaces.SystemManagement;
-using ERP.Web.API.Domain.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using ERP.Common;
 using ERP.Common.Extensions;
 using ERP.Common.Models;
 using ERP.Entity;
+using ERP.Entity.SystemManagement;
+using ERP.Web.API.Domain.Interfaces.SystemManagement;
 
 namespace ERP.Web.API.Domain.Services.SystemManagement
 {
@@ -19,7 +18,9 @@ namespace ERP.Web.API.Domain.Services.SystemManagement
         {
             _tenantCtx = tenantContext;
         }
-        public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, string search)
+
+        public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
+            string search)
         {
             var data = _tenantCtx.VwCompanies.AsQueryable();
 

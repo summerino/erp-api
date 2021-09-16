@@ -2,14 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
+using Microsoft.AspNetCore.Mvc;
 using ERP.Common;
 using ERP.Common.Models;
-using Microsoft.AspNetCore.Mvc;
 using ERP.Entity;
 using ERP.Entity.SystemManagement;
 using ERP.Web.API.Domain.Interfaces.Auth;
 using ERP.Web.API.Domain.Interfaces.SystemManagement;
-using ERP.Web.API.Domain.Models;
 using ERP.Web.API.Model;
 using Newtonsoft.Json;
 
@@ -22,11 +21,12 @@ namespace ERP.Web.API.Controllers.SystemManagement
         private readonly ICompanyProfileService _comp;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
-        private const int MenuId = (int)ERP.Web.API.Model.Menu.CompanyProfile;
 
-        public CompanyProfileController(ICompanyProfileService companyProfileService, IClaimService claim, IAuthService auth)
+        private const int MenuId = (int)Model.Menu.CompanyProfile;
+
+        public CompanyProfileController(ICompanyProfileService comp, IClaimService claim, IAuthService auth)
         {
-            _comp = companyProfileService;
+            _comp = comp;
             _claim = claim;
             _auth = auth;
         }
