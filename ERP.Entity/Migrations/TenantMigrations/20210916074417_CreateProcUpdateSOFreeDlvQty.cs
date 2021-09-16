@@ -104,7 +104,7 @@ END CATCH";
 		protected override void Down(MigrationBuilder migrationBuilder)
         {
 			// Drop procedure dbo.sp_update_so_free_dlv_qty
-            var sql = @"CREATE PROCEDURE [dbo].[sp_update_so_free_dlv_qty]";
+            var sql = @"DROP PROCEDURE [dbo].[sp_update_so_free_dlv_qty]";
             migrationBuilder.Sql(sql);
         }
 	}
