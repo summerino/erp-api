@@ -1,12 +1,11 @@
-﻿using ERP.Entity;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
+using ERP.Entity;
 using ERP.Entity.Accounting;
 using ERP.Entity.SQLQuery;
 using ERP.Web.API.Domain.Interfaces.Accounting;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace ERP.Web.API.Domain.Services.Accounting
 {
@@ -18,69 +17,9 @@ namespace ERP.Web.API.Domain.Services.Accounting
         {
             _db = db;
         }
-        public IEnumerable<BsIsDetailResult> GetBsIsDetailLists(string typeFormat, string code, string PlusMinus, string dateFrom, string dateTo, string jourSrc)
-        {
-            string parDateTo = "";
-            string whEndYear = "", whJourSrc = "";
 
-            if (!string.IsNullOrEmpty(dateTo))
-            {
-                var date = DateTime.Parse(dateTo);
-                date = new DateTime(date.Year, date.Month, DateTime.DaysInMonth(date.Year, date.Month));
-                parDateTo = date.ToString("yyyy-MM-dd");
-                var nowPeriod = date.ToString("yyyyMM");
-
-                whEndYear = $"AND Code <> 'ENDYEAR{nowPeriod.Substring(0, 4)}'";
-            }
-
-            if (!string.IsNullOrEmpty(jourSrc))
-            {
-                jourSrc = jourSrc.Replace("'", "''");
-                jourSrc = jourSrc.Replace(",", "','");
-                whJourSrc = $"AND src IN ('{jourSrc}')";
-            }
-
-            typeFormat = typeFormat.Replace("'", "''");
-            code = code.Replace("'", "''");
-
-            var dataCoa = _db.NewCodes.FromSqlInterpolated($"exec sp_get_bsisdt_coa {typeFormat}, {code.Replace("Z", "")}").ToList();
-            if (!dataCoa.Any())
-                return Enumerable.Empty<BsIsDetailResult>();
-
-            var sqlCoa = "";
-
-            foreach (var item in dataCoa)
-            {
-                sqlCoa +=
-                    $@"{(sqlCoa == "" ? "" : " UNION ")} 
-                    SELECT {item.Value} AS Code";
-            }
-
-            string cteSource = "cte_jur_src_final";
-
-            string sql = $@"
-                {SourceJournalQuery.BuildQuery(dateFrom, parDateTo, null, sqlCoa, null, null, null, null)}
-	            ,cte_jour_src AS (
-		            SELECT CoaCode,coaName,FORMAT([Date],'yyyyMM') AS period
-                    ,CASE WHEN SrcTrans = 'ENDYEAR' THEN SrcTrans ELSE '' END AS SrcTrans
-		            ,SUM(ROUND(debetOc - creditOc,4) * {PlusMinus.Replace("'", "''")}) AS amountOc
-                    ,SUM(ROUND(debetOc - creditOc,4) * {PlusMinus.Replace("'", "''")}) AS amountIdr
-		            FROM {cteSource}
-                    WHERE 1 = 1 {whEndYear} {whJourSrc}
-                    GROUP BY CoaCode,coaName,FORMAT([Date],'yyyyMM')
-                    ,CASE WHEN SrcTrans = 'ENDYEAR' THEN SrcTrans ELSE '' END
-	            )
-                SELECT CoaCode,coaName
-                ,SUM(amountOc) AS amountOc
-                ,SUM(amountIdr) AS amountIdr
-                FROM cte_jour_src
-                GROUP BY CoaCode,coaName
-                ORDER BY CoaCode";
-
-            return _db.BsIsDetailResults.FromSqlRaw(sql).ToList();
-        }
-
-        public IEnumerable<IncomeStatementResult> GetIncomeStatementLists(string periodType, string rptBy, string rptDet, string dateTo)
+        public IEnumerable<IncomeStatementResult> GetIncomeStatementLists(string periodType, string rptBy,
+            string rptDet, string dateTo)
         {
             string parDateTo = "", nowPeriod = "", prevPeriod = "";
             string whEndYear = "";
@@ -88,7 +27,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
             string tmpTableName = DateTime.Now.ToString("yyyyMMdd_hhmmss_fff");
 
             string fmtType = rptBy.Substring(1, 1);
-            rptBy = rptBy.Substring(0, 1);
+            rptBy = rptBy[..1];
 
             if (!string.IsNullOrEmpty(dateTo))
             {
@@ -98,10 +37,10 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 parDateTo = date.ToString("yyyy-MM-dd");
                 nowPeriod = date.ToString("yyyyMM");
                 prevPeriod = date.AddMonths(-1).ToString("yyyyMM");
-                if (periodType == "Y" || periodType == "A")
+                if (periodType is "Y" or "A")
                     prevPeriod = date.AddYears(-1).ToString("yyyyMM");
 
-                whEndYear = $"WHERE Code <> 'ENDYEAR-{nowPeriod.Substring(0, 4)}'";
+                whEndYear = $"WHERE Code <> 'ENDYEAR-{nowPeriod[..4]}'";
             }
 
             string sqlAmount = $@"
@@ -113,15 +52,15 @@ namespace ERP.Web.API.Domain.Services.Accounting
             {
                 sqlAmount = $@"
                 ,SUM(CASE WHEN isPercent = 1
-                        THEN CASE WHEN isPeriod <> '{nowPeriod.Substring(0, 4)}99'
+                        THEN CASE WHEN isPeriod <> '{nowPeriod[..4]}99'
                                 THEN 0 ELSE (isPm * isAmountIdr) END
-                        ELSE CASE WHEN LEFT(isPeriod,4) = '{nowPeriod.Substring(0, 4)}' AND isPeriod <= '{nowPeriod}'
+                        ELSE CASE WHEN LEFT(isPeriod,4) = '{nowPeriod[..4]}' AND isPeriod <= '{nowPeriod}'
                                 THEN (isPm * isAmountIdr) ELSE 0 END
                 END) AS isNowAmountIdr
                 ,SUM(CASE WHEN isPercent = 1
-                        THEN CASE WHEN isPeriod <> '{prevPeriod.Substring(0, 4)}99'
+                        THEN CASE WHEN isPeriod <> '{prevPeriod[..4]}99'
                                 THEN 0 ELSE (isPm * isAmountIdr) END
-                        ELSE CASE WHEN LEFT(isPeriod,4) = '{prevPeriod.Substring(0, 4)}' AND isPeriod <= '{prevPeriod}' AND isSource <> 'ENDYEAR'
+                        ELSE CASE WHEN LEFT(isPeriod,4) = '{prevPeriod[..4]}' AND isPeriod <= '{prevPeriod}' AND isSource <> 'END_YEAR'
                                 THEN (isPm * isAmountIdr) ELSE 0 END
                 END) AS isPrevAmountIdr
                 ,CONVERT(decimal, 0) AS isNowYearAmountIdr,CONVERT(decimal, 0) AS isPrevYearAmountIdr";
@@ -130,17 +69,17 @@ namespace ERP.Web.API.Domain.Services.Accounting
             {
                 sqlAmount = $@"
                 ,SUM(CASE WHEN isPeriod = '{nowPeriod}' THEN (isPm * isAmountIdr) ELSE 0 END) AS isNowAmountIdr
-                ,SUM(CASE WHEN isPeriod = '{prevPeriod}' AND isSource <> 'ENDYEAR' THEN (isPm * isAmountIdr) ELSE 0 END) AS isPrevAmountIdr
+                ,SUM(CASE WHEN isPeriod = '{prevPeriod}' AND isSource <> 'END_YEAR' THEN (isPm * isAmountIdr) ELSE 0 END) AS isPrevAmountIdr
                 ,SUM(CASE WHEN isPercent = 1
-                        THEN CASE WHEN isPeriod <> '{nowPeriod.Substring(0, 4)}99'
+                        THEN CASE WHEN isPeriod <> '{nowPeriod[..4]}99'
                                 THEN 0 ELSE (isPm * isAmountIdr) END
-                        ELSE CASE WHEN LEFT(isPeriod,4) = '{nowPeriod.Substring(0, 4)}' AND isPeriod <= '{nowPeriod}'
+                        ELSE CASE WHEN LEFT(isPeriod,4) = '{nowPeriod[..4]}' AND isPeriod <= '{nowPeriod}'
                                 THEN (isPm * isAmountIdr) ELSE 0 END
                 END) AS isNowYearAmountIdr
                 ,SUM(CASE WHEN isPercent = 1
-                        THEN CASE WHEN isPeriod <> '{prevPeriod.Substring(0, 4)}99'
+                        THEN CASE WHEN isPeriod <> '{prevPeriod[..4]}99'
                                 THEN 0 ELSE (isPm * isAmountIdr) END
-                        ELSE CASE WHEN LEFT(isPeriod,4) = '{prevPeriod.Substring(0, 4)}' AND isPeriod <= '{prevPeriod}' AND isSource <> 'ENDYEAR'
+                        ELSE CASE WHEN LEFT(isPeriod,4) = '{prevPeriod[..4]}' AND isPeriod <= '{prevPeriod}' AND isSource <> 'END_YEAR'
                                 THEN (isPm * isAmountIdr) ELSE 0 END
                 END) AS isPrevYearAmountIdr";
             }
@@ -240,13 +179,13 @@ namespace ERP.Web.API.Domain.Services.Accounting
             string sql = $@"
                 {SourceJournalQuery.BuildQuery(null, parDateTo, null, null, null, null, null, null)}
 		        SELECT CoaCode,coaName,FORMAT([Date],'yyyyMM') AS period
-                ,CASE WHEN SrcTrans = 'ENDYEAR' THEN SrcTrans ELSE '' END AS src
+                ,CASE WHEN SrcTrans = 'END_YEAR' THEN SrcTrans ELSE '' END AS src
                 ,SUM(ROUND(debetOc - creditOc,4)) AS amountIdr
                 INTO #tmpJourSrc_{tmpTableName}
 		        FROM {cteSource}
                 {whEndYear}
                 GROUP BY CoaCode,coaName,FORMAT([Date],'yyyyMM')
-                ,CASE WHEN SrcTrans = 'ENDYEAR' THEN SrcTrans ELSE '' END
+                ,CASE WHEN SrcTrans = 'END_YEAR' THEN SrcTrans ELSE '' END
 	           
                 SELECT *,CASE WHEN [Type] = 'P' THEN 1 ELSE 0 END AS isPercent
                 INTO #tmpIsFormat_{tmpTableName}
@@ -367,10 +306,10 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 SELECT isCode,isName,isParent
                 ,isPercentOf,isPercentFrom,isPosition,isDeep,isSort,isSubTotalSort
                 ,isDetail,isHidden,isBold,isShowed,isOutdent,isExpanded,isHasChild,isPercent
-                ,'{nowPeriod.Substring(0, 4)}99' AS isPeriod,isSource,isRptSort,isPm
+                ,'{nowPeriod[..4]}99' AS isPeriod,isSource,isRptSort,isPm
                 ,SUM(isAmountIdr) AS isAmountIdr
                 FROM #tmpIsRpt_{tmpTableName}
-                WHERE (isPeriod > '{nowPeriod.Substring(0, 4)}00' AND isPeriod <= '{nowPeriod}')
+                WHERE (isPeriod > '{nowPeriod[..4]}00' AND isPeriod <= '{nowPeriod}')
                 GROUP BY isCode,isName,isParent
                 ,isPercentOf,isPercentFrom,isPosition,isDeep,isSort,isSubTotalSort
                 ,isDetail,isHidden,isBold,isShowed,isOutdent,isExpanded,isHasChild,isPercent
@@ -380,11 +319,11 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 SELECT isCode,isName,isParent
                 ,isPercentOf,isPercentFrom,isPosition,isDeep,isSort,isSubTotalSort
                 ,isDetail,isHidden,isBold,isShowed,isOutdent,isExpanded,isHasChild,isPercent
-                ,'{prevPeriod.Substring(0, 4)}99' AS isPeriod,isSource,isRptSort,isPm
+                ,'{prevPeriod[..4]}99' AS isPeriod,isSource,isRptSort,isPm
                 ,SUM(isAmountIdr) AS isAmountIdr
                 FROM #tmpIsRpt_{tmpTableName} 
-                WHERE (isPeriod > '{prevPeriod.Substring(0, 4)}00' AND isPeriod <= '{prevPeriod}')
-                AND isSource <> 'ENDYEAR' {(periodType == "Y" || periodType == "A" ? "" : "AND 1 = 2")}
+                WHERE (isPeriod > '{prevPeriod[..4]}00' AND isPeriod <= '{prevPeriod}')
+                AND isSource <> 'END_YEAR' {(periodType is "Y" or "A" ? "" : "AND 1 = 2")}
                 GROUP BY isCode,isName,isParent
                 ,isPercentOf,isPercentFrom,isPosition,isDeep,isSort,isSubTotalSort
                 ,isDetail,isHidden,isBold,isShowed,isOutdent,isExpanded,isHasChild,isPercent
@@ -415,7 +354,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                         WHERE [Type] = 'P'
                         AND TBB.PercentOf = TBA.isCode
                     )
-                    AND isSource <> 'ENDYEAR'
+                    AND isSource <> 'END_YEAR'
                     GROUP BY isCode,isPeriod,isRptSort
                 ) TBB
                     ON TBB.isCode = TBA.PercentOf
@@ -429,7 +368,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                         WHERE [Type] = 'P'
                         AND TBB.PercentFrom = TBA.isCode
                     )
-                    AND isSource <> 'ENDYEAR'
+                    AND isSource <> 'END_YEAR'
                     GROUP BY isCode,isPeriod,isRptSort
                 ) TBC
                     ON TBC.isCode = TBA.PercentFrom
@@ -444,19 +383,19 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 SELECT isCode,isName,isParent,isPosition,isDeep,isSort,isSubTotalSort
                 ,isDetail,isHidden,isBold,isShowed,isOutdent,isExpanded,isHasChild,isPercent,isRptSort,isPm
                 {sqlAmount}
-                ,SUM(CASE WHEN isPeriod = '{nowPeriod.Substring(0, 4)}99' THEN (isPm * isAmountIdr) ELSE 0 END) AS isYtdAmountIdr
-                ,SUM(CASE WHEN isPeriod = '{nowPeriod.Substring(0, 4)}01' THEN (isPm * isAmountIdr) ELSE 0 END) AS isMonth1AmountIdr
-                ,SUM(CASE WHEN isPeriod = '{nowPeriod.Substring(0, 4)}02' THEN (isPm * isAmountIdr) ELSE 0 END) AS isMonth2AmountIdr
-                ,SUM(CASE WHEN isPeriod = '{nowPeriod.Substring(0, 4)}03' THEN (isPm * isAmountIdr) ELSE 0 END) AS isMonth3AmountIdr
-                ,SUM(CASE WHEN isPeriod = '{nowPeriod.Substring(0, 4)}04' THEN (isPm * isAmountIdr) ELSE 0 END) AS isMonth4AmountIdr
-                ,SUM(CASE WHEN isPeriod = '{nowPeriod.Substring(0, 4)}05' THEN (isPm * isAmountIdr) ELSE 0 END) AS isMonth5AmountIdr
-                ,SUM(CASE WHEN isPeriod = '{nowPeriod.Substring(0, 4)}06' THEN (isPm * isAmountIdr) ELSE 0 END) AS isMonth6AmountIdr
-                ,SUM(CASE WHEN isPeriod = '{nowPeriod.Substring(0, 4)}07' THEN (isPm * isAmountIdr) ELSE 0 END) AS isMonth7AmountIdr
-                ,SUM(CASE WHEN isPeriod = '{nowPeriod.Substring(0, 4)}08' THEN (isPm * isAmountIdr) ELSE 0 END) AS isMonth8AmountIdr
-                ,SUM(CASE WHEN isPeriod = '{nowPeriod.Substring(0, 4)}09' THEN (isPm * isAmountIdr) ELSE 0 END) AS isMonth9AmountIdr
-                ,SUM(CASE WHEN isPeriod = '{nowPeriod.Substring(0, 4)}10' THEN (isPm * isAmountIdr) ELSE 0 END) AS isMonth10AmountIdr
-                ,SUM(CASE WHEN isPeriod = '{nowPeriod.Substring(0, 4)}11' THEN (isPm * isAmountIdr) ELSE 0 END) AS isMonth11AmountIdr
-                ,SUM(CASE WHEN isPeriod = '{nowPeriod.Substring(0, 4)}12' THEN (isPm * isAmountIdr) ELSE 0 END) AS isMonth12AmountIdr
+                ,SUM(CASE WHEN isPeriod = '{nowPeriod[..4]}99' THEN (isPm * isAmountIdr) ELSE 0 END) AS isYtdAmountIdr
+                ,SUM(CASE WHEN isPeriod = '{nowPeriod[..4]}01' THEN (isPm * isAmountIdr) ELSE 0 END) AS isMonth1AmountIdr
+                ,SUM(CASE WHEN isPeriod = '{nowPeriod[..4]}02' THEN (isPm * isAmountIdr) ELSE 0 END) AS isMonth2AmountIdr
+                ,SUM(CASE WHEN isPeriod = '{nowPeriod[..4]}03' THEN (isPm * isAmountIdr) ELSE 0 END) AS isMonth3AmountIdr
+                ,SUM(CASE WHEN isPeriod = '{nowPeriod[..4]}04' THEN (isPm * isAmountIdr) ELSE 0 END) AS isMonth4AmountIdr
+                ,SUM(CASE WHEN isPeriod = '{nowPeriod[..4]}05' THEN (isPm * isAmountIdr) ELSE 0 END) AS isMonth5AmountIdr
+                ,SUM(CASE WHEN isPeriod = '{nowPeriod[..4]}06' THEN (isPm * isAmountIdr) ELSE 0 END) AS isMonth6AmountIdr
+                ,SUM(CASE WHEN isPeriod = '{nowPeriod[..4]}07' THEN (isPm * isAmountIdr) ELSE 0 END) AS isMonth7AmountIdr
+                ,SUM(CASE WHEN isPeriod = '{nowPeriod[..4]}08' THEN (isPm * isAmountIdr) ELSE 0 END) AS isMonth8AmountIdr
+                ,SUM(CASE WHEN isPeriod = '{nowPeriod[..4]}09' THEN (isPm * isAmountIdr) ELSE 0 END) AS isMonth9AmountIdr
+                ,SUM(CASE WHEN isPeriod = '{nowPeriod[..4]}10' THEN (isPm * isAmountIdr) ELSE 0 END) AS isMonth10AmountIdr
+                ,SUM(CASE WHEN isPeriod = '{nowPeriod[..4]}11' THEN (isPm * isAmountIdr) ELSE 0 END) AS isMonth11AmountIdr
+                ,SUM(CASE WHEN isPeriod = '{nowPeriod[..4]}12' THEN (isPm * isAmountIdr) ELSE 0 END) AS isMonth12AmountIdr
                 INTO #tmpIsSum_{tmpTableName}
                 FROM #tmpIsRpt_{tmpTableName}
                 GROUP BY isCode,isName,isParent,isPosition,isDeep,isSort,isSubTotalSort
@@ -505,6 +444,69 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 DROP TABLE #tmpJourSrc_{tmpTableName}";
 
             return _db.IncomeStatementResults.FromSqlRaw(sql).ToList();
+        }
+
+        public IEnumerable<BsIsDetailResult> GetBsIsDetailLists(string typeFormat, string code, string PlusMinus,
+            string dateFrom, string dateTo, string jourSrc)
+        {
+            string parDateTo = "";
+            string whEndYear = "", whJourSrc = "";
+
+            if (!string.IsNullOrEmpty(dateTo))
+            {
+                var date = DateTime.Parse(dateTo);
+                date = new DateTime(date.Year, date.Month, DateTime.DaysInMonth(date.Year, date.Month));
+                parDateTo = date.ToString("yyyy-MM-dd");
+                var nowPeriod = date.ToString("yyyyMM");
+
+                whEndYear = $"AND Code <> 'ENDYEAR{nowPeriod[..4]}'";
+            }
+
+            if (!string.IsNullOrEmpty(jourSrc))
+            {
+                jourSrc = jourSrc.Replace("'", "''");
+                jourSrc = jourSrc.Replace(",", "','");
+                whJourSrc = $"AND src IN ('{jourSrc}')";
+            }
+
+            typeFormat = typeFormat.Replace("'", "''");
+            code = code.Replace("'", "''");
+
+            var dataCoa = _db.NewCodes.FromSqlInterpolated($"exec sp_get_bsisdt_coa {typeFormat}, {code.Replace("Z", "")}").ToList();
+            if (!dataCoa.Any())
+                return Enumerable.Empty<BsIsDetailResult>();
+
+            var sqlCoa = "";
+
+            foreach (var item in dataCoa)
+            {
+                sqlCoa +=
+                    $@"{(sqlCoa == "" ? "" : " UNION ")} 
+                    SELECT {item.Value} AS Code";
+            }
+
+            string cteSource = "cte_jur_src_final";
+
+            string sql = $@"
+                {SourceJournalQuery.BuildQuery(dateFrom, parDateTo, null, sqlCoa, null, null, null, null)}
+	            ,cte_jour_src AS (
+		            SELECT CoaCode,coaName,FORMAT([Date],'yyyyMM') AS period
+                    ,CASE WHEN SrcTrans = 'END_YEAR' THEN SrcTrans ELSE '' END AS SrcTrans
+		            ,SUM(ROUND(debetOc - creditOc,4) * {PlusMinus.Replace("'", "''")}) AS amountOc
+                    ,SUM(ROUND(debetOc - creditOc,4) * {PlusMinus.Replace("'", "''")}) AS amountIdr
+		            FROM {cteSource}
+                    WHERE 1 = 1 {whEndYear} {whJourSrc}
+                    GROUP BY CoaCode,coaName,FORMAT([Date],'yyyyMM')
+                    ,CASE WHEN SrcTrans = 'END_YEAR' THEN SrcTrans ELSE '' END
+	            )
+                SELECT CoaCode,coaName
+                ,SUM(amountOc) AS amountOc
+                ,SUM(amountIdr) AS amountIdr
+                FROM cte_jour_src
+                GROUP BY CoaCode,coaName
+                ORDER BY CoaCode";
+
+            return _db.BsIsDetailResults.FromSqlRaw(sql).ToList();
         }
     }
 }
