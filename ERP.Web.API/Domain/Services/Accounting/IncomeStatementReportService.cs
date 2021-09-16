@@ -246,9 +246,10 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     SELECT *
                     FROM cte_is_format_src_1
                     WHERE isHasChild = 1
-                    UNION ALL
-                    SELECT *
-                    FROM cte_is_format_src_1
+                    --UNION ALL
+                    --SELECT *
+                    --FROM cte_is_format_src_1
+                    --WHERE 1 = 2
                 )
                 ,cte_is_format_src_2 AS (
                     SELECT TBA.isCode + 'Z' AS isCode
