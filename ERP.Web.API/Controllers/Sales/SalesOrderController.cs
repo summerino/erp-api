@@ -101,10 +101,10 @@ namespace ERP.Web.API.Controllers.Sales
         }
 
         [HttpGet("free-item")]
-        public IActionResult GetFreeDetailData(string code)
+        public IActionResult GetFreeDetailData(string code, bool? fullDlv)
         {
 
-            var data = _so.GetFreeDetailData(code).ToList<dynamic>();
+            var data = _so.GetFreeDetailData(code, fullDlv).ToList<dynamic>();
 
             return Ok(new ApiResponse
             {
