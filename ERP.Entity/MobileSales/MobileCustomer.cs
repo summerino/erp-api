@@ -8,7 +8,7 @@ namespace ERP.Entity.MobileSales
     public class MobileCustomer : BaseEntityWithApproved
     {
         [Key]
-        [StringLength(8)]
+        [StringLength(17)]
         public string Code { get; set; }
 
         [StringLength(8)]
