@@ -137,6 +137,26 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     {
                         item.Mark = false;
                     }
+
+                    var cust = Db.Customers.FirstOrDefault(x => x.Code == item.Kodepelanggan);
+                    if (cust != null)
+                    {
+                        item.Mark = false;
+                    }
+                    else
+                    {
+                        item.Mark = true;
+                    }
+
+                    var startDate = Db.SystemParameters.FirstOrDefault(x => x.Code == "DATA_START_DATE");
+                    if (item.Tanggal > Convert.ToDateTime(startDate.Value))
+                    {
+                        item.Mark = true;
+                    }
+                    else
+                    {
+                        item.Mark = false;
+                    }
                 }
                 else
                 {
