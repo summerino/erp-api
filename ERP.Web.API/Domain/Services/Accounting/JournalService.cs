@@ -145,25 +145,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 short j = 0;
                 foreach (var itemDetail in RcvDetailData)
                 {
-                    var prorateHeaderDisc = itemData.RcvHeader.FinalDisc > 0 ? (itemData.RcvHeader.FinalDisc * itemDetail.RcvDetail.NettPrice) / RcvDetailData.Sum(x => x.RcvDetail.NettPrice) : 0;
-                    //Inventory
-                    journals.Add(new Journal
-                    {
-                        Code = itemData.RcvHeader.Code,
-                        LineNo = ++i,
-                        Date = itemData.RcvHeader.Date,
-                        CoaCode = string.IsNullOrWhiteSpace(items.FirstOrDefault(x => x.Id == itemDetail.RcvDetail.ItemId)?.CoaInventory) ? systemParam.FirstOrDefault(x => x.Code == "INVENTORY_COA")?.Value ?? "" : items.FirstOrDefault(x => x.Id == itemDetail.RcvDetail.ItemId)?.CoaInventory,
-                        TypeCode = "RCV_DT",
-                        Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_INVENTORY")?.Value ?? ""} {itemDetail.Item.Initial}").Trim(),
-                        RefCode1 = itemData.RcvHeader.TransCode,
-                        RefCode2 = itemDetail.Item.Initial,
-                        Group = 1,
-                        CurrCode = itemData.RcvHeader.CurrCode,
-                        Period = itemData.RcvHeader.Date.ToString("yyyyMMdd"),
-                        Type = "D",
-                        Amount = !itemData.RcvHeader.IncludeTax ? ((itemDetail.RcvDetail.NettPrice - prorateHeaderDisc) * itemDetail.RcvDetail.Qty) - (itemDetail.RcvDetail.TaxAmount * itemDetail.RcvDetail.Qty) : ((itemDetail.RcvDetail.NettPrice - prorateHeaderDisc) * itemDetail.RcvDetail.Qty),
-                        SrcTrans = "RCV"
-                    });
+                    var prorateHeaderDisc = itemData.RcvHeader.FinalDisc > 0 ? (itemData.RcvHeader.FinalDisc * itemDetail.RcvDetail.NettPrice) / RcvDetailData.Sum(x => x.RcvDetail.NettPrice) : 0;                    
 
                     if (itemDetail.RcvDetail.TaxAmount > 0)
                     {
@@ -183,7 +165,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                                 Group = 2,
                                 CurrCode = itemData.RcvHeader.CurrCode,
                                 Period = itemData.RcvHeader.Date.ToString("yyyyMMdd"),
-                                Type = "C",
+                                Type = "D",
                                 Amount = itemDetail.RcvDetail.TaxAmount * itemDetail.RcvDetail.Qty,
                                 SrcTrans = "RCV"
                             });
@@ -203,12 +185,37 @@ namespace ERP.Web.API.Domain.Services.Accounting
                                 Group = 2,
                                 CurrCode = itemData.RcvHeader.CurrCode,
                                 Period = itemData.RcvHeader.Date.ToString("yyyyMMdd"),
-                                Type = "C",
+                                Type = "D",
                                 Amount = itemDetail.RcvDetail.TaxAmount * itemDetail.RcvDetail.Qty,
                                 SrcTrans = "RCV"
                             });
                         }
                     }
+
+                    var ivnValue = (itemDetail.RcvDetail.UnitPrice - itemDetail.RcvDetail.Disc - prorateHeaderDisc) * itemDetail.RcvDetail.Qty;
+                    var taxValue = journals.Where(x => x.Code == itemData.RcvHeader.Code && x.RefCode2 == itemDetail.Item.Initial && x.Group == 2).Sum(x => x.Amount);
+                    if(itemData.RcvHeader.TaxAmount > 0)
+                        if (itemData.RcvHeader.IncludeTax)
+                            ivnValue -= taxValue;
+
+                    //Inventory
+                    journals.Add(new Journal
+                    {
+                        Code = itemData.RcvHeader.Code,
+                        LineNo = ++i,
+                        Date = itemData.RcvHeader.Date,
+                        CoaCode = string.IsNullOrWhiteSpace(items.FirstOrDefault(x => x.Id == itemDetail.RcvDetail.ItemId)?.CoaInventory) ? systemParam.FirstOrDefault(x => x.Code == "INVENTORY_COA")?.Value ?? "" : items.FirstOrDefault(x => x.Id == itemDetail.RcvDetail.ItemId)?.CoaInventory,
+                        TypeCode = "RCV_DT",
+                        Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_INVENTORY")?.Value ?? ""} {itemDetail.Item.Initial}").Trim(),
+                        RefCode1 = itemData.RcvHeader.TransCode,
+                        RefCode2 = itemDetail.Item.Initial,
+                        Group = 1,
+                        CurrCode = itemData.RcvHeader.CurrCode,
+                        Period = itemData.RcvHeader.Date.ToString("yyyyMMdd"),
+                        Type = "D",
+                        Amount = ivnValue,
+                        SrcTrans = "RCV"
+                    });
                 }
 
                 var invDetData = _db.PurchaseInvoiceDetails.Where(x => x.RcvCode == itemData.RcvHeader.Code).ToList();
@@ -251,16 +258,11 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     }
                 }
 
-                var apValue = itemData.RcvHeader.IncludeTax ?
-                    itemData.RcvHeader.Total -
-                    journals.Where(x => x.Code == itemData.RcvHeader.Code && x.Group == 2).Sum(x => x.Amount)
-                    : itemData.RcvHeader.Total;
+                var apValue = itemData.RcvHeader.Total;
 
                 var dmValue = journals.Where(x => x.Code == itemData.RcvHeader.Code && x.Group == 4).Sum(x => x.Amount);
                 if (dmValue > 0)
-                {
                     apValue -= dmValue;
-                }
 
                 //Hutang - AP
                 journals.Add(new Journal
@@ -366,6 +368,11 @@ namespace ERP.Web.API.Domain.Services.Accounting
                         });
                     }
 
+                    var ivnValue = smData != null ? (smData.BaseNettPrice * smData.BaseQty) : 0;
+                    var discValue = journals.Where(x => x.Code == itemData.Dlvheader.Code && x.RefCode2 == itemDetail.Item.Initial && x.Group == 3).Sum(x => x.Amount);
+                    if (discValue > 0)
+                        ivnValue += discValue;
+
                     //Inventory using COGS for Amount
                     journals.Add(new Journal
                     {
@@ -381,7 +388,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                         CurrCode = itemData.Dlvheader.CurrCode,
                         Period = itemData.Dlvheader.Date.ToString("yyyyMMdd"),
                         Type = "C",
-                        Amount = smData != null ? smData.BaseNettPrice * smData.BaseQty : 0,
+                        Amount = ivnValue,
                         SrcTrans = "DLV"
                     });
 
