@@ -162,6 +162,7 @@ namespace ERP.Web.API
             services.AddScoped<ITrialBalanceReportService, TrialBalanceReportService>();
             services.AddScoped<IBalanceSheetReportService, BalanceSheetReportService>();
             services.AddScoped<IIncomeStatementReportService, IncomeStatementReportService>();
+            services.AddScoped<IIncomeStatementFormatService, IncomeStatementFormatService>();
 
             // Asset Management services
             services.AddScoped<IAssetTypeService, AssetTypeService>();
