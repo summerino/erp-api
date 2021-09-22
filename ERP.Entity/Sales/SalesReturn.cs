@@ -86,7 +86,6 @@ namespace ERP.Entity.Sales
         public string TransCode { get; set; }
 
         public short Type { get; set; }
-        public string ReturnType { get; set; }
 
         public string CustCode { get; set; }
 
@@ -132,6 +131,8 @@ namespace ERP.Entity.Sales
         public string UpdatedInitial { get; set; }
 
         public string ApprovedInitial { get; set; }
+
+        public string TypeName { get; set; }
 
         public string Status { get; set; }
     }

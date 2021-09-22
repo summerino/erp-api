@@ -125,6 +125,8 @@ namespace ERP.Entity.Purchase
 
         public string UpdatedInitial { get; set; }
 
+        public string TypeName { get; set; }
+
         public string Status { get; set; }
     }
 
