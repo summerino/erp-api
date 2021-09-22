@@ -193,7 +193,7 @@ namespace ERP.Web.API.Domain.Services.Sales
             }
 
             result.Success = true;
-            result.Data = cdtMemo;
+            result.Data = data.Code;
             result.Message = "Data pengembalian penjualan berhasil disimpan.";
             return result;
         }
@@ -360,6 +360,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                 Db.Database.ExecuteSqlRaw(
                     "EXEC sp_update_stock_mutation_from_sr {0}, {1}, {2}, {3}",
                     data.Code, data.Date, data.TransCode, data.WarehouseCode);
+
                 transaction.Commit();
             }
             catch (Exception ex)
@@ -369,7 +370,7 @@ namespace ERP.Web.API.Domain.Services.Sales
             }
 
             result.Success = true;
-            result.Data = cdtMemo;
+            result.Data = data.Code;
             result.Message = "Data pengembalian penjualan berhasil diperbarui.";
             return result;
         }
