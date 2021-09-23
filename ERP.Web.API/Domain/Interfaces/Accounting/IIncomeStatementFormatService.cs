@@ -1,8 +1,6 @@
-﻿using ERP.Entity.Accounting;
-using System;
+﻿using ERP.Common;
+using ERP.Entity.Accounting;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace ERP.Web.API.Domain.Interfaces.Accounting
 {
@@ -11,5 +9,17 @@ namespace ERP.Web.API.Domain.Interfaces.Accounting
         object GetFormatHierarchy(string category);
 
         IEnumerable<IncomeStatementFormat> GetFormatLists(string category);
+
+        SaveResult Move(IncomeStatementFormat data, string type);
+
+        SaveResult Delete(string code, int userId);
+
+        IEnumerable<IncomeStatementFormat> GetSubFormat(string code);
+
+        IEnumerable<IncomeStatementFormat> GetUnSubFormat(string code, string category);
+
+        SaveResult InsertSub(string subCode, string code, int userId);
+
+        SaveResult RemoveSub(string subCode, string code);
     }
 }
