@@ -120,6 +120,7 @@
         IncomeStatementReport = 111,
         Posting = 86,
         ClosingMonth = 88,
+        IncomeStatementFormat = 112,
 
         // Asset Management
         AssetType = 62,
