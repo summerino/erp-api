@@ -152,8 +152,8 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     else
                     {
                         item.LineNo = ++i;
-                        item.Type = item.CreditValue != 0 ? "C" : "D";
-                        item.Amount = (decimal)(item.CreditValue != 0 ? item.CreditValue : item.DebitValue);
+                        item.Type = item.Type;
+                        item.Amount = item.Type == "D" ? (decimal)item.DebitValue : (decimal)item.CreditValue;
 
                         Db.GeneralJournalDetails.Update(item);
                         Db.Entry(item).Property(e => e.Code).IsModified = false;
