@@ -1540,88 +1540,25 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     decimal totalHeader = 0;
 
                     short i = 0;
-                    short j = 0;
-                    short k = 0;
                     foreach (var itemDetail in RtnDetailData)
                     {
-                        //Inventory using COGS for Amount
+                        //Piutang Dagang
                         journals.Add(new Journal
                         {
                             Code = itemData.RtnHeader.Code,
                             LineNo = ++i,
                             Date = itemData.RtnHeader.Date,
-                            CoaCode = string.IsNullOrWhiteSpace(items.FirstOrDefault(x => x.Id == itemDetail.RtnDetail.ItemId)?.CoaInventory) ? systemParam.FirstOrDefault(x => x.Code == "INVENTORY_COA")?.Value ?? "" : items.FirstOrDefault(x => x.Id == itemDetail.RtnDetail.ItemId)?.CoaInventory,
-                            TypeCode = "SR_DT",
-                            Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_INVENTORY")?.Value ?? ""} {itemDetail.Item.Initial}").Trim(),
-                            RefCode1 = itemDetail.Item.Initial,
-                            Group = 2,
+                            CoaCode = systemParam.FirstOrDefault(x => x.Code == "AR_COA")?.Value ?? "",
+                            TypeCode = "AR",
+                            Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_AR")?.Value ?? ""} {itemData.Customer.Initial}").Trim(),
+                            RefCode1 = "",
+                            Group = 1,
                             CurrCode = itemData.RtnHeader.CurrCode,
                             Period = itemData.RtnHeader.Date.ToString("yyyyMMdd"),
                             Type = "D",
-                            Amount = itemDetail.RtnDetail.NettPrice * itemDetail.RtnDetail.Qty,
+                            Amount = itemDetail.RtnDetail.Total,
                             SrcTrans = "SR"
                         });
-
-                        //COGS (Cost of Goods Sold) - HPP (Harga Pokok Penjualan)
-                        journals.Add(new Journal
-                        {
-                            Code = itemData.RtnHeader.Code,
-                            LineNo = ++k,
-                            Date = itemData.RtnHeader.Date,
-                            CoaCode = string.IsNullOrWhiteSpace(items.FirstOrDefault(x => x.Id == itemDetail.RtnDetail.ItemId)?.CoaCogs) ? systemParam.FirstOrDefault(x => x.Code == "COGS_COA")?.Value ?? "" : items.FirstOrDefault(x => x.Id == itemDetail.RtnDetail.ItemId)?.CoaCogs,
-                            TypeCode = "SR_DT",
-                            Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_COGS")?.Value ?? ""} {itemDetail.Item.Initial}").Trim(),
-                            RefCode1 = itemDetail.Item.Initial,
-                            Group = 5,
-                            CurrCode = itemData.RtnHeader.CurrCode,
-                            Period = itemData.RtnHeader.Date.ToString("yyyyMMdd"),
-                            Type = "C",
-                            Amount = itemDetail.RtnDetail.NettPrice * itemDetail.RtnDetail.Qty,
-                            SrcTrans = "SR"
-                        });
-
-                        //PPN - Pajak
-                        if (itemDetail.RtnDetail.TaxAmount > 0)
-                        {
-                            if (itemData.RtnHeader.IncludeTax)
-                            {
-                                journals.Add(new Journal
-                                {
-                                    Code = itemData.RtnHeader.Code,
-                                    LineNo = ++j,
-                                    Date = itemData.RtnHeader.Date,
-                                    CoaCode = string.IsNullOrWhiteSpace(taxes.FirstOrDefault(x => x.Id == itemDetail.RtnDetail.TaxId)?.CoaCode) ? systemParam.FirstOrDefault(x => x.Code == "TAX_IN_COA")?.Value ?? "" : taxes.FirstOrDefault(x => x.Id == itemDetail.RtnDetail.TaxId)?.CoaCode,
-                                    TypeCode = "SR_DT",
-                                    Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_TAX_IN")?.Value ?? ""} {itemDetail.Item.Initial}").Trim(),
-                                    RefCode1 = itemDetail.Item.Initial,
-                                    Group = 3,
-                                    CurrCode = itemData.RtnHeader.CurrCode,
-                                    Period = itemData.RtnHeader.Date.ToString("yyyyMMdd"),
-                                    Type = "D",
-                                    Amount = itemDetail.RtnDetail.TaxAmount * itemDetail.RtnDetail.Qty,
-                                    SrcTrans = "SR"
-                                });
-                            }
-                            else
-                            {
-                                journals.Add(new Journal
-                                {
-                                    Code = itemData.RtnHeader.Code,
-                                    LineNo = ++j,
-                                    Date = itemData.RtnHeader.Date,
-                                    CoaCode = string.IsNullOrWhiteSpace(taxes.FirstOrDefault(x => x.Id == itemDetail.RtnDetail.TaxId)?.CoaCode) ? systemParam.FirstOrDefault(x => x.Code == "TAX_OUT_COA")?.Value ?? "" : taxes.FirstOrDefault(x => x.Id == itemDetail.RtnDetail.TaxId)?.CoaCode,
-                                    TypeCode = "SR_DT",
-                                    Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_TAX_OUT")?.Value ?? ""} {itemDetail.Item.Initial}").Trim(),
-                                    RefCode1 = itemDetail.Item.Initial,
-                                    Group = 3,
-                                    CurrCode = itemData.RtnHeader.CurrCode,
-                                    Period = itemData.RtnHeader.Date.ToString("yyyyMMdd"),
-                                    Type = "D",
-                                    Amount = itemDetail.RtnDetail.TaxAmount * itemDetail.RtnDetail.Qty,
-                                    SrcTrans = "SR"
-                                });
-                            }
-                        }
 
                         totalHeader += itemDetail.RtnDetail.Total;
                     }
@@ -1633,31 +1570,13 @@ namespace ERP.Web.API.Domain.Services.Accounting
                         Date = itemData.RtnHeader.Date,
                         CoaCode = systemParam.FirstOrDefault(x => x.Code == "CM_AP_COA")?.Value ?? "",
                         TypeCode = "CM_AP",
-                        Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_SR")?.Value ?? ""} {itemData.Customer.Initial}").Trim(),
+                        Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_CM_AP")?.Value ?? ""} {itemData.Customer.Initial}").Trim(),
                         RefCode1 = "",
-                        Group = 4,
+                        Group = 2,
                         CurrCode = itemData.RtnHeader.CurrCode,
                         Period = itemData.RtnHeader.Date.ToString("yyyyMMdd"),
                         Type = "C",
                         Amount = totalHeader,
-                        SrcTrans = "SR"
-                    });
-
-                    //Retur Penjualan
-                    journals.Add(new Journal
-                    {
-                        Code = itemData.RtnHeader.Code,
-                        LineNo = 1,
-                        Date = itemData.RtnHeader.Date,
-                        CoaCode = systemParam.FirstOrDefault(x => x.Code == "CM_AP_COA")?.Value ?? "",
-                        TypeCode = "SR",
-                        Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_SR")?.Value ?? ""} {itemData.Customer.Initial}").Trim(),
-                        RefCode1 = "",
-                        Group = 1,
-                        CurrCode = itemData.RtnHeader.CurrCode,
-                        Period = itemData.RtnHeader.Date.ToString("yyyyMMdd"),
-                        Type = "D",
-                        Amount = itemData.RtnHeader.IncludeTax ? totalHeader - (journals.Where(x => x.Code == itemData.RtnHeader.Code && x.Group == 3).Sum(x => x.Amount)) : totalHeader,
                         SrcTrans = "SR"
                     });
                 }
