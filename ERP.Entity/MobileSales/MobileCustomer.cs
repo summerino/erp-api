@@ -1,11 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using ERP.Entity.Core;
 
 namespace ERP.Entity.MobileSales
 {
     [Table("MobileCustomer", Schema = Schema.MobileSales)]
-    public class MobileCustomer : BaseEntityWithApproved
+    public class MobileCustomer : BaseEntityWithMarkAndApproved
     {
         [Key]
         [StringLength(17)]
@@ -54,5 +55,61 @@ namespace ERP.Entity.MobileSales
         public int? AreaId4 { get; set; }
 
         public int? AreaId5 { get; set; }
+
+        public int? RejectedBy { get; set; }
+
+        [Column(TypeName = "datetime")]
+        public DateTime? RejectedDate { get; set; }
+    }
+
+    public class VwMobileCustomer : BaseEntityWithMarkAndApproved
+    {
+        public string Code { get; set; }
+
+        public string CustCode { get; set; }
+
+        public string Initial { get; set; }
+
+        public string Name { get; set; }
+
+        public int TypeId { get; set; }
+
+        public string InitialAddress { get; set; }
+
+        public string Address1 { get; set; }
+
+        public string Address2 { get; set; }
+
+        public string ContactPerson { get; set; }
+
+        public string Phone { get; set; }
+
+        public string Fax { get; set; }
+
+        public int? AreaId1 { get; set; }
+
+        public int? AreaId2 { get; set; }
+
+        public int? AreaId3 { get; set; }
+
+        public int? AreaId4 { get; set; }
+
+        public int? AreaId5 { get; set; }
+
+        public int? RejectedBy { get; set; }
+
+        [Column(TypeName = "datetime")]
+        public DateTime? RejectedDate { get; set; }
+
+        public string CreatedInitial { get; set; }
+
+        public string UpdatedInitial { get; set; }
+
+        public string ApprovedInitial { get; set; }
+
+        public string RejectedInitial { get; set; }
+
+        public string Status { get; set; }
+
     }
 }
