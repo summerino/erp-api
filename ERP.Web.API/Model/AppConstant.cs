@@ -47,7 +47,10 @@
         CbTypePurchaseDownPaymentReturn = 38,
         CbTypeSalesReturn = 39,
         CbTypePurchaseReturn = 40,
-        Print = 41
+        Print = 41,
+        OverLimit = 42,
+        Approve = 43,
+        Reject = 44
     }
 
     public enum Menu 
@@ -128,6 +131,7 @@
 
         // Mobile Sales
         MobileReason = 108,
+        MobileCustomer = 113,
 
         // System Management
         CompanyProfile = 75,
