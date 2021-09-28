@@ -12,6 +12,8 @@ namespace ERP.Entity.Accounting
 
         public string IsName { get; set; }
 
+        public string IsNameWithSpace { get; set; }
+
         public decimal? IsNowAmountIdr { get; set; }
 
         public decimal? IsPrevAmountIdr { get; set; }
