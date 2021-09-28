@@ -4,14 +4,16 @@ using ERP.Entity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ERP.Entity.Migrations.TenantMigrations
 {
     [DbContext(typeof(TenantContext))]
-    partial class TenantContextModelSnapshot : ModelSnapshot
+    [Migration("20210928144654_CreateTablePostingLog")]
+    partial class CreateTablePostingLog
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1019,27 +1021,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.HasIndex("TypeCode");
 
                     b.ToTable("Journal", "Accounting");
-                });
-
-            modelBuilder.Entity("ERP.Entity.Accounting.PostingLog", b =>
-                {
-                    b.Property<string>("Period")
-                        .HasMaxLength(6)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(6)");
-
-                    b.Property<bool>("IsPosted")
-                        .HasColumnType("bit");
-
-                    b.Property<int?>("PostedBy")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("PostedDate")
-                        .HasColumnType("datetime");
-
-                    b.HasKey("Period");
-
-                    b.ToTable("PostingLog", "Accounting");
                 });
 
             modelBuilder.Entity("ERP.Entity.Accounting.ReportJournalResult", b =>
@@ -6980,7 +6961,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(20)");
 
                     b.Property<string>("Mark")
-                        .IsRequired()
                         .HasMaxLength(3)
                         .IsUnicode(false)
                         .HasColumnType("varchar(3)");

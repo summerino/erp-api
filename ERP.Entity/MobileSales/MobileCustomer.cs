@@ -5,7 +5,7 @@ using ERP.Entity.Core;
 namespace ERP.Entity.MobileSales
 {
     [Table("MobileCustomer", Schema = Schema.MobileSales)]
-    public class MobileCustomer : BaseEntityWithApproved
+    public class MobileCustomer : BaseEntityWithMarkApprovedAndRejected
     {
         [Key]
         [StringLength(17)]

@@ -69,8 +69,11 @@ namespace ERP.Entity.Core
         public DateTime? ApprovedDate { get; set; }
     }
 
-    public class BaseEntityWithApproved
+    public class BaseEntityWithMarkApprovedAndRejected
     {
+        [StringLength(3)]
+        public string Mark { get; set; }
+
         public int CreatedBy { get; set; }
 
         [Column(TypeName = "datetime")]
@@ -85,6 +88,11 @@ namespace ERP.Entity.Core
 
         [Column(TypeName = "datetime")]
         public DateTime? ApprovedDate { get; set; }
+
+        public int? RejectedBy { get; set; }
+
+        [Column(TypeName = "datetime")]
+        public DateTime? RejectedDate { get; set; }
     }
 
     public class BaseCreatedEntity
