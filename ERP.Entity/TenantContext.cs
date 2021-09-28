@@ -49,13 +49,14 @@ namespace ERP.Entity
         public DbSet<GeneralJournalDetail> GeneralJournalDetails { get; set; }
         public DbSet<VwGeneralJournalHeader> VwGeneralJournalHeaders { get; set; }
         public DbSet<Journal> Journals { get; set; }
-        public DbSet<ReportJournalResult> ReportJournalResults { get; set; }
         public DbSet<GeneralLedgerResult> GeneralLedgerResults { get; set; }
-        public DbSet<TrialBalanceResult> TrialBalanceResults { get; set; }
         public DbSet<IncomeStatementFormat> IncomeStatementFormats { get; set; }
         public DbSet<IncomeStatementFormatSubtotal> IncomeStatementFormatSubtotals { get; set; }
         public DbSet<VwIncomeStatementFormatSubtotal> VwIncomeStatementFormatSubtotals { get; set; }
         public DbSet<IncomeStatementResult> IncomeStatementResults { get; set; }
+        public DbSet<ReportJournalResult> ReportJournalResults { get; set; }
+        public DbSet<PostingLog> PostingLogs { get; set; }
+        public DbSet<TrialBalanceResult> TrialBalanceResults { get; set; }
         public DbSet<BsIsDetailResult> BsIsDetailResults { get; set; }
 
         // Asset Management entities
@@ -1141,6 +1142,9 @@ namespace ERP.Entity
             // Mobile Customer model
             modelBuilder.Entity<MobileCustomer>(entity =>
             {
+                entity.Property(e => e.Mark)
+                    .IsRequired();
+
                 entity.HasOne<Customer>()
                     .WithMany()
                     .HasForeignKey(d => d.CustCode)
