@@ -248,13 +248,6 @@ namespace ERP.Web.API.Domain.Services.Sales
                     }
                 }
 
-                //Calculate HPP
-                var currentSM = Db.StockMutations.Where(x => x.RefCode1 == data.Code).ToList();
-                var nonVoidSM = RemoveVoidSM(Db.StockMutations.ToList());
-                foreach (var item in currentSM)
-                {
-                    CalculateHPP(nonVoidSM, item.WarehouseCode, item.ItemId, item.RefDetailId1);
-                }
                 transaction.Commit();
             }
             catch (Exception ex)
@@ -502,13 +495,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                             "UPDATE Sales.SalesOrderHeader SET Mark={0} WHERE Code={1}", soMark, data.TransCode);
                     }
                 }
-                //Calculate HPP
-                var currentSM = Db.StockMutations.Where(x => x.RefCode1 == data.Code).ToList();
-                var nonVoidSM = RemoveVoidSM(Db.StockMutations.ToList());
-                foreach (var item in currentSM)
-                {
-                    CalculateHPP(nonVoidSM, item.WarehouseCode, item.ItemId, item.RefDetailId1);
-                }
+
                 transaction.Commit();
             }
             catch (Exception ex)
@@ -700,72 +687,5 @@ namespace ERP.Web.API.Domain.Services.Sales
             return result;
         }
 
-        private void CalculateHPP(IEnumerable<StockMutation> stockMutations, string whCode, int itemId, long id)
-        {
-            decimal latestQty = 0;
-            decimal latestStockValue = 0;
-            decimal hpp = 0;
-
-            var firstId = stockMutations.FirstOrDefault(x => x.WarehouseCode == whCode && x.ItemId == itemId && x.Src == "RCV")?.Id;
-            if (firstId == null)
-                return;
-            var firstSM = stockMutations.FirstOrDefault(x => x.Id == firstId);
-
-            var currentSM = stockMutations.FirstOrDefault(x => x.WarehouseCode == whCode && x.ItemId == itemId && x.RefDetailId1 == id);
-
-            if (firstSM != null || firstSM.BaseNettPrice != 0)
-            {
-                latestStockValue += firstSM.BaseNettPrice * firstSM.BaseQty;
-                latestQty += firstSM.BaseQty;
-                hpp = latestStockValue / latestQty;
-
-                var listSM = stockMutations.Where(x => new[] { "RCV", "DO", "SR" }.Contains(x.Src) && x.WarehouseCode == whCode && x.ItemId == itemId && x.Id > firstId && x.Id <= currentSM.Id).OrderBy(x => x.Id).ToList();
-                foreach (var item in listSM)
-                {
-                    if (item.Src == "RCV" && item.Src == "SR")
-                    {
-                        latestStockValue += item.BaseNettPrice * item.BaseQty;
-                        latestQty += item.BaseQty;
-                    }
-                    else if (item.Src == "DO")
-                    {
-                        var srcTrans = stockMutations.FirstOrDefault(x => x.ItemId == item.ItemId && x.RefCode1 == item.RefCode2);
-                        if (srcTrans?.Src == "SR")
-                        {
-                            item.BaseNettPrice = srcTrans.BaseNettPrice;
-                            item.NettPrice = srcTrans.NettPrice;
-                            latestStockValue -= item.BaseNettPrice * item.BaseQty;
-                            latestQty -= item.BaseQty;
-                        }
-                        else
-                        {
-                            item.BaseNettPrice = hpp;
-                            item.NettPrice = (hpp * item.BaseQty) / item.Qty;
-                            latestStockValue -= item.BaseNettPrice * item.BaseQty;
-                            latestQty -= item.BaseQty;
-                        }
-                        Db.StockMutations.Update(item);
-                    }
-                    if (latestStockValue > 0 && latestQty > 0)
-                        hpp = latestStockValue / latestQty;
-                }
-                Db.SaveChanges();
-            }
-        }
-
-        private List<StockMutation> RemoveVoidSM(List<StockMutation> data)
-        {
-            var result = data;
-            var listVoid = new List<string>();
-
-            listVoid.AddRange(Db.PurchaseReceiveHeaders.Where(x => x.Mark == "V").Select(x => x.Code).ToList());
-            listVoid.AddRange(Db.SalesDeliveryHeaders.Where(x => x.Mark == "V").Select(x => x.Code).ToList());
-            listVoid.AddRange(Db.AdjustmentHeaders.Where(x => x.Mark == "V").Select(x => x.Code).ToList());
-            listVoid.AddRange(Db.TransferStockHeaders.Where(x => x.Mark == "V").Select(x => x.Code).ToList());
-
-            result = result.Where(x => !listVoid.Contains(x.RefCode1)).ToList();
-
-            return result;
-        }
     }
 }

@@ -325,6 +325,8 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 {
                     var smData = _db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.DlvDetail.Id && x.RefCode1 == itemDetail.DlvDetail.Code);
                     var prorateHeaderDisc = itemData.Dlvheader.FinalDisc > 0 ? (itemData.Dlvheader.FinalDisc * itemDetail.DlvDetail.NettPrice) / DlvDetailData.Sum(x => x.DlvDetail.NettPrice) : 0;
+                    var nonVoidSM = RemoveVoidSM(_db.StockMutations.ToList());
+                    var resultHpp = CalculateHPP(nonVoidSM, smData.WarehouseCode, smData.ItemId, smData.RefDetailId1);
 
                     //Discount - Diskon
                     if (itemDetail.DlvDetail.Disc > 0)
@@ -388,7 +390,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                         CurrCode = itemData.Dlvheader.CurrCode,
                         Period = itemData.Dlvheader.Date.ToString("yyyyMMdd"),
                         Type = "C",
-                        Amount = ivnValue,
+                        Amount = resultHpp > 0 ? resultHpp * smData.BaseQty : 0,
                         SrcTrans = "DLV"
                     });
 
@@ -407,7 +409,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                         CurrCode = itemData.Dlvheader.CurrCode,
                         Period = itemData.Dlvheader.Date.ToString("yyyyMMdd"),
                         Type = "D",
-                        Amount = smData != null ? smData.BaseNettPrice * smData.BaseQty : 0,
+                        Amount = resultHpp > 0 ? resultHpp * smData.BaseQty : 0,
                         SrcTrans = "DLV"
                     });
 
@@ -2098,6 +2100,79 @@ namespace ERP.Web.API.Domain.Services.Accounting
             }
 
             return journals;
+        }
+
+        private decimal CalculateHPP(IEnumerable<StockMutation> stockMutations, string whCode, int itemId, long id)
+        {
+            decimal latestQty = 0;
+            decimal latestStockValue = 0;
+            decimal hpp = 0;
+            decimal result = 0;
+
+            var firstId = stockMutations.FirstOrDefault(x => x.WarehouseCode == whCode && x.ItemId == itemId && x.Src == "RCV")?.Id;
+            if (firstId == null)
+                return 0;
+            var firstSM = stockMutations.FirstOrDefault(x => x.Id == firstId);
+
+            var currentSM = stockMutations.FirstOrDefault(x => x.WarehouseCode == whCode && x.ItemId == itemId && x.RefDetailId1 == id);
+
+            if (firstSM != null || firstSM.BaseNettPrice != 0)
+            {
+                latestStockValue += firstSM.BaseNettPrice * firstSM.BaseQty;
+                latestQty += firstSM.BaseQty;
+                hpp = latestStockValue / latestQty;
+
+                var listSM = stockMutations.Where(x => new[] { "RCV", "DO", "SR", "ADJ", "TS" }.Contains(x.Src) && x.WarehouseCode == whCode && x.ItemId == itemId && x.Id > firstId && x.Id <= currentSM.Id).OrderBy(x => x.Id).ToList();
+                foreach (var item in listSM)
+                {
+                    if (item.Src == "RCV" && item.Src == "SR")
+                    {
+                        latestStockValue += item.BaseNettPrice * item.BaseQty;
+                        latestQty += item.BaseQty;
+                    }
+                    else //if (item.Src == "DO")
+                    {
+                        var srcTrans = stockMutations.FirstOrDefault(x => x.ItemId == item.ItemId && x.RefCode1 == item.RefCode2);
+                        if (srcTrans?.Src == "SR")
+                        {
+                            item.BaseNettPrice = srcTrans.BaseNettPrice;
+                            item.NettPrice = srcTrans.NettPrice;
+                            latestStockValue -= item.BaseNettPrice * item.BaseQty;
+                            latestQty -= item.BaseQty;
+                        }
+                        else
+                        {
+                            item.BaseNettPrice = hpp;
+                            item.NettPrice = (hpp * item.BaseQty) / item.Qty;
+                            latestStockValue -= item.BaseNettPrice * item.BaseQty;
+                            latestQty -= item.BaseQty;
+                        }
+                        _db.StockMutations.Update(item);
+                    }
+                    if (latestStockValue > 0 && latestQty > 0)
+                    {
+                        result = hpp;
+                        hpp = latestStockValue / latestQty;
+                    }
+                }
+                _db.SaveChanges();
+            }
+            return result;
+        }
+
+        private List<StockMutation> RemoveVoidSM(List<StockMutation> data)
+        {
+            var result = data;
+            var listVoid = new List<string>();
+
+            listVoid.AddRange(_db.PurchaseReceiveHeaders.Where(x => x.Mark == "V").Select(x => x.Code).ToList());
+            listVoid.AddRange(_db.SalesDeliveryHeaders.Where(x => x.Mark == "V").Select(x => x.Code).ToList());
+            listVoid.AddRange(_db.AdjustmentHeaders.Where(x => x.Mark == "V").Select(x => x.Code).ToList());
+            listVoid.AddRange(_db.TransferStockHeaders.Where(x => x.Mark == "V").Select(x => x.Code).ToList());
+
+            result = result.Where(x => !listVoid.Contains(x.RefCode1)).ToList();
+
+            return result;
         }
     }
 }
