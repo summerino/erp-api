@@ -2150,14 +2150,11 @@ namespace ERP.Web.API.Domain.Services.Accounting
                         _db.StockMutations.Update(item);
                     }
                     if (latestStockValue > 0 && latestQty > 0)
-                    {
-                        result = hpp;
                         hpp = latestStockValue / latestQty;
-                    }
                 }
                 _db.SaveChanges();
             }
-            return result;
+            return hpp;
         }
 
         private List<StockMutation> RemoveVoidSM(List<StockMutation> data)
