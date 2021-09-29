@@ -166,7 +166,6 @@ namespace ERP.Entity
         public DbSet<VwMobileReason> VwMobileReasons { get; set; }
         public DbSet<MobileVisitLog> MobileVisitLogs { get; set; }
         public DbSet<MobileVisitReason> MobileVisitReasons { get; set; }
-        public DbSet<VwMobileCustomer> VwMobileCustomers { get; set; }
 
         // Purchase entities
         public DbSet<DebitMemo> DebitMemos { get; set; }
@@ -1391,12 +1390,7 @@ namespace ERP.Entity
             modelBuilder.Entity<VwMobileReason>()
                 .HasNoKey()
                 .ToView("vwMobileReason", Schema.MobileSales);
-
-            // Mobile Customer model
-            modelBuilder.Entity<VwMobileCustomer>()
-                .HasNoKey()
-                .ToView("vwMobileCustomer", Schema.MobileSales);
-
+            
             // Mobile Visit Log model
             modelBuilder.Entity<MobileVisitLog>(entity =>
             {
