@@ -404,6 +404,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 ,isRptSort,isPm
 
                 SELECT isCode,CASE WHEN isHidden = 1 THEN '' ELSE isName END AS isName
+                ,CASE WHEN isHidden = 1 THEN '' ELSE RIGHT('              ' + isName, LEN(isName) + ((isDeep-1)*2)) END AS isNameWithSpace
                 ,CASE WHEN isHidden = 1 OR isHasChild = 1 THEN null ELSE isNowAmountIdr END AS isNowAmountIdr
                 ,CASE WHEN isHidden = 1 OR isHasChild = 1 THEN null ELSE isPrevAmountIdr END AS isPrevAmountIdr
 
@@ -444,10 +445,10 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 DROP TABLE #tmpIsFormat_{tmpTableName}
                 DROP TABLE #tmpJourSrc_{tmpTableName}";
 
-            return _db.IncomeStatementResults.FromSqlRaw(sql).ToList();
+            return _db.IncomeStatementResults.FromSqlRaw(sql);
         }
 
-        public IEnumerable<BsIsDetailResult> GetBsIsDetailLists(string typeFormat, string code, string PlusMinus,
+        public IEnumerable<BsIsDetailResult> GetBsIsDetailLists(string typeFormat, string code, string plusMinus,
             string dateFrom, string dateTo, string jourSrc)
         {
             string parDateTo = "";
@@ -493,8 +494,8 @@ namespace ERP.Web.API.Domain.Services.Accounting
 	            ,cte_jour_src AS (
 		            SELECT CoaCode,coaName,FORMAT([Date],'yyyyMM') AS period
                     ,CASE WHEN SrcTrans = 'END_YEAR' THEN SrcTrans ELSE '' END AS SrcTrans
-		            ,SUM(ROUND(debetOc - creditOc,4) * {PlusMinus.Replace("'", "''")}) AS amountOc
-                    ,SUM(ROUND(debetOc - creditOc,4) * {PlusMinus.Replace("'", "''")}) AS amountIdr
+		            ,SUM(ROUND(debetOc - creditOc,4) * {plusMinus.Replace("'", "''")}) AS amountOc
+                    ,SUM(ROUND(debetOc - creditOc,4) * {plusMinus.Replace("'", "''")}) AS amountIdr
 		            FROM {cteSource}
                     WHERE 1 = 1 {whEndYear} {whJourSrc}
                     GROUP BY CoaCode,coaName,FORMAT([Date],'yyyyMM')
@@ -507,7 +508,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 GROUP BY CoaCode,coaName
                 ORDER BY CoaCode";
 
-            return _db.BsIsDetailResults.FromSqlRaw(sql).ToList();
+            return _db.BsIsDetailResults.FromSqlRaw(sql);
         }
     }
 }

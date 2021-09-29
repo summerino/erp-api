@@ -1,13 +1,11 @@
-﻿using ERP.Entity;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Microsoft.AspNetCore.Mvc;
+using ERP.Entity;
 using ERP.Entity.Accounting;
 using ERP.Web.API.Domain.Interfaces.Accounting;
 using ERP.Web.API.Domain.Interfaces.SystemManagement;
 using ERP.Web.API.Model;
-using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace ERP.Web.API.Controllers.Accounting
 {
@@ -21,7 +19,8 @@ namespace ERP.Web.API.Controllers.Accounting
 
         private const int MenuId = (int)Menu.IncomeStatementReport;
 
-        public IncomeStatementReportController(IIncomeStatementReportService isr, IRoleService role, IClaimService claim)
+        public IncomeStatementReportController(IIncomeStatementReportService isr, IRoleService role,
+            IClaimService claim)
         {
             _isr = isr;
             _role = role;
@@ -37,7 +36,7 @@ namespace ERP.Web.API.Controllers.Accounting
                 return result;
 
             result = _isr.GetIncomeStatementLists(data.PeriodType, data.RptBy, data.RptDet, data.DateTo).ToList();
-
+            
             return result;
         }
 

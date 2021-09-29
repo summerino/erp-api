@@ -8,7 +8,7 @@ namespace ERP.Web.API.Domain.Interfaces.Accounting
         IEnumerable<IncomeStatementResult> GetIncomeStatementLists(string periodType, string rptBy,
             string rptDet, string dateTo);
 
-        IEnumerable<BsIsDetailResult> GetBsIsDetailLists(string typeFormat, string code, string PlusMinus,
+        IEnumerable<BsIsDetailResult> GetBsIsDetailLists(string typeFormat, string code, string plusMinus,
             string dateFrom, string dateTo, string jourSrc);
     }
 }
