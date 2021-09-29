@@ -8,7 +8,7 @@ namespace ERP.Entity.MobileSales
 {
     [Table("MobileVisitLog", Schema = Schema.MobileSales)]
     [Index(nameof(CustCode))]
-    public class MobileVisitLog : BaseEntityWithMarkAndApproved
+    public class MobileVisitLog : BaseEntityWithMarkApprovedAndRejected
     {
         [Key]
         [StringLength(17)]

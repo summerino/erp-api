@@ -7,7 +7,7 @@ using ERP.Entity.Core;
 namespace ERP.Entity.MobileSales
 {
     [Table("MobileCostHeader", Schema = Schema.MobileSales)]
-    public class MobileCostHeader : BaseEntityWithMarkAndApproved
+    public class MobileCostHeader : BaseEntityWithMarkApprovedAndRejected
     {
         [Key]
         [StringLength(17)]

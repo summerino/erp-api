@@ -10,7 +10,7 @@ namespace ERP.Entity.MobileSales
     [Index(nameof(CustCode))]
     [Index(nameof(CoaCode))]
     [Index(nameof(TransCode))]
-    public class MobilePaymentInvoice : BaseEntityWithMarkAndApproved
+    public class MobilePaymentInvoice : BaseEntityWithMarkApprovedAndRejected
     {
         [Key]
         [StringLength(17)]

@@ -8,7 +8,7 @@ namespace ERP.Entity.MobileSales
 {
     [Table("MobileOrderHeader", Schema = Schema.MobileSales)]
     [Index(nameof(CustCode))]
-    public class MobileOrderHeader : BaseEntityWithMarkAndApproved
+    public class MobileOrderHeader : BaseEntityWithMarkApprovedAndRejected
     {
         [Key]
         [StringLength(17)]

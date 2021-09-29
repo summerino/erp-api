@@ -6,7 +6,7 @@ using ERP.Entity.Core;
 namespace ERP.Entity.MobileSales
 {
     [Table("MobileItemRequestHeader", Schema = Schema.MobileSales)]
-    public class MobileItemRequestHeader : BaseEntityWithMarkAndApproved
+    public class MobileItemRequestHeader : BaseEntityWithMarkApprovedAndRejected
     {
         [Key]
         [StringLength(17)]
