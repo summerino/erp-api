@@ -154,6 +154,7 @@ namespace ERP.Entity
         public DbSet<MobileCostDetail> MobileCostDetails { get; set; }
         public DbSet<MobileCostImage> MobileCostImages { get; set; }
         public DbSet<MobileCustomer> MobileCustomers { get; set; }
+        public DbSet<VwMobileCustomer> VwMobileCustomers { get; set; }
         public DbSet<MobileItemRequestHeader> MobileItemRequestHeaders { get; set; }
         public DbSet<MobileItemRequestDetail> MobileItemRequestDetails { get; set; }
         public DbSet<MobileOrderHeader> MobileOrderHeaders { get; set; }
@@ -1180,6 +1181,10 @@ namespace ERP.Entity
                     .HasForeignKey(d => d.AreaId5)
                     .OnDelete(DeleteBehavior.NoAction);
             });
+
+            modelBuilder.Entity<VwMobileCustomer>()
+                .HasNoKey()
+                .ToView("vwMobileCustomer", Schema.MobileSales);
 
             // Mobile Item Request model
             modelBuilder.Entity<MobileItemRequestHeader>(entity =>
