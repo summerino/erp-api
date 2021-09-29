@@ -2107,7 +2107,6 @@ namespace ERP.Web.API.Domain.Services.Accounting
             decimal latestQty = 0;
             decimal latestStockValue = 0;
             decimal hpp = 0;
-            decimal result = 0;
 
             var firstId = stockMutations.FirstOrDefault(x => x.WarehouseCode == whCode && x.ItemId == itemId && x.Src == "RCV")?.Id;
             if (firstId == null)
