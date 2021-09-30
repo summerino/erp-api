@@ -5,7 +5,7 @@ namespace ERP.Web.API.Domain.Interfaces.Accounting
 {
     public interface IJournalService
     {
-        SaveResult PostingJournal(JournalRequest data);
+        SaveResult PostingJournal(JournalRequest data, int userId);
 
     }
 }

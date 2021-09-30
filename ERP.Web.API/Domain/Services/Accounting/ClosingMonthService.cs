@@ -67,11 +67,14 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     }
                 }
 
-                // Check if previous month still open
-                if(Db.ClosingMonths.Where(x => Convert.ToInt32(x.Period) < Convert.ToInt32($"{startDate.Year}{(startDate.Month > 9 ? startDate.Month : "0" + startDate.Month)}") && x.IsClose == false).Any())
+                if (data.IsClose)
                 {
-                    result.Message = "Tidak bisa melakukan tutup bulan karena terdapat periode sebelumnya yang belum ditutup.";
-                    return result;
+                    // Check if previous month still open
+                    if (Db.ClosingMonths.Where(x => Convert.ToInt32(x.Period) < Convert.ToInt32($"{startDate.Year}{(startDate.Month > 9 ? startDate.Month : "0" + startDate.Month)}") && x.IsClose == false).Any())
+                    {
+                        result.Message = "Tidak bisa melakukan tutup bulan karena terdapat periode sebelumnya yang belum ditutup.";
+                        return result;
+                    }
                 }
 
                 // Insert data
@@ -87,6 +90,12 @@ namespace ERP.Web.API.Domain.Services.Accounting
                             CreatedDate = data.CreatedDate,
                             UpdatedBy = data.UpdatedBy,
                             UpdatedDate = data.UpdatedDate
+                        });
+
+                        Db.PostingLogs.Add(new PostingLog
+                        {
+                            Period = $"{dataMonth.Year}{(dataMonth.Month > 9 ? dataMonth.Month : "0" + dataMonth.Month)}",
+                            IsPosted = false
                         });
                     }
                 }
@@ -120,8 +129,32 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     result.Message = "Tidak bisa melakukan tutup bulan karena terdapat periode sebelumnya yang belum ditutup.";
                     return result;
                 }
+
+                if (Db.PostingLogs.Where(x => Convert.ToInt32(x.Period) < Convert.ToInt32(data.Period) && x.IsPosted == false).Any())
+                {
+                    result.Message = "Tidak bisa melakukan tutup bulan karena terdapat periode sebelumnya yang belum diposting.";
+                    return result;
+                }
             }
-            
+            else
+            {
+                var cmData = Db.ClosingMonths.Where(x => Convert.ToInt32(x.Period) > Convert.ToInt32(data.Period)).ToList();
+                var plData = Db.PostingLogs.Where(x => Convert.ToInt32(x.Period) > Convert.ToInt32(data.Period)).ToList();
+                foreach (var item in cmData)
+                {
+                    item.IsClose = false;
+                    var itemLog = plData.FirstOrDefault(x => x.Period == item.Period);
+                    if (itemLog != null)
+                    {
+                        itemLog.IsPosted = false;
+                        itemLog.PostedBy = null;
+                        itemLog.PostedDate = null;
+                    }
+                }
+                Db.ClosingMonths.UpdateRange(cmData);
+                Db.PostingLogs.UpdateRange(plData);
+            }
+
 
             // Update data
             Db.ClosingMonths.Update(data);

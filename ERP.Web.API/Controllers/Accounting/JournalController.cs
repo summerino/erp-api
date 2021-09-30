@@ -6,6 +6,7 @@ using ERP.Web.API.Domain.Interfaces.Accounting;
 using ERP.Web.API.Domain.Interfaces.Auth;
 using ERP.Web.API.Model;
 using ERP.Web.API.Model.Accounting;
+using System.Collections.Generic;
 
 namespace ERP.Web.API.Controllers.Accounting
 {
@@ -14,14 +15,17 @@ namespace ERP.Web.API.Controllers.Accounting
     public class JournalController : ControllerBase
     {
         private readonly IJournalService _js;
+        private readonly IClosingMonthService _cm;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
 
         private const int MenuId = (int)Menu.Posting;
 
-        public JournalController(IJournalService journalService, IClaimService claimService, IAuthService authService)
+        public JournalController(IJournalService journalService, IClosingMonthService cm,
+            IClaimService claimService, IAuthService authService)
         {
             _js = journalService;
+            _cm = cm;
             _claim = claimService;
             _auth = authService;
         }
@@ -34,7 +38,10 @@ namespace ERP.Web.API.Controllers.Accounting
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
             }
 
-            var result = _js.PostingJournal(data);
+            if (_cm.IsMonthClosed(new List<string> { data.Date.ToString("yyyyMM") }))
+                return Ok(new SaveResult(false, "Periode sudah ditutup. Silakan hubungi departemen akuntansi."));
+
+            var result = _js.PostingJournal(data, _claim.UserId);
 
             return Ok(result);
         }
