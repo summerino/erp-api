@@ -6,7 +6,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            // Alter view Purchasing.vwPurchaseReturnHeader
+            // Alter view Finance.vwInterCashBankHeader
             var sql = @"ALTER VIEW [Finance].[vwInterCashBankHeader]
 AS
     SELECT gcbh.*,
