@@ -132,6 +132,7 @@
         // Mobile Sales
         MobileReason = 108,
         MobileCustomer = 113,
+        MobileItemRequest = 114,
 
         // System Management
         CompanyProfile = 75,
