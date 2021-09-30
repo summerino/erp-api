@@ -22,7 +22,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
             _db = db;
         }
 
-        public SaveResult PostingJournal(JournalRequest data)
+        public SaveResult PostingJournal(JournalRequest data, int userId)
         {
             var result = new SaveResult(false);
             var systemParam = _db.SystemParameters.ToList();
@@ -32,6 +32,12 @@ namespace ERP.Web.API.Domain.Services.Accounting
             using var transaction = _db.Database.BeginTransaction();
             try
             {
+                if (_db.PostingLogs.Where(x => Convert.ToInt32(x.Period) < Convert.ToInt32(data.Date.ToString("yyyyMM")) && x.IsPosted == false).Any())
+                {
+                    result.Message = "Tidak bisa melakukan posting jurnal karena terdapat periode sebelumnya yang belum diposting.";
+                    return result;
+                }
+
                 var removed = _db.Journals.Where(x => x.Date.Month == data.Date.Month && x.Date.Year == data.Date.Year).ToList();
                 if (removed != null)
                     _db.RemoveRange(removed);
@@ -110,6 +116,13 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     if (journalEY != null)
                         _db.AddRange(journalEY);
                 }
+
+                //Update posting log
+                var plData = _db.PostingLogs.FirstOrDefault(x => x.Period == data.Date.ToString("yyyyMM"));
+                plData.IsPosted = true;
+                plData.PostedBy = userId;
+                plData.PostedDate = DateTime.Now;
+                _db.PostingLogs.Update(plData);
 
                 _db.SaveChanges();
 
@@ -1979,6 +1992,10 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 short l = 0;
                 foreach (var itemDetail in adjDetailData)
                 {
+                    var smData = _db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.AdjDetail.Id && x.RefCode1 == itemDetail.AdjDetail.Code);
+                    var nonVoidSM = RemoveVoidSM(_db.StockMutations.ToList());
+                    var resultHpp = CalculateHPP(nonVoidSM, smData.WarehouseCode, smData.ItemId, smData.RefDetailId1);
+
                     if (itemDetail.AdjDetail.QtyAdjust > itemDetail.AdjDetail.QtyOnHand)
                     {
                         var qty = (itemDetail.AdjDetail.QtyAdjust - itemDetail.AdjDetail.QtyOnHand);
@@ -1995,7 +2012,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                             CurrCode = "IDR",
                             Period = itemData.Date.ToString("yyyyMMdd"),
                             Type = "D",
-                            Amount = qty * itemDetail.AdjDetail.COGS,
+                            Amount = qty * resultHpp,
                             SrcTrans = "ADJ"
                         });
                     }
@@ -2015,7 +2032,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                             CurrCode = "IDR",
                             Period = itemData.Date.ToString("yyyyMMdd"),
                             Type = "C",
-                            Amount = qty * itemDetail.AdjDetail.COGS,
+                            Amount = qty * resultHpp,
                             SrcTrans = "ADJ"
                         });
                     }
@@ -2121,7 +2138,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 latestQty += firstSM.BaseQty;
                 hpp = latestStockValue / latestQty;
 
-                var listSM = stockMutations.Where(x => new[] { "RCV", "DO", "SR", "ADJ", "TS" }.Contains(x.Src) && x.WarehouseCode == whCode && x.ItemId == itemId && x.Id > firstId && x.Id <= currentSM.Id).OrderBy(x => x.Id).ToList();
+                var listSM = stockMutations.Where(x => new[] { "RCV", "DO", "SR", "ADJ", "TS" }.Contains(x.Src) && x.WarehouseCode == whCode && x.ItemId == itemId && x.Id > firstId && x.Id <= currentSM.Id).OrderBy(x => x.Date).ToList();
                 foreach (var item in listSM)
                 {
                     if (item.Src == "RCV" && item.Src == "SR")
