@@ -128,16 +128,16 @@ namespace ERP.Web.API.Controllers.Finance
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
             // Validate process
-            var (isValid, message) = Validate(data);
+            var (isValid, message) = Validate(data, true);
             if (!isValid)
                 return Ok(new SaveResult(false, message));
 
-            var result = _interCb.Delete(data.Code, _claim.UserId);
+            var result = _interCb.Delete(data.Code, data.TransCode, _claim.UserId);
 
             return Ok(result);
         }
 
-        private (bool, string) Validate(CashBankRequest data)
+        private (bool, string) Validate(CashBankRequest data, bool onDelete = false)
         {
             var periods = new List<string> { data.Date.ToString("yyyyMM") };
             if (data.OriginalDate.HasValue)
@@ -147,9 +147,13 @@ namespace ERP.Web.API.Controllers.Finance
                 return (false, "Periode sudah ditutup. Silakan hubungi departemen akuntansi.");
 
             // Checking data start date validity
-            return !_sysPar.IsStartDateValid(data.Date)
-                ? (false, "Tanggal tidak boleh lebih kecil dari tanggal mulai data.")
-                : (true, "");
+            if (!_sysPar.IsStartDateValid(data.Date))
+                return (false, "Tanggal tidak boleh lebih kecil dari tanggal mulai data.");
+
+            if (!onDelete && (!data.ItemDetails.Any() || data.ItemDetails.Count != 2))
+                return (false, "Detail Akun asal atau akun tujuan tidak ada.");
+
+            return (true, "");
         }
     }
 }

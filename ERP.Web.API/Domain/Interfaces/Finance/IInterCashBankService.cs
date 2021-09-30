@@ -17,6 +17,6 @@ namespace ERP.Web.API.Domain.Interfaces.Finance
 
         SaveResult Update(CashBankRequest data);
 
-        SaveResult Delete(string code, int userId);
+        SaveResult Delete(string code, string transCode, int userId);
     }
 }

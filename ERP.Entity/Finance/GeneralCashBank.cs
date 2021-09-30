@@ -200,7 +200,7 @@ namespace ERP.Entity.Finance
 
         public string TransCode { get; set; }
 
-        public string CoaDetail { get; set; }
+        public string CoaCodeTo { get; set; }
 
         public string CurrDetail { get; set; }
 

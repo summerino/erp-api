@@ -28,7 +28,7 @@ namespace ERP.Web.API.Domain.Services.Finance
                     ? data.Where(x => x.Date == searchDate)
                     : data.Where(x =>
                         x.Code.Contains(search) || x.CoaCode.Contains(search) || x.CoaNameFrom.Contains(search) ||
-                        x.CoaDetail.Contains(search) || x.CoaNameTo.Contains(search));
+                        x.CoaCodeTo.Contains(search) || x.CoaNameTo.Contains(search));
             }
 
             return data.ToDataSourceResult(skip, take, filters, sorts);
@@ -50,6 +50,13 @@ namespace ERP.Web.API.Domain.Services.Finance
                 // Get new code
                 var newCode = GetNewCode("CB_NUM_FMT", data.Date);
                 var newCode2 = GetNewCode("CB_NUM_FMT", data.Date);
+                var crossCoa = Db.SystemParameters.FirstOrDefault(x => x.Code == "CROSS_COA" && x.IsActive)?.Value;
+
+                if (string.IsNullOrWhiteSpace(crossCoa))
+                {
+                    result.Message = "Data pemindahan dana tidak bisa disimpan karena akun ayat silang belum diatur di pengaturan sistem.";
+                    return result;
+                }
 
                 // Insert header data
                 data.Code = newCode;
@@ -58,16 +65,10 @@ namespace ERP.Web.API.Domain.Services.Finance
 
                 if (data.ItemDetails.Any())
                 {
-                    var orderedData = data.ItemDetails.OrderBy(x => x.LineNo);
-                    short j = 0;
-                    string coaCode = "";
-                    string currCode = "";
-                    decimal rate = 0;
-                    decimal amount = 0;
-                    foreach (var item in orderedData)
+                    foreach (var item in data.ItemDetails.OrderBy(x => x.LineNo))
                     {
-                        // Save Credit for data
-                        if (j == 1)
+                        // Save credit for data
+                        if (item.Type.ToUpper() == "ICBI")
                         {
                             Db.GeneralCashBankHeaders.Add(new GeneralCashBankHeader
                             {
@@ -75,10 +76,10 @@ namespace ERP.Web.API.Domain.Services.Finance
                                 VouCode = data.VouCode,
                                 Type = "D",
                                 Date = data.Date,
-                                CoaCode = coaCode,
-                                CurrCode = currCode,
-                                Rate = rate,
-                                Amount = amount,
+                                CoaCode = item.CoaCode,
+                                CurrCode = item.CurrCode,
+                                Rate = data.Rate,
+                                Amount = data.Amount,
                                 ChequeNo = data.ChequeNo,
                                 ChequeDate = data.ChequeDate,
                                 Notes = data.Notes,
@@ -93,27 +94,19 @@ namespace ERP.Web.API.Domain.Services.Finance
 
                         Db.GeneralCashBankDetails.Add(new GeneralCashBankDetail
                         {
-                            Code = (j == 1) ? newCode2 : data.Code,
-                            LineNo = j,
+                            Code = item.Type.ToUpper() == "ICBI" ? newCode2 : data.Code,
+                            LineNo = 1,
                             Type = item.Type,
-                            TransCode = (j == 1) ? data.Code : newCode2,
-                            CoaCode = item.CoaCode,
+                            TransCode = item.Type.ToUpper() == "ICBI" ? data.Code : newCode2,
+                            CoaCode = crossCoa,
                             CurrCode = item.CurrCode,
                             Rate = item.Rate,
                             Amount = item.Amount,
                             TypeAmount = item.TypeAmount,
-                            TransAmount = item.TransAmount,
-                            Notes = item.Notes
+                            TransAmount = item.Amount,
+                            Notes = item.Notes,
+                            Src = "ICB"
                         });
-
-                        if (j == 0)
-                        {
-                            coaCode = item.CoaCode;
-                            currCode = item.CurrCode;
-                            rate = item.Rate;
-                            amount = item.Amount;
-                        }
-                        j++;
                     }
                 }
 
@@ -147,50 +140,59 @@ namespace ERP.Web.API.Domain.Services.Finance
                     return result;
                 }
 
+                // Get cross coa
+                var crossCoa = Db.SystemParameters.FirstOrDefault(x => x.Code == "CROSS_COA" && x.IsActive)?.Value;
+
+                if (string.IsNullOrWhiteSpace(crossCoa))
+                {
+                    result.Message = "Data pemindahan dana tidak bisa diubah karena akun ayat silang belum diatur di pengaturan sistem.";
+                    return result;
+                }
+
                 data.ApprovedBy = null;
                 data.ApprovedDate = null;
 
                 // Update header data
-                Db.GeneralCashBankHeaders.Update(data);
-                Db.Entry(data).Property(e => e.Code).IsModified = false;
-                Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
-                Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
+                Db.Set<GeneralCashBankHeader>().Attach(data);
+                Db.Entry(data).Property(e => e.Date).IsModified = true;
+                Db.Entry(data).Property(e => e.Amount).IsModified = true;
+                Db.Entry(data).Property(e => e.ChequeNo).IsModified = true;
+                Db.Entry(data).Property(e => e.ChequeDate).IsModified = true;
+                Db.Entry(data).Property(e => e.Notes).IsModified = true;
+                Db.Entry(data).Property(e => e.UpdatedBy).IsModified = true;
+                Db.Entry(data).Property(e => e.UpdatedDate).IsModified = true;
+                Db.Entry(data).Property(e => e.ApprovedBy).IsModified = true;
+                Db.Entry(data).Property(e => e.ApprovedDate).IsModified = true;
 
                 if (data.ItemDetails.Any())
                 {
-                    var orderedData = data.ItemDetails.OrderBy(x => x.LineNo);
-                    short j = 0;
-                    foreach (var item in orderedData)
+                    short j = 1;
+                    foreach (var item in data.ItemDetails.OrderBy(x => x.LineNo))
                     {
                         // Load secondary transaction
                         var data2 = Db.GeneralCashBankHeaders.Find(item.TransCode);
 
-                        // Save Credit for data
-                        if (j == 0)
+                        // Save credit for data
+                        if (j == 1)
                         {
                             data2.Date = data.Date;
                             data2.Amount = data.Amount;
                             data2.ChequeNo = data.ChequeNo;
                             data2.ChequeDate = data.ChequeDate;
                             data2.Notes = data.Notes;
-                            Db.GeneralCashBankHeaders.Update(data2);
-                            Db.Entry(data2).Property(e => e.Code).IsModified = false;
-                            Db.Entry(data2).Property(e => e.CreatedBy).IsModified = false;
-                            Db.Entry(data2).Property(e => e.CreatedDate).IsModified = false;
+                            data2.UpdatedBy = data.UpdatedBy;
+                            data2.UpdatedDate = data.UpdatedDate;
+                            data2.ApprovedBy = null;
+                            data2.ApprovedDate = null;
                         }
 
-                        var dataDetail = Db.GeneralCashBankDetails.Where(x => x.Code == item.Code).FirstOrDefault();
+                        var dataDetail = Db.GeneralCashBankDetails.FirstOrDefault(x => x.Code == item.Code);
+                        dataDetail.CoaCode = crossCoa;
                         dataDetail.Rate = item.Rate;
                         dataDetail.Amount = item.Amount;
-                        dataDetail.TransAmount = item.TransAmount;
+                        dataDetail.TransAmount = item.Amount;
                         dataDetail.Notes = item.Notes;
-                        Db.Entry(dataDetail).Property(e => e.Code).IsModified = false;
-                        Db.Entry(dataDetail).Property(e => e.LineNo).IsModified = false;
-                        Db.Entry(dataDetail).Property(e => e.TransCode).IsModified = false;
-                        Db.Entry(dataDetail).Property(e => e.Type).IsModified = false;
-                        Db.Entry(dataDetail).Property(e => e.CoaCode).IsModified = false;
-                        Db.Entry(dataDetail).Property(e => e.CurrCode).IsModified = false;
-                        Db.Entry(dataDetail).Property(e => e.TypeAmount).IsModified = false;
+                        
                         j++;
                     }
                 }
@@ -211,24 +213,27 @@ namespace ERP.Web.API.Domain.Services.Finance
             return result;
         }
 
-        public SaveResult Delete(string code, int userId)
+        public SaveResult Delete(string code, string transCode, int userId)
         {
             var result = new SaveResult(false);
 
-            var data = Db.GeneralCashBankHeaders.Find(code);
-            if (data != null)
+            var data = Db.GeneralCashBankHeaders.Where(x => x.Code == code || x.Code == transCode);
+            if (data.Any())
             {
                 // Checking mark header data
-                if (data.Mark == "V")
+                if (data.Any(x => x.Mark == "V"))
                 {
                     result.Message = "Data pemindahan dana tidak bisa ditandai sebagai void karena sudah ditandai sebagai void.";
                     return result;
                 }
 
                 // Update header data
-                data.Mark = "V";
-                data.UpdatedBy = userId;
-                data.UpdatedDate = DateTime.Now;
+                foreach (var item in data)
+                {
+                    item.Mark = "V";
+                    item.UpdatedBy = userId;
+                    item.UpdatedDate = DateTime.Now;
+                }
 
                 Db.SaveChanges();
             }
@@ -237,7 +242,5 @@ namespace ERP.Web.API.Domain.Services.Finance
             result.Message = "Data pemindahan dana berhasil ditandai sebagai void.";
             return result;
         }
-
-
     }
 }
