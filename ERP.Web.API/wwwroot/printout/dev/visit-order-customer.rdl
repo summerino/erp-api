@@ -130,10 +130,10 @@ FROM SystemManagement.Company</CommandText>
                   <Width>0.5in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>1in</Width>
+                  <Width>0.8125in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>1in</Width>
+                  <Width>1.175in</Width>
                 </TablixColumn>
               </TablixColumns>
               <TablixRows>
@@ -444,6 +444,7 @@ FROM SystemManagement.Company</CommandText>
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
                         </Textbox>
+                        <rd:Selected>true</rd:Selected>
                       </CellContents>
                     </TablixCell>
                   </TablixCells>
@@ -787,7 +788,7 @@ FROM SystemManagement.Company</CommandText>
             </TablixRowHierarchy>
             <DataSetName>Data</DataSetName>
             <Height>0.93403in</Height>
-            <Width>8.3in</Width>
+            <Width>8.2875in</Width>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -796,7 +797,7 @@ FROM SystemManagement.Company</CommandText>
             </Style>
           </Tablix>
         </ReportItems>
-        <Height>1.32986in</Height>
+        <Height>0.93403in</Height>
         <Style>
           <Border>
             <Style>None</Style>
