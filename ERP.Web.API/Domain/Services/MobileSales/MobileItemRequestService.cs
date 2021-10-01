@@ -240,6 +240,12 @@ namespace ERP.Web.API.Domain.Services.MobileSales
             // Delete detail data that exists in order before
             Db.MobileItemRequestDetails.RemoveRange(delDetails);
 
+            if (data.ItemDetails.GroupBy(x => new { x.ItemId, x.UnitId }).Any(x => x.Count() > 1))
+            {
+                result.Message = "Terdapat barang dengan satuan yang sama pada bagian detail..";
+                return result;
+            }
+
             // Update detail data
             short i = 0;
             foreach (var item in data.ItemDetails)
