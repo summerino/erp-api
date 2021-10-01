@@ -60,7 +60,9 @@ namespace ERP.Web.API.Domain.Services.MobileSales
                         CreatedBy = userId,
                         CreatedDate = DateTime.Now,
                         UpdatedBy = userId,
-                        UpdatedDate = DateTime.Now
+                        UpdatedDate = DateTime.Now,
+                        ApprovedBy = userId,
+                        ApprovedDate = DateTime.Now
                     };
                     Db.TransferStockHeaders.Add(headData);
 
