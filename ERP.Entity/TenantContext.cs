@@ -168,6 +168,8 @@ namespace ERP.Entity
         public DbSet<MobileVisitReason> MobileVisitReasons { get; set; }
         public DbSet<VwMobileItemRequestHeader> VwMobileItemRequestHeaders { get; set; }
         public DbSet<VwMobileItemRequestDetail> VwMobileItemRequestDetails { get; set; }
+        public DbSet<VwMobileCostHeader> VwMobileCostHeaders { get; set; }
+        public DbSet<VwMobileCostDetail> VwMobileCostDetails { get; set; }
 
         // Purchase entities
         public DbSet<DebitMemo> DebitMemos { get; set; }
@@ -1141,6 +1143,14 @@ namespace ERP.Entity
                     .HasForeignKey(d => d.Code)
                     .OnDelete(DeleteBehavior.NoAction);
             });
+
+            modelBuilder.Entity<VwMobileCostHeader>()
+                .HasNoKey()
+                .ToView("vwMobileCostHeader", Schema.MobileSales);
+
+            modelBuilder.Entity<VwMobileCostDetail>()
+                .HasNoKey()
+                .ToView("vwMobileCostDetail", Schema.MobileSales);
 
             // Mobile Customer model
             modelBuilder.Entity<MobileCustomer>(entity =>
