@@ -64,4 +64,50 @@ namespace ERP.Entity.MobileSales
         [Required]
         public string Image { get; set; }
     }
+
+    public class VwMobileCostHeader : BaseEntityWithMarkApprovedAndRejected
+    {
+        public string Code { get; set; }
+
+        public DateTime Date { get; set; }
+        
+        public string CashBankCode { get; set; }
+
+        public long SalesmanId { get; set; }
+
+        public string CurrCode { get; set; }
+
+        public decimal Rate { get; set; }
+
+        public decimal Total { get; set; }
+
+        public string CreatedInitial { get; set; }
+
+        public string UpdatedInitial { get; set; }
+
+        public string ApprovedInitial { get; set; }
+
+        public string RejectedInitial { get; set; }
+
+        public string SalesmanInitial { get; set; }
+
+        public string SalesmanName { get; set; }
+
+        public string Status { get; set; }
+    }
+
+    public class VwMobileCostDetail
+    {
+        public long Id { get; set; }
+
+        public string Code { get; set; }
+
+        public short LineNo { get; set; }
+
+        public string CoaCode { get; set; }
+
+        public decimal Amount { get; set; }
+
+        public string CoaName { get; set; }
+    }
 }

@@ -44,7 +44,7 @@ namespace ERP.Web.API.Domain.Services.MobileSales
                         return new SaveResult(false, "Data penjual tidak ditemukan.");
 
                     if(string.IsNullOrEmpty(empData.WarehouseCode))
-                        return new SaveResult(false, "Data gudang penjual penjual kosong.");
+                        return new SaveResult(false, "Data gudang penjual kosong.");
 
                     // Insert header data
                     var headData = new TransferStockHeader
@@ -60,7 +60,9 @@ namespace ERP.Web.API.Domain.Services.MobileSales
                         CreatedBy = userId,
                         CreatedDate = DateTime.Now,
                         UpdatedBy = userId,
-                        UpdatedDate = DateTime.Now
+                        UpdatedDate = DateTime.Now,
+                        ApprovedBy = userId,
+                        ApprovedDate = DateTime.Now
                     };
                     Db.TransferStockHeaders.Add(headData);
 
@@ -141,6 +143,13 @@ namespace ERP.Web.API.Domain.Services.MobileSales
                         result.Message = errorList;
                         return result;
                     }
+
+                    var mirData = Db.MobileItemRequestHeaders.FirstOrDefault(x => x.Code == itemRequest.Code);
+                    mirData.TransferCode = newCode;
+                    mirData.Mark = "APR";
+                    mirData.ApprovedBy = userId;
+                    mirData.ApprovedDate = DateTime.Now;
+                    Db.MobileItemRequestHeaders.Update(mirData);
 
                     Db.SaveChanges();
 
@@ -230,6 +239,12 @@ namespace ERP.Web.API.Domain.Services.MobileSales
 
             // Delete detail data that exists in order before
             Db.MobileItemRequestDetails.RemoveRange(delDetails);
+
+            if (data.ItemDetails.GroupBy(x => new { x.ItemId, x.UnitId }).Any(x => x.Count() > 1))
+            {
+                result.Message = "Terdapat barang dengan satuan yang sama pada bagian detail.";
+                return result;
+            }
 
             // Update detail data
             short i = 0;
