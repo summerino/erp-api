@@ -44,7 +44,7 @@ namespace ERP.Web.API.Domain.Services.MobileSales
                         return new SaveResult(false, "Data penjual tidak ditemukan.");
 
                     if(string.IsNullOrEmpty(empData.WarehouseCode))
-                        return new SaveResult(false, "Data gudang penjual penjual kosong.");
+                        return new SaveResult(false, "Data gudang penjual kosong.");
 
                     // Insert header data
                     var headData = new TransferStockHeader
@@ -242,7 +242,7 @@ namespace ERP.Web.API.Domain.Services.MobileSales
 
             if (data.ItemDetails.GroupBy(x => new { x.ItemId, x.UnitId }).Any(x => x.Count() > 1))
             {
-                result.Message = "Terdapat barang dengan satuan yang sama pada bagian detail..";
+                result.Message = "Terdapat barang dengan satuan yang sama pada bagian detail.";
                 return result;
             }
 
