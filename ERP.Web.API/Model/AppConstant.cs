@@ -133,6 +133,7 @@
         MobileReason = 108,
         MobileCustomer = 113,
         MobileItemRequest = 115,
+        MobileSalesCost = 116,
 
         // System Management
         CompanyProfile = 75,
