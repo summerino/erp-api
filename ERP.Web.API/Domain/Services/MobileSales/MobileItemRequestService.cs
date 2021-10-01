@@ -142,6 +142,13 @@ namespace ERP.Web.API.Domain.Services.MobileSales
                         return result;
                     }
 
+                    var mirData = Db.MobileItemRequestHeaders.FirstOrDefault(x => x.Code == itemRequest.Code);
+                    mirData.TransferCode = newCode;
+                    mirData.Mark = "APR";
+                    mirData.ApprovedBy = userId;
+                    mirData.ApprovedDate = DateTime.Now;
+                    Db.MobileItemRequestHeaders.Update(mirData);
+
                     Db.SaveChanges();
 
                     // Execute sp_update_transfer_stock
