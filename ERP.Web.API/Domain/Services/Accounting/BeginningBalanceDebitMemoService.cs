@@ -128,27 +128,15 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 var result = Db.BeginningBalanceCreditMemos.FirstOrDefault(x => x.Code == item.Kode);
                 if (result != null)
                 {
-                    if ((item.Nilai - result.Used) < 0)
-                    {
-                        item.Mark = true;
-                    }
-                    else
-                    {
-                        item.Mark = false;
-                    }
-
                     var sup = Db.Suppliers.FirstOrDefault(x => x.Code == item.Kodepemasok);
-                    if (sup != null)
-                    {
-                        item.Mark = false;
-                    }
-                    else
-                    {
-                        item.Mark = true;
-                    }
-
                     var startDate = Db.SystemParameters.FirstOrDefault(x => x.Code == "DATA_START_DATE");
-                    if (item.Tanggal > Convert.ToDateTime(startDate.Value))
+
+                    if (
+                        ((item.Nilai - result.Used) < 0) ||
+                        (sup == null) ||
+                        (item.Tanggal > Convert.ToDateTime(startDate.Value)) ||
+                        (data.GroupBy(x => x.Kode == item.Kode).Any(g => g.Count() > 1))
+                    )
                     {
                         item.Mark = true;
                     }
@@ -172,6 +160,11 @@ namespace ERP.Web.API.Domain.Services.Accounting
             try
             {
                 var verified = VerifyUpload(data).ToList();
+                if (!verified.Where(x => !x.Mark).Any())
+                {
+                    result.Message = "Tidak ada data yang dapat diproses.";
+                    return result;
+                }
                 var verifyDupe = verified.GroupBy(x => x.Kode).Any(g => g.Count() > 1);
                 if (verifyDupe)
                 {
