@@ -119,10 +119,24 @@ namespace ERP.Web.API.Domain.Services.Accounting
 
                 //Update posting log
                 var plData = _db.PostingLogs.FirstOrDefault(x => x.Period == data.Date.ToString("yyyyMM"));
-                plData.IsPosted = true;
-                plData.PostedBy = userId;
-                plData.PostedDate = DateTime.Now;
-                _db.PostingLogs.Update(plData);
+                if (plData == null)
+                {
+                    _db.PostingLogs.Add(new PostingLog
+                    {
+                        Period = data.Date.ToString("yyyyMM"),
+                        IsPosted = true,
+                        PostedBy = userId,
+                        PostedDate = DateTime.Now
+                    });
+                }
+                else
+                {
+                    plData.IsPosted = true;
+                    plData.PostedBy = userId;
+                    plData.PostedDate = DateTime.Now;
+                    _db.PostingLogs.Update(plData);
+                }
+                
 
                 _db.SaveChanges();
 
