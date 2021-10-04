@@ -131,12 +131,13 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 {
                     var sup = Db.Suppliers.FirstOrDefault(x => x.Code == item.Kodepemasok);
                     var startDate = Db.SystemParameters.FirstOrDefault(x => x.Code == "DATA_START_DATE");
+                    var isDuplicate = data.Where(x => x.Kode == item.Kode).GroupBy(x => x.Kode).Any(g => g.Count() > 1);
 
-                    if(
+                    if (
                         ((item.Nilai - result.PaidAmount) < 0) || 
                         (sup == null) || 
                         (item.Tanggal > Convert.ToDateTime(startDate.Value)) ||
-                        (data.GroupBy(x => x.Kode == item.Kode).Any(g => g.Count() > 1))
+                        isDuplicate
                     )
                     {
                         item.Mark = true;
