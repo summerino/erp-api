@@ -51,10 +51,10 @@ namespace ERP.Web.API.Controllers.MobileSales
         [HttpPut("approve")]
         public IActionResult Approve(List<MobileVisitLog> data)
         {
-            //if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Approve }).Any())
-            //{
-            //    return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            //}
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Approve }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
             var result = _vl.Approve(data, _claim.UserId);
 
             return Ok(result);
@@ -63,10 +63,10 @@ namespace ERP.Web.API.Controllers.MobileSales
         [HttpPut("reject")]
         public IActionResult Reject(List<MobileVisitLog> data)
         {
-            //if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Reject }).Any())
-            //{
-            //    return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            //}
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Reject }).Any())
+            {
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            }
             var result = _vl.Reject(data, _claim.UserId);
 
             return Ok(result);
