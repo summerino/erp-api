@@ -162,6 +162,7 @@ namespace ERP.Entity
         public DbSet<MobileOrderDetailDiscount> MobileOrderDetailDiscounts { get; set; }
         public DbSet<MobileOrderDetailFreeGood> MobileOrderDetailFreeGoods { get; set; }
         public DbSet<MobilePaymentInvoice> MobilePaymentInvoices { get; set; }
+        public DbSet<MobilePaymentMethod> MobilePaymentMethods { get; set; }
         public DbSet<MobileReason> MobileReasons { get; set; }
         public DbSet<VwMobileReason> VwMobileReasons { get; set; }
         public DbSet<MobileVisitLog> MobileVisitLogs { get; set; }
