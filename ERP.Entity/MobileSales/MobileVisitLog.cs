@@ -65,4 +65,57 @@ namespace ERP.Entity.MobileSales
 
         public int VisitReasonId { get; set; }
     }
+
+    public class VwMobileVisitLog : BaseEntityWithMarkApprovedAndRejected
+    {
+        public string Code { get; set; }
+
+        public DateTime Date { get; set; }
+
+        public string VisitOrderCode { get; set; }
+
+        public long SalesmanId { get; set; }
+
+        public string CustCode { get; set; }
+
+        public bool Scheduled { get; set; }
+
+        public bool? Visited { get; set; }
+
+        public decimal? Lat { get; set; }
+
+        public decimal? Lng { get; set; }
+
+        public DateTime? StartTime { get; set; }
+
+        public DateTime? EndTime { get; set; }
+
+        public decimal? Total { get; set; }
+
+        public int? UnscheduledVisitReasonId { get; set; }
+
+        public int? NoVisitReasonId { get; set; }
+
+        public int? NoOrderReasonId { get; set; }
+
+        public string Image { get; set; }
+
+        public string CreatedInitial { get; set; }
+
+        public string UpdatedInitial { get; set; }
+
+        public string ApprovedInitial { get; set; }
+
+        public string RejectedInitial { get; set; }
+
+        public string SalesmanInitial { get; set; }
+
+        public string SalesmanName { get; set; }
+
+        public string CustomerInitial { get; set; }
+
+        public string CustomerName { get; set; }
+
+        public string Status { get; set; }
+    }
 }

@@ -133,7 +133,7 @@ namespace ERP.Web.API.Domain.Services.MobileSales
             {
                 if (item.Mark == "REJ")
                 {
-                    result.Message = "Data biaya sales barang tidak bisa ditolak karena dalam status ditolak.";
+                    result.Message = "Data biaya sales mobile tidak bisa ditolak karena dalam status ditolak.";
                     return result;
                 }
 
