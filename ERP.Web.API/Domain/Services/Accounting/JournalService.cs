@@ -94,9 +94,9 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 if (journalDFA != null)
                     _db.AddRange(journalDFA);
 
-                var journalEYAS = ProcessEndYearAssetJournal(data.Date, systemParam, journalDFA);
-                if (journalEYAS != null)
-                    _db.AddRange(journalEYAS);
+                //var journalEYAS = ProcessEndYearAssetJournal(data.Date, systemParam, journalDFA);
+                //if (journalEYAS != null)
+                //    _db.AddRange(journalEYAS);
 
                 var journalADJ = ProcessAdjustmentJournal(data.Date, systemParam);
                 if (journalADJ != null)
@@ -112,7 +112,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     if (removedEY != null)
                         _db.RemoveRange(removedEY);
 
-                    var journalEY = ProcessEndYearJournal(data.Date);
+                    var journalEY = ProcessEndYearJournal(data.Date, systemParam);
                     if (journalEY != null)
                         _db.AddRange(journalEY);
                 }
@@ -136,7 +136,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     plData.PostedDate = DateTime.Now;
                     _db.PostingLogs.Update(plData);
                 }
-                
+
 
                 _db.SaveChanges();
 
@@ -172,7 +172,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 short j = 0;
                 foreach (var itemDetail in RcvDetailData)
                 {
-                    var prorateHeaderDisc = itemData.RcvHeader.FinalDisc > 0 ? (itemData.RcvHeader.FinalDisc * itemDetail.RcvDetail.NettPrice) / RcvDetailData.Sum(x => x.RcvDetail.NettPrice) : 0;                    
+                    var prorateHeaderDisc = itemData.RcvHeader.FinalDisc > 0 ? (itemData.RcvHeader.FinalDisc * itemDetail.RcvDetail.NettPrice) / RcvDetailData.Sum(x => x.RcvDetail.NettPrice) : 0;
 
                     if (itemDetail.RcvDetail.TaxAmount > 0)
                     {
@@ -221,7 +221,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
 
                     var ivnValue = (itemDetail.RcvDetail.UnitPrice - itemDetail.RcvDetail.Disc - prorateHeaderDisc) * itemDetail.RcvDetail.Qty;
                     var taxValue = journals.Where(x => x.Code == itemData.RcvHeader.Code && x.RefCode2 == itemDetail.Item.Initial && x.Group == 2).Sum(x => x.Amount);
-                    if(itemData.RcvHeader.TaxAmount > 0)
+                    if (itemData.RcvHeader.TaxAmount > 0)
                         if (itemData.RcvHeader.IncludeTax)
                             ivnValue -= taxValue;
 
@@ -260,7 +260,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                                 foreach (var itemMemo in invMemo)
                                 {
                                     var memoData = _db.DebitMemos.FirstOrDefault(x => x.Code == itemMemo.DebitMemoCode);
-                                    if(memoData != null || memoData.Mark != "V")
+                                    if (memoData != null || memoData.Mark != "V")
                                     {
                                         journals.Add(new Journal
                                         {
@@ -278,7 +278,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                                             Amount = itemMemo.DebitMemoAmount,
                                             SrcTrans = "PI"
                                         });
-                                    }                                    
+                                    }
                                 }
                             }
                         }
@@ -1936,7 +1936,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
             return journals;
         }
 
-        private IEnumerable<Journal> ProcessEndYearJournal(DateTime dateTime)
+        private IEnumerable<Journal> ProcessEndYearJournal(DateTime dateTime, List<SystemParameter> systemParam)
         {
             List<Journal> journals = new();
             if (dateTime.Month == 12)
@@ -1951,9 +1951,9 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     Code = "ENDYEAR-" + dateTime.Year.ToString(),
                     LineNo = 1,
                     Date = new DateTime(dateTime.Year, dateTime.Month, DateTime.DaysInMonth(dateTime.Year, dateTime.Month)),
-                    CoaCode = "",
+                    CoaCode = systemParam.FirstOrDefault(x => x.Code == "RETAINED_EARNING_COA")?.Value ?? "",
                     TypeCode = "ADJ_END_YEAR",
-                    Notes = "Laba Ditahan",
+                    Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_RETAINED_EARNING")?.Value ?? ""}").Trim(),
                     RefCode1 = "",
                     Group = 1,
                     CurrCode = "IDR",

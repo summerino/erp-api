@@ -49,9 +49,18 @@ namespace ERP.Web.API.Domain.Services.Sales
                       where dt.DoCode == code
                       select dt.Code;
 
-            var data = from siH in Db.SalesInvoiceHeaders
+            var dpD = from dlv in Db.DeliveryPlanDetails
+                      where dlv.TransCode == code
+                      select dlv.Code;
+
+            var data = (new[] { new { Code = "", Date = new DateTime(), Total = (decimal)0, Type = "" } })
+                .Union(from siH in Db.SalesInvoiceHeaders
                        where siD.Contains(siH.Code) && siH.Mark != "V"
-                       select new { siH.Code, siH.Date, siH.Total };
+                       select new { siH.Code, siH.Date, siH.Total, Type = "Faktur" })
+                .Union(from dpH in Db.DeliveryPlanHeaders
+                       where dpD.Contains(dpH.Code) && dpH.Mark != "V"
+                       select new { dpH.Code, dpH.Date, Total = (decimal)0, Type = "Rencana Pengiriman" })
+                .Skip(1);
 
             return data.ToDynamicList();
         }
@@ -517,6 +526,13 @@ namespace ERP.Web.API.Domain.Services.Sales
             var data = Db.SalesDeliveryHeaders.Find(code);
             if (data != null)
             {
+                var related = GetRelatedTransactions(data.Code);
+                if (related.Count > 0)
+                {
+                    result.Message = "Data pengiriman penjualan tidak bisa ditandai sebagai void karena terdapat transaksi terkait.";
+                    return result;
+                }
+
                 // Checking mark header data
                 if (data.Mark == "V")
                 {
