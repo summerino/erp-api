@@ -176,11 +176,11 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     return result;
                 }
 
-                var removed = Db.BeginningBalanceARs
-                    .Where(x => !verified.Select(y => y.Kode).Contains(x.Code))
-                    .ToList();
-                if (removed.Any())
-                    Db.BeginningBalanceARs.RemoveRange(removed);
+                //var removed = Db.BeginningBalanceARs
+                //    .Where(x => !verified.Select(y => y.Kode).Contains(x.Code))
+                //    .ToList();
+                //if (removed.Any())
+                //    Db.BeginningBalanceARs.RemoveRange(removed);
 
                 foreach (var item in verified)
                 {
