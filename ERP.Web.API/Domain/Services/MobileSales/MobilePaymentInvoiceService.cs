@@ -46,9 +46,9 @@ namespace ERP.Web.API.Domain.Services.MobileSales
                         }
 
                         var voiData = Db.VisitOrderInvoices.FirstOrDefault(x => x.Code == voData.Code && x.InvCode == item.TransCode);
-                        if (voData == null)
+                        if (voiData == null)
                         {
-                            result.Message = $"Data perintah kunjungan faktur {vlData.VisitOrderCode} - {item.TransCode} tidak ada.";
+                            result.Message = $"Data perintah kunjungan {vlData.VisitOrderCode} - {item.TransCode} tidak ada.";
                             return result;
                         }
 
@@ -68,7 +68,7 @@ namespace ERP.Web.API.Domain.Services.MobileSales
                             CurrCode = "IDR",
                             Rate = 1,
                             Amount = item.Amount,
-                            Notes = $"Terbentuk dari Faktur Pembayaran Mobile {item.Code}",
+                            Notes = $"Terbentuk dari Pembayaran Mobile {item.Code}",
                             Mark = "A",
                             CreatedBy = userId,
                             CreatedDate = DateTime.Now,
@@ -121,7 +121,7 @@ namespace ERP.Web.API.Domain.Services.MobileSales
             }
 
             result.Success = true;
-            result.Message = "Data faktur pembayaran mobile berhasil disetujui.";
+            result.Message = "Data pembayaran mobile berhasil disetujui.";
             return result;
         }
 
@@ -154,7 +154,7 @@ namespace ERP.Web.API.Domain.Services.MobileSales
             {
                 if (item.Mark == "REJ")
                 {
-                    result.Message = "Data faktur pembayaran mobile tidak bisa ditolak karena dalam status ditolak.";
+                    result.Message = "Data pembayaran mobile tidak bisa ditolak karena dalam status ditolak.";
                     return result;
                 }
 
@@ -168,7 +168,7 @@ namespace ERP.Web.API.Domain.Services.MobileSales
             Db.SaveChanges();
 
             result.Success = true;
-            result.Message = "Data faktur pembayaran mobile berhasil ditolak.";
+            result.Message = "Data pembayaran mobile berhasil ditolak.";
             return result;
         }
     }
