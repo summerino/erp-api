@@ -125,7 +125,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
         {
             foreach (var item in data)
             {
-                var result = Db.BeginningBalanceCreditMemos.FirstOrDefault(x => x.Code == item.Kode);
+                var result = Db.BeginningBalanceDebitMemos.FirstOrDefault(x => x.Code == item.Kode);
                 if (result != null)
                 {
                     var sup = Db.Suppliers.FirstOrDefault(x => x.Code == item.Kodepemasok);
@@ -135,6 +135,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     if (
                         ((item.Nilai - result.Used) < 0) ||
                         (sup == null) ||
+                        string.IsNullOrEmpty(item.Tipe) ||
                         (item.Tanggal > Convert.ToDateTime(startDate.Value)) ||
                         isDuplicate
                     )
@@ -173,11 +174,11 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     return result;
                 }
 
-                var removed = Db.BeginningBalanceDebitMemos
-                    .Where(x => !verified.Select(y => y.Kode).Contains(x.Code))
-                    .ToList();
-                if (removed.Any())
-                    Db.BeginningBalanceDebitMemos.RemoveRange(removed);
+                //var removed = Db.BeginningBalanceDebitMemos
+                //    .Where(x => !verified.Select(y => y.Kode).Contains(x.Code))
+                //    .ToList();
+                //if (removed.Any())
+                //    Db.BeginningBalanceDebitMemos.RemoveRange(removed);
 
                 foreach (var item in verified)
                 {
