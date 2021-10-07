@@ -134,8 +134,8 @@
         MobileCustomer = 113,
         MobileItemRequest = 115,
         MobileSalesCost = 116,
-        MobileVisitLog = 117,
-        MobilePaymentInvoice = 118,
+        MobileVisitLog = 118,
+        MobilePaymentInvoice = 119,
 
         // System Management
         CompanyProfile = 75,
