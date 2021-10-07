@@ -937,7 +937,7 @@ FROM SystemManagement.Company</CommandText>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>=IIf(First(Fields!SrcTrans.Value, "Header") = 1, "Kd. Order", " Kd. Retur")</Value>
+                      <Value>=IIf(First(Fields!SrcTrans.Value, "Header") = 1, "Kd. Order", "Kd. Retur")</Value>
                       <Style />
                     </TextRun>
                   </TextRuns>
