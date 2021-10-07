@@ -47,4 +47,48 @@ namespace ERP.Entity.MobileSales
         [StringLength(5)]
         public string SrcTrans { get; set; }
     }
+
+    public class VwMobilePaymentInvoice : BaseEntityWithMarkApprovedAndRejected
+    {
+        public string Code { get; set; }
+
+        public string VisitLogCode { get; set; }
+
+        public DateTime Date { get; set; }
+
+        public long SalesmanId { get; set; }
+
+        public string CustCode { get; set; }
+
+        public string CoaCode { get; set; }
+
+        public string TransCode { get; set; }
+
+        public decimal Amount { get; set; }
+
+        public string NotesFailCollect { get; set; }
+
+        public string SrcTrans { get; set; }
+
+        public string CreatedInitial { get; set; }
+
+        public string UpdatedInitial { get; set; }
+
+        public string ApprovedInitial { get; set; }
+
+        public string RejectedInitial { get; set; }
+
+        public string SalesmanInitial { get; set; }
+
+        public string SalesmanName { get; set; }
+
+        public string CustomerInitial { get; set; }
+
+        public string CustomerName { get; set; }
+
+        public string CoaName { get; set; }
+
+        public string Status { get; set; }
+
+    }
 }
