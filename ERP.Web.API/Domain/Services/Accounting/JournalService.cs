@@ -2148,7 +2148,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
 
             var currentSM = stockMutations.FirstOrDefault(x => x.WarehouseCode == whCode && x.ItemId == itemId && x.RefDetailId1 == id);
 
-            if (firstSM != null || firstSM.BaseNettPrice != 0)
+            if ((firstSM?.BaseNettPrice ?? 0m) != 0m)
             {
                 latestStockValue += firstSM.BaseNettPrice * firstSM.BaseQty;
                 latestQty += firstSM.BaseQty;
