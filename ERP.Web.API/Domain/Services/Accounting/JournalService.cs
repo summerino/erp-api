@@ -2007,6 +2007,8 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 foreach (var itemDetail in adjDetailData)
                 {
                     var smData = _db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.AdjDetail.Id && x.RefCode1 == itemDetail.AdjDetail.Code);
+                    if (smData == null) continue;
+
                     var nonVoidSM = RemoveVoidSM(_db.StockMutations.ToList());
                     var resultHpp = CalculateHPP(nonVoidSM, smData.WarehouseCode, smData.ItemId, smData.RefDetailId1);
 

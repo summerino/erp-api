@@ -94,21 +94,21 @@ namespace ERP.Web.API.Domain.Services.Sales
                 }
 
                 //Checking warehouse qty is item is available or not
-                if (IsQtyAvailable(null, data.WarehouseCode, data.ItemDetails) == 1)
+                var isQtyAvailable = IsQtyAvailable(null, data.WarehouseCode, data.ItemDetails);
+                switch (isQtyAvailable)
                 {
-                    result.Message = "Terdapat barang yang tidak tersedia pada gudang yang dipilih";
-                    return result;
-                }
-                else if (IsQtyAvailable(null, data.WarehouseCode, data.ItemDetails) == 2)
-                {
-                    result.Message = "Terdapat barang yang qty-nya melebihi ketersediaan pada gudang yang dipilih";
-                    return result;
+                    case 1:
+                        result.Message = "Terdapat barang yang tidak tersedia pada gudang yang dipilih";
+                        return result;
+                    case 2:
+                        result.Message = "Terdapat barang yang qty-nya melebihi ketersediaan pada gudang yang dipilih";
+                        return result;
                 }
 
                 // Checking deliver qty is excess or not
                 if (IsQtyExcess(null, data.SrcTrans, data.TransCode, data.ItemDetails))
                 {
-                    result.Message = "Data pengiriman penjualan tidak bisa disimpan karena qty yg diterima lebih besar dari qty yang tersedia.";
+                    result.Message = "Data pengiriman penjualan tidak bisa disimpan karena qty yg dikirim lebih besar dari qty yang tersedia.";
                     return result;
                 }
 
@@ -294,21 +294,21 @@ namespace ERP.Web.API.Domain.Services.Sales
                 }
 
                 //Checking warehouse qty is item is available or not
-                if (IsQtyAvailable(data.Code, data.WarehouseCode, data.ItemDetails) == 1)
+                var isQtyAvailable = IsQtyAvailable(data.Code, data.WarehouseCode, data.ItemDetails);
+                switch (isQtyAvailable)
                 {
-                    result.Message = "Terdapat barang yang tidak tersedia pada gudang yang dipilih";
-                    return result;
-                }
-                else if (IsQtyAvailable(data.Code, data.WarehouseCode, data.ItemDetails) == 2)
-                {
-                    result.Message = "Terdapat barang yang qty-nya melebihi ketersediaan pada gudang yang dipilih";
-                    return result;
+                    case 1:
+                        result.Message = "Terdapat barang yang tidak tersedia pada gudang yang dipilih";
+                        return result;
+                    case 2:
+                        result.Message = "Terdapat barang yang qty-nya melebihi ketersediaan pada gudang yang dipilih";
+                        return result;
                 }
 
                 // Checking deliver qty is excess or not
                 if (IsQtyExcess(data.Code, data.SrcTrans, data.TransCode, data.ItemDetails))
                 {
-                    result.Message = "Data pengiriman penjualan tidak bisa disimpan karena qty yg diterima lebih besar dari qty yang tersedia.";
+                    result.Message = "Data pengiriman penjualan tidak bisa disimpan karena qty yg dikirim lebih besar dari qty yang tersedia.";
                     return result;
                 }
 
@@ -562,7 +562,6 @@ namespace ERP.Web.API.Domain.Services.Sales
                         Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", data.TransCode);
 
                         Db.Database.ExecuteSqlRaw("EXEC sp_update_so_free_dlv_qty {0}", data.TransCode);
-
                     }
                     else
                     {
@@ -677,7 +676,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                         var oldStock = Db.StockMutations.FirstOrDefault(x => x.ItemId == item.ItemId && x.RefCode1 == code);
                         if (uom.IsBaseUnit)
                         {
-                            if (item.Qty > (stock.QtyOnHand - oldStock.BaseQty))
+                            if (item.Qty > stock.QtyOnHand - (oldStock?.BaseQty ?? 0))
                             {
                                 result = 2;
                             }
@@ -687,7 +686,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                             var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= uom.Seq).Select(x => x.Conversion).ToList();
                             var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
                             var baseQty = item.Qty * multipliedQty;
-                            if (baseQty > (stock.QtyOnHand - oldStock.BaseQty))
+                            if (baseQty > stock.QtyOnHand - (oldStock?.BaseQty ?? 0))
                             {
                                 result = 2;
                             }
@@ -702,6 +701,5 @@ namespace ERP.Web.API.Domain.Services.Sales
             }
             return result;
         }
-
     }
 }
