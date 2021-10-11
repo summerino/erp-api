@@ -149,6 +149,23 @@ namespace ERP.Web.API.Domain.Services.Accounting
             }
             else
             {
+                var currData = Db.PostingLogs.FirstOrDefault(x => x.Period == data.Period);
+                if (currData != null)
+                {
+                    currData.IsPosted = false;
+                    currData.PostedBy = null;
+                    currData.PostedDate = null;
+                    Db.PostingLogs.Update(currData);
+                }
+                else
+                {
+                    Db.PostingLogs.Add(new PostingLog
+                    {
+                        Period = data.Period,
+                        IsPosted = false
+                    });
+                }
+
                 var cmData = Db.ClosingMonths.Where(x => Convert.ToInt32(x.Period) > Convert.ToInt32(data.Period)).ToList();
                 var plData = Db.PostingLogs.Where(x => Convert.ToInt32(x.Period) > Convert.ToInt32(data.Period)).ToList();
                 foreach (var item in cmData)
