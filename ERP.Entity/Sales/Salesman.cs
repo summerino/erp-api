@@ -190,4 +190,21 @@ namespace ERP.Entity.Sales
 
         public string AreaName5 { get; set; }
     }
+
+    [Table("SalesmanMapTrackingHistory", Schema = Schema.Sales)]
+    public class SalesmanMapTrackingHistory
+    {
+        public long Id { get; set; }
+
+        public long SalesmanId { get; set; }
+         
+        [Column(TypeName = "decimal(9, 6)")]
+        public decimal Lat { get; set; }
+
+        [Column(TypeName = "decimal(9, 6)")]
+        public decimal Lng { get; set; }
+
+        [Column(TypeName = "datetime")]
+        public DateTime TrackedDate { get; set; }
+    }
 }

@@ -227,6 +227,7 @@ namespace ERP.Entity
         public DbSet<SalesmanScheduleCustomer> SalesmanScheduleCustomers { get; set; }
         public DbSet<VwSalesmanSchedule> VwSalesmanSchedules { get; set; }
         public DbSet<VwSalesmanScheduleCustomer> VwSalesmanScheduleCustomers { get; set; }
+        public DbSet<SalesmanMapTrackingHistory> SalesmanMapTrackingHistories { get; set; }
         public DbSet<SalesOrderHeader> SalesOrderHeaders { get; set; }
         public DbSet<VwSalesOrderHeader> VwSalesOrderHeaders { get; set; }
         public DbSet<SalesOrderDetail> SalesOrderDetails { get; set; }
@@ -1870,6 +1871,7 @@ namespace ERP.Entity
                 .HasNoKey()
                 .ToView("vwSalesmanGroup", Schema.Sales);
 
+            // Salesman Schedule model
             modelBuilder.Entity<VwSalesmanSchedule>()
                 .HasNoKey()
                 .ToView("vwSalesmanSchedule", Schema.Sales);
@@ -1877,6 +1879,15 @@ namespace ERP.Entity
             modelBuilder.Entity<VwSalesmanScheduleCustomer>()
                 .HasNoKey()
                 .ToView("vwSalesmanScheduleCustomer", Schema.Sales);
+
+            // Salesman Tracking History model
+            modelBuilder.Entity<SalesmanMapTrackingHistory>(entity =>
+            {
+                entity.HasOne<Employee>()
+                    .WithMany()
+                    .HasForeignKey(d => d.SalesmanId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
 
             // Sales Order model
             modelBuilder.Entity<SalesOrderHeader>(entity =>
