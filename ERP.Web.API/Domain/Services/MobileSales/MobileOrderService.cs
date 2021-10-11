@@ -31,318 +31,335 @@ namespace ERP.Web.API.Domain.Services.MobileSales
             {
                 foreach (var itemData in data)
                 {
-                    List<long> idOrderDetail = new();
-                    var newCode = GetNewCode("DI_NUM_FMT", itemData.Date);
-                    var salesData = Db.Employees.FirstOrDefault(x => x.Id == itemData.SalesBy);
-                    var detailData = Db.MobileOrderDetails.Where(x => x.Code == itemData.Code);
-                    var detailDiscData = Db.MobileOrderDetailDiscounts.Where(x => x.Code == itemData.Code);
-                    var detailFreeData = Db.MobileOrderDetailFreeGoods.Where(x => x.Code == itemData.Code);
-                    var memoData = (from h in Db.SalesInvoiceCreditMemos
-                                    join d in Db.CreditMemos on h.CreditMemoCode equals d.Code
-                                    where h.InvCode == newCode
-                                    select new
-                                    {
-                                        h.Id,
-                                        CreditMemoCode = d.Code,
-                                        d.Date,
-                                        Type = d.SrcTrans,
-                                        CreditMemoAmount = h.CreditMemoAmount
-                                    }).Union(from h in Db.SalesInvoiceCreditMemos
-                                             join d in Db.BeginningBalanceCreditMemos on h.CreditMemoCode equals d.Code
-                                             where h.InvCode == newCode
-                                             select new
-                                             {
-                                                 h.Id,
-                                                 CreditMemoCode = d.Code,
-                                                 d.Date,
-                                                 d.Type,
-                                                 CreditMemoAmount = h.CreditMemoAmount
-                                             });
-                    // Sales Order
-                    Db.SalesOrderHeaders.Add(new SalesOrderHeader
+                    var vlData = Db.MobileVisitLogs.FirstOrDefault(x => x.Code == itemData.VisitLogCode);
+                    if (vlData != null)
                     {
-                        Code = newCode,
-                        Date = itemData.Date,
-                        CustCode = itemData.CustCode,
-                        PaymentTermId = itemData.PaymentTermId,
-                        SalesBy = itemData.SalesBy,
-                        WarehouseCode = salesData.WarehouseCode,
-                        CurrCode = itemData.CurrCode,
-                        Rate = itemData.Rate,
-                        SubTotal = itemData.SubTotal,
-                        FinalDiscPercent = itemData.FinalDiscPercent,
-                        FinalDisc = itemData.FinalDisc,
-                        IncludeTax = itemData.IncludeTax,
-                        TaxAmount = itemData.TaxAmount,
-                        Total = itemData.Total,
-                        Dpp = itemData.Dpp,
-                        Notes = $"Created from Mobile Order {itemData.Code}",
-                        Mark = itemData.Mark,
-                        CreatedBy = itemData.CreatedBy,
-                        CreatedDate = itemData.CreatedDate,
-                        UpdatedBy = userId,
-                        UpdatedDate = DateTime.Now,
-                        ApprovedBy = userId,
-                        ApprovedDate = DateTime.Now,
-                        FromDirectInvoice = true
-                    });
+                        if (vlData.VisitOrderCode == null && (vlData.Scheduled || !vlData.Scheduled) && vlData.ApprovedBy == null)
+                        {
+                            result.Message = $"Data catatan kunjungan mobile {itemData.VisitLogCode} harus di approve terlebih dahulu.";
+                            return result;
+                        }
 
-                    // Credit Used
-                    UpdateCreditUsed(itemData.CustCode, itemData.Total);
+                        var voData = Db.VisitOrders.FirstOrDefault(x => x.Code == vlData.VisitOrderCode);
+                        if (voData == null)
+                        {
+                            result.Message = $"Data perintah kunjungan {vlData.VisitOrderCode} tidak ada.";
+                            return result;
+                        }
 
-                    
-
-                    short i = 0;
-                    foreach (var itemDetail in detailData)
-                    {
-                        var barangData = Db.Items.FirstOrDefault(x => x.Id == itemDetail.ItemId);
-                        var orderDetail = new SalesOrderDetail
+                        List<long> idOrderDetail = new();
+                        var newCode = GetNewCode("DI_NUM_FMT", itemData.Date);
+                        var salesData = Db.Employees.FirstOrDefault(x => x.Id == itemData.SalesBy);
+                        var detailData = Db.MobileOrderDetails.Where(x => x.Code == itemData.Code);
+                        var detailDiscData = Db.MobileOrderDetailDiscounts.Where(x => x.Code == itemData.Code);
+                        var detailFreeData = Db.MobileOrderDetailFreeGoods.Where(x => x.Code == itemData.Code);
+                        var memoData = (from h in Db.SalesInvoiceCreditMemos
+                                        join d in Db.CreditMemos on h.CreditMemoCode equals d.Code
+                                        where h.InvCode == newCode
+                                        select new
+                                        {
+                                            h.Id,
+                                            CreditMemoCode = d.Code,
+                                            d.Date,
+                                            Type = d.SrcTrans,
+                                            CreditMemoAmount = h.CreditMemoAmount
+                                        }).Union(from h in Db.SalesInvoiceCreditMemos
+                                                 join d in Db.BeginningBalanceCreditMemos on h.CreditMemoCode equals d.Code
+                                                 where h.InvCode == newCode
+                                                 select new
+                                                 {
+                                                     h.Id,
+                                                     CreditMemoCode = d.Code,
+                                                     d.Date,
+                                                     d.Type,
+                                                     CreditMemoAmount = h.CreditMemoAmount
+                                                 });
+                        // Sales Order
+                        Db.SalesOrderHeaders.Add(new SalesOrderHeader
                         {
                             Code = newCode,
-                            LineNo = ++i,
-                            ItemId = itemDetail.ItemId,
-                            UomId = itemDetail.UomId,
-                            UnitId = itemDetail.UnitId,
-                            Qty = itemDetail.Qty,
-                            Length = barangData.Length,
-                            Width = barangData.Width,
-                            Height = barangData.Height,
-                            Weight = barangData.Weight,
-                            DimensionMeasurement = barangData.DimensionMeasurement,
-                            WeightMeasurement = barangData.WeightMeasurement,
-                            QtyDlv = 0,
-                            UnitPrice = itemDetail.UnitPrice,
-                            Disc = itemDetail.Disc,
-                            TaxId = itemDetail.TaxId,
-                            TaxAmount = itemDetail.TaxAmount,
-                            NettPrice = itemDetail.NettPrice,
-                            Total = itemDetail.Total,
-                            Dpp = itemDetail.Dpp,
+                            Date = itemData.Date,
+                            CustCode = itemData.CustCode,
+                            PaymentTermId = itemData.PaymentTermId,
+                            SalesBy = itemData.SalesBy,
+                            WarehouseCode = salesData.WarehouseCode,
+                            CurrCode = itemData.CurrCode,
+                            Rate = itemData.Rate,
+                            SubTotal = itemData.SubTotal,
+                            FinalDiscPercent = itemData.FinalDiscPercent,
+                            FinalDisc = itemData.FinalDisc,
+                            IncludeTax = itemData.IncludeTax,
+                            TaxAmount = itemData.TaxAmount,
+                            Total = itemData.Total,
+                            Dpp = itemData.Dpp,
                             Notes = $"Created from Mobile Order {itemData.Code}",
-                            CoaInventory = barangData.CoaInventory,
-                            CoaCogs = barangData.CoaCogs,
-                            CoaSls = barangData.CoaSls,
-                            CoaSlsDisc = barangData.CoaSlsDisc,
-                            CoaSlsReturn = barangData.CoaSlsReturn
-                        };
+                            Mark = itemData.Mark,
+                            CreatedBy = itemData.CreatedBy,
+                            CreatedDate = itemData.CreatedDate,
+                            UpdatedBy = userId,
+                            UpdatedDate = DateTime.Now,
+                            ApprovedBy = userId,
+                            ApprovedDate = DateTime.Now,
+                            FromDirectInvoice = true
+                        });
 
-                        Db.SalesOrderDetails.Add(orderDetail);
-                        idOrderDetail.Add(orderDetail.Id);
+                        // Credit Used
+                        UpdateCreditUsed(itemData.CustCode, itemData.Total);
 
-                        if (detailDiscData.Any() || detailFreeData.Any())
+
+
+                        short i = 0;
+                        foreach (var itemDetail in detailData)
                         {
-                            Db.SaveChanges();
-                        }
-
-                        if (detailDiscData.Any())
-                        {
-                            short d = 0;
-                            foreach (var discItem in detailDiscData)
+                            var barangData = Db.Items.FirstOrDefault(x => x.Id == itemDetail.ItemId);
+                            var orderDetail = new SalesOrderDetail
                             {
-                                Db.SalesOrderDetailDiscounts.Add(new SalesOrderDetailDiscount
-                                {
-                                    Code = newCode,
-                                    OrderDetailId = orderDetail.Id,
-                                    LineNo = ++d,
-                                    PromoCode = discItem.PromoCode,
-                                    PromoDetailId = discItem.PromoDetailId,
-                                    Name = discItem.Name,
-                                    IsPercentage = discItem.IsPercentage,
-                                    Value = discItem.Value,
-                                    Amount = discItem.Amount,
-                                    CoaCode = barangData.CoaSlsDisc
-                                });
-                            }
-                            Db.SaveChanges();
-                        }
+                                Code = newCode,
+                                LineNo = ++i,
+                                ItemId = itemDetail.ItemId,
+                                UomId = itemDetail.UomId,
+                                UnitId = itemDetail.UnitId,
+                                Qty = itemDetail.Qty,
+                                Length = barangData.Length,
+                                Width = barangData.Width,
+                                Height = barangData.Height,
+                                Weight = barangData.Weight,
+                                DimensionMeasurement = barangData.DimensionMeasurement,
+                                WeightMeasurement = barangData.WeightMeasurement,
+                                QtyDlv = 0,
+                                UnitPrice = itemDetail.UnitPrice,
+                                Disc = itemDetail.Disc,
+                                TaxId = itemDetail.TaxId,
+                                TaxAmount = itemDetail.TaxAmount,
+                                NettPrice = itemDetail.NettPrice,
+                                Total = itemDetail.Total,
+                                Dpp = itemDetail.Dpp,
+                                Notes = $"Created from Mobile Order {itemData.Code}",
+                                CoaInventory = barangData.CoaInventory,
+                                CoaCogs = barangData.CoaCogs,
+                                CoaSls = barangData.CoaSls,
+                                CoaSlsDisc = barangData.CoaSlsDisc,
+                                CoaSlsReturn = barangData.CoaSlsReturn
+                            };
 
-                        if (detailFreeData.Any())
-                        {
-                            short f = 0;
-                            foreach (var freeItem in detailFreeData)
+                            Db.SalesOrderDetails.Add(orderDetail);
+                            idOrderDetail.Add(orderDetail.Id);
+
+                            if (detailDiscData.Any() || detailFreeData.Any())
                             {
-                                Db.SalesOrderDetailFreeGoods.Add(new SalesOrderDetailFreeGood
-                                {
-                                    Code = newCode,
-                                    OrderDetailId = orderDetail.Id,
-                                    LineNo = ++f,
-                                    PromoCode = freeItem.PromoCode,
-                                    ItemId = freeItem.ItemId,
-                                    UomId = freeItem.UomId,
-                                    UnitId = freeItem.UnitId,
-                                    Qty = freeItem.Qty,
-                                    QtyClosed = freeItem.Qty,
-                                    UnitPrice = freeItem.UnitPrice,
-                                    CoaCode = barangData.CoaSlsDisc
-                                });
+                                Db.SaveChanges();
                             }
-                            Db.SaveChanges();
+
+                            if (detailDiscData.Any())
+                            {
+                                short d = 0;
+                                foreach (var discItem in detailDiscData)
+                                {
+                                    Db.SalesOrderDetailDiscounts.Add(new SalesOrderDetailDiscount
+                                    {
+                                        Code = newCode,
+                                        OrderDetailId = orderDetail.Id,
+                                        LineNo = ++d,
+                                        PromoCode = discItem.PromoCode,
+                                        PromoDetailId = discItem.PromoDetailId,
+                                        Name = discItem.Name,
+                                        IsPercentage = discItem.IsPercentage,
+                                        Value = discItem.Value,
+                                        Amount = discItem.Amount,
+                                        CoaCode = barangData.CoaSlsDisc
+                                    });
+                                }
+                                Db.SaveChanges();
+                            }
+
+                            if (detailFreeData.Any())
+                            {
+                                short f = 0;
+                                foreach (var freeItem in detailFreeData)
+                                {
+                                    Db.SalesOrderDetailFreeGoods.Add(new SalesOrderDetailFreeGood
+                                    {
+                                        Code = newCode,
+                                        OrderDetailId = orderDetail.Id,
+                                        LineNo = ++f,
+                                        PromoCode = freeItem.PromoCode,
+                                        ItemId = freeItem.ItemId,
+                                        UomId = freeItem.UomId,
+                                        UnitId = freeItem.UnitId,
+                                        Qty = freeItem.Qty,
+                                        QtyClosed = freeItem.Qty,
+                                        UnitPrice = freeItem.UnitPrice,
+                                        CoaCode = barangData.CoaSlsDisc
+                                    });
+                                }
+                                Db.SaveChanges();
+                            }
                         }
-                    }
 
-                    // Sales Delivery
-                    Db.SalesDeliveryHeaders.Add(new SalesDeliveryHeader
-                    {
-                        Code = newCode,
-                        Date = itemData.Date,
-                        SrcTrans = 1,
-                        TransCode = newCode,
-                        CustCode = itemData.CustCode,
-                        WarehouseCode = salesData.WarehouseCode,
-                        ShippedBy = itemData.SalesBy,
-                        CurrCode = itemData.CurrCode,
-                        Rate = itemData.Rate,
-                        SubTotal = itemData.SubTotal,
-                        FinalDiscPercent = itemData.FinalDiscPercent,
-                        FinalDisc = itemData.FinalDisc,
-                        IncludeTax = itemData.IncludeTax,
-                        TaxAmount = itemData.TaxAmount,
-                        Total = itemData.Total,
-                        Dpp = itemData.Dpp,
-                        Mark = "INV",
-                        Notes = $"Created from Mobile Order {itemData.Code}",
-                        CreatedBy = itemData.CreatedBy,
-                        CreatedDate = itemData.CreatedDate,
-                        UpdatedBy = itemData.UpdatedBy,
-                        UpdatedDate = itemData.UpdatedDate,
-                        FromDirectInvoice = true
-                    });
-
-                    short j = 0;
-                    foreach (var itemDetail in detailData)
-                    {
-                        var barangData = Db.Items.FirstOrDefault(x => x.Id == itemDetail.ItemId);
-                        var deliveryDetail = new SalesDeliveryDetail
+                        // Sales Delivery
+                        Db.SalesDeliveryHeaders.Add(new SalesDeliveryHeader
                         {
                             Code = newCode,
-                            LineNo = ++j,
-                            SoDetailId = idOrderDetail[j - 1],
-                            ItemId = itemDetail.ItemId,
-                            UomId = itemDetail.UomId,
-                            UnitId = itemDetail.UnitId,
-                            Qty = itemDetail.Qty,
-                            Length = barangData.Length,
-                            Width = barangData.Width,
-                            Height = barangData.Height,
-                            Weight = barangData.Weight,
-                            DimensionMeasurement = barangData.DimensionMeasurement,
-                            WeightMeasurement = barangData.WeightMeasurement,
-                            UnitPrice = itemDetail.UnitPrice,
-                            Disc = itemDetail.Disc,
-                            TaxId = itemDetail.TaxId,
-                            TaxAmount = itemDetail.TaxAmount,
-                            NettPrice = itemDetail.NettPrice,
-                            Total = itemDetail.Total,
-                            Dpp = itemDetail.Dpp
-                        };
-
-                        Db.SalesDeliveryDetails.Add(deliveryDetail);
-
-                        if (detailFreeData.Any())
-                        {
-                            Db.SaveChanges();
-                        }
-
-                        if (detailFreeData.Any())
-                        {
-                            short f = 0;
-                            foreach (var freeItem in detailFreeData)
-                            {
-                                Db.SalesDeliveryDetailFreeGoods.Add(new SalesDeliveryDetailFreeGood
-                                {
-                                    Code = newCode,
-                                    DlvOrderDetailId = deliveryDetail.Id,
-                                    LineNo = ++f,
-                                    PromoCode = freeItem.PromoCode,
-                                    ItemId = freeItem.ItemId,
-                                    UomId = freeItem.UomId,
-                                    UnitId = freeItem.UnitId,
-                                    Qty = freeItem.Qty,
-                                    UnitPrice = freeItem.UnitPrice,
-                                    CoaCode = barangData.CoaSlsDisc
-                                });
-
-                                var orderFreeDetail = Db.SalesOrderDetailFreeGoods.FirstOrDefault(x => x.Id == freeItem.Id);
-                                orderFreeDetail.QtyClosed += freeItem.Qty;
-                                Db.SalesOrderDetailFreeGoods.Update(orderFreeDetail);
-                            }
-                            Db.SaveChanges();
-                        }
-                    }
-
-                    // Sales Invoice
-                    Db.SalesInvoiceHeaders.Add(new SalesInvoiceHeader
-                    {
-                        Code = newCode,
-                        Date = itemData.Date,
-                        //DueDate = itemData.DueDate,
-                        SoCode = newCode,
-                        CustCode = itemData.CustCode,
-                        IssuedBy = itemData.SalesBy,
-                        CurrCode = itemData.CurrCode,
-                        Total = itemData.Total,
-                        Notes = $"Created from Mobile Order {itemData.Code}",
-                        Mark = itemData.Mark,
-                        PaidAmount = memoData.Sum(x => x.CreditMemoAmount),
-                        CreatedBy = itemData.CreatedBy,
-                        CreatedDate = itemData.CreatedDate,
-                        UpdatedBy = itemData.UpdatedBy,
-                        UpdatedDate = itemData.UpdatedDate,
-                        FromDirectInvoice = true
-                    });
-
-                    Db.SalesInvoiceDetails.Add(new SalesInvoiceDetail
-                    {
-                        Code = newCode,
-                        LineNo = 1,
-                        DoCode = newCode,
-                        SubTotal = itemData.SubTotal,
-                        FinalDisc = itemData.FinalDisc,
-                        TaxAmount = itemData.TaxAmount,
-                        Total = itemData.Total,
-                        Dpp = itemData.Dpp
-                    });
-
-                    // insert memo
-                    foreach (var item in memoData)
-                    {
-                        Db.SalesInvoiceCreditMemos.Add(new SalesInvoiceCreditMemo
-                        {
-                            InvCode = newCode,
-                            InvAmount = itemData.Total,
-                            CreditMemoAmount = item.CreditMemoAmount,
-                            CreditMemoCode = item.CreditMemoCode
+                            Date = itemData.Date,
+                            SrcTrans = 1,
+                            TransCode = newCode,
+                            CustCode = itemData.CustCode,
+                            WarehouseCode = salesData.WarehouseCode,
+                            ShippedBy = itemData.SalesBy,
+                            CurrCode = itemData.CurrCode,
+                            Rate = itemData.Rate,
+                            SubTotal = itemData.SubTotal,
+                            FinalDiscPercent = itemData.FinalDiscPercent,
+                            FinalDisc = itemData.FinalDisc,
+                            IncludeTax = itemData.IncludeTax,
+                            TaxAmount = itemData.TaxAmount,
+                            Total = itemData.Total,
+                            Dpp = itemData.Dpp,
+                            Mark = "INV",
+                            Notes = $"Created from Mobile Order {itemData.Code}",
+                            CreatedBy = itemData.CreatedBy,
+                            CreatedDate = itemData.CreatedDate,
+                            UpdatedBy = itemData.UpdatedBy,
+                            UpdatedDate = itemData.UpdatedDate,
+                            FromDirectInvoice = true
                         });
-                    }
 
-                    Db.SaveChanges();
+                        short j = 0;
+                        foreach (var itemDetail in detailData)
+                        {
+                            var barangData = Db.Items.FirstOrDefault(x => x.Id == itemDetail.ItemId);
+                            var deliveryDetail = new SalesDeliveryDetail
+                            {
+                                Code = newCode,
+                                LineNo = ++j,
+                                SoDetailId = idOrderDetail[j - 1],
+                                ItemId = itemDetail.ItemId,
+                                UomId = itemDetail.UomId,
+                                UnitId = itemDetail.UnitId,
+                                Qty = itemDetail.Qty,
+                                Length = barangData.Length,
+                                Width = barangData.Width,
+                                Height = barangData.Height,
+                                Weight = barangData.Weight,
+                                DimensionMeasurement = barangData.DimensionMeasurement,
+                                WeightMeasurement = barangData.WeightMeasurement,
+                                UnitPrice = itemDetail.UnitPrice,
+                                Disc = itemDetail.Disc,
+                                TaxId = itemDetail.TaxId,
+                                TaxAmount = itemDetail.TaxAmount,
+                                NettPrice = itemDetail.NettPrice,
+                                Total = itemDetail.Total,
+                                Dpp = itemDetail.Dpp
+                            };
 
-                    var DlvData = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.TransCode == newCode);
-                    // Execute sp_update_stock_mutation_from_so
-                    Db.Database.ExecuteSqlRaw(
-                        "EXEC sp_update_stock_mutation_from_so {0}, {1}",
-                        newCode, itemData.Date);
+                            Db.SalesDeliveryDetails.Add(deliveryDetail);
 
-                    // Execute sp_update_stock_mutation_from_do
-                    Db.Database.ExecuteSqlRaw(
-                        "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
-                        DlvData.Code, itemData.Date, newCode);
+                            if (detailFreeData.Any())
+                            {
+                                Db.SaveChanges();
+                            }
 
-                    // Execute sp_update_po_rcv_qty
-                    Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", newCode);
+                            if (detailFreeData.Any())
+                            {
+                                short f = 0;
+                                foreach (var freeItem in detailFreeData)
+                                {
+                                    Db.SalesDeliveryDetailFreeGoods.Add(new SalesDeliveryDetailFreeGood
+                                    {
+                                        Code = newCode,
+                                        DlvOrderDetailId = deliveryDetail.Id,
+                                        LineNo = ++f,
+                                        PromoCode = freeItem.PromoCode,
+                                        ItemId = freeItem.ItemId,
+                                        UomId = freeItem.UomId,
+                                        UnitId = freeItem.UnitId,
+                                        Qty = freeItem.Qty,
+                                        UnitPrice = freeItem.UnitPrice,
+                                        CoaCode = barangData.CoaSlsDisc
+                                    });
 
-                    // Update sales order to closed if all sales delivery are invoiced
-                    if (
-                        !Db.SalesDeliveryHeaders
-                            .Any(x => x.TransCode == newCode && x.Mark != "INV"))
-                    {
+                                    var orderFreeDetail = Db.SalesOrderDetailFreeGoods.FirstOrDefault(x => x.Id == freeItem.Id);
+                                    orderFreeDetail.QtyClosed += freeItem.Qty;
+                                    Db.SalesOrderDetailFreeGoods.Update(orderFreeDetail);
+                                }
+                                Db.SaveChanges();
+                            }
+                        }
+
+                        // Sales Invoice
+                        Db.SalesInvoiceHeaders.Add(new SalesInvoiceHeader
+                        {
+                            Code = newCode,
+                            Date = itemData.Date,
+                            //DueDate = itemData.DueDate,
+                            SoCode = newCode,
+                            CustCode = itemData.CustCode,
+                            IssuedBy = itemData.SalesBy,
+                            CurrCode = itemData.CurrCode,
+                            Total = itemData.Total,
+                            Notes = $"Created from Mobile Order {itemData.Code}",
+                            Mark = itemData.Mark,
+                            PaidAmount = memoData.Sum(x => x.CreditMemoAmount),
+                            CreatedBy = itemData.CreatedBy,
+                            CreatedDate = itemData.CreatedDate,
+                            UpdatedBy = itemData.UpdatedBy,
+                            UpdatedDate = itemData.UpdatedDate,
+                            FromDirectInvoice = true
+                        });
+
+                        Db.SalesInvoiceDetails.Add(new SalesInvoiceDetail
+                        {
+                            Code = newCode,
+                            LineNo = 1,
+                            DoCode = newCode,
+                            SubTotal = itemData.SubTotal,
+                            FinalDisc = itemData.FinalDisc,
+                            TaxAmount = itemData.TaxAmount,
+                            Total = itemData.Total,
+                            Dpp = itemData.Dpp
+                        });
+
+                        // insert memo
+                        foreach (var item in memoData)
+                        {
+                            Db.SalesInvoiceCreditMemos.Add(new SalesInvoiceCreditMemo
+                            {
+                                InvCode = newCode,
+                                InvAmount = itemData.Total,
+                                CreditMemoAmount = item.CreditMemoAmount,
+                                CreditMemoCode = item.CreditMemoCode
+                            });
+                        }
+
+                        Db.SaveChanges();
+
+                        var DlvData = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.TransCode == newCode);
+                        // Execute sp_update_stock_mutation_from_so
                         Db.Database.ExecuteSqlRaw(
-                            "UPDATE Sales.SalesOrderHeader SET Mark='CLS' WHERE Code={0} AND Mark='CMP'", newCode);
-                    }
-                    UpdateCreditMemo(itemData.Code);
-                }
+                            "EXEC sp_update_stock_mutation_from_so {0}, {1}",
+                            newCode, itemData.Date);
 
-                transaction.Commit();
+                        // Execute sp_update_stock_mutation_from_do
+                        Db.Database.ExecuteSqlRaw(
+                            "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
+                            DlvData.Code, itemData.Date, newCode);
+
+                        // Execute sp_update_po_rcv_qty
+                        Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", newCode);
+
+                        // Update sales order to closed if all sales delivery are invoiced
+                        if (
+                            !Db.SalesDeliveryHeaders
+                                .Any(x => x.TransCode == newCode && x.Mark != "INV"))
+                        {
+                            Db.Database.ExecuteSqlRaw(
+                                "UPDATE Sales.SalesOrderHeader SET Mark='CLS' WHERE Code={0} AND Mark='CMP'", newCode);
+                        }
+                        UpdateCreditMemo(itemData.Code);
+                    }
+
+                    transaction.Commit();
+                }
             }
             catch (Exception ex)
             {
