@@ -68,16 +68,24 @@ namespace ERP.Web.API.Domain.Services.Sales
         }
         public List<dynamic> GetRelatedTransactions(string code)
         {
+            var dpD = from dlv in Db.DeliveryPlanDetails
+                      where dlv.TransCode == code
+                      select dlv.Code;
 
-            var data = (from h in Db.GeneralCashBankHeaders
+            var data = (new[] { new { Code = "", Date = new DateTime(), Total = (decimal)0, Type = "" } })
+                .Union(from h in Db.GeneralCashBankHeaders
                         join d in Db.GeneralCashBankDetails on h.Code equals d.Code
                         where h.Mark == "A" && d.TransCode == code
                         select new
                         {
                             h.Code,
                             h.Date,
-                            h.Amount
-                        });
+                            Total = h.Amount,
+                            Type = "Kas Bank"
+                        }).Union(from dpH in Db.DeliveryPlanHeaders
+                                 where dpD.Contains(dpH.Code) && dpH.Mark != "V"
+                                 select new { dpH.Code, dpH.Date, Total = (decimal)0, Type = "Rencana Pengiriman" })
+                .Skip(1); ;
 
             return data.ToDynamicList();
         }
@@ -802,6 +810,14 @@ namespace ERP.Web.API.Domain.Services.Sales
             var data = Db.SalesInvoiceHeaders.Find(code);
             if (data != null)
             {
+
+                var related = GetRelatedTransactions(data.Code);
+                if (related.Count > 0)
+                {
+                    result.Message = "Data penjualan langsung tidak bisa ditandai sebagai void karena terdapat transaksi terkait.";
+                    return result;
+                }
+
                 // Checking mark header data
                 if (data.Mark == "V")
                 {
