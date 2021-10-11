@@ -44,14 +44,7 @@ namespace ERP.Web.API.Controllers.Sales
         [HttpGet("related-trans")]
         public IActionResult GetRelatedTransactions(string code)
         {
-            var data = _inv.GetRelatedTransactions(code)
-                .Select(x => new
-                {
-                    x.Code,
-                    x.Date,
-                    Total = x.Amount,
-                    Type = "Kas Bank"
-                }).ToList<dynamic>();
+            var data = _inv.GetRelatedTransactions(code).ToList();
 
             return Ok(new ApiResponse
             {
