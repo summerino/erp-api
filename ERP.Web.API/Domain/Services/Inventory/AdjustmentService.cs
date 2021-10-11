@@ -279,6 +279,12 @@ namespace ERP.Web.API.Domain.Services.Inventory
                     data.UpdatedBy = userId;
                     data.UpdatedDate = DateTime.Now;
 
+                    var stockADJ = Db.StockMutations.Where(x => x.RefCode1 == data.Code);
+                    if (stockADJ != null)
+                    {
+                        Db.StockMutations.RemoveRange(stockADJ);
+                    }
+
                     Db.SaveChanges();
                     transaction.Commit();
                 }

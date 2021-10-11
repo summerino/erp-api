@@ -219,6 +219,12 @@ namespace ERP.Web.API.Domain.Services.Inventory
                 var data = Db.BeginningBalanceStockHeaders.Find(code);
                 if (data != null)
                 {
+                    var stockBB = Db.StockMutations.Where(x => x.RefCode1 == data.Code);
+                    if (stockBB != null)
+                    {
+                        Db.StockMutations.RemoveRange(stockBB);
+                    }
+
                     // Execute sp_update_stock_mutation_from_bb
                     Db.Database.ExecuteSqlRaw(
                         "EXEC sp_restore_stock_mutation_from_bb {0}, {1}",
