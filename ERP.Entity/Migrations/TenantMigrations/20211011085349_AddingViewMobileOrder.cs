@@ -54,7 +54,7 @@ AS
 	LEFT JOIN Inventory.UoM uom
 		ON uom.Id = mo_d.UomId
 	LEFT JOIN Inventory.UoMConversion uom_c
-		ON uom_c.Id = mo_d.UnitId\";
+		ON uom_c.Id = mo_d.UnitId";
             migrationBuilder.Sql(sql);
         }
 
