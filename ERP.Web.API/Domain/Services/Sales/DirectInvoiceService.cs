@@ -66,6 +66,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                 Dpp = ordData?.Dpp ?? 0m
             };
         }
+
         public List<dynamic> GetRelatedTransactions(string code)
         {
             var dpD = from dlv in Db.DeliveryPlanDetails
@@ -85,7 +86,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                         }).Union(from dpH in Db.DeliveryPlanHeaders
                                  where dpD.Contains(dpH.Code) && dpH.Mark != "V"
                                  select new { dpH.Code, dpH.Date, Total = (decimal)0, Type = "Rencana Pengiriman" })
-                .Skip(1); ;
+                .Skip(1);
 
             return data.ToDynamicList();
         }
@@ -801,7 +802,7 @@ namespace ERP.Web.API.Domain.Services.Sales
         {
             var result = new SaveResult(false);
 
-            if (IsAlreadyInTransaction(code)) 
+            if (IsAlreadyInTransaction(code))
             {
                 result.Message = "Data penjualan langsung tidak bisa ditandai sebagai void karena sudah ada di transaksi kas bank.";
                 return result;
@@ -810,7 +811,6 @@ namespace ERP.Web.API.Domain.Services.Sales
             var data = Db.SalesInvoiceHeaders.Find(code);
             if (data != null)
             {
-
                 var related = GetRelatedTransactions(data.Code);
                 if (related.Count > 0)
                 {
