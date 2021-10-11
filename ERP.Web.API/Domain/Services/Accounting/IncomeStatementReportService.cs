@@ -461,7 +461,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 parDateTo = date.ToString("yyyy-MM-dd");
                 var nowPeriod = date.ToString("yyyyMM");
 
-                whEndYear = $"AND Code <> 'ENDYEAR{nowPeriod[..4]}'";
+                whEndYear = $"AND Code <> 'ENDYEAR-{nowPeriod[..4]}'";
             }
 
             if (!string.IsNullOrEmpty(jourSrc))
@@ -484,7 +484,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
             {
                 sqlCoa +=
                     $@"{(sqlCoa == "" ? "" : " UNION ")} 
-                    SELECT {item.Value} AS Code";
+                    SELECT '{item.Value}' AS Code";
             }
 
             string cteSource = "cte_jur_src_final";

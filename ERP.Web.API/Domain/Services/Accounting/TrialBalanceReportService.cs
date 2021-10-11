@@ -33,7 +33,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
 			}
 
 			if (!string.IsNullOrEmpty(dateTo))
-				whEndYear = $"WHERE Code <> 'ENDYEAR' + CAST(YEAR('{dateTo.Replace("'", "''")}') AS VARCHAR)";
+				whEndYear = $"WHERE Code <> 'ENDYEAR-' + CAST(YEAR('{dateTo.Replace("'", "''")}') AS VARCHAR)";
 
 			if (!string.IsNullOrEmpty(dateFrom))
 				dateFrom = dateFrom.Replace("'", "''");
