@@ -46,21 +46,21 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     return result;
                 }
 
-                // Check if previous month and dataStartDate is valid
-                var lastPeriod = Db.ClosingMonths.Max(x => x.Period);
-                var startDataDate = Convert.ToDateTime(Db.SystemParameters.FirstOrDefault(x => x.Code == "DATA_START_DATE").Value).ToString("yyyyMM");
-                var numStartDate = Convert.ToInt32($"{startDate.Year}{(startDate.Month > 9 ? startDate.Month : "0" + startDate.Month)}");
-                if (!string.IsNullOrEmpty(lastPeriod))
+                // Check if dataStartDate & previous month is valid
+                var startDataDate = Convert.ToDateTime(Db.SystemParameters.FirstOrDefault(x => x.Code == "DATA_START_DATE").Value).AddMonths(-1).ToString("yyyyMM");
+                if (startDate.Month == 1)
                 {
-                    if (Convert.ToInt32(lastPeriod) != numStartDate - 1)
+                    if (startDataDate == null)
                     {
                         result.Message = "Tidak bisa melakukan tutup bulan karena data periode sebelumnya tidak ada.";
                         return result;
                     }
-                } 
-                else if (!string.IsNullOrEmpty(startDataDate))
+                }
+                else
                 {
-                    if (Convert.ToInt32(startDataDate) != numStartDate - 1)
+                    var prevDataMonth = startDate.AddMonths(-1);
+                    var prevData = Db.ClosingMonths.FirstOrDefault(x => x.Period == $"{startDate.Year}{(prevDataMonth.Month > 9 ? prevDataMonth.Month : "0" + prevDataMonth.Month)}");
+                    if (prevData == null)
                     {
                         result.Message = "Tidak bisa melakukan tutup bulan karena data periode sebelumnya tidak ada.";
                         return result;
@@ -92,11 +92,22 @@ namespace ERP.Web.API.Domain.Services.Accounting
                             UpdatedDate = data.UpdatedDate
                         });
 
-                        Db.PostingLogs.Add(new PostingLog
+                        var plData = Db.PostingLogs.FirstOrDefault(x => x.Period == $"{dataMonth.Year}{(dataMonth.Month > 9 ? dataMonth.Month : "0" + dataMonth.Month)}");
+                        if (plData != null)
                         {
-                            Period = $"{dataMonth.Year}{(dataMonth.Month > 9 ? dataMonth.Month : "0" + dataMonth.Month)}",
-                            IsPosted = false
-                        });
+                            plData.IsPosted = false;
+                            plData.PostedBy = null;
+                            plData.PostedDate = null;
+                            Db.PostingLogs.Update(plData);
+                        } 
+                        else
+                        {
+                            Db.PostingLogs.Add(new PostingLog
+                            {
+                                Period = $"{dataMonth.Year}{(dataMonth.Month > 9 ? dataMonth.Month : "0" + dataMonth.Month)}",
+                                IsPosted = false
+                            });
+                        }
                     }
                 }
 
@@ -138,6 +149,23 @@ namespace ERP.Web.API.Domain.Services.Accounting
             }
             else
             {
+                var currData = Db.PostingLogs.FirstOrDefault(x => x.Period == data.Period);
+                if (currData != null)
+                {
+                    currData.IsPosted = false;
+                    currData.PostedBy = null;
+                    currData.PostedDate = null;
+                    Db.PostingLogs.Update(currData);
+                }
+                else
+                {
+                    Db.PostingLogs.Add(new PostingLog
+                    {
+                        Period = data.Period,
+                        IsPosted = false
+                    });
+                }
+
                 var cmData = Db.ClosingMonths.Where(x => Convert.ToInt32(x.Period) > Convert.ToInt32(data.Period)).ToList();
                 var plData = Db.PostingLogs.Where(x => Convert.ToInt32(x.Period) > Convert.ToInt32(data.Period)).ToList();
                 foreach (var item in cmData)
