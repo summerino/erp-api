@@ -215,6 +215,7 @@ namespace ERP.Web.API
             services.AddScoped<IMobileCostService, MobileCostService>();
             services.AddScoped<IMobileVisitLogService, MobileVisitLogService>();
             services.AddScoped<IMobilePaymentInvoiceService, MobilePaymentInvoiceService>();
+            services.AddScoped<IMobileOrderService, MobileOrderService>();
 
             // Purchase services
             services.AddScoped<IDebitMemoService, DebitMemoService>();

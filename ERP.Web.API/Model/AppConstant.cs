@@ -136,6 +136,7 @@
         MobileSalesCost = 116,
         MobileVisitLog = 118,
         MobilePaymentInvoice = 119,
+        MobileOrder = 120,
 
         // System Management
         CompanyProfile = 75,

@@ -162,4 +162,102 @@ namespace ERP.Entity.MobileSales
         [Column(TypeName = "decimal(19, 6)")]
         public decimal UnitPrice { get; set; }
     }
+
+    public class VwMobileOrderHeader : BaseEntityWithMarkApprovedAndRejected
+    {
+        public string Code { get; set; }
+
+        public DateTime Date { get; set; }
+
+        public string VisitLogCode { get; set; }
+
+        public string SalesOrderCode { get; set; }
+
+        public short Type { get; set; }
+
+        public string CustCode { get; set; }
+
+        public long SalesBy { get; set; }
+
+        public int? PaymentTermId { get; set; }
+
+        public string CurrCode { get; set; }
+
+        public decimal Rate { get; set; }
+
+        public decimal SubTotal { get; set; }
+
+        public decimal FinalDiscPercent { get; set; }
+
+        public decimal FinalDisc { get; set; }
+
+        public bool IncludeTax { get; set; }
+
+        public decimal TaxAmount { get; set; }
+
+        public decimal Total { get; set; }
+
+        public decimal Dpp { get; set; }
+
+        public decimal PaidAmount { get; set; }
+
+        public string CustName { get; set; }
+
+        public string SalesInitial { get; set; }
+
+        public string CreatedInitial { get; set; }
+
+        public string UpdatedInitial { get; set; }
+
+        public string ApprovedInitial { get; set; }
+
+        public string RejectedInitial { get; set; }
+
+        public string Status { get; set; }
+    }
+
+    public class VwMobileOrderDetail
+    {
+        public long Id { get; set; }
+
+        public string Code { get; set; }
+
+        public short LineNo { get; set; }
+
+        public int ItemId { get; set; }
+
+        public int UomId { get; set; }
+
+        public int UnitId { get; set; }
+
+        public decimal Qty { get; set; }
+
+        public decimal UnitPrice { get; set; }
+
+        public decimal Disc { get; set; }
+
+        public int? TaxId { get; set; }
+
+        public decimal TaxAmount { get; set; }
+
+        public decimal NettPrice { get; set; }
+
+        public decimal Total { get; set; }
+
+        public decimal Dpp { get; set; }
+
+        public string ItemInitial { get; set; }
+
+        public string ItemName { get; set; }
+
+        public int? ItemUomSellId { get; set; }
+
+        public string ItemUomSellName { get; set; }
+
+        public decimal? ItemSellPrice { get; set; }
+
+        public string UomInitial { get; set; }
+
+        public string UnitName { get; set; }
+    }
 }
