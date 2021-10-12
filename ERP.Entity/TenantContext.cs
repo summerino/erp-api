@@ -12,6 +12,7 @@ using ERP.Entity.Purchase;
 using ERP.Entity.Sales;
 using ERP.Entity.SystemManagement;
 using ERP.Entity.MobileSales;
+using ERP.Entity.MobileWarehouse;
 
 namespace ERP.Entity
 {
@@ -151,32 +152,35 @@ namespace ERP.Entity
 
         // Mobile Sales entities
         public DbSet<MobileCostHeader> MobileCostHeaders { get; set; }
+        public DbSet<VwMobileCostHeader> VwMobileCostHeaders { get; set; }
         public DbSet<MobileCostDetail> MobileCostDetails { get; set; }
+        public DbSet<VwMobileCostDetail> VwMobileCostDetails { get; set; }
         public DbSet<MobileCostImage> MobileCostImages { get; set; }
         public DbSet<MobileCustomer> MobileCustomers { get; set; }
         public DbSet<VwMobileCustomer> VwMobileCustomers { get; set; }
         public DbSet<MobileItemRequestHeader> MobileItemRequestHeaders { get; set; }
+        public DbSet<VwMobileItemRequestHeader> VwMobileItemRequestHeaders { get; set; }
         public DbSet<MobileItemRequestDetail> MobileItemRequestDetails { get; set; }
+        public DbSet<VwMobileItemRequestDetail> VwMobileItemRequestDetails { get; set; }
         public DbSet<MobileOrderHeader> MobileOrderHeaders { get; set; }
+        public DbSet<VwMobileOrderHeader> VwMobileOrderHeaders { get; set; }
         public DbSet<MobileOrderDetail> MobileOrderDetails { get; set; }
+        public DbSet<VwMobileOrderDetail> VwMobileOrderDetails { get; set; }
         public DbSet<MobileOrderDetailDiscount> MobileOrderDetailDiscounts { get; set; }
         public DbSet<MobileOrderDetailFreeGood> MobileOrderDetailFreeGoods { get; set; }
         public DbSet<MobilePaymentInvoice> MobilePaymentInvoices { get; set; }
+        public DbSet<VwMobilePaymentInvoice> VwMobilePaymentInvoices { get; set; }
         public DbSet<MobilePaymentMethod> MobilePaymentMethods { get; set; }
+        public DbSet<VwMobilePaymentMethod> VwMobilePaymentMethods { get; set; }
         public DbSet<MobileReason> MobileReasons { get; set; }
         public DbSet<VwMobileReason> VwMobileReasons { get; set; }
         public DbSet<MobileVisitLog> MobileVisitLogs { get; set; }
-        public DbSet<MobileVisitReason> MobileVisitReasons { get; set; }
-        public DbSet<VwMobileItemRequestHeader> VwMobileItemRequestHeaders { get; set; }
-        public DbSet<VwMobileItemRequestDetail> VwMobileItemRequestDetails { get; set; }
-        public DbSet<VwMobileCostHeader> VwMobileCostHeaders { get; set; }
-        public DbSet<VwMobileCostDetail> VwMobileCostDetails { get; set; }
         public DbSet<VwMobileVisitLog> VwMobileVisitLogs { get; set; }
-        public DbSet<VwMobilePaymentInvoice> VwMobilePaymentInvoices { get; set; }
-        public DbSet<VwMobileOrderHeader> VwMobileOrderHeaders { get; set; }
-        public DbSet<VwMobileOrderDetail> VwMobileOrderDetails { get; set; }
-        public DbSet<VwMobilePaymentMethod> VwMobilePaymentMethods { get; set; }
+        public DbSet<MobileVisitReason> MobileVisitReasons { get; set; }
 
+        // Mobile Warehouse entities
+        public DbSet<MobileReceiveItemHeader> MobileReceiveItemHeaders { get; set; }
+        public DbSet<MobileReceiveItemDetail> MobileReceiveItemDetails { get; set; }
 
         // Purchase entities
         public DbSet<DebitMemo> DebitMemos { get; set; }
@@ -1130,6 +1134,10 @@ namespace ERP.Entity
                     .OnDelete(DeleteBehavior.NoAction);
             });
 
+            modelBuilder.Entity<VwMobileCostHeader>()
+                .HasNoKey()
+                .ToView("vwMobileCostHeader", Schema.MobileSales);
+
             modelBuilder.Entity<MobileCostDetail>(entity =>
             {
                 entity.Property(e => e.Code)
@@ -1141,6 +1149,10 @@ namespace ERP.Entity
                     .OnDelete(DeleteBehavior.NoAction);
             });
 
+            modelBuilder.Entity<VwMobileCostDetail>()
+                .HasNoKey()
+                .ToView("vwMobileCostDetail", Schema.MobileSales);
+
             modelBuilder.Entity<MobileCostImage>(entity =>
             {
                 entity.Property(e => e.Code)
@@ -1151,14 +1163,6 @@ namespace ERP.Entity
                     .HasForeignKey(d => d.Code)
                     .OnDelete(DeleteBehavior.NoAction);
             });
-
-            modelBuilder.Entity<VwMobileCostHeader>()
-                .HasNoKey()
-                .ToView("vwMobileCostHeader", Schema.MobileSales);
-
-            modelBuilder.Entity<VwMobileCostDetail>()
-                .HasNoKey()
-                .ToView("vwMobileCostDetail", Schema.MobileSales);
 
             // Mobile Customer model
             modelBuilder.Entity<MobileCustomer>(entity =>
@@ -1248,6 +1252,10 @@ namespace ERP.Entity
                     .OnDelete(DeleteBehavior.NoAction);
             });
 
+            modelBuilder.Entity<VwMobileItemRequestHeader>()
+                .HasNoKey()
+                .ToView("vwMobileItemRequestHeader", Schema.MobileSales);
+
             modelBuilder.Entity<MobileItemRequestDetail>(entity =>
             {
                 entity.Property(e => e.Code)
@@ -1268,10 +1276,6 @@ namespace ERP.Entity
                     .HasForeignKey(d => d.UnitId)
                     .OnDelete(DeleteBehavior.NoAction);
             });
-
-            modelBuilder.Entity<VwMobileItemRequestHeader>()
-                .HasNoKey()
-                .ToView("vwMobileItemRequestHeader", Schema.MobileSales);
 
             modelBuilder.Entity<VwMobileItemRequestDetail>()
                 .HasNoKey()
@@ -1304,6 +1308,10 @@ namespace ERP.Entity
                     .OnDelete(DeleteBehavior.NoAction);
             });
 
+            modelBuilder.Entity<VwMobileOrderHeader>()
+                .HasNoKey()
+                .ToView("vwMobileOrderHeader", Schema.MobileSales);
+
             modelBuilder.Entity<MobileOrderDetail>(entity =>
             {
                 entity.Property(e => e.Code)
@@ -1334,6 +1342,10 @@ namespace ERP.Entity
                     .HasForeignKey(d => d.TaxId)
                     .OnDelete(DeleteBehavior.NoAction);
             });
+
+            modelBuilder.Entity<VwMobileOrderDetail>()
+                .HasNoKey()
+                .ToView("vwMobileOrderDetail", Schema.MobileSales);
 
             modelBuilder.Entity<MobileOrderDetailDiscount>(entity =>
             {
@@ -1396,14 +1408,6 @@ namespace ERP.Entity
                     .HasForeignKey(d => d.UnitId)
                     .OnDelete(DeleteBehavior.NoAction);
             });
-
-            modelBuilder.Entity<VwMobileOrderHeader>()
-                .HasNoKey()
-                .ToView("vwMobileOrderHeader", Schema.MobileSales);
-
-            modelBuilder.Entity<VwMobileOrderDetail>()
-                .HasNoKey()
-                .ToView("vwMobileOrderDetail", Schema.MobileSales);
 
             // Mobile Payment Invoice model
             modelBuilder.Entity<MobilePaymentInvoice>(entity =>
@@ -1486,6 +1490,55 @@ namespace ERP.Entity
                     .OnDelete(DeleteBehavior.NoAction);
             });
 
+            // Mobile Sales entities
+            // Mobile Receive Item model
+            modelBuilder.Entity<MobileReceiveItemHeader>(entity =>
+            {
+                entity.Property(e => e.Mark)
+                    .IsRequired();
+
+                entity.HasOne<PurchaseReceiveHeader>()
+                    .WithMany()
+                    .HasForeignKey(d => d.RcvCode)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Supplier>()
+                    .WithMany()
+                    .HasForeignKey(d => d.SupCode)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Employee>()
+                    .WithMany()
+                    .HasForeignKey(d => d.ReceiveBy)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            modelBuilder.Entity<MobileReceiveItemDetail>(entity =>
+            {
+                entity.Property(e => e.Code)
+                    .IsRequired();
+
+                entity.HasOne<Item>()
+                    .WithMany()
+                    .HasForeignKey(d => d.ItemId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<UoM>()
+                    .WithMany()
+                    .HasForeignKey(d => d.UomId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<UoMConversion>()
+                    .WithMany()
+                    .HasForeignKey(d => d.UnitId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Warehouse>()
+                    .WithMany()
+                    .HasForeignKey(d => d.WarehouseCode)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+            
             // Purchase entities
             // Debit Memo model
             modelBuilder.Entity<DebitMemo>(entity =>
