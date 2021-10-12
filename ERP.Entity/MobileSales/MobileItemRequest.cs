@@ -31,24 +31,6 @@ namespace ERP.Entity.MobileSales
         public int? AreaId5 { get; set; }
     }
 
-    [Table("MobileItemRequestDetail", Schema = Schema.MobileSales)]
-    public class MobileItemRequestDetail
-    {
-        public long Id { get; set; }
-
-        [StringLength(17)]
-        public string Code { get; set; }
-
-        public short LineNo { get; set; }
-
-        public int ItemId { get; set; }
-
-        public int UnitId { get; set; }
-
-        [Column(TypeName = "decimal(18, 2)")]
-        public decimal Qty { get; set; }
-    }
-
     public class VwMobileItemRequestHeader : BaseEntityWithMarkApprovedAndRejected
     {
         public string Code { get; set; }
@@ -84,6 +66,24 @@ namespace ERP.Entity.MobileSales
         public string Status { get; set; }
     }
 
+    [Table("MobileItemRequestDetail", Schema = Schema.MobileSales)]
+    public class MobileItemRequestDetail
+    {
+        public long Id { get; set; }
+
+        [StringLength(17)]
+        public string Code { get; set; }
+
+        public short LineNo { get; set; }
+
+        public int ItemId { get; set; }
+
+        public int UnitId { get; set; }
+
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal Qty { get; set; }
+    }
+
     public class VwMobileItemRequestDetail
     {
         public long Id { get; set; }
@@ -103,6 +103,5 @@ namespace ERP.Entity.MobileSales
         public string UnitName { get; set; }
 
         public int UomId { get; set; }
-
     }
 }
