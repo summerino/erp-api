@@ -2204,5 +2204,11 @@ namespace ERP.Web.API.Domain.Services.Accounting
 
             return result;
         }
+
+        public IEnumerable<PostingLog> GetPostingHistory(JournalRequest data)
+        {
+            var plData = _db.PostingLogs.ToList();
+            return plData.Where(x => x.Period.StartsWith(data.Date.Year.ToString()));
+        }
     }
 }

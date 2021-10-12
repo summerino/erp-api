@@ -7,6 +7,8 @@ using ERP.Web.API.Domain.Interfaces.Auth;
 using ERP.Web.API.Model;
 using ERP.Web.API.Model.Accounting;
 using System.Collections.Generic;
+using System;
+using System.Globalization;
 
 namespace ERP.Web.API.Controllers.Accounting
 {
@@ -44,6 +46,24 @@ namespace ERP.Web.API.Controllers.Accounting
             var result = _js.PostingJournal(data, _claim.UserId);
 
             return Ok(result);
+        }
+
+        [HttpPost("lists")]
+        public IActionResult OnGet(JournalRequest data)
+        {
+            var result = _js.GetPostingHistory(data)
+                .Select(x => new
+                {
+                    Period = new DateTime(Convert.ToInt32(x.Period[..4]), Convert.ToInt32(x.Period[4..]) > 9 ? Convert.ToInt32(x.Period[4..]) : Convert.ToInt32(x.Period[5..]), 1).ToString("MMM", CultureInfo.CreateSpecificCulture("id-ID")) 
+                    + $"- {x.Period[..4]}",
+                    x.IsPosted
+                }).ToList<dynamic>();
+
+            return Ok(new ApiResponse
+            {
+                RowCount = result.Count,
+                TableData = result
+            });
         }
     }
 }
