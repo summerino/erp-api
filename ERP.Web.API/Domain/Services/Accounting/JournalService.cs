@@ -2205,6 +2205,12 @@ namespace ERP.Web.API.Domain.Services.Accounting
             return result;
         }
 
+        public IEnumerable<PostingLog> GetPostingHistory(JournalRequest data)
+        {
+            var plData = _db.PostingLogs.ToList();
+            return plData.Where(x => x.Period.StartsWith(data.Date.Year.ToString()));
+        }
+
         private bool CheckPrevPeriod(DateTime postDate)
         {
             DateTime startDate = new(postDate.Year, 1, 1);
