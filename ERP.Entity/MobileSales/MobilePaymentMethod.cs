@@ -19,4 +19,19 @@ namespace ERP.Entity.MobileSales
 
         public short Seq { get; set; }
     }
+
+    public class VwMobilePaymentMethod : BaseEntityWithActive
+    {
+        public int Id { get; set; }
+
+        public string Name { get; set; }
+
+        public string CoaCode { get; set; }
+
+        public short Seq { get; set; }
+
+        public string UpdatedInitial { get; set; }
+
+        public string CoaName { get; set; }
+    }
 }
