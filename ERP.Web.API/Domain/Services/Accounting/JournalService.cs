@@ -32,7 +32,8 @@ namespace ERP.Web.API.Domain.Services.Accounting
             using var transaction = _db.Database.BeginTransaction();
             try
             {
-                if (_db.PostingLogs.Where(x => Convert.ToInt32(x.Period) < Convert.ToInt32(data.Date.ToString("yyyyMM")) && x.IsPosted == false).Any())
+                var periodValid = CheckPrevPeriod(data.Date);
+                if (!periodValid)
                 {
                     result.Message = "Tidak bisa melakukan posting jurnal karena terdapat periode sebelumnya yang belum diposting.";
                     return result;
@@ -351,10 +352,9 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 foreach (var itemDetail in DlvDetailData)
                 {
                     var smData = _db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.DlvDetail.Id && x.RefCode1 == itemDetail.DlvDetail.Code);
-                    if (smData == null) continue;
                     var prorateHeaderDisc = itemData.Dlvheader.FinalDisc > 0 ? (itemData.Dlvheader.FinalDisc * itemDetail.DlvDetail.NettPrice) / DlvDetailData.Sum(x => x.DlvDetail.NettPrice) : 0;
                     var nonVoidSM = RemoveVoidSM(_db.StockMutations.ToList());
-                    var resultHpp = CalculateHPP(nonVoidSM, smData.WarehouseCode, smData.ItemId, smData.RefDetailId1, "DO");
+                    var resultHpp = CalculateHPP(nonVoidSM, smData.WarehouseCode, smData.ItemId, smData.RefDetailId1);
 
                     //Discount - Diskon
                     if (itemDetail.DlvDetail.Disc > 0)
@@ -2011,7 +2011,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     if (smData == null) continue;
 
                     var nonVoidSM = RemoveVoidSM(_db.StockMutations.ToList());
-                    var resultHpp = CalculateHPP(nonVoidSM, smData.WarehouseCode, smData.ItemId, smData.RefDetailId1, "ADJ");
+                    var resultHpp = CalculateHPP(nonVoidSM, smData.WarehouseCode, smData.ItemId, smData.RefDetailId1);
 
                     if (itemDetail.AdjDetail.QtyAdjust > itemDetail.AdjDetail.QtyOnHand)
                     {
@@ -2136,18 +2136,18 @@ namespace ERP.Web.API.Domain.Services.Accounting
             return journals;
         }
 
-        private decimal CalculateHPP(IEnumerable<StockMutation> stockMutations, string whCode, int itemId, long id, string srcCode)
+        private decimal CalculateHPP(IEnumerable<StockMutation> stockMutations, string whCode, int itemId, long id)
         {
             decimal latestQty = 0;
             decimal latestStockValue = 0;
             decimal hpp = 0;
 
-            //var firstId = stockMutations.FirstOrDefault(x => x.WarehouseCode == whCode && x.ItemId == itemId && x.Src == "RCV")?.Id;
-            //if (firstId == null)
-            //    return 0;
-            var firstSM = stockMutations.OrderBy(y => y.Date).FirstOrDefault(x => x.WarehouseCode == whCode && x.ItemId == itemId);
+            var firstId = stockMutations.FirstOrDefault(x => x.WarehouseCode == whCode && x.ItemId == itemId && x.Src == "RCV")?.Id;
+            if (firstId == null)
+                return 0;
+            var firstSM = stockMutations.FirstOrDefault(x => x.Id == firstId);
 
-            var currentSM = stockMutations.FirstOrDefault(x => x.WarehouseCode == whCode && x.ItemId == itemId && x.RefDetailId1 == id && x.Src == srcCode);
+            var currentSM = stockMutations.FirstOrDefault(x => x.WarehouseCode == whCode && x.ItemId == itemId && x.RefDetailId1 == id);
 
             if ((firstSM?.BaseNettPrice ?? 0m) != 0m)
             {
@@ -2155,7 +2155,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 latestQty += firstSM.BaseQty;
                 hpp = latestStockValue / latestQty;
 
-                var listSM = stockMutations.Where(x => new[] { "RCV", "DO", "SR", "ADJ", "TS" }.Contains(x.Src) && x.WarehouseCode == whCode && x.ItemId == itemId && x.Date >= firstSM.Date && x.Date <= currentSM.Date).OrderBy(x => x.Date).ToList();
+                var listSM = stockMutations.Where(x => new[] { "RCV", "DO", "SR", "ADJ", "TS" }.Contains(x.Src) && x.WarehouseCode == whCode && x.ItemId == itemId && x.Id > firstId && x.Id <= currentSM.Id).OrderBy(x => x.Date).ToList();
                 foreach (var item in listSM)
                 {
                     if (item.Src == "RCV" && item.Src == "SR")
@@ -2209,6 +2209,30 @@ namespace ERP.Web.API.Domain.Services.Accounting
         {
             var plData = _db.PostingLogs.ToList();
             return plData.Where(x => x.Period.StartsWith(data.Date.Year.ToString()));
+        }
+
+        private bool CheckPrevPeriod(DateTime postDate)
+        {
+            DateTime startDate = new(postDate.Year, 1, 1);
+            DateTime endDate = new(postDate.Year, postDate.Month, 1);
+            for (var dataMonth = startDate; dataMonth.Date < endDate.Date; dataMonth = dataMonth.AddMonths(1))
+            {
+                var plData = _db.PostingLogs.FirstOrDefault(x => x.Period == $"{dataMonth.Year}{(dataMonth.Month > 9 ? dataMonth.Month : "0" + dataMonth.Month)}");
+                if (plData == null)
+                {
+                    _db.PostingLogs.Add(new PostingLog
+                    {
+                        Period = $"{dataMonth.Year}{(dataMonth.Month > 9 ? dataMonth.Month : "0" + dataMonth.Month)}",
+                        IsPosted = false
+                    });
+                    _db.SaveChanges();
+
+                    return false;
+                }
+                else if (!plData.IsPosted)
+                    return false;
+            }
+            return true;
         }
     }
 }

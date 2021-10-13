@@ -66,7 +66,6 @@ namespace ERP.Web.API.Domain.Services.Sales
                 Dpp = ordData?.Dpp ?? 0m
             };
         }
-
         public List<dynamic> GetRelatedTransactions(string code)
         {
             var dpD = from dlv in Db.DeliveryPlanDetails
@@ -86,7 +85,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                         }).Union(from dpH in Db.DeliveryPlanHeaders
                                  where dpD.Contains(dpH.Code) && dpH.Mark != "V"
                                  select new { dpH.Code, dpH.Date, Total = (decimal)0, Type = "Rencana Pengiriman" })
-                .Skip(1);
+                .Skip(1); ;
 
             return data.ToDynamicList();
         }
@@ -802,15 +801,10 @@ namespace ERP.Web.API.Domain.Services.Sales
         {
             var result = new SaveResult(false);
 
-            if (IsAlreadyInTransaction(code))
-            {
-                result.Message = "Data penjualan langsung tidak bisa ditandai sebagai void karena sudah ada di transaksi kas bank.";
-                return result;
-            }
-
             var data = Db.SalesInvoiceHeaders.Find(code);
             if (data != null)
             {
+
                 var related = GetRelatedTransactions(data.Code);
                 if (related.Count > 0)
                 {
@@ -868,14 +862,6 @@ namespace ERP.Web.API.Domain.Services.Sales
             result.Success = true;
             result.Message = "Data penjualan langsung berhasil ditandai sebagai void.";
             return result;
-        }
-
-        private bool IsAlreadyInTransaction(string code) 
-        {
-            return (from h in Db.GeneralCashBankHeaders
-                    join d in Db.GeneralCashBankDetails on h.Code equals d.Code
-                    where h.Mark == "A" && d.TransCode == code
-                    select h.Code).Any();
         }
 
         private bool IsQtyExcess(string warehouseCode, IEnumerable<SalesOrderDetail> items, string code)

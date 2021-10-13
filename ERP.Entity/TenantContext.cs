@@ -171,6 +171,7 @@ namespace ERP.Entity
         public DbSet<MobilePaymentInvoice> MobilePaymentInvoices { get; set; }
         public DbSet<VwMobilePaymentInvoice> VwMobilePaymentInvoices { get; set; }
         public DbSet<MobilePaymentMethod> MobilePaymentMethods { get; set; }
+        public DbSet<VwMobilePaymentMethod> VwMobilePaymentMethods { get; set; }
         public DbSet<MobileReason> MobileReasons { get; set; }
         public DbSet<VwMobileReason> VwMobileReasons { get; set; }
         public DbSet<MobileVisitLog> MobileVisitLogs { get; set; }
@@ -1428,6 +1429,11 @@ namespace ERP.Entity
             modelBuilder.Entity<VwMobilePaymentInvoice>()
                 .HasNoKey()
                 .ToView("vwMobilePaymentInvoice", Schema.MobileSales);
+
+            // Mobile Payment Method model
+            modelBuilder.Entity<VwMobilePaymentMethod>()
+                .HasNoKey()
+                .ToView("vwMobilePaymentMethod", Schema.MobileSales);
 
             // Mobile Reason model
             modelBuilder.Entity<VwMobileReason>()
