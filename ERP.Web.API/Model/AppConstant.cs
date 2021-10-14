@@ -140,6 +140,10 @@
         MobileOrder = 120,
         MobilePaymentInvoice = 119,
 
+        // Mobile Warehouse
+        MobileReceiveItem = 124,
+        MobileDeliveryItem = 125,
+
         // System Management
         CompanyProfile = 75,
         User = 51,
