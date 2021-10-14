@@ -33,6 +33,38 @@ namespace ERP.Entity.MobileWarehouse
         public long ReceiveBy { get; set; }
     }
 
+    public class VwMobileReceiveItemHeader : BaseEntityWithMarkApprovedAndRejected
+    {
+        public string Code { get; set; }
+
+        public DateTime Date { get; set; }
+
+        public string RcvCode { get; set; }
+
+        public string TransCode { get; set; }
+
+        public short SrcTrans { get; set; }
+
+        public string SupCode { get; set; }
+
+        public long ReceiveBy { get; set; }
+
+        public string SupInitial { get; set; }
+
+        public string ReceiveInitial { get; set; }
+
+        public string CreatedInitial { get; set; }
+
+        public string UpdatedInitial { get; set; }
+
+        public string ApprovedInitial { get; set; }
+
+        public string RejectedInitial { get; set; }
+
+        public string Status { get; set; }
+
+    }
+
     [Table("MobileReceiveItemDetail", Schema = Schema.MobileWarehouse)]
     public class MobileReceiveItemDetail
     {
@@ -59,5 +91,42 @@ namespace ERP.Entity.MobileWarehouse
         public string WarehouseCode { get; set; }
 
         public int Type { get; set; }
+    }
+
+    public class VwMobileReceiveItemDetail
+    {
+        public long Id { get; set; }
+
+        public string Code { get; set; }
+
+        public short LineNo { get; set; }
+
+        public long? TransDetailId { get; set; }
+
+        public int ItemId { get; set; }
+
+        public decimal Qty { get; set; }
+
+        public int UomId { get; set; }
+
+        public int UnitId { get; set; }
+
+        public string WarehouseCode { get; set; }
+
+        public int Type { get; set; }
+
+        public string ItemInitial { get; set; }
+
+        public string ItemName { get; set; }
+
+        public int? ItemUomBuyId { get; set; }
+
+        public string ItemUomBuyName { get; set; }
+
+        public decimal? ItemBuyPrice { get; set; }
+
+        public string UomInitial { get; set; }
+
+        public string UnitName { get; set; }
     }
 }
