@@ -1,8 +1,8 @@
-﻿using ERP.Common;
+﻿using System.Collections.Generic;
+using ERP.Common;
 using ERP.Common.Models;
 using ERP.Entity.MobileSales;
 using ERP.Web.API.Model.MobileSales;
-using System.Collections.Generic;
 
 namespace ERP.Web.API.Domain.Interfaces.MobileSales
 {
@@ -13,10 +13,21 @@ namespace ERP.Web.API.Domain.Interfaces.MobileSales
 
         IEnumerable<VwMobileCostDetail> GetDetailData(string code);
 
+        IEnumerable<MobileCostImage> GetImageData(string code);
+
+        bool IsCostExists(string date, int userId);
+
+        SaveResult Insert(MobileCostRequest data);
+
+        SaveResult Update(MobileCostRequest data);
+
         SaveResult Approve(List<MobileCostRequest> data, int userId, string date, string coa, string notes);
 
         SaveResult Reject(List<MobileCostRequest> data, int userId);
 
-        SaveResult Update(MobileCostRequest data);
+        #region Mobile
+        DataSourceResult GetDataForMobile(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
+            int userId, string date);
+        #endregion
     }
 }

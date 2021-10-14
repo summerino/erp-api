@@ -6,25 +6,24 @@ using UserCatalog = ERP.Entity.Catalog.User;
 
 namespace ERP.Web.API.Controllers.Auth
 {
-    [Route("auth")]
+    [Route("[controller]")]
     [ApiController]
-    public class AuthManagementController : ControllerBase
+    public class AuthController : ControllerBase
     {
-        private readonly IAuthService _authService;
+        private readonly IAuthService _auth;
 
-        public AuthManagementController(IAuthService authService)
+        public AuthController(IAuthService auth)
         {
-            _authService = authService;
+            _auth = auth;
         }
 
-        [HttpPost]
-        [Route("Login")]
+        [HttpPost("[action]")]
         [AllowAnonymous]
         public IActionResult Login(UserCatalog data)
         {
             if (ModelState.IsValid)
             {
-                var result = _authService.Login(data);
+                var result = _auth.Login(data);
                 return Ok(result) ;
             }
 
@@ -35,13 +34,12 @@ namespace ERP.Web.API.Controllers.Auth
             });
         }
 
-        [HttpPost]
-        [Route("Logout")]
+        [HttpPost("[action]")]
         public IActionResult Logout()
         {
             if (ModelState.IsValid)
             {
-                var result = _authService.Logout();
+                var result = _auth.Logout();
                 return Ok(result);
             }
 

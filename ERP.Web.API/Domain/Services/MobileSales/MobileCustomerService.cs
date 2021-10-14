@@ -1,14 +1,13 @@
-﻿using ERP.Common;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using ERP.Common;
 using ERP.Common.Extensions;
 using ERP.Common.Models;
 using ERP.Entity;
 using ERP.Entity.General;
 using ERP.Entity.MobileSales;
 using ERP.Web.API.Domain.Interfaces.MobileSales;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace ERP.Web.API.Domain.Services.MobileSales
 {
@@ -17,6 +16,71 @@ namespace ERP.Web.API.Domain.Services.MobileSales
         public MobileCustomerService(TenantContext db)
             :base(db)
         {
+        }
+
+        public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string search)
+        {
+            var data = Db.VwMobileCustomers.AsQueryable();
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                data = data.Where(x =>
+                    x.Code.Contains(search) || x.Initial.Contains(search) || x.Name.Contains(search)
+                    || x.InitialAddress.Contains(search) || x.Address1.Contains(search) || x.Address2.Contains(search)
+                    || x.ContactPerson.Contains(search) || x.Phone.Contains(search) || x.Fax.Contains(search)
+                    || x.Mark.Contains(search) || x.Status.Contains(search));
+            }
+
+            return data.ToDataSourceResult(skip, take, filters, sorts);
+        }
+
+        public override SaveResult Insert(MobileCustomer data)
+        {
+            var result = new SaveResult(false);
+
+            using var transaction = Db.Database.BeginTransaction();
+            try
+            {
+                // Checking initial already exists or not
+                if (IsInitialExists(data.Initial, data.Code))
+                {
+                    result.Message = "Inisial sudah terdaftar. Tolong gunakan inisial lain.";
+                    return result;
+                }
+
+                Db.MobileCustomers.Add(data);
+                Db.SaveChanges();
+
+                transaction.Commit();
+            }
+            catch (Exception ex)
+            {
+                result.Message = ex.InnerException?.Message ?? ex.Message;
+                return result;
+            }
+
+            result.Success = true;
+            result.Data = data;
+            result.Message = "Data pelanggan mobile berhasil disimpan.";
+            return result;
+        }
+
+        public override SaveResult Update(MobileCustomer data)
+        {
+            var result = new SaveResult(false);
+
+            // Update data
+            Db.MobileCustomers.Update(data);
+            Db.Entry(data).Property(e => e.Code).IsModified = false;
+            Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
+            Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
+
+            Db.SaveChanges();
+
+            result.Success = true;
+            result.Data = data.Code;
+            result.Message = "Data pelanggan mobile berhasil diperbarui.";
+            return result;
         }
 
         public SaveResult Approve(List<MobileCustomer> data, int userId)
@@ -28,7 +92,7 @@ namespace ERP.Web.API.Domain.Services.MobileSales
 
             foreach (var item in data)
             {
-                if (IsInitialExists(item.Initial))
+                if (IsCustomerInitialExists(item.Initial))
                 {
                     result.Message = $"Inisial sudah {item.Initial} terdaftar. Tolong gunakan inisial lain.";
                     return result;
@@ -87,7 +151,6 @@ namespace ERP.Web.API.Domain.Services.MobileSales
                 mcData.ApprovedBy = userId;
                 mcData.ApprovedDate = mcData.UpdatedDate;
                 Db.MobileCustomers.Update(mcData);
-
             }
 
             Db.SaveChanges();
@@ -95,22 +158,6 @@ namespace ERP.Web.API.Domain.Services.MobileSales
             result.Success = true;
             result.Message = "Data pelanggan mobile berhasil disetujui.";
             return result;
-        }
-
-        public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string search)
-        {
-            var data = Db.VwMobileCustomers.AsQueryable();
-
-            if (!string.IsNullOrEmpty(search))
-            {
-                data = data.Where(x =>
-                        x.Code.Contains(search) || x.Initial.Contains(search) || x.Name.Contains(search)
-                        || x.InitialAddress.Contains(search) || x.Address1.Contains(search) || x.Address2.Contains(search)
-                        || x.ContactPerson.Contains(search) || x.Phone.Contains(search) || x.Fax.Contains(search)
-                        || x.Mark.Contains(search) || x.Status.Contains(search));
-            }
-
-            return data.ToDataSourceResult(skip, take, filters, sorts);
         }
 
         public SaveResult Reject(List<MobileCustomer> data, int userId)
@@ -142,25 +189,12 @@ namespace ERP.Web.API.Domain.Services.MobileSales
             return result;
         }
 
-        public override SaveResult Update(MobileCustomer data)
+        private bool IsInitialExists(string initial, string code)
         {
-            var result = new SaveResult(false);
-
-            // Update data
-            Db.MobileCustomers.Update(data);
-            Db.Entry(data).Property(e => e.Code).IsModified = false;
-            Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
-            Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
-
-            Db.SaveChanges();
-
-            result.Success = true;
-            result.Data = data.Code;
-            result.Message = "Data pelanggan mobile berhasil diperbarui.";
-            return result;
+            return Db.MobileCustomers.Any(x => x.Initial == initial && x.Code != code);
         }
 
-        private bool IsInitialExists(string initial)
+        private bool IsCustomerInitialExists(string initial)
         {
             return Db.Customers.Any(x => x.Initial == initial);
         }

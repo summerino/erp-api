@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 using Microsoft.EntityFrameworkCore;
@@ -9,6 +10,7 @@ using ERP.Common.Models;
 using ERP.Entity;
 using ERP.Entity.Purchase;
 using ERP.Web.API.Domain.Interfaces.Purchase;
+using ERP.Web.API.Domain.Models.Mobile.Purchase;
 using ERP.Web.API.Model.Purchase;
 
 namespace ERP.Web.API.Domain.Services.Purchase
@@ -773,5 +775,59 @@ namespace ERP.Web.API.Domain.Services.Purchase
             result.Message = "Data order pembelian berhasil ditutup.";
             return result;
         }
+
+        #region Mobile
+        public DataSourceResult GetDataForMobile(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, string search, string date)
+        {
+            var data = (from poHeader in Db.PurchaseOrderHeaders
+                join sup in Db.Suppliers on poHeader.SupCode equals sup.Code
+                where poHeader.Mark.Equals("A")
+                select new PurchaseOrderHeaderModel
+                {
+                    Code = poHeader.Code,
+                    Date = poHeader.Date,
+                    SupCode = poHeader.SupCode,
+                    SupName = sup.Name,
+                    SupPhone = sup.Phone,
+                    //WarehouseCode = poHeader.WarehouseCode
+                }).AsQueryable();
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                data = data.Where(x => x.Code.Contains(search) || x.SupName.Contains(search));
+            }
+
+            if (!string.IsNullOrEmpty(date))
+            {
+                var date1 = DateTime.ParseExact(date, "yyyy-MM-dd", null);
+                data = data.Where(x => x.Date.Equals(date1));
+            }
+            return data.ToDataSourceResult(skip, take, filter, sort);
+        }
+
+        public IEnumerable<PurchaseOrderDetailModel> GetDetailDataForMobile(string code, bool? fullReceived = null)
+        {
+            var data = from detail in Db.PurchaseOrderDetails
+                join header in Db.PurchaseOrderHeaders on detail.Code equals header.Code
+                join supplier in Db.Suppliers on header.SupCode equals supplier.Code
+                join item in Db.Items on detail.ItemId equals item.Id
+                join uom in Db.UoMs on detail.UomId equals uom.Id
+                where detail.Code.Equals(code)
+                select new PurchaseOrderDetailModel
+                {
+                    Code = detail.Code,
+                    ItemId = detail.ItemId,
+                    ItemInitial = item.Initial,
+                    ItemName = item.Name,
+                    LineNo = detail.LineNo,
+                    OrderQty = detail.Qty,
+                    ReceiveQty = detail.QtyRcv,
+                    RemainQty = detail.Qty - detail.QtyRcv,
+                    Uom = uom.Description, // ambil description?
+                    UomId = detail.UnitId,
+                };
+            return data.ToList();
+        }
+        #endregion
     }
 }

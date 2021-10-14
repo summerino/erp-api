@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Identity;
 using ERP.Common;
 using ERP.Common.Extensions;
 using ERP.Common.Models;
@@ -9,7 +10,6 @@ using ERP.Entity.General;
 using ERP.Entity.Inventory;
 using ERP.Web.API.Domain.Interfaces.General;
 using ERP.Web.API.Model.General;
-using Microsoft.AspNetCore.Identity;
 using UserCatalog = ERP.Entity.Catalog.CustomerUser;
 
 namespace ERP.Web.API.Domain.Services.General
@@ -27,9 +27,27 @@ namespace ERP.Web.API.Domain.Services.General
         }
 
         public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
-            string search)
+            string search, string mobileLastSync)
         {
             var data = Db.VwCustomers.AsQueryable();
+
+            if (!string.IsNullOrEmpty(mobileLastSync))
+            {
+                switch (mobileLastSync.Length)
+                {
+                    case 21:
+                        mobileLastSync += "000";
+                        break;
+                    case 22:
+                        mobileLastSync += "00";
+                        break;
+                    case 23:
+                        mobileLastSync += "0";
+                        break;
+                }
+                data = data.Where(x => x.UpdatedDate > DateTime.ParseExact(mobileLastSync, "yyyy-MM-ddTHH:mm:ss.ffff", null));
+            }
+
             if (!string.IsNullOrEmpty(search))
             {
                 data = data.Where(x =>
@@ -390,10 +408,9 @@ namespace ERP.Web.API.Domain.Services.General
             if (addrDetails.Count > 0)
             {
                 return (addrDetails[0].Id > 0) ? addrDetails[0].Id : 0;
-            } else
-            {
-                return 0;
             }
+
+            return 0;
         }
 
         private SaveResult AddOrUpdateMobileSignIn(CustomerRequest data) 
@@ -477,9 +494,11 @@ namespace ERP.Web.API.Domain.Services.General
             result.Success = true;
             return result;
         }
+
         public void DeleteMobileSignIn(CustomerRequest data) 
         {
-            if (data.CatalogUserId != null) {
+            if (data.CatalogUserId != null)
+            {
                 var custUser = _catalogCtx.CustomerUsers.FirstOrDefault(x => x.TenantId.Equals(_claim.TenantId) && x.Id.Equals(data.CatalogUserId));
                 if (custUser != null)
                 {
@@ -489,9 +508,7 @@ namespace ERP.Web.API.Domain.Services.General
                     data.MobileSignIn = false;
                     data.MobileUsername = null;
                 }
-                
             }
-            
         }
     }
 }

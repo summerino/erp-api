@@ -32,9 +32,26 @@ namespace ERP.Web.API.Domain.Services.Inventory
             return data.ToDataSourceResult(skip, take, filter, sort);
         }
 
-        public DataSourceResult GetLists(IEnumerable<Filter> filters, IEnumerable<Sort> sorts)
+        public DataSourceResult GetLists(IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string mobileLastSync)
         {
             var data = Db.UoMs.Where(x => x.IsActive);
+
+            if (!string.IsNullOrEmpty(mobileLastSync))
+            {
+                switch (mobileLastSync.Length)
+                {
+                    case 21:
+                        mobileLastSync += "000";
+                        break;
+                    case 22:
+                        mobileLastSync += "00";
+                        break;
+                    case 23:
+                        mobileLastSync += "0";
+                        break;
+                }
+                data = data.Where(x => x.UpdatedDate > DateTime.ParseExact(mobileLastSync, "yyyy-MM-ddTHH:mm:ss.ffff", null));
+            }
 
             return data.ToDataSourceResult(0, -1, filters, sorts);
         }

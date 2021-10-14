@@ -6,6 +6,7 @@ using ERP.Common.Models;
 using ERP.Entity;
 using ERP.Entity.Sales;
 using ERP.Web.API.Domain.Interfaces.Sales;
+using ERP.Web.API.Domain.Models.Mobile.Sales;
 
 namespace ERP.Web.API.Domain.Services.Sales
 {
@@ -43,10 +44,8 @@ namespace ERP.Web.API.Domain.Services.Sales
 
                 return data.OrderBy(x => x.Id);
             }
-            else
-            {
-                return Db.VwSalesmanSchedules.Where(x => x.Id == 0);
-            }
+
+            return Db.VwSalesmanSchedules.Where(x => x.Id == 0);
         }
 
         public IEnumerable<VwSalesmanSchedule> GetSalesmanSchedule(long id)
@@ -67,5 +66,26 @@ namespace ERP.Web.API.Domain.Services.Sales
 
             return data.OrderBy(x => x.SalesmanScheduleId);
         }
+
+        #region Mobile
+        public SalesProfile GetSalesProfileForMobile(int id)
+        {
+            var param = Db.SystemParameters.FirstOrDefault(x => x.Code.Equals("DEF_SALES_TAX_INC"))?.Value;
+
+            var data = (from user in Db.Users
+                join empl in Db.Employees on user.EmployeeId equals empl.Id
+                join groupSl in Db.SalesmanGroups on empl.SalesGroupId equals groupSl.Id
+                select new SalesProfile
+                {
+                    UserId = user.Id,
+                    SalesName = empl.FirstName + " " + empl.LastName,
+                    SalesId = empl.Id,
+                    SalesInitialId = empl.Initial,
+                    SalesGroup = groupSl.Name,
+                    TaxInclude = int.Parse(param)
+                }).SingleOrDefault(x => x.UserId.Equals(id));
+            return data;
+        }
+        #endregion
     }
 }

@@ -9,6 +9,7 @@ using ERP.Common.Models;
 using ERP.Entity;
 using ERP.Entity.Inventory;
 using ERP.Web.API.Domain.Interfaces.Inventory;
+using ERP.Web.API.Domain.Models.Mobile.General;
 
 namespace ERP.Web.API.Domain.Services.Inventory
 {
@@ -20,15 +21,29 @@ namespace ERP.Web.API.Domain.Services.Inventory
         }
 
         public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
-            List<int> category,string warehouseCode, string search)
+            List<int> category,string warehouseCode, string search, string mobileLastSync)
         {
-
             var data = Db.VwItems.AsQueryable();
 
-            if (category?.Any() ?? false)
+            if (!string.IsNullOrEmpty(mobileLastSync))
             {
-                data = data.Where(x => category.Contains(x.CategoryId));
+                switch (mobileLastSync.Length)
+                {
+                    case 21:
+                        mobileLastSync += "000";
+                        break;
+                    case 22:
+                        mobileLastSync += "00";
+                        break;
+                    case 23:
+                        mobileLastSync += "0";
+                        break;
+                }
+                data = data.Where(x => x.UpdatedDate > DateTime.ParseExact(mobileLastSync, "yyyy-MM-ddTHH:mm:ss.ffff", null));
             }
+
+            if (category?.Any() ?? false)
+                data = data.Where(x => category.Contains(x.CategoryId));
 
             if (!string.IsNullOrEmpty(search))
             {
@@ -57,7 +72,8 @@ namespace ERP.Web.API.Domain.Services.Inventory
                             QtyReorderPoint = X.Sum(x => x.QtyReorderPoint)
                         }).AsQueryable();
             }
-            else {
+            else
+            {
                 wq = wq.GroupBy(x => new { x.ItemId })
                            .Select(X =>
                            new WarehouseQuantity
@@ -301,5 +317,57 @@ namespace ERP.Web.API.Domain.Services.Inventory
 
             return result;
         }
+
+        #region Mobile
+        public ItemInformationModel GetItemInformation(int itemId, string custCode)
+        {
+            var dataStock = Db.WarehouseQuantities.Where(x => x.ItemId.Equals(itemId));
+
+            var stock = dataStock.Sum(p => p.QtyOnHand - p.QtyOnOrder);
+
+            DateTime? lastUpdate = null;
+            if (dataStock.Any())
+            {
+                lastUpdate = dataStock.Max(p => p.UpdatedDate);
+            }
+
+
+            var data = (from sh in Db.SalesOrderHeaders
+                join sd in Db.SalesOrderDetails on sh.Code equals sd.Code
+                where sd.ItemId == itemId && sh.CustCode == custCode
+                select new
+                {
+                    sd.Qty,
+                    sh.UpdatedDate
+                });
+
+            if (data.Any())
+            {
+                DateTime? maxUpdate = data.Max(p => p.UpdatedDate);
+                var maxOrder = data.Max(p => p.Qty);
+                var avgOrder = data.Average(p => p.Qty);
+                var lastOrder = data.Where(x => x.UpdatedDate.Equals(maxUpdate)).Select(x => x.Qty).FirstOrDefault();
+
+                return new ItemInformationModel
+                {
+                    Stock = stock,
+                    LastUpdateStock = lastUpdate,
+                    MaxOrder = maxOrder,
+                    AvgOrder = avgOrder,
+                    LastOrder = lastOrder
+                };
+            }
+            else
+            {
+                return new ItemInformationModel
+                {
+                    Stock = stock,
+                    MaxOrder = 0,
+                    AvgOrder = 0,
+                    LastOrder = 0
+                };
+            }
+        }
+        #endregion
     }
 }

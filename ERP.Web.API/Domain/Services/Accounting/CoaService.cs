@@ -7,7 +7,6 @@ using ERP.Common.Models;
 using ERP.Entity;
 using ERP.Entity.Accounting;
 using ERP.Web.API.Domain.Interfaces.Accounting;
-using ERP.Web.API.Domain.Models;
 
 namespace ERP.Web.API.Domain.Services.Accounting
 {
@@ -31,9 +30,30 @@ namespace ERP.Web.API.Domain.Services.Accounting
             return data.ToDataSourceResult(skip, take, filter, sort);
         }
 
-        public DataSourceResult GetLists(IEnumerable<Filter> filters, IEnumerable<Sort> sorts)
+        public DataSourceResult GetLists(IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string mobileLastSync)
         {
             var data = Db.Coas.Where(x => x.IsActive);
+
+            if (!string.IsNullOrEmpty(mobileLastSync))
+            {
+                switch (mobileLastSync.Length)
+                {
+                    case 19:
+                        mobileLastSync += ".0000";
+                        break;
+                    case 21:
+                        mobileLastSync += "000";
+                        break;
+                    case 22:
+                        mobileLastSync += "00";
+                        break;
+                    case 23:
+                        mobileLastSync += "0";
+                        break;
+                }
+                data = data.Where(x => x.UpdatedDate > DateTime.ParseExact(mobileLastSync, "yyyy-MM-ddTHH:mm:ss.ffff", null));
+            }
+
             var dataT = data;
 
             data = data.Where(x => !dataT.Select(t => t.ParentId).Contains(x.Id));

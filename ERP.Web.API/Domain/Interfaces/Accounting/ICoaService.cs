@@ -2,7 +2,6 @@
 using ERP.Common;
 using ERP.Common.Models;
 using ERP.Entity.Accounting;
-using ERP.Web.API.Domain.Models;
 
 namespace ERP.Web.API.Domain.Interfaces.Accounting
 {
@@ -11,7 +10,7 @@ namespace ERP.Web.API.Domain.Interfaces.Accounting
         DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
             string search);
 
-        DataSourceResult GetLists(IEnumerable<Filter> filters, IEnumerable<Sort> sorts);
+        DataSourceResult GetLists(IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string mobileLastSync = null);
 
         DataSourceResult GetListsNonSysPar(IEnumerable<Filter> filters, IEnumerable<Sort> sorts);
 

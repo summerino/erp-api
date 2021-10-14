@@ -21,6 +21,11 @@ using ERP.Web.API.Domain.Interfaces.Finance;
 using ERP.Web.API.Domain.Interfaces.General;
 using ERP.Web.API.Domain.Interfaces.HumanResource;
 using ERP.Web.API.Domain.Interfaces.Inventory;
+using ERP.Web.API.Domain.Interfaces.Mobile.General;
+using ERP.Web.API.Domain.Interfaces.Mobile.HumanResource;
+using ERP.Web.API.Domain.Interfaces.Mobile.ItemRequest;
+using ERP.Web.API.Domain.Interfaces.Mobile.NetRevenue;
+using ERP.Web.API.Domain.Interfaces.Mobile.TransactionHistory;
 using ERP.Web.API.Domain.Interfaces.MobileSales;
 using ERP.Web.API.Domain.Interfaces.Purchase;
 using ERP.Web.API.Domain.Interfaces.Sales;
@@ -35,10 +40,16 @@ using ERP.Web.API.Domain.Services.Finance;
 using ERP.Web.API.Domain.Services.General;
 using ERP.Web.API.Domain.Services.HumanResource;
 using ERP.Web.API.Domain.Services.Inventory;
+using ERP.Web.API.Domain.Services.Mobile.General;
+using ERP.Web.API.Domain.Services.Mobile.HumanResource;
+using ERP.Web.API.Domain.Services.Mobile.ItemRequest;
+using ERP.Web.API.Domain.Services.Mobile.NetRevenue;
+using ERP.Web.API.Domain.Services.Mobile.TransactionHistory;
 using ERP.Web.API.Domain.Services.MobileSales;
 using ERP.Web.API.Domain.Services.Purchase;
 using ERP.Web.API.Domain.Services.Sales;
 using ERP.Web.API.Domain.Services.SystemManagement;
+using ERP.Web.API.Model;
 using ERP.Web.API.Model.Auth;
 using Newtonsoft.Json.Serialization;
 using Swift.Framework;
@@ -109,6 +120,9 @@ namespace ERP.Web.API
             {
                 options.AddPolicy("ValidateToken", policy =>
                     policy.Requirements.Add(new UserSessionRequirement()));
+
+                options.AddPolicy(AppConstant.ValidateMobileTokenPolicy, policy =>
+                    policy.Requirements.Add(new MobileUserSessionRequirement()));
             });
 
             // Add authentication service
@@ -141,10 +155,12 @@ namespace ERP.Web.API
             // Add application service
             // Core services
             services.AddScoped<IAuthorizationHandler, UserSessionHandler>();
+            services.AddScoped<IAuthorizationHandler, MobileUserSessionHandler>();
             services.AddScoped<ITenantService, TenantService>();
             services.AddScoped<IShardingService, ShardingService>();
             services.AddScoped<IClaimService, ClaimService>();
             services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<IMobileAuthService, MobileAuthService>();
 
             // Accounting services
             services.AddScoped<IBeginningBalanceAccountPayableService, BeginningBalanceAccountPayableService>();
@@ -249,23 +265,39 @@ namespace ERP.Web.API
             services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<ISystemParameterService, SystemParameterService>();
             services.AddScoped<IUserService, UserService>();
+
+            #region Mobile
+            // General services
+            services.AddScoped<IImageService, ImageService>();
+            services.AddScoped<IVisitInformationService, VisitInformationService>();
+
+            // Human Resource Services
+            services.AddScoped<IAttendanceService, AttendanceService>();
+
+            // Item Request services
+            services.AddScoped<IItemRequestService, ItemRequestService>();
+
+            // Net Revenue services
+            services.AddScoped<INetRevenueService, NetRevenueService>();
+
+            // Transaction History services
+            services.AddScoped<ITransactionHistoryService, TransactionHistoryService>();
+
+            // Visit Order services
+            services.AddScoped<Domain.Interfaces.Mobile.VisitOrder.IVisitOrderService, Domain.Services.Mobile.VisitOrder.VisitOrderService>();
+            #endregion
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, CatalogContext catalogCtx,
             IShardingService shardingService, IServiceProvider service­Provider)
         {
-            //app.UseForwardedHeaders(new ForwardedHeadersOptions
-            //{
-            //    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
-            //});
-
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
 
-            //app.UseHttpsRedirection();
+            app.UseStaticFiles();
             app.UseRouting();
             app.UseCors();
             app.UseAuthentication();

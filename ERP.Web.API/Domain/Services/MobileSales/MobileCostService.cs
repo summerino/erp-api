@@ -1,4 +1,7 @@
-﻿using ERP.Common;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using ERP.Common;
 using ERP.Common.Extensions;
 using ERP.Common.Models;
 using ERP.Entity;
@@ -6,10 +9,6 @@ using ERP.Entity.Finance;
 using ERP.Entity.MobileSales;
 using ERP.Web.API.Domain.Interfaces.MobileSales;
 using ERP.Web.API.Model.MobileSales;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace ERP.Web.API.Domain.Services.MobileSales
 {
@@ -18,7 +17,150 @@ namespace ERP.Web.API.Domain.Services.MobileSales
         public MobileCostService(TenantContext db)
             :base(db)
         {
+        }
 
+        public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string search)
+        {
+            var data = Db.VwMobileCostHeaders.AsQueryable();
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                data = DateTime.TryParse(search, out var searchDate)
+                    ? data.Where(x => x.Date == searchDate)
+                    : data.Where(x =>
+                        x.Code.Contains(search) || x.SalesmanInitial.Contains(search) || x.SalesmanName.Contains(search)
+                        || x.Mark.Contains(search) || x.Status.Contains(search));
+            }
+
+            return data.ToDataSourceResult(skip, take, filters, sorts);
+        }
+
+        public IEnumerable<VwMobileCostDetail> GetDetailData(string code)
+        {
+            var data = Db.VwMobileCostDetails.Where(x => x.Code == code);
+
+            return data.OrderBy(x => x.LineNo);
+        }
+
+        public IEnumerable<MobileCostImage> GetImageData(string code)
+        {
+            var data = Db.MobileCostImages.Where(x => x.Code == code);
+
+            return data.OrderBy(x => x.LineNo);
+        }
+
+        public bool IsCostExists(string date, int userId)
+        {
+            var salesmanId = Db.Users.SingleOrDefault(x => x.Id == userId)?.EmployeeId;
+            return Db.MobileCostHeaders.Any(x => x.Date == DateTime.ParseExact(date, "yyyy-MM-dd", null) && x.SalesmanId == salesmanId);
+        }
+
+        public SaveResult Insert(MobileCostRequest data)
+        {
+            var result = new SaveResult(false);
+
+            long? employeeId = Db.Users.SingleOrDefault(x => x.Id.Equals(data.CreatedBy))?.EmployeeId;
+            using var transaction = Db.Database.BeginTransaction();
+            try
+            {
+                var newCode = GetNewCode("MOB_SC_NUM_FMT", data.Date);
+
+                data.Code = newCode;
+                data.Total = data.ItemDetails.Sum(x => x.Amount);
+                data.SalesmanId = (long)employeeId;
+
+                Db.MobileCostHeaders.Add(data);
+
+                short i = 0;
+                foreach (var cost in data.ItemDetails)
+                {
+                    Db.MobileCostDetails.Add(new MobileCostDetail
+                    {
+                        Code = newCode,
+                        LineNo = ++i,
+                        CoaCode = cost.CoaCode,
+                        Amount = cost.Amount
+                    });
+                }
+
+                short j = 0;
+                foreach (var cost in data.ImageDetails)
+                {
+                    Db.MobileCostImages.Add(new MobileCostImage
+                    {
+                        Code = newCode,
+                        LineNo = ++j,
+                        Image = cost.Image
+                    });
+                }
+
+                Db.SaveChanges();
+                transaction.Commit();
+            }
+            catch (Exception e)
+            {
+                result.Message = e.InnerException?.Message ?? e.Message;
+                return result;
+            }
+
+            result.Success = true;
+            result.Data = data.Code;
+            result.Message = "Biaya sales berhasil disimpan.";
+            return result;
+        }
+
+        public SaveResult Update(MobileCostRequest data)
+        {
+            var result = new SaveResult(false);
+
+            // Checking mark header data
+            if (Db.MobileCostHeaders.Any(x => x.Code == data.Code && x.Mark != "A"))
+            {
+                result.Message = "Data biaya sales mobile tidak bisa diubah karena sudah tidak aktif.";
+                return result;
+            }
+
+            // Get detail data that exists in detail before
+            var delDetails = Db.MobileCostDetails.Where(d => d.Code == data.Code).ToList();
+
+            // Delete detail data that exists in detail before
+            Db.MobileCostDetails.RemoveRange(delDetails);
+
+            if (data.ItemDetails.GroupBy(x => x.CoaCode).Any(x => x.Count() > 1))
+            {
+                result.Message = "Terdapat akun dengan code yang sama pada bagian detail.";
+                return result;
+            }
+
+            var headerData = Db.MobileCostHeaders.FirstOrDefault(x => x.Code == data.Code);
+            if (headerData == null)
+            {
+                result.Message = "Data biaya sales mobile tidak ditemukan.";
+                return result;
+            }
+
+            // Update detail data
+            short i = 0;
+            foreach (var item in data.ItemDetails)
+            {
+                Db.MobileCostDetails.Add(new MobileCostDetail
+                {
+                    Code = data.Code,
+                    LineNo = ++i,
+                    CoaCode = item.CoaCode,
+                    Amount = item.Amount
+                });
+            }
+
+            headerData.Total = data.ItemDetails.Sum(x => x.Amount);
+            Db.MobileCostHeaders.Update(headerData);
+
+            Db.SaveChanges();
+
+            result.Success = true;
+            result.Data = data.Code;
+            result.Message = "Data biaya sales mobile berhasil diperbarui.";
+            return result;
         }
 
         public SaveResult Approve(List<MobileCostRequest> data, int userId, string date, string coa, string notes)
@@ -99,29 +241,6 @@ namespace ERP.Web.API.Domain.Services.MobileSales
             return result;
         }
 
-        public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string search)
-        {
-            var data = Db.VwMobileCostHeaders.AsQueryable();
-
-            if (!string.IsNullOrEmpty(search))
-            {
-                data = DateTime.TryParse(search, out var searchDate)
-                    ? data.Where(x => x.Date == searchDate)
-                    : data.Where(x =>
-                        x.Code.Contains(search) || x.SalesmanInitial.Contains(search) || x.SalesmanName.Contains(search)
-                        || x.Mark.Contains(search) || x.Status.Contains(search));
-            }
-
-            return data.ToDataSourceResult(skip, take, filters, sorts);
-        }
-
-        public IEnumerable<VwMobileCostDetail> GetDetailData(string code)
-        {
-            var data = Db.VwMobileCostDetails.Where(x => x.Code == code);
-
-            return data.OrderBy(x => x.LineNo);
-        }
-
         public SaveResult Reject(List<MobileCostRequest> data, int userId)
         {
             var result = new SaveResult(false);
@@ -151,58 +270,29 @@ namespace ERP.Web.API.Domain.Services.MobileSales
             return result;
         }
 
-        public SaveResult Update(MobileCostRequest data)
+        #region Mobile
+        public DataSourceResult GetDataForMobile(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, int userId, string date)
         {
-            var result = new SaveResult(false);
-
-            // Checking mark header data
-            if (Db.MobileCostHeaders.Any(x => x.Code == data.Code && x.Mark != "A"))
-            {
-                result.Message = "Data biaya sales mobile tidak bisa diubah karena sudah tidak aktif.";
-                return result;
-            }
-
-            // Get detail data that exists in detail before
-            var delDetails = Db.MobileCostDetails.Where(d => d.Code == data.Code).ToList();
-
-            // Delete detail data that exists in detail before
-            Db.MobileCostDetails.RemoveRange(delDetails);
-
-            if (data.ItemDetails.GroupBy(x => x.CoaCode).Any(x => x.Count() > 1))
-            {
-                result.Message = "Terdapat akun dengan code yang sama pada bagian detail.";
-                return result;
-            }
-
-            var headerData = Db.MobileCostHeaders.FirstOrDefault(x => x.Code == data.Code);
-            if(headerData == null)
-            {
-                result.Message = "Data biaya sales mobile tidak ditemukan.";
-                return result;
-            }
-
-            // Update detail data
-            short i = 0;
-            foreach (var item in data.ItemDetails)
-            {
-                Db.MobileCostDetails.Add(new MobileCostDetail
+            var data = (from costHeader in Db.MobileCostHeaders
+                join user in Db.Users on costHeader.SalesmanId equals user.EmployeeId
+                where user.Id.Equals(userId)
+                select new MobileCostHeader
                 {
-                    Code = data.Code,
-                    LineNo = ++i,
-                    CoaCode = item.CoaCode,
-                    Amount = item.Amount
-                });
+                    Code = costHeader.Code,
+                    Date = costHeader.Date,
+                    Mark = costHeader.Mark,
+                    SalesmanId = costHeader.SalesmanId,
+                    Rate = costHeader.Rate,
+                    ApprovedDate = costHeader.ApprovedDate,
+                    Total = costHeader.Total,
+                }).AsQueryable();
+            if (!string.IsNullOrEmpty(date))
+            {
+                var date1 = DateTime.ParseExact(date, "yyyy-MM-dd", null);
+                data = data.Where(x => x.Date.Equals(date1));
             }
-
-            headerData.Total = data.ItemDetails.Sum(x => x.Amount);
-            Db.MobileCostHeaders.Update(headerData);
-
-            Db.SaveChanges();
-
-            result.Success = true;
-            result.Data = data.Code;
-            result.Message = "Data biaya sales mobile berhasil diperbarui.";
-            return result;
+            return data.ToDataSourceResult(skip, take, filters, sorts);
         }
+        #endregion
     }
 }

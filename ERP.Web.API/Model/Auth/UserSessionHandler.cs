@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using ERP.Entity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using ERP.Web.API.Domain.Services;
+using ERP.Entity;
 
 namespace ERP.Web.API.Model.Auth
 {

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using ERP.Common.Models;
 using ERP.Entity.Sales;
+using ERP.Web.API.Domain.Models.Mobile.Sales;
 
 namespace ERP.Web.API.Domain.Interfaces.Sales
 {
@@ -14,5 +15,9 @@ namespace ERP.Web.API.Domain.Interfaces.Sales
         IEnumerable<VwSalesmanSchedule> GetSalesmanSchedule(long id);
 
         IEnumerable<VwSalesmanScheduleCustomer> GetSalesmanScheduleDetailData(List<long> id);
+
+        #region Mobile
+        SalesProfile GetSalesProfileForMobile(int id);
+        #endregion
     }
 }

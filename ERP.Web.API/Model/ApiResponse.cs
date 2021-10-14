@@ -13,4 +13,18 @@ namespace ERP.Web.API.Model
 
         public string PKColumnName { get; set; }
     }
+
+    public class MobileApiResponse
+    {
+        public int Count { get; set; }
+
+        public List<dynamic> Data { get; set; }
+    }
+
+    public class MobileSimpleResponse
+    {
+        public string Message { get; set; }
+
+        public bool Success { get; set; }
+    }
 }

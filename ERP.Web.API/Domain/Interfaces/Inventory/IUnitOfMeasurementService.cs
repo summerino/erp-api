@@ -8,9 +8,9 @@ namespace ERP.Web.API.Domain.Interfaces.Inventory
 {
     public interface IUnitOfMeasurementService : IGeneralService<UoM>
     {
-        DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,string search);
+        DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, string search);
 
-        DataSourceResult GetLists(IEnumerable<Filter> filters, IEnumerable<Sort> sorts);
+        DataSourceResult GetLists(IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string mobileLastSync = null);
 
         IEnumerable<UoMConversion> GetDataConversion(int? uomId = null);
 
