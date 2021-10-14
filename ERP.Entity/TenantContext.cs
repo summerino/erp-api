@@ -179,6 +179,8 @@ namespace ERP.Entity
         public DbSet<MobileVisitReason> MobileVisitReasons { get; set; }
 
         // Mobile Warehouse entities
+        public DbSet<MobileDeliveryItemHeader> MobileDeliveryItemHeaders { get; set; }
+        public DbSet<MobileDeliveryItemDetail> MobileDeliveryItemDetails { get; set; }
         public DbSet<MobileReceiveItemHeader> MobileReceiveItemHeaders { get; set; }
         public DbSet<VwMobileReceiveItemHeader> VwMobileReceiveItemHeaders { get; set; }
         public DbSet<MobileReceiveItemDetail> MobileReceiveItemDetails { get; set; }
@@ -1492,7 +1494,45 @@ namespace ERP.Entity
                     .OnDelete(DeleteBehavior.NoAction);
             });
 
-            // Mobile Sales entities
+            // Mobile Warehouse entities
+            // Mobile Delivery Item model
+            modelBuilder.Entity<MobileDeliveryItemHeader>(entity =>
+            {
+                entity.Property(e => e.Mark)
+                    .IsRequired();
+
+                entity.HasOne<DeliveryPlanHeader>()
+                    .WithMany()
+                    .HasForeignKey(d => d.DlvPlanCode)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            modelBuilder.Entity<MobileDeliveryItemDetail>(entity =>
+            {
+                entity.Property(e => e.Code)
+                    .IsRequired();
+
+                entity.HasOne<MobileDeliveryItemHeader>()
+                    .WithMany()
+                    .HasForeignKey(d => d.Code)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Item>()
+                    .WithMany()
+                    .HasForeignKey(d => d.ItemId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<UoM>()
+                    .WithMany()
+                    .HasForeignKey(d => d.UomId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<UoMConversion>()
+                    .WithMany()
+                    .HasForeignKey(d => d.UnitId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
             // Mobile Receive Item model
             modelBuilder.Entity<MobileReceiveItemHeader>(entity =>
             {
@@ -1523,6 +1563,11 @@ namespace ERP.Entity
             {
                 entity.Property(e => e.Code)
                     .IsRequired();
+
+                entity.HasOne<MobileReceiveItemHeader>()
+                    .WithMany()
+                    .HasForeignKey(d => d.Code)
+                    .OnDelete(DeleteBehavior.NoAction);
 
                 entity.HasOne<Item>()
                     .WithMany()
