@@ -1911,7 +1911,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                             CurrCode = "IDR",
                             Period = item.Date.ToString("yyyyMMdd"),
                             Type = "D",
-                            Amount = itemDetail.Amount,
+                            Amount = itemDetail.Amount * itemDetail.Qty,
                             SrcTrans = "BB_INVT"
                         });
                     }
@@ -1930,7 +1930,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     CurrCode = "IDR",
                     Period = startDate.ToString("yyyyMMdd"),
                     Type = "C",
-                    Amount = journals.Where(x => x.Code == "BB-AR-" + startDate.ToString("yyyyMMdd")).Sum(x => x.Amount),
+                    Amount = journals.Where(x => x.Code == "BB-INVT-" + startDate.ToString("yyyyMMdd")).Sum(x => x.Amount),
                     SrcTrans = "BB_INVT"
                 });
             }
