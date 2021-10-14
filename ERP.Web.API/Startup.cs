@@ -42,6 +42,8 @@ using ERP.Web.API.Domain.Services.SystemManagement;
 using ERP.Web.API.Model.Auth;
 using Newtonsoft.Json.Serialization;
 using Swift.Framework;
+using ERP.Web.API.Domain.Interfaces.MobileWarehouse;
+using ERP.Web.API.Domain.Services.MobileWarehouse;
 
 namespace ERP.Web.API
 {
@@ -217,6 +219,9 @@ namespace ERP.Web.API
             services.AddScoped<IMobilePaymentInvoiceService, MobilePaymentInvoiceService>();
             services.AddScoped<IMobileOrderService, MobileOrderService>();
             services.AddScoped<IMobilePaymentMethodService, MobilePaymentMethodService>();
+
+            // Mobile Warehouse services
+            services.AddScoped<IMobileReceiveItemService, MobileReceiveItemService>();
 
             // Purchase services
             services.AddScoped<IDebitMemoService, DebitMemoService>();

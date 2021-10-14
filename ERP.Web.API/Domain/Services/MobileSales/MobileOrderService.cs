@@ -367,7 +367,7 @@ namespace ERP.Web.API.Domain.Services.MobileSales
                 return result;
             }
             result.Success = true;
-            result.Message = "Data penjualan langsung berhasil disimpan.";
+            result.Message = "Data pesanan mobile berhasil disetujui.";
             return result;
         }
 
