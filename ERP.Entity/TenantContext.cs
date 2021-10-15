@@ -180,7 +180,9 @@ namespace ERP.Entity
 
         // Mobile Warehouse entities
         public DbSet<MobileDeliveryItemHeader> MobileDeliveryItemHeaders { get; set; }
+        public DbSet<VwMobileDeliveryItemHeader> VwMobileDeliveryItemHeaders { get; set; }
         public DbSet<MobileDeliveryItemDetail> MobileDeliveryItemDetails { get; set; }
+        public DbSet<VwMobileDeliveryItemDetail> VwMobileDeliveryItemDetails { get; set; }
         public DbSet<MobileReceiveItemHeader> MobileReceiveItemHeaders { get; set; }
         public DbSet<VwMobileReceiveItemHeader> VwMobileReceiveItemHeaders { get; set; }
         public DbSet<MobileReceiveItemDetail> MobileReceiveItemDetails { get; set; }
@@ -1507,6 +1509,10 @@ namespace ERP.Entity
                     .OnDelete(DeleteBehavior.NoAction);
             });
 
+            modelBuilder.Entity<VwMobileDeliveryItemHeader>()
+                .HasNoKey()
+                .ToView("vwMobileDeliveryItemHeader", Schema.MobileWarehouse);
+
             modelBuilder.Entity<MobileDeliveryItemDetail>(entity =>
             {
                 entity.Property(e => e.Code)
@@ -1532,6 +1538,10 @@ namespace ERP.Entity
                     .HasForeignKey(d => d.UnitId)
                     .OnDelete(DeleteBehavior.NoAction);
             });
+
+            modelBuilder.Entity<VwMobileDeliveryItemDetail>()
+                .HasNoKey()
+                .ToView("vwMobileDeliveryItemDetail", Schema.MobileWarehouse);
 
             // Mobile Receive Item model
             modelBuilder.Entity<MobileReceiveItemHeader>(entity =>

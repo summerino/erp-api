@@ -16,6 +16,21 @@ namespace ERP.Entity.MobileWarehouse
         public string DlvPlanCode { get; set; }
     }
 
+    public class VwMobileDeliveryItemHeader : BaseEntityWithMarkApprovedAndRejected
+    {
+        public string Code { get; set; }
+
+        public string DlvPlanCode { get; set; }
+
+        public string CreatedInitial { get; set; }
+
+        public string UpdatedInitial { get; set; }
+
+        public string ApprovedInitial { get; set; }
+
+        public string RejectedInitial { get; set; }
+    }
+
     [Table("MobileDeliveryItemDetail", Schema = Schema.MobileWarehouse)]
     public class MobileDeliveryItemDetail
     {
@@ -34,5 +49,36 @@ namespace ERP.Entity.MobileWarehouse
         public int UomId { get; set; }
 
         public int UnitId { get; set; }
+    }
+
+    public class VwMobileDeliveryItemDetail
+    {
+        public long Id { get; set; }
+
+        public string Code { get; set; }
+
+        public short LineNo { get; set; }
+
+        public int ItemId { get; set; }
+
+        public decimal Qty { get; set; }
+
+        public int UomId { get; set; }
+
+        public int UnitId { get; set; }
+
+        public string ItemInitial { get; set; }
+
+        public string ItemName { get; set; }
+
+        public int? ItemUomSellId { get; set; }
+
+        public string ItemUomSellName { get; set; }
+
+        public decimal? ItemSellPrice { get; set; }
+
+        public string UomInitial { get; set; }
+
+        public string UnitName { get; set; }
     }
 }
