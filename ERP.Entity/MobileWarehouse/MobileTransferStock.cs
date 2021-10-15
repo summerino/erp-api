@@ -4,8 +4,8 @@ using ERP.Entity.Core;
 
 namespace ERP.Entity.MobileWarehouse
 {
-    [Table("MobileDeliveryItemHeader", Schema = Schema.MobileWarehouse)]
-    public class MobileDeliveryItemHeader : BaseEntityWithMarkApprovedAndRejected
+    [Table("MobileTransferStockHeader", Schema = Schema.MobileWarehouse)]
+    public class MobileTransferStockHeader : BaseEntityWithMarkApprovedAndRejected
     {
         [Key]
         [StringLength(17)]
@@ -13,11 +13,11 @@ namespace ERP.Entity.MobileWarehouse
 
         [Required]
         [StringLength(17)]
-        public string DlvPlanCode { get; set; }
+        public string TransferCode { get; set; }
     }
 
-    [Table("MobileDeliveryItemDetail", Schema = Schema.MobileWarehouse)]
-    public class MobileDeliveryItemDetail
+    [Table("MobileTransferStockDetail", Schema = Schema.MobileWarehouse)]
+    public class MobileTransferStockDetail
     {
         public long Id { get; set; }
 
@@ -28,10 +28,10 @@ namespace ERP.Entity.MobileWarehouse
 
         public int ItemId { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Column(TypeName = "decimal(19, 6)")]
         public decimal OriginalQty { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Column(TypeName = "decimal(19, 6)")]
         public decimal RealizeQty { get; set; }
 
         public int UomId { get; set; }
