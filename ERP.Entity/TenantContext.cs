@@ -187,6 +187,8 @@ namespace ERP.Entity
         public DbSet<VwMobileReceiveItemHeader> VwMobileReceiveItemHeaders { get; set; }
         public DbSet<MobileReceiveItemDetail> MobileReceiveItemDetails { get; set; }
         public DbSet<VwMobileReceiveItemDetail> VwMobileReceiveItemDetails { get; set; }
+        public DbSet<MobileTransferStockHeader> MobileTransferStockHeaders { get; set; }
+        public DbSet<MobileTransferStockDetail> MobileTransferStockDetails { get; set; }
 
         // Purchase entities
         public DbSet<DebitMemo> DebitMemos { get; set; }
@@ -1603,6 +1605,44 @@ namespace ERP.Entity
             modelBuilder.Entity<VwMobileReceiveItemDetail>()
                 .HasNoKey()
                 .ToView("vwMobileReceiveItemDetail", Schema.MobileWarehouse);
+
+            // Mobile Transfer Stock model
+            modelBuilder.Entity<MobileTransferStockHeader>(entity =>
+            {
+                entity.Property(e => e.Mark)
+                    .IsRequired();
+
+                entity.HasOne<TransferStockHeader>()
+                    .WithMany()
+                    .HasForeignKey(d => d.TransferCode)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            modelBuilder.Entity<MobileTransferStockDetail>(entity =>
+            {
+                entity.Property(e => e.Code)
+                    .IsRequired();
+
+                entity.HasOne<MobileTransferStockHeader>()
+                    .WithMany()
+                    .HasForeignKey(d => d.Code)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Item>()
+                    .WithMany()
+                    .HasForeignKey(d => d.ItemId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<UoM>()
+                    .WithMany()
+                    .HasForeignKey(d => d.UomId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<UoMConversion>()
+                    .WithMany()
+                    .HasForeignKey(d => d.UnitId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
 
             // Purchase entities
             // Debit Memo model

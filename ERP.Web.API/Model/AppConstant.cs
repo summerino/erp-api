@@ -143,6 +143,7 @@
         // Mobile Warehouse
         MobileReceiveItem = 124,
         MobileDeliveryItem = 125,
+        MobileTransferStock = 126,
 
         // System Management
         CompanyProfile = 75,
