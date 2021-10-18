@@ -64,7 +64,9 @@ namespace ERP.Entity.MobileWarehouse
 
         public int ItemId { get; set; }
 
-        public decimal Qty { get; set; }
+        public decimal OriginalQty { get; set; }
+
+        public decimal RealizeQty { get; set; }
 
         public int UomId { get; set; }
 
