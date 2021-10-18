@@ -397,6 +397,10 @@ namespace ERP.Web.API.Domain.Services.Sales
                     data.UpdatedBy = userId;
                     data.UpdatedDate = DateTime.Now;
 
+                    Db.Database.ExecuteSqlRaw(
+                    "EXEC sp_update_stock_mutation_from_sr {0}, {1}, {2}, {3}",
+                    data.Code, data.Date, data.TransCode, data.WarehouseCode);
+
                     var stockPR = Db.StockMutations.Where(x => x.RefCode1 == data.Code);
                     if (stockPR != null)
                     {
@@ -405,10 +409,6 @@ namespace ERP.Web.API.Domain.Services.Sales
 
                     // Save changes
                     Db.SaveChanges();
-
-                    Db.Database.ExecuteSqlRaw(
-                    "EXEC sp_update_stock_mutation_from_sr {0}, {1}, {2}, {3}",
-                    data.Code, data.Date, data.TransCode, data.WarehouseCode);
 
                     transaction.Commit();
                 }
