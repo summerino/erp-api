@@ -414,18 +414,18 @@ namespace ERP.Web.API.Domain.Services.Purchase
                     data.UpdatedBy = userId;
                     data.UpdatedDate = DateTime.Now;
 
+                    Db.Database.ExecuteSqlRaw(
+                    "EXEC sp_update_stock_mutation_from_pr {0}, {1}, {2}",
+                    data.Code, data.Date, data.RcvCode);
+
                     var stockPR = Db.StockMutations.Where(x => x.RefCode1 == data.Code);
-                    if(stockPR != null)
+                    if (stockPR != null)
                     {
                         Db.StockMutations.RemoveRange(stockPR);
                     }
 
                     // Save changes
                     Db.SaveChanges();
-
-                    Db.Database.ExecuteSqlRaw(
-                    "EXEC sp_update_stock_mutation_from_pr {0}, {1}, {2}",
-                    data.Code, data.Date, data.RcvCode);
 
                     transaction.Commit();
                 }
