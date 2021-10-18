@@ -206,6 +206,9 @@ namespace ERP.Web.API.Domain.Services.MobileWarehouse
                     // Save changes
                     Db.SaveChanges();
 
+                    itemData.RcvCode = rcvHeadData.Code;
+                    Db.MobileReceiveItemHeaders.Update(itemData);
+
                     var rcvDetail = Db.PurchaseReceiveDetails.Where(x => x.Code == rcvHeadData.Code).ToList();
 
                     rcvHeadData.FinalDiscPercent = 0m;

@@ -3,7 +3,6 @@ using ERP.Common.Models;
 using ERP.Entity;
 using ERP.Entity.MobileWarehouse;
 using ERP.Web.API.Domain.Interfaces.Auth;
-using ERP.Web.API.Domain.Interfaces.Inventory;
 using ERP.Web.API.Domain.Interfaces.MobileWarehouse;
 using ERP.Web.API.Model;
 using ERP.Web.API.Model.MobileWarehouse;
@@ -18,18 +17,18 @@ using System.Threading.Tasks;
 
 namespace ERP.Web.API.Controllers.MobileWarehouse
 {
-    [Route("mobile-receive-item")]
+    [Route("mobile-delivery-item")]
     [ApiController]
-    public class MobileReceiveItemController : ControllerBase
+    public class MobileDeliveryItemController : ControllerBase
     {
-        private readonly IMobileReceiveItemService _mr;
+        private readonly IMobileDeliveryItemService _md;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
-        private const int MenuId = (int)Menu.MobileReceiveItem;
+        private const int MenuId = (int)Menu.MobileDeliveryItem;
 
-        public MobileReceiveItemController(IMobileReceiveItemService mr, IClaimService claim, IAuthService auth)
+        public MobileDeliveryItemController(IMobileDeliveryItemService md, IClaimService claim, IAuthService auth)
         {
-            _mr = mr;
+            _md = md;
             _claim = claim;
             _auth = auth;
         }
@@ -38,7 +37,7 @@ namespace ERP.Web.API.Controllers.MobileWarehouse
         public IActionResult GetData(string search, string filters, string sorts, int skip, int take)
         {
             var data =
-                _mr.GetData(
+                _md.GetData(
                     skip, take,
                     JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
                     JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
@@ -54,28 +53,7 @@ namespace ERP.Web.API.Controllers.MobileWarehouse
         [HttpGet("item")]
         public IActionResult GetDetailData(string code)
         {
-            var data = _mr.GetDetailData(code)
-                .Select(x => new
-                {
-                    x.Id,
-                    x.Code,
-                    x.LineNo,
-                    PoDetailId = x.TransDetailId,
-                    x.ItemId,
-                    x.ItemInitial,
-                    x.ItemName,
-                    x.Qty,
-                    x.UomId,
-                    x.UnitId,
-                    x.UnitName,
-                    x.WarehouseCode,
-                    x.Type,
-                    OldUnitId = x.ItemUomBuyId,
-                    OldUnitName = x.ItemUomBuyName,
-                    OldUnitPrice = x.ItemBuyPrice,
-                    TypeName = x.Type == 0 ? "Normal" : "Bonus",
-                    State = ""
-                })
+            var data = _md.GetDetailData(code)
                 .ToList<dynamic>();
 
             return Ok(new ApiResponse
@@ -86,7 +64,7 @@ namespace ERP.Web.API.Controllers.MobileWarehouse
         }
 
         [HttpPut("{code}")]
-        public IActionResult OnPut(string code, MobileReceiveItemRequest data)
+        public IActionResult OnPut(string code, MobileDeliveryItemRequest data)
         {
             // Checking role authorization
             if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
@@ -96,31 +74,31 @@ namespace ERP.Web.API.Controllers.MobileWarehouse
             data.UpdatedBy = _claim.UserId;
             data.UpdatedDate = DateTime.Now;
 
-            var result = _mr.Update(data);
+            var result = _md.Update(data);
 
             return Ok(result);
         }
 
         [HttpPut("approve")]
-        public IActionResult Approve(List<MobileReceiveItemHeader> data)
+        public IActionResult Approve(List<MobileDeliveryItemHeader> data)
         {
             if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Approve }).Any())
             {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
             }
-            var result = _mr.Approve(data, _claim.UserId);
+            var result = _md.Approve(data, _claim.UserId);
 
             return Ok(result);
         }
 
         [HttpPut("reject")]
-        public IActionResult Reject(List<MobileReceiveItemHeader> data)
+        public IActionResult Reject(List<MobileDeliveryItemHeader> data)
         {
             if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Reject }).Any())
             {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
             }
-            var result = _mr.Reject(data, _claim.UserId);
+            var result = _md.Reject(data, _claim.UserId);
 
             return Ok(result);
         }
