@@ -102,10 +102,7 @@ namespace ERP.Web.API
 
             // Configure controller options
             services
-                .AddControllers(options =>
-                {
-                    options.Filters.Add(new AuthorizeFilter("ValidateToken"));
-                })
+                .AddControllers()
                 .AddNewtonsoftJson(options =>
                 {
                     options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
@@ -120,8 +117,9 @@ namespace ERP.Web.API
             // Add authorization service
             services.AddAuthorization(options =>
             {
-                options.AddPolicy("ValidateToken", policy =>
-                    policy.Requirements.Add(new UserSessionRequirement()));
+                options.FallbackPolicy = new AuthorizationPolicyBuilder()
+                    .AddRequirements(new UserSessionRequirement())
+                    .Build();
 
                 options.AddPolicy(AppConstant.ValidateMobileTokenPolicy, policy =>
                     policy.Requirements.Add(new MobileUserSessionRequirement()));
@@ -313,7 +311,7 @@ namespace ERP.Web.API
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapControllers().RequireAuthorization();
+                endpoints.MapControllers();
             });
 
             EnsureDatabaseCreated(catalogCtx, shardingService);

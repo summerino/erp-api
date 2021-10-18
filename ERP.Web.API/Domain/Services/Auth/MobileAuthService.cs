@@ -45,7 +45,7 @@ namespace ERP.Web.API.Domain.Services.Auth
         public MobileAuthResult Login(MobileLoginRequest data)
         {
             var config = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
-            var allowedType = config["AppSettings:userTypeAllowed"];
+            var allowedType = config["MobileApiSettings:UserTypeAllowed"];
             var allowedTypes = new List<int>();
             if (!string.IsNullOrEmpty(allowedType) && !string.IsNullOrWhiteSpace(allowedType)) 
             {
