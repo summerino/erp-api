@@ -56,6 +56,7 @@ namespace ERP.Web.API.Controllers.Accounting
                 {
                     Period = new DateTime(Convert.ToInt32(x.Period[..4]), Convert.ToInt32(x.Period[4..]) > 9 ? Convert.ToInt32(x.Period[4..]) : Convert.ToInt32(x.Period[5..]), 1).ToString("MMM", CultureInfo.CreateSpecificCulture("id-ID")) 
                     + $"- {x.Period[..4]}",
+                    x.PostedDate,
                     x.IsPosted
                 }).ToList<dynamic>();
 
