@@ -237,6 +237,7 @@ namespace ERP.Web.API
             // Mobile Warehouse services
             services.AddScoped<IMobileReceiveItemService, MobileReceiveItemService>();
             services.AddScoped<IMobileDeliveryItemService, MobileDeliveryItemService>();
+            services.AddScoped<IMobileTransferStockService, MobileTransferStockService>();
 
             // Purchase services
             services.AddScoped<IDebitMemoService, DebitMemoService>();

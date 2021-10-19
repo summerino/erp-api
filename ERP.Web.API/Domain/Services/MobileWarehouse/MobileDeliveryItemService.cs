@@ -326,7 +326,7 @@ namespace ERP.Web.API.Domain.Services.MobileWarehouse
             var data = Db.VwMobileDeliveryItemHeaders.AsQueryable();
 
             if (!string.IsNullOrEmpty(search))
-                data = data.Where(x => x.Code.Contains(search));
+                data = data.Where(x => x.Code.Contains(search) || x.DlvPlanCode.Contains(search));
 
             return data.ToDataSourceResult(skip, take, filters, sorts);
         }
