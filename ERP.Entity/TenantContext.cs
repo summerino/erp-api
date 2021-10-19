@@ -188,7 +188,9 @@ namespace ERP.Entity
         public DbSet<MobileReceiveItemDetail> MobileReceiveItemDetails { get; set; }
         public DbSet<VwMobileReceiveItemDetail> VwMobileReceiveItemDetails { get; set; }
         public DbSet<MobileTransferStockHeader> MobileTransferStockHeaders { get; set; }
+        public DbSet<VwMobileTransferStockHeader> VwMobileTransferStockHeaders { get; set; }
         public DbSet<MobileTransferStockDetail> MobileTransferStockDetails { get; set; }
+        public DbSet<VwMobileTransferStockDetail> VwMobileTransferStockDetails { get; set; }
 
         // Purchase entities
         public DbSet<DebitMemo> DebitMemos { get; set; }
@@ -1618,6 +1620,10 @@ namespace ERP.Entity
                     .OnDelete(DeleteBehavior.NoAction);
             });
 
+            modelBuilder.Entity<VwMobileTransferStockHeader>()
+                .HasNoKey()
+                .ToView("vwMobileTransferStockHeader", Schema.MobileWarehouse);
+
             modelBuilder.Entity<MobileTransferStockDetail>(entity =>
             {
                 entity.Property(e => e.Code)
@@ -1643,6 +1649,10 @@ namespace ERP.Entity
                     .HasForeignKey(d => d.UnitId)
                     .OnDelete(DeleteBehavior.NoAction);
             });
+
+            modelBuilder.Entity<VwMobileTransferStockDetail>()
+               .HasNoKey()
+               .ToView("vwMobileTransferStockDetail", Schema.MobileWarehouse);
 
             // Purchase entities
             // Debit Memo model

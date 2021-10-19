@@ -29,6 +29,8 @@ namespace ERP.Entity.MobileWarehouse
         public string ApprovedInitial { get; set; }
 
         public string RejectedInitial { get; set; }
+
+        public string Status { get; set; }
     }
 
     [Table("MobileDeliveryItemDetail", Schema = Schema.MobileWarehouse)]
