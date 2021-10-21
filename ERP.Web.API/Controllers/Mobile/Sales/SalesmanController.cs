@@ -1,5 +1,6 @@
 ﻿using ERP.Entity;
 using ERP.Web.API.Domain.Interfaces.Sales;
+using ERP.Web.API.Domain.Models.Mobile.Sales;
 using ERP.Web.API.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -24,6 +25,13 @@ namespace ERP.Web.API.Controllers.Mobile.Sales
         public IActionResult GetSalesProfile()
         {
             return Ok(_salesman.GetSalesProfileForMobile(_claim.UserId));
+        }
+
+        [HttpPost("tracking")]
+        public IActionResult InsertSalesTracking(SalesTracking data)
+        {
+
+            return Ok(_salesman.InsertTracking(data,_claim.UserId));
         }
     }
 }

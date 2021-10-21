@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using ERP.Common;
 using ERP.Common.Models;
 using ERP.Entity.Sales;
 using ERP.Web.API.Domain.Models.Mobile.Sales;
@@ -18,6 +19,7 @@ namespace ERP.Web.API.Domain.Interfaces.Sales
 
         #region Mobile
         SalesProfile GetSalesProfileForMobile(int id);
+        SaveResult InsertTracking(SalesTracking data, int userId);
         #endregion
     }
 }
