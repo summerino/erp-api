@@ -76,13 +76,55 @@ namespace ERP.Web.API.Domain.Services.Purchase
             using var transaction = Db.Database.BeginTransaction();
             try
             {
-                // Checking purchase order mark
-                if (IsPurchaseOrderInvalid(data.TransCode))
+                if (data.SrcTrans == 2)
                 {
-                    result.Message = "Data penerimaan pembelian tidak bisa disimpan karena data order pembelian sudah ditandai sebagai void atau tutup.";
-                    return result;
-                }
+                    var transData = Db.PurchaseReturnHeaders.FirstOrDefault(x => x.Code == data.TransCode);
 
+                    if (transData == null)
+                    {
+                        result.Message = "Data penerimaan pembelian tidak bisa disimpan karena data retur pembelian tidak ditemukan.";
+                        return result;
+                    }
+
+                    // Checking purchase return mark
+                    if (transData.Mark == "V")
+                    {
+                        result.Message = "Data penerimaan pembelian tidak bisa disimpan karena data retur pembelian sudah ditandai sebagai void.";
+                        return result;
+                    }
+
+                    // Checking purchase return date with purchase receive
+                    if (transData.Date > data.Date)
+                    {
+                        result.Message = "Data penerimaan pembelian tidak bisa disimpan karena data retur pembelian mempunyai tanggal lebih besar.";
+                        return result;
+                    }
+                }
+                else
+                {
+                    var transData = Db.PurchaseOrderHeaders.FirstOrDefault(x => x.Code == data.TransCode);
+
+                    if (transData == null)
+                    {
+                        result.Message = "Data penerimaan pembelian tidak bisa disimpan karena data order pembelian tidak ditemukan.";
+                        return result;
+                    }
+
+                    // Checking purchase order mark
+                    if (transData.Mark is "V" or "CLS")
+                    {
+                        result.Message = "Data penerimaan pembelian tidak bisa disimpan karena data order pembelian sudah ditandai sebagai void atau tutup.";
+                        return result;
+                    }
+
+                    // Checking purchase order date with purchase receive
+                    if (transData.Date > data.Date)
+                    {
+                        result.Message = "Data penerimaan pembelian tidak bisa disimpan karena data order pembelian mempunyai tanggal lebih besar.";
+                        return result;
+                    }
+                }
+                
                 // Checking receive qty is excess or not
                 if (IsQtyExcess(data.SrcTrans, data.TransCode, data.ItemDetails, null))
                 {
@@ -217,16 +259,10 @@ namespace ERP.Web.API.Domain.Services.Purchase
                     "EXEC sp_update_stock_mutation_from_rcv {0}, {1}, {2}",
                     data.Code, data.Date, data.TransCode);
 
-                if (data.SrcTrans == 1)
-                {
-                    // Execute sp_update_po_rcv_qty
-                    Db.Database.ExecuteSqlRaw("EXEC sp_update_po_rcv_qty {0}", data.TransCode);
-                }
-                else
-                {
-                    // Execute sp_update_pr_rcv_qty
-                    Db.Database.ExecuteSqlRaw("EXEC sp_update_pr_rcv_qty {0}", data.TransCode);
-                }
+                // Execute sp_update_po_rcv_qty / sp_update_pr_rcv_qty
+                Db.Database.ExecuteSqlRaw(
+                    data.SrcTrans == 1 ? "EXEC sp_update_po_rcv_qty {0}" : "EXEC sp_update_pr_rcv_qty {0}",
+                    data.TransCode);
 
                 if (data.IsPoInv)
                 {
@@ -272,13 +308,55 @@ namespace ERP.Web.API.Domain.Services.Purchase
                     return result;
                 }
 
-                // Checking purchase order mark
-                if (IsPurchaseOrderInvalid(data.TransCode))
+                if (data.SrcTrans == 2)
                 {
-                    result.Message = "Data penerimaan pembelian tidak bisa diubah karena data order pembelian sudah ditandai sebagai void atau tutup.";
-                    return result;
-                }
+                    var transData = Db.PurchaseReturnHeaders.FirstOrDefault(x => x.Code == data.TransCode);
 
+                    if (transData == null)
+                    {
+                        result.Message = "Data penerimaan pembelian tidak bisa diubah karena data retur pembelian tidak ditemukan.";
+                        return result;
+                    }
+
+                    // Checking purchase return mark
+                    if (transData.Mark == "V")
+                    {
+                        result.Message = "Data penerimaan pembelian tidak bisa diubah karena data retur pembelian sudah ditandai sebagai void.";
+                        return result;
+                    }
+
+                    // Checking purchase return date with purchase receive
+                    if (transData.Date > data.Date)
+                    {
+                        result.Message = "Data penerimaan pembelian tidak bisa diubah karena data retur pembelian mempunyai tanggal lebih besar.";
+                        return result;
+                    }
+                }
+                else
+                {
+                    var transData = Db.PurchaseOrderHeaders.FirstOrDefault(x => x.Code == data.TransCode);
+
+                    if (transData == null)
+                    {
+                        result.Message = "Data penerimaan pembelian tidak bisa diubah karena data order pembelian tidak ditemukan.";
+                        return result;
+                    }
+
+                    // Checking purchase order mark
+                    if (transData.Mark is "V" or "CLS")
+                    {
+                        result.Message = "Data penerimaan pembelian tidak bisa diubah karena data order pembelian sudah ditandai sebagai void atau tutup.";
+                        return result;
+                    }
+
+                    // Checking purchase order date with purchase receive
+                    if (transData.Date > data.Date)
+                    {
+                        result.Message = "Data penerimaan pembelian tidak bisa diubah karena data order pembelian mempunyai tanggal lebih besar.";
+                        return result;
+                    }
+                }
+                
                 // Checking receive qty is excess or not
                 if (IsQtyExcess(data.SrcTrans, data.TransCode, data.ItemDetails, data.Code))
                 {
@@ -462,16 +540,10 @@ namespace ERP.Web.API.Domain.Services.Purchase
                     "EXEC sp_update_stock_mutation_from_rcv {0}, {1}, {2}",
                     data.Code, data.Date, data.TransCode);
 
-                if (data.SrcTrans == 1)
-                {
-                    // Execute sp_update_po_rcv_qty
-                    Db.Database.ExecuteSqlRaw("EXEC sp_update_po_rcv_qty {0}", data.TransCode);
-                }
-                else
-                {
-                    // Execute sp_update_pr_rcv_qty
-                    Db.Database.ExecuteSqlRaw("EXEC sp_update_pr_rcv_qty {0}", data.TransCode);
-                }
+                // Execute sp_update_po_rcv_qty / sp_update_pr_rcv_qty
+                Db.Database.ExecuteSqlRaw(
+                    data.SrcTrans == 1 ? "EXEC sp_update_po_rcv_qty {0}" : "EXEC sp_update_pr_rcv_qty {0}",
+                    data.TransCode);
 
                 if (data.IsPoInv)
                 {
@@ -596,12 +668,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
             result.Message = "Data penerimaan pembelian berhasil ditandai sebagai void.";
             return result;
         }
-
-        private bool IsPurchaseOrderInvalid(string poCode)
-        {
-            return Db.PurchaseOrderHeaders.Any(x => x.Code == poCode && new[] { "V", "CLS" }.Contains(x.Mark));
-        }
-
+        
         private bool IsQtyExcess(int srcTrans, string transCode, IEnumerable<PurchaseReceiveDetail> items, string code)
         {
             var result = false;

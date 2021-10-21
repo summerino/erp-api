@@ -10,7 +10,6 @@ using ERP.Entity;
 using ERP.Entity.Sales;
 using ERP.Web.API.Domain.Interfaces.Sales;
 using ERP.Web.API.Model.Sales;
-using ERP.Entity.Inventory;
 
 namespace ERP.Web.API.Domain.Services.Sales
 {
@@ -86,11 +85,53 @@ namespace ERP.Web.API.Domain.Services.Sales
             using var transaction = Db.Database.BeginTransaction();
             try
             {
-                // Checking sales order mark
-                if (IsSalesOrderInvalid(data.TransCode))
+                if (data.SrcTrans == 2)
                 {
-                    result.Message = "Data pengiriman penjualan tidak bisa disimpan karena data order penjualan sudah ditandai sebagai void atau tutup.";
-                    return result;
+                    var transData = Db.SalesReturnHeaders.FirstOrDefault(x => x.Code == data.TransCode);
+
+                    if (transData == null)
+                    {
+                        result.Message = "Data pengiriman penjualan tidak bisa disimpan karena data retur penjualan tidak ditemukan.";
+                        return result;
+                    }
+
+                    // Checking sales return mark
+                    if (transData.Mark == "V")
+                    {
+                        result.Message = "Data pengiriman penjualan tidak bisa disimpan karena data retur penjualan sudah ditandai sebagai void.";
+                        return result;
+                    }
+
+                    // Checking sales return date with sales delivery
+                    if (transData.Date > data.Date)
+                    {
+                        result.Message = "Data pengiriman penjualan tidak bisa disimpan karena data retur penjualan mempunyai tanggal lebih besar.";
+                        return result;
+                    }
+                }
+                else
+                {
+                    var transData = Db.SalesOrderHeaders.FirstOrDefault(x => x.Code == data.TransCode);
+
+                    if (transData == null)
+                    {
+                        result.Message = "Data pengiriman penjualan tidak bisa disimpan karena data order penjualan tidak ditemukan.";
+                        return result;
+                    }
+
+                    // Checking sales order mark
+                    if (transData.Mark is "V" or "CLS")
+                    {
+                        result.Message = "Data pengiriman penjualan tidak bisa disimpan karena data order penjualan sudah ditandai sebagai void atau tutup.";
+                        return result;
+                    }
+
+                    // Checking sales order date with sales delivery
+                    if (transData.Date > data.Date)
+                    {
+                        result.Message = "Data pengiriman penjualan tidak bisa disimpan karena data order penjualan mempunyai tanggal lebih besar.";
+                        return result;
+                    }
                 }
 
                 //Checking warehouse qty is item is available or not
@@ -286,11 +327,53 @@ namespace ERP.Web.API.Domain.Services.Sales
                     return result;
                 }
 
-                // Checking sales order mark
-                if (IsSalesOrderInvalid(data.TransCode))
+                if (data.SrcTrans == 2)
                 {
-                    result.Message = "Data pengiriman penjualan tidak bisa diubah karena data order penjualan sudah ditandai sebagai void atau tutup.";
-                    return result;
+                    var transData = Db.SalesReturnHeaders.FirstOrDefault(x => x.Code == data.TransCode);
+
+                    if (transData == null)
+                    {
+                        result.Message = "Data pengiriman penjualan tidak bisa disimpan karena data retur penjualan tidak ditemukan.";
+                        return result;
+                    }
+
+                    // Checking sales return mark
+                    if (transData.Mark == "V")
+                    {
+                        result.Message = "Data pengiriman penjualan tidak bisa disimpan karena data retur penjualan sudah ditandai sebagai void.";
+                        return result;
+                    }
+
+                    // Checking sales return date with sales delivery
+                    if (transData.Date > data.Date)
+                    {
+                        result.Message = "Data pengiriman penjualan tidak bisa disimpan karena data retur penjualan mempunyai tanggal lebih besar.";
+                        return result;
+                    }
+                }
+                else
+                {
+                    var transData = Db.SalesOrderHeaders.FirstOrDefault(x => x.Code == data.TransCode);
+
+                    if (transData == null)
+                    {
+                        result.Message = "Data pengiriman penjualan tidak bisa disimpan karena data order penjualan tidak ditemukan.";
+                        return result;
+                    }
+
+                    // Checking sales order mark
+                    if (transData.Mark is "V" or "CLS")
+                    {
+                        result.Message = "Data pengiriman penjualan tidak bisa disimpan karena data order penjualan sudah ditandai sebagai void atau tutup.";
+                        return result;
+                    }
+
+                    // Checking sales order date with sales delivery
+                    if (transData.Date > data.Date)
+                    {
+                        result.Message = "Data pengiriman penjualan tidak bisa disimpan karena data order penjualan mempunyai tanggal lebih besar.";
+                        return result;
+                    }
                 }
 
                 //Checking warehouse qty is item is available or not
@@ -582,12 +665,7 @@ namespace ERP.Web.API.Domain.Services.Sales
             result.Message = "Data pengiriman penjualan berhasil ditandai sebagai void.";
             return result;
         }
-
-        private bool IsSalesOrderInvalid(string soCode)
-        {
-            return Db.SalesOrderHeaders.Any(x => x.Code == soCode && new[] { "V", "CLS" }.Contains(x.Mark));
-        }
-
+        
         private bool IsQtyExcess(string code, int srcTrans, string transCode, IEnumerable<SalesDeliveryDetail> items)
         {
             var result = false;

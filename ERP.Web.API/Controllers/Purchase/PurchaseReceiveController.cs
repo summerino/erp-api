@@ -6,13 +6,13 @@ using Microsoft.AspNetCore.Mvc;
 using ERP.Common;
 using ERP.Common.Models;
 using ERP.Entity;
+using ERP.Web.API.Domain.Interfaces.Accounting;
 using ERP.Web.API.Domain.Interfaces.Auth;
 using ERP.Web.API.Domain.Interfaces.Purchase;
 using ERP.Web.API.Domain.Interfaces.SystemManagement;
 using ERP.Web.API.Model;
 using ERP.Web.API.Model.Purchase;
 using Newtonsoft.Json;
-using ERP.Web.API.Domain.Interfaces.Accounting;
 
 namespace ERP.Web.API.Controllers.Purchase
 {
@@ -21,20 +21,21 @@ namespace ERP.Web.API.Controllers.Purchase
     public class PurchaseReceiveController : ControllerBase
     {
         private readonly IPurchaseReceiveService _rcv;
+        private readonly IClosingMonthService _closingMonth;
         private readonly ISystemParameterService _sysPar;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
-        private readonly IClosingMonthService _closingMonth;
+
         private const int MenuId = (int)Menu.PurchaseReceive;
 
-        public PurchaseReceiveController(IPurchaseReceiveService rcv, ISystemParameterService sysPar,
-            IClaimService claim, IAuthService auth, IClosingMonthService closingMonthService)
+        public PurchaseReceiveController(IPurchaseReceiveService rcv, IClosingMonthService closingMonth,
+            ISystemParameterService sysPar, IClaimService claim, IAuthService auth)
         {
             _rcv = rcv;
+            _closingMonth = closingMonth;
             _sysPar = sysPar;
             _claim = claim;
             _auth = auth;
-            _closingMonth = closingMonthService;
         }
 
         [HttpGet]
