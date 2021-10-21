@@ -94,10 +94,20 @@ namespace ERP.Web.API.Domain.Services.Sales
                 // Checking sales order mark
                 if (IsSalesOrderInvalid(data.SoCode))
                 {
-                    result.Message = "Data faktur penjualan tidak bisa diubah karena status order penjualan bukan diterima sebagian atau selesai.";
+                    result.Message = "Data faktur penjualan tidak bisa disimpan karena status order penjualan bukan diterima sebagian atau selesai.";
                     return result;
                 }
-                
+
+                // Checking sales delivery mark & date
+                if (
+                    Db.SalesDeliveryHeaders.Any(d =>
+                        data.Details.Select(i => i.DoCode).Contains(d.Code) &&
+                        (d.Mark == "V" || d.Date > data.Date)))
+                {
+                    result.Message = "Data faktur penjualan tidak bisa disimpan karena status surat jalan sudah ditandai sebagai void atau mempunyai tanggal lebih besar dari faktur.";
+                    return result;
+                }
+
                 // Get new code
                 var newCode = GetNewCode("SI_NUM_FMT", data.Date);
                     
@@ -191,6 +201,16 @@ namespace ERP.Web.API.Domain.Services.Sales
                 if (IsSalesOrderInvalid(data.SoCode))
                 {
                     result.Message = "Data faktur penjualan tidak bisa diubah karena status order penjualan bukan diterima sebagian atau selesai.";
+                    return result;
+                }
+
+                // Checking sales delivery mark & date
+                if (
+                    Db.SalesDeliveryHeaders.Any(d =>
+                        data.Details.Select(i => i.DoCode).Contains(d.Code) &&
+                        (d.Mark == "V" || d.Date > data.Date)))
+                {
+                    result.Message = "Data faktur penjualan tidak bisa diubah karena status surat jalan sudah ditandai sebagai void atau mempunyai tanggal lebih besar dari faktur.";
                     return result;
                 }
 

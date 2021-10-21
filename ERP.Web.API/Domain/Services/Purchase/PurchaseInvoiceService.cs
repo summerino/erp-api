@@ -52,10 +52,20 @@ namespace ERP.Web.API.Domain.Services.Purchase
                 // Checking purchase order mark
                 if (IsPurchaseOrderInvalid(data.PoCode))
                 {
-                    result.Message = "Data faktur pembelian tidak bisa diubah karena status order pembelian bukan diterima sebagian atau selesai.";
+                    result.Message = "Data faktur pembelian tidak bisa disimpan karena status order pembelian bukan diterima sebagian atau selesai.";
                     return result;
                 }
-                
+
+                // Checking purchase receive mark & date
+                if (
+                    Db.PurchaseReceiveHeaders.Any(pr =>
+                        data.Details.Select(i => i.RcvCode).Contains(pr.Code) &&
+                        (pr.Mark == "V" || pr.Date > data.Date)))
+                {
+                    result.Message = "Data faktur pembelian tidak bisa disimpan karena status penerimaan pembelian sudah ditandai sebagai void atau mempunyai tanggal lebih besar dari faktur.";
+                    return result;
+                }
+
                 // Get new code
                 var newCode = GetNewCode("PI_NUM_FMT", data.Date);
                     
@@ -144,6 +154,16 @@ namespace ERP.Web.API.Domain.Services.Purchase
                 if (IsPurchaseOrderInvalid(data.PoCode))
                 {
                     result.Message = "Data faktur pembelian tidak bisa diubah karena status order pembelian bukan diterima sebagian atau selesai.";
+                    return result;
+                }
+
+                // Checking purchase receive mark & date
+                if (
+                    Db.PurchaseReceiveHeaders.Any(pr =>
+                        data.Details.Select(i => i.RcvCode).Contains(pr.Code) &&
+                        (pr.Mark == "V" || pr.Date > data.Date)))
+                {
+                    result.Message = "Data faktur pembelian tidak bisa diubah karena status penerimaan pembelian sudah ditandai sebagai void atau mempunyai tanggal lebih besar dari faktur.";
                     return result;
                 }
 
@@ -355,6 +375,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
         {
             return Db.PurchaseOrderHeaders.Any(x => x.Code == poCode && !new[] { "PR", "CMP" }.Contains(x.Mark));
         }
+
         private bool IsAlreadyInTransaction(string code)
         {
             return (from h in Db.GeneralCashBankHeaders
