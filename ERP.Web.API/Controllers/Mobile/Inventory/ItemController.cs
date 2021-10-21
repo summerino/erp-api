@@ -98,7 +98,10 @@ namespace ERP.Web.API.Controllers.Mobile.Inventory
                     {
                         x.Id,
                         x.Initial,
-                        x.BaseUnit
+                        x.BaseUnit,
+                        x.Description,
+                        x.IsActive,
+                        x.UpdatedDate
                     })
                     .ToList<dynamic>();
 
