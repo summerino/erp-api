@@ -84,7 +84,7 @@ namespace ERP.Web.API.Controllers.Mobile.Operational
                 _coa.GetLists(
                     new List<Filter>
                     {
-                        new() {Field = "ShowInMobile", Operator = "eq", Keyword = "1"}
+                        new() {Field = "ShowInMobile", Operator = "eq", Keyword = true}
                     },
                     null,
                     lastUpdate).Data
