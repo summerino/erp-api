@@ -16,6 +16,8 @@ namespace ERP.Web.API.Domain.Interfaces.Purchase
 
         List<dynamic> GetRelatedTransactions(string code);
 
+        IEnumerable<VwPurchaseOrderHeader> GetInCompleteInvoiceData(string searchBy, string search, string invCode);
+
         SaveResult Insert(PurchaseOrderRequest data);
 
         SaveResult Update(PurchaseOrderRequest data);

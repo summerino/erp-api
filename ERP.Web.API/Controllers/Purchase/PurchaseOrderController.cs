@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using ERP.Common;
 using ERP.Common.Models;
 using ERP.Entity;
+using ERP.Web.API.Domain.Interfaces.Accounting;
 using ERP.Web.API.Domain.Interfaces.Auth;
 using ERP.Web.API.Domain.Interfaces.Inventory;
 using ERP.Web.API.Domain.Interfaces.Purchase;
@@ -13,7 +14,6 @@ using ERP.Web.API.Domain.Interfaces.SystemManagement;
 using ERP.Web.API.Model;
 using ERP.Web.API.Model.Purchase;
 using Newtonsoft.Json;
-using ERP.Web.API.Domain.Interfaces.Accounting;
 
 namespace ERP.Web.API.Controllers.Purchase
 {
@@ -23,21 +23,23 @@ namespace ERP.Web.API.Controllers.Purchase
     {
         private readonly IPurchaseOrderService _po;
         private readonly IUnitOfMeasurementService _uom;
+        private readonly IClosingMonthService _closingMonth;
         private readonly ISystemParameterService _sysPar;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
-        private readonly IClosingMonthService _closingMonth;
+
         private const int MenuId = (int)Menu.PurchaseOrder;
 
         public PurchaseOrderController(IPurchaseOrderService po, IUnitOfMeasurementService uom,
-            ISystemParameterService sysPar, IClaimService claim, IAuthService auth, IClosingMonthService closingMonthService)
+            IClosingMonthService closingMonth, ISystemParameterService sysPar,
+            IClaimService claim, IAuthService auth)
         {
             _po = po;
             _uom = uom;
+            _closingMonth = closingMonth;
             _sysPar = sysPar;
             _claim = claim;
             _auth = auth;
-            _closingMonth = closingMonthService;
         }
 
         [HttpGet]
@@ -99,6 +101,18 @@ namespace ERP.Web.API.Controllers.Purchase
         {
             var data = _po.GetRelatedTransactions(code);
             
+            return Ok(new ApiResponse
+            {
+                RowCount = data.Count,
+                TableData = data
+            });
+        }
+
+        [HttpGet("in-complete-invoice")]
+        public IActionResult GetInCompleteInvoiceData(string searchBy, string search, string invCode)
+        {
+            var data = _po.GetInCompleteInvoiceData(searchBy, search, invCode).ToList<dynamic>();
+
             return Ok(new ApiResponse
             {
                 RowCount = data.Count,
