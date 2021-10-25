@@ -220,11 +220,11 @@ namespace ERP.Web.API.Domain.Services.Inventory
                 var data = Db.BeginningBalanceStockHeaders.Find(code);
                 if (data != null)
                 {
-                    var stockBB = Db.StockMutations.Where(x => x.RefCode1 == data.Code);
-                    if (stockBB != null)
-                    {
-                        Db.StockMutations.RemoveRange(stockBB);
-                    }
+                    //var stockBB = Db.StockMutations.Where(x => x.RefCode1 == data.Code);
+                    //if (stockBB != null)
+                    //{
+                    //    Db.StockMutations.RemoveRange(stockBB);
+                    //}
 
                     // Execute sp_update_stock_mutation_from_bb
                     Db.Database.ExecuteSqlRaw(
@@ -234,6 +234,7 @@ namespace ERP.Web.API.Domain.Services.Inventory
                     var detail = Db.BeginningBalanceStockDetails.Where(x => x.Code.Equals(code)).ToList();
                     Db.RemoveRange(detail);
                     Db.Remove(data);
+
                     Db.SaveChanges();
                     transaction.Commit();
                 }
