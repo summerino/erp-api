@@ -60,6 +60,41 @@ namespace ERP.Web.API.Domain.Services.Sales
             return data.ToDynamicList();
         }
 
+        public IEnumerable<VwSalesOrderHeader> GetInCompleteInvoiceData(string searchBy, string search, string invCode)
+        {
+            var data = Db.VwSalesOrderHeaders.Where(x => new[] { "PR", "CMP" }.Contains(x.Mark));
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                data = searchBy switch
+                {
+                    "code" => data.Where(x => x.Code.Contains(search)),
+                    "date" => data.Where(x => x.Date == Convert.ToDateTime(search)),
+                    "custName" => data.Where(x => x.CustName.Contains(search)),
+                    _ => data
+                };
+            }
+
+            data = string.IsNullOrWhiteSpace(invCode)
+                ? data.Where(x => Db.SalesDeliveryHeaders
+                    .Where(r => r.Mark == "A" && r.SrcTrans == 1)
+                    .Select(r => r.TransCode).Contains(x.Code))
+                : data.Where(x => Db.SalesDeliveryHeaders
+                                      .Where(r => r.Mark == "A" && r.SrcTrans == 1)
+                                      .Select(r => r.TransCode).Contains(x.Code) ||
+                                  Db.SalesInvoiceHeaders
+                                      .Where(i => i.Code == invCode)
+                                      .Select(i => i.SoCode).Contains(x.Code));
+
+            return searchBy switch
+            {
+                "code" => data.OrderBy(x => x.Code),
+                "date" => data.OrderBy(x => x.Date),
+                "custName" => data.OrderBy(x => x.CustName),
+                _ => data
+            };
+        }
+
         public SaveResult Insert(SalesOrderRequest data)
         {
             var result = new SaveResult(false);

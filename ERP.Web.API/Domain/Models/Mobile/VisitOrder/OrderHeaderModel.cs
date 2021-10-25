@@ -26,7 +26,7 @@ namespace ERP.Web.API.Domain.Models.Mobile.VisitOrder
         public DateTime Date { get; set; }
         public string Code { get; set; }
         public int? PaymentTermId { get; set; }
-        public string? PaymentTermName { get; set; }
+        public string PaymentTermName { get; set; }
         public decimal PaidAmount { get; set; }
         public DateTime UpdatedDate { get; set; }
     }

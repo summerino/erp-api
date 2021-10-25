@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 using Microsoft.EntityFrameworkCore;
@@ -12,6 +11,7 @@ using ERP.Entity.Purchase;
 using ERP.Web.API.Domain.Interfaces.Purchase;
 using ERP.Web.API.Domain.Models.Mobile.Purchase;
 using ERP.Web.API.Model.Purchase;
+using Swift.Framework;
 
 namespace ERP.Web.API.Domain.Services.Purchase
 {
@@ -59,6 +59,41 @@ namespace ERP.Web.API.Domain.Services.Purchase
                        select new { pr.Code, pr.Date, pr.Mark };
 
             return data.ToDynamicList();
+        }
+
+        public IEnumerable<VwPurchaseOrderHeader> GetInCompleteInvoiceData(string searchBy, string search, string invCode)
+        {
+            var data = Db.VwPurchaseOrderHeaders.Where(x => new[] { "PR", "CMP" }.Contains(x.Mark));
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                data = searchBy switch
+                {
+                    "code" => data.Where(x => x.Code.Contains(search)),
+                    "date" => data.Where(x => x.Date == Convert.ToDateTime(search)),
+                    "supName" => data.Where(x => x.SupName.Contains(search)),
+                    _ => data
+                };
+            }
+
+            data = string.IsNullOrWhiteSpace(invCode)
+                ? data.Where(x => Db.PurchaseReceiveHeaders
+                                    .Where(r => r.Mark == "A" && r.SrcTrans == 1)
+                                    .Select(r => r.TransCode).Contains(x.Code))
+                : data.Where(x => Db.PurchaseReceiveHeaders
+                                      .Where(r => r.Mark == "A" && r.SrcTrans == 1)
+                                      .Select(r => r.TransCode).Contains(x.Code) ||
+                                  Db.PurchaseInvoiceHeaders
+                                      .Where(i => i.Code == invCode)
+                                      .Select(i => i.PoCode).Contains(x.Code));
+
+            return searchBy switch
+            {
+                "code" => data.OrderBy(x => x.Code),
+                "date" => data.OrderBy(x => x.Date),
+                "supName" => data.OrderBy(x => x.SupName),
+                _ => data
+            };
         }
 
         public SaveResult Insert(PurchaseOrderRequest data)

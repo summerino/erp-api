@@ -177,7 +177,7 @@ namespace ERP.Entity.Sales
 
         public int? TaxId { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Column(TypeName = "decimal(19, 6)")]
         public decimal TaxAmount { get; set; }
 
         [Column(TypeName = "decimal(19, 6)")]

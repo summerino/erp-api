@@ -94,10 +94,20 @@ namespace ERP.Web.API.Domain.Services.Sales
                 // Checking sales order mark
                 if (IsSalesOrderInvalid(data.SoCode))
                 {
-                    result.Message = "Data faktur penjualan tidak bisa diubah karena status order penjualan bukan diterima sebagian atau selesai.";
+                    result.Message = "Data faktur penjualan tidak bisa disimpan karena status order penjualan bukan diterima sebagian atau selesai.";
                     return result;
                 }
-                
+
+                // Checking sales delivery mark & date
+                if (
+                    Db.SalesDeliveryHeaders.Any(d =>
+                        data.Details.Select(i => i.DoCode).Contains(d.Code) &&
+                        (d.Mark != "A" || d.Date > data.Date)))
+                {
+                    result.Message = "Data faktur penjualan tidak bisa disimpan karena status surat jalan bukan aktif atau mempunyai tanggal lebih besar dari faktur.";
+                    return result;
+                }
+
                 // Get new code
                 var newCode = GetNewCode("SI_NUM_FMT", data.Date);
                     
@@ -149,13 +159,13 @@ namespace ERP.Web.API.Domain.Services.Sales
                     WHERE Code IN ('{string.Join("','", data.Details.Select(x => x.DoCode.Replace("'", "''")))}')");
 
                 // Update sales order to closed if all sales delivery are invoiced
-                if (
-                    !Db.SalesDeliveryHeaders
-                        .Any(x => x.TransCode == data.SoCode && x.Mark != "INV"))
-                {
-                    Db.Database.ExecuteSqlRaw(
-                        "UPDATE Sales.SalesOrderHeader SET Mark='CLS' WHERE Code={0} AND Mark='CMP'", data.SoCode);
-                }
+                //if (
+                //    !Db.SalesDeliveryHeaders
+                //        .Any(x => x.TransCode == data.SoCode && x.Mark != "INV"))
+                //{
+                //    Db.Database.ExecuteSqlRaw(
+                //        "UPDATE Sales.SalesOrderHeader SET Mark='CLS' WHERE Code={0} AND Mark='CMP'", data.SoCode);
+                //}
 
                 UpdateCreditMemo(data);
 
@@ -194,6 +204,19 @@ namespace ERP.Web.API.Domain.Services.Sales
                     return result;
                 }
 
+                // Checking sales delivery mark & date
+                if (
+                    Db.SalesDeliveryHeaders.Any(d =>
+                        data.Details.Select(i => i.DoCode).Contains(d.Code) &&
+                        (d.Mark != "A" && !Db.SalesInvoiceDetails
+                                                .Where(si => si.Code == data.Code)
+                                                .Select(si => si.DoCode).Contains(d.Code) ||
+                            d.Date > data.Date)))
+                {
+                    result.Message = "Data faktur penjualan tidak bisa diubah karena status surat jalan bukan aktif atau mempunyai tanggal lebih besar dari faktur.";
+                    return result;
+                }
+                
                 data.ApprovedBy = null;
                 data.ApprovedDate = null;
 
@@ -297,24 +320,24 @@ namespace ERP.Web.API.Domain.Services.Sales
                     WHERE Code IN ('{string.Join("','", data.Details.Select(x => x.DoCode.Replace("'", "''")))}')");
 
                 // Check all sales delivery are invoiced
-                if (
-                    !Db.SalesDeliveryHeaders
-                        .Any(x => x.TransCode == data.SoCode && x.Mark != "INV"))
-                {
-                    // Update sales order to closed
-                    Db.Database.ExecuteSqlRaw(
-                        "UPDATE Sales.SalesOrderHeader SET Mark='CLS' WHERE Code={0} AND Mark='CMP'", data.SoCode);
-                }
-                else
-                {
-                    // Update sales order to partial receive or completed
-                    var soMark = Db.SalesOrderDetails.Any(x => x.Code == data.SoCode && x.Qty > x.QtyDlv)
-                        ? "PS"
-                        : "CMP";
+                //if (
+                //    !Db.SalesDeliveryHeaders
+                //        .Any(x => x.TransCode == data.SoCode && x.Mark != "INV"))
+                //{
+                //    // Update sales order to closed
+                //    Db.Database.ExecuteSqlRaw(
+                //        "UPDATE Sales.SalesOrderHeader SET Mark='CLS' WHERE Code={0} AND Mark='CMP'", data.SoCode);
+                //}
+                //else
+                //{
+                //    // Update sales order to partial receive or completed
+                //    var soMark = Db.SalesOrderDetails.Any(x => x.Code == data.SoCode && x.Qty > x.QtyDlv)
+                //        ? "PS"
+                //        : "CMP";
 
-                    Db.Database.ExecuteSqlRaw(
-                        "UPDATE Sales.SalesOrderHeader SET Mark={0} WHERE Code={1}", soMark, data.SoCode);
-                }
+                //    Db.Database.ExecuteSqlRaw(
+                //        "UPDATE Sales.SalesOrderHeader SET Mark={0} WHERE Code={1}", soMark, data.SoCode);
+                //}
 
                 // Decrease CreditUsed
                 UpdateCreditUsed(data.CustCode, data.PaidAmount);

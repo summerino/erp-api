@@ -19,6 +19,8 @@ namespace ERP.Web.API.Domain.Interfaces.Sales
 
         IEnumerable<SalesOrderDetailDiscount> GetDiscDetailData(string code);
 
+        IEnumerable<VwSalesOrderHeader> GetInCompleteInvoiceData(string searchBy, string search, string invCode);
+
         SaveResult Insert(SalesOrderRequest data);
 
         SaveResult Update(SalesOrderRequest data);

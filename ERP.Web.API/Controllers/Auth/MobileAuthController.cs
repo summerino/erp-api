@@ -1,10 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ERP.Web.API.Domain.Interfaces.Auth;
+using ERP.Web.API.Model;
 using ERP.Web.API.Model.Auth;
 
 namespace ERP.Web.API.Controllers.Auth
 {
+    [Authorize(AppConstant.ValidateMobileTokenPolicy)]
     [Route("mobile-auth")]
     [ApiController]
     public class MobileAuthController : ControllerBase

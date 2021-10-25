@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
+using Microsoft.AspNetCore.Mvc;
 using ERP.Common;
 using ERP.Common.Models;
-using Microsoft.AspNetCore.Mvc;
 using ERP.Entity;
 using ERP.Web.API.Domain.Interfaces.Accounting;
 using ERP.Web.API.Domain.Interfaces.Auth;
@@ -119,6 +119,18 @@ namespace ERP.Web.API.Controllers.Sales
         {
             var data = _so.GetRelatedTransactions(code);
             
+            return Ok(new ApiResponse
+            {
+                RowCount = data.Count,
+                TableData = data
+            });
+        }
+
+        [HttpGet("in-complete-invoice")]
+        public IActionResult GetInCompleteInvoiceData(string searchBy, string search, string invCode)
+        {
+            var data = _so.GetInCompleteInvoiceData(searchBy, search, invCode).ToList<dynamic>();
+
             return Ok(new ApiResponse
             {
                 RowCount = data.Count,

@@ -52,10 +52,20 @@ namespace ERP.Web.API.Domain.Services.Purchase
                 // Checking purchase order mark
                 if (IsPurchaseOrderInvalid(data.PoCode))
                 {
-                    result.Message = "Data faktur pembelian tidak bisa diubah karena status order pembelian bukan diterima sebagian atau selesai.";
+                    result.Message = "Data faktur pembelian tidak bisa disimpan karena status order pembelian bukan diterima sebagian atau selesai.";
                     return result;
                 }
-                
+
+                // Checking purchase receive mark & date
+                if (
+                    Db.PurchaseReceiveHeaders.Any(pr =>
+                        data.Details.Select(i => i.RcvCode).Contains(pr.Code) &&
+                        (pr.Mark != "A" || pr.Date > data.Date)))
+                {
+                    result.Message = "Data faktur pembelian tidak bisa disimpan karena status penerimaan pembelian bukan aktif atau mempunyai tanggal lebih besar dari faktur.";
+                    return result;
+                }
+
                 // Get new code
                 var newCode = GetNewCode("PI_NUM_FMT", data.Date);
                     
@@ -85,7 +95,8 @@ namespace ERP.Web.API.Domain.Services.Purchase
 
                 foreach (var item in data.Memos)
                 {
-                    Db.PurchaseInvoiceDebitMemos.Add(new PurchaseInvoiceDebitMemo { 
+                    Db.PurchaseInvoiceDebitMemos.Add(new PurchaseInvoiceDebitMemo
+                    {
                         InvCode = newCode,
                         InvAmount = data.Total,
                         DebitMemoAmount = item.DebitMemoAmount,
@@ -103,13 +114,13 @@ namespace ERP.Web.API.Domain.Services.Purchase
                     WHERE Code IN ('{string.Join("','", data.Details.Select(x => x.RcvCode.Replace("'", "''")))}')");
 
                 // Update purchase order to closed if all purchase receive are invoiced
-                if (
-                    !Db.PurchaseReceiveHeaders
-                        .Any(x => x.TransCode == data.PoCode && x.Mark != "INV"))
-                {
-                    Db.Database.ExecuteSqlRaw(
-                        "UPDATE Purchasing.PurchaseOrderHeader SET Mark='CLS' WHERE Code={0} AND Mark='CMP'", data.PoCode);
-                }
+                //if (
+                //    !Db.PurchaseReceiveHeaders
+                //        .Any(x => x.TransCode == data.PoCode && x.Mark != "INV"))
+                //{
+                //    Db.Database.ExecuteSqlRaw(
+                //        "UPDATE Purchasing.PurchaseOrderHeader SET Mark='CLS' WHERE Code={0} AND Mark='CMP'", data.PoCode);
+                //}
                 UpdateDebitMemo(data);
 
                 transaction.Commit();
@@ -144,6 +155,19 @@ namespace ERP.Web.API.Domain.Services.Purchase
                 if (IsPurchaseOrderInvalid(data.PoCode))
                 {
                     result.Message = "Data faktur pembelian tidak bisa diubah karena status order pembelian bukan diterima sebagian atau selesai.";
+                    return result;
+                }
+
+                // Checking purchase receive mark & date
+                if (
+                    Db.PurchaseReceiveHeaders.Any(pr =>
+                        data.Details.Select(i => i.RcvCode).Contains(pr.Code) &&
+                        (pr.Mark != "A" && !Db.PurchaseInvoiceDetails
+                                                .Where(pi => pi.Code == data.Code)
+                                                .Select(pi => pi.RcvCode).Contains(pr.Code) ||
+                            pr.Date > data.Date)))
+                {
+                    result.Message = "Data faktur pembelian tidak bisa diubah karena status penerimaan pembelian sudah ditandai sebagai void atau mempunyai tanggal lebih besar dari faktur.";
                     return result;
                 }
 
@@ -186,8 +210,6 @@ namespace ERP.Web.API.Domain.Services.Purchase
 
                 // Delete detail data that exists in invoice before
                 Db.PurchaseInvoiceDebitMemos.RemoveRange(delMemos);
-
-                
 
                 // Update detail data
                 short i = 0;
@@ -252,24 +274,24 @@ namespace ERP.Web.API.Domain.Services.Purchase
                     WHERE Code IN ('{string.Join("','", data.Details.Select(x => x.RcvCode.Replace("'", "''")))}')");
 
                 // Check all purchase receive are invoiced
-                if (
-                    !Db.PurchaseReceiveHeaders
-                        .Any(x => x.TransCode == data.PoCode && x.Mark != "INV"))
-                {
-                    // Update purchase order to closed
-                    Db.Database.ExecuteSqlRaw(
-                        "UPDATE Purchasing.PurchaseOrderHeader SET Mark='CLS' WHERE Code={0} AND Mark='CMP'", data.PoCode);
-                }
-                else
-                {
-                    // Update purchase order to partial receive or completed
-                    var poMark = Db.PurchaseOrderDetails.Any(x => x.Code == data.PoCode && x.Qty > x.QtyRcv)
-                        ? "PR"
-                        : "CMP";
+                //if (
+                //    !Db.PurchaseReceiveHeaders
+                //        .Any(x => x.TransCode == data.PoCode && x.Mark != "INV"))
+                //{
+                //    // Update purchase order to closed
+                //    Db.Database.ExecuteSqlRaw(
+                //        "UPDATE Purchasing.PurchaseOrderHeader SET Mark='CLS' WHERE Code={0} AND Mark='CMP'", data.PoCode);
+                //}
+                //else
+                //{
+                //    // Update purchase order to partial receive or completed
+                //    var poMark = Db.PurchaseOrderDetails.Any(x => x.Code == data.PoCode && x.Qty > x.QtyRcv)
+                //        ? "PR"
+                //        : "CMP";
 
-                    Db.Database.ExecuteSqlRaw(
-                        "UPDATE Purchasing.PurchaseOrderHeader SET Mark={0} WHERE Code={1}", poMark, data.PoCode);
-                }
+                //    Db.Database.ExecuteSqlRaw(
+                //        "UPDATE Purchasing.PurchaseOrderHeader SET Mark={0} WHERE Code={1}", poMark, data.PoCode);
+                //}
 
                 transaction.Commit();
             }
@@ -355,6 +377,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
         {
             return Db.PurchaseOrderHeaders.Any(x => x.Code == poCode && !new[] { "PR", "CMP" }.Contains(x.Mark));
         }
+
         private bool IsAlreadyInTransaction(string code)
         {
             return (from h in Db.GeneralCashBankHeaders
