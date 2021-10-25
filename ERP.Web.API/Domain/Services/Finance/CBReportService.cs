@@ -28,7 +28,7 @@ namespace ERP.Web.API.Domain.Services.Finance
             var dataPCOA = dataCOA;
 
             dataCOA = dataCOA.Where(x => !dataPCOA.Select(t => t.ParentId).Contains(x.Id)).ToList();
-            dataCOA = dataCOA.Where(x => x.TypeId == 2).ToList();
+            dataCOA = dataCOA.Where(x => x.TypeId == 1).ToList();
 
             var dataCBHeader = _db.GeneralCashBankHeaders.Where(x => x.Mark == "A").ToList();
             var dataCBDetail = _db.GeneralCashBankDetails.ToList();

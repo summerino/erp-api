@@ -23,14 +23,14 @@ namespace ERP.Web.API.Domain.Services.Purchase
                         left join Purchasing.PurchaseReceiveHeader rcv on rcv.SupCode = sp.Code
                         left join Purchasing.PurchaseInvoiceDetail invD on invD.RcvCode = rcv.Code
                         left join Purchasing.PurchaseInvoiceHeader inv on inv.Code = invD.Code and inv.Mark IN('A', 'PP', 'CMP')
-                        Where rcv.Mark IN('A', 'INV') Group by sp.Code, sp.Initial, sp.Name").ToList();
+                        Where rcv.Mark IN('A', 'INV') and rcv.SrcTrans = 1 Group by sp.Code, sp.Initial, sp.Name").ToList();
 
             var rcvData = _db.ReportByReceives.FromSqlRaw(@"select rcv.Date, inv.DueDate, rcv.Code, rcv.TransCode as SrcCode, inv.Code as InvCode, rcv.SupCode, sp.[Name] as SupName, rcv.Total as TotalAmount, CAST (0 as decimal) as PaidAmount, CAST (0 as decimal) as RemainderAmount
                         from Purchasing.PurchaseReceiveHeader rcv
                         left join General.Supplier sp on sp.Code = rcv.SupCode
                         left join Purchasing.PurchaseInvoiceDetail invD on invD.RcvCode = rcv.Code
                         left join Purchasing.PurchaseInvoiceHeader inv on inv.Code = invD.Code and inv.Mark IN('A', 'PP', 'CMP')
-                        Where rcv.Mark IN('A', 'INV') ").ToList();
+                        Where rcv.Mark IN('A', 'INV') and rcv.SrcTrans = 1").ToList();
 
             var cbData = _db.GeneralCashBankHeaders.Where(x => x.Mark != "V" && x.Date <= Convert.ToDateTime(date)).ToList();
 
