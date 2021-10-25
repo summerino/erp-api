@@ -40,6 +40,7 @@ namespace ERP.Web.API.Domain.Services.Inventory
             var data = Db.VwBeginningBalanceStockDetails.Where(x => x.Code == code);
             return data.OrderBy(x => x.LineNo);
         }
+
         public DataSourceResult GetBeginningBalanceStockItem(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
           List<int> category, string search)
         {
