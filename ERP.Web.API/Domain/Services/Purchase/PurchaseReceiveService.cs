@@ -170,48 +170,6 @@ namespace ERP.Web.API.Domain.Services.Purchase
                     });
                 }
                 
-                if(data.SrcTrans == 2)
-                {
-                    var dataPR = Db.PurchaseReturnHeaders.FirstOrDefault(x => x.Code == data.TransCode);
-                    if (dataPR.Type == 1) {
-                        // Update Debit Memo
-                        var dbtMemo = Db.DebitMemos.FirstOrDefault(x => x.TransCode == data.TransCode);
-                        var availableAmount = dbtMemo.Amount - dbtMemo.Used;
-                        if(data.Total > availableAmount)
-                        {
-                            result.Message = "Tidak bisa disimpan karena jumlah total penerimaan pembeliam lebih besar dari jumlah total memo debit.";
-                            return result;
-                        }
-                        availableAmount -= data.Total;
-                        dbtMemo.Used += data.Total;
-                        dbtMemo.Mark = availableAmount == 0 ? "FU" : "PU";
-                        dbtMemo.UpdatedBy = data.UpdatedBy;
-                        dbtMemo.UpdatedDate = data.UpdatedDate;
-                        Db.DebitMemos.Update(dbtMemo);
-
-                        // Update Purchase Return Detail
-                        var prData = Db.PurchaseReturnDetails.Where(x => x.Code == data.TransCode).ToList();
-                        foreach (var item in data.ItemDetails)
-                        {
-                            var itemPr = prData.FirstOrDefault(x => x.ItemId == item.ItemId);
-                            var availableQty = itemPr.Qty - itemPr.QtyRcv;
-                            if (item.Qty > availableQty)
-                            {
-                                result.Message = "Data penerimaan pembelian tidak bisa disimpan karena qty yg diterima lebih besar dari qty yang tersedia";
-                                return result;
-                            }
-
-                            itemPr.QtyRcv += item.Qty;
-                            Db.PurchaseReturnDetails.Update(itemPr);
-                        }
-
-                        // Update Purchase Return Header
-                        var prhData = Db.PurchaseReturnHeaders.FirstOrDefault(x => x.Code == data.TransCode);
-                        prhData.Mark = dbtMemo.Mark == "A" ? "A" : (dbtMemo.Mark == "PU" ? "PR" : "CMP");
-                        Db.PurchaseReturnHeaders.Update(prhData);
-                    }
-                }
-
                 if (data.IsPoInv)
                 {
                     // Purchase Invoice
@@ -423,76 +381,6 @@ namespace ERP.Web.API.Domain.Services.Purchase
                     }
                 }
 
-                if (data.SrcTrans == 2)
-                {
-                    var dataPR = Db.PurchaseReturnHeaders.FirstOrDefault(x => x.Code == data.TransCode);
-                    if (dataPR.Type == 1)
-                    {
-                        // Update Debit Memo
-                        var dbtMemo = Db.DebitMemos.FirstOrDefault(x => x.TransCode == data.TransCode);
-
-                        var oldTotal = Db.PurchaseReceiveHeaders.Where(x => x.TransCode == data.TransCode && x.Mark == "A")
-                            .GroupBy(x => new { x.TransCode })
-                            .Select(g => new { g.Key.TransCode, SumTotal = g.Sum(x => x.Total) });
-
-                        decimal valueTotal = 0;
-                        if (oldTotal.FirstOrDefault().SumTotal > data.Total)
-                        {
-                            valueTotal = oldTotal.FirstOrDefault().SumTotal - data.Total;
-                            dbtMemo.Used -= valueTotal;
-                        }
-                        else
-                        {
-                            valueTotal = data.Total - oldTotal.FirstOrDefault().SumTotal;
-                            dbtMemo.Used += valueTotal;
-                        }
-
-                        if (dbtMemo.Used > dbtMemo.Amount)
-                        {
-                            result.Message = "Tidak bisa disimpan karena jumlah total penerimaan pembeliam lebih besar dari jumlah total memo debit.";
-                            return result;
-                        }
-
-                        dbtMemo.Mark = dbtMemo.Used == 0 ? "A" : ((dbtMemo.Amount - dbtMemo.Used) == 0 ? "FU" : "PU");
-                        dbtMemo.UpdatedBy = data.UpdatedBy;
-                        dbtMemo.UpdatedDate = data.UpdatedDate;
-                        Db.DebitMemos.Update(dbtMemo);
-
-                        // Update Purchase Return Detail
-                        var prData = Db.PurchaseReturnDetails.Where(x => x.Code == data.TransCode).ToList();
-                        foreach (var item in data.ItemDetails)
-                        {
-                            var itemPrcv = Db.PurchaseReceiveDetails.FirstOrDefault(x => x.Id == item.Id);
-                            var itemPr = prData.FirstOrDefault(x => x.ItemId == item.ItemId);
-
-                            decimal valueQty = 0;
-                            if (itemPr.QtyRcv > item.Qty)
-                            {
-                                valueQty = itemPr.QtyRcv - item.Qty;
-                                itemPr.QtyRcv -= valueQty;
-                            }
-                            else
-                            {
-                                valueQty = item.Qty - itemPr.QtyRcv;
-                                itemPr.QtyRcv += valueQty;
-                            }
-
-                            if (itemPr.QtyRcv > itemPr.Qty)
-                            {
-                                result.Message = "Data penerimaan pembelian tidak bisa disimpan karena qty yg diterima lebih besar dari qty yang tersedia";
-                                return result;
-                            }
-
-                            Db.PurchaseReturnDetails.Update(itemPr);
-                        }
-
-                        // Update Purchase Return Header
-                        var prhData = Db.PurchaseReturnHeaders.FirstOrDefault(x => x.Code == data.TransCode);
-                        prhData.Mark = dbtMemo.Mark == "A" ? "A" : (dbtMemo.Mark == "PU" ? "PR" : "CMP");
-                        Db.PurchaseReturnHeaders.Update(prhData);
-                    }
-                }
-
                 if (data.IsPoInv)
                 {
                     // Purchase Invoice
@@ -607,34 +495,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                     data.Mark = "V";
                     data.UpdatedBy = userId;
                     data.UpdatedDate = DateTime.Now;
-
-                    if (data.SrcTrans == 2)
-                    {
-                        // Update Debit Memo
-                        var dbtMemo = Db.DebitMemos.FirstOrDefault(x => x.TransCode == data.TransCode);
-
-                        dbtMemo.Used -= data.Total;
-                        dbtMemo.Mark = dbtMemo.Used == 0 ? "A" : ((dbtMemo.Amount - dbtMemo.Used) == 0 ? "FU" : "PU");
-                        dbtMemo.UpdatedBy = data.UpdatedBy;
-                        dbtMemo.UpdatedDate = data.UpdatedDate;
-                        Db.DebitMemos.Update(dbtMemo);
-
-                        // Update Purchase Return Detail
-                        var prData = Db.PurchaseReturnDetails.Where(x => x.Code == data.TransCode).ToList();
-                        var prcvData = Db.PurchaseReceiveDetails.Where(x => x.Code == data.Code).ToList();
-                        foreach (var item in prcvData)
-                        {
-                            var itemPr = prData.FirstOrDefault(x => x.ItemId == item.ItemId);
-                            itemPr.QtyRcv -= item.Qty;
-                            Db.PurchaseReturnDetails.Update(itemPr);
-                        }
-
-                        // Update Purchase Return Header
-                        var prhData = Db.PurchaseReturnHeaders.FirstOrDefault(x => x.Code == data.TransCode);
-                        prhData.Mark = dbtMemo.Mark == "A" ? "A" : (dbtMemo.Mark == "PU" ? "PR" : "CMP");
-                        Db.PurchaseReturnHeaders.Update(prhData);
-                    }
-
+                    
                     // Save changes
                     Db.SaveChanges();
 
@@ -643,17 +504,10 @@ namespace ERP.Web.API.Domain.Services.Purchase
                         "EXEC sp_update_stock_mutation_from_rcv {0}, {1}, {2}, {3}",
                         data.Code, data.Date, data.TransCode, true);
 
-                    // Execute sp_update_po_rcv_qty
-                    if (data.SrcTrans == 1)
-                    {
-                        // Execute sp_update_po_rcv_qty
-                        Db.Database.ExecuteSqlRaw("EXEC sp_update_po_rcv_qty {0}", data.TransCode);
-                    }
-                    else
-                    {
-                        // Execute sp_update_pr_rcv_qty
-                        Db.Database.ExecuteSqlRaw("EXEC sp_update_pr_rcv_qty {0}", data.TransCode);
-                    }
+                    // Execute sp_update_po_rcv_qty / sp_update_pr_rcv_qty
+                    Db.Database.ExecuteSqlRaw(
+                        data.SrcTrans == 1 ? "EXEC sp_update_po_rcv_qty {0}" : "EXEC sp_update_pr_rcv_qty {0}",
+                        data.TransCode);
 
                     transaction.Commit();
                 }
