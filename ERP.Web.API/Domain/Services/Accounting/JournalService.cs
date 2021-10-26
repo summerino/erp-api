@@ -39,7 +39,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     return result;
                 }
 
-                var typeBB = new[] { "BB_AP", "BB_AR", "BB_DM", "BB_CM" };
+                var typeBB = new[] { "BB_AP", "BB_AR", "BB_DM", "BB_CM", "BB_INVT" };
                 var removedBB = _db.Journals.Where(x => typeBB.Contains(x.SrcTrans)).ToList();
                 if (removedBB != null)
                     _db.RemoveRange(removedBB);
