@@ -47,7 +47,7 @@ namespace ERP.Web.API.Domain.Services.Auth
             var config = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
             var allowedType = config["MobileApiSettings:UserTypeAllowed"];
             var allowedTypes = new List<int>();
-            if (!string.IsNullOrEmpty(allowedType) && !string.IsNullOrWhiteSpace(allowedType)) 
+            if (!string.IsNullOrEmpty(allowedType) && !string.IsNullOrWhiteSpace(allowedType))
             {
                 var tempAllowedTypes = allowedType.Split(',');
                 foreach (var item in tempAllowedTypes)
@@ -128,7 +128,8 @@ namespace ERP.Web.API.Domain.Services.Auth
             }
 
             // Get employee information details
-            var tenantEmployee = tenantCtx.Employees.FirstOrDefault(x => x.Id == tenantUser.EmployeeId && allowedTypes.Contains(x.Type));
+            var tenantEmployee = tenantCtx.Employees.FirstOrDefault(x => x.Id == tenantUser.EmployeeId && allowedTypes.Contains(x.Type) && x.Type == data.Type
+          );
             if (tenantEmployee == null)
             {
                 return new MobileAuthResult
@@ -138,7 +139,7 @@ namespace ERP.Web.API.Domain.Services.Auth
                 };
             }
 
-            var defaultWarehouseCode = tenantEmployee.WarehouseCode ?? tenantCtx.Warehouses.FirstOrDefault(x=>x.IsDefault)?.Code ?? "";
+            var defaultWarehouseCode = tenantEmployee.WarehouseCode ?? tenantCtx.Warehouses.FirstOrDefault(x => x.IsDefault)?.Code ?? "";
 
             tenantUser.IsMobileLoggedIn = true;
             tenantUser.MobileLastLogin = DateTime.Now;
@@ -164,7 +165,7 @@ namespace ERP.Web.API.Domain.Services.Auth
             tenantCtx.Entry(tenantUser).Property(e => e.TokenId).IsModified = false;
             tenantCtx.Entry(tenantUser).Property(e => e.IpAddress).IsModified = false;
             tenantCtx.SaveChanges();
-            
+
             return new MobileAuthResult
             {
                 AccessToken = tenantUser.MobileTokenId,
@@ -449,6 +450,6 @@ namespace ERP.Web.API.Domain.Services.Auth
         //    var query = _tenantCtx.RoleMenuActions.Where(x => x.MenuId.Equals(menuId) && x.RoleId.Equals(roleId) && actions.Contains(x.ActionId));
         //    return query.Select(x=>x.ActionId);
         //}
-        
+
     }
 }
