@@ -6,6 +6,7 @@ namespace ERP.Web.API.Domain.Models.Mobile.Sales
     {
         public string Code { get; set; }
         public DateTime Date { get; set; }
+        public int srcTrans { get; set; }
         public string WarehouseCode { get; set; }
         public string WarehouseName { get; set; }
         public int VehicleId { get; set; }

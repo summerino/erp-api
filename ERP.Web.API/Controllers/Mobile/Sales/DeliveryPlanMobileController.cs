@@ -5,6 +5,7 @@ using ERP.Web.API.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -13,11 +14,11 @@ namespace ERP.Web.API.Domain.Interfaces.Mobile.Sales
     [Authorize(AppConstant.ValidateMobileTokenPolicy)]
     [Route("mobile/[controller]")]
     [ApiController]
-    public class DeliveryPlanController : ControllerBase
+    public class DeliveryPlanMobileController : ControllerBase
     {
         private readonly IDeliveryPlanMobileService _deliveryPlan;
         private readonly IClaimService _claim;
-        public DeliveryPlanController(IDeliveryPlanMobileService deliveryPlan, IClaimService claim)
+        public DeliveryPlanMobileController(IDeliveryPlanMobileService deliveryPlan, IClaimService claim)
         {
             _deliveryPlan = deliveryPlan;
             _claim = claim;
@@ -79,12 +80,11 @@ namespace ERP.Web.API.Domain.Interfaces.Mobile.Sales
         [HttpPost]
         public IActionResult OnPost(DeliveryPlanRequestModel data)
         {
-            //data.Mark = "A";
-            //data.ReceiveBy = _claim.UserId;
-            //data.CreatedBy = _claim.UserId;
-            //data.CreatedDate = DateTime.Now;
-            //data.UpdatedBy = data.CreatedBy;
-            //data.UpdatedDate = data.CreatedDate;
+            data.Mark = "A";
+            data.CreatedBy = _claim.UserId;
+            data.CreatedDate = DateTime.Now;
+            data.UpdatedBy = data.CreatedBy;
+            data.UpdatedDate = data.CreatedDate;
 
             var result =
                 _deliveryPlan.Insert(data, _claim.UserId);
