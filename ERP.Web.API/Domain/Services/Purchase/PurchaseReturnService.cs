@@ -92,7 +92,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                 // Checking receive qty is excess or not
                 if (IsQtyExcess(data.ItemDetails, null))
                 {
-                    result.Message = "Data pengembalian pembelian tidak bisa disimpan karena qty yg dikembalikan lebih besar dari qty yang tersedia.";
+                    result.Message = "Data pengembalian pembelian tidak bisa disimpan karena qty yg dikembalikan lebih besar dari qty yang tersedia atau barang tidak tersedia pada gudang yang dipilih.";
                     return result;
                 }
 
@@ -497,6 +497,8 @@ namespace ERP.Web.API.Domain.Services.Purchase
                         }
                     }
                 }
+                else
+                    result = true;
             }
             return result;
         }
