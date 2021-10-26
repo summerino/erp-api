@@ -1,4 +1,7 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using ERP.Common;
 using ERP.Entity;
@@ -6,9 +9,6 @@ using ERP.Web.API.Domain.Interfaces.Accounting;
 using ERP.Web.API.Domain.Interfaces.Auth;
 using ERP.Web.API.Model;
 using ERP.Web.API.Model.Accounting;
-using System.Collections.Generic;
-using System;
-using System.Globalization;
 
 namespace ERP.Web.API.Controllers.Accounting
 {

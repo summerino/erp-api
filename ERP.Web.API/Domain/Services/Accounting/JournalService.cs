@@ -2219,7 +2219,13 @@ namespace ERP.Web.API.Domain.Services.Accounting
 
         private bool CheckPrevPeriod(DateTime postDate)
         {
+            var bbPeriod =
+                Convert
+                    .ToDateTime(_db.SystemParameters.FirstOrDefault(x => x.Code == "DATA_START_DATE")?.Value)
+                    .AddMonths(-1);
+
             DateTime startDate = new(postDate.Year, 1, 1);
+            startDate = startDate > bbPeriod ? startDate : bbPeriod; 
             DateTime endDate = new(postDate.Year, postDate.Month, 1);
             for (var dataMonth = startDate; dataMonth.Date < endDate.Date; dataMonth = dataMonth.AddMonths(1))
             {
@@ -2235,7 +2241,8 @@ namespace ERP.Web.API.Domain.Services.Accounting
 
                     return false;
                 }
-                else if (!plData.IsPosted)
+
+                if (!plData.IsPosted)
                     return false;
             }
             return true;

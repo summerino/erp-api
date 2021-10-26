@@ -2,38 +2,37 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
+using Microsoft.AspNetCore.Mvc;
 using ERP.Common;
 using ERP.Common.Models;
-using Microsoft.AspNetCore.Mvc;
 using ERP.Entity;
-using ERP.Entity.Accounting;
 using ERP.Web.API.Domain.Interfaces.Accounting;
 using ERP.Web.API.Domain.Interfaces.Auth;
-using ERP.Web.API.Domain.Models;
+using ERP.Web.API.Domain.Interfaces.General;
 using ERP.Web.API.Model;
 using ERP.Web.API.Model.Accounting;
 using Newtonsoft.Json;
-using ERP.Web.API.Domain.Interfaces.General;
 
 namespace ERP.Web.API.Controllers.Accounting
 {
     [Route("closing-month")]
     [ApiController]
-
     public class ClosingMonthController : ControllerBase
     {
         private readonly IClosingMonthService _cm;
+        private readonly IApprovalService _apv;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
-        private readonly IApprovalService _apv;
+
         private const int MenuId = (int)Menu.ClosingMonth;
 
-        public ClosingMonthController(IClosingMonthService closingMonth, IClaimService claim, IAuthService auth, IApprovalService approvalService)
+        public ClosingMonthController(IClosingMonthService cm, IApprovalService apv, IClaimService claim,
+            IAuthService auth)
         {
-            _cm = closingMonth;
+            _cm = cm;
             _claim = claim;
             _auth = auth;
-            _apv = approvalService;
+            _apv = apv;
         }
 
         [HttpGet]
@@ -98,7 +97,7 @@ namespace ERP.Web.API.Controllers.Accounting
 
         private (bool, string) Validate(ClosingMonthRequest data)
         {
-            string filters = "";
+            string filters;
             if (data.StartDate == null && data.EndDate == null)
             {
                 var year = Convert.ToInt32(data.Period[..4]);
@@ -109,7 +108,6 @@ namespace ERP.Web.API.Controllers.Accounting
             else
             {
                 var lastDay = DateTime.DaysInMonth(Convert.ToInt32(data.EndDate?.Year), Convert.ToInt32(data.EndDate?.Month));
-
                 filters = "[{\"field\":\"date\",\"operator\":\"lte\",\"keyword\":\"" + data.EndDate?.Year + "-" + data.EndDate?.Month + "-" + lastDay + "\"},{\"field\":\"date\",\"operator\":\"gte\",\"keyword\":\"" + data.StartDate?.Year + "-" + data.StartDate?.Month + "-01\"}]";
             }
 

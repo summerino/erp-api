@@ -47,10 +47,10 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 }
 
                 // Check if dataStartDate & previous month is valid
-                var startDataDate = Convert.ToDateTime(Db.SystemParameters.FirstOrDefault(x => x.Code == "DATA_START_DATE").Value).AddMonths(-1).ToString("yyyyMM");
+                var bbPeriod = Convert.ToDateTime(Db.SystemParameters.FirstOrDefault(x => x.Code == "DATA_START_DATE")?.Value).AddMonths(-1).ToString("yyyyMM");
                 if (startDate.Month == 1)
                 {
-                    if (startDataDate == null)
+                    if (bbPeriod == null)
                     {
                         result.Message = "Tidak bisa melakukan tutup bulan karena data periode sebelumnya tidak ada.";
                         return result;
@@ -132,18 +132,32 @@ namespace ERP.Web.API.Domain.Services.Accounting
         public override SaveResult Update(ClosingMonth data)
         {
             var result = new SaveResult(false);
-            
+
+            var bbPeriod =
+                Convert.ToInt32(
+                    Convert
+                        .ToDateTime(Db.SystemParameters.FirstOrDefault(x => x.Code == "DATA_START_DATE")?.Value).AddMonths(-1)
+                        .ToString("yyyyMM"));
+
             if (data.IsClose)
             {
-                if (Db.ClosingMonths.Where(x => Convert.ToInt32(x.Period) < Convert.ToInt32(data.Period) && x.IsClose == false).Any())
+                if (
+                    Db.ClosingMonths.Any(x =>
+                        Convert.ToInt32(x.Period) >= bbPeriod &&
+                        Convert.ToInt32(x.Period) < Convert.ToInt32(data.Period) &&
+                        x.IsClose == false))
                 {
                     result.Message = "Tidak bisa melakukan tutup bulan karena terdapat periode sebelumnya yang belum ditutup.";
                     return result;
                 }
 
-                if (Db.PostingLogs.Where(x => Convert.ToInt32(x.Period) < Convert.ToInt32(data.Period) && x.IsPosted == false).Any())
+                if (
+                    Db.PostingLogs.Any(x =>
+                        Convert.ToInt32(x.Period) >= bbPeriod &&
+                        Convert.ToInt32(x.Period) <= Convert.ToInt32(data.Period) &&
+                        x.IsPosted == false))
                 {
-                    result.Message = "Tidak bisa melakukan tutup bulan karena terdapat periode sebelumnya yang belum diposting.";
+                    result.Message = "Tidak bisa melakukan tutup bulan karena terdapat periode sekarang atau sebelumnya yang belum diposting.";
                     return result;
                 }
             }
@@ -166,20 +180,22 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     });
                 }
 
-                var cmData = Db.ClosingMonths.Where(x => Convert.ToInt32(x.Period) > Convert.ToInt32(data.Period)).ToList();
-                var plData = Db.PostingLogs.Where(x => Convert.ToInt32(x.Period) > Convert.ToInt32(data.Period)).ToList();
-                foreach (var item in cmData)
-                {
-                    item.IsClose = false;
-                    var itemLog = plData.FirstOrDefault(x => x.Period == item.Period);
-                    if (itemLog != null)
+                var cmData = Db.ClosingMonths.Where(x => Convert.ToInt32(x.Period) > Convert.ToInt32(data.Period))
+                    .ToList()
+                    .Select(x =>
                     {
-                        itemLog.IsPosted = false;
-                        itemLog.PostedBy = null;
-                        itemLog.PostedDate = null;
-                    }
-                }
+                        x.IsClose = false;
+                        return x;
+                    });
                 Db.ClosingMonths.UpdateRange(cmData);
+                
+                var plData = Db.PostingLogs.Where(x => Convert.ToInt32(x.Period) > Convert.ToInt32(data.Period))
+                    .ToList()
+                    .Select(x =>
+                    {
+                        x.IsPosted = false;
+                        return x;
+                    });
                 Db.PostingLogs.UpdateRange(plData);
             }
 
