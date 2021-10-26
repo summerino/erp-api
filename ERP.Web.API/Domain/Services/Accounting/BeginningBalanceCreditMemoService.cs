@@ -136,6 +136,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     if (
                         ((item.Nilai - result.Used) < 0) ||
                         (cust == null) ||
+                        string.IsNullOrEmpty(item.Tipe) ||
                         (item.Tanggal > Convert.ToDateTime(startDate.Value)) ||
                         isDuplicate
                     )
