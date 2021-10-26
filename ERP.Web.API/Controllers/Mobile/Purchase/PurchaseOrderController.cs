@@ -8,19 +8,23 @@ using ERP.Web.API.Domain.Interfaces.Purchase;
 using ERP.Web.API.Domain.Models.Mobile.Purchase;
 using ERP.Web.API.Model;
 using Newtonsoft.Json;
+using System;
+using ERP.Web.API.Domain.Interfaces.Inventory;
 
 namespace ERP.Web.API.Controllers.Mobile.Purchase
 {
     [Authorize(AppConstant.ValidateMobileTokenPolicy)]
     [Route("mobile/[controller]")]
     [ApiController]
-    public class PurchaseOrderController : ControllerBase
+    public class PurchaseOrderMobileController : ControllerBase
     {
         private readonly IPurchaseOrderService _purchaseOrder;
+        private readonly IUnitOfMeasurementService _uom;
         private readonly IClaimService _claim;
-        public PurchaseOrderController(IPurchaseOrderService purchaseOrder, IClaimService claim)
+        public PurchaseOrderMobileController(IPurchaseOrderService purchaseOrder, IUnitOfMeasurementService uom, IClaimService claim)
         {
             _purchaseOrder = purchaseOrder;
+            _uom = uom;
             _claim = claim;
         }
 
@@ -42,49 +46,60 @@ namespace ERP.Web.API.Controllers.Mobile.Purchase
         }
 
         [HttpGet("item")]
-        public IActionResult GetDetailData(string code, bool? fullReceived)
+        public IActionResult GetDetailData(string code, int srcTrans)
         {
-            //var uomC = _uom.GetDataConversion().ToList();
+            var data = _purchaseOrder.GetDetailDataForMobile(code, srcTrans);
 
-            var data = _purchaseOrder.GetDetailDataForMobile(code, fullReceived)
-                .Select(x => new
-                {
-                    x.Code,
-                    x.ItemId,
-                    x.ItemInitial,
-                    x.ItemName,
-                    x.LineNo,
-                    x.OrderQty,
-                    x.ReceiveQty,
-                    x.RemainQty, // kuantitas sisa?
-                    x.Uom, // ambil description?
-                    x.UomId,
-                    //Units = uomC.Where(u => u.UomId == x.UomId)
-                    //    .Select(u => new
-                    //    {
-                    //        u.Id,
-                    //        u.UomId,
-                    //        u.UnitToConvert,
-                    //        u.UnitEquivalent,
-                    //        u.Conversion,
-                    //        u.IsBaseUnit,
-                    //        u.Seq
-                    //    })
-                    //    .OrderBy(u => u.Seq)
-                    //    .ToList(),
-                    //OldUnitId = x.ItemUomBuyId,
-                    //OldUnitName = x.ItemUomBuyName,
-                    //OldUnitPrice = x.ItemBuyPrice,
-                    //TotTax = x.Qty * x.TaxAmount,
-                    //TotDPP = x.Qty * x.Dpp,
-                    //State = ""
-                }).ToList<dynamic>();
+            return Ok(data);
+        }
+
+        [HttpGet("log")]
+        public IActionResult GetLogData(string filters, string sorts, string search, int skip, int take, string date)
+        {
+            DataSourceResult data =
+                _purchaseOrder.GetLogDataForMobile(skip, take,
+                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"), search, date);
+
+            List<dynamic> result = ((List<ReceiveItemHeaderModel>)data.Data).ToList<dynamic>();
 
             return Ok(new MobileApiResponse
             {
-                Count = data.Count,
-                Data = data
-            });
+                Count = data.Total,
+                Data = result
+            }); ;
+        }
+
+        [HttpGet("logDetail")]
+        public IActionResult GetLogDetailData(string code)
+        {
+            var data = _purchaseOrder.GetLogDetailDataForMobile(code);
+
+            return Ok(data);
+        }
+
+        [HttpPost]
+        public IActionResult OnPost(PurchaseOrderRequestModel data)
+        {
+            data.Mark = "A";
+            data.ReceiveBy = _claim.UserId;
+            data.CreatedBy = _claim.UserId;
+            data.CreatedDate = DateTime.Now;
+            data.UpdatedBy = data.CreatedBy;
+            data.UpdatedDate = data.CreatedDate;
+
+            var result =
+                _purchaseOrder.InsertForMobile(data, _claim.UserId);
+
+            return Ok(result);
+        }
+
+        [HttpGet("uomConversion")]
+        public IActionResult GetUomConversionOne(int uomId)
+        {
+            var data = _uom.GetDataConversion(uomId);
+
+            return Ok(data);
         }
     }
 }
