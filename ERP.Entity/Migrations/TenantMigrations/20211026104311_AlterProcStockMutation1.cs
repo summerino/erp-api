@@ -197,7 +197,6 @@ END CATCH";
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-
         }
     }
 }
