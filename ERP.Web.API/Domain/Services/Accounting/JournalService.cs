@@ -39,6 +39,11 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     return result;
                 }
 
+                var typeBB = new[] { "BB_AP", "BB_AR", "BB_DM", "BB_CM" };
+                var removedBB = _db.Journals.Where(x => typeBB.Contains(x.SrcTrans)).ToList();
+                if (removedBB != null)
+                    _db.RemoveRange(removedBB);
+
                 var removed = _db.Journals.Where(x => x.Date.Month == data.Date.Month && x.Date.Year == data.Date.Year).ToList();
                 if (removed != null)
                     _db.RemoveRange(removed);
@@ -352,9 +357,10 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 foreach (var itemDetail in DlvDetailData)
                 {
                     var smData = _db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.DlvDetail.Id && x.RefCode1 == itemDetail.DlvDetail.Code);
+                    if (smData == null) continue;
                     var prorateHeaderDisc = itemData.Dlvheader.FinalDisc > 0 ? (itemData.Dlvheader.FinalDisc * itemDetail.DlvDetail.NettPrice) / DlvDetailData.Sum(x => x.DlvDetail.NettPrice) : 0;
                     var nonVoidSM = RemoveVoidSM(_db.StockMutations.ToList());
-                    var resultHpp = CalculateHPP(nonVoidSM, smData.WarehouseCode, smData.ItemId, smData.RefDetailId1);
+                    var resultHpp = CalculateHPP(nonVoidSM, smData.WarehouseCode, smData.ItemId, smData.RefDetailId1, "DO");
 
                     //Discount - Diskon
                     if (itemDetail.DlvDetail.Disc > 0)
@@ -566,7 +572,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     CurrCode = itemData.Dlvheader.CurrCode,
                     Period = itemData.Dlvheader.Date.ToString("yyyyMMdd"),
                     Type = "C",
-                    Amount = !itemData.Dlvheader.IncludeTax ? itemData.Dlvheader.Total - (journals.Where(x => x.Code == itemData.Dlvheader.Code && x.Group == 5).Sum(x => x.Amount)) : itemData.Dlvheader.Total,
+                    Amount = !itemData.Dlvheader.IncludeTax ? itemData.Dlvheader.Total - journals.Where(x => x.Code == itemData.Dlvheader.Code && x.Group == 5).Sum(x => x.Amount) + journals.Where(x => x.Code == itemData.Dlvheader.Code && x.Group == 3).Sum(x => x.Amount) : itemData.Dlvheader.Total + journals.Where(x => x.Code == itemData.Dlvheader.Code && x.Group == 3).Sum(x => x.Amount),
                     SrcTrans = "DLV"
                 });
 
@@ -705,7 +711,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     CoaCode = systemParam.FirstOrDefault(x => x.Code == "BB_COA")?.Value ?? "",
                     TypeCode = "BB_AP",
                     Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_BB_AP")?.Value ?? ""}").Trim(),
-                    RefCode1 = "BB-AP-" + startDate.ToString("yyMMdd"),
+                    RefCode1 = "BB-AP-" + startDate.ToString("yyyyMMdd"),
                     Group = 1,
                     CurrCode = "IDR",
                     Period = startDate.ToString("yyyyMMdd"),
@@ -754,7 +760,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     CoaCode = systemParam.FirstOrDefault(x => x.Code == "BB_COA")?.Value ?? "",
                     TypeCode = "BB_AR",
                     Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_BB_AR")?.Value ?? ""}").Trim(),
-                    RefCode1 = "BB-AR-" + startDate.ToString("yyMMdd"),
+                    RefCode1 = "BB-AR-" + startDate.ToString("yyyyMMdd"),
                     Group = 1,
                     CurrCode = "IDR",
                     Period = startDate.ToString("yyyyMMdd"),
@@ -2011,7 +2017,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     if (smData == null) continue;
 
                     var nonVoidSM = RemoveVoidSM(_db.StockMutations.ToList());
-                    var resultHpp = CalculateHPP(nonVoidSM, smData.WarehouseCode, smData.ItemId, smData.RefDetailId1);
+                    var resultHpp = CalculateHPP(nonVoidSM, smData.WarehouseCode, smData.ItemId, smData.RefDetailId1, "ADJ");
 
                     if (itemDetail.AdjDetail.QtyAdjust > itemDetail.AdjDetail.QtyOnHand)
                     {
@@ -2136,18 +2142,18 @@ namespace ERP.Web.API.Domain.Services.Accounting
             return journals;
         }
 
-        private decimal CalculateHPP(IEnumerable<StockMutation> stockMutations, string whCode, int itemId, long id)
+        private decimal CalculateHPP(IEnumerable<StockMutation> stockMutations, string whCode, int itemId, long id, string srcCode)
         {
             decimal latestQty = 0;
             decimal latestStockValue = 0;
             decimal hpp = 0;
 
-            var firstId = stockMutations.FirstOrDefault(x => x.WarehouseCode == whCode && x.ItemId == itemId && x.Src == "RCV")?.Id;
-            if (firstId == null)
-                return 0;
-            var firstSM = stockMutations.FirstOrDefault(x => x.Id == firstId);
+            //var firstId = stockMutations.FirstOrDefault(x => x.WarehouseCode == whCode && x.ItemId == itemId && x.Src == "RCV")?.Id;
+            //if (firstId == null)
+            //    return 0;
+            var firstSM = stockMutations.OrderBy(y => y.Date).FirstOrDefault(x => x.WarehouseCode == whCode && x.ItemId == itemId);
 
-            var currentSM = stockMutations.FirstOrDefault(x => x.WarehouseCode == whCode && x.ItemId == itemId && x.RefDetailId1 == id);
+            var currentSM = stockMutations.FirstOrDefault(x => x.WarehouseCode == whCode && x.ItemId == itemId && x.RefDetailId1 == id && x.Src == srcCode);
 
             if ((firstSM?.BaseNettPrice ?? 0m) != 0m)
             {
@@ -2155,7 +2161,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 latestQty += firstSM.BaseQty;
                 hpp = latestStockValue / latestQty;
 
-                var listSM = stockMutations.Where(x => new[] { "RCV", "DO", "SR", "ADJ", "TS" }.Contains(x.Src) && x.WarehouseCode == whCode && x.ItemId == itemId && x.Id > firstId && x.Id <= currentSM.Id).OrderBy(x => x.Date).ToList();
+                var listSM = stockMutations.Where(x => new[] { "RCV", "DO", "SR", "ADJ", "TS" }.Contains(x.Src) && x.WarehouseCode == whCode && x.ItemId == itemId && x.Date >= firstSM.Date && x.Date <= currentSM.Date).OrderBy(x => x.Date).ToList();
                 foreach (var item in listSM)
                 {
                     if (item.Src == "RCV" && item.Src == "SR")
