@@ -1,7 +1,10 @@
-﻿namespace ERP.Web.API.Domain.Models.Mobile.Sales
+﻿using ERP.Entity.MobileWarehouse;
+using System.Collections.Generic;
+
+namespace ERP.Web.API.Domain.Models.Mobile.Sales
 {
-    public class DeliveryPlanRequestModel //: MobileDeliverItemHeader
+    public class DeliveryPlanRequestModel : MobileDeliveryItemHeader
     {
-        //public IEnumerable<MobileDeliverItemDetail> PODetail { get; set; } ? save to?
+        public IEnumerable<MobileDeliveryItemDetail> DPDetails { get; set; }
     }
 }

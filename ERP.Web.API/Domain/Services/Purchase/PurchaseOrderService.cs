@@ -828,7 +828,8 @@ namespace ERP.Web.API.Domain.Services.Purchase
                                  SupTypeId = sup.TypeId,
                                  SupTypeName = supType.Name,
                                  Mark = order.Mark,
-                                 WarehouseCode = order.WarehouseCode
+                                 WarehouseCode = order.WarehouseCode,
+                                 srcTrans = 1
                              }).AsQueryable();
 
             dataOrder = dataOrder.Where(x => x.Mark != "CMP" && x.Mark != "CLS" && x.Mark != "V");
@@ -847,7 +848,8 @@ namespace ERP.Web.API.Domain.Services.Purchase
                                  SupTypeId = sup.TypeId,
                                  SupTypeName = supType.Name,
                                  Mark = retur.Mark,
-                                 WarehouseCode = returDetail.WarehouseCode
+                                 WarehouseCode = returDetail.WarehouseCode,
+                                 srcTrans = 2
                              }).AsQueryable();
 
             var data = dataOrder.Union(dataRetur);

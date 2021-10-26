@@ -2,9 +2,11 @@
 using ERP.Common.Extensions;
 using ERP.Common.Models;
 using ERP.Entity;
+using ERP.Entity.MobileWarehouse;
 using ERP.Web.API.Domain.Interfaces.Mobile.Sales;
 using ERP.Web.API.Domain.Models.Mobile.Sales;
 using ERP.Web.API.Domain.Services;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,6 +29,7 @@ namespace ERP.Web.API.Domain.Services.Mobile.Sales
                         {
                             Code = dpHeader.Code,
                             Date = dpHeader.Date,
+                            srcTrans = dpHeader.SrcTrans,
                             WarehouseCode = dpHeader.Code,
                             WarehouseName = warehouse.Name,
                             VehicleId = dpHeader.VehicleId,
@@ -55,85 +58,81 @@ namespace ERP.Web.API.Domain.Services.Mobile.Sales
 
         public IEnumerable<DeliveryPlanDetailModel> GetDetailData(string code, int srcTrans)
         {
-            if (srcTrans == 1)
-            {
-                var data = from detail in Db.DeliveryPlanDetails
-                           join doHeader in Db.SalesDeliveryHeaders on detail.TransCode equals doHeader.Code
-                           join doDetail in Db.SalesDeliveryDetails on doHeader.Code equals doDetail.Code
-                           join item in Db.Items on doDetail.ItemId equals item.Id
-                           join uom in Db.UoMConversions on item.UomId equals uom.Id
-                           where detail.Code.Equals(code)
-                           select new DeliveryPlanDetailModel
-                           {
-                               Code = detail.Code,
-                               ItemId = doDetail.ItemId,
-                               ItemName = item.Name,
-                               QtyOrder = doDetail.Qty,
-                               QtyLoad = doDetail.Qty,
-                               UnitId = doDetail.UnitId,
-                               UnitEquivalent = uom.UnitEquivalent
-                           };
-                return data.ToList();
-            }
-            else
-            {
-                var data = from detail in Db.DeliveryPlanDetails
-                               //join doHeader in Db.SalesDeliveryHeaders on detail.TransCode equals doHeader.Code
-                               //join doDetail in Db.SalesDeliveryDetails on doHeader.Code equals doDetail.Code
-                               //join item in Db.Items on doDetail.ItemId equals item.Id
-                               //join uom in Db.UoMConversions on item.UomId equals uom.Id
-                               //where detail.Code.Equals(code)
-                           select new DeliveryPlanDetailModel
-                           {
-                               Code = detail.Code,
-                               //ItemId = doDetail.ItemId,
-                               //ItemName = item.Name,
-                               //QtyOrder = doDetail.Qty,
-                               //QtyLoad = doDetail.Qty,
-                               //UnitId = doDetail.UnitId,
-                               //UnitEquivalent = uom.UnitEquivalent
-                           };
-                return data.ToList();
-            }
+            var data = from detail in Db.DeliveryPlanDetails
+                       select new DeliveryPlanDetailModel
+                       {
+                           Code = detail.Code,
+                       };
+            return data.ToList();
+
+            //var dataDlv = Db.DeliveryPlanDetails.Find(code);
+            //if (dataDlv != null)
+            //{
+
+            //    // Execute sp_update_stock_mutation_from_adj
+            //    Db.Database.ExecuteSqlRaw(
+            //        "EXEC sp_get_dlv_plan_picking_print_data {0}, {1}",
+            //        dataDlv.Code, "ITEM");
+            //}
+
+            //var data = new DeliveryPlanDetailModel
+            //{
+            //    Code = dataDlv.Code,
+            //    ItemId = dataDlv.item,
+            //    ItemName = item.Name,
+            //    QtyOrder = dataDlv.Qty,
+            //    QtyLoad = dataDlv.Qty,
+            //    UnitId = dataDlv.UnitId,
+            //    UnitEquivalent = uom.UnitEquivalent
+            //};
+            //yield return data;
         }
 
 
         public DataSourceResult GetLogData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, string search, string date)
         {
-            var data = Db.MobileReceiveItemHeaders.Select(header => new DeliverItemHeaderModel
-            {
-                Code = header.Code,
-                Date = header.Date,
-                //RcvCode = header.RcvCode,
-                //ReceiveBy = header.ReceiveBy,
-                SrcTrans = header.SrcTrans,
-                SupCode = header.SupCode,
-                TransCode = header.TransCode
-            });
-
+            var data = from header in Db.VwMobileDeliveryItemHeaders
+                       join dlvPlanHeader in Db.VwDeliveryPlanHeaders on header.DlvPlanCode equals dlvPlanHeader.Code
+                       join driver in Db.VwEmployees on dlvPlanHeader.DriverId equals driver.Id
+                       select new DeliverItemHeaderModel
+                       {
+                           Code = header.Code,
+                           Date = header.CreatedDate.Date,
+                           DlvPlanCode = header.DlvPlanCode,
+                           DlvPlanDate = dlvPlanHeader.Date,
+                           DriverId = dlvPlanHeader.VehicleId,
+                           DriverName = driver.FirstName,
+                           VehicleId = dlvPlanHeader.VehicleId,
+                           VehicleNo = dlvPlanHeader.VehicleNo,
+                           Notes = dlvPlanHeader.Notes
+                       };
             return data.ToDataSourceResult(skip, take, filter, sort);
         }
 
-        public IEnumerable<DeliverItemDetailModel> GetLogDetailData(string code)
+        public IEnumerable<VwMobileDeliveryItemDetail> GetLogDetailData(string code)
         {
-            var data = Db.MobileReceiveItemDetails.Where(x => x.Code == code).Select(detail => new DeliverItemDetailModel
-            {
-                Code = detail.Code,
-                Id = detail.Id,
-                ItemId = detail.ItemId,
-                LineNo = detail.LineNo,
-                Qty = detail.Qty,
-                TransDetailId = detail.TransDetailId,
-                Type = detail.Type,
-                UnitId = detail.UnitId,
-                UomId = detail.UomId,
-                //WarehouseCode = detail.WarehouseCode
-                //column apa saja?
-            });
-
+            var data = from detail in Db.VwMobileDeliveryItemDetails
+                       where detail.Code.Equals(code)
+                       select new VwMobileDeliveryItemDetail
+                       {
+                           Id = detail.Id,
+                           Code = detail.Code,
+                           LineNo = detail.LineNo,
+                           ItemId = detail.ItemId,
+                           OriginalQty = detail.OriginalQty,
+                           RealizeQty = detail.RealizeQty,
+                           UomId = detail.UomId,
+                           UnitId = detail.UnitId,
+                           ItemInitial = detail.ItemInitial,
+                           ItemName = detail.ItemName,
+                           ItemUomSellId = detail.ItemUomSellId,
+                           ItemUomSellName = detail.ItemUomSellName,
+                           ItemSellPrice = detail.ItemSellPrice,
+                           UomInitial = detail.UomInitial,
+                           UnitName = detail.UnitName
+                       };
             return data;
         }
-
 
         public SaveResult Insert(DeliveryPlanRequestModel data, int UserId)
         {
@@ -142,28 +141,26 @@ namespace ERP.Web.API.Domain.Services.Mobile.Sales
             using var transaction = Db.Database.BeginTransaction();
             try
             {
-                //var newCode = GetNewCode("DLV_PLAN_NUM_FMT", data.Date);
+                var newCode = GetNewCode("DLV_PLAN_NUM_FMT", DateTime.Now.Date);
 
-                //data.Code = newCode;
+                data.Code = newCode;
 
-                //Db.MobileReceiveItemHeaders.Add(data);
+                Db.MobileDeliveryItemHeaders.Add(data);
 
-                //short i = 0;
-                //foreach (var rcv in data.)
-                //{
-                //    Db.MobileReceiveItemDetails.Add(new MobileReceiveItemDetail
-                //    {
-                //        Code = newCode,
-                //        LineNo = ++i,
-                //        ItemId = rcv.ItemId,
-                //        Qty = rcv.Qty,
-                //        TransDetailId = rcv.TransDetailId,
-                //        Type = rcv.Type,
-                //        UnitId = rcv.UnitId,
-                //        UomId = rcv.UomId,
-                //        WarehouseCode = rcv.WarehouseCode,
-                //    });
-                //}
+                short i = 0;
+                foreach (var dlv in data.DPDetails)
+                {
+                    Db.MobileDeliveryItemDetails.Add(new MobileDeliveryItemDetail
+                    {
+                        Code = newCode,
+                        LineNo = ++i,
+                        ItemId = dlv.ItemId,
+                        OriginalQty = dlv.OriginalQty,
+                        RealizeQty = dlv.RealizeQty,
+                        UomId = dlv.UomId,
+                        UnitId = dlv.UnitId
+                    });
+                }
 
                 Db.SaveChanges();
 

@@ -17,6 +17,7 @@ namespace ERP.Web.API.Domain.Models.Mobile.Purchase
         public string SupPhone { get; set; }
         public int SupTypeId { get; set; }
         public string SupTypeName { get; set; }
+        public int srcTrans { get; set; }
         public string WarehouseCode { get; set; }
         public string Mark { get; set; }
     }
