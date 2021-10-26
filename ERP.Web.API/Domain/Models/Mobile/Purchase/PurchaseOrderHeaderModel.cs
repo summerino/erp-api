@@ -13,11 +13,11 @@ namespace ERP.Web.API.Domain.Models.Mobile.Purchase
         [Required]
         [StringLength(8)]
         public string SupCode { get; set; }
-        //public long RequestBy { get; set; }
-        //[StringLength(8)]
-        //public string WarehouseCode { get; set; }
         public string SupName { get; set; }
         public string SupPhone { get; set; }
-        //public string Status/Mark { get; set; }
+        public int SupTypeId { get; set; }
+        public string SupTypeName { get; set; }
+        public string WarehouseCode { get; set; }
+        public string Mark { get; set; }
     }
 }

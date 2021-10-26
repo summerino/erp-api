@@ -12,6 +12,7 @@ using ERP.Web.API.Domain.Interfaces.MobileSales;
 using ERP.Web.API.Model;
 using ERP.Web.API.Model.MobileSales;
 using Newtonsoft.Json;
+using ERP.Web.API.Domain.Models.Mobile.Operational;
 
 namespace ERP.Web.API.Controllers.Mobile.Operational
 {
@@ -45,11 +46,11 @@ namespace ERP.Web.API.Controllers.Mobile.Operational
             {
                 Count = data.Total,
                 Data = result
-            });
+            }); ;
         }
 
         [HttpPost]
-        public IActionResult AddCost(MobileCostRequest data)
+        public IActionResult AddCost(CostRequestModel data)
         {
             // Insert process
             data.Mark = "A";
@@ -59,40 +60,29 @@ namespace ERP.Web.API.Controllers.Mobile.Operational
             data.UpdatedBy = data.CreatedBy;
             data.UpdatedDate = data.CreatedDate;
 
-            var result = _mobCost.Insert(data);
+            var result = _mobCost.InsertForMobile(data, _claim.UserId);
             return Ok(result);
         }
 
         [HttpGet("detail")]
         public IActionResult GetDetail(string code)
         {
-            var data = _mobCost.GetDetailData(code)
-                .Select(x => new
-                {
-                    x.Code, x.LineNo,
-                    x.CoaCode, x.CoaName,
-                    x.Amount
-                });
+            return Ok(_mobCost.GetDetailForMobile(code));
 
-            return Ok(data);
         }
 
         [HttpGet("coa")]
         public IActionResult GetMobileCoa(string lastUpdate)
         {
             var data =
-                _coa.GetLists(
-                    new List<Filter>
-                    {
-                        new() {Field = "ShowInMobile", Operator = "eq", Keyword = true}
-                    },
-                    null,
-                    lastUpdate).Data
-                    .ToDynamicList()
-                    .Select(x => new
-                    {
-                       x.Id, x.Code,  x.Name, x.IsActive, x.UpdatedDate
-                    });
+               _mobCost.GetMobileCoaForMobile(lastUpdate).Select(x => new
+               {
+                   x.Id,
+                   x.Code,
+                   x.Name,
+                   x.IsActive,
+                   x.UpdatedDate
+               });
 
             return Ok(data);
         }
@@ -100,22 +90,14 @@ namespace ERP.Web.API.Controllers.Mobile.Operational
         [HttpGet("image")]
         public IActionResult GetImage(string code)
         {
-            var data = _mobCost.GetImageData(code)
-                .Select(x => new
-                {
-                    x.Code, x.LineNo, x.Image
-                });
-
-            return Ok(data);
+            return Ok(_mobCost.GetImageForMobile(code));
         }
 
         [HttpGet("today")]
         public IActionResult GetTodayTransaction(string date)
         {
-            return Ok(new
-            {
-                Exist = _mobCost.IsCostExists(date, _claim.UserId)
-            });
+            return Ok(_mobCost.GetTodayTransactionForMobile(date, _claim.UserId));
         }
     }
 }
+

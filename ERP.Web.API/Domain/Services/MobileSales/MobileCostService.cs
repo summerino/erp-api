@@ -5,9 +5,11 @@ using ERP.Common;
 using ERP.Common.Extensions;
 using ERP.Common.Models;
 using ERP.Entity;
+using ERP.Entity.Accounting;
 using ERP.Entity.Finance;
 using ERP.Entity.MobileSales;
 using ERP.Web.API.Domain.Interfaces.MobileSales;
+using ERP.Web.API.Domain.Models.Mobile.Operational;
 using ERP.Web.API.Model.MobileSales;
 
 namespace ERP.Web.API.Domain.Services.MobileSales
@@ -274,24 +276,135 @@ namespace ERP.Web.API.Domain.Services.MobileSales
         public DataSourceResult GetDataForMobile(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, int userId, string date)
         {
             var data = (from costHeader in Db.MobileCostHeaders
-                join user in Db.Users on costHeader.SalesmanId equals user.EmployeeId
-                where user.Id.Equals(userId)
-                select new MobileCostHeader
-                {
-                    Code = costHeader.Code,
-                    Date = costHeader.Date,
-                    Mark = costHeader.Mark,
-                    SalesmanId = costHeader.SalesmanId,
-                    Rate = costHeader.Rate,
-                    ApprovedDate = costHeader.ApprovedDate,
-                    Total = costHeader.Total,
-                }).AsQueryable();
+                        join user in Db.Users on costHeader.SalesmanId equals user.EmployeeId
+                        where user.Id.Equals(userId)
+                        select new MobileCostHeader
+                        {
+                            Code = costHeader.Code,
+                            Date = costHeader.Date,
+                            Mark = costHeader.Mark,
+                            SalesmanId = costHeader.SalesmanId,
+                            Rate = costHeader.Rate,
+                            ApprovedDate = costHeader.ApprovedDate,
+                            Total = costHeader.Total,
+                        }).AsQueryable();
             if (!string.IsNullOrEmpty(date))
             {
                 var date1 = DateTime.ParseExact(date, "yyyy-MM-dd", null);
                 data = data.Where(x => x.Date.Equals(date1));
             }
             return data.ToDataSourceResult(skip, take, filters, sorts);
+        }
+
+        public IEnumerable<CostDetailModel> GetDetailForMobile(string Code)
+        {
+            var data = from cost in Db.MobileCostDetails
+                       join coa in Db.Coas on cost.CoaCode equals coa.Code
+                       where cost.Code.Equals(Code)
+                       select new CostDetailModel
+                       {
+                           Code = cost.Code,
+                           LineNo = cost.LineNo,
+                           CoaCode = cost.CoaCode,
+                           CoaName = coa.Name,
+                           Amount = cost.Amount,
+                       };
+            return data.ToList();
+        }
+
+        public SaveResult InsertForMobile(CostRequestModel data, int UserId)
+        {
+            var result = new SaveResult(false);
+
+            long? employeeId = Db.Users.Where(x => x.Id.Equals(UserId)).Select(u => u.EmployeeId).SingleOrDefault();
+            using var transaction = Db.Database.BeginTransaction();
+            try
+            {
+                var newCode = GetNewCode("MOB_SC_NUM_FMT", data.Date);
+
+                data.Code = newCode;
+                data.Total = data.CostDetails.Sum(x => x.Amount);
+                data.SalesmanId = (long)employeeId;
+
+                Db.MobileCostHeaders.Add(data);
+
+                short i = 0;
+                foreach (var cost in data.CostDetails)
+                {
+                    Db.MobileCostDetails.Add(new MobileCostDetail
+                    {
+                        Code = newCode,
+                        LineNo = ++i,
+                        CoaCode = cost.CoaCode,
+                        Amount = cost.Amount
+                    });
+                }
+
+                short j = 0;
+                foreach (var cost in data.CostImages)
+                {
+                    Db.MobileCostImages.Add(new MobileCostImage
+                    {
+                        Code = newCode,
+                        LineNo = ++j,
+                        Image = cost.Image
+                    });
+                }
+
+                Db.SaveChanges();
+                transaction.Commit();
+            }
+            catch (Exception e)
+            {
+                result.Message = e.InnerException?.Message ?? e.Message;
+                return result;
+            }
+
+            result.Success = true;
+            result.Data = data.Code;
+            result.Message = "Biaya sales berhasil disimpan.";
+            return result;
+        }
+
+        public IEnumerable<Coa> GetMobileCoaForMobile(string lastUpdate)
+        {
+            var data = Db.Coas.Where(x => x.ShowInMobile == true).AsQueryable();
+
+            if (lastUpdate != null)
+            {
+                if (lastUpdate.Length == 19)
+                    lastUpdate += ".0000";
+                else if (lastUpdate.Length == 21)
+                    lastUpdate += "000";
+                else if (lastUpdate.Length == 22)
+                    lastUpdate += "00";
+                else if (lastUpdate.Length == 23)
+                    lastUpdate += "0";
+                data = data.Where(x => x.UpdatedDate > DateTime.ParseExact(lastUpdate, "yyyy-MM-ddTHH:mm:ss.ffff", null));
+            }
+
+            return data;
+        }
+
+        public IEnumerable<CostImageModel> GetImageForMobile(string Code)
+        {
+            var data = from image in Db.MobileCostImages
+                       where image.Code.Equals(Code)
+                       select new CostImageModel
+                       {
+                           Code = image.Code,
+                           LineNo = image.LineNo,
+                           Image = image.Image,
+                       };
+            return data.ToList();
+        }
+
+        public CostTodayTransactionModel GetTodayTransactionForMobile(string date, int userId)
+        {
+            var salesmanId = Db.Users.Where(x => x.Id.Equals(userId)).Select(x => x.EmployeeId).SingleOrDefault();
+            var date1 = Db.MobileCostHeaders.Any(x => x.Date == DateTime.ParseExact(date, "yyyy-MM-dd", null) && x.SalesmanId == salesmanId);
+            var data = new CostTodayTransactionModel { Exist = date1 };
+            return data;
         }
         #endregion
     }
