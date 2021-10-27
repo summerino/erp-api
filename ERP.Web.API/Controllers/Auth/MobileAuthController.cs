@@ -52,6 +52,23 @@ namespace ERP.Web.API.Controllers.Auth
             });
         }
 
+        [HttpPost("login-customer")]
+        [AllowAnonymous]
+        public IActionResult LoginCustomer(MobileLoginCustomerRequest data)
+        {
+            if (ModelState.IsValid)
+            {
+                var result = _auth.LoginCustomer(data);
+                return Ok(result);
+            }
+
+            return BadRequest(new MobileAuthResult
+            {
+                Message = "Invalid request.",
+                Success = false
+            });
+        }
+
         [HttpPost("change-password")]
         public IActionResult ChangePassword(MobileChangePasswordRequest data)
         {

@@ -12,6 +12,14 @@ namespace ERP.Web.API.Model.Auth
         public int Type { get; set; }
     }
 
+    public class MobileLoginCustomerRequest
+    {
+        [Required]
+        public string Username { get; set; }
+        [Required]
+        public string Password { get; set; }
+    }
+
     public class MobileChangePasswordRequest
     {
         [Required]

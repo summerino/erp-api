@@ -7,6 +7,7 @@ namespace ERP.Web.API.Domain.Interfaces.Auth
     {
         MobileAuthResult Login(MobileLoginRequest data);
         MobileAuthResult LoginWarehouse(MobileLoginRequest data);
+        MobileAuthResult LoginCustomer(MobileLoginCustomerRequest data);
         MobileSimpleResponse ChangePassword(MobileChangePasswordRequest data);
         MobileAuthResult Logout();
 
