@@ -57,6 +57,8 @@ using ERP.Web.API.Domain.Interfaces.MobileWarehouse;
 using ERP.Web.API.Domain.Services.MobileWarehouse;
 using ERP.Web.API.Domain.Interfaces.Mobile.Sales;
 using ERP.Web.API.Domain.Services.Mobile.Sales;
+using ERP.Web.API.Domain.Interfaces.Mobile.CustomerTransaction;
+using ERP.Web.API.Domain.Services.Mobile.CustomerTransaction;
 
 namespace ERP.Web.API
 {
@@ -295,6 +297,9 @@ namespace ERP.Web.API
 
             // Visit Order services
             services.AddScoped<Domain.Interfaces.Mobile.VisitOrder.IVisitOrderService, Domain.Services.Mobile.VisitOrder.VisitOrderService>();
+
+            // Customer Transaction (Mobile Customer) services
+            services.AddScoped<ICustomerTransactionService, CustomerTransactionService>();
             #endregion
         }
 
