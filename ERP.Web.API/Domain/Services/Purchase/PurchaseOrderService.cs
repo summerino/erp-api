@@ -12,6 +12,7 @@ using ERP.Web.API.Domain.Interfaces.Purchase;
 using ERP.Web.API.Domain.Models.Mobile.Purchase;
 using ERP.Web.API.Model.Purchase;
 using Swift.Framework;
+using ERP.Entity.MobileWarehouse;
 
 namespace ERP.Web.API.Domain.Services.Purchase
 {
@@ -814,54 +815,219 @@ namespace ERP.Web.API.Domain.Services.Purchase
         #region Mobile
         public DataSourceResult GetDataForMobile(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, string search, string date)
         {
-            var data = (from poHeader in Db.PurchaseOrderHeaders
-                join sup in Db.Suppliers on poHeader.SupCode equals sup.Code
-                where poHeader.Mark.Equals("A")
-                select new PurchaseOrderHeaderModel
-                {
-                    Code = poHeader.Code,
-                    Date = poHeader.Date,
-                    SupCode = poHeader.SupCode,
-                    SupName = sup.Name,
-                    SupPhone = sup.Phone,
-                    //WarehouseCode = poHeader.WarehouseCode
-                }).AsQueryable();
+            var dataOrder = (from order in Db.PurchaseOrderHeaders
+                             join sup in Db.Suppliers on order.SupCode equals sup.Code
+                             join supType in Db.SupplierTypes on sup.TypeId equals supType.Id
+                             select new PurchaseOrderHeaderModel
+                             {
+                                 Code = order.Code,
+                                 Date = order.Date,
+                                 SupCode = order.SupCode,
+                                 SupName = sup.Name,
+                                 SupPhone = sup.Phone,
+                                 SupTypeId = sup.TypeId,
+                                 SupTypeName = supType.Name,
+                                 Mark = order.Mark,
+                                 WarehouseCode = order.WarehouseCode,
+                                 srcTrans = 1
+                             }).AsQueryable();
+
+            dataOrder = dataOrder.Where(x => x.Mark != "CMP" && x.Mark != "CLS" && x.Mark != "V");
+
+            var dataRetur = (from retur in Db.PurchaseReturnHeaders
+                             join returDetail in Db.PurchaseReturnDetails on retur.Code equals returDetail.Code
+                             join sup in Db.Suppliers on retur.SupCode equals sup.Code
+                             join supType in Db.SupplierTypes on sup.TypeId equals supType.Id
+                             select new PurchaseOrderHeaderModel
+                             {
+                                 Code = retur.Code,
+                                 Date = retur.Date,
+                                 SupCode = retur.SupCode,
+                                 SupName = sup.Name,
+                                 SupPhone = sup.Phone,
+                                 SupTypeId = sup.TypeId,
+                                 SupTypeName = supType.Name,
+                                 Mark = retur.Mark,
+                                 WarehouseCode = returDetail.WarehouseCode,
+                                 srcTrans = 2
+                             }).AsQueryable();
+
+            var data = dataOrder.Union(dataRetur);
 
             if (!string.IsNullOrEmpty(search))
             {
                 data = data.Where(x => x.Code.Contains(search) || x.SupName.Contains(search));
             }
 
-            if (!string.IsNullOrEmpty(date))
+            if (date != null && date != "")
             {
                 var date1 = DateTime.ParseExact(date, "yyyy-MM-dd", null);
                 data = data.Where(x => x.Date.Equals(date1));
             }
+
             return data.ToDataSourceResult(skip, take, filter, sort);
         }
 
-        public IEnumerable<PurchaseOrderDetailModel> GetDetailDataForMobile(string code, bool? fullReceived = null)
+        public IEnumerable<PurchaseOrderDetailModel> GetDetailDataForMobile(string code, int srcTrans)
         {
-            var data = from detail in Db.PurchaseOrderDetails
-                join header in Db.PurchaseOrderHeaders on detail.Code equals header.Code
-                join supplier in Db.Suppliers on header.SupCode equals supplier.Code
-                join item in Db.Items on detail.ItemId equals item.Id
-                join uom in Db.UoMs on detail.UomId equals uom.Id
-                where detail.Code.Equals(code)
-                select new PurchaseOrderDetailModel
+            if (srcTrans == 1)
+            {
+                var data = from order in Db.VwPurchaseOrderDetails
+                           join header in Db.VwPurchaseOrderHeaders on order.Code equals header.Code
+                           join item in Db.Items on order.ItemId equals item.Id
+                           where order.Code.Equals(code) && order.Qty <= order.QtyRcv
+                           select new PurchaseOrderDetailModel
+                           {
+                               Code = order.Code,
+                               LineNo = order.LineNo,
+                               ItemId = order.ItemId,
+                               OrderQty = order.Qty,
+                               ReceiveQty = order.QtyRcv,
+                               TransDetailId = 2,
+                               Type = 1,
+                               UnitId = order.UnitId,
+                               UomId = order.UomId,
+                               WarehouseCode = header.WarehouseCode,
+
+                               ItemInitial = item.Initial,
+                               ItemName = order.ItemName,
+                               UnitName = order.UnitName
+                           };
+                return data;
+            }
+            else
+            {
+                var data = Db.VwPurchaseReturnDetails.Where(x => x.Code.Equals(code) && x.Qty <= x.QtyRcv)
+                    .Join(Db.Items, retur => retur.ItemId, item => item.Id, (retur, item) => new PurchaseOrderDetailModel
+                    {
+                        Code = retur.Code,
+                        LineNo = retur.LineNo,
+                        ItemId = retur.ItemId,
+                        OrderQty = retur.Qty,
+                        ReceiveQty = retur.QtyRcv,
+                        TransDetailId = 1,
+                        Type = 1,
+                        UnitId = retur.UnitId,
+                        UomId = retur.UomId,
+                        WarehouseCode = retur.WarehouseCode,
+
+                        ItemInitial = item.Initial,
+                        ItemName = retur.ItemName,
+                        UnitName = retur.UnitName
+                    });
+
+                return data;
+            }
+        }
+
+        public DataSourceResult GetLogDataForMobile(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, string search, string date)
+        {
+            var data = from rcvHeader in Db.MobileReceiveItemHeaders
+                       join po in Db.VwPurchaseOrderHeaders on rcvHeader.TransCode equals po.Code
+                       join sup in Db.VwSuppliers on rcvHeader.SupCode equals sup.Code
+                       select new ReceiveItemHeaderModel
+                       {
+                           Code = rcvHeader.Code,
+                           Date = rcvHeader.Date,
+                           PODate = po.Date,
+                           PONumber = po.Code,
+                           RcvCode = rcvHeader.RcvCode,
+                           ReceiveBy = rcvHeader.ReceiveBy,
+                           SrcTrans = rcvHeader.SrcTrans,
+                           SupCode = rcvHeader.SupCode,
+                           SupName = sup.Name,
+                           SupPhone = sup.Phone,
+                           TransCode = rcvHeader.TransCode
+                       };
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                data = data.Where(x => x.Code.Contains(search) || x.SupName.Contains(search));
+            }
+
+            if (date != null && date != "")
+            {
+                var date1 = DateTime.ParseExact(date, "yyyy-MM-dd", null);
+                data = data.Where(x => x.Date.Equals(date1));
+            }
+
+            return data.ToDataSourceResult(skip, take, filter, sort);
+        }
+
+        public IEnumerable<ReceiveItemDetailModel> GetLogDetailDataForMobile(string code)
+        {
+            var data = from detail in Db.MobileReceiveItemDetails
+                       join item in Db.Items on detail.ItemId equals item.Id
+                       join uom in Db.UoMConversions on detail.UnitId equals uom.Id
+                       join header in Db.MobileReceiveItemHeaders on detail.Code equals header.Code
+                       join orderHeader in Db.PurchaseOrderHeaders on header.TransCode equals orderHeader.Code
+                       join orderDetail in Db.PurchaseOrderDetails on orderHeader.Code equals orderDetail.Code
+                       where detail.Code.Equals(code)
+                       select new ReceiveItemDetailModel
+                       {
+                           Code = detail.Code,
+                           Id = detail.Id,
+                           ItemId = detail.ItemId,
+                           LineNo = detail.LineNo,
+                           Qty = detail.Qty,
+                           TransDetailId = detail.TransDetailId,
+                           Type = detail.Type,
+                           UnitId = detail.UnitId,
+                           UomId = detail.UomId,
+                           UnitEquivalent = uom.UnitEquivalent,
+                           WarehouseCode = detail.WarehouseCode,
+                           ItemInitial = item.Initial,
+                           ItemName = item.Name,
+                           QtyOrder = orderDetail.Qty,
+                           QtyRemain = orderDetail.Qty - detail.Qty
+                       };
+            return data;
+        }
+
+        public SaveResult InsertForMobile(PurchaseOrderRequestModel data, int UserId)
+        {
+            var result = new SaveResult(false);
+
+            using var transaction = Db.Database.BeginTransaction();
+            try
+            {
+                var newCode = GetNewCode("RCV_NUM_FMT", data.Date);
+
+                data.Code = newCode;
+
+                Db.MobileReceiveItemHeaders.Add(data);
+
+                short i = 0;
+                foreach (var rcv in data.PODetails)
                 {
-                    Code = detail.Code,
-                    ItemId = detail.ItemId,
-                    ItemInitial = item.Initial,
-                    ItemName = item.Name,
-                    LineNo = detail.LineNo,
-                    OrderQty = detail.Qty,
-                    ReceiveQty = detail.QtyRcv,
-                    RemainQty = detail.Qty - detail.QtyRcv,
-                    Uom = uom.Description, // ambil description?
-                    UomId = detail.UnitId,
-                };
-            return data.ToList();
+                    rcv.Code = newCode;
+                    Db.MobileReceiveItemDetails.Add(new MobileReceiveItemDetail
+                    {
+                        Code = rcv.Code,
+                        LineNo = ++i,
+                        ItemId = rcv.ItemId,
+                        Qty = rcv.Qty,
+                        TransDetailId = rcv.TransDetailId,
+                        Type = rcv.Type,
+                        UnitId = rcv.UnitId,
+                        UomId = rcv.UomId,
+                        WarehouseCode = rcv.WarehouseCode
+                    });
+                }
+
+                Db.SaveChanges();
+                transaction.Commit();
+            }
+            catch (Exception ex)
+            {
+                result.Message = ex.InnerException?.Message ?? ex.Message;
+                return result;
+            }
+
+            result.Success = true;
+            result.Data = data;
+            result.Message = "Data penerimaan barang berhasil disimpan.";
+            return result;
         }
         #endregion
     }

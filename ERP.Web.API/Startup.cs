@@ -55,6 +55,8 @@ using Newtonsoft.Json.Serialization;
 using Swift.Framework;
 using ERP.Web.API.Domain.Interfaces.MobileWarehouse;
 using ERP.Web.API.Domain.Services.MobileWarehouse;
+using ERP.Web.API.Domain.Interfaces.Mobile.Sales;
+using ERP.Web.API.Domain.Services.Mobile.Sales;
 using ERP.Web.API.Domain.Interfaces.Mobile.CustomerTransaction;
 using ERP.Web.API.Domain.Services.Mobile.CustomerTransaction;
 
@@ -286,6 +288,9 @@ namespace ERP.Web.API
 
             // Net Revenue services
             services.AddScoped<INetRevenueService, NetRevenueService>();
+
+            // Sales services
+            services.AddScoped<IDeliveryPlanMobileService, DeliveryPlanMobileService>();
 
             // Transaction History services
             services.AddScoped<ITransactionHistoryService, TransactionHistoryService>();
