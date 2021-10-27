@@ -552,7 +552,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     CurrCode = itemData.Dlvheader.CurrCode,
                     Period = itemData.Dlvheader.Date.ToString("yyyyMMdd"),
                     Type = "D",
-                    Amount = arValue,
+                    Amount = arValue - journals.Where(x => x.Code == itemData.Dlvheader.Code && x.Group == 2).Sum(x => x.Amount),
                     SrcTrans = "DLV"
                 });
 
@@ -570,7 +570,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     CurrCode = itemData.Dlvheader.CurrCode,
                     Period = itemData.Dlvheader.Date.ToString("yyyyMMdd"),
                     Type = "C",
-                    Amount = !itemData.Dlvheader.IncludeTax ? itemData.Dlvheader.Total - journals.Where(x => x.Code == itemData.Dlvheader.Code && x.Group == 5).Sum(x => x.Amount) + journals.Where(x => x.Code == itemData.Dlvheader.Code && x.Group == 3).Sum(x => x.Amount) : itemData.Dlvheader.Total + journals.Where(x => x.Code == itemData.Dlvheader.Code && x.Group == 3).Sum(x => x.Amount),
+                    Amount = itemData.Dlvheader.Total - journals.Where(x => x.Code == itemData.Dlvheader.Code && new[] { 3, 4, 5 }.Contains(x.Group)).Sum(x => x.Amount),
                     SrcTrans = "DLV"
                 });
 
