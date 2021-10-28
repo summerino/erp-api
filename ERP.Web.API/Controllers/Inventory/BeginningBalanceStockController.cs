@@ -65,15 +65,8 @@ namespace ERP.Web.API.Controllers.Inventory
             var data = _bb.GetDetailData(code)
                 .Select(x => new
                 {
-                    x.Id,
-                    x.Code,
-                    x.LineNo,
-                    x.ItemId,
-                    x.ItemName,
-                    x.Notes,
-                    x.Qty,
-                    x.Amount,
-                    InitAmount = x.Qty > 1 ? x.Amount / x.Qty : x.Amount,
+                    x.Id, x.Code, x.LineNo, x.ItemId, x.ItemName, x.UomId, x.UnitId, x.Qty,
+                    x.UnitPrice, x.Notes,
                     Units = uomC.Where(u => u.UomId == x.UomId)
                         .Select(u => new
                         {
@@ -87,9 +80,10 @@ namespace ERP.Web.API.Controllers.Inventory
                         })
                         .OrderBy(u => u.Seq)
                         .ToList(),
-                    x.UnitId,
                     OldUnitId = x.UnitId,
-                    x.UomId,
+                    OldUnitName = x.ItemUomBuyName,
+                    OldUnitPrice = x.ItemBuyPrice,
+                    Total = x.Qty * x.UnitPrice,
                     State = ""
                 })
                 .ToList<dynamic>();
@@ -132,7 +126,6 @@ namespace ERP.Web.API.Controllers.Inventory
                 return Ok(new SaveResult(false, message));
 
             // Insert process
-            // data.Mark = "A";
             data.CreatedBy = _claim.UserId;
             data.CreatedDate = DateTime.Now;
             data.UpdatedBy = data.CreatedBy;

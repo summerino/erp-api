@@ -1986,7 +1986,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                             CurrCode = "IDR",
                             Period = item.Date.ToString("yyyyMMdd"),
                             Type = "D",
-                            Amount = itemDetail.Amount * itemDetail.Qty,
+                            Amount = itemDetail.UnitPrice * itemDetail.Qty,
                             SrcTrans = "BB_INVT"
                         });
                     }

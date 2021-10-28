@@ -1,7 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
 using ERP.Entity.Core;
 
 namespace ERP.Entity.Inventory
@@ -27,11 +26,18 @@ namespace ERP.Entity.Inventory
     public class VwBeginningBalanceStockHeader : BaseEntityWithActive
     {
         public string Code { get; set; }
+
         public DateTime Date { get; set; }
+
         public string WarehouseCode { get; set; }
+
         public string Notes { get; set; }
+
+
         public string WarehouseInitial { get; set; }
+
         public string CreatedInitial { get; set; }
+
         public string UpdatedInitial { get; set; }
     }
 
@@ -55,7 +61,7 @@ namespace ERP.Entity.Inventory
         public decimal Qty { get; set; }
         
         [Column(TypeName = "decimal(18, 2)")]
-        public decimal Amount { get; set; }
+        public decimal UnitPrice { get; set; }
 
         [StringLength(256)]
         public string Notes { get; set; }
@@ -63,16 +69,33 @@ namespace ERP.Entity.Inventory
     public class VwBeginningBalanceStockDetail
     {
         public long Id { get; set; }
+        
         public string Code { get; set; }
+        
         public short LineNo { get; set; }
+        
         public int ItemId { get; set; }
+        
         public int UomId { get; set; }
+        
         public int UnitId { get; set; }
+        
         public decimal Qty { get; set; }
-        public decimal Amount { get; set; }
+        
+        public decimal UnitPrice { get; set; }
+        
         public string Notes { get; set; }
+
+
         public string ItemName { get; set; }
+        
         public string ItemInitial { get; set; }
+        
+        public int? ItemUomBuyId { get; set; }
+        
+        public string ItemUomBuyName { get; set; }
+        
+        public decimal? ItemBuyPrice { get; set; }
     }
 
     public class VwBeginningBalanceItem : BaseEntityWithActive

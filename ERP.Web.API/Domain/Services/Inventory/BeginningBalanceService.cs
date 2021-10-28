@@ -89,13 +89,14 @@ namespace ERP.Web.API.Domain.Services.Inventory
                 var details = new List<BeginningBalanceStockDetail>();
                 foreach (var item in data.ItemDetails)
                 {
-                    var beginningBalanceDetail = new BeginningBalanceStockDetail() {
+                    var beginningBalanceDetail = new BeginningBalanceStockDetail
+                    {
                         LineNo = ++i,
                         Code = newCode,
                         ItemId = item.ItemId,
                         Notes = item.Notes,
                         Qty = item.Qty,
-                        Amount = item.Amount,
+                        UnitPrice = item.UnitPrice,
                         UnitId = item.UnitId,
                         UomId = item.UomId
                     };
@@ -134,7 +135,6 @@ namespace ERP.Web.API.Domain.Services.Inventory
             using var transaction = Db.Database.BeginTransaction();
             try
             {
-
                 var validationResult = Validate(data);
                 if (!validationResult.Item1)
                 {
@@ -163,14 +163,14 @@ namespace ERP.Web.API.Domain.Services.Inventory
 
                     if (item.Id <= 0)
                     {
-                        var beginningBalanceDetail = new BeginningBalanceStockDetail()
+                        var beginningBalanceDetail = new BeginningBalanceStockDetail
                         {
                             Code = data.Code,
                             ItemId = item.ItemId,
                             LineNo = ++i,
                             Notes = item.Notes,
                             Qty = item.Qty,
-                            Amount = item.Amount,
+                            UnitPrice = item.UnitPrice,
                             UnitId = item.UnitId,
                             UomId = item.UomId,
                         };
@@ -253,7 +253,7 @@ namespace ERP.Web.API.Domain.Services.Inventory
         {
             var listItem = Db.BeginningBalanceStockDetails.Where(x=>x.Code.Equals(code)).Select(x=>x.ItemId).ToList();
 
-            if (Db.SalesOrderDetails.Where(x => listItem.Contains(x.ItemId)).Any())
+            if (Db.SalesOrderDetails.Any(x => listItem.Contains(x.ItemId)))
             {
                 var items = (from d in Db.SalesOrderDetails
                              join i in Db.Items on d.ItemId equals i.Id
@@ -297,7 +297,7 @@ namespace ERP.Web.API.Domain.Services.Inventory
                 listItemForSpesificWarehouse = query.Where(x=>x.Code != data.Code).ToList();
             }
 
-            if (listItemForSpesificWarehouse.Count() > 0)
+            if (listItemForSpesificWarehouse.Any())
             {
                 string message = "";
                 List<string> items = new List<string>();
