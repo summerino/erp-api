@@ -687,7 +687,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     {
                         Code = "BB-AP-" + startDate.ToString("yyyyMMdd"),
                         LineNo = ++i,
-                        Date = item.Date,
+                        Date = startDate,
                         CoaCode = systemParam.FirstOrDefault(x => x.Code == "AP_COA")?.Value ?? "",
                         TypeCode = "BB_AP",
                         Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_AP")?.Value ?? ""} {item.SupName}").Trim(),
@@ -736,7 +736,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     {
                         Code = "BB-AR-" + startDate.ToString("yyyyMMdd"),
                         LineNo = ++i,
-                        Date = item.Date,
+                        Date = startDate,
                         CoaCode = systemParam.FirstOrDefault(x => x.Code == "AR_COA")?.Value ?? "",
                         TypeCode = "BB_AR",
                         Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_AR")?.Value ?? ""} {item.CustName}").Trim(),
@@ -785,7 +785,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     {
                         Code = $"BB-DM-{(item.Type == 1 ? "DPS" : "PR")}-" + startDate.ToString("yyyyMMdd"),
                         LineNo = ++i,
-                        Date = item.Date,
+                        Date = startDate,
                         CoaCode = systemParam.FirstOrDefault(x => x.Code == $"{(item.Type == 1 ? "DPS" : "PR")}_COA")?.Value ?? "",
                         TypeCode = $"BB_{(item.Type == 1 ? "DPS" : "PR")}",
                         Notes = ($"{systemParam.FirstOrDefault(x => x.Code == $"JR_PREFIX_BB_{(item.Type == 1 ? "DPS" : "PR")}")?.Value ?? ""} {item.SupName}").Trim(),
@@ -851,7 +851,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     {
                         Code = $"BB-CM-{(item.Type == 1 ? "DPC" : "SR")}-" + startDate.ToString("yyyyMMdd"),
                         LineNo = ++i,
-                        Date = item.Date,
+                        Date = startDate,
                         CoaCode = systemParam.FirstOrDefault(x => x.Code == $"{(item.Type == 1 ? "DPC" : "SR")}_COA")?.Value ?? "",
                         TypeCode = $"BB_{(item.Type == 1 ? "DPC" : "SR")}",
                         Notes = ($"{systemParam.FirstOrDefault(x => x.Code == $"JR_PREFIX_BB_{(item.Type == 1 ? "DPC" : "SR")}")?.Value ?? ""} {item.CustName}").Trim(),
@@ -1979,7 +1979,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                         {
                             Code = "BB-INVT-" + startDate.ToString("yyyyMMdd"),
                             LineNo = ++i,
-                            Date = item.Date,
+                            Date = startDate,
                             CoaCode = systemParam.FirstOrDefault(x => x.Code == "INVENTORY_COA")?.Value ?? "",
                             TypeCode = "BB_INVT",
                             Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_INVENTORY")?.Value ?? ""} {itemDetail.ItemName}").Trim(),
