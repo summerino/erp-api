@@ -120,11 +120,11 @@ namespace ERP.Web.API.Controllers.Purchase
         }
 
         [HttpGet("diff-item")]
-        public IActionResult GetDiffItem(string code)
+        public IActionResult GetDiffItem(string code, bool? fullReceived)
         {
             var uomC = _uom.GetDataConversion().ToList();
 
-            var data = _rtn.GetDetailExchangeData(code)
+            var data = _rtn.GetDetailExchangeData(code, fullReceived)
                 .Select(x => new
                 {
                     x.Id,
@@ -132,13 +132,15 @@ namespace ERP.Web.API.Controllers.Purchase
                     x.LineNo,
                     x.ReturnDetailId,
                     x.ItemId,
-                    x.ItemInitial,
                     x.ItemName,
                     x.UomId,
                     x.UnitId,
                     x.UnitName,
                     x.Qty,
+                    x.QtyRcv,
+                    x.WarehouseCode,
                     x.UnitPrice,
+                    Disc = 0m,
                     x.TaxId,
                     x.TaxAmount,
                     x.NettPrice,
@@ -147,8 +149,6 @@ namespace ERP.Web.API.Controllers.Purchase
                     OldUnitId = x.ItemUomBuyId,
                     OldUnitName = x.ItemUomBuyName,
                     OldUnitPrice = x.ItemBuyPrice,
-                    TotTax = x.Qty * x.TaxAmount,
-                    TotDPP = x.Qty * x.Dpp,
                     Units = uomC.Where(u => u.UomId == x.UomId)
                         .Select(u => new
                         {
@@ -162,6 +162,8 @@ namespace ERP.Web.API.Controllers.Purchase
                         })
                         .OrderBy(u => u.Seq)
                         .ToList(),
+                    TotTax = x.Qty * x.TaxAmount,
+                    TotDPP = x.Qty * x.Dpp,
                     State = ""
                 })
                 .ToList<dynamic>();

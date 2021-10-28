@@ -51,9 +51,17 @@ namespace ERP.Web.API.Domain.Services.Purchase
             return data.OrderBy(x => x.LineNo);
         }
 
-        public IEnumerable<VwPurchaseReturnDetailExchDiffItem> GetDetailExchangeData(string code)
+        public IEnumerable<VwPurchaseReturnDetailExchDiffItem> GetDetailExchangeData(string code, bool? fullReceived)
         {
             var data = Db.VwPurchaseReturnDetailExchDiffItems.Where(x => x.Code == code);
+
+            if (fullReceived.HasValue)
+            {
+                data = (bool)fullReceived
+                    ? data.Where(x => x.Qty <= x.QtyRcv)
+                    : data.Where(x => x.Qty > x.QtyRcv);
+            }
+
             return data.OrderBy(x => x.LineNo);
         }
 
