@@ -4622,9 +4622,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("bigint")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<string>("Code")
                         .IsRequired()
                         .HasMaxLength(17)
@@ -4647,6 +4644,9 @@ namespace ERP.Entity.Migrations.TenantMigrations
 
                     b.Property<int>("UnitId")
                         .HasColumnType("int");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("UomId")
                         .HasColumnType("int");
@@ -6035,15 +6035,15 @@ namespace ERP.Entity.Migrations.TenantMigrations
 
             modelBuilder.Entity("ERP.Entity.Inventory.VwBeginningBalanceStockDetail", b =>
                 {
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<string>("Code")
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
 
                     b.Property<long>("Id")
                         .HasColumnType("bigint");
+
+                    b.Property<decimal?>("ItemBuyPrice")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("ItemId")
                         .HasColumnType("int");
@@ -6053,6 +6053,13 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(max)");
 
                     b.Property<string>("ItemName")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<int?>("ItemUomBuyId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ItemUomBuyName")
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
 
@@ -6068,6 +6075,9 @@ namespace ERP.Entity.Migrations.TenantMigrations
 
                     b.Property<int>("UnitId")
                         .HasColumnType("int");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("UomId")
                         .HasColumnType("int");
