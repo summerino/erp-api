@@ -34,6 +34,7 @@ namespace ERP.Web.API.Domain.Services.Inventory
 					WHEN sm.Src = 'BB' THEN 'Saldo Awal Persediaan'
 					WHEN sm.Src = 'PR' THEN 'Retur Pembelian'
 					WHEN sm.Src = 'SR' THEN 'Retur Penjualan'
+					WHEN sm.Src = 'CNEE' THEN 'Konsinyasi'
 					END AS SrcTrans,
 					CASE
 					WHEN sm.Src = 'ADJ' AND sm.BaseQty > 0 THEN 
@@ -48,7 +49,7 @@ namespace ERP.Web.API.Domain.Services.Inventory
 						WHEN @Unit = 2 THEN abs(sm.BaseQty) / ( SELECT EXP(SUM(LOG(Conversion))) FROM Inventory.UoMConversion WHERE UomId = im.UomId AND Seq <= (SELECT Seq FROM Inventory.UoMConversion WHERE Id = im.UomBuyId))
 						WHEN @Unit = 3 THEN abs(sm.BaseQty) / ( SELECT EXP(SUM(LOG(Conversion))) FROM Inventory.UoMConversion WHERE UomId = im.UomId AND Seq <= (SELECT Seq FROM Inventory.UoMConversion WHERE Id = im.UomSellId))
 						END AS decimal)
-					WHEN sm.Src = 'TS' AND sm.[Type] = 'OH' AND sm.BaseQty > 0 THEN 
+					WHEN sm.Src IN ('TS', 'CNEE') AND sm.[Type] = 'OH' AND sm.BaseQty > 0 THEN 
 						CAST (CASE 
 						WHEN @Unit = 1 THEN abs(sm.BaseQty) 
 						WHEN @Unit = 2 THEN abs(sm.BaseQty) / ( SELECT EXP(SUM(LOG(Conversion))) FROM Inventory.UoMConversion WHERE UomId = im.UomId AND Seq <= (SELECT Seq FROM Inventory.UoMConversion WHERE Id = im.UomBuyId))
@@ -69,7 +70,7 @@ namespace ERP.Web.API.Domain.Services.Inventory
 						WHEN @Unit = 2 THEN abs(sm.BaseQty) / ( SELECT EXP(SUM(LOG(Conversion))) FROM Inventory.UoMConversion WHERE UomId = im.UomId AND Seq <= (SELECT Seq FROM Inventory.UoMConversion WHERE Id = im.UomBuyId))
 						WHEN @Unit = 3 THEN abs(sm.BaseQty) / ( SELECT EXP(SUM(LOG(Conversion))) FROM Inventory.UoMConversion WHERE UomId = im.UomId AND Seq <= (SELECT Seq FROM Inventory.UoMConversion WHERE Id = im.UomSellId))
 						END AS decimal)
-					WHEN sm.Src = 'TS' AND sm.[Type] = 'OH' AND sm.BaseQty < 0 THEN 
+					WHEN sm.Src IN ('TS', 'CNEE') AND sm.[Type] = 'OH' AND sm.BaseQty < 0 THEN 
 						CAST (CASE 
 						WHEN @Unit = 1 THEN abs(sm.BaseQty) 
 						WHEN @Unit = 2 THEN abs(sm.BaseQty) / ( SELECT EXP(SUM(LOG(Conversion))) FROM Inventory.UoMConversion WHERE UomId = im.UomId AND Seq <= (SELECT Seq FROM Inventory.UoMConversion WHERE Id = im.UomBuyId))
@@ -90,7 +91,7 @@ namespace ERP.Web.API.Domain.Services.Inventory
 					CAST (0 AS bit) AS IsBold
 				FROM Inventory.StockMutation sm
 				LEFT JOIN Inventory.Item im on im.Id = sm.ItemId
-				WHERE sm.Src IN ('RCV','DO','TS','ADJ','BB', 'PR') AND sm.[Type] = 'OH' " + (string.IsNullOrEmpty(whCode) ? "" : $"AND sm.WarehouseCode = '{whCode.Replace("'", "''")}'") + " ORDER BY sm.Date").ToList();
+				WHERE sm.Src IN ('RCV','DO','TS','ADJ','BB','PR','CNEE') AND sm.[Type] = 'OH' " + (string.IsNullOrEmpty(whCode) ? "" : $"AND sm.WarehouseCode = '{whCode.Replace("'", "''")}'") + " ORDER BY sm.Date").ToList();
 
 			var itemData = _db.ReportByItems.FromSqlRaw(qsetUnit +
 				@"SELECT im.Id, im.Initial, im.[Name],

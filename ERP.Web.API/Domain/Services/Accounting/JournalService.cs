@@ -992,7 +992,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     //Receive Process
                     var RcvData = (from rcvheader in _db.PurchaseReceiveHeaders
                                    join supplier in _db.Suppliers on rcvheader.SupCode equals supplier.Code
-                                   where rcvheader.TransCode == itemData.RtnHeader.Code
+                                   where rcvheader.TransCode == itemData.RtnHeader.Code && rcvheader.Mark != "V"
                                    select new { RcvHeader = rcvheader, Supplier = supplier }).ToList();
 
                     if (RcvData.Any())
@@ -1006,6 +1006,8 @@ namespace ERP.Web.API.Domain.Services.Accounting
                             short j = 0;
                             foreach (var itemDetail in RcvDetailData)
                             {
+                                var diffItem = RtnDetailExData.FirstOrDefault(x => x.Code == itemRcvData.RcvHeader.TransCode && x.ItemId == itemDetail.RcvDetail.ItemId);
+
                                 //Inventory
                                 journals.Add(new Journal
                                 {
@@ -1021,7 +1023,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                                     CurrCode = itemRcvData.RcvHeader.CurrCode,
                                     Period = itemRcvData.RcvHeader.Date.ToString("yyyyMMdd"),
                                     Type = "D",
-                                    Amount = itemData.RtnHeader.Type == 2 ? hppData[itemDetail.RcvDetail.ItemId] * itemDetail.RcvDetail.Qty : RtnDetailExData.FirstOrDefault(x => x.Code == itemRcvData.RcvHeader.TransCode && x.ItemId == itemDetail.RcvDetail.ItemId).UnitPrice * itemDetail.RcvDetail.Qty,
+                                    Amount = itemData.RtnHeader.Type == 2 ? hppData[itemDetail.RcvDetail.ItemId] * itemDetail.RcvDetail.Qty : diffItem != null ? diffItem.UnitPrice * itemDetail.RcvDetail.Qty : 0,
                                     SrcTrans = "RCV"
                                 });
 
