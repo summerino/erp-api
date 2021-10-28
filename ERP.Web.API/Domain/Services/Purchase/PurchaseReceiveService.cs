@@ -557,10 +557,13 @@ namespace ERP.Web.API.Domain.Services.Purchase
             {
                 foreach (var item in items)
                 {
+                    var prData = Db.PurchaseReturnHeaders.FirstOrDefault(x => x.Code == transCode);
                     var dataPRDetail = Db.PurchaseReturnDetails.FirstOrDefault(x => x.Code == transCode && x.ItemId == item.ItemId);
+                    var dataPRXDetail = Db.PurchaseReturnDetailExchDiffItems.FirstOrDefault(x => x.Code == transCode && x.ItemId == item.ItemId);
+
                     if (code == null)
                     {
-                        var availableStock = dataPRDetail.Qty - dataPRDetail.QtyRcv ;
+                        var availableStock = prData.Type == 2 ? dataPRDetail.Qty - dataPRDetail.QtyRcv : dataPRXDetail.Qty - dataPRXDetail.QtyRcv;
                         if (item.Qty > availableStock)
                         {
                             result = true;
@@ -569,7 +572,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                     else
                     {
                         var oldPRD = Db.PurchaseReceiveDetails.AsNoTracking().FirstOrDefault(x => x.Code == code && x.ItemId == item.ItemId);
-                        var availableStock = dataPRDetail.Qty - (dataPRDetail.QtyRcv - oldPRD.Qty);
+                        var availableStock = (prData.Type == 2 ? dataPRDetail.Qty : dataPRXDetail.Qty) - ((prData.Type == 2 ? dataPRDetail.QtyRcv : dataPRXDetail.QtyRcv) - oldPRD.Qty);
                         if (item.Qty > availableStock)
                         {
                             result = true;
