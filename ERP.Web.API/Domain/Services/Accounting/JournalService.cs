@@ -992,7 +992,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     //Receive Process
                     var RcvData = (from rcvheader in _db.PurchaseReceiveHeaders
                                    join supplier in _db.Suppliers on rcvheader.SupCode equals supplier.Code
-                                   where rcvheader.TransCode == itemData.RtnHeader.Code
+                                   where rcvheader.TransCode == itemData.RtnHeader.Code && rcvheader.Mark != "V"
                                    select new { RcvHeader = rcvheader, Supplier = supplier }).ToList();
 
                     if (RcvData.Any())
@@ -1986,7 +1986,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                             CurrCode = "IDR",
                             Period = item.Date.ToString("yyyyMMdd"),
                             Type = "D",
-                            Amount = itemDetail.Amount * itemDetail.Qty,
+                            Amount = itemDetail.Amount,
                             SrcTrans = "BB_INVT"
                         });
                     }
