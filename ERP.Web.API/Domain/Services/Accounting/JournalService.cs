@@ -552,7 +552,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     CurrCode = itemData.Dlvheader.CurrCode,
                     Period = itemData.Dlvheader.Date.ToString("yyyyMMdd"),
                     Type = "D",
-                    Amount = arValue - journals.Where(x => x.Code == itemData.Dlvheader.Code && x.Group == 2).Sum(x => x.Amount),
+                    Amount = arValue,
                     SrcTrans = "DLV"
                 });
 
@@ -570,7 +570,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     CurrCode = itemData.Dlvheader.CurrCode,
                     Period = itemData.Dlvheader.Date.ToString("yyyyMMdd"),
                     Type = "C",
-                    Amount = itemData.Dlvheader.Total - journals.Where(x => x.Code == itemData.Dlvheader.Code && new[] { 3, 4, 5 }.Contains(x.Group)).Sum(x => x.Amount),
+                    Amount = itemData.Dlvheader.Total - journals.Where(x => x.Code == itemData.Dlvheader.Code && new[] { 4, 5 }.Contains(x.Group)).Sum(x => x.Amount) + journals.Where(x => x.Code == itemData.Dlvheader.Code && new[] { 2, 3 }.Contains(x.Group)).Sum(x => x.Amount),
                     SrcTrans = "DLV"
                 });
 
@@ -2219,10 +2219,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
             decimal latestStockValue = 0;
             decimal hpp = 0;
 
-            //var firstId = stockMutations.FirstOrDefault(x => x.WarehouseCode == whCode && x.ItemId == itemId && x.Src == "RCV")?.Id;
-            //if (firstId == null)
-            //    return 0;
-            var firstSM = stockMutations.OrderBy(y => y.Date).FirstOrDefault(x => x.WarehouseCode == whCode && x.ItemId == itemId);
+            var firstSM = stockMutations.OrderBy(y => y.Date).FirstOrDefault(x => x.WarehouseCode == whCode && x.ItemId == itemId && x.Src == "RCV");
 
             var currentSM = stockMutations.FirstOrDefault(x => x.WarehouseCode == whCode && x.ItemId == itemId && x.RefDetailId1 == id && x.Src == srcCode);
 
