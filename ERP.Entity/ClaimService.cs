@@ -7,6 +7,8 @@ namespace ERP.Entity
     {
         string Jti { get; }
 
+        string UserCode { get; }
+
         int UserId { get; }
 
         int RoleId { get; }
@@ -33,6 +35,9 @@ namespace ERP.Entity
 
         public string Jti =>
             _accessor.HttpContext?.User?.Claims?.SingleOrDefault(x => x.Type == "jti")?.Value.ToString();
+
+        public string UserCode =>
+            _accessor.HttpContext?.User?.Claims?.SingleOrDefault(x => x.Type == "UserCode")?.Value.ToString();
 
         public int UserId =>
             int.TryParse(_accessor.HttpContext?.User?.Claims?.SingleOrDefault(x => x.Type == "UserId")?.Value,
