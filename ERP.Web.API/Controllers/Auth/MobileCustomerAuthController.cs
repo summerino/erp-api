@@ -6,43 +6,26 @@ using ERP.Web.API.Model.Auth;
 
 namespace ERP.Web.API.Controllers.Auth
 {
-    [Authorize(AppConstant.ValidateMobileTokenPolicy)]
-    [Route("mobile-auth")]
+    [Authorize(AppConstant.ValidateMobileCustomerTokenPolicy)]
+    [Route("mobile-customer-auth")]
     [ApiController]
-    public class MobileAuthController : ControllerBase
+    public class MobileCustomerAuthController : ControllerBase
     {
         private readonly IMobileAuthService _auth;
 
-        public MobileAuthController(IMobileAuthService auth)
+        public MobileCustomerAuthController(IMobileAuthService auth)
         {
             _auth = auth;
         }
 
         [HttpPost("[action]")]
         [AllowAnonymous]
-        public IActionResult Login(MobileLoginRequest data)
+        public IActionResult Login(MobileLoginCustomerRequest data)
         {
             if (ModelState.IsValid)
             {
-                var result = _auth.Login(data);
+                var result = _auth.LoginCustomer(data);
                 return Ok(result) ;
-            }
-
-            return BadRequest(new MobileAuthResult
-            {
-                Message = "Invalid request.",
-                Success = false
-            });
-        }
-
-        [HttpPost("login-warehouse")]
-        [AllowAnonymous]
-        public IActionResult LoginWarehouse(MobileLoginRequest data)
-        {
-            if (ModelState.IsValid)
-            {
-                var result = _auth.LoginWarehouse(data);
-                return Ok(result);
             }
 
             return BadRequest(new MobileAuthResult
@@ -57,7 +40,7 @@ namespace ERP.Web.API.Controllers.Auth
         {
             if (ModelState.IsValid)
             {
-                var result = _auth.ChangePassword(data);
+                var result = _auth.ChangePasswordCustomer(data);
                 return Ok(result);
             }
 
@@ -73,7 +56,7 @@ namespace ERP.Web.API.Controllers.Auth
         {
             if (ModelState.IsValid)
             {
-                var result = _auth.Logout();
+                var result = _auth.LogoutCustomer();
                 return Ok(result);
             }
 

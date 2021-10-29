@@ -3,6 +3,7 @@
     public static class AppConstant
     {
         public const string ValidateMobileTokenPolicy = "ValidateMobileToken";
+        public const string ValidateMobileCustomerTokenPolicy = "ValidateMobileCustomerToken";
         public static string UnAuthMessage = "Operasi tidak dapat dilanjutkan, harap hubungi administrator.";
     }
 

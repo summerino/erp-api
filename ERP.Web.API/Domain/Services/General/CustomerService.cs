@@ -440,7 +440,6 @@ namespace ERP.Web.API.Domain.Services.General
 
             if (data.CatalogUserId == null)
             {
-
                 if (string.IsNullOrWhiteSpace(data.MobileUsername) || string.IsNullOrWhiteSpace(data.MobilePassword))
                 {
                     result.Message = "Username atau password tidak boleh kosong.";

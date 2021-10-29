@@ -127,6 +127,9 @@ namespace ERP.Web.API
 
                 options.AddPolicy(AppConstant.ValidateMobileTokenPolicy, policy =>
                     policy.Requirements.Add(new MobileUserSessionRequirement()));
+
+                options.AddPolicy(AppConstant.ValidateMobileCustomerTokenPolicy, policy =>
+                    policy.Requirements.Add(new MobileCustomerSessionRequirement()));
             });
 
             // Add authentication service
@@ -160,6 +163,7 @@ namespace ERP.Web.API
             // Core services
             services.AddScoped<IAuthorizationHandler, UserSessionHandler>();
             services.AddScoped<IAuthorizationHandler, MobileUserSessionHandler>();
+            services.AddScoped<IAuthorizationHandler, MobileCustomerSessionHandler>();
             services.AddScoped<ITenantService, TenantService>();
             services.AddScoped<IShardingService, ShardingService>();
             services.AddScoped<IClaimService, ClaimService>();

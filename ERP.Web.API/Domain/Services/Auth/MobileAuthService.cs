@@ -10,13 +10,13 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using ERP.Entity;
+using ERP.Entity.Catalog;
+using ERP.Entity.General;
 using ERP.Web.API.Domain.Interfaces.Auth;
 using ERP.Web.API.Model;
 using ERP.Web.API.Model.Auth;
 using UserTenant = ERP.Entity.SystemManagement.User;
 using UserCatalog = ERP.Entity.Catalog.User;
-using CustomerCatalog = ERP.Entity.Catalog.CustomerUser;
-using UserCustomer = ERP.Entity.General.Customer;
 
 namespace ERP.Web.API.Domain.Services.Auth
 {
@@ -321,6 +321,86 @@ namespace ERP.Web.API.Domain.Services.Auth
             };
         }
 
+        public MobileAuthResult LoginCustomer(MobileLoginCustomerRequest data)
+        {
+            var catalogUser = _catalogCtx.CustomerUsers.FirstOrDefault(x => x.Username == data.Username);
+            if (catalogUser == null)
+            {
+                return new MobileAuthResult
+                {
+                    Message = "Username atau Kata Sandi tidak sesuai.",
+                    Success = false
+                };
+            }
+
+            var pwh = new PasswordHasher<CustomerUser>();
+            var isCorrect = pwh.VerifyHashedPassword(catalogUser, catalogUser.Password, data.Password);
+
+            if (isCorrect != PasswordVerificationResult.Success)
+            {
+                return new MobileAuthResult
+                {
+                    Message = "Username atau Kata Sandi tidak sesuai.",
+                    Success = false
+                };
+            }
+
+            var tenant = _catalogCtx.Tenants.FirstOrDefault(x => x.Id == catalogUser.TenantId);
+            if (tenant == null)
+            {
+                return new MobileAuthResult
+                {
+                    Message = "Username atau Kata Sandi tidak sesuai.",
+                    Success = false
+                };
+            }
+
+            // Configure tenant context db
+            var contextOptions = new DbContextOptionsBuilder<TenantContext>()
+                .UseSqlServer($"Server={tenant.ServerName};Database={tenant.DatabaseName};User Id={tenant.ServerUserId};Password={tenant.ServerPassword}")
+                .Options;
+            var tenantCtx = new TenantContext(contextOptions, _catalogCtx, _claim);
+
+            // Get customer information details
+            var tenantCustomer = tenantCtx.Customers.FirstOrDefault(x => x.CatalogUserId == catalogUser.Id && x.MobileSignIn && x.IsActive);
+            if (tenantCustomer == null)
+            {
+                return new MobileAuthResult
+                {
+                    Message = "Username atau Kata Sandi tidak sesuai.",
+                    Success = false
+                };
+            }
+
+            if (tenantCustomer.IsMobileLoggedIn)
+            {
+                if ((DateTime.Now - tenantCustomer.MobileLastLogin.GetValueOrDefault()).TotalMinutes < _jwtConfig.TimeInMinute)
+                {
+                    return new MobileAuthResult
+                    {
+                        Message = "Pengguna sedang digunakan.",
+                        Success = false
+                    };
+                }
+            }
+
+            tenantCustomer.IsMobileLoggedIn = true;
+            tenantCustomer.MobileLastLogin = DateTime.Now;
+            tenantCustomer.MobileSessionId = Guid.NewGuid().ToString();
+            tenantCustomer.MobileTokenId = GenerateJwtTokenCustomer(tenantCustomer, catalogUser.TenantId);
+            tenantCustomer.MobileIpAddress = _claim.IpAddress;
+
+            tenantCtx.SaveChanges();
+
+            return new MobileAuthResult
+            {
+                AccessToken = tenantCustomer.MobileTokenId,
+                ExpToken = EpochTime.GetIntDate(tenantCustomer.MobileLastLogin.Value.AddMinutes(_jwtConfig.TimeInMinute)),
+                UserData = catalogUser.Id.ToString(),
+                Success = true
+            };
+        }
+
         public MobileSimpleResponse ChangePassword(MobileChangePasswordRequest data)
         {
             if (data.NewPassword != data.ConfirmPassword)
@@ -353,6 +433,41 @@ namespace ERP.Web.API.Domain.Services.Auth
 
             return new MobileSimpleResponse { Success = true, Message = "Kata Sandi berhasil dirubah." };
         }
+
+        public MobileSimpleResponse ChangePasswordCustomer(MobileChangePasswordRequest data)
+        {
+            if (data.NewPassword != data.ConfirmPassword)
+            {
+                return new MobileSimpleResponse
+                {
+                    Message = "Kata Sandi tidak sama",
+                    Success = false
+                };
+            }
+
+            var customer = _tenantCtx.Customers.FirstOrDefault(x => x.Code == _claim.UserCode);
+            if (customer != null)
+            {
+                var catalogCustomerUser = _catalogCtx.CustomerUsers.FirstOrDefault(x => x.Username == customer.MobileUsername);
+                var pwh = new PasswordHasher<CustomerUser>();
+                var isCorrect = pwh.VerifyHashedPassword(catalogCustomerUser, catalogCustomerUser.Password, data.OldPassword);
+
+                if (isCorrect != PasswordVerificationResult.Success)
+                {
+                    return new MobileSimpleResponse
+                    {
+                        Message = "Kata Sandi tidak sesuai.",
+                        Success = false
+                    };
+                }
+                var hashPwd = pwh.HashPassword(catalogCustomerUser, data.NewPassword);
+                catalogCustomerUser.Password = hashPwd;
+                _catalogCtx.SaveChanges();
+            }
+
+            return new MobileSimpleResponse { Success = true, Message = "Kata Sandi berhasil dirubah." };
+        }
+
         public MobileAuthResult Logout()
         {
             var catalogUser = _catalogCtx.Users.FirstOrDefault(x => x.Id.ToString() == _claim.CatalogUserId);
@@ -410,6 +525,48 @@ namespace ERP.Web.API.Domain.Services.Auth
                 Message = "Berhasil Keluar."
             };
         }
+
+        public MobileAuthResult LogoutCustomer()
+        {
+            var catalogCustomerUser = _catalogCtx.CustomerUsers.FirstOrDefault(x => x.Id.ToString() == _claim.CatalogUserId);
+            if (catalogCustomerUser == null)
+            {
+                return new MobileAuthResult
+                {
+                    Message = "Pengguna tidak terdaftar.",
+                    Success = false
+                };
+            }
+
+            // Configure tenant context db
+            var contextOptions = new DbContextOptionsBuilder<TenantContext>().Options;
+            var tenantCtx = new TenantContext(contextOptions, _catalogCtx, _claim);
+
+            // Get customer information details
+            var tenantCustomer = tenantCtx.Customers.FirstOrDefault(x => x.CatalogUserId == catalogCustomerUser.Id);
+            if (tenantCustomer == null)
+            {
+                return new MobileAuthResult
+                {
+                    Message = "Pengguna tidak terdaftar.",
+                    Success = false
+                };
+            }
+
+            tenantCustomer.IsMobileLoggedIn = false;
+            tenantCustomer.MobileIpAddress = null;
+            tenantCustomer.MobileTokenId = null;
+            tenantCustomer.MobileSessionId = null;
+
+            tenantCtx.SaveChanges();
+
+            return new MobileAuthResult
+            {
+                Success = true,
+                Message = "Berhasil Keluar."
+            };
+        }
+
         private string GenerateJwtToken(UserTenant data, int tenantId, string defaultWarehouseCode)
         {
             var jwtTokenHandler = new JwtSecurityTokenHandler();
@@ -441,7 +598,7 @@ namespace ERP.Web.API.Domain.Services.Auth
             return jwtToken;
         }
 
-        private string GenerateJwtTokenCustomer(UserCustomer data, int tenantId)
+        private string GenerateJwtTokenCustomer(Customer data, int tenantId)
         {
             var jwtTokenHandler = new JwtSecurityTokenHandler();
 
@@ -454,7 +611,7 @@ namespace ERP.Web.API.Domain.Services.Auth
                     new Claim(JwtRegisteredClaimNames.Sub, data.MobileUsername),
                     new Claim(JwtRegisteredClaimNames.Jti, data.MobileSessionId),
                     new Claim(JwtRegisteredClaimNames.GivenName, data.Initial),
-                    new Claim("Code", data.Code),
+                    new Claim("UserCode", data.Code),
                     new Claim("CatalogUserId", data.CatalogUserId.ToString()),
                     new Claim("TenantId", tenantId.ToString()),
                 }),
@@ -469,126 +626,5 @@ namespace ERP.Web.API.Domain.Services.Auth
 
             return jwtToken;
         }
-
-        public MobileAuthResult LoginCustomer(MobileLoginCustomerRequest data)
-        {
-            var catalogUser = _catalogCtx.CustomerUsers.FirstOrDefault(x => x.Username == data.Username);
-            if (catalogUser == null)
-            {
-                return new MobileAuthResult
-                {
-                    Message = "Username atau Kata Sandi tidak sesuai.",
-                    Success = false
-                };
-            }
-
-            var pwh = new PasswordHasher<CustomerCatalog>();
-            var isCorrect = pwh.VerifyHashedPassword(catalogUser, catalogUser.Password, data.Password);
-
-            if (isCorrect != PasswordVerificationResult.Success)
-            {
-                return new MobileAuthResult
-                {
-                    Message = "Username atau Kata Sandi tidak sesuai.",
-                    Success = false
-                };
-            }
-
-            var tenant = _catalogCtx.Tenants.FirstOrDefault(x => x.Id == catalogUser.TenantId);
-            if (tenant == null)
-            {
-                return new MobileAuthResult
-                {
-                    Message = "Username atau Kata Sandi tidak sesuai.",
-                    Success = false
-                };
-            }
-
-            // Configure tenant context db
-            var contextOptions = new DbContextOptionsBuilder<TenantContext>()
-                .UseSqlServer($"Server={tenant.ServerName};Database={tenant.DatabaseName};User Id={tenant.ServerUserId};Password={tenant.ServerPassword}")
-                .Options;
-            var tenantCtx = new TenantContext(contextOptions, _catalogCtx, _claim);
-
-            // Get user information details
-            var tenantUser = tenantCtx.Customers.FirstOrDefault(x => x.CatalogUserId == catalogUser.Id && x.MobileSignIn && x.IsActive);
-            if (tenantUser == null)
-            {
-                return new MobileAuthResult
-                {
-                    Message = "Username atau Kata Sandi tidak sesuai.",
-                    Success = false
-                };
-            }
-
-            if (tenantUser.IsMobileLoggedIn)
-            {
-                if ((DateTime.Now - tenantUser.MobileLastLogin.GetValueOrDefault()).TotalMinutes < _jwtConfig.TimeInMinute)
-                {
-                    return new MobileAuthResult
-                    {
-                        Message = "Pengguna sedang digunakan.",
-                        Success = false
-                    };
-                }
-            }
-
-            // Get employee information details
-            var tenantEmployee = tenantCtx.Customers.FirstOrDefault(x => x.Code == tenantUser.Code 
-          );
-            if (tenantEmployee == null)
-            {
-                return new MobileAuthResult
-                {
-                    Message = "Data karyawan tidak ditemukan.",
-                    Success = false
-                };
-            }
-
-
-            tenantUser.IsMobileLoggedIn = true;
-            tenantUser.MobileLastLogin = DateTime.Now;
-            tenantUser.MobileSessionId = Guid.NewGuid().ToString();
-            tenantUser.MobileTokenId = GenerateJwtTokenCustomer(tenantUser, catalogUser.TenantId);
-            tenantUser.MobileIpAddress = _claim.IpAddress;
-
-            tenantCtx.Customers.Update(tenantUser);
-            tenantCtx.Entry(tenantUser).Property(e => e.CatalogUserId).IsModified = false;
-            tenantCtx.Entry(tenantUser).Property(e => e.MobileUsername).IsModified = false;
-            tenantCtx.Entry(tenantUser).Property(e => e.Initial).IsModified = false;
-            tenantCtx.Entry(tenantUser).Property(e => e.Name).IsModified = false;
-            tenantCtx.Entry(tenantUser).Property(e => e.IsActive).IsModified = false;
-            tenantCtx.Entry(tenantUser).Property(e => e.CreatedBy).IsModified = false;
-            tenantCtx.Entry(tenantUser).Property(e => e.CreatedDate).IsModified = false;
-            tenantCtx.Entry(tenantUser).Property(e => e.UpdatedBy).IsModified = false;
-            tenantCtx.Entry(tenantUser).Property(e => e.UpdatedDate).IsModified = false;
-            tenantCtx.Entry(tenantUser).Property(e => e.IsMobileLoggedIn).IsModified = false;
-            tenantCtx.Entry(tenantUser).Property(e => e.MobileLastLogin).IsModified = false;
-            tenantCtx.Entry(tenantUser).Property(e => e.MobileSessionId).IsModified = false;
-            tenantCtx.Entry(tenantUser).Property(e => e.MobileTokenId).IsModified = false;
-            tenantCtx.Entry(tenantUser).Property(e => e.MobileIpAddress).IsModified = false;
-            tenantCtx.SaveChanges();
-
-            return new MobileAuthResult
-            {
-                AccessToken = tenantUser.MobileTokenId,
-                ExpToken = EpochTime.GetIntDate(tenantUser.MobileLastLogin.Value.AddMinutes(_jwtConfig.TimeInMinute)),
-                UserData = catalogUser.Id.ToString(),
-                Success = true
-            };
-        }
-
-        //public IEnumerable<int> GetActions(int menuId, int roleId, Actions[] actions)
-        //{
-        //    var arr = actions.Select(x => (int)x).ToList();
-        //    return GetActions(menuId, roleId, arr);
-        //}
-
-        //public IEnumerable<int> GetActions(int menuId, int roleId, List<int> actions)
-        //{
-        //    var query = _tenantCtx.RoleMenuActions.Where(x => x.MenuId.Equals(menuId) && x.RoleId.Equals(roleId) && actions.Contains(x.ActionId));
-        //    return query.Select(x=>x.ActionId);
-        //}
-
     }
 }
