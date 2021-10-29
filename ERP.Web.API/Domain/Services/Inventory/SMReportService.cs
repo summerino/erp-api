@@ -35,6 +35,7 @@ namespace ERP.Web.API.Domain.Services.Inventory
 					WHEN sm.Src = 'PR' THEN 'Retur Pembelian'
 					WHEN sm.Src = 'SR' THEN 'Retur Penjualan'
 					WHEN sm.Src = 'CNEE' THEN 'Konsinyasi'
+					WHEN sm.Src = 'DOF' THEN 'Surat Jalan Bonus'
 					END AS SrcTrans,
 					CASE
 					WHEN sm.Src = 'ADJ' AND sm.BaseQty > 0 THEN 
@@ -91,7 +92,7 @@ namespace ERP.Web.API.Domain.Services.Inventory
 					CAST (0 AS bit) AS IsBold
 				FROM Inventory.StockMutation sm
 				LEFT JOIN Inventory.Item im on im.Id = sm.ItemId
-				WHERE sm.Src IN ('RCV','DO','TS','ADJ','BB','PR','CNEE') AND sm.[Type] = 'OH' " + (string.IsNullOrEmpty(whCode) ? "" : $"AND sm.WarehouseCode = '{whCode.Replace("'", "''")}'") + " ORDER BY sm.Date").ToList();
+				WHERE sm.Src IN ('RCV','DO','TS','ADJ','BB','PR','CNEE','DOF') AND sm.[Type] = 'OH' " + (string.IsNullOrEmpty(whCode) ? "" : $"AND sm.WarehouseCode = '{whCode.Replace("'", "''")}'") + " ORDER BY sm.Date").ToList();
 
 			var itemData = _db.ReportByItems.FromSqlRaw(qsetUnit +
 				@"SELECT im.Id, im.Initial, im.[Name],
@@ -182,9 +183,43 @@ namespace ERP.Web.API.Domain.Services.Inventory
 
 					foreach (var item in smItemData)
                     {
+						var taxAmount = 0m;
+						if (item.SrcTrans == "Penjualan Langsung" || item.SrcTrans == "Surat Jalan")
+						{
+							taxAmount = _db.SalesDeliveryDetails.FirstOrDefault(x => x.Code == item.TransCode && x.ItemId == item.ItemId).TaxAmount;
+						}
+						else if (item.SrcTrans == "Penerimaan")
+                        {
+							taxAmount = _db.PurchaseReceiveDetails.FirstOrDefault(x => x.Code == item.TransCode && x.ItemId == item.ItemId).TaxAmount;
+						}
+						else if (item.SrcTrans == "Retur Pembelian")
+						{
+							var prData = _db.PurchaseReturnHeaders.FirstOrDefault(x => x.Code == item.TransCode);
+							if (prData.Type == 2)
+							{
+								taxAmount = _db.PurchaseReturnDetails.FirstOrDefault(x => x.Code == item.TransCode && x.ItemId == item.ItemId).TaxAmount;
+							}
+							else if (prData.Type == 3)
+							{
+								taxAmount = _db.PurchaseReturnDetailExchDiffItems.FirstOrDefault(x => x.Code == item.TransCode && x.ItemId == item.ItemId).TaxAmount;
+							}
+						}
+						else if (item.SrcTrans == "Retur Penjualan")
+						{
+							var srData = _db.SalesReturnHeaders.FirstOrDefault(x => x.Code == item.TransCode);
+							if (srData.Type == 2)
+							{
+								taxAmount = _db.SalesReturnDetails.FirstOrDefault(x => x.Code == item.TransCode && x.ItemId == item.ItemId).TaxAmount;
+							}
+							else if (srData.Type == 3)
+							{
+								taxAmount = _db.SalesReturnDetailExchDiffItems.FirstOrDefault(x => x.Code == item.TransCode && x.ItemId == item.ItemId).TaxAmount;
+							}
+						}
+
 						item.QtyEnd = item.QtyIn > 0 ? selectedItem.QtyBegin + item.QtyIn : selectedItem.QtyBegin - item.QtyOut;
-						item.InvIn = item.QtyIn * item.HPP;
-						item.InvOut = item.QtyOut * item.HPP;
+						item.InvIn = (item.QtyIn * item.HPP) - (item.QtyIn * taxAmount);
+						item.InvOut = (item.QtyOut * item.HPP) - (item.QtyOut * taxAmount);
 						item.InvEnd = (selectedItem.InvBegin + item.InvIn) - item.InvOut;
 						selectedItem.QtyBegin = item.QtyEnd;
 						selectedItem.InvBegin = item.InvEnd;
@@ -227,9 +262,9 @@ namespace ERP.Web.API.Domain.Services.Inventory
 			listVoid.AddRange(_db.SalesDeliveryHeaders.Where(x => x.Mark == "V").Select(x => x.Code).ToList());
 			listVoid.AddRange(_db.AdjustmentHeaders.Where(x => x.Mark == "V").Select(x => x.Code).ToList());
 			listVoid.AddRange(_db.TransferStockHeaders.Where(x => x.Mark == "V").Select(x => x.Code).ToList());
+			listVoid.AddRange(_db.PurchaseReturnHeaders.Where(x => x.Mark == "V").Select(x => x.Code).ToList());
 
 			result = result.Where(x => !listVoid.Contains(x.TransCode)).ToList();
-			var removed = result.Where(x => listVoid.Contains(x.TransCode)).ToList();
 
 			return result;
         }

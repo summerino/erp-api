@@ -2090,9 +2090,8 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     var nonVoidSM = RemoveVoidSM(_db.StockMutations.ToList());
                     var resultHpp = CalculateHPP(nonVoidSM, smData.WarehouseCode, smData.ItemId, smData.RefDetailId1, "ADJ");
 
-                    if (itemDetail.AdjDetail.QtyAdjust > itemDetail.AdjDetail.QtyOnHand)
+                    if (itemData.Type == 1)
                     {
-                        var qty = (itemDetail.AdjDetail.QtyAdjust - itemDetail.AdjDetail.QtyOnHand);
                         journals.Add(new Journal
                         {
                             Code = itemData.Code,
@@ -2106,33 +2105,54 @@ namespace ERP.Web.API.Domain.Services.Accounting
                             CurrCode = "IDR",
                             Period = itemData.Date.ToString("yyyyMMdd"),
                             Type = "D",
-                            Amount = qty * resultHpp,
+                            Amount = itemDetail.AdjDetail.QtyAdjust * resultHpp,
                             SrcTrans = "ADJ"
                         });
                     }
-                    else if (itemDetail.AdjDetail.QtyOnHand > itemDetail.AdjDetail.QtyAdjust)
+                    else if (itemData.Type == 2)
                     {
-                        var qty = (itemDetail.AdjDetail.QtyOnHand - itemDetail.AdjDetail.QtyAdjust);
-                        journals.Add(new Journal
+                        if (itemDetail.AdjDetail.QtyAdjust > 0)
                         {
-                            Code = itemData.Code,
-                            LineNo = ++l,
-                            Date = itemData.Date,
-                            CoaCode = systemParam.FirstOrDefault(x => x.Code == "INVENTORY_COA")?.Value ?? "",
-                            TypeCode = "ADJ_DT",
-                            Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_ADJ_MINUS")?.Value ?? ""} {itemDetail.Item.Initial}").Trim(),
-                            RefCode1 = itemDetail.Item.Initial,
-                            Group = 2,
-                            CurrCode = "IDR",
-                            Period = itemData.Date.ToString("yyyyMMdd"),
-                            Type = "C",
-                            Amount = qty * resultHpp,
-                            SrcTrans = "ADJ"
-                        });
+                            journals.Add(new Journal
+                            {
+                                Code = itemData.Code,
+                                LineNo = ++k,
+                                Date = itemData.Date,
+                                CoaCode = systemParam.FirstOrDefault(x => x.Code == "INVENTORY_COA")?.Value ?? "",
+                                TypeCode = "ADJ_DT",
+                                Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_ADJ_PLUS")?.Value ?? ""} {itemDetail.Item.Initial}").Trim(),
+                                RefCode1 = itemDetail.Item.Initial,
+                                Group = 1,
+                                CurrCode = "IDR",
+                                Period = itemData.Date.ToString("yyyyMMdd"),
+                                Type = "D",
+                                Amount = itemDetail.AdjDetail.QtyAdjust * resultHpp,
+                                SrcTrans = "ADJ"
+                            });
+                        }
+                        else if (itemDetail.AdjDetail.QtyAdjust < 0)
+                        {
+                            journals.Add(new Journal
+                            {
+                                Code = itemData.Code,
+                                LineNo = ++l,
+                                Date = itemData.Date,
+                                CoaCode = systemParam.FirstOrDefault(x => x.Code == "INVENTORY_COA")?.Value ?? "",
+                                TypeCode = "ADJ_DT",
+                                Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_ADJ_MINUS")?.Value ?? ""} {itemDetail.Item.Initial}").Trim(),
+                                RefCode1 = itemDetail.Item.Initial,
+                                Group = 2,
+                                CurrCode = "IDR",
+                                Period = itemData.Date.ToString("yyyyMMdd"),
+                                Type = "C",
+                                Amount = Math.Abs(itemDetail.AdjDetail.QtyAdjust) * resultHpp,
+                                SrcTrans = "ADJ"
+                            });
+                        }
                     }
                 }
 
-                if (journals.Where(x => x.Group == 1).Any())
+                if (journals.Where(x => x.Code == itemData.Code && x.Group == 1).Any())
                 {
                     journals.Add(new Journal
                     {
@@ -2152,7 +2172,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     });
                 }
 
-                if (journals.Where(x => x.Group == 2).Any())
+                if (journals.Where(x => x.Code == itemData.Code && x.Group == 2).Any())
                 {
                     journals.Add(new Journal
                     {
@@ -2229,31 +2249,28 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 latestQty += firstSM.BaseQty;
                 hpp = latestStockValue / latestQty;
 
-                var listSM = stockMutations.Where(x => new[] { "RCV", "DO", "SR", "ADJ", "TS", "PR" }.Contains(x.Src) && x.WarehouseCode == whCode && x.ItemId == itemId && x.Date >= firstSM.Date && x.Date <= currentSM.Date).OrderBy(x => x.Date).ToList();
+                var listSM = stockMutations.Where(x => new[] { "RCV", "DO", "SR", "ADJ", "TS", "PR", "CNEE" }.Contains(x.Src) && x.WarehouseCode == whCode && x.ItemId == itemId && x.Date >= firstSM.Date && x.Date <= currentSM.Date).OrderBy(x => x.Date).ToList();
                 foreach (var item in listSM)
                 {
-                    if (item.Src == "RCV" && item.Src == "SR")
+                    if (item.Src == "RCV" || item.Src == "SR")
                     {
                         latestStockValue += item.BaseNettPrice * item.BaseQty;
                         latestQty += item.BaseQty;
                     }
-                    else //if (item.Src == "DO")
+                    else if (item.Src == "ADJ" || item.Src == "CNEE")
                     {
-                        var srcTrans = stockMutations.FirstOrDefault(x => x.ItemId == item.ItemId && x.RefCode1 == item.RefCode2);
-                        if (srcTrans?.Src == "SR")
-                        {
-                            item.BaseNettPrice = srcTrans.BaseNettPrice;
-                            item.NettPrice = srcTrans.NettPrice;
-                            latestStockValue -= item.BaseNettPrice * item.BaseQty;
-                            latestQty -= item.BaseQty;
-                        }
-                        else
-                        {
-                            item.BaseNettPrice = hpp;
-                            item.NettPrice = (hpp * item.BaseQty) / item.Qty;
-                            latestStockValue -= item.BaseNettPrice * item.BaseQty;
-                            latestQty -= item.BaseQty;
-                        }
+                        item.BaseNettPrice = hpp;
+                        item.NettPrice = hpp * item.BaseQty / item.Qty;
+                        latestStockValue += item.BaseNettPrice * Math.Abs(item.BaseQty);
+                        latestQty += item.BaseQty;
+                        _db.StockMutations.Update(item);
+                    }
+                    else
+                    {
+                        item.BaseNettPrice = hpp;
+                        item.NettPrice = hpp * item.BaseQty / item.Qty;
+                        latestStockValue -= item.BaseNettPrice * item.BaseQty;
+                        latestQty -= item.BaseQty;
                         _db.StockMutations.Update(item);
                     }
                     if (latestStockValue > 0 && latestQty > 0)
