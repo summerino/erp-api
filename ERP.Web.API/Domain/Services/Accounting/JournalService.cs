@@ -1023,7 +1023,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                                     CurrCode = itemRcvData.RcvHeader.CurrCode,
                                     Period = itemRcvData.RcvHeader.Date.ToString("yyyyMMdd"),
                                     Type = "D",
-                                    Amount = itemData.RtnHeader.Type == 2 ? hppData[itemDetail.RcvDetail.ItemId] * itemDetail.RcvDetail.Qty : diffItem != null ? diffItem.UnitPrice * itemDetail.RcvDetail.Qty : 0,
+                                    Amount = itemData.RtnHeader.Type == 2 ? (itemDetail.RcvDetail.NettPrice - hppData[itemDetail.RcvDetail.ItemId] - itemDetail.RcvDetail.TaxAmount) * itemDetail.RcvDetail.Qty : diffItem != null ? (diffItem.NettPrice - diffItem.TaxAmount) * itemDetail.RcvDetail.Qty : 0,
                                     SrcTrans = "RCV"
                                 });
 
@@ -1035,18 +1035,36 @@ namespace ERP.Web.API.Domain.Services.Accounting
                                         Code = itemRcvData.RcvHeader.Code,
                                         LineNo = ++j,
                                         Date = itemRcvData.RcvHeader.Date,
-                                        CoaCode = string.IsNullOrWhiteSpace(taxes.FirstOrDefault(x => x.Id == itemDetail.RcvDetail.TaxId)?.CoaCode) ? systemParam.FirstOrDefault(x => x.Code == "TAX_OUT_COA")?.Value ?? "" : taxes.FirstOrDefault(x => x.Id == itemDetail.RcvDetail.TaxId)?.CoaCode,
+                                        CoaCode = string.IsNullOrWhiteSpace(taxes.FirstOrDefault(x => x.Id == itemDetail.RcvDetail.TaxId)?.CoaCode) ? systemParam.FirstOrDefault(x => x.Code == "TAX_IN_COA")?.Value ?? "" : taxes.FirstOrDefault(x => x.Id == itemDetail.RcvDetail.TaxId)?.CoaCode,
                                         TypeCode = "RCV_DT",
-                                        Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_TAX_OUT")?.Value ?? ""} {itemDetail.Item.Initial}").Trim(),
+                                        Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_IN_OUT")?.Value ?? ""} {itemDetail.Item.Initial}").Trim(),
                                         RefCode1 = itemDetail.Item.Initial,
                                         Group = 2,
                                         CurrCode = itemRcvData.RcvHeader.CurrCode,
                                         Period = itemRcvData.RcvHeader.Date.ToString("yyyyMMdd"),
                                         Type = "D",
-                                        Amount = itemDetail.RcvDetail.Qty * itemDetail.RcvDetail.TaxAmount,
+                                        Amount = itemData.RtnHeader.Type == 2 ? itemDetail.RcvDetail.Qty * itemDetail.RcvDetail.TaxAmount : diffItem != null ? diffItem.TaxAmount * itemDetail.RcvDetail.Qty : 0,
                                         SrcTrans = "RCV"
                                     });
                                 }
+
+                                //COGS - HPP
+                                journals.Add(new Journal
+                                {
+                                    Code = itemRcvData.RcvHeader.Code,
+                                    LineNo = ++j,
+                                    Date = itemRcvData.RcvHeader.Date,
+                                    CoaCode = systemParam.FirstOrDefault(x => x.Code == "COGS_COA")?.Value ?? "",
+                                    TypeCode = "RCV_DT",
+                                    Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_COGS")?.Value ?? ""} {itemData.Supplier.Initial}").Trim(),
+                                    RefCode1 = "",
+                                    Group = 3,
+                                    CurrCode = itemRcvData.RcvHeader.CurrCode,
+                                    Period = itemRcvData.RcvHeader.Date.ToString("yyyyMMdd"),
+                                    Type = "D",
+                                    Amount = hppData[itemDetail.RcvDetail.ItemId] > 0 ? itemDetail.RcvDetail.Qty * hppData[itemDetail.RcvDetail.ItemId] : 0,
+                                    SrcTrans = "RCV"
+                                });
                             }
                             //Hutang - AP
                             journals.Add(new Journal
@@ -1058,32 +1076,32 @@ namespace ERP.Web.API.Domain.Services.Accounting
                                 TypeCode = "RCV",
                                 Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_AP")?.Value ?? ""} {itemData.Supplier.Initial}").Trim(),
                                 RefCode1 = itemRcvData.RcvHeader.TransCode,
-                                Group = 3,
+                                Group = 4,
                                 CurrCode = itemRcvData.RcvHeader.CurrCode,
                                 Period = itemRcvData.RcvHeader.Date.ToString("yyyyMMdd"),
                                 Type = "C",
-                                Amount = itemRcvData.RcvHeader.Total,
+                                Amount = itemData.RtnHeader.Type == 2 ? journals.Where(x => x.Code == itemRcvData.RcvHeader.Code && new[] { 1, 2, 3 }.Contains(x.Group)).Sum(x => x.Amount) : itemRcvData.RcvHeader.Total,
                                 SrcTrans = "RCV"
                             });
 
                             if (itemData.RtnHeader.Type == 3)
                             {
-                                var inValue = journals.Where(x => x.Code == itemRcvData.RcvHeader.Code && new[] { 1, 2 }.Contains(x.Group)).Sum(x => x.Amount);
+                                var ciValue = journals.Where(x => x.Code == itemRcvData.RcvHeader.Code && new[] { 1, 2, 3 }.Contains(x.Group)).Sum(x => x.Amount) - itemRcvData.RcvHeader.Total;
                                 journals.Add(new Journal
                                 {
-                                    Code = itemData.RtnHeader.Code,
+                                    Code = itemRcvData.RcvHeader.Code,
                                     LineNo = 1,
-                                    Date = itemData.RtnHeader.Date,
-                                    CoaCode = systemParam.FirstOrDefault(x => x.Code == "COGS_COA")?.Value ?? "",
-                                    TypeCode = "PR_DT",
-                                    Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_COGS")?.Value ?? ""} {itemData.Supplier.Initial}").Trim(),
+                                    Date = itemRcvData.RcvHeader.Date,
+                                    CoaCode = systemParam.FirstOrDefault(x => x.Code == (ciValue > 0 ? "OTH_INCOME_COA" : "OTH_EXPENSE_COA"))?.Value ?? "",
+                                    TypeCode = "RCV",
+                                    Notes = ($"{systemParam.FirstOrDefault(x => x.Code == (ciValue > 0 ? "JR_PREFIX_OTH_INCOME" : "JR_PREFIX_OTH_EXPENSE"))?.Value ?? ""} {itemData.Supplier.Initial}").Trim(),
                                     RefCode1 = "",
-                                    Group = 4,
-                                    CurrCode = itemData.RtnHeader.CurrCode,
-                                    Period = itemData.RtnHeader.Date.ToString("yyyyMMdd"),
-                                    Type = "C",
-                                    Amount = Math.Abs(itemRcvData.RcvHeader.Total - inValue),
-                                    SrcTrans = "PR"
+                                    Group = 5,
+                                    CurrCode = itemRcvData.RcvHeader.CurrCode,
+                                    Period = itemRcvData.RcvHeader.Date.ToString("yyyyMMdd"),
+                                    Type = (ciValue > 0 ? "D" : "C"),
+                                    Amount = Math.Abs(ciValue),
+                                    SrcTrans = "RCV"
                                 });
                             }
                         }
@@ -1117,7 +1135,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                             CurrCode = itemData.RtnHeader.CurrCode,
                             Period = itemData.RtnHeader.Date.ToString("yyyyMMdd"),
                             Type = "C",
-                            Amount = resultHpp > 0 ? itemDetail.RtnDetail.Qty * resultHpp : 0,
+                            Amount = itemDetail.RtnDetail.Qty * (itemDetail.RtnDetail.NettPrice - itemDetail.RtnDetail.TaxAmount - resultHpp),
                             SrcTrans = "PR"
                         });
 
@@ -1141,7 +1159,26 @@ namespace ERP.Web.API.Domain.Services.Accounting
                                 SrcTrans = "PR"
                             });
                         }
+
+                        //COGS - HPP
+                        journals.Add(new Journal
+                        {
+                            Code = itemData.RtnHeader.Code,
+                            LineNo = 1,
+                            Date = itemData.RtnHeader.Date,
+                            CoaCode = systemParam.FirstOrDefault(x => x.Code == "COGS_COA")?.Value ?? "",
+                            TypeCode = "PR_DT",
+                            Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_COGS")?.Value ?? ""} {itemData.Supplier.Initial}").Trim(),
+                            RefCode1 = "",
+                            Group = 4,
+                            CurrCode = itemData.RtnHeader.CurrCode,
+                            Period = itemData.RtnHeader.Date.ToString("yyyyMMdd"),
+                            Type = "C",
+                            Amount = resultHpp > 0 ? itemDetail.RtnDetail.Qty * resultHpp : 0,
+                            SrcTrans = "PR"
+                        });
                     }
+
                     //Piutang Nota Debit
                     journals.Add(new Journal
                     {
@@ -1159,28 +1196,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                         Amount = itemData.RtnHeader.Total,
                         SrcTrans = "PR"
                     });
-
-                    //COGS - HPP
-                    var dmValue = itemData.RtnHeader.Total;
-                    var inValue = journals.Where(x => x.Code == itemData.RtnHeader.Code && new[] { 2, 3 }.Contains(x.Group)).Sum(x => x.Amount);
-                    journals.Add(new Journal
-                    {
-                        Code = itemData.RtnHeader.Code,
-                        LineNo = 1,
-                        Date = itemData.RtnHeader.Date,
-                        CoaCode = systemParam.FirstOrDefault(x => x.Code == "COGS_COA")?.Value ?? "",
-                        TypeCode = "PR_DT",
-                        Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_COGS")?.Value ?? ""} {itemData.Supplier.Initial}").Trim(),
-                        RefCode1 = "",
-                        Group = 4,
-                        CurrCode = itemData.RtnHeader.CurrCode,
-                        Period = itemData.RtnHeader.Date.ToString("yyyyMMdd"),
-                        Type = "C",
-                        Amount = Math.Abs(dmValue - inValue),
-                        SrcTrans = "PR"
-                    });
                 }
-
             }
             return journals;
         }
