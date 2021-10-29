@@ -8,7 +8,7 @@ namespace ERP.Entity.Inventory
 
         public int ItemId { get; set; }
 
-        public DateTime Date { get; set; }
+        public DateTime? Date { get; set; }
 
         public string TransCode { get; set; }
 
