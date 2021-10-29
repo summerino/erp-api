@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using ERP.Common;
 using ERP.Common.Extensions;
@@ -8,7 +7,6 @@ using ERP.Common.Models;
 using ERP.Entity;
 using ERP.Entity.General;
 using ERP.Web.API.Domain.Interfaces.General;
-using ERP.Web.API.Domain.Models;
 
 namespace ERP.Web.API.Domain.Services.General
 {
@@ -82,6 +80,15 @@ namespace ERP.Web.API.Domain.Services.General
                 return result;
             }
 
+            // Checking usage at item if type is different from original
+            if (
+                Db.Taxes.Any(x => x.Id == data.Id && x.TypeId != data.TypeId) &&
+                Db.Items.Any(x => x.SalesTaxId == data.Id || x.PurchaseTaxId == data.Id))
+            {
+                result.Message = "Data tipe pajak tidak bisa diubah karena telah digunakan pada data barang.";
+                return result;
+            }
+
             // Update data
             Db.Taxes.Update(data);
             Db.Entry(data).Property(e => e.Id).IsModified = false;
@@ -104,15 +111,16 @@ namespace ERP.Web.API.Domain.Services.General
             if (data != null)
             {
                 // Checking active
-                if (data.IsActive == false)
-                {
-                    result.Message = "Tidak bisa menghapus data pajak karena data sudah dihapus.";
-                    return result;
-                }
+                //if (data.IsActive == false)
+                //{
+                //    result.Message = "Tidak bisa menghapus data pajak karena data sudah dihapus.";
+                //    return result;
+                //}
 
-                if (Db.Items.Any(x => x.SalesTaxId == data.Id) || Db.Items.Any(x => x.PurchaseTaxId == data.Id))
+                // Checking usage at item
+                if (Db.Items.Any(x => x.SalesTaxId == data.Id || x.PurchaseTaxId == data.Id))
                 {
-                    result.Message = "Tidak bisa menghapus data tipe pajak karena telah digunakan pada data barang.";
+                    result.Message = "Tidak bisa menghapus data pajak karena telah digunakan pada data barang.";
                     return result;
                 }
 
