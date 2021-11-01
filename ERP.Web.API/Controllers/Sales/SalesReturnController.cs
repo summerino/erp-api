@@ -120,11 +120,11 @@ namespace ERP.Web.API.Controllers.Sales
         }
 
         [HttpGet("diff-item")]
-        public IActionResult GetDiffItem(string code)
+        public IActionResult GetDiffItem(string code, bool? fullDelivered)
         {
             var uomC = _uom.GetDataConversion().ToList();
 
-            var data = _rtn.GetDetailExchangeData(code)
+            var data = _rtn.GetDetailExchangeData(code, fullDelivered)
                 .Select(x => new
                 {
                     x.Id,

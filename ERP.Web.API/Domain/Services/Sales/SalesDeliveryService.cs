@@ -685,10 +685,12 @@ namespace ERP.Web.API.Domain.Services.Sales
             {
                 foreach (var item in items)
                 {
+                    var srData = Db.SalesReturnHeaders.FirstOrDefault(x => x.Code == transCode);
                     var dataSRDetail = Db.SalesReturnDetails.FirstOrDefault(x => x.Code == transCode && x.ItemId == item.ItemId);
+                    var dataSRXDetail = Db.SalesReturnDetailExchDiffItems.FirstOrDefault(x => x.Code == transCode && x.ItemId == item.ItemId);
                     if (code == null)
                     {
-                        var availableStock = dataSRDetail.Qty - dataSRDetail.QtyDlv;
+                        var availableStock = srData.Type == 2 ? dataSRDetail.Qty - dataSRDetail.QtyDlv : dataSRXDetail.Qty - dataSRXDetail.QtyDlv;
                         if (item.Qty > availableStock)
                         {
                             result = true;
@@ -697,7 +699,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                     else
                     {
                         var oldSDD = Db.SalesDeliveryDetails.AsNoTracking().FirstOrDefault(x => x.Code == code && x.ItemId == item.ItemId);
-                        var availableStock = dataSRDetail.Qty - (dataSRDetail.QtyDlv - oldSDD.Qty);
+                        var availableStock = (srData.Type == 2 ? dataSRDetail.Qty : dataSRXDetail.Qty) - ((srData.Type == 2 ? dataSRDetail.Qty : dataSRXDetail.Qty) - oldSDD.Qty);
                         if (item.Qty > availableStock)
                         {
                             result = true;
