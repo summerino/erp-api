@@ -767,5 +767,32 @@ namespace ERP.Web.API.Domain.Services.Sales
             }
             return result;
         }
+
+        public IEnumerable<SalesDeliveryDetailFreeGoodData> GetFreeDetailData(string code)
+        {
+            var result = (from dc in Db.SalesDeliveryDetailFreeGoods
+                          join i in Db.Items on dc.ItemId equals i.Id
+                          join u in Db.UoMConversions on dc.UnitId equals u.Id
+                          where dc.Code == code
+                          select new SalesDeliveryDetailFreeGoodData
+                          {
+                              Id = dc.Id,
+                              Code = dc.Code,
+                              DlvOrderDetailId = dc.DlvOrderDetailId,
+                              LineNo = dc.LineNo,
+                              PromoCode = dc.PromoCode,
+                              ItemId = dc.ItemId,
+                              UomId = dc.UomId,
+                              UnitId = dc.UnitId,
+                              Qty = dc.Qty,
+                              UnitPrice = dc.UnitPrice,
+                              CoaCode = dc.CoaCode,
+                              Initial = i.Initial,
+                              Name = i.Name,
+                              UnitName = u.UnitEquivalent
+                          }).ToList();
+
+            return result.OrderBy(x => x.LineNo);
+        }
     }
 }

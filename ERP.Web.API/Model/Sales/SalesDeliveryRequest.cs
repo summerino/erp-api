@@ -21,4 +21,13 @@ namespace ERP.Web.API.Model.Sales
     {
         public IEnumerable<SalesDeliveryDetailFreeGood> FreeItemDetails { get; set; }
     }
+
+    public class SalesDeliveryDetailFreeGoodData : SalesDeliveryDetailFreeGood
+    {
+        public string Initial { get; set; }
+
+        public string Name { get; set; }
+
+        public string UnitName { get; set; }
+    }
 }
