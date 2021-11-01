@@ -13,7 +13,7 @@ namespace ERP.Web.API.Domain.Interfaces.Sales
 
         IEnumerable<VwSalesReturnDetail> GetDetailData(string code, bool? fullDelivered = null);
 
-        IEnumerable<VwSalesReturnDetailExchDiffItem> GetDetailExchangeData(string code);
+        IEnumerable<VwSalesReturnDetailExchDiffItem> GetDetailExchangeData(string code, bool? fullDelivered = null);
 
         List<dynamic> GetRelatedTransactions(string code);
 
