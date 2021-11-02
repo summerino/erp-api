@@ -1455,15 +1455,15 @@ namespace ERP.Web.API.Domain.Services.Accounting
                                     LineNo = 1,
                                     Date = itemDlvData.DlvHeader.Date,
                                     CoaCode = systemParam.FirstOrDefault(x => x.Code == (ciValue > 0 ? "OTH_INCOME_COA" : "OTH_EXPENSE_COA"))?.Value ?? "",
-                                    TypeCode = "RCV",
+                                    TypeCode = "DLV",
                                     Notes = ($"{systemParam.FirstOrDefault(x => x.Code == (ciValue > 0 ? "JR_PREFIX_OTH_INCOME" : "JR_PREFIX_OTH_EXPENSE"))?.Value ?? ""} {itemData.Customer.Initial}").Trim(),
                                     RefCode1 = "",
-                                    Group = 5,
+                                    Group = 6,
                                     CurrCode = itemDlvData.DlvHeader.CurrCode,
                                     Period = itemDlvData.DlvHeader.Date.ToString("yyyyMMdd"),
                                     Type = (ciValue > 0 ? "D" : "C"),
                                     Amount = Math.Abs(ciValue),
-                                    SrcTrans = "RCV"
+                                    SrcTrans = "DLV"
                                 });
                             }
                         }
