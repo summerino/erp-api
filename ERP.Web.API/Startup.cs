@@ -304,6 +304,9 @@ namespace ERP.Web.API
 
             // Customer Transaction (Mobile Customer) services
             services.AddScoped<ICustomerTransactionService, CustomerTransactionService>();
+
+            //Transfer Stock
+            services.AddScoped<Domain.Interfaces.Mobile.TransferStock.IMobileTransferStockService, Domain.Services.Mobile.TransferStock.MobileTransferStockService>();
             #endregion
         }
 
