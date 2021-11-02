@@ -33,6 +33,7 @@ namespace ERP.Entity.Inventory
         public DateTime Date { get; set; }
 
         public short Type { get; set; }
+
         public string Types { get; set; }
 
         public string WarehouseCode { get; set; }
@@ -78,7 +79,7 @@ namespace ERP.Entity.Inventory
         [Column(TypeName = "decimal(19, 6)")]
         public decimal QtyOnTransfer { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Column(TypeName = "decimal(19, 6)")]
         public decimal QtyAdjust { get; set; }
 
         [Column(TypeName = "decimal(18, 2)")]

@@ -6,13 +6,13 @@ using Microsoft.AspNetCore.Mvc;
 using ERP.Common;
 using ERP.Common.Models;
 using ERP.Entity;
+using ERP.Web.API.Domain.Interfaces.Accounting;
 using ERP.Web.API.Domain.Interfaces.Auth;
 using ERP.Web.API.Domain.Interfaces.Inventory;
 using ERP.Web.API.Domain.Interfaces.SystemManagement;
 using ERP.Web.API.Model;
 using ERP.Web.API.Model.Inventory;
 using Newtonsoft.Json;
-using ERP.Web.API.Domain.Interfaces.Accounting;
 
 namespace ERP.Web.API.Controllers.Inventory
 {
@@ -23,21 +23,22 @@ namespace ERP.Web.API.Controllers.Inventory
     {
         private readonly IAdjustmentService _adjustment;
         private readonly IUnitOfMeasurementService _uom;
+        private readonly IClosingMonthService _closingMonth;
         private readonly ISystemParameterService _sysPar;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
-        private readonly IClosingMonthService _closingMonth;
+
         private const int MenuId = (int)Menu.Adjustment;
 
         public AdjustmentController(IAdjustmentService adjustment, IUnitOfMeasurementService uom,
-            ISystemParameterService sysPar, IClaimService claim, IAuthService auth, IClosingMonthService closingMonthService)
+            IClosingMonthService closingMonth, ISystemParameterService sysPar, IClaimService claim, IAuthService auth)
         {
             _adjustment = adjustment;
             _uom = uom;
+            _closingMonth = closingMonth;
             _sysPar = sysPar;
             _claim = claim;
             _auth = auth;
-            _closingMonth = closingMonthService;
         }
 
         [HttpGet]
@@ -102,6 +103,7 @@ namespace ERP.Web.API.Controllers.Inventory
                         .ToList(),
                     x.UnitId,
                     OldUnitId = x.UnitId,
+                    BaseUnitId = uomC.FirstOrDefault(u => u.UomId == x.UomId && u.IsBaseUnit)?.Id,
                     x.UomId,
                     State = ""
                 })
