@@ -1,4 +1,5 @@
 ﻿using ERP.Common.Models;
+using ERP.Entity;
 using ERP.Web.API.Domain.Interfaces.Mobile.CustomerTransaction;
 using ERP.Web.API.Domain.Models.Mobile.TransactionHistory;
 using ERP.Web.API.Model;
@@ -9,39 +10,44 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
-using System.Threading.Tasks;
 
 namespace ERP.Web.API.Controllers.Mobile.CustomerTransaction
 {
-    [Authorize(AppConstant.ValidateMobileTokenPolicy)]
+    [Authorize(AppConstant.ValidateMobileCustomerTokenPolicy)]
     [Route("mobile/[controller]")]
     [ApiController]
     public class CustomerTransactionController : ControllerBase
     {
         private readonly ICustomerTransactionService _customerTransaction;
+        private readonly IClaimService _claim;
 
-        public CustomerTransactionController(ICustomerTransactionService customerTransaction)
+        public CustomerTransactionController(ICustomerTransactionService customerTransaction, IClaimService claim)
         {
             _customerTransaction = customerTransaction;
+            _claim = claim;
         }
 
         [HttpGet]
         public IActionResult GetData(string filters, string sorts, int skip, int take, DateTime? date)
         {
-            var custCode = "C000001";
+           
             var data =
                 _customerTransaction.GetData(
                     skip, take,
                     JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
-                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),date,custCode);
+                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"), date, _claim.UserCode);
 
-            
+
             var result = data.Data.ToDynamicList().Select(x => new
             {
                 x.Code,
                 x.Date,
+                x.FinalDiscPercent,
+                x.FinalDisc,
+                x.SubTotal,
+                x.TaxAmount,
                 x.Total,
-                Status=x.Remaining==0?"Lunas":"Belum"
+                Status = x.Remaining == 0 ? "Lunas" : "Belum"
             }).ToList<dynamic>();
 
             return Ok(new MobileApiResponse
@@ -62,9 +68,16 @@ namespace ERP.Web.API.Controllers.Mobile.CustomerTransaction
         [HttpGet("credit-limit")]
         public IActionResult GetCreditLimit()
         {
-            var custCode = "C000001";
             var data =
-                _customerTransaction.GetCreditLimit(custCode);
+                _customerTransaction.GetCreditLimit(_claim.UserCode);
+            return Ok(data);
+        }
+
+        [HttpGet("profile")]
+        public IActionResult GetCustomerProfile()
+        {
+            var data =
+                _customerTransaction.GetCustomerProfile(_claim.UserCode);
             return Ok(data);
         }
     }
