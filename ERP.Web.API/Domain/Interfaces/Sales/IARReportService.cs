@@ -1,5 +1,5 @@
-﻿using ERP.Common.Models;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using ERP.Common.Models;
 
 namespace ERP.Web.API.Domain.Interfaces.Sales
 {

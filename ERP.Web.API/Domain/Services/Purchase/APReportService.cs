@@ -1,11 +1,11 @@
-﻿using ERP.Common.Extensions;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
+using ERP.Common.Extensions;
 using ERP.Common.Models;
 using ERP.Entity;
 using ERP.Web.API.Domain.Interfaces.Purchase;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace ERP.Web.API.Domain.Services.Purchase
 {
@@ -32,7 +32,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                         left join Purchasing.PurchaseInvoiceHeader inv on inv.Code = invD.Code and inv.Mark IN('A', 'PP', 'CMP')
                         Where rcv.Mark IN('A', 'INV') and rcv.SrcTrans = 1").ToList();
 
-            var cbData = _db.GeneralCashBankHeaders.Where(x => x.Mark != "V" && x.Date <= Convert.ToDateTime(date)).ToList();
+            var cbData = _db.GeneralCashBankHeaders.Where(x => x.Mark != "V" && (x.ChequeDate ?? x.Date) <= Convert.ToDateTime(date)).ToList();
 
             var cbDetail = _db.GeneralCashBankDetails.Where(x => cbData.Select(c => c.Code).Contains(x.Code)).ToList();
 
@@ -50,7 +50,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
 
             foreach (var itemSup in supData)
             {
-                itemSup.TotalTrans = rcvData.Where(x => x.SupCode == itemSup.Code).Count();
+                itemSup.TotalTrans = rcvData.Count(x => x.SupCode == itemSup.Code);
                 itemSup.TotalAmount = rcvData.Where(x => x.SupCode == itemSup.Code).Sum(x => x.TotalAmount);
                 itemSup.PaidAmount = rcvData.Where(x => x.SupCode == itemSup.Code).Sum(x => x.PaidAmount);
                 itemSup.RemainderAmount = rcvData.Where(x => x.SupCode == itemSup.Code).Sum(x => x.RemainderAmount);
@@ -64,7 +64,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                 {
                     rcvData = rcvData.Where(x => x.SupCode == supCode).ToList();
                 }
-                return rcvData.AsQueryable().ToDataSourceResult(0, rcvData.Count(), null, sorts);
+                return rcvData.AsQueryable().ToDataSourceResult(0, rcvData.Count, null, sorts);
             }
             else
             {
@@ -72,7 +72,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                 {
                     supData = supData.Where(x => x.Code == supCode).ToList();
                 }
-                return supData.AsQueryable().ToDataSourceResult(0, supData.Count(), null, sorts);
+                return supData.AsQueryable().ToDataSourceResult(0, supData.Count, null, sorts);
             }
         }
     }

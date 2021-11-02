@@ -6,6 +6,7 @@ using ERP.Common.Models;
 using ERP.Entity;
 using ERP.Entity.Finance;
 using ERP.Web.API.Domain.Interfaces.Finance;
+using Microsoft.EntityFrameworkCore;
 
 namespace ERP.Web.API.Domain.Services.Finance
 {
@@ -24,7 +25,7 @@ namespace ERP.Web.API.Domain.Services.Finance
             List<ReportByAccount> reportA = new();
             List<ReportByAccountDetail> reportAD = new();
 
-            var dataCOA = _db.Coas.Where(x => x.IsActive).ToList(); ;
+            var dataCOA = _db.Coas.Where(x => x.IsActive).ToList();
             var dataPCOA = dataCOA;
 
             dataCOA = dataCOA.Where(x => !dataPCOA.Select(t => t.ParentId).Contains(x.Id)).ToList();
@@ -33,15 +34,15 @@ namespace ERP.Web.API.Domain.Services.Finance
             var dataCBHeader = _db.GeneralCashBankHeaders.Where(x => x.Mark == "A").ToList();
             var dataCBDetail = _db.GeneralCashBankDetails.ToList();
 
-            var initCBHeader = dataCBHeader.Where(x => x.Date < Convert.ToDateTime(startDate)).ToList();
+            var initCBHeader = dataCBHeader.Where(x => x.ChequeDate.GetValueOrDefault(x.Date) < Convert.ToDateTime(startDate)).ToList();
 
             if (!string.IsNullOrEmpty(startDate) && !string.IsNullOrEmpty(endDate))
             {
-                dataCBHeader = dataCBHeader.Where(x => x.Date >= Convert.ToDateTime(startDate) && x.Date <= Convert.ToDateTime(endDate)).ToList();
+                dataCBHeader = dataCBHeader.Where(x => x.ChequeDate.GetValueOrDefault(x.Date) >= Convert.ToDateTime(startDate) && x.ChequeDate.GetValueOrDefault(x.Date) <= Convert.ToDateTime(endDate)).ToList();
             }
             else if (!string.IsNullOrEmpty(endDate))
             {
-                dataCBHeader = dataCBHeader.Where(x => x.Date <= Convert.ToDateTime(endDate)).ToList();
+                dataCBHeader = dataCBHeader.Where(x => x.ChequeDate.GetValueOrDefault(x.Date) <= Convert.ToDateTime(endDate)).ToList();
             }
 
             if (!string.IsNullOrEmpty(coaCode))
@@ -63,13 +64,13 @@ namespace ERP.Web.API.Domain.Services.Finance
                     IsBold = true
                 });
 
-                foreach (var item in dataCBHeader.OrderBy(x => x.Date))
+                foreach (var item in dataCBHeader.OrderBy(x => x.ChequeDate.GetValueOrDefault(x.Date)))
                 {
                     endBalance += item.Amount;
 
                     reportA.Add(new ReportByAccount
                     {
-                        Date = item.Date,
+                        Date = item.ChequeDate.GetValueOrDefault(item.Date),
                         Code = item.Code,
                         Notes = item.Notes,
                         IncomingBalance = item.Type == "D" ? item.Amount : 0,
@@ -88,7 +89,7 @@ namespace ERP.Web.API.Domain.Services.Finance
                     IsBold = true
                 });
 
-                return reportA.AsQueryable().ToDataSourceResult(0, reportA.Count(), null, null);
+                return reportA.AsQueryable().ToDataSourceResult(0, reportA.Count, null, null);
             }
             else if (type == 2)
             {
@@ -100,7 +101,7 @@ namespace ERP.Web.API.Domain.Services.Finance
                     IsBold = true
                 });
 
-                foreach (var item in dataCBHeader.OrderBy(x => x.Date))
+                foreach (var item in dataCBHeader.OrderBy(x => x.ChequeDate.GetValueOrDefault(x.Date)))
                 {
                     var selectedDetail = dataCBDetail.Where(x => x.Code == item.Code).ToList();
                     foreach (var itemDetail in selectedDetail)
@@ -119,7 +120,7 @@ namespace ERP.Web.API.Domain.Services.Finance
 
                         reportAD.Add(new ReportByAccountDetail
                         {
-                            Date = item.Date,
+                            Date = item.ChequeDate.GetValueOrDefault(item.Date),
                             Code = item.Code,
                             Notes = itemDetail.Notes,
                             TransCode = itemDetail.TransCode,
@@ -142,7 +143,7 @@ namespace ERP.Web.API.Domain.Services.Finance
                     IsBold = true
                 });
 
-                return reportAD.AsQueryable().ToDataSourceResult(0, reportAD.Count(), null, null);
+                return reportAD.AsQueryable().ToDataSourceResult(0, reportAD.Count, null, null);
             }
             else
             {
@@ -162,7 +163,7 @@ namespace ERP.Web.API.Domain.Services.Finance
                         EndingBalance = eBalance
                     });
                 }
-                return reportAC.AsQueryable().ToDataSourceResult(0, reportAC.Count(), null, sorts);
+                return reportAC.AsQueryable().ToDataSourceResult(0, reportAC.Count, null, sorts);
             }
         }
     }

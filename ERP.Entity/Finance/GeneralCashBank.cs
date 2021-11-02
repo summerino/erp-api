@@ -375,9 +375,12 @@ namespace ERP.Entity.Finance
 
     public class VwDebitCreditPayment
     {
+        public string Code { get; set; }
+
         public string TransCode { get; set; }
+
         public decimal Amount { get; set; }
+
         public string TypeAmount { get; set; }
     }
-
 }

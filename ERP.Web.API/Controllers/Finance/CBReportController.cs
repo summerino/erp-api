@@ -22,7 +22,10 @@ namespace ERP.Web.API.Controllers.Finance
         [HttpGet]
         public IActionResult GetData(int? type, string startDate, string endDate, string coaCode, string sorts)
         {
-            var result = _cb.GetData(type, startDate, endDate, coaCode, JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"));
+            var result =
+                _cb.GetData(
+                    type, startDate, endDate, coaCode,
+                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"));
 
             return Ok(new ApiResponse
             {

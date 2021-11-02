@@ -58,7 +58,7 @@ namespace ERP.Web.API.Controllers.Accounting
                     .ToDynamicList()
                     .Select(x => new
                     {
-                        x.Id, x.Code, x.Name, x.ParentId, x.CurrCode, x.VouCode
+                        x.Id, x.Code, x.Name, x.ParentId, x.CurrCode, x.CbType, x.VouCode
                     })
                     .ToList<dynamic>();
 

@@ -430,7 +430,7 @@ namespace ERP.Web.API.Domain.Services.Finance
         private (string, bool, List<string>) Validate(CashBankRequest data)
         {
             var listTransCode = data.ItemDetails.Select(x => x.TransCode).ToList();
-            var oldTransactions = Db.VwDebitCreditPayments.Where(x => listTransCode.Contains(x.TransCode)).ToList();
+            var oldTransactions = Db.VwDebitCreditPayments.Where(x => listTransCode.Contains(x.TransCode) && x.Code != data.Code).ToList();
 
             var queries = new List<string>();
 

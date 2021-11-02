@@ -22,7 +22,10 @@ namespace ERP.Web.API.Controllers.Purchase
         [HttpGet]
         public IActionResult GetData(int type, string supCode, string date, string sorts)
         {
-            var result = _ap.GetData(type, date, supCode, JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"));
+            var result =
+                _ap.GetData(
+                    type, date, supCode,
+                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"));
 
             return Ok(new ApiResponse
             {

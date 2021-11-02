@@ -31,8 +31,9 @@ namespace ERP.Entity.Accounting
         [StringLength(3)]
         public string CurrCode { get; set; }
 
+        [Column("CBType")]
         [StringLength(1)]
-        public string CBType { get; set; }
+        public string CbType { get; set; }
 
         [StringLength(4)]
         public string VouCode { get; set; }
@@ -67,7 +68,7 @@ namespace ERP.Entity.Accounting
 
         public string CurrCode { get; set; }
 
-        public string CBType { get; set; }
+        public string CbType { get; set; }
 
         public string VouCode { get; set; }
 

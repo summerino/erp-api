@@ -1,11 +1,11 @@
-﻿using ERP.Common.Extensions;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
+using ERP.Common.Extensions;
 using ERP.Common.Models;
 using ERP.Entity;
 using ERP.Web.API.Domain.Interfaces.Sales;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace ERP.Web.API.Domain.Services.Sales
 {
@@ -34,7 +34,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                             left join Sales.SalesInvoiceHeader inv on inv.Code = invD.Code and inv.Mark IN('A','PP','CMP')
                             Where dlv.Mark IN('A','INV')" + (slsId > 0 ? $" and so.SalesBy = {slsId} " : " ") + "").ToList();
 
-            var cbData = _db.GeneralCashBankHeaders.Where(x => x.Mark != "V" && x.Date <= Convert.ToDateTime(date)).ToList();
+            var cbData = _db.GeneralCashBankHeaders.Where(x => x.Mark != "V" && (x.ChequeDate ?? x.Date) <= Convert.ToDateTime(date)).ToList();
 
             var cbDetail = _db.GeneralCashBankDetails.Where(x => cbData.Select(c => c.Code).Contains(x.Code)).ToList();
 
@@ -52,7 +52,7 @@ namespace ERP.Web.API.Domain.Services.Sales
 
             foreach (var itemCus in cusData)
             {
-                itemCus.TotalTrans = dlvData.Where(x => x.CustCode == itemCus.Code).Count();
+                itemCus.TotalTrans = dlvData.Count(x => x.CustCode == itemCus.Code);
                 itemCus.TotalAmount = dlvData.Where(x => x.CustCode == itemCus.Code).Sum(x => x.TotalAmount);
                 itemCus.PaidAmount = dlvData.Where(x => x.CustCode == itemCus.Code).Sum(x => x.PaidAmount);
                 itemCus.RemainderAmount = dlvData.Where(x => x.CustCode == itemCus.Code).Sum(x => x.RemainderAmount);
@@ -66,7 +66,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                 {
                     dlvData = dlvData.Where(x => x.CustCode == custCode).ToList();
                 }
-                return dlvData.AsQueryable().ToDataSourceResult(0, dlvData.Count(), null, sorts);
+                return dlvData.AsQueryable().ToDataSourceResult(0, dlvData.Count, null, sorts);
             }
             else
             {
@@ -74,7 +74,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                 {
                     cusData = cusData.Where(x => x.Code == custCode).ToList();
                 }
-                return cusData.AsQueryable().ToDataSourceResult(0, cusData.Count(), null, sorts);
+                return cusData.AsQueryable().ToDataSourceResult(0, cusData.Count, null, sorts);
             }
         }
     }
