@@ -89,7 +89,8 @@ namespace ERP.Web.API.Domain.Services.Inventory
                 var details = new List<AdjustmentDetail>();
                 foreach (var item in data.ItemDetails)
                 {
-                    var adjustmentDetail = new AdjustmentDetail() {
+                    var adjustmentDetail = new AdjustmentDetail
+                    {
                         LineNo = ++i,
                         BaseQtyOnHand = item.BaseQtyOnHand,
                         Code = newCode,
@@ -153,13 +154,9 @@ namespace ERP.Web.API.Domain.Services.Inventory
             using var transaction = Db.Database.BeginTransaction();
             try
             {
-
-                
-
                 // Checking mark header data
                 if (Db.AdjustmentHeaders.Any(x => x.Code == data.Code && x.Mark == "V"))
                 {
-
                     result.Message = "Data penyesuaian tidak bisa di ubah karena sudah ditandai sebagai void.";
                     return result;
                 }
@@ -185,10 +182,9 @@ namespace ERP.Web.API.Domain.Services.Inventory
                 short i = 0;
                 foreach (var item in data.ItemDetails)
                 {
-
                     if (item.Id <= 0)
                     {
-                        var adjustmentDetail = new AdjustmentDetail()
+                        var adjustmentDetail = new AdjustmentDetail
                         {
                             BaseQtyOnHand = item.BaseQtyOnHand,
                             Code = data.Code,

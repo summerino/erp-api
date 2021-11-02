@@ -17,6 +17,8 @@ namespace ERP.Web.API.Domain.Interfaces.Sales
 
         IEnumerable<SalesDeliveryHeader> GetUnInvoiceData(string soCode, string invCode);
 
+        IEnumerable<SalesDeliveryDetailFreeGoodData> GetFreeDetailData(string code);
+
         SaveResult Insert(SalesDeliveryRequest data);
 
         SaveResult Update(SalesDeliveryRequest data);

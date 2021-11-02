@@ -82,6 +82,19 @@ namespace ERP.Web.API.Controllers.Sales
             });
         }
 
+        [HttpGet("free-item")]
+        public IActionResult GetFreeDetailData(string code)
+        {
+
+            var data = _dlv.GetFreeDetailData(code).ToList<dynamic>();
+
+            return Ok(new ApiResponse
+            {
+                RowCount = data.Count,
+                TableData = data
+            });
+        }
+
         [HttpGet("related-trans")]
         public IActionResult GetRelatedTransactions(string code)
         {
