@@ -83,7 +83,7 @@ namespace ERP.Web.API.Domain.Services.Sales
             try
             {
                 // Checking receive qty is excess or not
-                if (IsQtyExcess(data.WarehouseCode,data.ItemDetails, null))
+                if (IsQtyExcess(data.WarehouseCode,data.DiffItemDetails, null))
                 {
                     result.Message = "Data pengembalian penjualan tidak bisa disimpan karena qty yg dikembalikan lebih besar dari qty yang tersedia.";
                     return result;
@@ -230,7 +230,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                 }
 
                 // Checking receive qty is excess or not
-                if (IsQtyExcess(data.WarehouseCode ,data.ItemDetails, data.Code))
+                if (IsQtyExcess(data.WarehouseCode ,data.DiffItemDetails, data.Code))
                 {
                     result.Message = "Data pengembalian penjualan tidak bisa diubah karena qty yg dikembalikan lebih besar dari qty yang tersedia.";
                     return result;
@@ -432,7 +432,7 @@ namespace ERP.Web.API.Domain.Services.Sales
             return result;
         }
 
-        private bool IsQtyExcess(string warehouseCode,IEnumerable<SalesReturnDetail> items, string code)
+        private bool IsQtyExcess(string warehouseCode,IEnumerable<SalesReturnDetailExchDiffItem> items, string code)
         {
             var result = false;
             foreach (var item in items)
