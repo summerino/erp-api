@@ -41,12 +41,10 @@ namespace ERP.Web.API.Domain.Interfaces.Mobile.Sales
             }); ;
         }
 
-        [HttpGet("detail")]
-        public IActionResult GetDetailData(string code, int srcTrans)
+        [HttpGet("item")]
+        public IActionResult GetDetailData(string code)
         {
-            //var uomC = _uom.GetDataConversion().ToList();
-
-            var data = _deliveryPlan.GetDetailData(code, srcTrans);
+            var data = _deliveryPlan.GetDetailData(code);
 
             return Ok(data);
         }
@@ -59,7 +57,7 @@ namespace ERP.Web.API.Domain.Interfaces.Mobile.Sales
                     JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
                     JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"), search, date);
 
-            List<dynamic> result = ((List<DeliverItemHeaderModel>)data.Data).ToList<dynamic>();
+            List<dynamic> result = ((List<DeliveryItemHeaderModel>)data.Data).ToList<dynamic>();
 
             return Ok(new MobileApiResponse
             {
@@ -68,7 +66,7 @@ namespace ERP.Web.API.Domain.Interfaces.Mobile.Sales
             }); ;
         }
 
-        [HttpGet("logDetail")]
+        [HttpGet("logItem")]
         public IActionResult GetLogDetailData(string code)
         {
             var data = _deliveryPlan.GetLogDetailData(code);

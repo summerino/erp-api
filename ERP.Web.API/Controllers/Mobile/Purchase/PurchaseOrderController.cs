@@ -70,7 +70,7 @@ namespace ERP.Web.API.Controllers.Mobile.Purchase
             }); ;
         }
 
-        [HttpGet("logDetail")]
+        [HttpGet("logItem")]
         public IActionResult GetLogDetailData(string code)
         {
             var data = _purchaseOrder.GetLogDetailDataForMobile(code);
