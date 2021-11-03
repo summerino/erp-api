@@ -872,49 +872,54 @@ namespace ERP.Web.API.Domain.Services.Purchase
         {
             if (srcTrans == 1)
             {
-                var data = from order in Db.VwPurchaseOrderDetails
-                           join header in Db.VwPurchaseOrderHeaders on order.Code equals header.Code
-                           join item in Db.Items on order.ItemId equals item.Id
-                           where order.Code.Equals(code) && order.Qty <= order.QtyRcv
+                var data = from order_d in Db.VwPurchaseOrderDetails
+                           join order_h in Db.VwPurchaseOrderHeaders on order_d.Code equals order_h.Code
+                           join item in Db.Items on order_d.ItemId equals item.Id
+                           where order_d.Code.Equals(code) && order_d.Qty <= order_d.QtyRcv
                            select new PurchaseOrderDetailModel
                            {
-                               Code = order.Code,
-                               LineNo = order.LineNo,
-                               ItemId = order.ItemId,
-                               OrderQty = order.Qty,
-                               ReceiveQty = order.QtyRcv,
+                               Code = order_d.Code,
+                               LineNo = order_d.LineNo,
+                               ItemId = order_d.ItemId,
+                               OrderQty = order_d.Qty,
+                               ReceiveQty = order_d.QtyRcv,
                                TransDetailId = 2,
-                               Type = 1,
-                               UnitId = order.UnitId,
-                               UomId = order.UomId,
-                               WarehouseCode = header.WarehouseCode,
+                               Type = order_d.Type,
+                               UnitId = order_d.UnitId,
+                               UomId = order_d.UomId,
+                               WarehouseCode = order_h.WarehouseCode,
 
                                ItemInitial = item.Initial,
-                               ItemName = order.ItemName,
-                               UnitName = order.UnitName
+                               ItemName = order_d.ItemName,
+                               UnitName = order_d.UnitName
                            };
                 return data;
             }
             else
             {
-                var data = Db.VwPurchaseReturnDetails.Where(x => x.Code.Equals(code) && x.Qty <= x.QtyRcv)
-                    .Join(Db.Items, retur => retur.ItemId, item => item.Id, (retur, item) => new PurchaseOrderDetailModel
-                    {
-                        Code = retur.Code,
-                        LineNo = retur.LineNo,
-                        ItemId = retur.ItemId,
-                        OrderQty = retur.Qty,
-                        ReceiveQty = retur.QtyRcv,
-                        TransDetailId = 1,
-                        Type = 1,
-                        UnitId = retur.UnitId,
-                        UomId = retur.UomId,
-                        WarehouseCode = retur.WarehouseCode,
+                //var data = Db.VwPurchaseReturnDetails.Where(x => x.Code.Equals(code) && x.Qty <= x.QtyRcv)
+                //    .Join(Db.Items, retur => retur.ItemId, item => item.Id, (retur, item) => new PurchaseOrderDetailModel
+                var data = from retur_d in Db.VwPurchaseReturnDetails
+                           join retur_h in Db.VwPurchaseReturnHeaders on retur_d.Code equals retur_h.Code
+                           join item in Db.Items on retur_d.ItemId equals item.Id
+                           where retur_d.Code.Equals(code) && retur_d.Qty <= retur_d.QtyRcv
+                           select new PurchaseOrderDetailModel
+                           {
+                               Code = retur_d.Code,
+                               LineNo = retur_d.LineNo,
+                               ItemId = retur_d.ItemId,
+                               OrderQty = retur_d.Qty,
+                               ReceiveQty = retur_d.QtyRcv,
+                               TransDetailId = 1,
+                               Type = retur_h.Type, // type apa?
+                               UnitId = retur_d.UnitId,
+                               UomId = retur_d.UomId,
+                               WarehouseCode = retur_d.WarehouseCode,
 
-                        ItemInitial = item.Initial,
-                        ItemName = retur.ItemName,
-                        UnitName = retur.UnitName
-                    });
+                               ItemInitial = item.Initial,
+                               ItemName = retur_d.ItemName,
+                               UnitName = retur_d.UnitName
+                           };
 
                 return data;
             }

@@ -2,7 +2,7 @@
 
 namespace ERP.Web.API.Domain.Models.Mobile.Sales
 {
-    public class DeliverItemHeaderModel
+    public class DeliveryItemHeaderModel
     {
         public string Code { get; set; }
         public DateTime Date { get; set; }
