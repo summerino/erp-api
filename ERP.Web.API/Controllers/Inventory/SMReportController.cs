@@ -22,9 +22,9 @@ namespace ERP.Web.API.Controllers.Inventory
         }
 
         [HttpGet]
-        public IActionResult GetData(int type, string startDate, string endDate, string whCode, int itemId, int typeUnit, bool isSm, string sorts)
+        public IActionResult GetData(int type, string startDate, string endDate, string whCode, int? itemId, int typeUnit, bool isSm, string sorts)
         {
-            var result = _sm.GetData(type, startDate, endDate, whCode, itemId, typeUnit, isSm, JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"));
+            var result = _sm.GetData(type, startDate, endDate, whCode, itemId, typeUnit, isSm);
 
             return Ok(new ApiResponse
             {
