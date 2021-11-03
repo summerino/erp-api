@@ -19,10 +19,26 @@ namespace ERP.Web.API.Domain.Services.Inventory
         {
             _db = db;        
         }
-		public DataSourceResult GetData(int type, string startDate, string endDate, string whCode, int itemId, int typeUnit, bool isSM, IEnumerable<Sort> sorts)
+		public DataSourceResult GetData(int type, string startDate, string endDate, string whCode, int? itemId, int typeUnit, bool isSM)
 		{
 			List<ReportByStockMutation> smListData = new();
 			var qsetUnit = $"DECLARE @Unit int; SET @Unit = '{typeUnit.ToString().Replace("'", "''")}'; ";
+
+			var orderQuery = @" ORDER BY CASE
+					WHEN sm.Src = 'ADJ' AND sm.BaseQty > 0 THEN
+						1
+					WHEN sm.Src IN('RCV', 'BB', 'SR') THEN
+						1
+					WHEN sm.Src IN('TS', 'CNEE') AND sm.[Type] = 'OH' AND sm.BaseQty > 0 THEN
+						1
+					WHEN sm.Src = 'ADJ' AND sm.BaseQty < 0 THEN
+						2
+					WHEN sm.Src IN('DO', 'DOF', 'PR') THEN
+						2
+					WHEN sm.Src IN('TS', 'CNEE') AND sm.[Type] = 'OH' AND sm.BaseQty < 0 THEN
+						2
+					ELSE 3
+					END, sm.Date";
 
 			var smData = _db.ReportByStockMutations.FromSqlRaw(qsetUnit + @"SELECT sm.WarehouseCode, sm.ItemId, sm.Date, sm.RefCode1 as TransCode, 
 					CASE 
@@ -44,7 +60,7 @@ namespace ERP.Web.API.Domain.Services.Inventory
 						WHEN @Unit = 2 THEN abs(sm.BaseQty) / ( SELECT EXP(SUM(LOG(Conversion))) FROM Inventory.UoMConversion WHERE UomId = im.UomId AND Seq <= (SELECT Seq FROM Inventory.UoMConversion WHERE Id = im.UomBuyId))
 						WHEN @Unit = 3 THEN abs(sm.BaseQty) / ( SELECT EXP(SUM(LOG(Conversion))) FROM Inventory.UoMConversion WHERE UomId = im.UomId AND Seq <= (SELECT Seq FROM Inventory.UoMConversion WHERE Id = im.UomSellId))
 						END AS decimal)
-					WHEN sm.Src IN ('RCV','BB') THEN 
+					WHEN sm.Src IN ('RCV', 'BB', 'SR') THEN 
 						CAST (CASE 
 						WHEN @Unit = 1 THEN abs(sm.BaseQty) 
 						WHEN @Unit = 2 THEN abs(sm.BaseQty) / ( SELECT EXP(SUM(LOG(Conversion))) FROM Inventory.UoMConversion WHERE UomId = im.UomId AND Seq <= (SELECT Seq FROM Inventory.UoMConversion WHERE Id = im.UomBuyId))
@@ -65,7 +81,7 @@ namespace ERP.Web.API.Domain.Services.Inventory
 						WHEN @Unit = 2 THEN abs(sm.BaseQty) / ( SELECT EXP(SUM(LOG(Conversion))) FROM Inventory.UoMConversion WHERE UomId = im.UomId AND Seq <= (SELECT Seq FROM Inventory.UoMConversion WHERE Id = im.UomBuyId))
 						WHEN @Unit = 3 THEN abs(sm.BaseQty) / ( SELECT EXP(SUM(LOG(Conversion))) FROM Inventory.UoMConversion WHERE UomId = im.UomId AND Seq <= (SELECT Seq FROM Inventory.UoMConversion WHERE Id = im.UomSellId))
 						END AS decimal)
-					WHEN sm.Src IN ('DO', 'PR') THEN 
+					WHEN sm.Src IN ('DO', 'DOF', 'PR') THEN 
 						CAST (CASE 
 						WHEN @Unit = 1 THEN abs(sm.BaseQty) 
 						WHEN @Unit = 2 THEN abs(sm.BaseQty) / ( SELECT EXP(SUM(LOG(Conversion))) FROM Inventory.UoMConversion WHERE UomId = im.UomId AND Seq <= (SELECT Seq FROM Inventory.UoMConversion WHERE Id = im.UomBuyId))
@@ -92,7 +108,7 @@ namespace ERP.Web.API.Domain.Services.Inventory
 					CAST (0 AS bit) AS IsBold
 				FROM Inventory.StockMutation sm
 				LEFT JOIN Inventory.Item im on im.Id = sm.ItemId
-				WHERE sm.Src IN ('RCV','DO','TS','ADJ','BB','PR','CNEE','DOF') AND sm.[Type] = 'OH' " + (string.IsNullOrEmpty(whCode) ? "" : $"AND sm.WarehouseCode = '{whCode.Replace("'", "''")}'") + " ORDER BY sm.Date").ToList();
+				WHERE sm.Src IN ('RCV','DO','TS','ADJ','BB','PR','CNEE','DOF') AND sm.[Type] = 'OH' " + (string.IsNullOrEmpty(whCode) ? "" : $"AND sm.WarehouseCode = '{whCode.Replace("'", "''")}'") + orderQuery).ToList();
 
 			var itemData = _db.ReportByItems.FromSqlRaw(qsetUnit +
 				@"SELECT im.Id, im.Initial, im.[Name],
@@ -136,7 +152,7 @@ namespace ERP.Web.API.Domain.Services.Inventory
 
 			smData = RemoveVoidSM(smData);
 
-			if(itemId > 0)
+			if(itemId.HasValue)
             {
 				itemData = itemData.Where(x => x.Id == itemId).ToList();
 				initData = initData.Where(x => x.ItemId == itemId).ToList();
@@ -194,27 +210,11 @@ namespace ERP.Web.API.Domain.Services.Inventory
 						}
 						else if (item.SrcTrans == "Retur Pembelian")
 						{
-							var prData = _db.PurchaseReturnHeaders.FirstOrDefault(x => x.Code == item.TransCode);
-							if (prData.Type == 2)
-							{
-								taxAmount = _db.PurchaseReturnDetails.FirstOrDefault(x => x.Code == item.TransCode && x.ItemId == item.ItemId).TaxAmount;
-							}
-							else if (prData.Type == 3)
-							{
-								taxAmount = _db.PurchaseReturnDetailExchDiffItems.FirstOrDefault(x => x.Code == item.TransCode && x.ItemId == item.ItemId).TaxAmount;
-							}
+							taxAmount = _db.PurchaseReturnDetails.FirstOrDefault(x => x.Code == item.TransCode && x.ItemId == item.ItemId).TaxAmount;
 						}
 						else if (item.SrcTrans == "Retur Penjualan")
 						{
-							var srData = _db.SalesReturnHeaders.FirstOrDefault(x => x.Code == item.TransCode);
-							if (srData.Type == 2)
-							{
-								taxAmount = _db.SalesReturnDetails.FirstOrDefault(x => x.Code == item.TransCode && x.ItemId == item.ItemId).TaxAmount;
-							}
-							else if (srData.Type == 3)
-							{
-								taxAmount = _db.SalesReturnDetailExchDiffItems.FirstOrDefault(x => x.Code == item.TransCode && x.ItemId == item.ItemId).TaxAmount;
-							}
+							taxAmount = _db.SalesReturnDetails.FirstOrDefault(x => x.Code == item.TransCode && x.ItemId == item.ItemId).TaxAmount;
 						}
 
 						item.QtyEnd = item.QtyIn > 0 ? selectedItem.QtyBegin + item.QtyIn : selectedItem.QtyBegin - item.QtyOut;
@@ -229,7 +229,7 @@ namespace ERP.Web.API.Domain.Services.Inventory
 
 					smListData.Add(new ReportByStockMutation
 					{
-						Date = DateTime.MaxValue,
+						//Date = DateTime.MaxValue,
 						TransCode = "Total",
 						QtyIn = smListData.Where(x => !x.IsBold).Sum(x => x.QtyIn),
 						QtyOut = smListData.Where(x => !x.IsBold).Sum(x => x.QtyOut),
@@ -240,16 +240,16 @@ namespace ERP.Web.API.Domain.Services.Inventory
 						IsBold = true
 					});
 
-					return smListData.AsQueryable().ToDataSourceResult(0, smListData.Count(), null, sorts);
+					return smListData.AsQueryable().ToDataSourceResult(0, smListData.Count(), null, null);
 				}
 				else
                 {
-					return itemData.AsQueryable().ToDataSourceResult(0, itemData.Count(), null, sorts);
+					return itemData.AsQueryable().ToDataSourceResult(0, itemData.Count(), null, null);
 				}
 			} 
 			else
             {
-				return whData.AsQueryable().ToDataSourceResult(0, whData.Count(), null, sorts);
+				return whData.AsQueryable().ToDataSourceResult(0, whData.Count(), null, null);
 			}
 		}
 
