@@ -31,6 +31,9 @@ namespace ERP.Entity.MobileWarehouse
         public string SupCode { get; set; }
 
         public long ReceiveBy { get; set; }
+
+        [Required]
+        public string SignatureImage { get; set; }
     }
 
     public class VwMobileReceiveItemHeader : BaseEntityWithMarkApprovedAndRejected
@@ -48,6 +51,9 @@ namespace ERP.Entity.MobileWarehouse
         public string SupCode { get; set; }
 
         public long ReceiveBy { get; set; }
+        
+        public string SignatureImage { get; set; }
+
 
         public string SupInitial { get; set; }
 
@@ -62,7 +68,6 @@ namespace ERP.Entity.MobileWarehouse
         public string RejectedInitial { get; set; }
 
         public string Status { get; set; }
-
     }
 
     [Table("MobileReceiveItemDetail", Schema = Schema.MobileWarehouse)]
@@ -114,6 +119,7 @@ namespace ERP.Entity.MobileWarehouse
         public string WarehouseCode { get; set; }
 
         public int Type { get; set; }
+
 
         public string ItemInitial { get; set; }
 

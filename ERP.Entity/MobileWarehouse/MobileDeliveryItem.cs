@@ -14,6 +14,9 @@ namespace ERP.Entity.MobileWarehouse
         [Required]
         [StringLength(17)]
         public string DlvPlanCode { get; set; }
+
+        [Required]
+        public string SignatureImage { get; set; }
     }
 
     public class VwMobileDeliveryItemHeader : BaseEntityWithMarkApprovedAndRejected
@@ -21,6 +24,9 @@ namespace ERP.Entity.MobileWarehouse
         public string Code { get; set; }
 
         public string DlvPlanCode { get; set; }
+        
+        public string SignatureImage { get; set; }
+
 
         public string CreatedInitial { get; set; }
 
@@ -73,6 +79,7 @@ namespace ERP.Entity.MobileWarehouse
         public int UomId { get; set; }
 
         public int UnitId { get; set; }
+
 
         public string ItemInitial { get; set; }
 
