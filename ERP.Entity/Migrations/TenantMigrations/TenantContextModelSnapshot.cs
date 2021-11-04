@@ -2311,6 +2311,10 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.Property<short>("SrcTrans")
                         .HasColumnType("smallint");
 
+                    b.Property<string>("Status")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
                     b.Property<string>("SupCode")
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");

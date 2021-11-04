@@ -42,6 +42,48 @@ namespace ERP.Web.API.Domain.Services.Purchase
             return Db.PurchaseInvoiceDetails.Where(x => x.Code == code).OrderBy(x => x.LineNo);
         }
 
+        public List<dynamic> GetDataMemo(string code)
+        {
+            var data = (from h in Db.PurchaseInvoiceDebitMemos
+                join d in Db.DebitMemos on h.DebitMemoCode equals d.Code
+                where h.InvCode == code
+                select new
+                {
+                    h.Id,
+                    DebitMemoCode = d.Code,
+                    d.Date,
+                    Type = d.SrcTrans,
+                    h.DebitMemoAmount
+                }).Union(from h in Db.PurchaseInvoiceDebitMemos
+                join d in Db.BeginningBalanceDebitMemos on h.DebitMemoCode equals d.Code
+                where h.InvCode == code
+                select new
+                {
+                    h.Id,
+                    DebitMemoCode = d.Code,
+                    d.Date,
+                    d.Type,
+                    h.DebitMemoAmount
+                });
+
+            return data.ToDynamicList();
+        }
+
+        public List<dynamic> GetRelatedTransactions(string code)
+        {
+            var data = (from h in Db.GeneralCashBankHeaders
+                join d in Db.GeneralCashBankDetails on h.Code equals d.Code
+                where h.Mark == "A" && d.TransCode == code
+                select new
+                {
+                    h.Code,
+                    h.Date,
+                    h.Amount
+                });
+
+            return data.ToDynamicList();
+        }
+
         public SaveResult Insert(PurchaseInvoiceRequest data)
         {
             var result = new SaveResult(false);
@@ -386,49 +428,6 @@ namespace ERP.Web.API.Domain.Services.Purchase
                     select h.Code).Any();
         }
 
-        public List<dynamic> GetRelatedTransactions(string code)
-        {
-
-            var data = (from h in Db.GeneralCashBankHeaders
-                        join d in Db.GeneralCashBankDetails on h.Code equals d.Code
-                        where h.Mark == "A" && d.TransCode == code
-                        select new
-                        {
-                            h.Code,
-                            h.Date,
-                            h.Amount
-                        });
-
-            return data.ToDynamicList();
-        }
-        public List<dynamic> GetDataMemo(string code)
-        {
-
-            var data = (from h in Db.PurchaseInvoiceDebitMemos
-                        join d in Db.DebitMemos on h.DebitMemoCode equals d.Code
-                        where h.InvCode == code
-                        select new
-                        {
-                            h.Id,
-                            DebitMemoCode = d.Code,
-                            d.Date,
-                            Type = d.SrcTrans,
-                            DebitMemoAmount = h.DebitMemoAmount
-                        }).Union(from h in Db.PurchaseInvoiceDebitMemos
-                                 join d in Db.BeginningBalanceDebitMemos on h.DebitMemoCode equals d.Code
-                                 where h.InvCode == code
-                                 select new
-                                 {
-                                     h.Id,
-                                     DebitMemoCode = d.Code,
-                                     d.Date,
-                                     d.Type,
-                                     DebitMemoAmount = h.DebitMemoAmount
-                                 });
-
-            return data.ToDynamicList();
-        }
-
         #region Update & Restore Debit Memo
         private void UpdateDebitMemo(PurchaseInvoiceRequest data)
         {
@@ -492,7 +491,5 @@ namespace ERP.Web.API.Domain.Services.Purchase
             }
         }
         #endregion
-
-
     }
 }

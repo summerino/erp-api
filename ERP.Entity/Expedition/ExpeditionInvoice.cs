@@ -80,6 +80,8 @@ namespace ERP.Entity.Expedition
         public string UpdatedInitial { get; set; }
 
         public string ApprovedInitial { get; set; }
+
+        public string Status { get; set; }
     }
 
     [Table("ExpeditionInvoiceDetail", Schema = Schema.Expedition)]
