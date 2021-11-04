@@ -32,6 +32,8 @@ namespace ERP.Entity.Inventory
         [Required]
         [StringLength(1000)]
         public string Value { get; set; }
+
+        public bool ShowInMobile { get; set; }
     }
 
     public class VwItemGroup : BaseEntityWithActive
