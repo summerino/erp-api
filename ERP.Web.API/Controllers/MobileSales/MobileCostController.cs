@@ -61,6 +61,19 @@ namespace ERP.Web.API.Controllers.MobileSales
             });
         }
 
+        [HttpGet("image")]
+        public IActionResult GetImageData(string code)
+        {
+            var data = _mc.GetImageData(code)
+                .ToList<dynamic>();
+
+            return Ok(new ApiResponse
+            {
+                RowCount = data.Count,
+                TableData = data
+            });
+        }
+
         [HttpPut("approve")]
         public IActionResult Approve(List<MobileCostRequest> data, string date, string coa, string notes)
         {
