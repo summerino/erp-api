@@ -58,7 +58,8 @@ namespace ERP.Web.API.Controllers.Inventory
                     x.Id,
                     x.ItemGroupId,
                     x.Name,
-                    x.Value
+                    x.Value,
+                    x.ShowInMobile
                 })
                 .ToList<dynamic>();
 
