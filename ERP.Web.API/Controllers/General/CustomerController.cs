@@ -83,6 +83,8 @@ namespace ERP.Web.API.Controllers.General
                         x.ContactPerson,
                         x.Phone,
                         x.Fax,
+                        x.Lat,
+                        x.Lng,
                         x.IsDefault
                     })
                     .ToList<dynamic>();
