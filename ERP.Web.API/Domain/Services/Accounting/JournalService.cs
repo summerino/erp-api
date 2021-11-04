@@ -1030,7 +1030,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                                     CurrCode = itemRcvData.RcvHeader.CurrCode,
                                     Period = itemRcvData.RcvHeader.Date.ToString("yyyyMMdd"),
                                     Type = "D",
-                                    Amount = itemData.RtnHeader.Type == 2 ? (itemDetail.RcvDetail.NettPrice - hppData[itemDetail.RcvDetail.ItemId] - itemDetail.RcvDetail.TaxAmount) * itemDetail.RcvDetail.Qty : diffItem != null ? (diffItem.NettPrice - diffItem.TaxAmount) * itemDetail.RcvDetail.Qty : 0,
+                                    Amount = itemData.RtnHeader.Type == 2 ? (itemDetail.RcvDetail.NettPrice - (hppData.ContainsKey(itemDetail.RcvDetail.ItemId) ? hppData[itemDetail.RcvDetail.ItemId] : 0) - itemDetail.RcvDetail.TaxAmount) * itemDetail.RcvDetail.Qty : diffItem != null ? (diffItem.NettPrice - diffItem.TaxAmount) * itemDetail.RcvDetail.Qty : 0,
                                     SrcTrans = "RCV"
                                 });
 
@@ -1069,7 +1069,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                                     CurrCode = itemRcvData.RcvHeader.CurrCode,
                                     Period = itemRcvData.RcvHeader.Date.ToString("yyyyMMdd"),
                                     Type = "D",
-                                    Amount = hppData[itemDetail.RcvDetail.ItemId] > 0 ? itemDetail.RcvDetail.Qty * hppData[itemDetail.RcvDetail.ItemId] : 0,
+                                    Amount = hppData.ContainsKey(itemDetail.RcvDetail.ItemId) ? hppData[itemDetail.RcvDetail.ItemId] > 0 ? itemDetail.RcvDetail.Qty * hppData[itemDetail.RcvDetail.ItemId] : 0 : 0,
                                     SrcTrans = "RCV"
                                 });
                             }
@@ -1369,7 +1369,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                                     CurrCode = itemDlvData.DlvHeader.CurrCode,
                                     Period = itemDlvData.DlvHeader.Date.ToString("yyyyMMdd"),
                                     Type = "C",
-                                    Amount = itemData.RtnHeader.Type == 2 ? (itemDetail.DlvDetail.NettPrice - hppData[itemDetail.DlvDetail.ItemId] - itemDetail.DlvDetail.TaxAmount) * itemDetail.DlvDetail.Qty : diffItem != null ? (diffItem.NettPrice - diffItem.TaxAmount) * itemDetail.DlvDetail.Qty : 0,
+                                    Amount = itemData.RtnHeader.Type == 2 ? (itemDetail.DlvDetail.NettPrice - (hppData.ContainsKey(itemDetail.DlvDetail.ItemId) ? hppData[itemDetail.DlvDetail.ItemId] : 0) - itemDetail.DlvDetail.TaxAmount) * itemDetail.DlvDetail.Qty : diffItem != null ? (diffItem.NettPrice - diffItem.TaxAmount) * itemDetail.DlvDetail.Qty : 0,
                                     SrcTrans = "DLV"
                                 });
 
@@ -1388,7 +1388,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                                     CurrCode = itemDlvData.DlvHeader.CurrCode,
                                     Period = itemDlvData.DlvHeader.Date.ToString("yyyyMMdd"),
                                     Type = "D",
-                                    Amount = hppData[itemDetail.DlvDetail.ItemId] > 0 ? itemDetail.DlvDetail.Qty * hppData[itemDetail.DlvDetail.ItemId] : 0,
+                                    Amount = hppData.ContainsKey(itemDetail.DlvDetail.ItemId) ? hppData[itemDetail.DlvDetail.ItemId] > 0 ? itemDetail.DlvDetail.Qty * hppData[itemDetail.DlvDetail.ItemId] : 0 : 0,
                                     SrcTrans = "DLV"
                                 });
 
