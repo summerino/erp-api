@@ -328,7 +328,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                     "EXEC sp_update_stock_mutation_from_po {0}, {1}",
                     data.Code, data.Date);
 
-                if (data.IsPoRcv)
+                if (data.IsPoRcv || data.IsPoInv)
                 {
                     var RcvData = Db.PurchaseReceiveHeaders.FirstOrDefault(x => x.TransCode == newCode);
 
@@ -341,27 +341,27 @@ namespace ERP.Web.API.Domain.Services.Purchase
                     Db.Database.ExecuteSqlRaw("EXEC sp_update_po_rcv_qty {0}", newCode);
                 }
 
-                if (data.IsPoInv)
-                {
-                    var RcvData = Db.PurchaseReceiveHeaders.FirstOrDefault(x => x.TransCode == newCode);
+                //if (data.IsPoInv)
+                //{
+                //    var RcvData = Db.PurchaseReceiveHeaders.FirstOrDefault(x => x.TransCode == newCode);
 
-                    // Execute sp_update_stock_mutation_from_rcv
-                    Db.Database.ExecuteSqlRaw(
-                        "EXEC sp_update_stock_mutation_from_rcv {0}, {1}, {2}",
-                        RcvData.Code, data.Date, newCode);
+                //    // Execute sp_update_stock_mutation_from_rcv
+                //    Db.Database.ExecuteSqlRaw(
+                //        "EXEC sp_update_stock_mutation_from_rcv {0}, {1}, {2}",
+                //        RcvData.Code, data.Date, newCode);
 
-                    // Execute sp_update_po_rcv_qty
-                    Db.Database.ExecuteSqlRaw("EXEC sp_update_po_rcv_qty {0}", newCode);
+                //    // Execute sp_update_po_rcv_qty
+                //    Db.Database.ExecuteSqlRaw("EXEC sp_update_po_rcv_qty {0}", newCode);
 
-                    // Update purchase order to closed if all purchase receive are invoiced
-                    if (
-                        !Db.PurchaseReceiveHeaders
-                            .Any(x => x.TransCode == newCode && x.Mark != "INV"))
-                    {
-                        Db.Database.ExecuteSqlRaw(
-                            "UPDATE Purchasing.PurchaseOrderHeader SET Mark='CLS' WHERE Code={0} AND Mark='CMP'", newCode);
-                    }
-                }
+                //    // Update purchase order to closed if all purchase receive are invoiced
+                //    if (
+                //        !Db.PurchaseReceiveHeaders
+                //            .Any(x => x.TransCode == newCode && x.Mark != "INV"))
+                //    {
+                //        Db.Database.ExecuteSqlRaw(
+                //            "UPDATE Purchasing.PurchaseOrderHeader SET Mark='CLS' WHERE Code={0} AND Mark='CMP'", newCode);
+                //    }
+                //}
 
                 transaction.Commit();
             }
@@ -693,51 +693,51 @@ namespace ERP.Web.API.Domain.Services.Purchase
                     "EXEC sp_update_stock_mutation_from_po {0}, {1}",
                     data.Code, data.Date);
 
-                if (data.IsPoRcv)
+                if (data.IsPoRcv || data.IsPoInv)
                 {
-                    var RcvData = Db.PurchaseReceiveHeaders.FirstOrDefault(x => x.TransCode == data.Code);
+                    var rcvData = Db.PurchaseReceiveHeaders.FirstOrDefault(x => x.TransCode == data.Code);
 
                     // Execute sp_update_stock_mutation_from_rcv
                     Db.Database.ExecuteSqlRaw(
                         "EXEC sp_update_stock_mutation_from_rcv {0}, {1}, {2}",
-                        RcvData.Code, data.Date, data.Code);
+                        rcvData?.Code, data.Date, data.Code);
 
                     // Execute sp_update_po_rcv_qty
                     Db.Database.ExecuteSqlRaw("EXEC sp_update_po_rcv_qty {0}", data.Code);
                 }
 
-                if (data.IsPoInv)
-                {
-                    var RcvData = Db.PurchaseReceiveHeaders.FirstOrDefault(x => x.TransCode == data.Code);
+                //if (data.IsPoInv)
+                //{
+                //    var rcvData = Db.PurchaseReceiveHeaders.FirstOrDefault(x => x.TransCode == data.Code);
 
-                    // Execute sp_update_stock_mutation_from_rcv
-                    Db.Database.ExecuteSqlRaw(
-                        "EXEC sp_update_stock_mutation_from_rcv {0}, {1}, {2}",
-                        RcvData.Code, data.Date, data.Code);
+                //    // Execute sp_update_stock_mutation_from_rcv
+                //    Db.Database.ExecuteSqlRaw(
+                //        "EXEC sp_update_stock_mutation_from_rcv {0}, {1}, {2}",
+                //        rcvData?.Code, data.Date, data.Code);
 
-                    // Execute sp_update_po_rcv_qty
-                    Db.Database.ExecuteSqlRaw("EXEC sp_update_po_rcv_qty {0}", data.Code);
+                //    // Execute sp_update_po_rcv_qty
+                //    Db.Database.ExecuteSqlRaw("EXEC sp_update_po_rcv_qty {0}", data.Code);
 
-                    // Check all purchase receive are invoiced
-                    if (
-                        !Db.PurchaseReceiveHeaders
-                            .Any(x => x.TransCode == data.Code && x.Mark != "INV"))
-                    {
-                        // Update purchase order to closed
-                        Db.Database.ExecuteSqlRaw(
-                            "UPDATE Purchasing.PurchaseOrderHeader SET Mark='CLS' WHERE Code={0} AND Mark='CMP'", data.Code);
-                    }
-                    else
-                    {
-                        // Update purchase order to partial receive or completed
-                        var poMark = Db.PurchaseOrderDetails.Any(x => x.Code == data.Code && x.Qty > x.QtyRcv)
-                            ? "PR"
-                            : "CMP";
+                //    // Check all purchase receive are invoiced
+                //    if (
+                //        !Db.PurchaseReceiveHeaders
+                //            .Any(x => x.TransCode == data.Code && x.Mark != "INV"))
+                //    {
+                //        // Update purchase order to closed
+                //        Db.Database.ExecuteSqlRaw(
+                //            "UPDATE Purchasing.PurchaseOrderHeader SET Mark='CLS' WHERE Code={0} AND Mark='CMP'", data.Code);
+                //    }
+                //    else
+                //    {
+                //        // Update purchase order to partial receive or completed
+                //        var poMark = Db.PurchaseOrderDetails.Any(x => x.Code == data.Code && x.Qty > x.QtyRcv)
+                //            ? "PR"
+                //            : "CMP";
 
-                        Db.Database.ExecuteSqlRaw(
-                            "UPDATE Purchasing.PurchaseOrderHeader SET Mark={0} WHERE Code={1}", poMark, data.Code);
-                    }
-                }
+                //        Db.Database.ExecuteSqlRaw(
+                //            "UPDATE Purchasing.PurchaseOrderHeader SET Mark={0} WHERE Code={1}", poMark, data.Code);
+                //    }
+                //}
 
                 transaction.Commit();
             }

@@ -392,38 +392,40 @@ namespace ERP.Web.API.Domain.Services.Sales
                     "EXEC sp_update_stock_mutation_from_so {0}, {1}",
                     data.Code, data.Date);
 
-                if (data.IsSoDlv)
+                if (data.IsSoDlv || data.IsSoInv)
                 {
-                    var DlvData = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.TransCode == newCode);
+                    var dlvData = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.TransCode == newCode);
+
                     // Execute sp_update_stock_mutation_from_rcv
                     Db.Database.ExecuteSqlRaw(
                         "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
-                        DlvData.Code, data.Date, newCode);
+                        dlvData?.Code, data.Date, newCode);
 
                     // Execute sp_update_po_rcv_qty
                     Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", newCode);
                 }
 
-                if (data.IsSoInv)
-                {
-                    var DlvData = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.TransCode == newCode);
-                    // Execute sp_update_stock_mutation_from_rcv
-                    Db.Database.ExecuteSqlRaw(
-                        "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
-                        DlvData.Code, data.Date, newCode);
+                //if (data.IsSoInv)
+                //{
+                //    var dlvData = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.TransCode == newCode);
 
-                    // Execute sp_update_po_rcv_qty
-                    Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", newCode);
+                //    // Execute sp_update_stock_mutation_from_rcv
+                //    Db.Database.ExecuteSqlRaw(
+                //        "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
+                //        dlvData?.Code, data.Date, newCode);
 
-                    // Update sales order to closed if all sales delivery are invoiced
-                    if (
-                        !Db.SalesDeliveryHeaders
-                            .Any(x => x.TransCode == newCode && x.Mark != "INV"))
-                    {
-                        Db.Database.ExecuteSqlRaw(
-                            "UPDATE Sales.SalesOrderHeader SET Mark='CLS' WHERE Code={0} AND Mark='CMP'", newCode);
-                    }
-                }
+                //    // Execute sp_update_po_rcv_qty
+                //    Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", newCode);
+
+                //    // Update sales order to closed if all sales delivery are invoiced
+                //    if (
+                //        !Db.SalesDeliveryHeaders
+                //            .Any(x => x.TransCode == newCode && x.Mark != "INV"))
+                //    {
+                //        Db.Database.ExecuteSqlRaw(
+                //            "UPDATE Sales.SalesOrderHeader SET Mark='CLS' WHERE Code={0} AND Mark='CMP'", newCode);
+                //    }
+                //}
                 
                 transaction.Commit();
             }
@@ -853,51 +855,51 @@ namespace ERP.Web.API.Domain.Services.Sales
                     "EXEC sp_update_stock_mutation_from_so {0}, {1}",
                     data.Code, data.Date);
 
-                if (data.IsSoDlv)
+                if (data.IsSoDlv || data.IsSoInv)
                 {
-                    var DlvData = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.TransCode == data.Code);
+                    var dlvData = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.TransCode == data.Code);
+
                     // Execute sp_update_stock_mutation_from_rcv
                     Db.Database.ExecuteSqlRaw(
                         "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
-                        DlvData.Code, data.Date, data.Code);
+                        dlvData?.Code, data.Date, data.Code);
 
                     // Execute sp_update_po_rcv_qty
                     Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", data.Code);
                 }
 
-                if (data.IsSoInv)
-                {
-                    var DlvData = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.TransCode == data.Code);
-                    // Execute sp_update_stock_mutation_from_rcv
-                    Db.Database.ExecuteSqlRaw(
-                        "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
-                        DlvData.Code, data.Date, data.Code);
+                //if (data.IsSoInv)
+                //{
+                //    var dlvData = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.TransCode == data.Code);
 
-                    // Execute sp_update_po_rcv_qty
-                    Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", data.Code);
+                //    // Execute sp_update_stock_mutation_from_rcv
+                //    Db.Database.ExecuteSqlRaw(
+                //        "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
+                //        dlvData?.Code, data.Date, data.Code);
 
-                    // Check all sales delivery are invoiced
-                    if (
-                        !Db.SalesDeliveryHeaders
-                            .Any(x => x.TransCode == data.Code && x.Mark != "INV"))
-                    {
-                        // Update sales order to closed
-                        Db.Database.ExecuteSqlRaw(
-                            "UPDATE Sales.SalesOrderHeader SET Mark='CLS' WHERE Code={0} AND Mark='CMP'", data.Code);
-                    }
-                    else
-                    {
-                        // Update sales order to partial receive or completed
-                        var soMark = Db.SalesOrderDetails.Any(x => x.Code == data.Code && x.Qty > x.QtyDlv)
-                            ? "PS"
-                            : "CMP";
+                //    // Execute sp_update_po_rcv_qty
+                //    Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", data.Code);
 
-                        Db.Database.ExecuteSqlRaw(
-                            "UPDATE Sales.SalesOrderHeader SET Mark={0} WHERE Code={1}", soMark, data.Code);
-                    }
-                }
+                //    // Check all sales delivery are invoiced
+                //    if (
+                //        !Db.SalesDeliveryHeaders
+                //            .Any(x => x.TransCode == data.Code && x.Mark != "INV"))
+                //    {
+                //        // Update sales order to closed
+                //        Db.Database.ExecuteSqlRaw(
+                //            "UPDATE Sales.SalesOrderHeader SET Mark='CLS' WHERE Code={0} AND Mark='CMP'", data.Code);
+                //    }
+                //    else
+                //    {
+                //        // Update sales order to partial receive or completed
+                //        var soMark = Db.SalesOrderDetails.Any(x => x.Code == data.Code && x.Qty > x.QtyDlv)
+                //            ? "PS"
+                //            : "CMP";
 
-                
+                //        Db.Database.ExecuteSqlRaw(
+                //            "UPDATE Sales.SalesOrderHeader SET Mark={0} WHERE Code={1}", soMark, data.Code);
+                //    }
+                //}
 
                 transaction.Commit();
             }
