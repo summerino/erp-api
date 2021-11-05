@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Dynamic.Core;
+using System.Security.Cryptography.X509Certificates;
 using ERP.Common;
 using ERP.Common.Extensions;
 using ERP.Common.Models;
@@ -37,6 +39,21 @@ namespace ERP.Web.API.Domain.Services.Expedition
         public IEnumerable<ExpeditionInvoiceDetail> GetDetailData(string code)
         {
             return Db.ExpeditionInvoiceDetails.Where(x => x.Code == code).OrderBy(x => x.LineNo);
+        }
+
+        public List<dynamic> GetRelatedTransactions(string code)
+        {
+            var data = (from h in Db.GeneralCashBankHeaders
+                join d in Db.GeneralCashBankDetails on h.Code equals d.Code
+                where h.Mark == "A" && d.TransCode == code && d.Type == "EPAP"
+                select new
+                {
+                    h.Code,
+                    h.Date,
+                    h.Amount
+                });
+
+            return data.ToDynamicList();
         }
 
         public SaveResult Insert(ExpeditionInvoiceRequest data)

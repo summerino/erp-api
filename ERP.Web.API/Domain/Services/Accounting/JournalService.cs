@@ -112,6 +112,10 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 if (journalGJ != null)
                     _db.AddRange(journalGJ);
 
+                var journalTS = ProcessTransferStockJournal(data.Date, systemParam);
+                if (journalTS != null)
+                    _db.AddRange(journalTS);
+
                 if (data.Date.Month == 12)
                 {
                     var removedEY = _db.Journals.Where(x => x.Code == "ENDYEAR-" + data.Date.Year.ToString()).ToList();
@@ -637,7 +641,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     {
                         Code = itemData.Code,
                         LineNo = ++i,
-                        Date = itemData.Date,
+                        Date = itemData.ChequeDate.HasValue ? itemData.ChequeDate.Value : itemData.Date,
                         CoaCode = itemDetailData.CoaCode ?? systemParam.FirstOrDefault(x => x.Code == $"{itemDetailData.Type}_COA")?.Value ?? "",
                         TypeCode = $"CB_{itemDetailData.Type}",
                         Notes = ($"{systemParam.FirstOrDefault(x => x.Code == $"JR_PREFIX_{itemDetailData.Type}")?.Value ?? ""} {itemDetailData.Notes}").Trim(),
@@ -654,7 +658,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     {
                         Code = itemData.Code,
                         LineNo = ++j,
-                        Date = itemData.Date,
+                        Date = itemData.ChequeDate.HasValue ? itemData.ChequeDate.Value : itemData.Date,
                         CoaCode = itemData.CoaCode ?? "",
                         TypeCode = "CB",
                         Notes = "Kas/Bank",
@@ -1026,7 +1030,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                                     CurrCode = itemRcvData.RcvHeader.CurrCode,
                                     Period = itemRcvData.RcvHeader.Date.ToString("yyyyMMdd"),
                                     Type = "D",
-                                    Amount = itemData.RtnHeader.Type == 2 ? (itemDetail.RcvDetail.NettPrice - hppData[itemDetail.RcvDetail.ItemId] - itemDetail.RcvDetail.TaxAmount) * itemDetail.RcvDetail.Qty : diffItem != null ? (diffItem.NettPrice - diffItem.TaxAmount) * itemDetail.RcvDetail.Qty : 0,
+                                    Amount = itemData.RtnHeader.Type == 2 ? (itemDetail.RcvDetail.NettPrice - (hppData.ContainsKey(itemDetail.RcvDetail.ItemId) ? hppData[itemDetail.RcvDetail.ItemId] : 0) - itemDetail.RcvDetail.TaxAmount) * itemDetail.RcvDetail.Qty : diffItem != null ? (diffItem.NettPrice - diffItem.TaxAmount) * itemDetail.RcvDetail.Qty : 0,
                                     SrcTrans = "RCV"
                                 });
 
@@ -1065,7 +1069,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                                     CurrCode = itemRcvData.RcvHeader.CurrCode,
                                     Period = itemRcvData.RcvHeader.Date.ToString("yyyyMMdd"),
                                     Type = "D",
-                                    Amount = hppData[itemDetail.RcvDetail.ItemId] > 0 ? itemDetail.RcvDetail.Qty * hppData[itemDetail.RcvDetail.ItemId] : 0,
+                                    Amount = hppData.ContainsKey(itemDetail.RcvDetail.ItemId) ? hppData[itemDetail.RcvDetail.ItemId] > 0 ? itemDetail.RcvDetail.Qty * hppData[itemDetail.RcvDetail.ItemId] : 0 : 0,
                                     SrcTrans = "RCV"
                                 });
                             }
@@ -1365,7 +1369,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                                     CurrCode = itemDlvData.DlvHeader.CurrCode,
                                     Period = itemDlvData.DlvHeader.Date.ToString("yyyyMMdd"),
                                     Type = "C",
-                                    Amount = itemData.RtnHeader.Type == 2 ? (itemDetail.DlvDetail.NettPrice - hppData[itemDetail.DlvDetail.ItemId] - itemDetail.DlvDetail.TaxAmount) * itemDetail.DlvDetail.Qty : diffItem != null ? (diffItem.NettPrice - diffItem.TaxAmount) * itemDetail.DlvDetail.Qty : 0,
+                                    Amount = itemData.RtnHeader.Type == 2 ? (itemDetail.DlvDetail.NettPrice - (hppData.ContainsKey(itemDetail.DlvDetail.ItemId) ? hppData[itemDetail.DlvDetail.ItemId] : 0) - itemDetail.DlvDetail.TaxAmount) * itemDetail.DlvDetail.Qty : diffItem != null ? (diffItem.NettPrice - diffItem.TaxAmount) * itemDetail.DlvDetail.Qty : 0,
                                     SrcTrans = "DLV"
                                 });
 
@@ -1384,7 +1388,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                                     CurrCode = itemDlvData.DlvHeader.CurrCode,
                                     Period = itemDlvData.DlvHeader.Date.ToString("yyyyMMdd"),
                                     Type = "D",
-                                    Amount = hppData[itemDetail.DlvDetail.ItemId] > 0 ? itemDetail.DlvDetail.Qty * hppData[itemDetail.DlvDetail.ItemId] : 0,
+                                    Amount = hppData.ContainsKey(itemDetail.DlvDetail.ItemId) ? hppData[itemDetail.DlvDetail.ItemId] > 0 ? itemDetail.DlvDetail.Qty * hppData[itemDetail.DlvDetail.ItemId] : 0 : 0,
                                     SrcTrans = "DLV"
                                 });
 
@@ -2127,6 +2131,131 @@ namespace ERP.Web.API.Domain.Services.Accounting
             return journals;
         }
 
+        private IEnumerable<Journal> ProcessTransferStockJournal(DateTime dateTime, List<SystemParameter> systemParam)
+        {
+            List<Journal> journals = new();
+
+            var dataHeader = _db.TransferStockHeaders
+                .Where(x => x.Date.Month == dateTime.Month && x.Date.Year == dateTime.Year && x.Mark != "V")
+                .ToList();
+
+            var dataHPP = (new[] { new { Code = "", ItemId = 0, HPP = 0m } }).ToList();
+
+            foreach (var itemData in dataHeader)
+            {
+                var dataDetail = (from tsdetail in _db.TransferStockDetails
+                                     join item in _db.Items on tsdetail.ItemId equals item.Id
+                                     where tsdetail.Code == itemData.Code
+                                     select new { TsDetail = tsdetail, Item = item }).ToList();
+
+                short i = 0;
+                short j = 0;
+                foreach (var itemDetail in dataDetail)
+                {
+                    var smData = _db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.TsDetail.Id && x.RefCode1 == itemDetail.TsDetail.Code);
+                    if (smData == null) continue;
+
+                    var nonVoidSM = RemoveVoidSM(_db.StockMutations.ToList());
+                    var resultHpp = 0m;
+                    if (itemData.Type != "IN")
+                    {
+                        var srcType = new[] { "OUT", "DT" }.Contains(itemData.Type) ? "TS" : "CNEE";
+                        resultHpp = CalculateHPP(nonVoidSM, smData.WarehouseCode, smData.ItemId, smData.RefDetailId1, srcType);
+                    }
+
+                    if(itemData.Type == "OUT")
+                        dataHPP.Add(new { Code = itemData.Code, ItemId = itemDetail.TsDetail.ItemId, HPP = resultHpp });
+
+                    if(itemData.Type == "IN")
+                    {
+                        var valueHPP = dataHPP.FirstOrDefault(x => x.Code == itemData.OriginTransferCode && x.ItemId == itemDetail.TsDetail.ItemId);
+                        if (valueHPP != null)
+                            resultHpp = valueHPP.HPP;
+                    }
+
+                    //Persediaan Barang
+                    journals.Add(new Journal
+                    {
+                        Code = itemData.Code,
+                        LineNo = ++i,
+                        Date = itemData.Date,
+                        CoaCode = systemParam.FirstOrDefault(x => x.Code == "INVENTORY_COA")?.Value ?? "",
+                        TypeCode = "TS_DT",
+                        Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_INVENTORY")?.Value ?? ""} {itemDetail.Item.Initial}").Trim(),
+                        RefCode1 = itemDetail.Item.Initial,
+                        Group = 1,
+                        CurrCode = "IDR",
+                        Period = itemData.Date.ToString("yyyyMMdd"),
+                        Type = new[] { "C", "RC", "OUT", "DT" }.Contains(itemData.Type) ? "C" : "D",
+                        Amount = resultHpp > 0 ? resultHpp * itemDetail.TsDetail.Qty : 0,
+                        SrcTrans = "TS"
+                    });
+
+                    if (new[] { "C", "RC", "DT" }.Contains(itemData.Type))
+                    {
+                        //Persediaan Barang
+                        journals.Add(new Journal
+                        {
+                            Code = itemData.Code,
+                            LineNo = ++j,
+                            Date = itemData.Date,
+                            CoaCode = systemParam.FirstOrDefault(x => x.Code == "INVENTORY_COA")?.Value ?? "",
+                            TypeCode = "TS_DT",
+                            Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_INVENTORY")?.Value ?? ""} {itemDetail.Item.Initial}").Trim(),
+                            RefCode1 = itemDetail.Item.Initial,
+                            Group = 2,
+                            CurrCode = "IDR",
+                            Period = itemData.Date.ToString("yyyyMMdd"),
+                            Type = new[] { "C", "RC", "DT" }.Contains(itemData.Type) ? "D" : "C",
+                            Amount = resultHpp > 0 ? resultHpp * itemDetail.TsDetail.Qty : 0,
+                            SrcTrans = "TS"
+                        });
+                    }
+                }
+
+                //Barang Terkirim
+                journals.Add(new Journal
+                {
+                    Code = itemData.Code,
+                    LineNo = 1,
+                    Date = itemData.Date,
+                    CoaCode = systemParam.FirstOrDefault(x => x.Code == "SENT_ITEM_COA")?.Value ?? "",
+                    TypeCode = "TS",
+                    Notes = "Barang Terkirim",
+                    RefCode1 = "",
+                    Group = 3,
+                    CurrCode = "IDR",
+                    Period = itemData.Date.ToString("yyyyMMdd"),
+                    Type = new[] { "C", "RC", "OUT", "DT" }.Contains(itemData.Type) ? "D" : "C",
+                    Amount = journals.Where(x => x.Code ==  itemData.Code && x.Group == 1).Sum(x => x.Amount),
+                    SrcTrans = "TS"
+                });
+
+                if (new[] { "C", "RC", "DT" }.Contains(itemData.Type))
+                {
+                    //Barang Terkirim
+                    journals.Add(new Journal
+                    {
+                        Code = itemData.Code,
+                        LineNo = 1,
+                        Date = itemData.Date,
+                        CoaCode = systemParam.FirstOrDefault(x => x.Code == "SENT_ITEM_COA")?.Value ?? "",
+                        TypeCode = "TS",
+                        Notes = "Barang Terkirim",
+                        RefCode1 = "",
+                        Group = 4,
+                        CurrCode = "IDR",
+                        Period = itemData.Date.ToString("yyyyMMdd"),
+                        Type = new[] { "C", "RC", "DT" }.Contains(itemData.Type) ? "C" : "D",
+                        Amount = journals.Where(x => x.Code == itemData.Code && x.Group == 2).Sum(x => x.Amount),
+                        SrcTrans = "TS"
+                    });
+                }
+            }
+
+            return journals;
+        }
+
         private decimal CalculateHPP(IEnumerable<StockMutation> stockMutations, string whCode, int itemId, long id, string srcCode)
         {
             decimal latestQty = 0;
@@ -2146,7 +2275,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 latestQty += firstSM.BaseQty;
                 hpp = latestStockValue / latestQty;
 
-                var listSM = stockMutations.Where(x => new[] { "RCV", "DO", "SR", "ADJ", "TS", "PR", "CNEE", "BB" }.Contains(x.Src) && x.WarehouseCode == whCode && x.ItemId == itemId && x.Date >= firstSM.Date && x.Date <= currentSM.Date).OrderBy(x => x.Date).ToList();
+                var listSM = stockMutations.Where(x => x.Id != firstSM.Id && new[] { "RCV", "DO", "SR", "ADJ", "TS", "PR", "CNEE", "BB" }.Contains(x.Src) && x.WarehouseCode == whCode && x.ItemId == itemId && x.Date >= firstSM.Date && x.Date <= currentSM.Date).OrderBy(x => x.Date).ToList();
                 foreach (var item in listSM)
                 {
                     if (new[] { "RCV","BB","SR" }.Contains(item.Src))

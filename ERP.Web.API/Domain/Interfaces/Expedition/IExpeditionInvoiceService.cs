@@ -12,6 +12,8 @@ namespace ERP.Web.API.Domain.Interfaces.Expedition
             string search);
 
         IEnumerable<ExpeditionInvoiceDetail> GetDetailData(string code);
+        
+        List<dynamic> GetRelatedTransactions(string code);
 
         SaveResult Insert(ExpeditionInvoiceRequest data);
 

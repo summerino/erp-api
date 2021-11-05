@@ -34,6 +34,8 @@ namespace ERP.Web.API.Domain.Services.Purchase
 
             var cbData = _db.GeneralCashBankHeaders.Where(x => x.Mark != "V" && (x.ChequeDate ?? x.Date) <= Convert.ToDateTime(date)).ToList();
 
+            var bbData = _db.VwBeginningBalanceAPs.Where(x => x.IsActive && x.Date <= Convert.ToDateTime(date)).ToList();
+
             var cbDetail = _db.GeneralCashBankDetails.Where(x => cbData.Select(c => c.Code).Contains(x.Code)).ToList();
 
             rcvData = rcvData.Where(x => x.Date <= Convert.ToDateTime(date)).ToList();
@@ -44,6 +46,23 @@ namespace ERP.Web.API.Domain.Services.Purchase
                 var totCb = cbDetail.Where(x => x.TransCode == itemRcv.InvCode).Sum(x => x.TransAmount);
                 itemRcv.PaidAmount = totCb * itemRcv.TotalAmount / totInv;
                 itemRcv.RemainderAmount = itemRcv.TotalAmount - itemRcv.PaidAmount;
+            }
+
+            foreach (var itemBB in bbData)
+            {
+                rcvData.Add(new Entity.Purchase.ReportByReceive
+                {
+                    Date = itemBB.Date,
+                    DueDate = itemBB.DueDate,
+                    Code = itemBB.Code,
+                    SrcCode = "",
+                    InvCode = "",
+                    SupCode = itemBB.SupCode,
+                    SupName = itemBB.SupName,
+                    TotalAmount = itemBB.Amount,
+                    PaidAmount = itemBB.PaidAmount,
+                    RemainderAmount = itemBB.Amount - itemBB.PaidAmount
+                });
             }
 
             rcvData = rcvData.Where(x => x.RemainderAmount > 0).ToList();

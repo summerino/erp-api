@@ -346,7 +346,7 @@ namespace ERP.Web.API.Domain.Services.Finance
                         Db.Entry(item).Property(e => e.Src).IsModified = false;
 
                     }
-                    listTransCodeAndTransAmount.Add(new { TransCode = item.TransCode, TransAmount = item.TransAmount });
+                    listTransCodeAndTransAmount.Add(new { item.TransCode, item.TransAmount });
                 }
 
                 if (queries.Any())
@@ -535,8 +535,10 @@ namespace ERP.Web.API.Domain.Services.Finance
                     if (totalAmount > ep.Amount)
                         return ($"Lebih bayar untuk transaksi dengan kode {ep.Code}.", false, new List<string>());
 
+                    var mark = ep.Amount == totalAmount ? "CMP" : "PP";
+
                     queries.Add(
-                        $"UPDATE Expedition.ExpeditionInvoiceHeader SET PaidAmount='{totalAmount}' WHERE Code='{item.TransCode}';");
+                        $"UPDATE Expedition.ExpeditionInvoiceHeader SET PaidAmount='{totalAmount}', Mark='{mark}' WHERE Code='{item.TransCode}';");
                 }
                 else if (item.Type is "DPC" or "DPS")
                 {

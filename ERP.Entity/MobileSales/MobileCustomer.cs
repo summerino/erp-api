@@ -55,6 +55,12 @@ namespace ERP.Entity.MobileSales
         public int? AreaId4 { get; set; }
 
         public int? AreaId5 { get; set; }
+
+        [Column(TypeName = "decimal(9, 6)")]
+        public decimal? Lat { get; set; }
+
+        [Column(TypeName = "decimal(9, 6)")]
+        public decimal? Lng { get; set; }
     }
 
     public class VwMobileCustomer : BaseEntityWithMarkApprovedAndRejected
@@ -90,6 +96,10 @@ namespace ERP.Entity.MobileSales
         public int? AreaId4 { get; set; }
 
         public int? AreaId5 { get; set; }
+
+        public decimal? Lat { get; set; }
+
+        public decimal? Lng { get; set; }
 
 
         public string CreatedInitial { get; set; }

@@ -219,6 +219,12 @@ namespace ERP.Entity.General
         [StringLength(15)]
         public string Fax { get; set; }
 
+        [Column(TypeName = "decimal(9, 6)")]
+        public decimal? Lat { get; set; }
+
+        [Column(TypeName = "decimal(9, 6)")]
+        public decimal? Lng { get; set; }
+
         public bool IsDefault { get; set; }
     }
 }

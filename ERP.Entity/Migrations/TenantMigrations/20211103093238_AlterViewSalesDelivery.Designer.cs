@@ -4,14 +4,16 @@ using ERP.Entity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ERP.Entity.Migrations.TenantMigrations
 {
     [DbContext(typeof(TenantContext))]
-    partial class TenantContextModelSnapshot : ModelSnapshot
+    [Migration("20211103093238_AlterViewSalesDelivery")]
+    partial class AlterViewSalesDelivery
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2311,10 +2313,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.Property<short>("SrcTrans")
                         .HasColumnType("smallint");
 
-                    b.Property<string>("Status")
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
-
                     b.Property<string>("SupCode")
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
@@ -3334,12 +3332,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
 
                     b.Property<bool>("IsDefault")
                         .HasColumnType("bit");
-
-                    b.Property<decimal?>("Lat")
-                        .HasColumnType("decimal(9,6)");
-
-                    b.Property<decimal?>("Lng")
-                        .HasColumnType("decimal(9,6)");
 
                     b.Property<string>("Phone")
                         .HasMaxLength(30)
@@ -5025,9 +5017,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasMaxLength(50)
                         .IsUnicode(false)
                         .HasColumnType("varchar(50)");
-
-                    b.Property<bool>("ShowInMobile")
-                        .HasColumnType("bit");
 
                     b.Property<string>("Value")
                         .IsRequired()
@@ -7013,12 +7002,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .IsUnicode(false)
                         .HasColumnType("varchar(20)");
 
-                    b.Property<decimal?>("Lat")
-                        .HasColumnType("decimal(9,6)");
-
-                    b.Property<decimal?>("Lng")
-                        .HasColumnType("decimal(9,6)");
-
                     b.Property<string>("Mark")
                         .IsRequired()
                         .HasMaxLength(3)
@@ -7969,12 +7952,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.Property<string>("InitialAddress")
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
-
-                    b.Property<decimal?>("Lat")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal?>("Lng")
-                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Mark")
                         .HasMaxLength(3)
