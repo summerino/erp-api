@@ -134,15 +134,15 @@ namespace ERP.Web.API.Domain.Services.Sales
                     }
                 }
 
-                //Checking warehouse qty is item is available or not
+                // Checking warehouse qty is item is available or not
                 var isQtyAvailable = IsQtyAvailable(null, data.WarehouseCode, data.ItemDetails);
                 switch (isQtyAvailable)
                 {
                     case 1:
-                        result.Message = "Terdapat barang yang tidak tersedia pada gudang yang dipilih";
+                        result.Message = "Terdapat barang yang tidak tersedia pada gudang yang dipilih.";
                         return result;
                     case 2:
-                        result.Message = "Terdapat barang yang qty-nya melebihi ketersediaan pada gudang yang dipilih";
+                        result.Message = "Terdapat barang yang qty-nya melebihi ketersediaan pada gudang yang dipilih.";
                         return result;
                 }
 
@@ -370,15 +370,15 @@ namespace ERP.Web.API.Domain.Services.Sales
                     }
                 }
 
-                //Checking warehouse qty is item is available or not
+                // Checking warehouse qty is item is available or not
                 var isQtyAvailable = IsQtyAvailable(data.Code, data.WarehouseCode, data.ItemDetails);
                 switch (isQtyAvailable)
                 {
                     case 1:
-                        result.Message = "Terdapat barang yang tidak tersedia pada gudang yang dipilih";
+                        result.Message = "Terdapat barang yang tidak tersedia pada gudang yang dipilih.";
                         return result;
                     case 2:
-                        result.Message = "Terdapat barang yang qty-nya melebihi ketersediaan pada gudang yang dipilih";
+                        result.Message = "Terdapat barang yang qty-nya melebihi ketersediaan pada gudang yang dipilih.";
                         return result;
                 }
 

@@ -100,14 +100,17 @@ namespace ERP.Web.API.Domain.Services.Sales
             var result = new SaveResult(false);
             var listIdDetail = new List<long>();
 
-
             using var transaction = Db.Database.BeginTransaction();
             try
             {
-                // Checking deliver qty is excess or not
-                if (IsQtyExcess(data.WarehouseCode, data.ItemDetails, null))
+                // Checking order qty is excess or not
+                var checkQty =
+                    Convert.ToBoolean(
+                        Db.SystemParameters.FirstOrDefault(x => x.Code == "DEF_SLS_ORD_CHECK_QTY")?.Value);
+
+                if (checkQty && IsQtyExcess(data.WarehouseCode, data.ItemDetails, null))
                 {
-                    result.Message = "Data order penjualan tidak bisa disimpan karena qty yg diterima lebih besar dari qty yang tersedia.";
+                    result.Message = "Data order penjualan tidak bisa disimpan karena qty yang dipesan lebih besar dari qty yang tersedia.";
                     return result;
                 }
 
@@ -422,7 +425,6 @@ namespace ERP.Web.API.Domain.Services.Sales
                     }
                 }
                 
-
                 transaction.Commit();
             }
             catch (Exception ex)
@@ -453,10 +455,14 @@ namespace ERP.Web.API.Domain.Services.Sales
                     return result;
                 }
 
-                // Checking deliver qty is excess or not
-                if (IsQtyExcess(data.WarehouseCode, data.ItemDetails, data.Code))
+                // Checking order qty is excess or not
+                var checkQty =
+                    Convert.ToBoolean(
+                        Db.SystemParameters.FirstOrDefault(x => x.Code == "DEF_SLS_ORD_CHECK_QTY")?.Value);
+
+                if (checkQty && IsQtyExcess(data.WarehouseCode, data.ItemDetails, data.Code))
                 {
-                    result.Message = "Data order penjualan tidak bisa disimpan karena qty yg diterima lebih besar dari qty yang tersedia.";
+                    result.Message = "Data order penjualan tidak bisa disimpan karena qty yang dipesan lebih besar dari qty tersedia.";
                     return result;
                 }
 
