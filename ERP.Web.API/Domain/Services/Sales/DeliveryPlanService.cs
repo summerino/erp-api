@@ -85,6 +85,12 @@ namespace ERP.Web.API.Domain.Services.Sales
                 short i = 0;
                 foreach (var item in data.ItemDetails)
                 {
+                    if (Db.DeliveryPlanDetails.Any(x => x.TransCode == item.TransCode))
+                    {
+                        result.Message = "Data rencana pengiriman tidak bisa ditambahkan karena terdapat surat jalan yang sudah digunakan.";
+                        return result;
+                    }
+
                     var newItem = new DeliveryPlanDetail
                     {
                         Code = newCode,
@@ -176,7 +182,13 @@ namespace ERP.Web.API.Domain.Services.Sales
                 short i = 0;
                 foreach (var item in data.ItemDetails)
                 {
-                    if(item.Id < 0)
+                    if (Db.DeliveryPlanDetails.Any(x => x.TransCode == item.TransCode && x.Code != data.Code))
+                    {
+                        result.Message = "Data rencana pengiriman tidak bisa diperbarui karena terdapat surat jalan yang sudah digunakan.";
+                        return result;
+                    }
+
+                    if (item.Id < 0)
                     {
                         var newItem = new DeliveryPlanDetail
                         {
