@@ -501,6 +501,7 @@ namespace ERP.Web.API.Domain.Services.Finance
                     else
                     {
                         var header = Db.PurchaseInvoiceHeaders.SingleOrDefault(x => x.Code == item.TransCode);
+                        
                         if (header == null)
                             continue;
 
@@ -569,7 +570,8 @@ namespace ERP.Web.API.Domain.Services.Finance
                         else
                         {
                             var memo = Db.DebitMemos.SingleOrDefault(x => x.Code == item.TransCode);
-                            if (memo != null)
+                            
+                            if (memo == null)
                                 continue;
 
                             if (totalAmount > memo.Amount)
