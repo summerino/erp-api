@@ -16,7 +16,7 @@ namespace ERP.Web.API.Controllers.Mobile.TransferStock
     [ApiController]
     public class MobileTransferStockController : ControllerBase
     {
-        
+
         private readonly IMobileTransferStockService _transferStock;
         private readonly IClaimService _claim;
         public MobileTransferStockController(IMobileTransferStockService transferStock, IClaimService claim)
@@ -28,7 +28,7 @@ namespace ERP.Web.API.Controllers.Mobile.TransferStock
         [HttpGet("header")]
         public IActionResult GetTransferStockHeader(DateTime? date, string search)
         {
-            var result = _transferStock.getTranferStockHeader(date, search);
+            var result = _transferStock.getTranferStockHeader(date, search, _claim.UserId);
 
             return Ok(result);
         }
@@ -44,7 +44,7 @@ namespace ERP.Web.API.Controllers.Mobile.TransferStock
         [HttpGet("log-header")]
         public IActionResult GetMobileTransferStockHeader(DateTime? date, string search)
         {
-            var result = _transferStock.getMobileTranferStockHeader(date, search);
+            var result = _transferStock.getMobileTranferStockHeader(date, search, _claim.UserId);
 
             return Ok(result);
         }

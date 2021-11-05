@@ -20,7 +20,13 @@ namespace ERP.Web.API.Domain.Models.Mobile.TransferStock
         public string WarehouseInitialFrom { get; set; }
 
         public string WarehouseInitialTo { get; set; }
+        public string WarehouseNameFrom { get; set; }
 
+        public string WarehouseNameTo { get; set; }
+
+        public string SalesNameFrom { get; set; }
+
+        public string SalesNameTo { get; set; }
         public string TypeInitial { get; set; }
     }
 }
