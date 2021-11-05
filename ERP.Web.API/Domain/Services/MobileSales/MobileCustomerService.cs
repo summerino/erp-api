@@ -131,6 +131,8 @@ namespace ERP.Web.API.Domain.Services.MobileSales
                     ContactPerson = item.ContactPerson,
                     Phone = item.Phone,
                     Fax = item.Fax,
+                    Lat = item.Lat,
+                    Lng = item.Lng,
                     IsDefault = true
                 };
 
