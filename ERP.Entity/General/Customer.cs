@@ -91,18 +91,6 @@ namespace ERP.Entity.General
 
         public int TypeId { get; set; }
 
-        public string InitialAddress { get; set; }
-
-        public string Address1 { get; set; }
-
-        public string Address2 { get; set; }
-
-        public string ContactPerson { get; set; }
-
-        public string Phone { get; set; }
-
-        public string Fax { get; set; }
-
         public string Email { get; set; }
 
         public string Website { get; set; }
@@ -152,7 +140,21 @@ namespace ERP.Entity.General
 
         public string TypeName { get; set; }
 
-        public string UpdatedInitial { get; set; }
+        public string InitialAddress { get; set; }
+
+        public string Address1 { get; set; }
+
+        public string Address2 { get; set; }
+
+        public string ContactPerson { get; set; }
+
+        public string Phone { get; set; }
+
+        public string Fax { get; set; }
+
+        public decimal? Lat { get; set; }
+
+        public decimal? Lng { get; set; }
 
         public string AreaName1 { get; set; }
 
@@ -163,6 +165,8 @@ namespace ERP.Entity.General
         public string AreaName4 { get; set; }
 
         public string AreaName5 { get; set; }
+
+        public string UpdatedInitial { get; set; }
     }
 
     [Table("CustomerType", Schema = Schema.General)]
