@@ -90,7 +90,8 @@ namespace ERP.Web.API.Domain.Services.Inventory
                     {
                         ItemGroupId = data.Id,
                         Name = item.Name,
-                        Value = item.Value
+                        Value = item.Value,
+                        ShowInMobile = item.ShowInMobile
                     });
                 }
 
@@ -145,7 +146,8 @@ namespace ERP.Web.API.Domain.Services.Inventory
                         {
                             ItemGroupId = data.Id,
                             Name = item.Name,
-                            Value = item.Value
+                            Value = item.Value,
+                            ShowInMobile = item.ShowInMobile
                         });
                     }
                     else
