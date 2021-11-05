@@ -104,10 +104,8 @@ namespace ERP.Web.API.Domain.Services.Sales
             try
             {
                 // Checking order qty is excess or not
-                var checkQty =
-                    Convert.ToBoolean(
-                        Db.SystemParameters.FirstOrDefault(x => x.Code == "DEF_SLS_ORD_CHECK_QTY")?.Value);
-
+                var checkQty = Db.SystemParameters.FirstOrDefault(x => x.Code == "DEF_SLS_ORD_CHECK_QTY")?.Value == "1";
+                
                 if (checkQty && IsQtyExcess(data.WarehouseCode, data.ItemDetails, null))
                 {
                     result.Message = "Data order penjualan tidak bisa disimpan karena qty yang dipesan lebih besar dari qty yang tersedia.";
@@ -458,9 +456,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                 }
 
                 // Checking order qty is excess or not
-                var checkQty =
-                    Convert.ToBoolean(
-                        Db.SystemParameters.FirstOrDefault(x => x.Code == "DEF_SLS_ORD_CHECK_QTY")?.Value);
+                var checkQty = Db.SystemParameters.FirstOrDefault(x => x.Code == "DEF_SLS_ORD_CHECK_QTY")?.Value == "1";
 
                 if (checkQty && IsQtyExcess(data.WarehouseCode, data.ItemDetails, data.Code))
                 {
