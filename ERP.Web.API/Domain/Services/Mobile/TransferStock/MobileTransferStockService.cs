@@ -16,57 +16,21 @@ namespace ERP.Web.API.Domain.Services.Mobile.TransferStock
         {
         }
 
-        public IEnumerable<MobileTransferStockHeaderModel> getMobileTranferStockHeader(DateTime? date, string search)
+        public IEnumerable<MobileTransferStockHeaderModel> getMobileTranferStockHeader(DateTime? date, string search, int userId)
         {
-            var data = from th in Db.VwTransferStockHeaders
-                       where th.Type == "IN" || th.Type == "OUT"
-                       select new MobileTransferStockHeaderModel
-                       {
-                           Code = th.Code,
-                           Date = th.Date,
-                           Type = th.Type,
-                           WarehouseCodeFrom = th.WarehouseCodeFrom,
-                           WarehouseCodeTo = th.WarehouseCodeTo,
-                           WarehouseInitialFrom = th.WarehouseInitialFrom,
-                           WarehouseInitialTo = th.WarehouseInitialTo,
-                           TypeInitial = th.TypeInitial
-
-                       };
-
-            if (date.HasValue)
-            {
-                data = data.Where(x => x.Date.Equals(date));
-            }
-
-            if (search != "")
-            {
-                data = data.Where(x => x.WarehouseInitialFrom.Contains(search) || x.WarehouseInitialTo.Contains(search) || x.Code.Contains(search));
-            }
-
-            return data;
-        }
-
-        public IEnumerable<MobileTransferStockDetailModel> getMobileTransferStockDetail(string code)
-        {
-            var data = from td in Db.VwTransferStockDetails
-                       where td.Code == code
-                       select new MobileTransferStockDetailModel
-                       {
-                           ItemId = td.ItemId,
-                           UomId = td.UomId,
-                           UnitId = td.UnitId,
-                           ItemName = td.ItemName,
-                           UnitName = td.UnitName,
-                           OriginalQty = td.Qty,
-                           RealizeQty = 0
-                       };
-            return data;
-        }
-
-        public IEnumerable<MobileTransferStockHeaderModel> getTranferStockHeader(DateTime? date, string search)
-        {
+            var empId = Db.Users.Where(x => x.Id.Equals(userId)).Select(y => y.EmployeeId).Single();
+            var wh = Db.Employees.Where(x => x.Id.Equals(empId)).Select(y => y.WarehouseCode).Single();
             var data = from thm in Db.MobileTransferStockHeaders
                        join th in Db.VwTransferStockHeaders on thm.TransferCode equals th.Code
+                       join gi in Db.Warehouses on th.WarehouseCodeFrom equals gi.Code
+                       join go in Db.Warehouses on th.WarehouseCodeTo equals go.Code
+                       join emp1 in Db.Employees.Where(x => x.Type.Equals(2)) on th.WarehouseCodeFrom equals emp1.WarehouseCode
+                        into a1
+                       from sub1 in a1.DefaultIfEmpty()
+                       join emp2 in Db.Employees.Where(x => x.Type.Equals(2)) on th.WarehouseCodeTo equals emp2.WarehouseCode
+                       into a2
+                       from sub2 in a2.DefaultIfEmpty()
+                       where ((th.Type == "IN" && th.WarehouseCodeTo == wh) || (th.Type == "OUT" && th.WarehouseCodeFrom == wh))
                        select new MobileTransferStockHeaderModel
                        {
                            Code = thm.Code,
@@ -76,6 +40,10 @@ namespace ERP.Web.API.Domain.Services.Mobile.TransferStock
                            WarehouseCodeTo = th.WarehouseCodeTo,
                            WarehouseInitialFrom = th.WarehouseInitialFrom,
                            WarehouseInitialTo = th.WarehouseInitialTo,
+                           WarehouseNameFrom = gi.Name,
+                           WarehouseNameTo = go.Name,
+                           SalesNameFrom = sub1 != null ? sub1.FirstName + ' ' + sub1.LastName : "",
+                           SalesNameTo = sub2 != null ? sub2.FirstName + ' ' + sub2.LastName : "",
                            TypeInitial = th.TypeInitial
 
                        };
@@ -87,13 +55,14 @@ namespace ERP.Web.API.Domain.Services.Mobile.TransferStock
 
             if (search != "")
             {
-                data = data.Where(x => x.WarehouseInitialFrom.Contains(search) || x.WarehouseInitialTo.Contains(search) || x.Code.Contains(search));
+                data = data.Where(x => x.WarehouseNameFrom.Contains(search) || x.WarehouseNameTo.Contains(search) || x.Code.Contains(search));
             }
 
             return data;
+
         }
 
-        public IEnumerable<MobileTransferStockDetailModel> getTransferStockDetail(string code)
+        public IEnumerable<MobileTransferStockDetailModel> getMobileTransferStockDetail(string code)
         {
             var data = from td in Db.VwMobileTransferStockDetails
                        where td.Code == code
@@ -106,6 +75,66 @@ namespace ERP.Web.API.Domain.Services.Mobile.TransferStock
                            UnitName = td.UnitName,
                            OriginalQty = td.OriginalQty,
                            RealizeQty = td.RealizeQty
+                       };
+            return data;
+        }
+
+        public IEnumerable<MobileTransferStockHeaderModel> getTranferStockHeader(DateTime? date, string search, int userId)
+        {
+            var empId = Db.Users.Where(x => x.Id.Equals(userId)).Select(y => y.EmployeeId).Single();
+            var wh = Db.Employees.Where(x => x.Id.Equals(empId)).Select(y => y.WarehouseCode).Single();
+            var data = (from th in Db.VwTransferStockHeaders
+                        join gi in Db.Warehouses on th.WarehouseCodeFrom equals gi.Code
+                        join go in Db.Warehouses on th.WarehouseCodeTo equals go.Code
+                        join emp1 in Db.Employees.Where(x => x.Type.Equals(2)) on th.WarehouseCodeFrom equals emp1.WarehouseCode
+                        into a1
+                        from sub1 in a1.DefaultIfEmpty()
+                        join emp2 in Db.Employees.Where(x => x.Type.Equals(2)) on th.WarehouseCodeTo equals emp2.WarehouseCode
+                        into a2
+                        from sub2 in a2.DefaultIfEmpty()
+                        where ((th.Type == "IN" && th.WarehouseCodeTo == wh) || (th.Type == "OUT" && th.WarehouseCodeFrom == wh)) && th.Mark == "A"
+                        select new MobileTransferStockHeaderModel
+                        {
+                            Code = th.Code,
+                            Date = th.Date,
+                            Type = th.Type,
+                            WarehouseCodeFrom = th.WarehouseCodeFrom,
+                            WarehouseCodeTo = th.WarehouseCodeTo,
+                            WarehouseInitialFrom = th.WarehouseInitialFrom,
+                            WarehouseInitialTo = th.WarehouseInitialTo,
+                            WarehouseNameFrom = gi.Name,
+                            WarehouseNameTo = go.Name,
+                            SalesNameFrom = sub1!=null?sub1.FirstName + ' ' + sub1.LastName:"",
+                            SalesNameTo = sub2!=null?sub2.FirstName + ' ' + sub2.LastName:"",
+                            TypeInitial = th.TypeInitial
+                        }) ;
+
+            if (date.HasValue)
+            {
+                data = data.Where(x => x.Date.Equals(date));
+            }
+
+            if (search != null && search != "")
+            {
+                data = data.Where(x => x.WarehouseInitialFrom.Contains(search) || x.WarehouseInitialTo.Contains(search) || x.Code.Contains(search));
+            }
+
+            return data;
+        }
+
+        public IEnumerable<MobileTransferStockDetailModel> getTransferStockDetail(string code)
+        {
+            var data = from td in Db.VwTransferStockDetails
+                       where td.Code == code
+                       select new MobileTransferStockDetailModel
+                       {
+                           ItemId = td.ItemId,
+                           UomId = td.UomId,
+                           UnitId = td.UnitId,
+                           ItemName = td.ItemName,
+                           UnitName = td.UnitName,
+                           OriginalQty = td.Qty,
+                           RealizeQty = 0
                        };
             return data;
         }
