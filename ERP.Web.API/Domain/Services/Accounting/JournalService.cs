@@ -1431,7 +1431,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                                 CurrCode = itemDlvData.DlvHeader.CurrCode,
                                 Period = itemDlvData.DlvHeader.Date.ToString("yyyyMMdd"),
                                 Type = "D",
-                                Amount = itemData.RtnHeader.Type == 2 ? journals.Where(x => x.Code == itemDlvData.DlvHeader.Code && x.Group == 2).Sum(x => x.Amount) : itemData.RtnHeader.Total,
+                                Amount = itemData.RtnHeader.Type == 2 ? journals.FirstOrDefault(x => x.Code == itemData.RtnHeader.Code && x.Group == 4).Amount : itemData.RtnHeader.Total,
                                 SrcTrans = "DLV"
                             });
 
