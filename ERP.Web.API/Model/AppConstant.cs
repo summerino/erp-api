@@ -81,6 +81,7 @@
         Consignee = 91,
         Adjustment = 34,
         BeginningBalanceStock = 87,
+        StockMutationReport = 94,
 
         // Purchase
         PurchaseOrder = 36,
