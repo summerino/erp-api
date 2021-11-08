@@ -53,7 +53,7 @@ namespace ERP.Web.API.Domain.Services.Mobile.TransferStock
                 data = data.Where(x => x.Date.Equals(date));
             }
 
-            if (search != "")
+            if (search != null && search != "")
             {
                 data = data.Where(x => x.WarehouseNameFrom.Contains(search) || x.WarehouseNameTo.Contains(search) || x.Code.Contains(search));
             }
@@ -116,7 +116,7 @@ namespace ERP.Web.API.Domain.Services.Mobile.TransferStock
 
             if (search != null && search != "")
             {
-                data = data.Where(x => x.WarehouseInitialFrom.Contains(search) || x.WarehouseInitialTo.Contains(search) || x.Code.Contains(search));
+                data = data.Where(x => x.WarehouseNameFrom.Contains(search) || x.WarehouseNameTo.Contains(search) || x.Code.Contains(search));
             }
 
             return data;
@@ -134,7 +134,7 @@ namespace ERP.Web.API.Domain.Services.Mobile.TransferStock
                            ItemName = td.ItemName,
                            UnitName = td.UnitName,
                            OriginalQty = td.Qty,
-                           RealizeQty = 0
+                           RealizeQty = td.Qty
                        };
             return data;
         }
@@ -146,21 +146,21 @@ namespace ERP.Web.API.Domain.Services.Mobile.TransferStock
             using var transaction = Db.Database.BeginTransaction();
             try
             {
+                var date = DateTime.Now;
                 // Get new code
-                var newCode = GetNewCode("MOB_TS_NUM_FMT", data.Date);
+                var newCode = GetNewCode("MOB_TS_NUM_FMT", date);
 
                 // Insert header data
-                var date = DateTime.Now;
                 Db.MobileTransferStockHeaders.Add(new MobileTransferStockHeader
                 {
                     Code = newCode,
                     TransferCode = data.Code,
+                    SignatureImage = data.SignatureImage,
                     Mark = "A",
                     CreatedBy = userId,
                     CreatedDate = date,
                     UpdatedBy = userId,
                     UpdatedDate = date,
-
                 });
 
                 // Insert detail data

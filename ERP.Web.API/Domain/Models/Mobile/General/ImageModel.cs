@@ -4,5 +4,6 @@
     {
         public string FileName { get; set; }
         public string FileByte { get; set; }
+        public string Folder { get; set; }
     }
 }

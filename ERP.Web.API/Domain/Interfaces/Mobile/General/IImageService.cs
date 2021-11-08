@@ -1,9 +1,10 @@
 ﻿using ERP.Common;
+using ERP.Web.API.Domain.Models.Mobile.General;
 
 namespace ERP.Web.API.Domain.Interfaces.Mobile.General
 {
     public interface IImageService
     {
-        SaveResult AddImage(string base64image, string imageName);
+        SaveResult AddImage(ImageModel data);
     }
 }
