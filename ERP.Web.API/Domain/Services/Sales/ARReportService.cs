@@ -44,9 +44,10 @@ namespace ERP.Web.API.Domain.Services.Sales
 
             foreach (var itemDlv in dlvData)
             {
+                var invData = _db.SalesInvoiceCreditMemos.FirstOrDefault(x => x.InvCode == itemDlv.InvCode);
                 var totDlv = dlvData.Where(x => x.InvCode == itemDlv.InvCode).Sum(x => x.TotalAmount);
                 var totCb = cbDetail.Where(x => x.TransCode == itemDlv.InvCode).Sum(x => x.TransAmount);
-                itemDlv.PaidAmount = totCb * itemDlv.TotalAmount / totDlv;
+                itemDlv.PaidAmount = (totCb * itemDlv.TotalAmount / totDlv) + invData?.CreditMemoAmount ?? 0;
                 itemDlv.RemainderAmount = itemDlv.TotalAmount - itemDlv.PaidAmount;
             }
 
