@@ -449,6 +449,9 @@ namespace ERP.Web.API.Domain.Services.Finance
                         if (bbData == null)
                             continue;
 
+                        if (data.ChequeDate.GetValueOrDefault(data.Date) < bbData.Date)
+                            return ($"Tanggal kas bank tidak boleh lebih kecil dari tanggal transaksi {bbData.Code}.", false, new List<string>());
+
                         if (totalAmount > bbData.Amount)
                             return ($"Lebih bayar untuk transaksi dengan kode {bbData.Code}.", false, new List<string>());
 
@@ -461,6 +464,9 @@ namespace ERP.Web.API.Domain.Services.Finance
 
                         if (header == null)
                             continue;
+
+                        if (data.ChequeDate.GetValueOrDefault(data.Date) < header.Date)
+                            return ($"Tanggal kas bank tidak boleh lebih kecil dari tanggal transaksi {header.Code}.", false, new List<string>());
 
                         if (totalAmount > header.Total)
                             return ($"Lebih bayar untuk transaksi dengan kode {header.Code}.", false, new List<string>());
@@ -492,6 +498,9 @@ namespace ERP.Web.API.Domain.Services.Finance
                         if (bbData == null)
                             continue;
 
+                        if (data.ChequeDate.GetValueOrDefault(data.Date) < bbData.Date)
+                            return ($"Tanggal kas bank tidak boleh lebih kecil dari tanggal transaksi {bbData.Code}.", false, new List<string>());
+
                         if (totalAmount > bbData.Amount)
                             return ($"Lebih bayar untuk transaksi dengan kode {bbData.Code}.", false, new List<string>());
 
@@ -501,8 +510,12 @@ namespace ERP.Web.API.Domain.Services.Finance
                     else
                     {
                         var header = Db.PurchaseInvoiceHeaders.SingleOrDefault(x => x.Code == item.TransCode);
+                        
                         if (header == null)
                             continue;
+
+                        if (data.ChequeDate.GetValueOrDefault(data.Date) < header.Date)
+                            return ($"Tanggal kas bank tidak boleh lebih kecil dari tanggal transaksi {header.Code}.", false, new List<string>());
 
                         if (totalAmount > header.Total)
                             return ($"Lebih bayar untuk transaksi dengan kode {header.Code}.", false, new List<string>());
@@ -532,6 +545,9 @@ namespace ERP.Web.API.Domain.Services.Finance
                     if (ep == null)
                         continue;
 
+                    if (data.ChequeDate.GetValueOrDefault(data.Date) < ep.Date)
+                        return ($"Tanggal kas bank tidak boleh lebih kecil dari tanggal transaksi {ep.Code}.", false, new List<string>());
+
                     if (totalAmount > ep.Amount)
                         return ($"Lebih bayar untuk transaksi dengan kode {ep.Code}.", false, new List<string>());
 
@@ -540,8 +556,29 @@ namespace ERP.Web.API.Domain.Services.Finance
                     queries.Add(
                         $"UPDATE Expedition.ExpeditionInvoiceHeader SET PaidAmount='{totalAmount}', Mark='{mark}' WHERE Code='{item.TransCode}';");
                 }
-                else if (item.Type is "DPC" or "DPS")
+                else if (item.Type == "DPC")
                 {
+                    var memo = Db.CreditMemos.SingleOrDefault(x => x.Code == item.TransCode);
+
+                    if (memo == null)
+                        continue;
+
+                    if (data.ChequeDate.GetValueOrDefault(data.Date) < memo.Date)
+                        return ($"Tanggal kas bank tidak boleh lebih kecil dari tanggal transaksi {memo.Code}.", false, new List<string>());
+
+                    var query = QueryBuilder(item.Type, item.TransCode);
+                    queries.Add(query);
+                }
+                else if (item.Type == "DPS")
+                {
+                    var memo = Db.DebitMemos.SingleOrDefault(x => x.Code == item.TransCode);
+
+                    if (memo == null)
+                        continue;
+
+                    if (data.ChequeDate.GetValueOrDefault(data.Date) < memo.Date)
+                        return ($"Tanggal kas bank tidak boleh lebih kecil dari tanggal transaksi {memo.Code}.", false, new List<string>());
+
                     var query = QueryBuilder(item.Type, item.TransCode);
                     queries.Add(query);
                 }
@@ -560,6 +597,9 @@ namespace ERP.Web.API.Domain.Services.Finance
                             if (bbData == null)
                                 continue;
 
+                            if (data.ChequeDate.GetValueOrDefault(data.Date) < bbData.Date)
+                                return ($"Tanggal kas bank tidak boleh lebih kecil dari tanggal transaksi {bbData.Code}.", false, new List<string>());
+
                             if (totalAmount > bbData.Amount)
                                 return ($"Lebih bayar untuk transaksi dengan kode {bbData.Code}.", false, new List<string>());
 
@@ -569,8 +609,12 @@ namespace ERP.Web.API.Domain.Services.Finance
                         else
                         {
                             var memo = Db.DebitMemos.SingleOrDefault(x => x.Code == item.TransCode);
-                            if (memo != null)
+                            
+                            if (memo == null)
                                 continue;
+
+                            if (data.ChequeDate.GetValueOrDefault(data.Date) < memo.Date)
+                                return ($"Tanggal kas bank tidak boleh lebih kecil dari tanggal transaksi {memo.Code}.", false, new List<string>());
 
                             if (totalAmount > memo.Amount)
                                 return ($"Lebih bayar untuk transaksi dengan kode {memo.Code}.", false, new List<string>());
@@ -593,6 +637,9 @@ namespace ERP.Web.API.Domain.Services.Finance
                             if (bbData == null)
                                 continue;
 
+                            if (data.ChequeDate.GetValueOrDefault(data.Date) < bbData.Date)
+                                return ($"Tanggal kas bank tidak boleh lebih kecil dari tanggal transaksi {bbData.Code}.", false, new List<string>());
+
                             if (totalAmount > bbData.Amount)
                                 return ($"Lebih bayar untuk transaksi dengan kode {bbData.Code}.", false, new List<string>());
 
@@ -605,6 +652,9 @@ namespace ERP.Web.API.Domain.Services.Finance
 
                             if (memo == null)
                                 continue;
+
+                            if (data.ChequeDate.GetValueOrDefault(data.Date) < memo.Date)
+                                return ($"Tanggal kas bank tidak boleh lebih kecil dari tanggal transaksi {memo.Code}.", false, new List<string>());
 
                             if (totalAmount > memo.Amount)
                                 return ($"Lebih bayar untuk transaksi dengan kode {memo.Code}.", false, new List<string>());

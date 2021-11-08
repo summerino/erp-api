@@ -223,12 +223,6 @@ namespace ERP.Web.API.Domain.Services.Sales
                 // Restore CreditUsed
                 RestoreCreditUsed(data.Code, data.CustCode);
 
-                // Update header data
-                Db.SalesInvoiceHeaders.Update(data);
-                Db.Entry(data).Property(e => e.Code).IsModified = false;
-                Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
-                Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
-
                 // Restore Credit Memo
                 RestoreCreditMemo(data.Code);
 
@@ -309,6 +303,13 @@ namespace ERP.Web.API.Domain.Services.Sales
                 // Insert detail if new data exists
                 if (newMemos.Any())
                     Db.SalesInvoiceCreditMemos.AddRange(newMemos);
+
+                // Update header data
+                data.PaidAmount = newMemos.Sum(x => x.CreditMemoAmount) - delMemos.Sum(x => x.CreditMemoAmount); ;
+                Db.SalesInvoiceHeaders.Update(data);
+                Db.Entry(data).Property(e => e.Code).IsModified = false;
+                Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
+                Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
 
                 // Save changes
                 Db.SaveChanges();

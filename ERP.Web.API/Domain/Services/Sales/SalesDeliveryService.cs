@@ -134,15 +134,15 @@ namespace ERP.Web.API.Domain.Services.Sales
                     }
                 }
 
-                //Checking warehouse qty is item is available or not
+                // Checking warehouse qty is item is available or not
                 var isQtyAvailable = IsQtyAvailable(null, data.WarehouseCode, data.ItemDetails);
                 switch (isQtyAvailable)
                 {
                     case 1:
-                        result.Message = "Terdapat barang yang tidak tersedia pada gudang yang dipilih";
+                        result.Message = "Terdapat barang yang tidak tersedia pada gudang yang dipilih.";
                         return result;
                     case 2:
-                        result.Message = "Terdapat barang yang qty-nya melebihi ketersediaan pada gudang yang dipilih";
+                        result.Message = "Terdapat barang yang qty-nya melebihi ketersediaan pada gudang yang dipilih.";
                         return result;
                 }
 
@@ -283,13 +283,13 @@ namespace ERP.Web.API.Domain.Services.Sales
                     Db.Database.ExecuteSqlRaw("UPDATE Sales.SalesDeliveryHeader SET Mark='INV' WHERE Code={0}", data.Code);
 
                     // Update sales order to closed if all sales delivery are invoiced
-                    if (
-                        !Db.SalesDeliveryHeaders
-                            .Any(x => x.TransCode == data.TransCode && x.Mark != "INV"))
-                    {
-                        Db.Database.ExecuteSqlRaw(
-                            "UPDATE Sales.SalesOrderHeader SET Mark='CLS' WHERE Code={0} AND Mark='CMP'", data.TransCode);
-                    }
+                    //if (
+                    //    !Db.SalesDeliveryHeaders
+                    //        .Any(x => x.TransCode == data.TransCode && x.Mark != "INV"))
+                    //{
+                    //    Db.Database.ExecuteSqlRaw(
+                    //        "UPDATE Sales.SalesOrderHeader SET Mark='CLS' WHERE Code={0} AND Mark='CMP'", data.TransCode);
+                    //}
                 }
 
                 transaction.Commit();
@@ -370,15 +370,15 @@ namespace ERP.Web.API.Domain.Services.Sales
                     }
                 }
 
-                //Checking warehouse qty is item is available or not
+                // Checking warehouse qty is item is available or not
                 var isQtyAvailable = IsQtyAvailable(data.Code, data.WarehouseCode, data.ItemDetails);
                 switch (isQtyAvailable)
                 {
                     case 1:
-                        result.Message = "Terdapat barang yang tidak tersedia pada gudang yang dipilih";
+                        result.Message = "Terdapat barang yang tidak tersedia pada gudang yang dipilih.";
                         return result;
                     case 2:
-                        result.Message = "Terdapat barang yang qty-nya melebihi ketersediaan pada gudang yang dipilih";
+                        result.Message = "Terdapat barang yang qty-nya melebihi ketersediaan pada gudang yang dipilih.";
                         return result;
                 }
 
@@ -556,24 +556,24 @@ namespace ERP.Web.API.Domain.Services.Sales
                     Db.Database.ExecuteSqlRaw("UPDATE Sales.SalesDeliveryHeader SET Mark='INV' WHERE Code={0}", data.Code);
 
                     // Check all sales delivery are invoiced
-                    if (
-                        !Db.SalesDeliveryHeaders
-                            .Any(x => x.TransCode == data.TransCode && x.Mark != "INV"))
-                    {
-                        // Update sales order to closed
-                        Db.Database.ExecuteSqlRaw(
-                            "UPDATE Sales.SalesOrderHeader SET Mark='CLS' WHERE Code={0} AND Mark='CMP'", data.TransCode);
-                    }
-                    else
-                    {
-                        // Update sales order to partial receive or completed
-                        var soMark = Db.SalesOrderDetails.Any(x => x.Code == data.TransCode && x.Qty > x.QtyDlv)
-                            ? "PS"
-                            : "CMP";
+                    //if (
+                    //    !Db.SalesDeliveryHeaders
+                    //        .Any(x => x.TransCode == data.TransCode && x.Mark != "INV"))
+                    //{
+                    //    // Update sales order to closed
+                    //    Db.Database.ExecuteSqlRaw(
+                    //        "UPDATE Sales.SalesOrderHeader SET Mark='CLS' WHERE Code={0} AND Mark='CMP'", data.TransCode);
+                    //}
+                    //else
+                    //{
+                    //    // Update sales order to partial receive or completed
+                    //    var soMark = Db.SalesOrderDetails.Any(x => x.Code == data.TransCode && x.Qty > x.QtyDlv)
+                    //        ? "PS"
+                    //        : "CMP";
 
-                        Db.Database.ExecuteSqlRaw(
-                            "UPDATE Sales.SalesOrderHeader SET Mark={0} WHERE Code={1}", soMark, data.TransCode);
-                    }
+                    //    Db.Database.ExecuteSqlRaw(
+                    //        "UPDATE Sales.SalesOrderHeader SET Mark={0} WHERE Code={1}", soMark, data.TransCode);
+                    //}
                 }
 
                 transaction.Commit();

@@ -222,6 +222,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                         Db.SaveChanges();
                     }
                 }
+
                 // Sales Delivery
                 Db.SalesDeliveryHeaders.Add(new SalesDeliveryHeader
                 {
@@ -344,7 +345,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                     Dpp = data.Dpp
                 });
 
-                // insert memo
+                // Insert memo
                 foreach (var item in data.Memos)
                 {
                     Db.SalesInvoiceCreditMemos.Add(new SalesInvoiceCreditMemo
@@ -358,7 +359,8 @@ namespace ERP.Web.API.Domain.Services.Sales
 
                 Db.SaveChanges();
 
-                var DlvData = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.TransCode == newCode);
+                var dlvData = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.TransCode == newCode);
+
                 // Execute sp_update_stock_mutation_from_so
                 Db.Database.ExecuteSqlRaw(
                     "EXEC sp_update_stock_mutation_from_so {0}, {1}",
@@ -367,19 +369,19 @@ namespace ERP.Web.API.Domain.Services.Sales
                 // Execute sp_update_stock_mutation_from_do
                 Db.Database.ExecuteSqlRaw(
                     "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
-                    DlvData.Code, data.Date, newCode);
+                    dlvData?.Code, data.Date, newCode);
 
                 // Execute sp_update_po_rcv_qty
                 Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", newCode);
 
                 // Update sales order to closed if all sales delivery are invoiced
-                if (
-                    !Db.SalesDeliveryHeaders
-                        .Any(x => x.TransCode == newCode && x.Mark != "INV"))
-                {
-                    Db.Database.ExecuteSqlRaw(
-                        "UPDATE Sales.SalesOrderHeader SET Mark='CLS' WHERE Code={0} AND Mark='CMP'", newCode);
-                }
+                //if (
+                //    !Db.SalesDeliveryHeaders
+                //        .Any(x => x.TransCode == newCode && x.Mark != "INV"))
+                //{
+                //    Db.Database.ExecuteSqlRaw(
+                //        "UPDATE Sales.SalesOrderHeader SET Mark='CLS' WHERE Code={0} AND Mark='CMP'", newCode);
+                //}
                 UpdateCreditMemo(data);
 
                 transaction.Commit();
@@ -389,6 +391,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                 result.Message = ex.InnerException?.Message ?? ex.Message;
                 return result;
             }
+
             result.Success = true;
             result.Data = data.Code;
             result.Message = "Data penjualan langsung berhasil disimpan.";
@@ -435,59 +438,59 @@ namespace ERP.Web.API.Domain.Services.Sales
                 Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
                 Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
 
-                //Update Order header data
-                var OrderData = Db.SalesOrderHeaders.FirstOrDefault(x => x.Code == data.SoCode);
-                OrderData.Date = data.Date;
-                OrderData.CustCode = data.CustCode;
-                OrderData.PaymentTermId = data.PaymentTermId;
-                OrderData.SalesBy = data.SalesBy;
-                OrderData.WarehouseCode = data.WarehouseCode;
-                OrderData.CurrCode = data.CurrCode;
-                OrderData.Rate = data.Rate;
-                OrderData.SubTotal = data.SubTotal;
-                OrderData.FinalDiscPercent = data.FinalDiscPercent;
-                OrderData.FinalDisc = data.FinalDisc;
-                OrderData.IncludeTax = data.IncludeTax;
-                OrderData.TaxAmount = data.TaxAmount;
-                OrderData.Total = data.Total;
-                OrderData.Dpp = data.Dpp;
-                OrderData.Notes = data.Notes;
-                OrderData.Mark = data.Mark;
-                OrderData.UpdatedBy = data.UpdatedBy;
-                OrderData.UpdatedDate = data.UpdatedDate;
-                Db.SalesOrderHeaders.Update(OrderData);
-                Db.Entry(OrderData).Property(e => e.Code).IsModified = false;
-                Db.Entry(OrderData).Property(e => e.CreatedBy).IsModified = false;
-                Db.Entry(OrderData).Property(e => e.CreatedDate).IsModified = false;
+                // Update Order header data
+                var orderData = Db.SalesOrderHeaders.FirstOrDefault(x => x.Code == data.SoCode);
+                orderData.Date = data.Date;
+                orderData.CustCode = data.CustCode;
+                orderData.PaymentTermId = data.PaymentTermId;
+                orderData.SalesBy = data.SalesBy;
+                orderData.WarehouseCode = data.WarehouseCode;
+                orderData.CurrCode = data.CurrCode;
+                orderData.Rate = data.Rate;
+                orderData.SubTotal = data.SubTotal;
+                orderData.FinalDiscPercent = data.FinalDiscPercent;
+                orderData.FinalDisc = data.FinalDisc;
+                orderData.IncludeTax = data.IncludeTax;
+                orderData.TaxAmount = data.TaxAmount;
+                orderData.Total = data.Total;
+                orderData.Dpp = data.Dpp;
+                orderData.Notes = data.Notes;
+                orderData.Mark = data.Mark;
+                orderData.UpdatedBy = data.UpdatedBy;
+                orderData.UpdatedDate = data.UpdatedDate;
+                Db.SalesOrderHeaders.Update(orderData);
+                Db.Entry(orderData).Property(e => e.Code).IsModified = false;
+                Db.Entry(orderData).Property(e => e.CreatedBy).IsModified = false;
+                Db.Entry(orderData).Property(e => e.CreatedDate).IsModified = false;
 
-                //update Delivery header data
+                // Update Delivery header data
                 var invDetail = Db.SalesInvoiceDetails.FirstOrDefault(x => x.Code == data.Code);
-                var DeliveryData = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.Code == invDetail.DoCode);
-                DeliveryData.Date = data.Date;
-                DeliveryData.TransCode = OrderData.Code;
-                DeliveryData.CustCode = data.CustCode;
-                DeliveryData.WarehouseCode = data.WarehouseCode;
-                DeliveryData.ShippedBy = data.SalesBy;
-                DeliveryData.CurrCode = data.CurrCode;
-                DeliveryData.Rate = data.Rate;
-                DeliveryData.SubTotal = data.SubTotal;
-                DeliveryData.FinalDiscPercent = data.FinalDiscPercent;
-                DeliveryData.FinalDisc = data.FinalDisc;
-                DeliveryData.IncludeTax = data.IncludeTax;
-                DeliveryData.TaxAmount = data.TaxAmount;
-                DeliveryData.Total = data.Total;
-                DeliveryData.Dpp = data.Dpp;
-                DeliveryData.Mark = "INV";
-                DeliveryData.Notes = data.Notes;
-                DeliveryData.UpdatedBy = data.UpdatedBy;
-                DeliveryData.UpdatedDate = data.UpdatedDate;
-                Db.SalesDeliveryHeaders.Update(DeliveryData);
-                Db.Entry(DeliveryData).Property(e => e.Code).IsModified = false;
-                Db.Entry(DeliveryData).Property(e => e.SrcTrans).IsModified = false;
-                Db.Entry(DeliveryData).Property(e => e.CreatedBy).IsModified = false;
-                Db.Entry(DeliveryData).Property(e => e.CreatedDate).IsModified = false;
+                var deliveryData = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.Code == invDetail.DoCode);
+                deliveryData.Date = data.Date;
+                deliveryData.TransCode = orderData.Code;
+                deliveryData.CustCode = data.CustCode;
+                deliveryData.WarehouseCode = data.WarehouseCode;
+                deliveryData.ShippedBy = data.SalesBy;
+                deliveryData.CurrCode = data.CurrCode;
+                deliveryData.Rate = data.Rate;
+                deliveryData.SubTotal = data.SubTotal;
+                deliveryData.FinalDiscPercent = data.FinalDiscPercent;
+                deliveryData.FinalDisc = data.FinalDisc;
+                deliveryData.IncludeTax = data.IncludeTax;
+                deliveryData.TaxAmount = data.TaxAmount;
+                deliveryData.Total = data.Total;
+                deliveryData.Dpp = data.Dpp;
+                deliveryData.Mark = "INV";
+                deliveryData.Notes = data.Notes;
+                deliveryData.UpdatedBy = data.UpdatedBy;
+                deliveryData.UpdatedDate = data.UpdatedDate;
+                Db.SalesDeliveryHeaders.Update(deliveryData);
+                Db.Entry(deliveryData).Property(e => e.Code).IsModified = false;
+                Db.Entry(deliveryData).Property(e => e.SrcTrans).IsModified = false;
+                Db.Entry(deliveryData).Property(e => e.CreatedBy).IsModified = false;
+                Db.Entry(deliveryData).Property(e => e.CreatedDate).IsModified = false;
 
-                //Update Invoice detail data
+                // Update Invoice detail data
                 var InvoiceDetailData = Db.SalesInvoiceDetails.FirstOrDefault(x => x.Code == data.Code);
                 InvoiceDetailData.SubTotal = data.SubTotal;
                 InvoiceDetailData.FinalDisc = data.FinalDisc;
@@ -501,13 +504,11 @@ namespace ERP.Web.API.Domain.Services.Sales
                 // Restore Credit Note
                 RestoreCreditMemo(data.Code);
 
-                //Update Order Detail data
-                    // Get detail data that exists in order before
+                // Update Order Detail data
+                // Get detail data that exists in order before
                 var delOrderDetails = Db.SalesOrderDetails
                     .Where(d => d.Code == data.SoCode && !data.ItemDetails.Select(x => x.Id).Contains(d.Id))
                     .ToList();
-
-               
 
                 // Delete detail data that exists in order before
                 Db.SalesOrderDetails.RemoveRange(delOrderDetails);
@@ -646,13 +647,13 @@ namespace ERP.Web.API.Domain.Services.Sales
                     }
                 }
 
-                //Update Delivery detail data
-                    // Get detail data that exists in order before
+                // Update Delivery detail data
+                // Get detail data that exists in order before
                 var delDetails = Db.SalesDeliveryDetails
                     .Where(d => d.Code == InvoiceDetailData.DoCode)
                     .ToList();
 
-                    // Get detail data that exists in receive before
+                // Get detail data that exists in receive before
                 Db.SalesDeliveryDetails.RemoveRange(delDetails);
 
                 short j = 0;
@@ -763,26 +764,25 @@ namespace ERP.Web.API.Domain.Services.Sales
                     InvoiceDetailData.DoCode, data.Date, data.SoCode);
 
                 // Check all sales delivery are invoiced
-                if (
-                    !Db.SalesDeliveryHeaders
-                        .Any(x => x.TransCode == data.SoCode && x.Mark != "INV"))
-                {
-                    // Update sales order to closed
-                    Db.Database.ExecuteSqlRaw(
-                        "UPDATE Sales.SalesOrderHeader SET Mark='CLS' WHERE Code={0} AND Mark='CMP'", data.SoCode);
-                }
-                else
-                {
-                    // Update sales order to partial receive or completed
-                    var soMark = Db.SalesOrderDetails.Any(x => x.Code == data.SoCode && x.Qty > x.QtyDlv)
-                        ? "PS"
-                        : "CMP";
+                //if (
+                //    !Db.SalesDeliveryHeaders
+                //        .Any(x => x.TransCode == data.SoCode && x.Mark != "INV"))
+                //{
+                //    // Update sales order to closed
+                //    Db.Database.ExecuteSqlRaw(
+                //        "UPDATE Sales.SalesOrderHeader SET Mark='CLS' WHERE Code={0} AND Mark='CMP'", data.SoCode);
+                //}
+                //else
+                //{
+                //    // Update sales order to partial receive or completed
+                //    var soMark = Db.SalesOrderDetails.Any(x => x.Code == data.SoCode && x.Qty > x.QtyDlv)
+                //        ? "PS"
+                //        : "CMP";
 
-                    Db.Database.ExecuteSqlRaw(
-                        "UPDATE Sales.SalesOrderHeader SET Mark={0} WHERE Code={1}", soMark, data.SoCode);
-                }
+                //    Db.Database.ExecuteSqlRaw(
+                //        "UPDATE Sales.SalesOrderHeader SET Mark={0} WHERE Code={1}", soMark, data.SoCode);
+                //}
 
-                
                 UpdateCreditMemo(data);
                 transaction.Commit();
             }
@@ -877,7 +877,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                     {
                         if (uom.IsBaseUnit)
                         {
-                            if (item.Qty > (stock.QtyOnHand - stock.QtyOnOrder))
+                            if (item.Qty > stock.QtyOnHand)
                             {
                                 result = true;
                             }
@@ -887,7 +887,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                             var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= uom.Seq).Select(x => x.Conversion).ToList();
                             var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
                             var baseQty = item.Qty * multipliedQty;
-                            if (baseQty > (stock.QtyOnHand - stock.QtyOnOrder))
+                            if (baseQty > stock.QtyOnHand)
                             {
                                 result = true;
                             }
@@ -898,7 +898,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                         var oldStock = Db.StockMutations.FirstOrDefault(x => x.ItemId == item.ItemId && x.RefCode1 == code);
                         if (uom.IsBaseUnit)
                         {
-                            if (item.Qty > (stock.QtyOnHand - (stock.QtyOnOrder - oldStock.BaseQty)))
+                            if (item.Qty > (stock.QtyOnHand -  oldStock.BaseQty))
                             {
                                 result = true;
                             }
@@ -908,7 +908,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                             var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= uom.Seq).Select(x => x.Conversion).ToList();
                             var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
                             var baseQty = item.Qty * multipliedQty;
-                            if (baseQty > (stock.QtyOnHand - (stock.QtyOnOrder - oldStock.BaseQty)))
+                            if (baseQty > (stock.QtyOnHand - oldStock.BaseQty))
                             {
                                 result = true;
                             }

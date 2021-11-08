@@ -229,13 +229,13 @@ namespace ERP.Web.API.Domain.Services.Purchase
                         "UPDATE Purchasing.PurchaseReceiveHeader SET Mark='INV' WHERE Code={0}", data.Code);
 
                     // Update purchase order to closed if all purchase receive are invoiced
-                    if (
-                        !Db.PurchaseReceiveHeaders
-                            .Any(x => x.TransCode == data.TransCode && x.Mark != "INV"))
-                    {
-                        Db.Database.ExecuteSqlRaw(
-                            "UPDATE Purchasing.PurchaseOrderHeader SET Mark='CLS' WHERE Code={0} AND Mark='CMP'", data.TransCode);
-                    }
+                    //if (
+                    //    !Db.PurchaseReceiveHeaders
+                    //        .Any(x => x.TransCode == data.TransCode && x.Mark != "INV"))
+                    //{
+                    //    Db.Database.ExecuteSqlRaw(
+                    //        "UPDATE Purchasing.PurchaseOrderHeader SET Mark='CLS' WHERE Code={0} AND Mark='CMP'", data.TransCode);
+                    //}
                 }
 
                 transaction.Commit();
@@ -440,24 +440,24 @@ namespace ERP.Web.API.Domain.Services.Purchase
                         "UPDATE Purchasing.PurchaseReceiveHeader SET Mark='INV' WHERE Code={0}", data.Code);
 
                     // Check all purchase receive are invoiced
-                    if (
-                        !Db.PurchaseReceiveHeaders
-                            .Any(x => x.TransCode == data.TransCode && x.Mark != "INV"))
-                    {
-                        // Update purchase order to closed
-                        Db.Database.ExecuteSqlRaw(
-                            "UPDATE Purchasing.PurchaseOrderHeader SET Mark='CLS' WHERE Code={0} AND Mark='CMP'", data.TransCode);
-                    }
-                    else
-                    {
-                        // Update purchase order to partial receive or completed
-                        var poMark = Db.PurchaseOrderDetails.Any(x => x.Code == data.TransCode && x.Qty > x.QtyRcv)
-                            ? "PR"
-                            : "CMP";
+                    //if (
+                    //    !Db.PurchaseReceiveHeaders
+                    //        .Any(x => x.TransCode == data.TransCode && x.Mark != "INV"))
+                    //{
+                    //    // Update purchase order to closed
+                    //    Db.Database.ExecuteSqlRaw(
+                    //        "UPDATE Purchasing.PurchaseOrderHeader SET Mark='CLS' WHERE Code={0} AND Mark='CMP'", data.TransCode);
+                    //}
+                    //else
+                    //{
+                    //    // Update purchase order to partial receive or completed
+                    //    var poMark = Db.PurchaseOrderDetails.Any(x => x.Code == data.TransCode && x.Qty > x.QtyRcv)
+                    //        ? "PR"
+                    //        : "CMP";
 
-                        Db.Database.ExecuteSqlRaw(
-                            "UPDATE Purchasing.PurchaseOrderHeader SET Mark={0} WHERE Code={1}", poMark, data.TransCode);
-                    }
+                    //    Db.Database.ExecuteSqlRaw(
+                    //        "UPDATE Purchasing.PurchaseOrderHeader SET Mark={0} WHERE Code={1}", poMark, data.TransCode);
+                    //}
                 }
 
                 transaction.Commit();

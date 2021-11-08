@@ -185,7 +185,7 @@ namespace ERP.Web.API.Controllers.Sales
                     return (false, "Detail tidak boleh kosong.");
 
                 if (data.ItemDetails.GroupBy(x => new { x.Code, x.TransCode }).Any(x => x.Count() > 1))
-                    return(false, "Terdapat barang dengan satuan yang sama pada bagian detail.");
+                    return(false, "Terdapat transaksi yang sama pada bagian detail.");
             }
 
             return (true, "");

@@ -1322,9 +1322,9 @@ namespace ERP.Web.API.Domain.Services.Accounting
                         Code = itemData.RtnHeader.Code,
                         LineNo = 1,
                         Date = itemData.RtnHeader.Date,
-                        CoaCode = systemParam.FirstOrDefault(x => x.Code == "CM_AP_COA")?.Value ?? "",
+                        CoaCode = systemParam.FirstOrDefault(x => x.Code == "SLS_RTN_COA")?.Value ?? "",
                         TypeCode = "SR",
-                        Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_CM_AP")?.Value ?? ""} {itemData.Customer.Initial}").Trim(),
+                        Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_SLS_RTN")?.Value ?? ""} {itemData.Customer.Initial}").Trim(),
                         RefCode1 = "",
                         Group = 5,
                         CurrCode = itemData.RtnHeader.CurrCode,
@@ -1352,7 +1352,10 @@ namespace ERP.Web.API.Domain.Services.Accounting
                             short n = 0;
                             foreach (var itemDetail in DlvDetailData)
                             {
-                                var diffItem = RtnDetailExData.FirstOrDefault(x => x.Code == itemDlvData.DlvHeader.TransCode && x.ItemId == itemDetail.DlvDetail.ItemId);
+                                var smData = _db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.DlvDetail.Id && x.RefCode1 == itemDetail.DlvDetail.Code);
+                                if (smData == null) continue;
+                                var nonVoidSM = RemoveVoidSM(_db.StockMutations.ToList());
+                                var resultHpp = CalculateHPP(nonVoidSM, smData.WarehouseCode, smData.ItemId, smData.RefDetailId1, "DO");
 
                                 //Inventory using COGS for Amount
                                 journals.Add(new Journal
@@ -1369,7 +1372,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                                     CurrCode = itemDlvData.DlvHeader.CurrCode,
                                     Period = itemDlvData.DlvHeader.Date.ToString("yyyyMMdd"),
                                     Type = "C",
-                                    Amount = itemData.RtnHeader.Type == 2 ? (itemDetail.DlvDetail.NettPrice - (hppData.ContainsKey(itemDetail.DlvDetail.ItemId) ? hppData[itemDetail.DlvDetail.ItemId] : 0) - itemDetail.DlvDetail.TaxAmount) * itemDetail.DlvDetail.Qty : diffItem != null ? (diffItem.NettPrice - diffItem.TaxAmount) * itemDetail.DlvDetail.Qty : 0,
+                                    Amount = resultHpp > 0 ? resultHpp * itemDetail.DlvDetail.Qty : 0,
                                     SrcTrans = "DLV"
                                 });
 
@@ -1388,7 +1391,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                                     CurrCode = itemDlvData.DlvHeader.CurrCode,
                                     Period = itemDlvData.DlvHeader.Date.ToString("yyyyMMdd"),
                                     Type = "D",
-                                    Amount = hppData.ContainsKey(itemDetail.DlvDetail.ItemId) ? hppData[itemDetail.DlvDetail.ItemId] > 0 ? itemDetail.DlvDetail.Qty * hppData[itemDetail.DlvDetail.ItemId] : 0 : 0,
+                                    Amount = resultHpp > 0 ? resultHpp * itemDetail.DlvDetail.Qty : 0,
                                     SrcTrans = "DLV"
                                 });
 
@@ -1409,7 +1412,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                                         CurrCode = itemDlvData.DlvHeader.CurrCode,
                                         Period = itemDlvData.DlvHeader.Date.ToString("yyyyMMdd"),
                                         Type = "C",
-                                        Amount = itemData.RtnHeader.Type == 2 ? itemDetail.DlvDetail.Qty * itemDetail.DlvDetail.TaxAmount : diffItem != null ? diffItem.TaxAmount * itemDetail.DlvDetail.Qty : 0,
+                                        Amount = itemDetail.DlvDetail.TaxAmount * itemDetail.DlvDetail.Qty,
                                         SrcTrans = "DLV"
                                     });
                                 }
@@ -1428,7 +1431,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                                 CurrCode = itemDlvData.DlvHeader.CurrCode,
                                 Period = itemDlvData.DlvHeader.Date.ToString("yyyyMMdd"),
                                 Type = "D",
-                                Amount = itemData.RtnHeader.Type == 2 ? journals.Where(x => x.Code == itemDlvData.DlvHeader.Code && new[] { 2, 4, 5 }.Contains(x.Group)).Sum(x => x.Amount) : itemDlvData.DlvHeader.Total,
+                                Amount = itemData.RtnHeader.Type == 2 ? journals.Where(x => x.Code == itemDlvData.DlvHeader.Code && x.Group == 2).Sum(x => x.Amount) : itemData.RtnHeader.Total,
                                 SrcTrans = "DLV"
                             });
 
@@ -1438,21 +1441,21 @@ namespace ERP.Web.API.Domain.Services.Accounting
                                 Code = itemDlvData.DlvHeader.Code,
                                 LineNo = 1,
                                 Date = itemDlvData.DlvHeader.Date,
-                                CoaCode = systemParam.FirstOrDefault(x => x.Code == "CM_AP_COA")?.Value ?? "",
+                                CoaCode = systemParam.FirstOrDefault(x => x.Code == "SLS_RTN_COA")?.Value ?? "",
                                 TypeCode = "DLV",
-                                Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_CM_AP")?.Value ?? ""} {itemDlvData.Customer.Initial}").Trim(),
+                                Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_SLS_RTN")?.Value ?? ""} {itemDlvData.Customer.Initial}").Trim(),
                                 RefCode1 = itemData.RtnHeader.Code,
                                 Group = 3,
                                 CurrCode = itemDlvData.DlvHeader.CurrCode,
                                 Period = itemDlvData.DlvHeader.Date.ToString("yyyyMMdd"),
                                 Type = "C",
-                                Amount = itemData.RtnHeader.Total - itemData.RtnHeader.TaxAmount,
+                                Amount = itemDlvData.DlvHeader.Total - itemDlvData.DlvHeader.TaxAmount,
                                 SrcTrans = "DLV"
                             });
 
                             if (itemData.RtnHeader.Type == 3)
                             {
-                                var ciValue = journals.Where(x => x.Code == itemDlvData.DlvHeader.Code && new[] { 1, 2, 4 }.Contains(x.Group)).Sum(x => x.Amount) - itemDlvData.DlvHeader.Total;
+                                var ciValue = itemData.RtnHeader.Total - journals.Where(x => x.Code == itemDlvData.DlvHeader.Code && new[] { 4, 5 }.Contains(x.Group)).Sum(x => x.Amount);
                                 journals.Add(new Journal
                                 {
                                     Code = itemDlvData.DlvHeader.Code,
@@ -1465,7 +1468,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                                     Group = 6,
                                     CurrCode = itemDlvData.DlvHeader.CurrCode,
                                     Period = itemDlvData.DlvHeader.Date.ToString("yyyyMMdd"),
-                                    Type = (ciValue > 0 ? "D" : "C"),
+                                    Type = (ciValue > 0 ? "C" : "D"),
                                     Amount = Math.Abs(ciValue),
                                     SrcTrans = "DLV"
                                 });
@@ -2280,10 +2283,16 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 {
                     if (new[] { "RCV","BB","SR" }.Contains(item.Src))
                     {
+                        if (item.Src == "SR")
+                        {
+                            item.BaseNettPrice = hpp;
+                            item.NettPrice = hpp * item.BaseQty / item.Qty;
+                            _db.StockMutations.Update(item);
+                        }
                         latestStockValue += item.BaseNettPrice * item.BaseQty;
                         latestQty += item.BaseQty;
                     }
-                    else if (item.Src == "ADJ")
+                    else if (new[] { "ADJ", "TS", "CNEE"}.Contains(item.Src))
                     {
                         item.BaseNettPrice = hpp;
                         item.NettPrice = hpp * item.BaseQty / item.Qty;
