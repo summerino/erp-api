@@ -236,7 +236,7 @@ namespace ERP.Web.API.Domain.Services.Inventory
 						QtyEnd = selectedItem.QtyEnd,
 						InvIn = smListData.Where(x => !x.IsBold).Sum(x => x.InvIn),
 						InvOut = smListData.Where(x => !x.IsBold).Sum(x => x.InvOut),
-						InvEnd = selectedItem.InvEnd,
+						InvEnd = smListData.First(x => x.TransCode == "Nilai Awal").InvEnd + smListData.Where(x => !x.IsBold).Sum(x => x.InvIn) - smListData.Where(x => !x.IsBold).Sum(x => x.InvOut),
 						IsBold = true
 					});
 
