@@ -52,7 +52,8 @@
         Print = 41,
         OverLimit = 42,
         Approve = 43,
-        Reject = 44
+        Reject = 44,
+        ShowInventoryValue = 45
     }
 
     public enum Menu 
