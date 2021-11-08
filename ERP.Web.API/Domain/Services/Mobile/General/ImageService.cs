@@ -2,26 +2,28 @@
 using System.IO;
 using ERP.Common;
 using ERP.Web.API.Domain.Interfaces.Mobile.General;
+using ERP.Web.API.Domain.Models.Mobile.General;
 
 namespace ERP.Web.API.Domain.Services.Mobile.General
 {
     public class ImageService : IImageService
     {
-        public SaveResult AddImage(string base64image, string imageName)
+        public SaveResult AddImage(ImageModel data)
         {
             var result = new SaveResult(false);
             
             try
             {
-                var bytes = Convert.FromBase64String(base64image);
+                var bytes = Convert.FromBase64String(data.FileByte);
 
-                string filedir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/upload");
-               
+                string filedir = Path.Combine(Directory.GetCurrentDirectory(), $"wwwroot/upload/{data.Folder}");
+
+
                 if (!Directory.Exists(filedir))
                 { //check if the folder exists;
                     Directory.CreateDirectory(filedir);
                 }
-                string file = Path.Combine(filedir, imageName);
+                string file = Path.Combine(filedir, data.FileName);
                 //Debug.WriteLine(file);
                 //Debug.WriteLine(File.Exists(file));
 
@@ -35,7 +37,7 @@ namespace ERP.Web.API.Domain.Services.Mobile.General
                 }
 
                 result.Success = true;
-                result.Data = "upload/"+imageName;
+                result.Data = $"upload/{data.Folder}/{data.FileName}";
                 result.Message = "Gambar berhasil disimpan.";
                 return result;
             }

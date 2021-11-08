@@ -52,7 +52,7 @@ namespace ERP.Web.API.Controllers.Mobile.TransferStock
         [HttpGet("log-detail")]
         public IActionResult GetMobileTransferStockDetail(string code)
         {
-            var result = _transferStock.getTransferStockDetail(code);
+            var result = _transferStock.getMobileTransferStockDetail(code);
 
             return Ok(result);
         }
