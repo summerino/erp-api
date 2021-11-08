@@ -21,7 +21,7 @@ namespace ERP.Web.API.Controllers.Mobile.General
         [HttpPost]
         public IActionResult OnPost(ImageModel data)
         {
-            var result = _image.AddImage(data.FileByte, data.FileName);
+            var result = _image.AddImage(data);
             return Ok(result);
         }
     }
