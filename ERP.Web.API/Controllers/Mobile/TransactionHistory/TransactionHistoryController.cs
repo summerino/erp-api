@@ -8,6 +8,7 @@ using ERP.Web.API.Domain.Interfaces.Mobile.TransactionHistory;
 using ERP.Web.API.Domain.Models.Mobile.TransactionHistory;
 using ERP.Web.API.Model;
 using Newtonsoft.Json;
+using System;
 
 namespace ERP.Web.API.Controllers.Mobile.TransactionHistory
 {
@@ -180,6 +181,51 @@ namespace ERP.Web.API.Controllers.Mobile.TransactionHistory
                      custCode, _claim.UserId);
 
             var result = ((List<TransactionIndividual>)data.Data).ToList<dynamic>();
+
+            return Ok(new MobileApiResponse
+            {
+                Count = data.Total,
+                Data = result
+            });
+        }
+
+        [HttpGet("sub-group")]
+        public IActionResult GetSubGroup()
+        {
+            var data =
+                _transactionHistory.GetSubGroup();
+
+            return Ok(data);
+        }
+
+        [HttpGet("by-subgroup")]
+        public IActionResult GetDataByGroup(string filters, string sorts, int skip, int take, int groupId, string subGroup)
+        {
+            var data =
+                _transactionHistory.GetDataBySubGroup(skip, take,
+                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"), 
+                     groupId, subGroup);
+
+            var result = ((List<TransactionHistoryBySubGroup>)data.Data).ToList<dynamic>();
+
+            return Ok(new MobileApiResponse
+            {
+                Count = data.Total,
+                Data = result
+            });
+        }
+
+        [HttpGet("item-subgroup")]
+        public IActionResult GetItemByGroup(string filters, string sorts, int skip, int take, DateTime date,int groupId, string subGroup)
+        {
+            var data =
+                _transactionHistory.GetItemBySubGroup(skip, take,
+                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
+                     date,groupId, subGroup);
+
+            var result = ((List<TransactionHistoryItemBySubGroup>)data.Data).ToList<dynamic>();
 
             return Ok(new MobileApiResponse
             {
