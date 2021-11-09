@@ -57,7 +57,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                         new[] { new { Code = "", SoCode = "", Date = new DateTime(), Mark = "", Type = "" } }
                         ).Union(from dt in Db.VwSalesDeliveryHeaders
                                 where dt.WarehouseCode == warehousecode && !new[] { "V", "INV" }.Contains(dt.Mark)
-                                select new { dt.Code, SoCode = "", dt.Date, dt.Mark, Type = "Surat Jalan" }
+                                select new { dt.Code, SoCode = dt.TransCode, dt.Date, dt.Mark, Type = "Surat Jalan" }
                         ).Union(
                         from dt in Db.VwSalesInvoiceHeaders
                         where dt.FromDirectInvoice == true && !new[] { "V", "INV" }.Contains(dt.Mark)

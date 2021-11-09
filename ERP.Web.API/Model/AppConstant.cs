@@ -52,7 +52,8 @@
         Print = 41,
         OverLimit = 42,
         Approve = 43,
-        Reject = 44
+        Reject = 44,
+        ShowInventoryValue = 45
     }
 
     public enum Menu 
@@ -80,6 +81,7 @@
         Consignee = 91,
         Adjustment = 34,
         BeginningBalanceStock = 87,
+        StockMutationReport = 94,
 
         // Purchase
         PurchaseOrder = 36,
