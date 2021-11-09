@@ -66,6 +66,8 @@ namespace ERP.Web.API.Controllers.Mobile.General
                 x.AreaName3,
                 x.AreaName4,
                 x.AreaName5,
+                x.Lat,
+                x.Lng,
                 x.InitialAddress,
                 x.Address1,
                 x.Address2,
