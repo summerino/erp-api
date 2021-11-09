@@ -152,7 +152,7 @@ namespace ERP.Web.API.Domain.Services.Inventory
 
 			smData = RemoveVoidSM(smData);
 
-			if(itemId.HasValue)
+			if (itemId.HasValue)
             {
 				itemData = itemData.Where(x => x.Id == itemId).ToList();
 				initData = initData.Where(x => x.ItemId == itemId).ToList();
@@ -160,13 +160,78 @@ namespace ERP.Web.API.Domain.Services.Inventory
 
             foreach (var item in itemData)
             {
-				item.QtyBegin = (initData.Where(x => x.ItemId == item.Id).Sum(x => x.QtyIn) - initData.Where(x => x.ItemId == item.Id).Sum(x => x.QtyOut));
+				item.QtyBegin = initData.Where(x => x.ItemId == item.Id).Sum(x => x.QtyIn) - initData.Where(x => x.ItemId == item.Id).Sum(x => x.QtyOut);
 				item.QtyIn = smData.Where(x => x.ItemId == item.Id).Sum(x => x.QtyIn);
 				item.QtyOut = smData.Where(x => x.ItemId == item.Id).Sum(x => x.QtyOut);
 				item.QtyEnd = item.QtyBegin + (item.QtyIn - item.QtyOut);
-				item.InvBegin = (initData.Where(x => x.ItemId == item.Id).Sum(x => x.QtyIn * x.HPP) - initData.Where(x => x.ItemId == item.Id).Sum(x => x.QtyOut * x.HPP));
-				item.InvIn = smData.Where(x => x.ItemId == item.Id).Sum(x => x.QtyIn * x.HPP);
-				item.InvOut = smData.Where(x => x.ItemId == item.Id).Sum(x => x.QtyOut * x.HPP);
+				item.InvBegin = initData.Where(x => x.ItemId == item.Id).Sum(x => x.QtyIn * x.HPP) - initData.Where(x => x.ItemId == item.Id).Sum(x => x.QtyOut * x.HPP);
+				
+
+				var selectedItem = item;
+				var smItemData = smData.Where(x => x.ItemId == item.Id);
+
+				smListData.Add(new ReportByStockMutation
+				{
+					TransCode = "Nilai Awal",
+					QtyEnd = selectedItem.QtyBegin,
+					InvEnd = selectedItem.InvBegin,
+					IsBold = true
+				});
+
+				foreach (var smItem in smItemData)
+				{
+					var taxAmount = 0m;
+					if (smItem.SrcTrans == "Penjualan Langsung" || smItem.SrcTrans == "Surat Jalan")
+					{
+						var data = _db.SalesDeliveryDetails.FirstOrDefault(x => x.Code == smItem.TransCode && x.ItemId == smItem.ItemId);
+						taxAmount = data?.TaxAmount ?? 0m;
+					}
+					else if (smItem.SrcTrans == "Penerimaan")
+					{
+						var data = _db.PurchaseReceiveDetails.FirstOrDefault(x => x.Code == smItem.TransCode && x.ItemId == smItem.ItemId);
+						taxAmount = data?.TaxAmount ?? 0m;
+					}
+					else if (smItem.SrcTrans == "Retur Pembelian")
+					{
+						var data = _db.PurchaseReturnDetails.FirstOrDefault(x => x.Code == smItem.TransCode && x.ItemId == smItem.ItemId);
+						taxAmount = data?.TaxAmount ?? 0m;
+					}
+					else if (smItem.SrcTrans == "Retur Penjualan")
+					{
+						var data = _db.SalesReturnDetails.FirstOrDefault(x => x.Code == smItem.TransCode && x.ItemId == smItem.ItemId);
+						taxAmount = data?.TaxAmount ?? 0m;
+					}
+
+					smItem.QtyEnd = smItem.QtyIn > 0 ? selectedItem.QtyBegin + item.QtyIn : selectedItem.QtyBegin - smItem.QtyOut;
+					smItem.InvIn = (smItem.QtyIn * smItem.HPP) - (smItem.QtyIn * taxAmount);
+					smItem.InvOut = (smItem.QtyOut * smItem.HPP) - (smItem.QtyOut * taxAmount);
+					smItem.InvEnd = (selectedItem.InvBegin + smItem.InvIn) - smItem.InvOut;
+					selectedItem.QtyBegin = smItem.QtyEnd;
+					selectedItem.InvBegin = smItem.InvEnd;
+
+					smListData.Add(smItem);
+				}
+
+				smListData.Add(new ReportByStockMutation
+				{
+					//Date = DateTime.MaxValue,
+					TransCode = "Total",
+					QtyIn = smListData.Where(x => !x.IsBold).Sum(x => x.QtyIn),
+					QtyOut = smListData.Where(x => !x.IsBold).Sum(x => x.QtyOut),
+					QtyEnd = selectedItem.QtyEnd,
+					InvIn = smListData.Where(x => !x.IsBold).Sum(x => x.InvIn),
+					InvOut = smListData.Where(x => !x.IsBold).Sum(x => x.InvOut),
+					InvEnd = smListData.First(x => x.TransCode == "Nilai Awal").InvEnd + smListData.Where(x => !x.IsBold).Sum(x => x.InvIn) - smListData.Where(x => !x.IsBold).Sum(x => x.InvOut),
+					IsBold = true
+				});
+
+				item.QtyBegin = initData.Where(x => x.ItemId == item.Id).Sum(x => x.QtyIn) - initData.Where(x => x.ItemId == item.Id).Sum(x => x.QtyOut);
+				item.QtyIn = smData.Where(x => x.ItemId == item.Id).Sum(x => x.QtyIn);
+				item.QtyOut = smData.Where(x => x.ItemId == item.Id).Sum(x => x.QtyOut);
+				item.QtyEnd = item.QtyBegin + (item.QtyIn - item.QtyOut);
+				item.InvBegin = initData.Where(x => x.ItemId == item.Id).Sum(x => x.QtyIn * x.HPP) - initData.Where(x => x.ItemId == item.Id).Sum(x => x.QtyOut * x.HPP);
+				item.InvIn = smListData.Where(x => x.ItemId == item.Id && x.WarehouseCode != null).Sum(x => x.InvIn);
+				item.InvOut = smListData.Where(x => x.ItemId == item.Id && x.WarehouseCode != null).Sum(x => x.InvOut);
 				item.InvEnd = item.InvBegin + (item.InvIn - item.InvOut);
 			}
 
@@ -186,60 +251,6 @@ namespace ERP.Web.API.Domain.Services.Inventory
 			{
 				if (isSM)
                 {
-					var selectedItem = itemData.FirstOrDefault(x => x.Id == itemId);
-					var smItemData = smData.Where(x => x.ItemId == itemId);
-
-					smListData.Add(new ReportByStockMutation
-					{
-						TransCode = "Nilai Awal",
-						QtyEnd = selectedItem.QtyBegin,
-						InvEnd = selectedItem.InvBegin,
-						IsBold = true
-					});
-
-					foreach (var item in smItemData)
-                    {
-						var taxAmount = 0m;
-						if (item.SrcTrans == "Penjualan Langsung" || item.SrcTrans == "Surat Jalan")
-						{
-							taxAmount = _db.SalesDeliveryDetails.FirstOrDefault(x => x.Code == item.TransCode && x.ItemId == item.ItemId).TaxAmount;
-						}
-						else if (item.SrcTrans == "Penerimaan")
-                        {
-							taxAmount = _db.PurchaseReceiveDetails.FirstOrDefault(x => x.Code == item.TransCode && x.ItemId == item.ItemId).TaxAmount;
-						}
-						else if (item.SrcTrans == "Retur Pembelian")
-						{
-							taxAmount = _db.PurchaseReturnDetails.FirstOrDefault(x => x.Code == item.TransCode && x.ItemId == item.ItemId).TaxAmount;
-						}
-						else if (item.SrcTrans == "Retur Penjualan")
-						{
-							taxAmount = _db.SalesReturnDetails.FirstOrDefault(x => x.Code == item.TransCode && x.ItemId == item.ItemId).TaxAmount;
-						}
-
-						item.QtyEnd = item.QtyIn > 0 ? selectedItem.QtyBegin + item.QtyIn : selectedItem.QtyBegin - item.QtyOut;
-						item.InvIn = (item.QtyIn * item.HPP) - (item.QtyIn * taxAmount);
-						item.InvOut = (item.QtyOut * item.HPP) - (item.QtyOut * taxAmount);
-						item.InvEnd = (selectedItem.InvBegin + item.InvIn) - item.InvOut;
-						selectedItem.QtyBegin = item.QtyEnd;
-						selectedItem.InvBegin = item.InvEnd;
-
-						smListData.Add(item);
-                    }
-
-					smListData.Add(new ReportByStockMutation
-					{
-						//Date = DateTime.MaxValue,
-						TransCode = "Total",
-						QtyIn = smListData.Where(x => !x.IsBold).Sum(x => x.QtyIn),
-						QtyOut = smListData.Where(x => !x.IsBold).Sum(x => x.QtyOut),
-						QtyEnd = selectedItem.QtyEnd,
-						InvIn = smListData.Where(x => !x.IsBold).Sum(x => x.InvIn),
-						InvOut = smListData.Where(x => !x.IsBold).Sum(x => x.InvOut),
-						InvEnd = smListData.First(x => x.TransCode == "Nilai Awal").InvEnd + smListData.Where(x => !x.IsBold).Sum(x => x.InvIn) - smListData.Where(x => !x.IsBold).Sum(x => x.InvOut),
-						IsBold = true
-					});
-
 					return smListData.AsQueryable().ToDataSourceResult(0, smListData.Count(), null, null);
 				}
 				else
@@ -263,6 +274,7 @@ namespace ERP.Web.API.Domain.Services.Inventory
 			listVoid.AddRange(_db.AdjustmentHeaders.Where(x => x.Mark == "V").Select(x => x.Code).ToList());
 			listVoid.AddRange(_db.TransferStockHeaders.Where(x => x.Mark == "V").Select(x => x.Code).ToList());
 			listVoid.AddRange(_db.PurchaseReturnHeaders.Where(x => x.Mark == "V").Select(x => x.Code).ToList());
+			listVoid.AddRange(_db.SalesReturnHeaders.Where(x => x.Mark == "V").Select(x => x.Code).ToList());
 
 			result = result.Where(x => !listVoid.Contains(x.TransCode)).ToList();
 
