@@ -362,7 +362,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     if (smData == null) continue;
                     var prorateHeaderDisc = itemData.Dlvheader.FinalDisc > 0 ? (itemData.Dlvheader.FinalDisc * itemDetail.DlvDetail.NettPrice) / DlvDetailData.Sum(x => x.DlvDetail.NettPrice) : 0;
                     var nonVoidSM = RemoveVoidSM(_db.StockMutations.ToList());
-                    CalculateHPP(nonVoidSM, smData.WarehouseCode, smData.ItemId, smData.RefDetailId1, "DO");
+                    CalculateHPP(nonVoidSM, smData.ItemId, smData.RefDetailId1, "DO");
                     smData = _db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.DlvDetail.Id && x.RefCode1 == itemDetail.DlvDetail.Code);
                     var resultHpp = smData.BaseNettPrice > 0 ? smData.BaseNettPrice * smData.BaseQty : 0m;
 
@@ -935,7 +935,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                         var smData = _db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.RtnDetail.Id && x.RefCode1 == itemDetail.RtnDetail.Code);
                         if (smData == null) continue;
                         var nonVoidSM = RemoveVoidSM(_db.StockMutations.ToList());
-                        CalculateHPP(nonVoidSM, smData.WarehouseCode, smData.ItemId, smData.RefDetailId1, "PR");
+                        CalculateHPP(nonVoidSM, smData.ItemId, smData.RefDetailId1, "PR");
                         smData = _db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.RtnDetail.Id && x.RefCode1 == itemDetail.RtnDetail.Code);
                         var resultHpp = smData.BaseNettPrice > 0 ? smData.BaseNettPrice * smData.BaseQty : 0m;
 
@@ -1128,7 +1128,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                         var smData = _db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.RtnDetail.Id && x.RefCode1 == itemDetail.RtnDetail.Code);
                         if (smData == null) continue;
                         var nonVoidSM = RemoveVoidSM(_db.StockMutations.ToList());
-                        CalculateHPP(nonVoidSM, smData.WarehouseCode, smData.ItemId, smData.RefDetailId1, "PR");
+                        CalculateHPP(nonVoidSM, smData.ItemId, smData.RefDetailId1, "PR");
                         smData = _db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.RtnDetail.Id && x.RefCode1 == itemDetail.RtnDetail.Code);
                         var resultHpp = smData.BaseNettPrice > 0 ? smData.BaseNettPrice * smData.BaseQty : 0m;
 
@@ -1259,7 +1259,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                         var smData = _db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.RtnDetail.Id && x.RefCode1 == itemDetail.RtnDetail.Code);
                         if (smData == null) continue;
                         var nonVoidSM = RemoveVoidSM(_db.StockMutations.ToList());
-                        CalculateHPP(nonVoidSM, smData.WarehouseCode, smData.ItemId, smData.RefDetailId1, "SR");
+                        CalculateHPP(nonVoidSM, smData.ItemId, smData.RefDetailId1, "SR");
                         smData = _db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.RtnDetail.Id && x.RefCode1 == itemDetail.RtnDetail.Code);
                         var resultHpp = smData.BaseNettPrice > 0 ? smData.BaseNettPrice * smData.BaseQty : 0m;
 
@@ -1336,7 +1336,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                         CurrCode = itemData.RtnHeader.CurrCode,
                         Period = itemData.RtnHeader.Date.ToString("yyyyMMdd"),
                         Type = "C",
-                        Amount = Math.Abs(itemData.RtnHeader.Total) - journals.Where(x => x.Code == itemData.RtnHeader.Code && x.Group == 1).Sum(x => x.Amount),
+                        Amount = Math.Abs(itemData.RtnHeader.Total),
                         SrcTrans = "SR"
                     });
 
@@ -1354,7 +1354,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                         CurrCode = itemData.RtnHeader.CurrCode,
                         Period = itemData.RtnHeader.Date.ToString("yyyyMMdd"),
                         Type = "D",
-                        Amount = Math.Abs(itemData.RtnHeader.Total) - journals.Where(x => x.Code == itemData.RtnHeader.Code && new[] { 2, 3 }.Contains(x.Group)).Sum(x => x.Amount),
+                        Amount = Math.Abs(itemData.RtnHeader.Total) - journals.Where(x => x.Code == itemData.RtnHeader.Code && x.Group == 3).Sum(x => x.Amount),
                         SrcTrans = "SR"
                     });
                     
@@ -1379,7 +1379,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                                 var smData = _db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.DlvDetail.Id && x.RefCode1 == itemDetail.DlvDetail.Code);
                                 if (smData == null) continue;
                                 var nonVoidSM = RemoveVoidSM(_db.StockMutations.ToList());
-                                CalculateHPP(nonVoidSM, smData.WarehouseCode, smData.ItemId, smData.RefDetailId1, "DO");
+                                CalculateHPP(nonVoidSM, smData.ItemId, smData.RefDetailId1, "DO");
                                 smData = _db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.DlvDetail.Id && x.RefCode1 == itemDetail.DlvDetail.Code);
                                 var resultHpp = smData.BaseNettPrice > 0 ? smData.BaseNettPrice * smData.BaseQty : 0m;
 
@@ -1457,7 +1457,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                                 CurrCode = itemDlvData.DlvHeader.CurrCode,
                                 Period = itemDlvData.DlvHeader.Date.ToString("yyyyMMdd"),
                                 Type = "D",
-                                Amount = journals.FirstOrDefault(x => x.Code == itemData.RtnHeader.Code && x.Group == 4).Amount,
+                                Amount = itemData.RtnHeader.Type == 2 ? itemDlvData.DlvHeader.Total : journals.FirstOrDefault(x => x.Code == itemData.RtnHeader.Code && x.Group == 4).Amount,
                                 SrcTrans = "DLV"
                             });
 
@@ -1519,7 +1519,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                         if (smData == null) continue;
 
                         var nonVoidSM = RemoveVoidSM(_db.StockMutations.ToList());
-                        CalculateHPP(nonVoidSM, smData.WarehouseCode, smData.ItemId, smData.RefDetailId1, "SR");
+                        CalculateHPP(nonVoidSM, smData.ItemId, smData.RefDetailId1, "SR");
                         smData = _db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.RtnDetail.Id && x.RefCode1 == itemDetail.RtnDetail.Code);
                         var resultHpp = smData.BaseNettPrice > 0 ? smData.BaseNettPrice * smData.BaseQty : 0m;
 
@@ -2017,7 +2017,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     if (smData == null) continue;
 
                     var nonVoidSM = RemoveVoidSM(_db.StockMutations.ToList());
-                    CalculateHPP(nonVoidSM, smData.WarehouseCode, smData.ItemId, smData.RefDetailId1, "ADJ");
+                    CalculateHPP(nonVoidSM, smData.ItemId, smData.RefDetailId1, "ADJ");
                     smData = _db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.AdjDetail.Id && x.RefCode1 == itemDetail.AdjDetail.Code);
                     var resultHpp = smData.BaseNettPrice > 0 ? smData.BaseNettPrice * smData.BaseQty : 0m;
 
@@ -2193,7 +2193,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     if (itemData.Type != "IN")
                     {
                         var srcType = new[] { "OUT", "DT" }.Contains(itemData.Type) ? "TS" : "CNEE";
-                        CalculateHPP(nonVoidSM, smData.WarehouseCode, smData.ItemId, smData.RefDetailId1, srcType);
+                        CalculateHPP(nonVoidSM, smData.ItemId, smData.RefDetailId1, srcType);
                         smData = _db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.TsDetail.Id && x.RefCode1 == itemDetail.TsDetail.Code);
                         resultHpp = smData.BaseNettPrice > 0 ? smData.BaseNettPrice * smData.BaseQty : 0m;
                     }
@@ -2291,18 +2291,19 @@ namespace ERP.Web.API.Domain.Services.Accounting
             return journals;
         }
 
-        private void CalculateHPP(IEnumerable<StockMutation> stockMutations, string whCode, int itemId, long id, string srcCode)
+        private void CalculateHPP(IEnumerable<StockMutation> stockMutations, int itemId, long id, string srcCode)
         {
             decimal latestQty = 0;
             decimal latestStockValue = 0;
             decimal hpp = 0;
 
-            var firstSM = stockMutations.OrderBy(y => y.Date).FirstOrDefault(x => x.WarehouseCode == whCode && x.ItemId == itemId && x.Src == "BB");
+            var firstSM = stockMutations.OrderBy(y => y.Date).FirstOrDefault(x => x.ItemId == itemId && x.Src == "BB");
             if (firstSM == null)
-                firstSM = stockMutations.OrderBy(y => y.Date).FirstOrDefault(x => x.WarehouseCode == whCode && x.ItemId == itemId && x.Src == "RCV");
+                firstSM = stockMutations.OrderBy(y => y.Date).FirstOrDefault(x => x.ItemId == itemId && x.Src == "RCV");
 
 
-            var currentSM = stockMutations.FirstOrDefault(x => x.WarehouseCode == whCode && x.ItemId == itemId && x.RefDetailId1 == id && x.Src == srcCode);
+            var currentSM = stockMutations.FirstOrDefault(x => x.ItemId == itemId && x.RefDetailId1 == id && x.Src == srcCode);
+            if (currentSM == null) return;
 
             if ((firstSM?.BaseNettPrice ?? 0m) != 0m)
             {
@@ -2312,7 +2313,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
 
                 var listSM = stockMutations.Where(x => x.Id != firstSM.Id 
                             && new[] { "RCV", "DO", "SR", "ADJ", "TS", "PR", "CNEE", "BB" }.Contains(x.Src) 
-                            && x.WarehouseCode == whCode && x.ItemId == itemId 
+                            && x.ItemId == itemId 
                             && x.Date >= firstSM.Date 
                             && x.Date <= currentSM.Date)
                             .OrderBy(x => x.Date)
