@@ -242,8 +242,8 @@ namespace ERP.Web.API.Domain.Services.Inventory
 				wh.QtyOut = smData.Where(x => x.WarehouseCode == wh.Code).Sum(x => x.QtyOut);
 				wh.QtyEnd = wh.QtyBegin + (wh.QtyIn - wh.QtyOut);
 				wh.InvBegin = (initData.Where(x => x.WarehouseCode == wh.Code).Sum(x => x.QtyIn * x.HPP) - initData.Where(x => x.WarehouseCode == wh.Code).Sum(x => x.QtyOut * x.HPP));
-				wh.InvIn = smData.Where(x => x.WarehouseCode == wh.Code).Sum(x => x.QtyIn * x.HPP);
-				wh.InvOut = smData.Where(x => x.WarehouseCode == wh.Code).Sum(x => x.QtyOut * x.HPP);
+				wh.InvIn = smListData.Where(x => x.WarehouseCode == wh.Code).Sum(x => x.InvIn);
+				wh.InvOut = smListData.Where(x => x.WarehouseCode == wh.Code).Sum(x => x.InvOut);
 				wh.InvEnd = wh.InvBegin + (wh.InvIn - wh.InvOut);
 			}
 
