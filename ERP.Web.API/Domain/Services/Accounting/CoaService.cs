@@ -56,7 +56,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
 
             var dataT = data;
 
-            data = data.Where(x => !dataT.Select(t => t.ParentId).Contains(x.Id));
+            data = data.Where(x => dataT.Select(t => t.ParentId).Contains(x.Id));
 
             return data.ToDataSourceResult(0, -1, filters, sorts);
         }
