@@ -28,10 +28,7 @@ namespace ERP.Web.API.Domain.Services.Mobile.Sales
         public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, string search, string date)
         {
             var data = (from dpHeader in Db.VwDeliveryPlanHeaders
-                        //join dpDetail in Db.DeliveryPlanDetails on
                         join warehouse in Db.Warehouses on dpHeader.WarehouseCode equals warehouse.Code
-                        //join sup in Db.Suppliers on dpDetail.SupCode equals sup.Code
-                        //join supType in Db.SupplierTypes on sup.TypeId equals supType.Id
                         select new DeliveryPlanHeaderModel
                         {
                             Code = dpHeader.Code,
@@ -45,10 +42,6 @@ namespace ERP.Web.API.Domain.Services.Mobile.Sales
                             DriverName = dpHeader.DriverInitial,
                             Notes = dpHeader.Notes,
                             Mark = dpHeader.Mark,
-                            // CustCode = "",
-                            // CustName = "",
-                            // CustTypeId = 1,
-                            // CustTypeName = "",
                         }).AsQueryable();
 
             data = data.Where(x => x.Mark != "CMP" && x.Mark != "CLS" && x.Mark != "V");
@@ -69,54 +62,121 @@ namespace ERP.Web.API.Domain.Services.Mobile.Sales
 
         public IEnumerable<DeliveryPlanDetailModel> GetDetailData(string code)
         {
-            var data = from dlv_plan_d in Db.DeliveryPlanDetails
-                       join dlv_plan_h in Db.DeliveryPlanHeaders on dlv_plan_d.Code equals dlv_plan_h.Code
-                       //join si_h in Db.SalesInvoiceHeaders on dlv_plan_d.TransCode equals si_h.Code
-                       //join si_d in Db.SalesInvoiceDetails on si_h.Code equals si_d.Code
-                       join s_dlv_d in Db.SalesDeliveryDetails on dlv_plan_d.TransCode equals s_dlv_d.Code // jika dari DO maka ke 
-                       join item in Db.Items on s_dlv_d.ItemId equals item.Id
-                       join unit in Db.UoMConversions on item.UomId equals unit.UomId
-                       where dlv_plan_h.Code.Equals(code) && dlv_plan_h.Mark != "V"
-                       select new DeliveryPlanDetailModel
-                       {
-                           Code = dlv_plan_d.Code,
-                           LineNo = dlv_plan_d.LineNo,
-                           ItemId = s_dlv_d.ItemId,
-                           ItemInitial = item.Initial,
-                           ItemName = item.Name,
-                           LoadQty = s_dlv_d.Qty, // free quantity
-                           OrderQty = 0, // qty?
-                           UomId = item.UomId ?? 0,
-                           UnitId = unit.Id,
-                           UnitEquivalent = unit.UnitEquivalent,
-                           TransCode = dlv_plan_d.TransCode,
-                       };
-            return data.ToList();
+            var data_header = from dlv_pn_header in Db.DeliveryPlanHeaders
+                              where dlv_pn_header.Code.Equals(code) && dlv_pn_header.Mark != "V"
+                              select dlv_pn_header;
+
+            var data_plan = from dlv_plan_h in data_header
+                            join dlv_plan_d in Db.DeliveryPlanDetails on dlv_plan_h.Code equals dlv_plan_d.Code into details // left join
+                            from detail in details.DefaultIfEmpty()
+                            join si_h in Db.SalesInvoiceHeaders on detail.Code equals si_h.Code into invoices_header
+                            from invoice_h in invoices_header.DefaultIfEmpty()
+                            join si_d in Db.SalesInvoiceDetails on invoice_h.Code equals si_d.Code into invoices_detail
+                            from invoice_d in invoices_detail.DefaultIfEmpty()
+                            select new
+                            {
+                                detail.Code,
+                                DOCode = (invoice_d.DoCode ?? "") == "" ? detail.TransCode : invoice_d.DoCode,
+                                detail.LineNo,
+                            };
+
+            var cte_normal_src = (from cte in data_plan
+                                  join dlv_d in Db.SalesDeliveryDetails on cte.DOCode equals dlv_d.Code into normal
+                                  from dlv_d in normal
+                                  select new GoodsModel
+                                  {
+                                      Code = cte.Code,
+                                      DOCode = cte.DOCode,
+                                      LineNo = cte.LineNo,
+                                      ItemId = dlv_d.ItemId,
+                                      UnitId = dlv_d.UnitId,
+                                      Qty = dlv_d.Qty,
+                                      FreeQty = (decimal)0
+                                  }).ToArray();
+
+            var cte_free_src = (from cte in data_plan
+                                join dlv_d_fg in Db.SalesDeliveryDetailFreeGoods on cte.DOCode equals dlv_d_fg.Code into free
+                                from dlv_d_fg in free
+                                select new GoodsModel
+                                {
+                                    Code = cte.Code,
+                                    DOCode = cte.DOCode,
+                                    LineNo = cte.LineNo,
+                                    ItemId = dlv_d_fg.ItemId,
+                                    UnitId = dlv_d_fg.UnitId,
+                                    Qty = (decimal)0,
+                                    FreeQty = dlv_d_fg.Qty
+                                }).ToArray();
+
+            var cte_union = cte_normal_src.Union(cte_free_src);
+
+            var cte_calc_group = (from union in cte_union
+                                  group union by new { union.Code, union.LineNo, union.ItemId, union.UnitId } into un
+                                  select new
+                                  {
+                                      un.Key.Code,
+                                      un.Key.LineNo,
+                                      un.Key.ItemId,
+                                      un.Key.UnitId,
+                                      Qty = un.Sum(q => q.Qty),
+                                      FreeQty = un.Sum(f => f.FreeQty)
+                                  });
+
+            var data = (from result in (cte_calc_group)
+                        join item in Db.Items on result.ItemId equals item.Id into items
+                        from i in items.DefaultIfEmpty()
+                        join unit in Db.UoMConversions on result.UnitId equals unit.Id into units
+                        from u in units.DefaultIfEmpty()
+                        select new DeliveryPlanDetailModel
+                        {
+                            Code = result.Code,
+                            LineNo = result.LineNo,
+                            ItemId = result.ItemId,
+                            ItemInitial = i.Initial,
+                            ItemName = i.Name,
+                            LoadQty = result.FreeQty, // free quantity
+                            OrderQty = result.Qty,
+                            UomId = (int)i.UomId,
+                            UnitId = u.Id,
+                            UnitEquivalent = u.UnitEquivalent
+                        }).AsEnumerable();
+
+            return data;
         }
 
         public DataSourceResult GetLogData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, string search, string date)
         {
-            var data = from header in Db.VwMobileDeliveryItemHeaders
-                       join dlvPlanHeader in Db.VwDeliveryPlanHeaders on header.DlvPlanCode equals dlvPlanHeader.Code
-                       join driver in Db.VwEmployees on dlvPlanHeader.DriverId equals driver.Id
+            var data = from header in _db.VwMobileDeliveryItemHeaders
+                       join dlvPlanHeader in _db.VwDeliveryPlanHeaders on header.DlvPlanCode equals dlvPlanHeader.Code
+                       join warehouse in _db.VwWarehouses on dlvPlanHeader.WarehouseCode equals warehouse.Code
+                       join driver in _db.VwEmployees on dlvPlanHeader.DriverId equals driver.Id
                        select new DeliveryItemHeaderModel
                        {
                            Code = header.Code,
                            Date = header.CreatedDate.Date,
                            DlvPlanCode = header.DlvPlanCode,
                            DlvPlanDate = dlvPlanHeader.Date,
-                           DriverId = dlvPlanHeader.VehicleId,
-                           DriverName = driver.FirstName,
+                           DriverId = dlvPlanHeader.DriverId,
+                           DriverName = dlvPlanHeader.DriverInitial,
                            VehicleId = dlvPlanHeader.VehicleId,
                            VehicleNo = dlvPlanHeader.VehicleNo,
+                           WarehouseCode = dlvPlanHeader.WarehouseCode,
+                           WarehouseName = warehouse.Name,
                            Notes = dlvPlanHeader.Notes
                        };
+
+            if (date != null && date != "")
+            {
+                var date1 = DateTime.ParseExact(date, "yyyy-MM-dd", null);
+                data = data.Where(x => x.Date.Equals(date1));
+            }
+
             return data.ToDataSourceResult(skip, take, filter, sort);
         }
 
         public IEnumerable<VwMobileDeliveryItemDetail> GetLogDetailData(string code)
         {
-            var data = from detail in Db.VwMobileDeliveryItemDetails
+            var data = from detail in _db.VwMobileDeliveryItemDetails
                        where detail.Code.Equals(code)
                        select new VwMobileDeliveryItemDetail
                        {
@@ -139,23 +199,34 @@ namespace ERP.Web.API.Domain.Services.Mobile.Sales
             return data;
         }
 
-        public SaveResult Insert(DeliveryPlanRequestModel data, int UserId)
+        public SaveResult Insert(DeliveryPlanRequestModel data, int userId)
         {
             var result = new SaveResult(false);
 
-            using var transaction = Db.Database.BeginTransaction();
+            using var transaction = _db.Database.BeginTransaction();
             try
             {
+                var date = DateTime.Now;
                 var newCode = GetNewCode("DLV_PLAN_NUM_FMT", DateTime.Now.Date);
 
                 data.Code = newCode;
 
-                Db.MobileDeliveryItemHeaders.Add(data);
+                _db.MobileDeliveryItemHeaders.Add(new MobileDeliveryItemHeader
+                {
+                    Code = newCode,
+                    DlvPlanCode = data.DlvPlanCode,
+                    SignatureImage = data.SignatureImage,
+                    Mark = "A",
+                    CreatedBy = userId,
+                    CreatedDate = date,
+                    UpdatedBy = userId,
+                    UpdatedDate = date
+                });
 
                 short i = 0;
                 foreach (var dlv in data.DPDetails)
                 {
-                    Db.MobileDeliveryItemDetails.Add(new MobileDeliveryItemDetail
+                    _db.MobileDeliveryItemDetails.Add(new MobileDeliveryItemDetail
                     {
                         Code = newCode,
                         LineNo = ++i,
@@ -167,7 +238,7 @@ namespace ERP.Web.API.Domain.Services.Mobile.Sales
                     });
                 }
 
-                Db.SaveChanges();
+                _db.SaveChanges();
 
                 transaction.Commit();
             }

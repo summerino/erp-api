@@ -15,9 +15,5 @@ namespace ERP.Web.API.Domain.Models.Mobile.Sales
         public string DriverName { get; set; }
         public string Notes { get; set; }
         public string Mark { get; set; }
-        //public string CustCode { get; set; }
-        //public string CustName { get; set; }
-        //public int CustTypeId { get; set; }
-        //public string CustTypeName { get; set; }
     }
 }

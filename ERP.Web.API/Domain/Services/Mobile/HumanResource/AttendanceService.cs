@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using ERP.Common;
 using ERP.Common.Extensions;
@@ -22,6 +23,10 @@ namespace ERP.Web.API.Domain.Services.Mobile.HumanResource
 
         public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, int userId, string date)
         {
+            var day = DateTime.Now.Date;
+            var month = DateTime.ParseExact(date, "yyyy-MM", null).Month;
+            var year = DateTime.ParseExact(date, "yyyy-MM", null).Year;
+
             var data = (from attendance in Db.Attendances
                         join user in Db.Users on attendance.EmployeeId equals user.EmployeeId
                         where user.Id.Equals(userId)
@@ -41,15 +46,17 @@ namespace ERP.Web.API.Domain.Services.Mobile.HumanResource
                             CheckOutImage = attendance.CheckOutImage,
                             CheckOutNotes = attendance.CheckOutNotes,
                             TotalHours = attendance.TotalHours
-
                         }).AsQueryable();
 
-            if (!string.IsNullOrEmpty(date))
-            {
-                var month = DateTime.ParseExact(date, "yyyy-MM",null).Month;
-                var year = DateTime.ParseExact(date, "yyyy-MM",null).Year;
-                data = data.Where(x => x.Date.Month.Equals(month) && x.Date.Year.Equals(year));
-            }
+            data = data.Where(x => x.Date.Month.Equals(month) && x.Date.Year.Equals(year));
+
+            //if (!string.IsNullOrEmpty(date))
+            //{
+            //    var month = DateTime.ParseExact(date, "yyyy-MM", null).Month;
+            //    var year = DateTime.ParseExact(date, "yyyy-MM", null).Year;
+            //    data = data.Where(x => x.Date.Month.Equals(month) && x.Date.Year.Equals(year));
+            //}
+
             return data.ToDataSourceResult(skip, take, filter, sort);
         }
 
@@ -72,7 +79,6 @@ namespace ERP.Web.API.Domain.Services.Mobile.HumanResource
                 {
                     if (data.Type == "in")
                     {
-
                         entity.CheckIn = data.ClockTime;
                         entity.CheckInImage = data.Image;
                         entity.CheckInLat = data.Latitude;
@@ -85,12 +91,11 @@ namespace ERP.Web.API.Domain.Services.Mobile.HumanResource
                         entity.CheckOutImage = data.Image;
                         entity.CheckOutLat = data.Latitude;
                         entity.CheckOutLng = data.Longitude;
-                        entity.CheckOutNotes = data.Note;  
-                        
-                     var TotalHours = data.ClockTime.Subtract((DateTime)entity.CheckIn);
+                        entity.CheckOutNotes = data.Note;
+
+                        var TotalHours = data.ClockTime.Subtract((DateTime)entity.CheckIn);
                         entity.TotalHours = (decimal?)TotalHours.TotalHours;
-                        
-                       
+
                     }
                     else
                     {
@@ -103,7 +108,6 @@ namespace ERP.Web.API.Domain.Services.Mobile.HumanResource
                     Attendance newData = new();
                     if (data.Type == "in")
                     {
-
                         newData.Date = data.ClockTime.Date;
                         newData.CheckIn = data.ClockTime;
                         newData.CheckInLat = data.Latitude;
@@ -123,15 +127,11 @@ namespace ERP.Web.API.Domain.Services.Mobile.HumanResource
                         newData.EmployeeId = (long)employeeId;
                     }
 
-
                     Db.Attendances.Add(newData);
                 }
 
-
                 Db.SaveChanges();
-
                 transaction.Commit();
-
             }
             catch (Exception ex)
             {
