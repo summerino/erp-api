@@ -2325,7 +2325,8 @@ namespace ERP.Web.API.Domain.Services.Accounting
 
                 var listSM = stockMutations.Where(x => x.Id != firstSM.Id 
                             && new[] { "RCV", "DO", "SR", "ADJ", "TS", "PR", "CNEE", "BB" }.Contains(x.Src) 
-                            && x.ItemId == itemId 
+                            && x.ItemId == itemId
+                            && x.BaseQty != 0
                             && x.Date >= firstSM.Date 
                             && x.Date <= currentSM.Date)
                             .OrderBy(x => x.Date)
