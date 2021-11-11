@@ -64,9 +64,18 @@ namespace ERP.Web.API.Domain.Services.Sales
                         where h.Mark == "A" && d.TransCode == code
                         select new
                         {
-                            h.Code,
-                            h.Date,
+                            Code = h.Code,
+                            Date = h.Date,
                             Total = h.Amount
+                        }).Union(
+                        from s in Db.SalesInvoiceCreditMemos
+                        join c in Db.SalesInvoiceHeaders on s.InvCode equals c.Code
+                        where s.CreditMemoCode == code
+                        select new
+                        { 
+                            Code = s.InvCode,
+                            Date = c.Date,
+                            Total = c.Total
                         });
             return data.ToDynamicList();
         }
