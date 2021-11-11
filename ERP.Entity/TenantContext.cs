@@ -151,6 +151,7 @@ namespace ERP.Entity
         public DbSet<ReportByWarehouse> ReportByWarehouses { get; set; }
 
         // Mobile Sales entities
+        public DbSet<MobileActivityLog> MobileActivityLogs { get; set; }
         public DbSet<MobileCostHeader> MobileCostHeaders { get; set; }
         public DbSet<VwMobileCostHeader> VwMobileCostHeaders { get; set; }
         public DbSet<MobileCostDetail> MobileCostDetails { get; set; }
