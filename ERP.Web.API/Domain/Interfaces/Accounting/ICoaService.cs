@@ -14,6 +14,8 @@ namespace ERP.Web.API.Domain.Interfaces.Accounting
 
         DataSourceResult GetListsNonSysPar(IEnumerable<Filter> filters, IEnumerable<Sort> sorts);
 
+        DataSourceResult GetListParents(IEnumerable<Filter> filters, IEnumerable<Sort> sorts);
+
         SaveResult Delete(int id, int userId);
     }
 }

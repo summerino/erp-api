@@ -56,7 +56,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
 
             var dataT = data;
 
-            data = data.Where(x => dataT.Select(t => t.ParentId).Contains(x.Id));
+            data = data.Where(x => !dataT.Select(t => t.ParentId).Contains(x.Id));
 
             return data.ToDataSourceResult(0, -1, filters, sorts);
         }
@@ -71,6 +71,16 @@ namespace ERP.Web.API.Domain.Services.Accounting
             data = data.Where(x => !dataT.Select(t => t.ParentId).Contains(x.Id));
 
             data = data.Where(x => !sysParData.Select(c => c.Value).Contains(x.Code));
+
+            return data.ToDataSourceResult(0, -1, filters, sorts);
+        }
+
+        public DataSourceResult GetListParents(IEnumerable<Filter> filters, IEnumerable<Sort> sorts)
+        {
+            var data = Db.Coas.Where(x => x.IsActive);
+            var dataT = data;
+
+            data = data.Where(x => dataT.Select(t => t.ParentId).Contains(x.Id));
 
             return data.ToDataSourceResult(0, -1, filters, sorts);
         }

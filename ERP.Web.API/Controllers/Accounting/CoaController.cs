@@ -90,6 +90,29 @@ namespace ERP.Web.API.Controllers.Accounting
             });
         }
 
+        [HttpGet("parents")]
+        public IActionResult GetListParents(string filters, string sorts)
+        {
+            var data =
+                _coa.GetListParents(
+                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]")).Data
+                    .ToDynamicList()
+                    .Select(x => new
+                    {
+                        x.Id,
+                        x.Code,
+                        x.Name
+                    })
+                    .ToList<dynamic>();
+
+            return Ok(new ApiResponse
+            {
+                RowCount = data.Count,
+                TableData = data
+            });
+        }
+
         [HttpPost]
         public IActionResult OnPost(Coa data)
         {
