@@ -126,7 +126,7 @@ namespace ERP.Web.API.Domain.Services.MobileSales
             }
 
             result.Success = true;
-            result.Message = "Data catatan kunjungan mobile berhasil disetujui.";
+            result.Message = "Data log kunjungan mobile berhasil disetujui.";
             return result;
         }
 
@@ -158,7 +158,7 @@ namespace ERP.Web.API.Domain.Services.MobileSales
             {
                 if (item.Mark == "REJ")
                 {
-                    result.Message = "Data catatan kunjungan mobile tidak bisa ditolak karena dalam status ditolak.";
+                    result.Message = "Data log kunjungan mobile tidak bisa ditolak karena dalam status ditolak.";
                     return result;
                 }
 
@@ -172,7 +172,7 @@ namespace ERP.Web.API.Domain.Services.MobileSales
             Db.SaveChanges();
 
             result.Success = true;
-            result.Message = "Data catatan kunjungan mobile berhasil ditolak.";
+            result.Message = "Data log kunjungan mobile berhasil ditolak.";
             return result;
         }
     }
