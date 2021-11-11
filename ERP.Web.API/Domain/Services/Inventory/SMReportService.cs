@@ -24,7 +24,7 @@ namespace ERP.Web.API.Domain.Services.Inventory
 			List<ReportByStockMutation> smListData = new();
 			var qsetUnit = $"DECLARE @Unit int; SET @Unit = '{typeUnit.ToString().Replace("'", "''")}'; ";
 
-			var orderQuery = @" ORDER BY CASE
+			var orderQuery = @" ORDER BY sm.Date, CASE
 					WHEN sm.Src = 'ADJ' AND sm.BaseQty > 0 THEN
 						1
 					WHEN sm.Src IN('RCV', 'BB', 'SR') THEN
@@ -38,7 +38,7 @@ namespace ERP.Web.API.Domain.Services.Inventory
 					WHEN sm.Src IN('TS', 'CNEE') AND sm.[Type] = 'OH' AND sm.BaseQty < 0 THEN
 						2
 					ELSE 3
-					END, sm.Date";
+					END";
 
 			var smData = _db.ReportByStockMutations.FromSqlRaw(qsetUnit + @"SELECT sm.WarehouseCode, sm.ItemId, sm.Date, sm.RefCode1 as TransCode, 
 					CASE 
