@@ -52,6 +52,7 @@ namespace ERP.Web.API.Domain.Services.Mobile.NetRevenue
                                   });
 
             var data = leftoutrtjoin.Union(rightouterjoin);
+            
             if (date != null && date != "")
             {
                 var date1 = DateTime.ParseExact(date, "yyyy-MM-dd", null);

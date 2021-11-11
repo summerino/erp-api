@@ -13,5 +13,17 @@
         public int UnitId { get; set; }
         public string UnitEquivalent { get; set; }
         public string TransCode { get; set; }
+        //public string TransCode { get; set; }
+    }
+
+    public class GoodsModel
+    {
+        public string Code { get; set; }
+        public string DOCode { get; set; }
+        public short LineNo { get; set; }
+        public int ItemId { get; set; }
+        public int UnitId { get; set; }
+        public decimal Qty { get; set; }
+        public decimal FreeQty { get; set; }
     }
 }

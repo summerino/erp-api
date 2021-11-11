@@ -28,13 +28,14 @@ namespace ERP.Web.API.Domain.Interfaces.Purchase
 
         #region Mobile
         DataSourceResult GetDataForMobile(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, string search, string date);
-        IEnumerable<PurchaseOrderDetailModel> GetDetailDataForMobile(string code, int srcTrans);
 
-        SaveResult InsertForMobile(PurchaseOrderRequestModel data, int UserId);
+        IEnumerable<PurchaseOrderDetailModel> GetDetailDataForMobile(string code, int srcTrans);
 
         DataSourceResult GetLogDataForMobile(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, string search, string date);
 
-        IEnumerable<ReceiveItemDetailModel> GetLogDetailDataForMobile(string code);
+        IEnumerable<ReceiveItemDetailModel> GetLogDetailDataForMobile(string code, int srcTrans);
+
+        SaveResult InsertForMobile(PurchaseOrderRequestModel data, int UserId);
         #endregion
     }
 }
