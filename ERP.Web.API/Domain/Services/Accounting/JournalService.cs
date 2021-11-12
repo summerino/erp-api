@@ -1373,7 +1373,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     //Delivery Process
                     var DlvData = (from dlvheader in _db.SalesDeliveryHeaders
                                    join customer in _db.Customers on dlvheader.CustCode equals customer.Code
-                                   where dlvheader.TransCode == itemData.RtnHeader.Code
+                                   where dlvheader.TransCode == itemData.RtnHeader.Code && dlvheader.Mark != "V"
                                    select new { DlvHeader = dlvheader, Customer = customer }).ToList();
                     if (DlvData.Any())
                     {
@@ -1381,7 +1381,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                         {
                             var DlvDetailData = (from dlvdetail in _db.SalesDeliveryDetails
                                                  join item in _db.Items on dlvdetail.ItemId equals item.Id
-                                                 where dlvdetail.Code == itemDlvData.DlvHeader.Code
+                                                 where dlvdetail.Code == itemDlvData.DlvHeader.Code 
                                                  select new { DlvDetail = dlvdetail, Item = item }).ToList();
                             short l = 0;
                             short m = 0;
