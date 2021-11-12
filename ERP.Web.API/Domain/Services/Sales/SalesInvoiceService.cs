@@ -245,7 +245,7 @@ namespace ERP.Web.API.Domain.Services.Sales
 
                 // Get detail data that exists in invoice before
                 var delMemos = Db.SalesInvoiceCreditMemos
-                    .Where(d => d.InvCode == data.Code && !data.Memos.Select(x => x.Id).Contains(d.Id))
+                    .Where(d => d.InvCode == data.Code)
                     .ToList();
 
                 // Delete detail data that exists in invoice before
@@ -305,7 +305,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                     Db.SalesInvoiceCreditMemos.AddRange(newMemos);
 
                 // Update header data
-                data.PaidAmount = newMemos.Sum(x => x.CreditMemoAmount) - delMemos.Sum(x => x.CreditMemoAmount); ;
+                data.PaidAmount = newMemos.Any() ? newMemos.Sum(x => x.CreditMemoAmount) : 0;
                 Db.SalesInvoiceHeaders.Update(data);
                 Db.Entry(data).Property(e => e.Code).IsModified = false;
                 Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
