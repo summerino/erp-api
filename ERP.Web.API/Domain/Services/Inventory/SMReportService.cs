@@ -202,7 +202,7 @@ namespace ERP.Web.API.Domain.Services.Inventory
 						taxAmount = data?.TaxAmount ?? 0m;
 					}
 
-					smItem.QtyEnd = smItem.QtyIn > 0 ? selectedItem.QtyBegin + item.QtyIn : selectedItem.QtyBegin - smItem.QtyOut;
+					smItem.QtyEnd = smItem.QtyIn > 0 ? selectedItem.QtyBegin + smItem.QtyIn : selectedItem.QtyBegin - smItem.QtyOut;
 					smItem.InvIn = (smItem.QtyIn * smItem.HPP) - (smItem.QtyIn * taxAmount);
 					smItem.InvOut = (smItem.QtyOut * smItem.HPP) - (smItem.QtyOut * taxAmount);
 					smItem.InvEnd = (selectedItem.InvBegin + smItem.InvIn) - smItem.InvOut;
