@@ -59,20 +59,20 @@ namespace ERP.Web.API.Domain.Services.Inventory
 						WHEN @Unit = 1 THEN abs(sm.BaseQty) 
 						WHEN @Unit = 2 THEN abs(sm.BaseQty) / ( SELECT EXP(SUM(LOG(Conversion))) FROM Inventory.UoMConversion WHERE UomId = im.UomId AND Seq <= (SELECT Seq FROM Inventory.UoMConversion WHERE Id = im.UomBuyId))
 						WHEN @Unit = 3 THEN abs(sm.BaseQty) / ( SELECT EXP(SUM(LOG(Conversion))) FROM Inventory.UoMConversion WHERE UomId = im.UomId AND Seq <= (SELECT Seq FROM Inventory.UoMConversion WHERE Id = im.UomSellId))
-						END AS decimal)
+						END AS decimal(18,6))
 					WHEN sm.Src IN ('RCV', 'BB', 'SR') THEN 
 						CAST (CASE 
 						WHEN @Unit = 1 THEN abs(sm.BaseQty) 
 						WHEN @Unit = 2 THEN abs(sm.BaseQty) / ( SELECT EXP(SUM(LOG(Conversion))) FROM Inventory.UoMConversion WHERE UomId = im.UomId AND Seq <= (SELECT Seq FROM Inventory.UoMConversion WHERE Id = im.UomBuyId))
 						WHEN @Unit = 3 THEN abs(sm.BaseQty) / ( SELECT EXP(SUM(LOG(Conversion))) FROM Inventory.UoMConversion WHERE UomId = im.UomId AND Seq <= (SELECT Seq FROM Inventory.UoMConversion WHERE Id = im.UomSellId))
-						END AS decimal)
+						END AS decimal(18,6))
 					WHEN sm.Src IN ('TS', 'CNEE') AND sm.[Type] = 'OH' AND sm.BaseQty > 0 THEN 
 						CAST (CASE 
 						WHEN @Unit = 1 THEN abs(sm.BaseQty) 
 						WHEN @Unit = 2 THEN abs(sm.BaseQty) / ( SELECT EXP(SUM(LOG(Conversion))) FROM Inventory.UoMConversion WHERE UomId = im.UomId AND Seq <= (SELECT Seq FROM Inventory.UoMConversion WHERE Id = im.UomBuyId))
 						WHEN @Unit = 3 THEN abs(sm.BaseQty) / ( SELECT EXP(SUM(LOG(Conversion))) FROM Inventory.UoMConversion WHERE UomId = im.UomId AND Seq <= (SELECT Seq FROM Inventory.UoMConversion WHERE Id = im.UomSellId))
 						END AS decimal)
-					ELSE CAST (0 AS decimal)
+					ELSE CAST (0 AS decimal(18,6))
 					END AS QtyIn,
 					CASE
 					WHEN sm.Src = 'ADJ' AND sm.BaseQty < 0 THEN 
@@ -80,19 +80,19 @@ namespace ERP.Web.API.Domain.Services.Inventory
 						WHEN @Unit = 1 THEN abs(sm.BaseQty) 
 						WHEN @Unit = 2 THEN abs(sm.BaseQty) / ( SELECT EXP(SUM(LOG(Conversion))) FROM Inventory.UoMConversion WHERE UomId = im.UomId AND Seq <= (SELECT Seq FROM Inventory.UoMConversion WHERE Id = im.UomBuyId))
 						WHEN @Unit = 3 THEN abs(sm.BaseQty) / ( SELECT EXP(SUM(LOG(Conversion))) FROM Inventory.UoMConversion WHERE UomId = im.UomId AND Seq <= (SELECT Seq FROM Inventory.UoMConversion WHERE Id = im.UomSellId))
-						END AS decimal)
+						END AS decimal(18,6))
 					WHEN sm.Src IN ('DO', 'DOF', 'PR') THEN 
 						CAST (CASE 
 						WHEN @Unit = 1 THEN abs(sm.BaseQty) 
 						WHEN @Unit = 2 THEN abs(sm.BaseQty) / ( SELECT EXP(SUM(LOG(Conversion))) FROM Inventory.UoMConversion WHERE UomId = im.UomId AND Seq <= (SELECT Seq FROM Inventory.UoMConversion WHERE Id = im.UomBuyId))
 						WHEN @Unit = 3 THEN abs(sm.BaseQty) / ( SELECT EXP(SUM(LOG(Conversion))) FROM Inventory.UoMConversion WHERE UomId = im.UomId AND Seq <= (SELECT Seq FROM Inventory.UoMConversion WHERE Id = im.UomSellId))
-						END AS decimal)
+						END AS decimal(18,6))
 					WHEN sm.Src IN ('TS', 'CNEE') AND sm.[Type] = 'OH' AND sm.BaseQty < 0 THEN 
 						CAST (CASE 
 						WHEN @Unit = 1 THEN abs(sm.BaseQty) 
 						WHEN @Unit = 2 THEN abs(sm.BaseQty) / ( SELECT EXP(SUM(LOG(Conversion))) FROM Inventory.UoMConversion WHERE UomId = im.UomId AND Seq <= (SELECT Seq FROM Inventory.UoMConversion WHERE Id = im.UomBuyId))
 						WHEN @Unit = 3 THEN abs(sm.BaseQty) / ( SELECT EXP(SUM(LOG(Conversion))) FROM Inventory.UoMConversion WHERE UomId = im.UomId AND Seq <= (SELECT Seq FROM Inventory.UoMConversion WHERE Id = im.UomSellId))
-						END AS decimal)
+						END AS decimal(18,6))
 					ELSE CAST (0 AS decimal)
 					END AS QtyOut,
 					CAST (0 AS decimal) AS QtyEnd,
@@ -100,7 +100,7 @@ namespace ERP.Web.API.Domain.Services.Inventory
 						WHEN @Unit = 1 THEN abs(sm.BaseNettPrice) 
 						WHEN @Unit = 2 THEN abs(sm.BaseNettPrice) * ( SELECT EXP(SUM(LOG(Conversion))) FROM Inventory.UoMConversion WHERE UomId = im.UomId AND Seq <= (SELECT Seq FROM Inventory.UoMConversion WHERE Id = im.UomBuyId))
 						WHEN @Unit = 3 THEN abs(sm.BaseNettPrice) * ( SELECT EXP(SUM(LOG(Conversion))) FROM Inventory.UoMConversion WHERE UomId = im.UomId AND Seq <= (SELECT Seq FROM Inventory.UoMConversion WHERE Id = im.UomSellId))
-						END AS decimal)
+						END AS decimal(19,6))
 					AS HPP,
 					CAST (0 AS decimal) AS InvIn,
 					CAST (0 AS decimal) AS InvOut,
@@ -139,6 +139,36 @@ namespace ERP.Web.API.Domain.Services.Inventory
 							CAST (0 AS decimal) AS InvEnd
 						FROM Inventory.Warehouse wh").ToList();
 
+			smData = RemoveVoidSM(smData);
+
+            foreach (var itemSmData in smData)
+            {
+				var taxAmount = 0m;
+				if (itemSmData.SrcTrans == "Penjualan Langsung" || itemSmData.SrcTrans == "Surat Jalan")
+				{
+					var data = _db.SalesDeliveryDetails.FirstOrDefault(x => x.Code == itemSmData.TransCode && x.ItemId == itemSmData.ItemId);
+					taxAmount = data?.TaxAmount ?? 0m;
+				}
+				else if (itemSmData.SrcTrans == "Penerimaan")
+				{
+					var data = _db.PurchaseReceiveDetails.FirstOrDefault(x => x.Code == itemSmData.TransCode && x.ItemId == itemSmData.ItemId);
+					taxAmount = data?.TaxAmount ?? 0m;
+				}
+				else if (itemSmData.SrcTrans == "Retur Pembelian")
+				{
+					var data = _db.PurchaseReturnDetails.FirstOrDefault(x => x.Code == itemSmData.TransCode && x.ItemId == itemSmData.ItemId);
+					taxAmount = data?.TaxAmount ?? 0m;
+				}
+				else if (itemSmData.SrcTrans == "Retur Penjualan")
+				{
+					var data = _db.SalesReturnDetails.FirstOrDefault(x => x.Code == itemSmData.TransCode && x.ItemId == itemSmData.ItemId);
+					taxAmount = data?.TaxAmount ?? 0m;
+				}
+
+				itemSmData.InvIn = (itemSmData.QtyIn * itemSmData.HPP) - (itemSmData.QtyIn * taxAmount);
+				itemSmData.InvOut = (itemSmData.QtyOut * itemSmData.HPP) - (itemSmData.QtyOut * taxAmount);
+			}
+
 			var initData = smData.Where(x => x.Date < Convert.ToDateTime(startDate)).ToList();
 
 			if (!string.IsNullOrEmpty(startDate) && !string.IsNullOrEmpty(endDate))
@@ -149,8 +179,6 @@ namespace ERP.Web.API.Domain.Services.Inventory
 			{
 				smData = smData.Where(x => x.Date >= Convert.ToDateTime(startDate)).ToList();
 			}
-
-			smData = RemoveVoidSM(smData);
 
 			if (itemId.HasValue)
             {
@@ -164,7 +192,7 @@ namespace ERP.Web.API.Domain.Services.Inventory
 				item.QtyIn = smData.Where(x => x.ItemId == item.Id).Sum(x => x.QtyIn);
 				item.QtyOut = smData.Where(x => x.ItemId == item.Id).Sum(x => x.QtyOut);
 				item.QtyEnd = item.QtyBegin + (item.QtyIn - item.QtyOut);
-				item.InvBegin = initData.Where(x => x.ItemId == item.Id).Sum(x => x.QtyIn * x.HPP) - initData.Where(x => x.ItemId == item.Id).Sum(x => x.QtyOut * x.HPP);
+				item.InvBegin = initData.Where(x => x.ItemId == item.Id).Sum(x => x.InvIn) - initData.Where(x => x.ItemId == item.Id).Sum(x => x.InvOut);
 				
 
 				var selectedItem = item;
@@ -180,31 +208,7 @@ namespace ERP.Web.API.Domain.Services.Inventory
 
 				foreach (var smItem in smItemData)
 				{
-					var taxAmount = 0m;
-					if (smItem.SrcTrans == "Penjualan Langsung" || smItem.SrcTrans == "Surat Jalan")
-					{
-						var data = _db.SalesDeliveryDetails.FirstOrDefault(x => x.Code == smItem.TransCode && x.ItemId == smItem.ItemId);
-						taxAmount = data?.TaxAmount ?? 0m;
-					}
-					else if (smItem.SrcTrans == "Penerimaan")
-					{
-						var data = _db.PurchaseReceiveDetails.FirstOrDefault(x => x.Code == smItem.TransCode && x.ItemId == smItem.ItemId);
-						taxAmount = data?.TaxAmount ?? 0m;
-					}
-					else if (smItem.SrcTrans == "Retur Pembelian")
-					{
-						var data = _db.PurchaseReturnDetails.FirstOrDefault(x => x.Code == smItem.TransCode && x.ItemId == smItem.ItemId);
-						taxAmount = data?.TaxAmount ?? 0m;
-					}
-					else if (smItem.SrcTrans == "Retur Penjualan")
-					{
-						var data = _db.SalesReturnDetails.FirstOrDefault(x => x.Code == smItem.TransCode && x.ItemId == smItem.ItemId);
-						taxAmount = data?.TaxAmount ?? 0m;
-					}
-
 					smItem.QtyEnd = smItem.QtyIn > 0 ? selectedItem.QtyBegin + smItem.QtyIn : selectedItem.QtyBegin - smItem.QtyOut;
-					smItem.InvIn = (smItem.QtyIn * smItem.HPP) - (smItem.QtyIn * taxAmount);
-					smItem.InvOut = (smItem.QtyOut * smItem.HPP) - (smItem.QtyOut * taxAmount);
 					smItem.InvEnd = (selectedItem.InvBegin + smItem.InvIn) - smItem.InvOut;
 					selectedItem.QtyBegin = smItem.QtyEnd;
 					selectedItem.InvBegin = smItem.InvEnd;
@@ -229,7 +233,7 @@ namespace ERP.Web.API.Domain.Services.Inventory
 				item.QtyIn = smData.Where(x => x.ItemId == item.Id).Sum(x => x.QtyIn);
 				item.QtyOut = smData.Where(x => x.ItemId == item.Id).Sum(x => x.QtyOut);
 				item.QtyEnd = item.QtyBegin + (item.QtyIn - item.QtyOut);
-				item.InvBegin = initData.Where(x => x.ItemId == item.Id).Sum(x => x.QtyIn * x.HPP) - initData.Where(x => x.ItemId == item.Id).Sum(x => x.QtyOut * x.HPP);
+				item.InvBegin = initData.Where(x => x.ItemId == item.Id).Sum(x => x.InvIn) - initData.Where(x => x.ItemId == item.Id).Sum(x => x.InvOut);
 				item.InvIn = smListData.Where(x => x.ItemId == item.Id && x.WarehouseCode != null).Sum(x => x.InvIn);
 				item.InvOut = smListData.Where(x => x.ItemId == item.Id && x.WarehouseCode != null).Sum(x => x.InvOut);
 				item.InvEnd = item.InvBegin + (item.InvIn - item.InvOut);
