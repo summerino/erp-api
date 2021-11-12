@@ -527,7 +527,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                                             CurrCode = itemData.Dlvheader.CurrCode,
                                             Period = itemData.Dlvheader.Date.ToString("yyyyMMdd"),
                                             Type = "D",
-                                            Amount = itemMemo.CreditMemoAmount,
+                                            Amount = (itemMemo.CreditMemoAmount * itemData.Dlvheader.Total) / invData.Total,
                                             SrcTrans = "SI"
                                         });
                                     }
@@ -1064,7 +1064,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                                     SrcTrans = "RCV"
                                 });
 
-                                if (itemData.RtnHeader.Type == 3 && itemDetail.RcvDetail.TaxAmount > 0)
+                                if (journals.Where(x => x.Code == itemData.RtnHeader.Code && x.Group == 3).Any())
                                 {
                                     //Pajak - PPN
                                     journals.Add(new Journal
