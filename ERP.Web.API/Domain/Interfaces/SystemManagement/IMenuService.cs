@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using ERP.Common.Models;
+﻿using ERP.Common.Models;
 using ERP.Entity.SystemManagement;
 using ERP.Web.API.Domain.Models.SystemManagement;
 
@@ -10,7 +9,7 @@ namespace ERP.Web.API.Domain.Interfaces.SystemManagement
         DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
             string search);
 
-        IEnumerable<Action> GetActions();
+        IEnumerable<Entity.SystemManagement.Action> GetActions();
 
         IEnumerable<MenuAction> GetLists(int id);
 

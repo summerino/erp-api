@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using ERP.Entity;
-using ERP.Entity.SystemManagement;
+﻿using ERP.Entity;
 using ERP.Web.API.Domain.Interfaces.SystemManagement;
 
 namespace ERP.Web.API.Domain.Services.SystemManagement
@@ -14,7 +12,7 @@ namespace ERP.Web.API.Domain.Services.SystemManagement
             _tenantCtx = tenantCtx;
         }
 
-        public IEnumerable<Action> GetData()
+        public IEnumerable<Entity.SystemManagement.Action> GetData()
         {
             return _tenantCtx.Actions;
         }
