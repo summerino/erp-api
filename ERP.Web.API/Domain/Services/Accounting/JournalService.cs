@@ -2320,20 +2320,25 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 latestQty += firstSM.BaseQty;
                 hpp = latestStockValue / latestQty;
 
-                var listSM = stockMutations.Where(x => x.Id != firstSM.Id 
-                            && new[] { "RCV", "DO", "SR", "ADJ", "TS", "PR", "CNEE", "BB" }.Contains(x.Src) 
+                List<string> srcType = new() { "BB", "RCV", "DO", "SR", "ADJ", "TS", "PR", "CNEE"};
+
+                var listSM = stockMutations.Where(x => x.Id != firstSM.Id
+                            && srcType.Contains(x.Src)
                             && x.ItemId == itemId
                             && x.BaseQty != 0
-                            && x.Date >= firstSM.Date 
+                            && x.Date >= firstSM.Date
                             && x.Date <= currentSM.Date)
                             .OrderBy(x => x.Date)
                             .ThenBy(x => x.Id)
+                            .ThenBy(x => x.Src == "BB")
+                            .ThenBy(x => x.Src == "RCV")
                             .ToList();
+
                 foreach (var item in listSM)
                 {
                     if (new[] { "RCV","BB","SR" }.Contains(item.Src))
                     {
-                        if (item.Src != "BB")
+                        if (item.Src == "SR" || (item.Src == "RCV" && item.RefCode2[..2] == "PR"))
                         {
                             item.BaseNettPrice = hpp;
                             item.NettPrice = hpp * item.BaseQty / item.Qty;
