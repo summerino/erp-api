@@ -7,12 +7,17 @@ trigger:
 - development
 
 pool:
-  vmImage: windows-latest
+  vmImage: windows-2022
 
 variables:
   buildConfiguration: 'Release'
 
 steps:
+# - task: UseDotNet@2
+#   inputs:
+#     version: '6.0.x'
+#   displayName: 'Install .NET 6.0 Core SDK'
+
 - task: DotNetCoreCLI@2
   inputs:
     command: 'publish'
