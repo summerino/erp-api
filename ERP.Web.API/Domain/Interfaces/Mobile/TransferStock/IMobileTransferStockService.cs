@@ -1,11 +1,5 @@
 ﻿using ERP.Common;
-using ERP.Entity.Inventory;
-using ERP.Entity.MobileWarehouse;
 using ERP.Web.API.Domain.Models.Mobile.TransferStock;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace ERP.Web.API.Domain.Interfaces.Mobile.TransferStock
 {

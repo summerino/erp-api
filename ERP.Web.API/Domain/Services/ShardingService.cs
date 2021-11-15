@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using ERP.Entity;
 
 namespace ERP.Web.API.Domain.Services

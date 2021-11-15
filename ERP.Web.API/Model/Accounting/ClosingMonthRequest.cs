@@ -1,5 +1,4 @@
-﻿using System;
-using ERP.Entity.Accounting;
+﻿using ERP.Entity.Accounting;
 
 namespace ERP.Web.API.Model.Accounting
 {

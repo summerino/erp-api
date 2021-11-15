@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace ERP.Web.API.Domain.Models.Mobile.General
+﻿namespace ERP.Web.API.Domain.Models.Mobile.General
 {
     public class ItemInformationModel
     {

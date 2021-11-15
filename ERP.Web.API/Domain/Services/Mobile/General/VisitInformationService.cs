@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using ERP.Entity;
+﻿using ERP.Entity;
 using ERP.Web.API.Domain.Interfaces.Mobile.General;
 using ERP.Web.API.Domain.Models.Mobile.General;
 

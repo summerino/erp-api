@@ -1,10 +1,4 @@
 ﻿using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore.Scaffolding.Metadata;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.NetworkInformation;
-using System.Threading.Tasks;
 
 namespace ERP.Web.API.Utils
 {

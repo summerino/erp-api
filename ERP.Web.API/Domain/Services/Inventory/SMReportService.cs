@@ -4,10 +4,6 @@ using ERP.Entity;
 using ERP.Entity.Inventory;
 using ERP.Web.API.Domain.Interfaces.Inventory;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace ERP.Web.API.Domain.Services.Inventory
 {

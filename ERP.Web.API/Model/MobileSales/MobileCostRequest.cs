@@ -1,5 +1,4 @@
 ﻿using ERP.Entity.MobileSales;
-using System.Collections.Generic;
 
 namespace ERP.Web.API.Model.MobileSales
 {

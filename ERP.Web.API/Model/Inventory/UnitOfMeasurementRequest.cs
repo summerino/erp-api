@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using ERP.Entity.Inventory;
+﻿using ERP.Entity.Inventory;
 
 namespace ERP.Web.API.Model.Inventory
 {

@@ -1,10 +1,8 @@
-﻿using System.Linq;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using ERP.Entity;
 using ERP.Web.API.Domain.Interfaces.Finance;
 using ERP.Web.API.Model;
 using ERP.Web.API.Domain.Interfaces.Auth;
-using System.Collections.Generic;
 
 namespace ERP.Web.API.Controllers.Finance
 {

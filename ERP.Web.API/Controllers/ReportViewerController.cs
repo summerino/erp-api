@@ -1,8 +1,5 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Caching.Memory;
 using BoldReports.Web;
 using BoldReports.Web.ReportViewer;

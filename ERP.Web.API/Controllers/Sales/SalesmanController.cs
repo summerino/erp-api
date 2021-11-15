@@ -1,16 +1,13 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Dynamic.Core;
+﻿using System.Linq.Dynamic.Core;
 using ERP.Common.Models;
 using Microsoft.AspNetCore.Mvc;
 using ERP.Entity;
 using ERP.Web.API.Domain.Interfaces.Sales;
-using ERP.Web.API.Domain.Models;
 using ERP.Web.API.Model;
 using Newtonsoft.Json;
 
 namespace ERP.Web.API.Controllers.Sales
-{    
+{
     [Route("salesman")]
     [ApiController]
     public class SalesmanController : ControllerBase

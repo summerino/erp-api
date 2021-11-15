@@ -1,11 +1,5 @@
 ﻿using Newtonsoft.Json;
-using Swift.Framework.Dtos;
 using Swift.Framework.Dtos.PageView;
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace ERP.Web.API.Dtos
 {

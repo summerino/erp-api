@@ -2,7 +2,6 @@
 using ERP.Common.Models;
 using ERP.Entity.MobileWarehouse;
 using ERP.Web.API.Domain.Models.Mobile.Sales;
-using System.Collections.Generic;
 
 namespace ERP.Web.API.Domain.Interfaces.Mobile.Sales
 {

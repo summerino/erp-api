@@ -5,9 +5,6 @@ using ERP.Web.API.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace ERP.Web.API.Domain.Interfaces.Mobile.Sales
 {

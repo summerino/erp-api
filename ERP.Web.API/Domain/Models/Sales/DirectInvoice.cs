@@ -1,5 +1,4 @@
-﻿using System;
-using ERP.Entity.Sales;
+﻿using ERP.Entity.Sales;
 
 namespace ERP.Web.API.Domain.Models.Sales
 {

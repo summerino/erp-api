@@ -1,5 +1,4 @@
 ﻿using ERP.Entity.MobileWarehouse;
-using System.Collections.Generic;
 
 namespace ERP.Web.API.Domain.Models.Mobile.Purchase
 {

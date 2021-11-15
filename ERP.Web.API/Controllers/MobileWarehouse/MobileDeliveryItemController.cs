@@ -6,14 +6,9 @@ using ERP.Web.API.Domain.Interfaces.Auth;
 using ERP.Web.API.Domain.Interfaces.MobileWarehouse;
 using ERP.Web.API.Model;
 using ERP.Web.API.Model.MobileWarehouse;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Dynamic.Core;
-using System.Threading.Tasks;
 
 namespace ERP.Web.API.Controllers.MobileWarehouse
 {

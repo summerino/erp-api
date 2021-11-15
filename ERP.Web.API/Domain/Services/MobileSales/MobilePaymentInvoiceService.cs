@@ -6,10 +6,6 @@ using ERP.Entity.Finance;
 using ERP.Entity.MobileSales;
 using ERP.Web.API.Domain.Interfaces.MobileSales;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace ERP.Web.API.Domain.Services.MobileSales
 {

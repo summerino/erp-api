@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace ERP.Web.API.Domain.Models.Mobile.Purchase
+﻿namespace ERP.Web.API.Domain.Models.Mobile.Purchase
 {
     public class ReceiveItemHeaderModel
     {

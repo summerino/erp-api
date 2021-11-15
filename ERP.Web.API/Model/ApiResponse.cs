@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Swift.Framework.Dtos.PageView;
+﻿using Swift.Framework.Dtos.PageView;
 
 namespace ERP.Web.API.Model
 {

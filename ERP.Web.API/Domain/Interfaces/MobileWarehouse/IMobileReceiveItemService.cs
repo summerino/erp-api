@@ -2,10 +2,6 @@
 using ERP.Common.Models;
 using ERP.Entity.MobileWarehouse;
 using ERP.Web.API.Model.MobileWarehouse;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace ERP.Web.API.Domain.Interfaces.MobileWarehouse
 {

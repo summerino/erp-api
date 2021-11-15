@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using ERP.Entity.MobileSales;
+﻿using ERP.Entity.MobileSales;
 
 namespace ERP.Web.API.Domain.Models.Mobile.VisitOrder
 {

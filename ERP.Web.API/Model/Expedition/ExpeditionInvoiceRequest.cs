@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using ERP.Entity.Expedition;
+﻿using ERP.Entity.Expedition;
 
 namespace ERP.Web.API.Model.Expedition
 {

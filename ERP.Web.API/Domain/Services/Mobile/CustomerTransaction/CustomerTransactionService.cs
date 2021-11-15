@@ -4,10 +4,6 @@ using ERP.Entity;
 using ERP.Web.API.Domain.Interfaces.Mobile.CustomerTransaction;
 using ERP.Web.API.Domain.Models.Mobile.General;
 using ERP.Web.API.Domain.Models.Mobile.TransactionHistory;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace ERP.Web.API.Domain.Services.Mobile.CustomerTransaction
 {

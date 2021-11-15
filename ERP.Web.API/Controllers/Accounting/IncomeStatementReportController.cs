@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using ERP.Entity;
 using ERP.Entity.Accounting;
 using ERP.Web.API.Domain.Interfaces.Accounting;

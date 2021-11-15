@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using ERP.Entity.Purchase;
+﻿using ERP.Entity.Purchase;
 
 namespace ERP.Web.API.Model.Purchase
 {

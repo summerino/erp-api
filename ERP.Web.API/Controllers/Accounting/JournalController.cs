@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
+﻿using System.Globalization;
 using Microsoft.AspNetCore.Mvc;
 using ERP.Common;
 using ERP.Entity;

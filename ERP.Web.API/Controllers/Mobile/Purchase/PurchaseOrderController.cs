@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ERP.Common.Models;
 using ERP.Entity;
@@ -8,7 +6,6 @@ using ERP.Web.API.Domain.Interfaces.Purchase;
 using ERP.Web.API.Domain.Models.Mobile.Purchase;
 using ERP.Web.API.Model;
 using Newtonsoft.Json;
-using System;
 using ERP.Web.API.Domain.Interfaces.Inventory;
 
 namespace ERP.Web.API.Controllers.Mobile.Purchase

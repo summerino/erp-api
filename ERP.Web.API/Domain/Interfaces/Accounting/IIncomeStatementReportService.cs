@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using ERP.Entity.Accounting;
+﻿using ERP.Entity.Accounting;
 
 namespace ERP.Web.API.Domain.Interfaces.Accounting
 {

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Dynamic.Core;
+﻿using System.Linq.Dynamic.Core;
 using ERP.Common;
 using ERP.Common.Extensions;
 using ERP.Common.Models;
@@ -9,7 +6,6 @@ using ERP.Entity;
 using ERP.Entity.General;
 using Microsoft.EntityFrameworkCore;
 using ERP.Web.API.Domain.Interfaces.General;
-using ERP.Web.API.Domain.Models;
 using ERP.Web.API.Model.General;
 
 namespace ERP.Web.API.Domain.Services.General

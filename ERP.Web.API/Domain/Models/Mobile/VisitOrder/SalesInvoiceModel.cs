@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace ERP.Web.API.Domain.Models.Mobile.VisitOrder
+﻿namespace ERP.Web.API.Domain.Models.Mobile.VisitOrder
 {
     public class SalesInvoiceModel
     {

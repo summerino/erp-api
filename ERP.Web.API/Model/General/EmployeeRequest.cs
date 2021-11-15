@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using ERP.Entity.General;
+﻿using ERP.Entity.General;
 using ERP.Entity.Sales;
 
 namespace ERP.Web.API.Model.General

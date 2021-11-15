@@ -4,10 +4,6 @@ using ERP.Web.API.Domain.Models.Mobile.TransferStock;
 using ERP.Web.API.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace ERP.Web.API.Controllers.Mobile.TransferStock
 {

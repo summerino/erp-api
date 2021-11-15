@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace ERP.Web.API.Domain.Models.SystemManagement
+﻿namespace ERP.Web.API.Domain.Models.SystemManagement
 {
     public class MenuNavigation 
     {

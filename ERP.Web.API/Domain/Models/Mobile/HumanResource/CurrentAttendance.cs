@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace ERP.Web.API.Domain.Models.Mobile.HumanResource
+﻿namespace ERP.Web.API.Domain.Models.Mobile.HumanResource
 {
     public class CurrentAttendance
     {

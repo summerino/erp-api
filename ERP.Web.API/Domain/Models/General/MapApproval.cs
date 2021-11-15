@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using ERP.Entity.Core;
+﻿using ERP.Entity.Core;
 using ERP.Web.API.Model;
 
 namespace ERP.Web.API.Domain.Models.General

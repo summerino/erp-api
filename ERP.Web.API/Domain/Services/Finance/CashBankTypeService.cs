@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using ERP.Entity;
+﻿using ERP.Entity;
 using ERP.Entity.Finance;
 using ERP.Web.API.Domain.Interfaces.Finance;
 

@@ -1,10 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Linq.Dynamic.Core;
+﻿using System.Linq.Dynamic.Core;
 using ERP.Common.Models;
 using Microsoft.AspNetCore.Mvc;
 using ERP.Entity;
 using ERP.Web.API.Domain.Interfaces.Inventory;
-using ERP.Web.API.Domain.Models;
 using ERP.Web.API.Model;
 using Newtonsoft.Json;
 

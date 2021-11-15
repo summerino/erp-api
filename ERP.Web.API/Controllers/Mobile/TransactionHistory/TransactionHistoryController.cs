@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ERP.Common.Models;
 using ERP.Entity;
@@ -8,7 +6,6 @@ using ERP.Web.API.Domain.Interfaces.Mobile.TransactionHistory;
 using ERP.Web.API.Domain.Models.Mobile.TransactionHistory;
 using ERP.Web.API.Model;
 using Newtonsoft.Json;
-using System;
 
 namespace ERP.Web.API.Controllers.Mobile.TransactionHistory
 {

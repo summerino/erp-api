@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using ERP.Common;
+﻿using ERP.Common;
 using ERP.Common.Extensions;
 using ERP.Common.Models;
 using ERP.Entity;
 using ERP.Entity.Inventory;
 using ERP.Web.API.Domain.Interfaces.Inventory;
-using ERP.Web.API.Domain.Models;
 
 namespace ERP.Web.API.Domain.Services.Inventory
 {

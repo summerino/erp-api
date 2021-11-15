@@ -3,9 +3,6 @@ using ERP.Common.Models;
 using ERP.Entity;
 using ERP.Web.API.Domain.Interfaces.Expedition;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace ERP.Web.API.Domain.Services.Expedition
 {

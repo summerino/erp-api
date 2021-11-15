@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace ERP.Web.API.Domain.Models.Mobile.NetRevenue
+﻿namespace ERP.Web.API.Domain.Models.Mobile.NetRevenue
 {
     public class NetRevenueHeaderModel
     {

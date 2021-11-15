@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using ERP.Common.Models;
+﻿using ERP.Common.Models;
 using ERP.Web.API.Domain.Models.Mobile.NetRevenue;
 using ERP.Web.API.Domain.Models.Mobile.Operational;
 

@@ -7,10 +7,6 @@ using ERP.Entity.Purchase;
 using ERP.Web.API.Domain.Interfaces.MobileWarehouse;
 using ERP.Web.API.Model.MobileWarehouse;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace ERP.Web.API.Domain.Services.MobileWarehouse
 {

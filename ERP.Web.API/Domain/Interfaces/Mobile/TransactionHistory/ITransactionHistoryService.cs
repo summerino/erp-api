@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using ERP.Common.Models;
+﻿using ERP.Common.Models;
 using ERP.Web.API.Domain.Models.Mobile.TransactionHistory;
 
 namespace ERP.Web.API.Domain.Interfaces.Mobile.TransactionHistory

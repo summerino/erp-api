@@ -5,10 +5,6 @@ using ERP.Entity;
 using ERP.Entity.MobileSales;
 using ERP.Web.API.Domain.Interfaces.MobileSales;
 using Microsoft.Data.SqlClient;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace ERP.Web.API.Domain.Services.MobileSales
 {

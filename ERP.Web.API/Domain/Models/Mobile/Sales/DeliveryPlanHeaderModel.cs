@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace ERP.Web.API.Domain.Models.Mobile.Sales
+﻿namespace ERP.Web.API.Domain.Models.Mobile.Sales
 {
     public class DeliveryPlanHeaderModel
     {

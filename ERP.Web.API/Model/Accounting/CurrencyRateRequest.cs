@@ -1,6 +1,4 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
-using ERP.Entity.Accounting;
+﻿using ERP.Entity.Accounting;
 
 namespace ERP.Web.API.Model.Accounting
 {

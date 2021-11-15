@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace ERP.Web.API.Domain.Models.Mobile.TransactionHistory
+﻿namespace ERP.Web.API.Domain.Models.Mobile.TransactionHistory
 {
     public class TransactionHistoryByCustomer
     {

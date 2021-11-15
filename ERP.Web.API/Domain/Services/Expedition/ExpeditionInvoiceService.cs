@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Dynamic.Core;
-using System.Security.Cryptography.X509Certificates;
+﻿using System.Linq.Dynamic.Core;
 using ERP.Common;
 using ERP.Common.Extensions;
 using ERP.Common.Models;

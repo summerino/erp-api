@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using ERP.Entity.Sales;
+﻿using ERP.Entity.Sales;
 
 namespace ERP.Web.API.Model.Sales
 {

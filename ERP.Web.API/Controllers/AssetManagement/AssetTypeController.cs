@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Dynamic.Core;
+﻿using System.Linq.Dynamic.Core;
 using ERP.Common;
 using ERP.Common.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -9,7 +6,6 @@ using ERP.Entity;
 using ERP.Entity.AssetManagement;
 using ERP.Web.API.Domain.Interfaces.AssetManagement;
 using ERP.Web.API.Domain.Interfaces.Auth;
-using ERP.Web.API.Domain.Models;
 using ERP.Web.API.Model;
 using Newtonsoft.Json;
 

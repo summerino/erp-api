@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Dynamic.Core;
+﻿using System.Linq.Dynamic.Core;
 using Microsoft.EntityFrameworkCore;
 using ERP.Common;
 using ERP.Common.Extensions;
@@ -11,7 +8,6 @@ using ERP.Entity.Purchase;
 using ERP.Web.API.Domain.Interfaces.Purchase;
 using ERP.Web.API.Domain.Models.Mobile.Purchase;
 using ERP.Web.API.Model.Purchase;
-using Swift.Framework;
 using ERP.Entity.MobileWarehouse;
 
 namespace ERP.Web.API.Domain.Services.Purchase

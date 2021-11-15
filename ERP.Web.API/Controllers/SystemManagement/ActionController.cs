@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using ERP.Common.Extensions;
 using ERP.Web.API.Domain.Interfaces.SystemManagement;
 

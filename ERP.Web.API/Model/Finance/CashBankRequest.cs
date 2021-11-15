@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using ERP.Entity.Finance;
+﻿using ERP.Entity.Finance;
 
 namespace ERP.Web.API.Model.Finance
 {

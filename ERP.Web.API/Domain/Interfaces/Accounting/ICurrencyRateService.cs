@@ -1,8 +1,6 @@
-﻿using System.Collections.Generic;
-using ERP.Common;
+﻿using ERP.Common;
 using ERP.Common.Models;
 using ERP.Entity.Accounting;
-using ERP.Web.API.Domain.Models;
 using ERP.Web.API.Model.Accounting;
 
 namespace ERP.Web.API.Domain.Interfaces.Accounting

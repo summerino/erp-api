@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using ERP.Common;
+﻿using ERP.Common;
 using ERP.Common.Models;
 using ERP.Entity.MobileSales;
 

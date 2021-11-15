@@ -4,7 +4,6 @@ using ERP.Web.API.Domain.Interfaces.Auth;
 using ERP.Web.API.Domain.Interfaces.Inventory;
 using ERP.Web.API.Model;
 using Microsoft.AspNetCore.Mvc;
-using System.Linq;
 using System.Linq.Dynamic.Core;
 
 namespace ERP.Web.API.Controllers.Inventory

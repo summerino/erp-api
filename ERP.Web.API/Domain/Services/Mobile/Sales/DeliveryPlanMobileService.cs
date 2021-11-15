@@ -2,18 +2,9 @@
 using ERP.Common.Extensions;
 using ERP.Common.Models;
 using ERP.Entity;
-using ERP.Entity.Core;
 using ERP.Entity.MobileWarehouse;
-using ERP.Entity.SQLQuery;
 using ERP.Web.API.Domain.Interfaces.Mobile.Sales;
 using ERP.Web.API.Domain.Models.Mobile.Sales;
-using ERP.Web.API.Domain.Services;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Data.SqlClient;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace ERP.Web.API.Domain.Services.Mobile.Sales
 {

@@ -1,6 +1,4 @@
-﻿using System;
-using System.IO;
-using ERP.Common;
+﻿using ERP.Common;
 using ERP.Web.API.Domain.Interfaces.Mobile.General;
 using ERP.Web.API.Domain.Models.Mobile.General;
 
