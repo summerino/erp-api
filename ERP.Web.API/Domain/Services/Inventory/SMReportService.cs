@@ -21,19 +21,23 @@ namespace ERP.Web.API.Domain.Services.Inventory
 			var qsetUnit = $"DECLARE @Unit int; SET @Unit = '{typeUnit.ToString().Replace("'", "''")}'; ";
 
 			var orderQuery = @" ORDER BY sm.Date, CASE
+					WHEN sm.Src = 'BB' THEN
+						1
+					WHEN sm.Src = 'RCV THEN
+						2
 					WHEN sm.Src = 'ADJ' AND sm.BaseQty > 0 THEN
-						1
-					WHEN sm.Src IN('RCV', 'BB', 'SR') THEN
-						1
+						3
+					WHEN sm.Src = 'SR' THEN
+						3
 					WHEN sm.Src IN('TS', 'CNEE') AND sm.[Type] = 'OH' AND sm.BaseQty > 0 THEN
-						1
+						3
 					WHEN sm.Src = 'ADJ' AND sm.BaseQty < 0 THEN
-						2
+						4
 					WHEN sm.Src IN('DO', 'DOF', 'PR') THEN
-						2
+						4
 					WHEN sm.Src IN('TS', 'CNEE') AND sm.[Type] = 'OH' AND sm.BaseQty < 0 THEN
-						2
-					ELSE 3
+						4
+					ELSE 5
 					END";
 
 			var smData = _db.ReportByStockMutations.FromSqlRaw(qsetUnit + @"SELECT sm.WarehouseCode, sm.ItemId, sm.Date, sm.RefCode1 as TransCode, 
