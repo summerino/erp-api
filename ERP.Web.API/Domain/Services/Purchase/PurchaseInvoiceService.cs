@@ -213,11 +213,6 @@ namespace ERP.Web.API.Domain.Services.Purchase
                 data.ApprovedBy = null;
                 data.ApprovedDate = null;
 
-                // Update header data
-                Db.PurchaseInvoiceHeaders.Update(data);
-                Db.Entry(data).Property(e => e.Code).IsModified = false;
-                Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
-                Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
 
                 // Restore Debit Memo
                 RestoreDebitMemo(data.Code);
@@ -241,7 +236,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
 
                 // Get detail data that exists in invoice before
                 var delMemos = Db.PurchaseInvoiceDebitMemos
-                    .Where(d => d.InvCode == data.Code && !data.Memos.Select(x => x.Id).Contains(d.Id))
+                    .Where(d => d.InvCode == data.Code)
                     .ToList();
 
                 // Delete detail data that exists in invoice before
@@ -299,7 +294,14 @@ namespace ERP.Web.API.Domain.Services.Purchase
                 // Insert detail if new data exists
                 if (newMemos.Any())
                     Db.PurchaseInvoiceDebitMemos.AddRange(newMemos);
-                
+
+                // Update header data
+                data.PaidAmount = newMemos.Any() ? newMemos.Sum(x => x.DebitMemoAmount) : 0;
+                Db.PurchaseInvoiceHeaders.Update(data);
+                Db.Entry(data).Property(e => e.Code).IsModified = false;
+                Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
+                Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
+
                 // Update Debit Memo
                 UpdateDebitMemo(data);
 
