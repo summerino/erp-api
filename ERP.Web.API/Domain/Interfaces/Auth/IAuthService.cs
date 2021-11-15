@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using ERP.Web.API.Model;
+﻿using ERP.Web.API.Model;
 using ERP.Web.API.Model.Auth;
 using UserCatalog = ERP.Entity.Catalog.User;
 

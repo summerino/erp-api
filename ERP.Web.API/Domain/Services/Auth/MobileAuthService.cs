@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
+﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using ERP.Entity;
@@ -22,12 +18,6 @@ namespace ERP.Web.API.Domain.Services.Auth
 {
     public class MobileAuthService : IMobileAuthService
     {
-        protected TenantContext Db;
-        public MobileAuthService(TenantContext db)
-        {
-            Db = db;
-        }
-
         private readonly CatalogContext _catalogCtx;
         private readonly IClaimService _claim;
         private readonly JwtConfig _jwtConfig;
@@ -119,7 +109,7 @@ namespace ERP.Web.API.Domain.Services.Auth
 
             if (tenantUser.IsMobileLoggedIn)
             {
-                if ((DateTime.Now - tenantUser.MobileLastLogin.GetValueOrDefault()).TotalMinutes < _jwtConfig.TimeInMinute)
+                if ((DateTime.Now - tenantUser.MobileLastLogin.GetValueOrDefault()).TotalMinutes < _jwtConfig.MobileExpiresInMinute)
                 {
                     return new MobileAuthResult
                     {
@@ -171,7 +161,7 @@ namespace ERP.Web.API.Domain.Services.Auth
             return new MobileAuthResult
             {
                 AccessToken = tenantUser.MobileTokenId,
-                ExpToken = EpochTime.GetIntDate(tenantUser.MobileLastLogin.Value.AddMinutes(_jwtConfig.TimeInMinute)),
+                ExpToken = EpochTime.GetIntDate(tenantUser.MobileLastLogin.Value.AddMinutes(_jwtConfig.MobileExpiresInMinute)),
                 UserData = catalogUser.Id.ToString(),
                 Success = true
             };
@@ -264,7 +254,7 @@ namespace ERP.Web.API.Domain.Services.Auth
 
             if (tenantUser.IsMobileLoggedIn)
             {
-                if ((DateTime.Now - tenantUser.MobileLastLogin.GetValueOrDefault()).TotalMinutes < _jwtConfig.TimeInMinute)
+                if ((DateTime.Now - tenantUser.MobileLastLogin.GetValueOrDefault()).TotalMinutes < _jwtConfig.MobileExpiresInMinute)
                 {
                     return new MobileAuthResult
                     {
@@ -315,7 +305,7 @@ namespace ERP.Web.API.Domain.Services.Auth
             return new MobileAuthResult
             {
                 AccessToken = tenantUser.MobileTokenId,
-                ExpToken = EpochTime.GetIntDate(tenantUser.MobileLastLogin.Value.AddMinutes(_jwtConfig.TimeInMinute)),
+                ExpToken = EpochTime.GetIntDate(tenantUser.MobileLastLogin.Value.AddMinutes(_jwtConfig.MobileExpiresInMinute)),
                 UserData = catalogUser.Id.ToString(),
                 Success = true
             };
@@ -374,7 +364,7 @@ namespace ERP.Web.API.Domain.Services.Auth
 
             if (tenantCustomer.IsMobileLoggedIn)
             {
-                if ((DateTime.Now - tenantCustomer.MobileLastLogin.GetValueOrDefault()).TotalMinutes < _jwtConfig.TimeInMinute)
+                if ((DateTime.Now - tenantCustomer.MobileLastLogin.GetValueOrDefault()).TotalMinutes < _jwtConfig.MobileExpiresInMinute)
                 {
                     return new MobileAuthResult
                     {
@@ -395,7 +385,7 @@ namespace ERP.Web.API.Domain.Services.Auth
             return new MobileAuthResult
             {
                 AccessToken = tenantCustomer.MobileTokenId,
-                ExpToken = EpochTime.GetIntDate(tenantCustomer.MobileLastLogin.Value.AddMinutes(_jwtConfig.TimeInMinute)),
+                ExpToken = EpochTime.GetIntDate(tenantCustomer.MobileLastLogin.Value.AddMinutes(_jwtConfig.MobileExpiresInMinute)),
                 UserData = catalogUser.Id.ToString(),
                 Success = true
             };
@@ -586,7 +576,7 @@ namespace ERP.Web.API.Domain.Services.Auth
                     new Claim("TenantId", tenantId.ToString()),
                     new Claim("WarehouseCode", defaultWarehouseCode)
                 }),
-                Expires = data.MobileLastLogin.GetValueOrDefault(DateTime.Now).AddMinutes(_jwtConfig.TimeInMinute),
+                Expires = data.MobileLastLogin.GetValueOrDefault(DateTime.Now).AddMinutes(_jwtConfig.MobileExpiresInMinute),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
                 Issuer = _jwtConfig.Issuer,
                 NotBefore = data.MobileLastLogin.GetValueOrDefault(DateTime.Now)
@@ -615,7 +605,7 @@ namespace ERP.Web.API.Domain.Services.Auth
                     new Claim("CatalogUserId", data.CatalogUserId.ToString()),
                     new Claim("TenantId", tenantId.ToString()),
                 }),
-                Expires = data.MobileLastLogin.GetValueOrDefault(DateTime.Now).AddMinutes(_jwtConfig.TimeInMinute),
+                Expires = data.MobileLastLogin.GetValueOrDefault(DateTime.Now).AddMinutes(_jwtConfig.MobileExpiresInMinute),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
                 Issuer = _jwtConfig.Issuer,
                 NotBefore = data.MobileLastLogin.GetValueOrDefault(DateTime.Now)

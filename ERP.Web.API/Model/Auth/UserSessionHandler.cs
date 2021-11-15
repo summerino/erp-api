@@ -36,7 +36,7 @@ namespace ERP.Web.API.Model.Auth
                         .Any(x => x.IsActive && x.IsLoggedIn &&
                                   x.CatalogUserId.ToString() == currentUserId &&
                                   x.TokenId == _claim.KeyToken &&
-                                  EF.Functions.DateDiffMonth(x.LastLogin, DateTime.Now) < _jwtConfig.TimeInMinute))
+                                  EF.Functions.DateDiffMonth(x.LastLogin, DateTime.Now) < _jwtConfig.ExpiresInMinute))
                 {
                     context.Succeed(requirement);
                 }

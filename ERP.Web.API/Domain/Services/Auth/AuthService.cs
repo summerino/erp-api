@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
+﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Identity;
@@ -79,7 +76,7 @@ namespace ERP.Web.API.Domain.Services.Auth
             var tenantUser = tenantCtx.Users.FirstOrDefault(x => x.CatalogUserId == catalogUser.Id);
             if (tenantUser.IsLoggedIn)
             {
-                if ((DateTime.Now - tenantUser.LastLogin.GetValueOrDefault()).TotalMinutes < _jwtConfig.TimeInMinute)
+                if ((DateTime.Now - tenantUser.LastLogin.GetValueOrDefault()).TotalMinutes < _jwtConfig.ExpiresInMinute)
                 {
                     return new AuthResult
                     {
@@ -136,7 +133,7 @@ namespace ERP.Web.API.Domain.Services.Auth
             return new AuthResult
             {
                 AccessToken = tenantUser.TokenId,
-                ExpToken = EpochTime.GetIntDate(tenantUser.LastLogin.Value.AddMinutes(_jwtConfig.TimeInMinute)),
+                ExpToken = EpochTime.GetIntDate(tenantUser.LastLogin.Value.AddMinutes(_jwtConfig.ExpiresInMinute)),
                 UserData = catalogUser.Id.ToString(),
                 Success = true
             };
@@ -216,7 +213,7 @@ namespace ERP.Web.API.Domain.Services.Auth
                     new Claim("TenantInitial", tenantInitial),
                     new Claim("WarehouseCode", defaultWarehouseCode == null ? string.Empty : defaultWarehouseCode)
                 }),
-                Expires = data.LastLogin.GetValueOrDefault(DateTime.Now).AddMinutes(_jwtConfig.TimeInMinute),
+                Expires = data.LastLogin.GetValueOrDefault(DateTime.Now).AddMinutes(_jwtConfig.ExpiresInMinute),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
                 Issuer = _jwtConfig.Issuer,
                 NotBefore = data.LastLogin.GetValueOrDefault(DateTime.Now)
