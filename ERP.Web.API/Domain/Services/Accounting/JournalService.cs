@@ -2338,7 +2338,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 {
                     if (new[] { "RCV","BB","SR" }.Contains(item.Src))
                     {
-                        if (item.Src == "SR" || (item.Src == "RCV" && item.RefCode2[..2] == "PR"))
+                        if (item.Src == "SR" || (item.Src == "RCV" && item.RefCode2 != null && item.RefCode2[..2] == "PR"))
                         {
                             item.BaseNettPrice = hpp;
                             item.NettPrice = hpp * item.BaseQty / item.Qty;
