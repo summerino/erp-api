@@ -222,6 +222,7 @@ builder.Services.AddScoped<IMobileVisitLogService, MobileVisitLogService>();
 builder.Services.AddScoped<IMobilePaymentInvoiceService, MobilePaymentInvoiceService>();
 builder.Services.AddScoped<IMobileOrderService, MobileOrderService>();
 builder.Services.AddScoped<IMobilePaymentMethodService, MobilePaymentMethodService>();
+builder.Services.AddScoped<IMobileVisitPerformanceReportService, MobileVisitPerformanceReportService>();
 
 // Mobile Warehouse services
 builder.Services.AddScoped<IMobileReceiveItemService, MobileReceiveItemService>();
