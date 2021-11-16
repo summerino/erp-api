@@ -288,6 +288,9 @@ builder.Services.AddScoped<ICustomerTransactionService, CustomerTransactionServi
 
 //Transfer Stock
 builder.Services.AddScoped<ERP.Web.API.Domain.Interfaces.Mobile.TransferStock.IMobileTransferStockService, ERP.Web.API.Domain.Services.Mobile.TransferStock.MobileTransferStockService>();
+
+//Activity Log
+builder.Services.AddScoped<IActivityLogService, ActivityLogService>();
 #endregion
 
 var app = builder.Build();
