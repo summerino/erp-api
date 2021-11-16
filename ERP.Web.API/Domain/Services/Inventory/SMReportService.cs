@@ -23,7 +23,7 @@ namespace ERP.Web.API.Domain.Services.Inventory
 			var orderQuery = @" ORDER BY sm.Date, CASE
 					WHEN sm.Src = 'BB' THEN
 						1
-					WHEN sm.Src = 'RCV THEN
+					WHEN sm.Src = 'RCV' THEN
 						2
 					WHEN sm.Src = 'ADJ' AND sm.BaseQty > 0 THEN
 						3
