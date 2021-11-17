@@ -158,9 +158,11 @@ namespace ERP.Entity.Sales
 
         public string Website { get; set; }
 
-        //public short CreditTerm { get; set; }
+        public int PaymentTermId { get; set; }
 
         public decimal CreditLimit { get; set; }
+
+        public decimal CreditUsed { get; set; }
 
         public string RefNo { get; set; }
 
@@ -180,6 +182,12 @@ namespace ERP.Entity.Sales
 
         public int? AreaId5 { get; set; }
 
+        public bool IsConsignee { get; set; }
+
+        public bool MobileSignIn { get; set; }
+
+        public Guid? CatalogUserId { get; set; }
+
         public string AreaName1 { get; set; }
 
         public string AreaName2 { get; set; }
@@ -189,6 +197,8 @@ namespace ERP.Entity.Sales
         public string AreaName4 { get; set; }
 
         public string AreaName5 { get; set; }
+
+        public string Address1 { get; set; }
     }
 
     [Table("SalesmanMapTrackingHistory", Schema = Schema.Sales)]
