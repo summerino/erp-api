@@ -2322,6 +2322,12 @@ namespace ERP.Web.API.Domain.Services.Accounting
 
                 List<string> srcType = new() { "BB", "RCV", "DO", "SR", "ADJ", "TS", "PR", "CNEE"};
 
+                var doData = _db.SalesDeliveryHeaders.AsEnumerable();
+
+                var srData = _db.SalesReturnHeaders.AsEnumerable();
+
+                var rcvData = _db.PurchaseReceiveHeaders.AsEnumerable();
+
                 var listSM = stockMutations.Where(x => x.Id != firstSM.Id
                             && srcType.Contains(x.Src)
                             && x.ItemId == itemId
@@ -2329,16 +2335,19 @@ namespace ERP.Web.API.Domain.Services.Accounting
                             && x.Date >= firstSM.Date
                             && x.Date <= currentSM.Date)
                             .OrderBy(x => x.Date)
-                            .ThenBy(x => x.Id)
                             .ThenBy(x => x.Src == "BB")
                             .ThenBy(x => x.Src == "RCV")
+                            .ThenBy(x => (x.Src == "ADJ" && x.BaseQty > 0) || x.Src == "SR" || (new[] { "TS", "CNEE" }.Contains(x.Src) && x.Type == "OH" && x.BaseQty > 0))
+                            .ThenBy(x => x.Src == "DO" && (srData.FirstOrDefault(z => z.Code == (doData.FirstOrDefault(y => y.Code == x.RefCode1)?.TransCode ?? ""))?.Type ?? 1) == 2)
+                            .ThenBy(x => (x.Src == "ADJ" && x.BaseQty < 0) || (new[] {"TS", "CNEE"}.Contains(x.Src) && x.Type == "OH" && x.BaseQty < 0) || (new[] { "DO", "PR" }.Contains(x.Src)))
+                            .ThenBy(x => x.Id)
                             .ToList();
 
                 foreach (var item in listSM)
                 {
                     if (new[] { "RCV","BB","SR" }.Contains(item.Src))
                     {
-                        if (item.Src == "SR" || (item.Src == "RCV" && item.RefCode2 != null && item.RefCode2[..2] == "PR"))
+                        if (item.Src == "SR" || (item.Src == "RCV" && (rcvData.FirstOrDefault(x => x.Code == item.RefCode1)?.SrcTrans ?? 0) == 2))
                         {
                             item.BaseNettPrice = hpp;
                             item.NettPrice = hpp * item.BaseQty / item.Qty;
