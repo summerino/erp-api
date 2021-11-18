@@ -2322,11 +2322,11 @@ namespace ERP.Web.API.Domain.Services.Accounting
 
                 List<string> srcType = new() { "BB", "RCV", "DO", "SR", "ADJ", "TS", "PR", "CNEE"};
 
-                var doData = _db.SalesDeliveryHeaders.AsEnumerable();
+                var doData = _db.SalesDeliveryHeaders.ToList();
 
-                var srData = _db.SalesReturnHeaders.AsEnumerable();
+                var srData = _db.SalesReturnHeaders.ToList();
 
-                var rcvData = _db.PurchaseReceiveHeaders.AsEnumerable();
+                var rcvData = _db.PurchaseReceiveHeaders.ToList();
 
                 var listSM = stockMutations.Where(x => x.Id != firstSM.Id
                             && srcType.Contains(x.Src)
