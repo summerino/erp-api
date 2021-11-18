@@ -21,23 +21,16 @@ namespace ERP.Web.API.Domain.Services.Inventory
 			var qsetUnit = $"DECLARE @Unit int; SET @Unit = '{typeUnit.ToString().Replace("'", "''")}'; ";
 
 			var orderQuery = @" ORDER BY sm.Date, CASE
-					WHEN sm.Src = 'BB' THEN
-						1
-					WHEN sm.Src = 'RCV' THEN
-						2
-					WHEN sm.Src = 'ADJ' AND sm.BaseQty > 0 THEN
-						3
-					WHEN sm.Src = 'SR' THEN
-						3
-					WHEN sm.Src IN('TS', 'CNEE') AND sm.[Type] = 'OH' AND sm.BaseQty > 0 THEN
-						3
-					WHEN sm.Src = 'ADJ' AND sm.BaseQty < 0 THEN
-						4
-					WHEN sm.Src IN('DO', 'DOF', 'PR') THEN
-						4
-					WHEN sm.Src IN('TS', 'CNEE') AND sm.[Type] = 'OH' AND sm.BaseQty < 0 THEN
-						4
-					ELSE 5
+					WHEN sm.Src = 'BB' THEN 1
+					WHEN sm.Src = 'RCV' THEN 2
+					WHEN sm.Src = 'ADJ' AND sm.BaseQty > 0 THEN 3
+					WHEN sm.Src = 'SR' THEN 3
+					WHEN sm.Src IN('TS', 'CNEE') AND sm.[Type] = 'OH' AND sm.BaseQty > 0 THEN 3
+					WHEN sm.Src = 'DO' AND sr.[Type] = 2 THEN 4
+					WHEN sm.Src = 'ADJ' AND sm.BaseQty < 0 THEN 5
+					WHEN sm.Src IN('DO', 'PR') THEN 5
+					WHEN sm.Src IN('TS', 'CNEE') AND sm.[Type] = 'OH' AND sm.BaseQty < 0 THEN 5
+					ELSE 6
 					END";
 
 			var smData = _db.ReportByStockMutations.FromSqlRaw(qsetUnit + @"SELECT sm.WarehouseCode, sm.ItemId, sm.Date, sm.RefCode1 as TransCode, 
@@ -108,6 +101,8 @@ namespace ERP.Web.API.Domain.Services.Inventory
 					CAST (0 AS bit) AS IsBold
 				FROM Inventory.StockMutation sm
 				LEFT JOIN Inventory.Item im on im.Id = sm.ItemId
+				LEFT JOIN Sales.SalesDeliveryHeader do ON do.Code = sm.RefCode1
+				LEFT JOIN Sales.SalesReturnHeader sr ON sr.Code = do.TransCode
 				WHERE sm.Src IN ('RCV','DO','TS','ADJ','BB','PR','CNEE','DOF') AND sm.[Type] = 'OH' " + (string.IsNullOrEmpty(whCode) ? "" : $"AND sm.WarehouseCode = '{whCode.Replace("'", "''")}'") + orderQuery).ToList();
 
 			var itemData = _db.ReportByItems.FromSqlRaw(qsetUnit +
