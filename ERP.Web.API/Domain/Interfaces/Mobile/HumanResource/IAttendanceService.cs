@@ -7,8 +7,7 @@ namespace ERP.Web.API.Domain.Interfaces.Mobile.HumanResource
 {
     public interface IAttendanceService
     {
-        DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
-           int userId, string date);
+        DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, int userId, string date);
 
         SaveResult AddAttendance(AttendanceRequest data, int UserId);
 
