@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Bold.Licensing;
 using ERP.Entity;
+using ERP.Web.API.Domain.Interfaces;
 using ERP.Web.API.Domain.Interfaces.Accounting;
 using ERP.Web.API.Domain.Interfaces.AssetManagement;
 using ERP.Web.API.Domain.Interfaces.Auth;
@@ -14,6 +15,7 @@ using ERP.Web.API.Domain.Interfaces.Finance;
 using ERP.Web.API.Domain.Interfaces.General;
 using ERP.Web.API.Domain.Interfaces.HumanResource;
 using ERP.Web.API.Domain.Interfaces.Inventory;
+using ERP.Web.API.Domain.Interfaces.Mobile.CustomerDeliverySchedule;
 using ERP.Web.API.Domain.Interfaces.Mobile.CustomerTransaction;
 using ERP.Web.API.Domain.Interfaces.Mobile.General;
 using ERP.Web.API.Domain.Interfaces.Mobile.HumanResource;
@@ -36,6 +38,7 @@ using ERP.Web.API.Domain.Services.Finance;
 using ERP.Web.API.Domain.Services.General;
 using ERP.Web.API.Domain.Services.HumanResource;
 using ERP.Web.API.Domain.Services.Inventory;
+using ERP.Web.API.Domain.Services.Mobile.CustomerDeliverySchedule;
 using ERP.Web.API.Domain.Services.Mobile.CustomerTransaction;
 using ERP.Web.API.Domain.Services.Mobile.General;
 using ERP.Web.API.Domain.Services.Mobile.HumanResource;
@@ -52,12 +55,6 @@ using ERP.Web.API.Model;
 using ERP.Web.API.Model.Auth;
 using Newtonsoft.Json.Serialization;
 using Swift.Framework;
-<<<<<<< HEAD
-using ERP.Web.API.Domain.Interfaces;
-=======
-using ERP.Web.API.Domain.Interfaces.Mobile.CustomerDeliverySchedule;
-using ERP.Web.API.Domain.Services.Mobile.CustomerDeliverySchedule;
->>>>>>> development
 
 var builder = WebApplication.CreateBuilder(args);
 
