@@ -30,13 +30,13 @@ namespace ERP.Entity.Purchase
         [StringLength(3)]
         public string CurrCode { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal Rate { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal Amount { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal Used { get; set; }
 
         [StringLength(256)]

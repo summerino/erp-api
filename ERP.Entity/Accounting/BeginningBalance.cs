@@ -30,13 +30,13 @@ namespace ERP.Entity.Accounting
         [StringLength(3)]
         public string CurrCode { get; set; }
 
-        [Column(TypeName = "decimal(19, 6)")]
+        [Precision(19, 6)]
         public decimal Rate { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal Amount { get; set; }
 
-        [Column(TypeName = "decimal(19, 6)")]
+        [Precision(19, 6)]
         public decimal PaidAmount { get; set; }
 
         [StringLength(256)]
@@ -97,13 +97,13 @@ namespace ERP.Entity.Accounting
         [StringLength(3)]
         public string CurrCode { get; set; }
 
-        [Column(TypeName = "decimal(19, 6)")]
+        [Precision(19, 6)]
         public decimal Rate { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal Amount { get; set; }
 
-        [Column(TypeName = "decimal(19, 6)")]
+        [Precision(19, 6)]
         public decimal PaidAmount { get; set; }
 
         [StringLength(256)]
@@ -163,13 +163,13 @@ namespace ERP.Entity.Accounting
         [StringLength(3)]
         public string CurrCode { get; set; }
 
-        [Column(TypeName = "decimal(19, 6)")]
+        [Precision(19, 6)]
         public decimal Rate { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal Amount { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal Used { get; set; }
 
         [StringLength(256)]
@@ -232,13 +232,13 @@ namespace ERP.Entity.Accounting
         [StringLength(3)]
         public string CurrCode { get; set; }
 
-        [Column(TypeName = "decimal(19, 6)")]
+        [Precision(19, 6)]
         public decimal Rate { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal Amount { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal Used { get; set; }
 
         [StringLength(256)]

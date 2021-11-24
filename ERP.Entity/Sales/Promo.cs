@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 using ERP.Entity.Core;
 
 namespace ERP.Entity.Sales
@@ -85,15 +86,15 @@ namespace ERP.Entity.Sales
 
         public bool IsPercentage { get; set; }
 
-        [Column(TypeName = "decimal(5, 2)")]
+        [Precision(5, 2)]
         public decimal ValuePercentage { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal ValueAmount { get; set; }
 
         public bool IsPromoWithBudget { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal BudgetMaximumValue { get; set; }
 
         public short OverBudgetAction { get; set; }
@@ -121,15 +122,15 @@ namespace ERP.Entity.Sales
 
         public long PromoDetailId { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal FromQty { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal? ToQty { get; set; }
 
         public bool IsPercentage { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal Value { get; set; }
 
         public int? SaleUnit { get; set; }

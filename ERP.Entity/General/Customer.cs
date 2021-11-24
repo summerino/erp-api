@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 using ERP.Entity.Core;
 
 namespace ERP.Entity.General
@@ -30,10 +31,10 @@ namespace ERP.Entity.General
 
         public int PaymentTermId { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal CreditLimit { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal CreditUsed { get; set; }
 
         [StringLength(30)]
@@ -223,10 +224,10 @@ namespace ERP.Entity.General
         [StringLength(15)]
         public string Fax { get; set; }
 
-        [Column(TypeName = "decimal(9, 6)")]
+        [Precision(9, 6)]
         public decimal? Lat { get; set; }
 
-        [Column(TypeName = "decimal(9, 6)")]
+        [Precision(9, 6)]
         public decimal? Lng { get; set; }
 
         public bool IsDefault { get; set; }

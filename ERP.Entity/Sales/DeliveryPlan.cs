@@ -26,16 +26,16 @@ namespace ERP.Entity.Sales
         [StringLength(8)]
         public string WarehouseCode { get; set; }
 
-        [Column(TypeName = "decimal(19, 6)")]
+        [Precision(19, 6)]
         public decimal TotalVolume { get; set; }
 
-        [Column(TypeName = "decimal(19, 6)")]
+        [Precision(19, 6)]
         public decimal TotalWeight { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal TotalVehicleVolume { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal TotalVehicleWeight { get; set; }
 
         [StringLength(256)]
@@ -97,10 +97,10 @@ namespace ERP.Entity.Sales
         [StringLength(17)]
         public string TransCode { get; set; }
 
-        [Column(TypeName = "decimal(19, 6)")]
+        [Precision(19, 6)]
         public decimal Volume { get; set; }
 
-        [Column(TypeName = "decimal(19, 6)")]
+        [Precision(19, 6)]
         public decimal Weight { get; set; }
 
         public short SrcTrans { get; set; }
@@ -129,7 +129,7 @@ namespace ERP.Entity.Sales
 
         public int UnitId { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal Qty { get; set; }
 
         [StringLength(8)]

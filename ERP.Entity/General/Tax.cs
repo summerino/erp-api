@@ -21,7 +21,7 @@ namespace ERP.Entity.General
 
         public short TypeId { get; set; }
 
-        [Column(TypeName = "decimal(5, 2)")]
+        [Precision(5, 2)]
         public decimal Rate { get; set; }
 
         [StringLength(6)]

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 using ERP.Entity.Core;
 
 namespace ERP.Entity.Purchase
@@ -33,29 +34,29 @@ namespace ERP.Entity.Purchase
         [StringLength(3)]
         public string CurrCode { get; set; }
         
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal Rate { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal ShipmentFee { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal HandlingFee { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal SubTotal { get; set; }
         
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal FinalDisc { get; set; }
 
         public bool NoTax { get; set; }
 
         public bool IncludeTax { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal TaxAmount { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal Total { get; set; }
 
         [Column("DPP", TypeName = "decimal(18, 2)")]
@@ -148,10 +149,10 @@ namespace ERP.Entity.Purchase
 
         public int UnitId { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal Qty { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal QtyRcv { get; set; }
 
         [Required]
@@ -161,16 +162,16 @@ namespace ERP.Entity.Purchase
         [StringLength(8)]
         public string WarehouseCodeIn { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal? Length { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal? Width { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal? Height { get; set; }
 
-        [Column(TypeName = "decimal(18, 3)")]
+        [Precision(18, 3)]
         public decimal? Weight { get; set; }
 
         [StringLength(10)]
@@ -179,21 +180,21 @@ namespace ERP.Entity.Purchase
         [StringLength(10)]
         public string WeightMeasurement { get; set; }
 
-        [Column(TypeName = "decimal(19, 6)")]
+        [Precision(19, 6)]
         public decimal UnitPrice { get; set; }
 
-        [Column(TypeName = "decimal(19, 6)")]
+        [Precision(19, 6)]
         public decimal Disc { get; set; }
 
         public int? TaxId { get; set; }
 
-        [Column(TypeName = "decimal(19, 6)")]
+        [Precision(19, 6)]
         public decimal TaxAmount { get; set; }
 
-        [Column(TypeName = "decimal(19, 6)")]
+        [Precision(19, 6)]
         public decimal NettPrice { get; set; }
 
-        [Column(TypeName = "decimal(19, 6)")]
+        [Precision(19, 6)]
         public decimal Total { get; set; }
 
         [Column("DPP", TypeName = "decimal(19, 6)")]
@@ -282,27 +283,27 @@ namespace ERP.Entity.Purchase
 
         public int UnitId { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal Qty { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal QtyRcv { get; set; }
 
         [StringLength(8)]
         public string WarehouseCode { get; set; }
 
-        [Column(TypeName = "decimal(19, 6)")]
+        [Precision(19, 6)]
         public decimal UnitPrice { get; set; }
 
         public int? TaxId { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal TaxAmount { get; set; }
 
-        [Column(TypeName = "decimal(19, 6)")]
+        [Precision(19, 6)]
         public decimal NettPrice { get; set; }
 
-        [Column(TypeName = "decimal(19, 6)")]
+        [Precision(19, 6)]
         public decimal Total { get; set; }
 
         [Column("DPP", TypeName = "decimal(19, 6)")]

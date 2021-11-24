@@ -32,6 +32,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
 
                     b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Code")
@@ -67,9 +68,11 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(256)");
 
                     b.Property<decimal>("PaidAmount")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<decimal>("Rate")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<string>("SupCode")
@@ -105,6 +108,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
 
                     b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Code")
@@ -146,9 +150,11 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(256)");
 
                     b.Property<decimal>("PaidAmount")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<decimal>("Rate")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<int>("UpdatedBy")
@@ -178,6 +184,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
 
                     b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Code")
@@ -216,6 +223,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(256)");
 
                     b.Property<decimal>("Rate")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<short>("Type")
@@ -228,6 +236,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("datetime");
 
                     b.Property<decimal>("Used")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
@@ -251,6 +260,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
 
                     b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Code")
@@ -283,6 +293,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(256)");
 
                     b.Property<decimal>("Rate")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<string>("SupCode")
@@ -301,6 +312,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("datetime");
 
                     b.Property<decimal>("Used")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
@@ -505,6 +517,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
 
                     b.Property<decimal>("Amount")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<int>("CreatedBy")
@@ -545,6 +558,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
 
                     b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("CoaCode")
@@ -620,9 +634,11 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(256)");
 
                     b.Property<decimal>("Rate")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<decimal>("Total")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("UpdatedBy")
@@ -928,6 +944,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
 
                     b.Property<decimal>("Amount")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<string>("CoaCode")
@@ -949,6 +966,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(3)");
 
                     b.Property<decimal>("CustomRate")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<DateTime>("Date")
@@ -1708,6 +1726,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(17)");
 
                     b.Property<decimal>("AcquiredValue")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int?>("ApprovedBy")
@@ -1717,6 +1736,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("datetime");
 
                     b.Property<decimal>("BookValue")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("CoaExpense")
@@ -1749,6 +1769,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("smallint");
 
                     b.Property<decimal>("InitDepreciationExpense")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("InvoiceNo")
@@ -1790,9 +1811,11 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(17)");
 
                     b.Property<decimal>("PurchaseValue")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("SalvageValue")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime>("StartDepreciateOn")
@@ -1843,6 +1866,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("Percentage")
+                        .HasPrecision(5, 2)
                         .HasColumnType("decimal(5,2)");
 
                     b.HasKey("Id");
@@ -1861,6 +1885,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
 
                     b.Property<decimal>("BookValue")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Code")
@@ -1873,6 +1898,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("date");
 
                     b.Property<decimal>("DepreciateValue")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("FiscalYear")
@@ -1947,6 +1973,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
             modelBuilder.Entity("ERP.Entity.AssetManagement.VwFixedAsset", b =>
                 {
                     b.Property<decimal>("AcquiredValue")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int?>("ApprovedBy")
@@ -1964,6 +1991,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(max)");
 
                     b.Property<decimal>("BookValue")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("CoaExpense")
@@ -2005,6 +2033,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("smallint");
 
                     b.Property<decimal>("InitDepreciationExpense")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("InvoiceNo")
@@ -2045,9 +2074,11 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(17)");
 
                     b.Property<decimal>("PurchaseValue")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("SalvageValue")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime>("StartDepreciateOn")
@@ -2133,6 +2164,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(17)");
 
                     b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int?>("ApprovedBy")
@@ -2171,9 +2203,11 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(256)");
 
                     b.Property<decimal>("PaidAmount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("Rate")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("RefNo")
@@ -2397,6 +2431,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
 
                     b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("CoaCode")
@@ -2427,6 +2462,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(256)");
 
                     b.Property<decimal>("Rate")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<string>("Src")
@@ -2435,6 +2471,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(5)");
 
                     b.Property<decimal>("TransAmount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("TransCode")
@@ -2477,6 +2514,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(17)");
 
                     b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int?>("ApprovedBy")
@@ -2529,6 +2567,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(256)");
 
                     b.Property<decimal>("Rate")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<string>("Type")
@@ -3088,9 +3127,11 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(max)");
 
                     b.Property<decimal?>("CheckInLat")
+                        .HasPrecision(9, 6)
                         .HasColumnType("decimal(9,6)");
 
                     b.Property<decimal?>("CheckInLng")
+                        .HasPrecision(9, 6)
                         .HasColumnType("decimal(9,6)");
 
                     b.Property<string>("CheckInNotes")
@@ -3106,9 +3147,11 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(max)");
 
                     b.Property<decimal?>("CheckOutLat")
+                        .HasPrecision(9, 6)
                         .HasColumnType("decimal(9,6)");
 
                     b.Property<decimal?>("CheckOutLng")
+                        .HasPrecision(9, 6)
                         .HasColumnType("decimal(9,6)");
 
                     b.Property<string>("CheckOutNotes")
@@ -3123,6 +3166,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("bigint");
 
                     b.Property<decimal?>("TotalHours")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.HasKey("Id");
@@ -3202,9 +3246,11 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("datetime");
 
                     b.Property<decimal>("CreditLimit")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("CreditUsed")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Email")
@@ -3356,9 +3402,11 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("bit");
 
                     b.Property<decimal?>("Lat")
+                        .HasPrecision(9, 6)
                         .HasColumnType("decimal(9,6)");
 
                     b.Property<decimal?>("Lng")
+                        .HasPrecision(9, 6)
                         .HasColumnType("decimal(9,6)");
 
                     b.Property<string>("Phone")
@@ -3704,6 +3752,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(50)");
 
                     b.Property<decimal>("Rate")
+                        .HasPrecision(5, 2)
                         .HasColumnType("decimal(5,2)");
 
                     b.Property<short>("Seq")
@@ -3752,9 +3801,11 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("bit");
 
                     b.Property<decimal>("MaxLoadVolume")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("MaxLoadWeight")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Notes")
@@ -4531,12 +4582,15 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
 
                     b.Property<decimal>("BaseQtyOnHand")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("BaseQtyOnTransfer")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("COGS")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<string>("Code")
@@ -4557,12 +4611,15 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(256)");
 
                     b.Property<decimal>("QtyAdjust")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<decimal>("QtyOnHand")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<decimal>("QtyOnTransfer")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<int>("UnitId")
@@ -4596,6 +4653,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("bigint");
 
                     b.Property<decimal>("QtyAdjust")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("UnitId")
@@ -4691,12 +4749,14 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(256)");
 
                     b.Property<decimal>("Qty")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("UnitId")
                         .HasColumnType("int");
 
                     b.Property<decimal>("UnitPrice")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("UomId")
@@ -4829,6 +4889,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(6)");
 
                     b.Property<decimal?>("CostOfGoodSold")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<int>("CreatedBy")
@@ -4848,6 +4909,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(10)");
 
                     b.Property<decimal?>("Height")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Initial")
@@ -4860,6 +4922,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("bit");
 
                     b.Property<decimal?>("Length")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Name")
@@ -4924,6 +4987,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("datetime");
 
                     b.Property<decimal?>("Weight")
+                        .HasPrecision(18, 3)
                         .HasColumnType("decimal(18,3)");
 
                     b.Property<string>("WeightMeasurement")
@@ -4932,6 +4996,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(10)");
 
                     b.Property<decimal?>("Width")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
@@ -5223,9 +5288,11 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
 
                     b.Property<decimal>("BaseNettPrice")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<decimal>("BaseQty")
+                        .HasPrecision(18, 6)
                         .HasColumnType("decimal(18,6)");
 
                     b.Property<int>("BaseUnit")
@@ -5238,9 +5305,11 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("NettPrice")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<decimal>("Qty")
+                        .HasPrecision(18, 6)
                         .HasColumnType("decimal(18,6)");
 
                     b.Property<string>("RefCode1")
@@ -5332,6 +5401,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(256)");
 
                     b.Property<decimal>("Qty")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<int>("UnitId")
@@ -5479,6 +5549,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
                     b.Property<decimal>("Conversion")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<bool>("IsBaseUnit")
@@ -5747,6 +5818,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(10)");
 
                     b.Property<decimal?>("Height")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("Id")
@@ -5762,6 +5834,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("bit");
 
                     b.Property<decimal?>("Length")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Name")
@@ -5852,6 +5925,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(max)");
 
                     b.Property<decimal?>("Weight")
+                        .HasPrecision(18, 3)
                         .HasColumnType("decimal(18,3)");
 
                     b.Property<string>("WeightMeasurement")
@@ -5860,6 +5934,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(10)");
 
                     b.Property<decimal?>("Width")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.ToView("vwAdjustmentItem", "Inventory");
@@ -5977,6 +6052,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(10)");
 
                     b.Property<decimal?>("Height")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("Id")
@@ -5992,6 +6068,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("bit");
 
                     b.Property<decimal?>("Length")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Name")
@@ -6082,6 +6159,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(max)");
 
                     b.Property<decimal?>("Weight")
+                        .HasPrecision(18, 3)
                         .HasColumnType("decimal(18,3)");
 
                     b.Property<string>("WeightMeasurement")
@@ -6090,6 +6168,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(10)");
 
                     b.Property<decimal?>("Width")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.ToView("VwBeginningBalanceItem", "Inventory");
@@ -6823,18 +6902,23 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("QtyOnHand")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<decimal>("QtyOnIndent")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<decimal>("QtyOnOrder")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<decimal>("QtyOnTransfer")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<decimal>("QtyReorderPoint")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<DateTime>("UpdatedDate")
@@ -6899,6 +6983,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
 
                     b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("CoaCode")
@@ -6965,6 +7050,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(3)");
 
                     b.Property<decimal>("Rate")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int?>("RejectedBy")
@@ -6977,6 +7063,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("bigint");
 
                     b.Property<decimal>("Total")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("UpdatedBy")
@@ -7096,9 +7183,11 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(20)");
 
                     b.Property<decimal?>("Lat")
+                        .HasPrecision(9, 6)
                         .HasColumnType("decimal(9,6)");
 
                     b.Property<decimal?>("Lng")
+                        .HasPrecision(9, 6)
                         .HasColumnType("decimal(9,6)");
 
                     b.Property<string>("Mark")
@@ -7174,6 +7263,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("smallint");
 
                     b.Property<decimal>("Qty")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("UnitId")
@@ -7287,6 +7377,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(17)");
 
                     b.Property<decimal>("Disc")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<decimal>("Dpp")
@@ -7300,24 +7391,29 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("smallint");
 
                     b.Property<decimal>("NettPrice")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<decimal>("Qty")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("TaxAmount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int?>("TaxId")
                         .HasColumnType("int");
 
                     b.Property<decimal>("Total")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<int>("UnitId")
                         .HasColumnType("int");
 
                     b.Property<decimal>("UnitPrice")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<int>("UomId")
@@ -7347,6 +7443,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
 
                     b.Property<decimal>("Amount")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<string>("Code")
@@ -7378,6 +7475,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("bigint");
 
                     b.Property<decimal>("Value")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
@@ -7423,12 +7521,14 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(17)");
 
                     b.Property<decimal>("Qty")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<int>("UnitId")
                         .HasColumnType("int");
 
                     b.Property<decimal>("UnitPrice")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<int>("UomId")
@@ -7490,9 +7590,11 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnName("DPP");
 
                     b.Property<decimal>("FinalDisc")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("FinalDiscPercent")
+                        .HasPrecision(5, 2)
                         .HasColumnType("decimal(5,2)");
 
                     b.Property<bool>("IncludeTax")
@@ -7505,12 +7607,14 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(3)");
 
                     b.Property<decimal>("PaidAmount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int?>("PaymentTermId")
                         .HasColumnType("int");
 
                     b.Property<decimal>("Rate")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int?>("RejectedBy")
@@ -7528,12 +7632,15 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(17)");
 
                     b.Property<decimal>("SubTotal")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("TaxAmount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("Total")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<short>("Type")
@@ -7574,6 +7681,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(17)");
 
                     b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int?>("ApprovedBy")
@@ -7783,9 +7891,11 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(max)");
 
                     b.Property<decimal?>("Lat")
+                        .HasPrecision(9, 6)
                         .HasColumnType("decimal(9,6)");
 
                     b.Property<decimal?>("Lng")
+                        .HasPrecision(9, 6)
                         .HasColumnType("decimal(9,6)");
 
                     b.Property<string>("Mark")
@@ -7816,6 +7926,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("datetime");
 
                     b.Property<decimal?>("Total")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int?>("UnscheduledVisitReasonId")
@@ -8790,9 +8901,11 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("smallint");
 
                     b.Property<decimal>("OriginalQty")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("RealizeQty")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("UnitId")
@@ -8890,6 +9003,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("smallint");
 
                     b.Property<decimal>("Qty")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<long?>("TransDetailId")
@@ -9027,9 +9141,11 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("smallint");
 
                     b.Property<decimal>("OriginalQty")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<decimal>("RealizeQty")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<int>("UnitId")
@@ -9512,6 +9628,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(17)");
 
                     b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("CreatedBy")
@@ -9541,6 +9658,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(256)");
 
                     b.Property<decimal>("Rate")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<short>("SrcTrans")
@@ -9564,6 +9682,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("datetime");
 
                     b.Property<decimal>("Used")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Code");
@@ -9586,6 +9705,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
 
                     b.Property<decimal>("DebitMemoAmount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("DebitMemoCode")
@@ -9595,6 +9715,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(17)");
 
                     b.Property<decimal>("InvAmount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("InvCode")
@@ -9631,9 +9752,11 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnName("DPP");
 
                     b.Property<decimal>("FinalDisc")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("HandlingFee")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<short>("LineNo")
@@ -9646,15 +9769,19 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(17)");
 
                     b.Property<decimal>("ShipmentFee")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("SubTotal")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("TaxAmount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("Total")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.HasKey("Id");
@@ -9712,6 +9839,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(256)");
 
                     b.Property<decimal>("PaidAmount")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<string>("PoCode")
@@ -9732,6 +9860,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(8)");
 
                     b.Property<decimal>("Total")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("UpdatedBy")
@@ -9799,6 +9928,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(10)");
 
                     b.Property<decimal>("Disc")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<decimal>("Dpp")
@@ -9806,18 +9936,21 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnName("DPP");
 
                     b.Property<decimal?>("Height")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("ItemId")
                         .HasColumnType("int");
 
                     b.Property<decimal?>("Length")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<short>("LineNo")
                         .HasColumnType("smallint");
 
                     b.Property<decimal>("NettPrice")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<string>("Notes")
@@ -9826,18 +9959,22 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(256)");
 
                     b.Property<decimal>("Qty")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal?>("QtyRcv")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("TaxAmount")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<int?>("TaxId")
                         .HasColumnType("int");
 
                     b.Property<decimal>("Total")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<int>("Type")
@@ -9847,12 +9984,14 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("UnitPrice")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<int>("UomId")
                         .HasColumnType("int");
 
                     b.Property<decimal?>("Weight")
+                        .HasPrecision(18, 3)
                         .HasColumnType("decimal(18,3)");
 
                     b.Property<string>("WeightMeasurement")
@@ -9861,6 +10000,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(10)");
 
                     b.Property<decimal?>("Width")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
@@ -9901,12 +10041,15 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnName("DPP");
 
                     b.Property<decimal>("FinalDisc")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("FinalDiscPercent")
+                        .HasPrecision(5, 2)
                         .HasColumnType("decimal(5,2)");
 
                     b.Property<decimal>("HandlingFee")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<bool>("IncludeTax")
@@ -9924,15 +10067,18 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(256)");
 
                     b.Property<decimal>("Rate")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<long>("RequestBy")
                         .HasColumnType("bigint");
 
                     b.Property<decimal>("ShipmentFee")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("SubTotal")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("SupCode")
@@ -9942,9 +10088,11 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(8)");
 
                     b.Property<decimal>("TaxAmount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("Total")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("UpdatedBy")
@@ -9983,6 +10131,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(10)");
 
                     b.Property<decimal>("Disc")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<decimal>("Dpp")
@@ -9990,30 +10139,36 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnName("DPP");
 
                     b.Property<decimal?>("Height")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("ItemId")
                         .HasColumnType("int");
 
                     b.Property<decimal?>("Length")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<short>("LineNo")
                         .HasColumnType("smallint");
 
                     b.Property<decimal>("NettPrice")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<decimal>("Qty")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("TaxAmount")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<int?>("TaxId")
                         .HasColumnType("int");
 
                     b.Property<decimal>("Total")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<long?>("TransDetailId")
@@ -10026,6 +10181,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("UnitPrice")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<int>("UomId")
@@ -10038,6 +10194,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(8)");
 
                     b.Property<decimal?>("Weight")
+                        .HasPrecision(18, 3)
                         .HasColumnType("decimal(18,3)");
 
                     b.Property<string>("WeightMeasurement")
@@ -10046,6 +10203,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(10)");
 
                     b.Property<decimal?>("Width")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
@@ -10086,12 +10244,15 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnName("DPP");
 
                     b.Property<decimal>("FinalDisc")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("FinalDiscPercent")
+                        .HasPrecision(5, 2)
                         .HasColumnType("decimal(5,2)");
 
                     b.Property<decimal>("HandlingFee")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<bool>("IncludeTax")
@@ -10104,9 +10265,11 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(3)");
 
                     b.Property<decimal>("PaidAmount")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<decimal>("Rate")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<long>("ReceiveBy")
@@ -10118,12 +10281,14 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(30)");
 
                     b.Property<decimal>("ShipmentFee")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<short>("SrcTrans")
                         .HasColumnType("smallint");
 
                     b.Property<decimal>("SubTotal")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("SupCode")
@@ -10133,9 +10298,11 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(8)");
 
                     b.Property<decimal>("TaxAmount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("Total")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("TransCode")
@@ -10177,6 +10344,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(10)");
 
                     b.Property<decimal>("Disc")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<decimal>("Dpp")
@@ -10184,42 +10352,50 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnName("DPP");
 
                     b.Property<decimal?>("Height")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("ItemId")
                         .HasColumnType("int");
 
                     b.Property<decimal?>("Length")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<short>("LineNo")
                         .HasColumnType("smallint");
 
                     b.Property<decimal>("NettPrice")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<decimal>("Qty")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("QtyRcv")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<long?>("RcvDetailId")
                         .HasColumnType("bigint");
 
                     b.Property<decimal>("TaxAmount")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<int?>("TaxId")
                         .HasColumnType("int");
 
                     b.Property<decimal>("Total")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<int>("UnitId")
                         .HasColumnType("int");
 
                     b.Property<decimal>("UnitPrice")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<int>("UomId")
@@ -10237,6 +10413,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(8)");
 
                     b.Property<decimal?>("Weight")
+                        .HasPrecision(18, 3)
                         .HasColumnType("decimal(18,3)");
 
                     b.Property<string>("WeightMeasurement")
@@ -10245,6 +10422,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(10)");
 
                     b.Property<decimal?>("Width")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
@@ -10277,30 +10455,36 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("smallint");
 
                     b.Property<decimal>("NettPrice")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<decimal>("Qty")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("QtyRcv")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<long?>("ReturnDetailId")
                         .HasColumnType("bigint");
 
                     b.Property<decimal>("TaxAmount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int?>("TaxId")
                         .HasColumnType("int");
 
                     b.Property<decimal>("Total")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<int>("UnitId")
                         .HasColumnType("int");
 
                     b.Property<decimal>("UnitPrice")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<int>("UomId")
@@ -10349,9 +10533,11 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnName("DPP");
 
                     b.Property<decimal>("FinalDisc")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("HandlingFee")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<bool>("IncludeTax")
@@ -10373,6 +10559,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(256)");
 
                     b.Property<decimal>("Rate")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("RcvCode")
@@ -10386,12 +10573,14 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(30)");
 
                     b.Property<decimal>("ShipmentFee")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<long>("ShippedBy")
                         .HasColumnType("bigint");
 
                     b.Property<decimal>("SubTotal")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("SupCode")
@@ -10401,6 +10590,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(8)");
 
                     b.Property<decimal>("TaxAmount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime?>("TaxInvoiceDate")
@@ -10412,6 +10602,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(50)");
 
                     b.Property<decimal>("Total")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<short>("Type")
@@ -11492,6 +11683,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(17)");
 
                     b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("CreatedBy")
@@ -11527,6 +11719,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(256)");
 
                     b.Property<decimal>("Rate")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<short>("SrcTrans")
@@ -11544,6 +11737,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("datetime");
 
                     b.Property<decimal>("Used")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Code");
@@ -11592,9 +11786,11 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(17)");
 
                     b.Property<decimal>("Volume")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<decimal>("Weight")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.HasKey("Id");
@@ -11646,15 +11842,19 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("smallint");
 
                     b.Property<decimal>("TotalVehicleVolume")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("TotalVehicleWeight")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("TotalVolume")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<decimal>("TotalWeight")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<int>("UpdatedBy")
@@ -11707,6 +11907,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("smallint");
 
                     b.Property<decimal>("Qty")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("Type")
@@ -11752,6 +11953,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("smallint");
 
                     b.Property<decimal>("BudgetMaximumValue")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Code")
@@ -11804,9 +12006,11 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(50)");
 
                     b.Property<decimal>("ValueAmount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("ValuePercentage")
+                        .HasPrecision(5, 2)
                         .HasColumnType("decimal(5,2)");
 
                     b.HasKey("Id");
@@ -11831,6 +12035,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("FromQty")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<bool>("IsMultiple")
@@ -11849,6 +12054,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("int");
 
                     b.Property<decimal?>("ToQty")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("UnitFreeGood")
@@ -11857,6 +12063,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(20)");
 
                     b.Property<decimal>("Value")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
@@ -12053,6 +12260,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(10)");
 
                     b.Property<decimal>("Disc")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<decimal>("Dpp")
@@ -12060,21 +12268,25 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnName("DPP");
 
                     b.Property<decimal?>("Height")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("ItemId")
                         .HasColumnType("int");
 
                     b.Property<decimal?>("Length")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<short>("LineNo")
                         .HasColumnType("smallint");
 
                     b.Property<decimal>("NettPrice")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<decimal>("Qty")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<long?>("SoDetailId")
@@ -12082,24 +12294,28 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnName("SODetailId");
 
                     b.Property<decimal>("TaxAmount")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<int?>("TaxId")
                         .HasColumnType("int");
 
                     b.Property<decimal>("Total")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<int>("UnitId")
                         .HasColumnType("int");
 
                     b.Property<decimal>("UnitPrice")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<int>("UomId")
                         .HasColumnType("int");
 
                     b.Property<decimal?>("Weight")
+                        .HasPrecision(18, 3)
                         .HasColumnType("decimal(18,3)");
 
                     b.Property<string>("WeightMeasurement")
@@ -12108,6 +12324,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(10)");
 
                     b.Property<decimal?>("Width")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
@@ -12150,12 +12367,14 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(17)");
 
                     b.Property<decimal>("Qty")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<int>("UnitId")
                         .HasColumnType("int");
 
                     b.Property<decimal>("UnitPrice")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<int>("UomId")
@@ -12205,15 +12424,18 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnName("DPP");
 
                     b.Property<decimal>("FinalDisc")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("FinalDiscPercent")
+                        .HasPrecision(5, 2)
                         .HasColumnType("decimal(5,2)");
 
                     b.Property<bool>("FromDirectInvoice")
                         .HasColumnType("bit");
 
                     b.Property<decimal>("HandlingFee")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<bool>("IncludeTax")
@@ -12231,12 +12453,15 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(256)");
 
                     b.Property<decimal>("PaidAmount")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<decimal>("Rate")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("ShipmentFee")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<long>("ShippedBy")
@@ -12246,12 +12471,15 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("smallint");
 
                     b.Property<decimal>("SubTotal")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("TaxAmount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("Total")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("TransCode")
@@ -12288,6 +12516,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
 
                     b.Property<decimal>("CreditMemoAmount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("CreditMemoCode")
@@ -12297,6 +12526,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(17)");
 
                     b.Property<decimal>("InvAmount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("InvCode")
@@ -12340,24 +12570,30 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnName("DPP");
 
                     b.Property<decimal>("FinalDisc")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("HandlingFee")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<short>("LineNo")
                         .HasColumnType("smallint");
 
                     b.Property<decimal>("ShipmentFee")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("SubTotal")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("TaxAmount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("Total")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.HasKey("Id");
@@ -12424,6 +12660,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(256)");
 
                     b.Property<decimal>("PaidAmount")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<string>("SoCode")
@@ -12433,6 +12670,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnName("SOCode");
 
                     b.Property<decimal>("Total")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("UpdatedBy")
@@ -12506,9 +12744,11 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
 
                     b.Property<decimal>("Lat")
+                        .HasPrecision(9, 6)
                         .HasColumnType("decimal(9,6)");
 
                     b.Property<decimal>("Lng")
+                        .HasPrecision(9, 6)
                         .HasColumnType("decimal(9,6)");
 
                     b.Property<long>("SalesmanId")
@@ -12635,6 +12875,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(10)");
 
                     b.Property<decimal>("Disc")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<decimal>("Dpp")
@@ -12642,18 +12883,21 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnName("DPP");
 
                     b.Property<decimal?>("Height")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("ItemId")
                         .HasColumnType("int");
 
                     b.Property<decimal?>("Length")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<short>("LineNo")
                         .HasColumnType("smallint");
 
                     b.Property<decimal>("NettPrice")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<string>("Notes")
@@ -12662,30 +12906,36 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(256)");
 
                     b.Property<decimal>("Qty")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal?>("QtyDlv")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("TaxAmount")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<int?>("TaxId")
                         .HasColumnType("int");
 
                     b.Property<decimal>("Total")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<int>("UnitId")
                         .HasColumnType("int");
 
                     b.Property<decimal>("UnitPrice")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<int>("UomId")
                         .HasColumnType("int");
 
                     b.Property<decimal?>("Weight")
+                        .HasPrecision(18, 3)
                         .HasColumnType("decimal(18,3)");
 
                     b.Property<string>("WeightMeasurement")
@@ -12694,6 +12944,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(10)");
 
                     b.Property<decimal?>("Width")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
@@ -12710,6 +12961,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
 
                     b.Property<decimal>("Amount")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<string>("CoaCode")
@@ -12747,6 +12999,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("bigint");
 
                     b.Property<decimal>("Value")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
@@ -12789,15 +13042,18 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(17)");
 
                     b.Property<decimal>("Qty")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<decimal>("QtyClosed")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<int>("UnitId")
                         .HasColumnType("int");
 
                     b.Property<decimal>("UnitPrice")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<int>("UomId")
@@ -12850,15 +13106,18 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnName("DPP");
 
                     b.Property<decimal>("FinalDisc")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("FinalDiscPercent")
+                        .HasPrecision(5, 2)
                         .HasColumnType("decimal(5,2)");
 
                     b.Property<bool>("FromDirectInvoice")
                         .HasColumnType("bit");
 
                     b.Property<decimal>("HandlingFee")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<bool>("IncludeTax")
@@ -12879,21 +13138,26 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("Rate")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<long>("SalesBy")
                         .HasColumnType("bigint");
 
                     b.Property<decimal>("ShipmentFee")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("SubTotal")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("TaxAmount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("Total")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("UpdatedBy")
@@ -12938,6 +13202,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(10)");
 
                     b.Property<decimal>("Disc")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<decimal>("Dpp")
@@ -12945,33 +13210,40 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnName("DPP");
 
                     b.Property<decimal?>("Height")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("ItemId")
                         .HasColumnType("int");
 
                     b.Property<decimal?>("Length")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<short>("LineNo")
                         .HasColumnType("smallint");
 
                     b.Property<decimal>("NettPrice")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<decimal>("Qty")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("QtyDlv")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("TaxAmount")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<int?>("TaxId")
                         .HasColumnType("int");
 
                     b.Property<decimal>("Total")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<long?>("TransDetailId")
@@ -12981,12 +13253,14 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("UnitPrice")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<int>("UomId")
                         .HasColumnType("int");
 
                     b.Property<decimal?>("Weight")
+                        .HasPrecision(18, 3)
                         .HasColumnType("decimal(18,3)");
 
                     b.Property<string>("WeightMeasurement")
@@ -12995,6 +13269,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(10)");
 
                     b.Property<decimal?>("Width")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
@@ -13027,30 +13302,36 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("smallint");
 
                     b.Property<decimal>("NettPrice")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<decimal>("Qty")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("QtyDlv")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<long?>("ReturnDetailId")
                         .HasColumnType("bigint");
 
                     b.Property<decimal>("TaxAmount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int?>("TaxId")
                         .HasColumnType("int");
 
                     b.Property<decimal>("Total")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<int>("UnitId")
                         .HasColumnType("int");
 
                     b.Property<decimal>("UnitPrice")
+                        .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<int>("UomId")
@@ -13105,9 +13386,11 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnName("DPP");
 
                     b.Property<decimal>("FinalDisc")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("HandlingFee")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<bool>("IncludeTax")
@@ -13129,21 +13412,25 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(256)");
 
                     b.Property<decimal>("Rate")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<long>("SalesBy")
                         .HasColumnType("bigint");
 
                     b.Property<decimal>("ShipmentFee")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<short>("SrcTrans")
                         .HasColumnType("smallint");
 
                     b.Property<decimal>("SubTotal")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("TaxAmount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime?>("TaxInvoiceDate")
@@ -13155,6 +13442,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(50)");
 
                     b.Property<decimal>("Total")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("TransCode")

@@ -38,30 +38,30 @@ namespace ERP.Entity.MobileSales
         [StringLength(3)]
         public string CurrCode { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal Rate { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal SubTotal { get; set; }
 
-        [Column(TypeName = "decimal(5, 2)")]
+        [Precision(5, 2)]
         public decimal FinalDiscPercent { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal FinalDisc { get; set; }
 
         public bool IncludeTax { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal TaxAmount { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal Total { get; set; }
 
         [Column("DPP", TypeName = "decimal(18, 2)")]
         public decimal Dpp { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal PaidAmount { get; set; }
     }
 
@@ -134,24 +134,24 @@ namespace ERP.Entity.MobileSales
 
         public int UnitId { get; set; }
         
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal Qty { get; set; }
 
-        [Column(TypeName = "decimal(19, 6)")]
+        [Precision(19, 6)]
         public decimal UnitPrice { get; set; }
 
-        [Column(TypeName = "decimal(19, 6)")]
+        [Precision(19, 6)]
         public decimal Disc { get; set; }
 
         public int? TaxId { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal TaxAmount { get; set; }
 
-        [Column(TypeName = "decimal(19, 6)")]
+        [Precision(19, 6)]
         public decimal NettPrice { get; set; }
 
-        [Column(TypeName = "decimal(19, 6)")]
+        [Precision(19, 6)]
         public decimal Total { get; set; }
 
         [Column("DPP", TypeName = "decimal(19, 6)")]
@@ -225,10 +225,10 @@ namespace ERP.Entity.MobileSales
 
         public bool IsPercentage { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal Value { get; set; }
 
-        [Column(TypeName = "decimal(19, 6)")]
+        [Precision(19, 6)]
         public decimal Amount { get; set; }
     }
 
@@ -254,10 +254,10 @@ namespace ERP.Entity.MobileSales
 
         public int UnitId { get; set; }
 
-        [Column(TypeName = "decimal(19, 6)")]
+        [Precision(19, 6)]
         public decimal Qty { get; set; }
 
-        [Column(TypeName = "decimal(19, 6)")]
+        [Precision(19, 6)]
         public decimal UnitPrice { get; set; }
     }
 }

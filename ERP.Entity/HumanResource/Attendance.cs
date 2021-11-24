@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 using ERP.Entity.Core;
 
 namespace ERP.Entity.General
@@ -18,10 +19,10 @@ namespace ERP.Entity.General
         [Column(TypeName = "datetime")]
         public DateTime? CheckIn { get; set; }
 
-        [Column(TypeName = "decimal(9, 6)")]
+        [Precision(9, 6)]
         public decimal? CheckInLat { get; set; }
 
-        [Column(TypeName = "decimal(9, 6)")]
+        [Precision(9, 6)]
         public decimal? CheckInLng { get; set; }
 
         public string CheckInImage { get; set; }
@@ -32,10 +33,10 @@ namespace ERP.Entity.General
         [Column(TypeName = "datetime")]
         public DateTime? CheckOut { get; set; }
 
-        [Column(TypeName = "decimal(9, 6)")]
+        [Precision(9, 6)]
         public decimal? CheckOutLat { get; set; }
 
-        [Column(TypeName = "decimal(9, 6)")]
+        [Precision(9, 6)]
         public decimal? CheckOutLng { get; set; }
 
         public string CheckOutImage { get; set; }
@@ -43,7 +44,7 @@ namespace ERP.Entity.General
         [StringLength(256)]
         public string CheckOutNotes { get; set; }
 
-        [Column(TypeName = "decimal(19, 6)")]
+        [Precision(19, 6)]
         public decimal? TotalHours { get; set; }
     }
 

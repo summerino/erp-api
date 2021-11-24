@@ -52,7 +52,12 @@ using ERP.Web.API.Model;
 using ERP.Web.API.Model.Auth;
 using Newtonsoft.Json.Serialization;
 using Swift.Framework;
+<<<<<<< HEAD
 using ERP.Web.API.Domain.Interfaces;
+=======
+using ERP.Web.API.Domain.Interfaces.Mobile.CustomerDeliverySchedule;
+using ERP.Web.API.Domain.Services.Mobile.CustomerDeliverySchedule;
+>>>>>>> development
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -297,6 +302,12 @@ builder.Services.AddScoped<ERP.Web.API.Domain.Interfaces.Mobile.TransferStock.IM
 
 //Activity Log
 builder.Services.AddScoped<IActivityLogService, ActivityLogService>();
+
+// Cutomer Delivery Schedule
+builder.Services.AddScoped<ICustomerDeliveryScheduleService, CustomerDeliveryScheduleService>();
+
+// Cutomer Promotion
+builder.Services.AddScoped<ICustomerPromotionService, CustomerPromotionService>();
 #endregion
 
 var app = builder.Build();

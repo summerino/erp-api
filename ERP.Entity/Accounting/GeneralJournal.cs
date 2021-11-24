@@ -20,10 +20,10 @@ namespace ERP.Entity.Accounting
         [StringLength(3)]
         public string CurrCode { get; set; }
 
-        [Column(TypeName = "decimal(19, 6)")]
+        [Precision(19, 6)]
         public decimal Rate { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal Total { get; set; }
 
         [StringLength(256)]
@@ -74,7 +74,7 @@ namespace ERP.Entity.Accounting
         [StringLength(1)]
         public string Type { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal Amount { get; set; }
     }
 
@@ -135,14 +135,14 @@ namespace ERP.Entity.Accounting
         [StringLength(8)]
         public string Period { get; set; }
 
-        [Column(TypeName = "decimal(19, 6)")]
+        [Precision(19, 6)]
         public decimal CustomRate { get; set; }
 
         [Required]
         [StringLength(1)]
         public string Type { get; set; }
 
-        [Column(TypeName = "decimal(19, 6)")]
+        [Precision(19, 6)]
         public decimal Amount { get; set; }
 
         [Required]
