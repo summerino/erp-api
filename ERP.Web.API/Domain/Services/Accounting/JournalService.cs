@@ -2256,27 +2256,27 @@ namespace ERP.Web.API.Domain.Services.Accounting
                         });
                     }
                 }
-
-                //Barang Terkirim
-                journals.Add(new Journal
+                
+                if (!new[] { "C", "RC", "DT" }.Contains(itemData.Type))
                 {
-                    Code = itemData.Code,
-                    LineNo = 1,
-                    Date = itemData.Date,
-                    CoaCode = systemParam.FirstOrDefault(x => x.Code == "SENT_ITEM_COA")?.Value ?? "",
-                    TypeCode = "TS",
-                    Notes = "Barang Terkirim",
-                    RefCode1 = "",
-                    Group = 3,
-                    CurrCode = "IDR",
-                    Period = itemData.Date.ToString("yyyyMMdd"),
-                    Type = new[] { "C", "RC", "OUT", "DT" }.Contains(itemData.Type) ? "D" : "C",
-                    Amount = journals.Where(x => x.Code ==  itemData.Code && x.Group == 1).Sum(x => x.Amount),
-                    SrcTrans = "TS"
-                });
+                    //Barang Terkirim
+                    journals.Add(new Journal
+                    {
+                        Code = itemData.Code,
+                        LineNo = 1,
+                        Date = itemData.Date,
+                        CoaCode = systemParam.FirstOrDefault(x => x.Code == "SENT_ITEM_COA")?.Value ?? "",
+                        TypeCode = "TS",
+                        Notes = "Barang Terkirim",
+                        RefCode1 = "",
+                        Group = 3,
+                        CurrCode = "IDR",
+                        Period = itemData.Date.ToString("yyyyMMdd"),
+                        Type = new[] { "C", "RC", "OUT", "DT" }.Contains(itemData.Type) ? "D" : "C",
+                        Amount = journals.Where(x => x.Code == itemData.Code && x.Group == 1).Sum(x => x.Amount),
+                        SrcTrans = "TS"
+                    });
 
-                if (new[] { "C", "RC", "DT" }.Contains(itemData.Type))
-                {
                     //Barang Terkirim
                     journals.Add(new Journal
                     {
@@ -2295,6 +2295,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                         SrcTrans = "TS"
                     });
                 }
+                
             }
 
             return journals;
