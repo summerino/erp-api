@@ -6,9 +6,10 @@ namespace ERP.Web.API.Domain.Interfaces.Accounting
 {
     public interface IJournalService
     {
-        SaveResult PostingJournal(JournalRequest data, int userId);
+        Task PostingJournal(JournalRequest data, int userId);
 
         IEnumerable<PostingLog> GetPostingHistory(JournalRequest data);
 
+        bool CheckPrevPeriod(DateTime postDate);
     }
 }
