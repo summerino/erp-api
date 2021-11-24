@@ -52,8 +52,12 @@ using ERP.Web.API.Model;
 using ERP.Web.API.Model.Auth;
 using Newtonsoft.Json.Serialization;
 using Swift.Framework;
+<<<<<<< HEAD
+using ERP.Web.API.Domain.Interfaces;
+=======
 using ERP.Web.API.Domain.Interfaces.Mobile.CustomerDeliverySchedule;
 using ERP.Web.API.Domain.Services.Mobile.CustomerDeliverySchedule;
+>>>>>>> development
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -263,7 +267,10 @@ builder.Services.AddScoped<IMenuService, MenuService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<ISystemParameterService, SystemParameterService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IJournalStateService, JournalStateService>();
 
+//Special services
+builder.Services.AddScoped<IFireForgetService, FireForgetService>();
 #region Mobile
 // General services
 builder.Services.AddScoped<IImageService, ImageService>();

@@ -19,83 +19,148 @@ namespace ERP.Web.API.Domain.Services.Accounting
             _db = db;
         }
 
-        public SaveResult PostingJournal(JournalRequest data, int userId)
+        public Task PostingJournal(JournalRequest data, int userId)
         {
-            var result = new SaveResult(false);
             var systemParam = _db.SystemParameters.ToList();
             var items = _db.Items.ToList();
             var taxes = _db.Taxes.ToList();
 
-            using var transaction = _db.Database.BeginTransaction();
             try
             {
-                var periodValid = CheckPrevPeriod(data.Date);
-                if (!periodValid)
+
+                var stateData = new JournalState
                 {
-                    result.Message = "Tidak bisa melakukan posting jurnal karena terdapat periode sebelumnya yang belum diposting.";
-                    return result;
-                }
+                    Date = DateTime.Now,
+                    ProcessDate = data.Date,
+                    UserId = userId,
+                    Step = 1,
+                    Status = "ONGOING",
+                    Notes = ""
+                };
+
+                _db.JournalStates.Add(stateData);
+                _db.SaveChanges();
 
                 var typeBB = new[] { "BB_AP", "BB_AR", "BB_DM", "BB_CM", "BB_INVT" };
                 var removedBB = _db.Journals.Where(x => typeBB.Contains(x.SrcTrans)).ToList();
                 if (removedBB != null)
                     _db.RemoveRange(removedBB);
 
+                stateData.Step++; //2
+                _db.JournalStates.Update(stateData);
+                _db.SaveChanges();
+
                 var removed = _db.Journals.Where(x => x.Date.Month == data.Date.Month && x.Date.Year == data.Date.Year).ToList();
                 if (removed != null)
                     _db.RemoveRange(removed);
+
+                stateData.Step++; //3
+                _db.JournalStates.Update(stateData);
+                _db.SaveChanges();
 
                 var journalRCV = ProcessPurchaseJournal(data.Date, systemParam, items, taxes);
                 if (journalRCV != null)
                     _db.AddRange(journalRCV);
 
+                stateData.Step++; //4
+                _db.JournalStates.Update(stateData);
+                _db.SaveChanges();
+
                 var journalPR = ProcessPurchaseReturnJournal(data.Date, systemParam, items, taxes);
                 if (journalPR != null)
                     _db.AddRange(journalPR);
+
+                stateData.Step++; //5
+                _db.JournalStates.Update(stateData);
+                _db.SaveChanges();
 
                 var journalDO = ProcessSaleJournal(data.Date, systemParam, items, taxes);
                 if (journalDO != null)
                     _db.AddRange(journalDO);
 
+                stateData.Step++; //6
+                _db.JournalStates.Update(stateData);
+                _db.SaveChanges();
+
                 var journalSR = ProcessSalesReturnJournal(data.Date, systemParam, items, taxes);
                 if (journalSR != null)
                     _db.AddRange(journalSR);
+
+                stateData.Step++; //7
+                _db.JournalStates.Update(stateData);
+                _db.SaveChanges();
 
                 var journalCB = ProcessCashBankJournal(data.Date, systemParam);
                 if (journalCB != null)
                     _db.AddRange(journalCB);
 
+                stateData.Step++; //8
+                _db.JournalStates.Update(stateData);
+                _db.SaveChanges();
+
                 var journalBBAP = ProcessBBAPJournal(systemParam);
                 if (journalBBAP != null)
                     _db.AddRange(journalBBAP);
+
+                stateData.Step++; //9
+                _db.JournalStates.Update(stateData);
+                _db.SaveChanges();
 
                 var journalBBAR = ProcessBBARJournal(systemParam);
                 if (journalBBAR != null)
                     _db.AddRange(journalBBAR);
 
+                stateData.Step++; //10
+                _db.JournalStates.Update(stateData);
+                _db.SaveChanges();
+
                 var journalBBDM = ProcessBBDebitMemoJournal(systemParam);
                 if (journalBBDM != null)
                     _db.AddRange(journalBBDM);
+
+                stateData.Step++; //11
+                _db.JournalStates.Update(stateData);
+                _db.SaveChanges();
 
                 var journalBBCM = ProcessBBCreditMemoJournal(systemParam);
                 if (journalBBCM != null)
                     _db.AddRange(journalBBCM);
 
+                stateData.Step++; //12
+                _db.JournalStates.Update(stateData);
+                _db.SaveChanges();
+
                 var journalINVT = ProcessBBInventoryJournal(systemParam);
                 if (journalINVT != null)
                     _db.AddRange(journalINVT);
+
+                stateData.Step++; //13
+                _db.JournalStates.Update(stateData);
+                _db.SaveChanges();
 
                 var journalEXP = ProcessExpeditionJournal(data.Date, systemParam);
                 if (journalEXP != null)
                     _db.AddRange(journalEXP);
 
+                stateData.Step++; //14
+                _db.JournalStates.Update(stateData);
+                _db.SaveChanges();
+
                 var journalFA = ProcessFixedAssetJournal(data.Date, systemParam);
                 if (journalFA != null)
                     _db.AddRange(journalFA);
 
+                stateData.Step++; //15
+                _db.JournalStates.Update(stateData);
+                _db.SaveChanges();
+
                 var journalDFA = ProcessDepreciationFixedAssetJournal(data.Date, systemParam);
                 if (journalDFA != null)
                     _db.AddRange(journalDFA);
+
+                stateData.Step++; //16
+                _db.JournalStates.Update(stateData);
+                _db.SaveChanges();
 
                 //var journalEYAS = ProcessEndYearAssetJournal(data.Date, systemParam, journalDFA);
                 //if (journalEYAS != null)
@@ -105,9 +170,17 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 if (journalADJ != null)
                     _db.AddRange(journalADJ);
 
+                stateData.Step++; //17
+                _db.JournalStates.Update(stateData);
+                _db.SaveChanges();
+
                 var journalGJ = ProcessGeneralJournal(data.Date);
                 if (journalGJ != null)
                     _db.AddRange(journalGJ);
+
+                stateData.Step++; //18
+                _db.JournalStates.Update(stateData);
+                _db.SaveChanges();
 
                 var journalTS = ProcessTransferStockJournal(data.Date, systemParam);
                 if (journalTS != null)
@@ -115,14 +188,26 @@ namespace ERP.Web.API.Domain.Services.Accounting
 
                 if (data.Date.Month == 12)
                 {
+                    stateData.Step++; //19
+                    _db.JournalStates.Update(stateData);
+                    _db.SaveChanges();
+
                     var removedEY = _db.Journals.Where(x => x.Code == "ENDYEAR-" + data.Date.Year.ToString()).ToList();
                     if (removedEY != null)
                         _db.RemoveRange(removedEY);
+
+                    stateData.Step++; //20
+                    _db.JournalStates.Update(stateData);
+                    _db.SaveChanges();
 
                     var journalEY = ProcessEndYearJournal(data.Date, systemParam);
                     if (journalEY != null)
                         _db.AddRange(journalEY);
                 }
+
+                stateData.Step++; // 21 or 19
+                _db.JournalStates.Update(stateData);
+                _db.SaveChanges();
 
                 //Update posting log
                 var plData = _db.PostingLogs.FirstOrDefault(x => x.Period == data.Date.ToString("yyyyMM"));
@@ -144,20 +229,22 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     _db.PostingLogs.Update(plData);
                 }
 
+                stateData.Status = "FINISH";
+                _db.JournalStates.Update(stateData);
 
                 _db.SaveChanges();
-
-                transaction.Commit();
             }
             catch (Exception ex)
             {
-                result.Message = ex.InnerException?.Message ?? ex.Message;
-                return result;
+                var stateData = _db.JournalStates.OrderByDescending(x => x.Id).FirstOrDefault(x => x.UserId == userId);
+                stateData.Status = "FAILED";
+                stateData.Notes = ex.InnerException?.Message ?? ex.Message;
+                _db.JournalStates.Update(stateData);
+                _db.SaveChanges();
+                return Task.CompletedTask;
             }
 
-            result.Success = true;
-            result.Message = "Posting jurnal selesai.";
-            return result;
+            return Task.CompletedTask;
         }
 
         private IEnumerable<Journal> ProcessPurchaseJournal(DateTime dateTime, List<SystemParameter> systemParam, List<Item> items, List<Tax> taxes)
@@ -2405,7 +2492,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
             return plData.Where(x => x.Period.StartsWith(data.Date.Year.ToString()));
         }
 
-        private bool CheckPrevPeriod(DateTime postDate)
+        public bool CheckPrevPeriod(DateTime postDate)
         {
             var bbPeriod =
                 Convert
