@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 using ERP.Entity.Core;
 
 namespace ERP.Entity.Sales
@@ -208,10 +209,10 @@ namespace ERP.Entity.Sales
 
         public long SalesmanId { get; set; }
          
-        [Column(TypeName = "decimal(9, 6)")]
+        [Precision(9, 6)]
         public decimal Lat { get; set; }
 
-        [Column(TypeName = "decimal(9, 6)")]
+        [Precision(9, 6)]
         public decimal Lng { get; set; }
 
         [Column(TypeName = "datetime")]

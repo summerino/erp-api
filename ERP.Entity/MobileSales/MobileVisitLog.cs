@@ -30,10 +30,10 @@ namespace ERP.Entity.MobileSales
 
         public bool? Visited { get; set; }
 
-        [Column(TypeName = "decimal(9, 6)")]
+        [Precision(9, 6)]
         public decimal? Lat { get; set; }
 
-        [Column(TypeName = "decimal(9, 6)")]
+        [Precision(9, 6)]
         public decimal? Lng { get; set; }
 
         [Column(TypeName = "datetime")]
@@ -42,7 +42,7 @@ namespace ERP.Entity.MobileSales
         [Column(TypeName = "datetime")]
         public DateTime? EndTime { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal? Total { get; set; }
 
         public int? UnscheduledVisitReasonId { get; set; }

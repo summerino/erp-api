@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 using ERP.Entity.Core;
 
 namespace ERP.Entity.MobileSales
@@ -56,10 +57,10 @@ namespace ERP.Entity.MobileSales
 
         public int? AreaId5 { get; set; }
 
-        [Column(TypeName = "decimal(9, 6)")]
+        [Precision(9, 6)]
         public decimal? Lat { get; set; }
 
-        [Column(TypeName = "decimal(9, 6)")]
+        [Precision(9, 6)]
         public decimal? Lng { get; set; }
     }
 

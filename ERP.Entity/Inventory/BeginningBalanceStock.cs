@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using ERP.Entity.Core;
+using Microsoft.EntityFrameworkCore;
 
 namespace ERP.Entity.Inventory
 {
@@ -57,10 +58,10 @@ namespace ERP.Entity.Inventory
 
         public int UnitId { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal Qty { get; set; }
         
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal UnitPrice { get; set; }
 
         [StringLength(256)]
@@ -200,19 +201,19 @@ namespace ERP.Entity.Inventory
         [StringLength(6)]
         public string CoaExpense { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal? Length { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal? Width { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal? Height { get; set; }
 
         [StringLength(10)]
         public string DimensionMeasurement { get; set; }
 
-        [Column(TypeName = "decimal(18, 3)")]
+        [Precision(18, 3)]
         public decimal? Weight { get; set; }
 
         [StringLength(10)]

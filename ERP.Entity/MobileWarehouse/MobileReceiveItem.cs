@@ -84,7 +84,7 @@ namespace ERP.Entity.MobileWarehouse
 
         public int ItemId { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal Qty { get; set; }
 
         public int UomId { get; set; }

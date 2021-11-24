@@ -25,10 +25,10 @@ namespace ERP.Entity.MobileSales
         [StringLength(3)]
         public string CurrCode { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal Rate { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal Total { get; set; }
     }
 
@@ -78,7 +78,7 @@ namespace ERP.Entity.MobileSales
         [StringLength(6)]
         public string CoaCode { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal Amount { get; set; }
     }
 

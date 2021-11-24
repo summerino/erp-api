@@ -29,18 +29,18 @@ namespace ERP.Entity.Inventory
 
         public int UnitId { get; set; }
 
-        [Column(TypeName = "decimal(18, 6)")]
+        [Precision(18, 6)]
         public decimal Qty { get; set; }
 
-        [Column(TypeName = "decimal(19, 6)")]
+        [Precision(19, 6)]
         public decimal NettPrice { get; set; }
 
         public int BaseUnit { get; set; }
 
-        [Column(TypeName = "decimal(18, 6)")]
+        [Precision(18, 6)]
         public decimal BaseQty { get; set; }
 
-        [Column(TypeName = "decimal(19, 6)")]
+        [Precision(19, 6)]
         public decimal BaseNettPrice { get; set; }
 
         [Required]
