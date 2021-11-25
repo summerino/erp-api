@@ -14,6 +14,8 @@ namespace ERP.Web.API.Domain.Interfaces.Sales
 
         IEnumerable<VwSalesmanSchedule> GetSalesmanSchedule(long id);
 
+        IEnumerable<VwSalesmanSchedule> GetSalesmanScheduleWithDate(long id, string date);
+
         IEnumerable<VwSalesmanScheduleCustomer> GetSalesmanScheduleDetailData(List<long> id);
 
         #region Mobile

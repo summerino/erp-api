@@ -76,6 +76,8 @@ namespace ERP.Web.API.Controllers.Accounting
 
                 result.Add(new JournalReportWrapper
                 {
+                    SortDate = item.Date.ToString("dd-MMM-yyyy"),
+                    SortCode = item.Code,
                     AccCode = item.CoaCode,
                     AccName = item.CoaName,
                     Notes = item.Notes,
