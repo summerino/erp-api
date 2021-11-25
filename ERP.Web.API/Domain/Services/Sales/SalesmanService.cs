@@ -65,6 +65,14 @@ namespace ERP.Web.API.Domain.Services.Sales
             return data.OrderBy(x => x.SalesmanScheduleId);
         }
 
+        public IEnumerable<VwSalesmanSchedule> GetSalesmanScheduleWithDate(long id, string date)
+        {
+            var cDate = Convert.ToDateTime(date);
+            var data = Db.VwSalesmanSchedules.Where(x => x.Id == id && x.StartDate <= cDate && x.EndDate >= cDate && x.VisitDay == (byte)cDate.DayOfWeek);
+
+            return data.OrderBy(x => x.Id);
+        }
+
         #region Mobile
         public SalesProfile GetSalesProfileForMobile(int id)
         {
