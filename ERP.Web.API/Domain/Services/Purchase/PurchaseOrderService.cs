@@ -101,6 +101,13 @@ namespace ERP.Web.API.Domain.Services.Purchase
             using var transaction = Db.Database.BeginTransaction();
             try
             {
+                var (isDuplicate, message) = CheckDuplicateDetail(data.ItemDetails);
+                if (isDuplicate)
+                {
+                    result.Message = message;
+                    return result;
+                }
+
                 // Get new code
                 var newCode = GetNewCode("PO_NUM_FMT", data.Date);
 
@@ -385,6 +392,13 @@ namespace ERP.Web.API.Domain.Services.Purchase
                 if (Db.PurchaseOrderHeaders.Any(x => x.Code == data.Code && x.Mark == "V"))
                 {
                     result.Message = "Data order pembelian tidak bisa diubah karena sudah ditandai sebagai void.";
+                    return result;
+                }
+
+                var (isDuplicate, message) = CheckDuplicateDetail(data.ItemDetails);
+                if (isDuplicate)
+                {
+                    result.Message = message;
                     return result;
                 }
 
@@ -806,6 +820,20 @@ namespace ERP.Web.API.Domain.Services.Purchase
             result.Success = true;
             result.Message = "Data order pembelian berhasil ditutup.";
             return result;
+        }
+
+        private (bool,string) CheckDuplicateDetail(IEnumerable<PurchaseOrderDetail> data) 
+        {
+            var tData = data.GroupBy(x => new { x.ItemId, x.UnitId }).Where(y => y.Count() > 1);
+            var errorList = "";
+            foreach (var itemData in tData)
+            {
+                var item = Db.Items.FirstOrDefault(x => x.Id == itemData.Key.ItemId);
+                var uom = Db.UoMConversions.FirstOrDefault(x => x.Id == itemData.Key.UnitId);
+                errorList += $"&bull; Barang {item.Initial} dengan satuan {uom.UnitEquivalent} tidak dapat duplikat.<br/>";
+            }
+                
+            return (errorList != "", errorList);
         }
 
         #region Mobile
