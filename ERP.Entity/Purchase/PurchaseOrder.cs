@@ -166,6 +166,9 @@ namespace ERP.Entity.Purchase
         [Precision(19, 6)]
         public decimal Disc { get; set; }
 
+        [Precision(19, 6)]
+        public decimal FinalDiscHeader { get; set; }
+
         public int? TaxId { get; set; }
 
         [Precision(19, 6)]
@@ -238,6 +241,8 @@ namespace ERP.Entity.Purchase
         public decimal UnitPrice { get; set; }
 
         public decimal Disc { get; set; }
+
+        public decimal FinalDiscHeader { get; set; }
 
         public int? TaxId { get; set; }
 
