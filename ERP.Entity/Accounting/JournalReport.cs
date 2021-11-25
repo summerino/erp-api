@@ -64,6 +64,10 @@ namespace ERP.Entity.Accounting
 
     public class JournalReportWrapper
     {
+        public string SortDate { get; set; }
+
+        public string SortCode { get; set; }
+
         public string AccCode { get; set; }
 
         public string AccName { get; set; }
