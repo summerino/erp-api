@@ -258,7 +258,7 @@ namespace ERP.Web.API.Domain.Services.Sales
 
         private bool IsEmployeeAssignedInSameDate(DateTime date, long id)
         {
-            return Db.VwVisitOrders.Any(x => x.SalesmanId == id && x.Date == date);
+            return Db.VwVisitOrders.Any(x => x.SalesmanId == id && x.Date == date && x.Mark == "A");
         }
     }
 }
