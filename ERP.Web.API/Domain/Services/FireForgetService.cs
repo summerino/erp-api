@@ -14,7 +14,7 @@ namespace ERP.Web.API.Domain.Services
 
         public void Execute(Func<IJournalService, Task> DoWork)
         {
-            Task.Run(() =>
+            var t = new Thread(new ThreadStart(() =>
             {
                 try
                 {
@@ -24,10 +24,25 @@ namespace ERP.Web.API.Domain.Services
                 }
                 catch (Exception)
                 {
-
                     throw;
                 }
-            });
+            }));
+            t.Start();
+
+            //Task.Run(() =>
+            //{
+            //    try
+            //    {
+            //        using var scope = _ssf.CreateScope();
+            //        var repo = scope.ServiceProvider.GetRequiredService<IJournalService>();
+            //        DoWork(repo);
+            //    }
+            //    catch (Exception)
+            //    {
+
+            //        throw;
+            //    }
+            //});
         }
 
         public void Execute(Func<JournalService, Task> DoWork)
