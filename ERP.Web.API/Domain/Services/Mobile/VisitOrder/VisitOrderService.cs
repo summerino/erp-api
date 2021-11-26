@@ -568,11 +568,11 @@ namespace ERP.Web.API.Domain.Services.Mobile.VisitOrder
                     vo.UpdatedBy = data.UpdatedBy;
                     vo.UpdatedDate = data.UpdatedDate;
 
-                    if (data.Scheduled)
-                    {
-                        var order = Db.VisitOrderCustomers.First(x => x.Code == data.VisitOrderCode && x.CustCode == data.CustCode);
-                        order.Visited = true;
-                    }
+                    //if (data.Scheduled)
+                    //{
+                    //    var order = Db.VisitOrderCustomers.First(x => x.Code == data.VisitOrderCode && x.CustCode == data.CustCode);
+                    //    order.Visited = true;
+                    //}
                 }
 
                 foreach (var reason in data.VisitReasons)

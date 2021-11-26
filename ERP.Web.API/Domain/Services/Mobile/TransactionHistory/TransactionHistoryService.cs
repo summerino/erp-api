@@ -27,7 +27,7 @@ namespace ERP.Web.API.Domain.Services.Mobile.TransactionHistory
                                   Date = g.Key.Date,
                                   CustomerId = g.Key.CustCode,
                                   CustomerName = g.Key.Name,
-                                  Total = g.Sum(tl => tl.so.Total)
+                                  Total = g.Sum(tl => tl.so.SubTotal)
                               }).AsQueryable();
 
             var dataOrder = (
@@ -40,7 +40,7 @@ namespace ERP.Web.API.Domain.Services.Mobile.TransactionHistory
                             Date = g.Key.Date,
                             CustomerId = g.Key.CustCode,
                             CustomerName = g.Key.Name,
-                            Total = g.Sum(tl => tl.so.Total)
+                            Total = g.Sum(tl => tl.so.SubTotal)
                         }).AsQueryable();
 
             var data = (from so in dataOrder.Union(dataMobile)
@@ -201,7 +201,7 @@ namespace ERP.Web.API.Domain.Services.Mobile.TransactionHistory
                               {
                                   SalesId = g.Key.SalesBy,
                                   Date = g.Key.Date,
-                                  Total = g.Sum(tl => tl.Total)
+                                  Total = g.Sum(tl => tl.SubTotal)
                               }).AsQueryable();
 
             var dataOrder = (from so in Db.SalesOrderHeaders
@@ -210,7 +210,7 @@ namespace ERP.Web.API.Domain.Services.Mobile.TransactionHistory
                              {
                                  SalesId = g.Key.SalesBy,
                                  Date = g.Key.Date,
-                                 Total = g.Sum(tl => tl.Total)
+                                 Total = g.Sum(tl => tl.SubTotal)
                              }).AsQueryable();
 
             var data = (from so in dataOrder.Union(dataMobile)
