@@ -75,5 +75,12 @@ namespace ERP.Web.API.Controllers.Accounting
                 TableData = result
             });
         }
+
+        [HttpGet("state")]
+        public IActionResult GetPostingState()
+        {
+            var data = _js.GetPostingState(_claim.UserId);
+            return Ok(data);
+        }
     }
 }

@@ -9,6 +9,8 @@ namespace ERP.Web.API.Domain.Interfaces.Accounting
 
         IEnumerable<PostingLog> GetPostingHistory(JournalRequest data);
 
+        PostingState GetPostingState(int userId);
+
         bool CheckPrevPeriod(DateTime postDate);
     }
 }

@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
 	<ImplicitUsings>enable</ImplicitUsings>
-	<AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
+	<!--<AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>-->
     <Authors>Sahassa Dev. Team</Authors>
 	<Company>Sahassa Panca Manunggal</Company>
 	<Product>Sahassa® ERP</Product>

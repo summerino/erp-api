@@ -47,7 +47,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
 
             try
             {
-                var stateData = new JournalState
+                var stateData = new PostingState
                 {
                     Date = DateTime.Now,
                     ProcessDate = data.Date,
@@ -57,7 +57,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     Notes = ""
                 };
 
-                tenantCtx.JournalStates.Add(stateData);
+                tenantCtx.PostingStates.Add(stateData);
                 tenantCtx.SaveChanges();
 
                 var typeBB = new[] { "BB_AP", "BB_AR", "BB_DM", "BB_CM", "BB_INVT" };
@@ -66,7 +66,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     tenantCtx.RemoveRange(removedBB);
 
                 stateData.Step++; //2
-                tenantCtx.JournalStates.Update(stateData);
+                tenantCtx.PostingStates.Update(stateData);
                 tenantCtx.SaveChanges();
 
                 var removed = tenantCtx.Journals.Where(x => x.Date.Month == data.Date.Month && x.Date.Year == data.Date.Year).ToList();
@@ -74,7 +74,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     tenantCtx.RemoveRange(removed);
 
                 stateData.Step++; //3
-                tenantCtx.JournalStates.Update(stateData);
+                tenantCtx.PostingStates.Update(stateData);
                 tenantCtx.SaveChanges();
 
                 var journalRCV = ProcessPurchaseJournal(tenantCtx, data.Date, systemParam, items, taxes);
@@ -82,7 +82,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     tenantCtx.AddRange(journalRCV);
 
                 stateData.Step++; //4
-                tenantCtx.JournalStates.Update(stateData);
+                tenantCtx.PostingStates.Update(stateData);
                 tenantCtx.SaveChanges();
 
                 var journalPR = ProcessPurchaseReturnJournal(tenantCtx, data.Date, systemParam, items, taxes);
@@ -90,7 +90,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     tenantCtx.AddRange(journalPR);
 
                 stateData.Step++; //5
-                tenantCtx.JournalStates.Update(stateData);
+                tenantCtx.PostingStates.Update(stateData);
                 tenantCtx.SaveChanges();
 
                 var journalDO = ProcessSaleJournal(tenantCtx, data.Date, systemParam, items, taxes);
@@ -98,7 +98,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     tenantCtx.AddRange(journalDO);
 
                 stateData.Step++; //6
-                tenantCtx.JournalStates.Update(stateData);
+                tenantCtx.PostingStates.Update(stateData);
                 tenantCtx.SaveChanges();
 
                 var journalSR = ProcessSalesReturnJournal(tenantCtx, data.Date, systemParam, items, taxes);
@@ -106,7 +106,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     tenantCtx.AddRange(journalSR);
 
                 stateData.Step++; //7
-                tenantCtx.JournalStates.Update(stateData);
+                tenantCtx.PostingStates.Update(stateData);
                 tenantCtx.SaveChanges();
 
                 var journalCB = ProcessCashBankJournal(tenantCtx, data.Date, systemParam);
@@ -114,7 +114,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     tenantCtx.AddRange(journalCB);
 
                 stateData.Step++; //8
-                tenantCtx.JournalStates.Update(stateData);
+                tenantCtx.PostingStates.Update(stateData);
                 tenantCtx.SaveChanges();
 
                 var journalBBAP = ProcessBBAPJournal(tenantCtx, systemParam);
@@ -122,7 +122,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     tenantCtx.AddRange(journalBBAP);
 
                 stateData.Step++; //9
-                tenantCtx.JournalStates.Update(stateData);
+                tenantCtx.PostingStates.Update(stateData);
                 tenantCtx.SaveChanges();
 
                 var journalBBAR = ProcessBBARJournal(tenantCtx, systemParam);
@@ -130,7 +130,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     tenantCtx.AddRange(journalBBAR);
 
                 stateData.Step++; //10
-                tenantCtx.JournalStates.Update(stateData);
+                tenantCtx.PostingStates.Update(stateData);
                 tenantCtx.SaveChanges();
 
                 var journalBBDM = ProcessBBDebitMemoJournal(tenantCtx, systemParam);
@@ -138,7 +138,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     tenantCtx.AddRange(journalBBDM);
 
                 stateData.Step++; //11
-                tenantCtx.JournalStates.Update(stateData);
+                tenantCtx.PostingStates.Update(stateData);
                 tenantCtx.SaveChanges();
 
                 var journalBBCM = ProcessBBCreditMemoJournal(tenantCtx, systemParam);
@@ -146,7 +146,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     tenantCtx.AddRange(journalBBCM);
 
                 stateData.Step++; //12
-                tenantCtx.JournalStates.Update(stateData);
+                tenantCtx.PostingStates.Update(stateData);
                 tenantCtx.SaveChanges();
 
                 var journalINVT = ProcessBBInventoryJournal(tenantCtx, systemParam);
@@ -154,7 +154,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     tenantCtx.AddRange(journalINVT);
 
                 stateData.Step++; //13
-                tenantCtx.JournalStates.Update(stateData);
+                tenantCtx.PostingStates.Update(stateData);
                 tenantCtx.SaveChanges();
 
                 var journalEXP = ProcessExpeditionJournal(tenantCtx, data.Date, systemParam);
@@ -162,7 +162,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     tenantCtx.AddRange(journalEXP);
 
                 stateData.Step++; //14
-                tenantCtx.JournalStates.Update(stateData);
+                tenantCtx.PostingStates.Update(stateData);
                 tenantCtx.SaveChanges();
 
                 var journalFA = ProcessFixedAssetJournal(tenantCtx, data.Date, systemParam);
@@ -170,7 +170,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     tenantCtx.AddRange(journalFA);
 
                 stateData.Step++; //15
-                tenantCtx.JournalStates.Update(stateData);
+                tenantCtx.PostingStates.Update(stateData);
                 tenantCtx.SaveChanges();
 
                 var journalDFA = ProcessDepreciationFixedAssetJournal(tenantCtx, data.Date, systemParam);
@@ -178,7 +178,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     tenantCtx.AddRange(journalDFA);
 
                 stateData.Step++; //16
-                tenantCtx.JournalStates.Update(stateData);
+                tenantCtx.PostingStates.Update(stateData);
                 tenantCtx.SaveChanges();
 
                 //var journalEYAS = ProcessEndYearAssetJournal(data.Date, systemParam, journalDFA);
@@ -190,7 +190,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     tenantCtx.AddRange(journalADJ);
 
                 stateData.Step++; //17
-                tenantCtx.JournalStates.Update(stateData);
+                tenantCtx.PostingStates.Update(stateData);
                 tenantCtx.SaveChanges();
 
                 var journalGJ = ProcessGeneralJournal(tenantCtx, data.Date);
@@ -198,7 +198,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     tenantCtx.AddRange(journalGJ);
 
                 stateData.Step++; //18
-                tenantCtx.JournalStates.Update(stateData);
+                tenantCtx.PostingStates.Update(stateData);
                 tenantCtx.SaveChanges();
 
                 var journalTS = ProcessTransferStockJournal(tenantCtx, data.Date, systemParam);
@@ -208,7 +208,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 if (data.Date.Month == 12)
                 {
                     stateData.Step++; //19
-                    tenantCtx.JournalStates.Update(stateData);
+                    tenantCtx.PostingStates.Update(stateData);
                     tenantCtx.SaveChanges();
 
                     var removedEY = tenantCtx.Journals.Where(x => x.Code == "ENDYEAR-" + data.Date.Year.ToString()).ToList();
@@ -216,7 +216,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                         tenantCtx.RemoveRange(removedEY);
 
                     stateData.Step++; //20
-                    tenantCtx.JournalStates.Update(stateData);
+                    tenantCtx.PostingStates.Update(stateData);
                     tenantCtx.SaveChanges();
 
                     var journalEY = ProcessEndYearJournal(tenantCtx, data.Date, systemParam);
@@ -225,7 +225,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 }
 
                 stateData.Step++; // 21 or 19
-                tenantCtx.JournalStates.Update(stateData);
+                tenantCtx.PostingStates.Update(stateData);
                 tenantCtx.SaveChanges();
 
                 //Update posting log
@@ -249,16 +249,16 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 }
 
                 stateData.Status = "FINISH";
-                tenantCtx.JournalStates.Update(stateData);
+                tenantCtx.PostingStates.Update(stateData);
 
                 tenantCtx.SaveChanges();
             }
             catch (Exception ex)
             {
-                var stateData = tenantCtx.JournalStates.OrderByDescending(x => x.Id).FirstOrDefault(x => x.UserId == userId);
+                var stateData = tenantCtx.PostingStates.OrderByDescending(x => x.Id).FirstOrDefault(x => x.UserId == userId);
                 stateData.Status = "FAILED";
                 stateData.Notes = ex.InnerException?.Message ?? ex.Message;
-                tenantCtx.JournalStates.Update(stateData);
+                tenantCtx.PostingStates.Update(stateData);
                 tenantCtx.SaveChanges();
             }
         }
@@ -2506,6 +2506,12 @@ namespace ERP.Web.API.Domain.Services.Accounting
         {
             var plData = _ctx.PostingLogs.ToList();
             return plData.Where(x => x.Period.StartsWith(data.Date.Year.ToString()));
+        }
+
+        public PostingState GetPostingState(int userId)
+        {
+            var data = _ctx.PostingStates.OrderByDescending(x => x.Id).FirstOrDefault(x => x.UserId == userId);
+            return data;
         }
 
         public bool CheckPrevPeriod(DateTime postDate)

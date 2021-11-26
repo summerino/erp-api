@@ -264,7 +264,6 @@ builder.Services.AddScoped<IMenuService, MenuService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<ISystemParameterService, SystemParameterService>();
 builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<IJournalStateService, JournalStateService>();
 
 //Special services
 builder.Services.AddScoped<IFireForgetService, FireForgetService>();
