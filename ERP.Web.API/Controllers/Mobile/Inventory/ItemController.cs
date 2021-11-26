@@ -79,9 +79,9 @@ namespace ERP.Web.API.Controllers.Mobile.Inventory
         }
 
         [HttpGet("uomConversion")]
-        public IActionResult GetUomConversion()
+        public IActionResult GetUomConversion(int? uomId=null)
         {
-            var data = _uom.GetDataConversion();
+            var data = _uom.GetDataConversion(uomId);
             
             return Ok(data);
         }
