@@ -18,6 +18,8 @@ namespace ERP.Web.API.Domain.Interfaces.Inventory
 
         IEnumerable<dynamic> GetRelatedTransferTrans(string whId, int itemId);
 
+        bool IsItemUsed(int id);
+
         #region Mobile
         ItemInformationModel GetItemInformation(int itemId, string custCode);
         #endregion
