@@ -134,6 +134,14 @@ namespace ERP.Web.API.Controllers.Inventory
             return Ok(result);
         }
 
+        [HttpGet("item-used")]
+        public IActionResult IsItemUsed(int id)
+        {
+            var result = _item.IsItemUsed(id);
+
+            return Ok(result);
+        }
+
         private void MapNull(VwItem data) 
         {
             data.QtyOnHand ??= 0;

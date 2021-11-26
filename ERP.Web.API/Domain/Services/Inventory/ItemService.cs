@@ -198,18 +198,16 @@ namespace ERP.Web.API.Domain.Services.Inventory
 
             var wqData = Db.WarehouseQuantities.Where(x => x.ItemId == data.Id);
 
-            if (wqData.Any())
-            {
-                Db.Entry(data).Property(e => e.Initial).IsModified = false;
-                Db.Entry(data).Property(e => e.UomId).IsModified = false;
-            }
-
             // Update data
             Db.Items.Update(data);
             Db.Entry(data).Property(e => e.Id).IsModified = false;
             Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
             Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
-
+            if (wqData.Any())
+            {
+                Db.Entry(data).Property(e => e.Initial).IsModified = false;
+                Db.Entry(data).Property(e => e.UomId).IsModified = false;
+            }
             Db.SaveChanges();
 
             result.Success = true;
@@ -321,6 +319,11 @@ namespace ERP.Web.API.Domain.Services.Inventory
                           }).ToDynamicList();
 
             return result;
+        }
+
+        public bool IsItemUsed(int id)
+        {
+            return Db.WarehouseQuantities.Where(x => x.ItemId == id).Any();
         }
 
         #region Mobile
