@@ -1,4 +1,5 @@
-﻿using ERP.Common;
+﻿using Microsoft.EntityFrameworkCore;
+using ERP.Common;
 using ERP.Entity;
 using ERP.Entity.Accounting;
 using ERP.Entity.AssetManagement;
@@ -12,26 +13,40 @@ namespace ERP.Web.API.Domain.Services.Accounting
 {
     public class JournalService : IJournalService
     {
-        private readonly TenantContext _db;
-        private readonly ILogger<JournalService> _logger;
+        private readonly CatalogContext _catalogCtx;
+        private readonly TenantContext _ctx;
+        private readonly IClaimService _claim;
 
-        public JournalService(TenantContext db, ILogger<JournalService> logger)
+        public JournalService(CatalogContext catalogCtx, TenantContext db, IClaimService claim)
         {
-            _db = db;
-            _logger = logger;
+            _catalogCtx = catalogCtx;
+            _ctx = db;
+            _claim = claim;
         }
 
-        public SaveResult PostingJournal(JournalRequest data, int userId)
+        public void PostingJournal(JournalRequest data, int userId, int tenantId)
         {
             var result = new SaveResult(false);
-            var systemParam = _db.SystemParameters.ToList();
-            var items = _db.Items.ToList();
-            var taxes = _db.Taxes.ToList();
+
+            // Get tenant server information
+            var tenant = _catalogCtx.Tenants.Find(tenantId);
+            if (tenant == null)
+            {
+                throw new Exception("Tenant doesn't exists (called from JournalService).");
+            }
+
+            var optionsBuilder = new DbContextOptionsBuilder<TenantContext>();
+            optionsBuilder.UseSqlServer(
+                $"Server={tenant.ServerName};Database={tenant.DatabaseName};User Id={tenant.ServerUserId};Password={tenant.ServerPassword}");
+                
+            var tenantCtx = new TenantContext(optionsBuilder.Options, _catalogCtx, _claim);
+
+            var systemParam = tenantCtx.SystemParameters.ToList();
+            var items = tenantCtx.Items.ToList();
+            var taxes = tenantCtx.Taxes.ToList();
 
             try
             {
-                _logger.LogInformation("Inside IJournalService PostingJournal.");
-
                 var stateData = new JournalState
                 {
                     Date = DateTime.Now,
@@ -42,182 +57,182 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     Notes = ""
                 };
 
-                _db.JournalStates.Add(stateData);
-                _db.SaveChanges();
+                tenantCtx.JournalStates.Add(stateData);
+                tenantCtx.SaveChanges();
 
                 var typeBB = new[] { "BB_AP", "BB_AR", "BB_DM", "BB_CM", "BB_INVT" };
-                var removedBB = _db.Journals.Where(x => typeBB.Contains(x.SrcTrans)).ToList();
+                var removedBB = tenantCtx.Journals.Where(x => typeBB.Contains(x.SrcTrans)).ToList();
                 if (removedBB != null)
-                    _db.RemoveRange(removedBB);
+                    tenantCtx.RemoveRange(removedBB);
 
                 stateData.Step++; //2
-                _db.JournalStates.Update(stateData);
-                _db.SaveChanges();
+                tenantCtx.JournalStates.Update(stateData);
+                tenantCtx.SaveChanges();
 
-                var removed = _db.Journals.Where(x => x.Date.Month == data.Date.Month && x.Date.Year == data.Date.Year).ToList();
+                var removed = tenantCtx.Journals.Where(x => x.Date.Month == data.Date.Month && x.Date.Year == data.Date.Year).ToList();
                 if (removed != null)
-                    _db.RemoveRange(removed);
+                    tenantCtx.RemoveRange(removed);
 
                 stateData.Step++; //3
-                _db.JournalStates.Update(stateData);
-                _db.SaveChanges();
+                tenantCtx.JournalStates.Update(stateData);
+                tenantCtx.SaveChanges();
 
-                var journalRCV = ProcessPurchaseJournal(data.Date, systemParam, items, taxes);
+                var journalRCV = ProcessPurchaseJournal(tenantCtx, data.Date, systemParam, items, taxes);
                 if (journalRCV != null)
-                    _db.AddRange(journalRCV);
+                    tenantCtx.AddRange(journalRCV);
 
                 stateData.Step++; //4
-                _db.JournalStates.Update(stateData);
-                _db.SaveChanges();
+                tenantCtx.JournalStates.Update(stateData);
+                tenantCtx.SaveChanges();
 
-                var journalPR = ProcessPurchaseReturnJournal(data.Date, systemParam, items, taxes);
+                var journalPR = ProcessPurchaseReturnJournal(tenantCtx, data.Date, systemParam, items, taxes);
                 if (journalPR != null)
-                    _db.AddRange(journalPR);
+                    tenantCtx.AddRange(journalPR);
 
                 stateData.Step++; //5
-                _db.JournalStates.Update(stateData);
-                _db.SaveChanges();
+                tenantCtx.JournalStates.Update(stateData);
+                tenantCtx.SaveChanges();
 
-                var journalDO = ProcessSaleJournal(data.Date, systemParam, items, taxes);
+                var journalDO = ProcessSaleJournal(tenantCtx, data.Date, systemParam, items, taxes);
                 if (journalDO != null)
-                    _db.AddRange(journalDO);
+                    tenantCtx.AddRange(journalDO);
 
                 stateData.Step++; //6
-                _db.JournalStates.Update(stateData);
-                _db.SaveChanges();
+                tenantCtx.JournalStates.Update(stateData);
+                tenantCtx.SaveChanges();
 
-                var journalSR = ProcessSalesReturnJournal(data.Date, systemParam, items, taxes);
+                var journalSR = ProcessSalesReturnJournal(tenantCtx, data.Date, systemParam, items, taxes);
                 if (journalSR != null)
-                    _db.AddRange(journalSR);
+                    tenantCtx.AddRange(journalSR);
 
                 stateData.Step++; //7
-                _db.JournalStates.Update(stateData);
-                _db.SaveChanges();
+                tenantCtx.JournalStates.Update(stateData);
+                tenantCtx.SaveChanges();
 
-                var journalCB = ProcessCashBankJournal(data.Date, systemParam);
+                var journalCB = ProcessCashBankJournal(tenantCtx, data.Date, systemParam);
                 if (journalCB != null)
-                    _db.AddRange(journalCB);
+                    tenantCtx.AddRange(journalCB);
 
                 stateData.Step++; //8
-                _db.JournalStates.Update(stateData);
-                _db.SaveChanges();
+                tenantCtx.JournalStates.Update(stateData);
+                tenantCtx.SaveChanges();
 
-                var journalBBAP = ProcessBBAPJournal(systemParam);
+                var journalBBAP = ProcessBBAPJournal(tenantCtx, systemParam);
                 if (journalBBAP != null)
-                    _db.AddRange(journalBBAP);
+                    tenantCtx.AddRange(journalBBAP);
 
                 stateData.Step++; //9
-                _db.JournalStates.Update(stateData);
-                _db.SaveChanges();
+                tenantCtx.JournalStates.Update(stateData);
+                tenantCtx.SaveChanges();
 
-                var journalBBAR = ProcessBBARJournal(systemParam);
+                var journalBBAR = ProcessBBARJournal(tenantCtx, systemParam);
                 if (journalBBAR != null)
-                    _db.AddRange(journalBBAR);
+                    tenantCtx.AddRange(journalBBAR);
 
                 stateData.Step++; //10
-                _db.JournalStates.Update(stateData);
-                _db.SaveChanges();
+                tenantCtx.JournalStates.Update(stateData);
+                tenantCtx.SaveChanges();
 
-                var journalBBDM = ProcessBBDebitMemoJournal(systemParam);
+                var journalBBDM = ProcessBBDebitMemoJournal(tenantCtx, systemParam);
                 if (journalBBDM != null)
-                    _db.AddRange(journalBBDM);
+                    tenantCtx.AddRange(journalBBDM);
 
                 stateData.Step++; //11
-                _db.JournalStates.Update(stateData);
-                _db.SaveChanges();
+                tenantCtx.JournalStates.Update(stateData);
+                tenantCtx.SaveChanges();
 
-                var journalBBCM = ProcessBBCreditMemoJournal(systemParam);
+                var journalBBCM = ProcessBBCreditMemoJournal(tenantCtx, systemParam);
                 if (journalBBCM != null)
-                    _db.AddRange(journalBBCM);
+                    tenantCtx.AddRange(journalBBCM);
 
                 stateData.Step++; //12
-                _db.JournalStates.Update(stateData);
-                _db.SaveChanges();
+                tenantCtx.JournalStates.Update(stateData);
+                tenantCtx.SaveChanges();
 
-                var journalINVT = ProcessBBInventoryJournal(systemParam);
+                var journalINVT = ProcessBBInventoryJournal(tenantCtx, systemParam);
                 if (journalINVT != null)
-                    _db.AddRange(journalINVT);
+                    tenantCtx.AddRange(journalINVT);
 
                 stateData.Step++; //13
-                _db.JournalStates.Update(stateData);
-                _db.SaveChanges();
+                tenantCtx.JournalStates.Update(stateData);
+                tenantCtx.SaveChanges();
 
-                var journalEXP = ProcessExpeditionJournal(data.Date, systemParam);
+                var journalEXP = ProcessExpeditionJournal(tenantCtx, data.Date, systemParam);
                 if (journalEXP != null)
-                    _db.AddRange(journalEXP);
+                    tenantCtx.AddRange(journalEXP);
 
                 stateData.Step++; //14
-                _db.JournalStates.Update(stateData);
-                _db.SaveChanges();
+                tenantCtx.JournalStates.Update(stateData);
+                tenantCtx.SaveChanges();
 
-                var journalFA = ProcessFixedAssetJournal(data.Date, systemParam);
+                var journalFA = ProcessFixedAssetJournal(tenantCtx, data.Date, systemParam);
                 if (journalFA != null)
-                    _db.AddRange(journalFA);
+                    tenantCtx.AddRange(journalFA);
 
                 stateData.Step++; //15
-                _db.JournalStates.Update(stateData);
-                _db.SaveChanges();
+                tenantCtx.JournalStates.Update(stateData);
+                tenantCtx.SaveChanges();
 
-                var journalDFA = ProcessDepreciationFixedAssetJournal(data.Date, systemParam);
+                var journalDFA = ProcessDepreciationFixedAssetJournal(tenantCtx, data.Date, systemParam);
                 if (journalDFA != null)
-                    _db.AddRange(journalDFA);
+                    tenantCtx.AddRange(journalDFA);
 
                 stateData.Step++; //16
-                _db.JournalStates.Update(stateData);
-                _db.SaveChanges();
+                tenantCtx.JournalStates.Update(stateData);
+                tenantCtx.SaveChanges();
 
                 //var journalEYAS = ProcessEndYearAssetJournal(data.Date, systemParam, journalDFA);
                 //if (journalEYAS != null)
-                //    _db.AddRange(journalEYAS);
+                //    tenantCtx.AddRange(journalEYAS);
 
-                var journalADJ = ProcessAdjustmentJournal(data.Date, systemParam);
+                var journalADJ = ProcessAdjustmentJournal(tenantCtx, data.Date, systemParam);
                 if (journalADJ != null)
-                    _db.AddRange(journalADJ);
+                    tenantCtx.AddRange(journalADJ);
 
                 stateData.Step++; //17
-                _db.JournalStates.Update(stateData);
-                _db.SaveChanges();
+                tenantCtx.JournalStates.Update(stateData);
+                tenantCtx.SaveChanges();
 
-                var journalGJ = ProcessGeneralJournal(data.Date);
+                var journalGJ = ProcessGeneralJournal(tenantCtx, data.Date);
                 if (journalGJ != null)
-                    _db.AddRange(journalGJ);
+                    tenantCtx.AddRange(journalGJ);
 
                 stateData.Step++; //18
-                _db.JournalStates.Update(stateData);
-                _db.SaveChanges();
+                tenantCtx.JournalStates.Update(stateData);
+                tenantCtx.SaveChanges();
 
-                var journalTS = ProcessTransferStockJournal(data.Date, systemParam);
+                var journalTS = ProcessTransferStockJournal(tenantCtx, data.Date, systemParam);
                 if (journalTS != null)
-                    _db.AddRange(journalTS);
+                    tenantCtx.AddRange(journalTS);
 
                 if (data.Date.Month == 12)
                 {
                     stateData.Step++; //19
-                    _db.JournalStates.Update(stateData);
-                    _db.SaveChanges();
+                    tenantCtx.JournalStates.Update(stateData);
+                    tenantCtx.SaveChanges();
 
-                    var removedEY = _db.Journals.Where(x => x.Code == "ENDYEAR-" + data.Date.Year.ToString()).ToList();
+                    var removedEY = tenantCtx.Journals.Where(x => x.Code == "ENDYEAR-" + data.Date.Year.ToString()).ToList();
                     if (removedEY != null)
-                        _db.RemoveRange(removedEY);
+                        tenantCtx.RemoveRange(removedEY);
 
                     stateData.Step++; //20
-                    _db.JournalStates.Update(stateData);
-                    _db.SaveChanges();
+                    tenantCtx.JournalStates.Update(stateData);
+                    tenantCtx.SaveChanges();
 
-                    var journalEY = ProcessEndYearJournal(data.Date, systemParam);
+                    var journalEY = ProcessEndYearJournal(tenantCtx, data.Date, systemParam);
                     if (journalEY != null)
-                        _db.AddRange(journalEY);
+                        tenantCtx.AddRange(journalEY);
                 }
 
                 stateData.Step++; // 21 or 19
-                _db.JournalStates.Update(stateData);
-                _db.SaveChanges();
+                tenantCtx.JournalStates.Update(stateData);
+                tenantCtx.SaveChanges();
 
                 //Update posting log
-                var plData = _db.PostingLogs.FirstOrDefault(x => x.Period == data.Date.ToString("yyyyMM"));
+                var plData = tenantCtx.PostingLogs.FirstOrDefault(x => x.Period == data.Date.ToString("yyyyMM"));
                 if (plData == null)
                 {
-                    _db.PostingLogs.Add(new PostingLog
+                    tenantCtx.PostingLogs.Add(new PostingLog
                     {
                         Period = data.Date.ToString("yyyyMM"),
                         IsPosted = true,
@@ -230,44 +245,37 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     plData.IsPosted = true;
                     plData.PostedBy = userId;
                     plData.PostedDate = DateTime.Now;
-                    _db.PostingLogs.Update(plData);
+                    tenantCtx.PostingLogs.Update(plData);
                 }
 
                 stateData.Status = "FINISH";
-                _db.JournalStates.Update(stateData);
+                tenantCtx.JournalStates.Update(stateData);
 
-                _db.SaveChanges();
+                tenantCtx.SaveChanges();
             }
             catch (Exception ex)
             {
-                var stateData = _db.JournalStates.OrderByDescending(x => x.Id).FirstOrDefault(x => x.UserId == userId);
+                var stateData = tenantCtx.JournalStates.OrderByDescending(x => x.Id).FirstOrDefault(x => x.UserId == userId);
                 stateData.Status = "FAILED";
                 stateData.Notes = ex.InnerException?.Message ?? ex.Message;
-                _db.JournalStates.Update(stateData);
-                _db.SaveChanges();
-
-                result.Message = ex.InnerException?.Message ?? ex.Message;
-                return result;
+                tenantCtx.JournalStates.Update(stateData);
+                tenantCtx.SaveChanges();
             }
-
-            result.Success = true;
-            result.Message = "Posting jurnal selesai.";
-            return result;
         }
 
-        private IEnumerable<Journal> ProcessPurchaseJournal(DateTime dateTime, List<SystemParameter> systemParam, List<Item> items, List<Tax> taxes)
+        private IEnumerable<Journal> ProcessPurchaseJournal(TenantContext db, DateTime dateTime, List<SystemParameter> systemParam, List<Item> items, List<Tax> taxes)
         {
             List<Journal> journals = new();
 
-            var RcvData = (from rcvheader in _db.PurchaseReceiveHeaders
-                           join supplier in _db.Suppliers on rcvheader.SupCode equals supplier.Code
+            var RcvData = (from rcvheader in db.PurchaseReceiveHeaders
+                           join supplier in db.Suppliers on rcvheader.SupCode equals supplier.Code
                            where rcvheader.Date.Month == dateTime.Month && rcvheader.Date.Year == dateTime.Year && rcvheader.SrcTrans == 1 && rcvheader.Mark != "V"
                            select new { RcvHeader = rcvheader, Supplier = supplier }).ToList();
 
             foreach (var itemData in RcvData)
             {
-                var RcvDetailData = (from rcvdetail in _db.PurchaseReceiveDetails
-                                     join item in _db.Items on rcvdetail.ItemId equals item.Id
+                var RcvDetailData = (from rcvdetail in db.PurchaseReceiveDetails
+                                     join item in db.Items on rcvdetail.ItemId equals item.Id
                                      where rcvdetail.Code == itemData.RcvHeader.Code
                                      select new { RcvDetail = rcvdetail, Item = item }).ToList();
                 short i = 0;
@@ -347,21 +355,21 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     });
                 }
 
-                var invDetData = _db.PurchaseInvoiceDetails.Where(x => x.RcvCode == itemData.RcvHeader.Code).ToList();
+                var invDetData = db.PurchaseInvoiceDetails.Where(x => x.RcvCode == itemData.RcvHeader.Code).ToList();
                 if (invDetData.Any())
                 {
                     foreach (var item in invDetData)
                     {
-                        var invData = _db.PurchaseInvoiceHeaders.FirstOrDefault(x => x.Code == item.Code);
+                        var invData = db.PurchaseInvoiceHeaders.FirstOrDefault(x => x.Code == item.Code);
                         if (invData.Mark != "V")
                         {
-                            var invMemo = _db.PurchaseInvoiceDebitMemos.Where(x => x.InvCode == item.Code).ToList();
+                            var invMemo = db.PurchaseInvoiceDebitMemos.Where(x => x.InvCode == item.Code).ToList();
                             if (invMemo.Any())
                             {
                                 short k = 0;
                                 foreach (var itemMemo in invMemo)
                                 {
-                                    var memoData = _db.DebitMemos.FirstOrDefault(x => x.Code == itemMemo.DebitMemoCode);
+                                    var memoData = db.DebitMemos.FirstOrDefault(x => x.Code == itemMemo.DebitMemoCode);
                                     if (memoData != null || memoData.Mark != "V")
                                     {
                                         journals.Add(new Journal
@@ -415,24 +423,24 @@ namespace ERP.Web.API.Domain.Services.Accounting
             return journals;
         }
 
-        private IEnumerable<Journal> ProcessSaleJournal(DateTime dateTime, List<SystemParameter> systemParam, List<Item> items, List<Tax> taxes)
+        private IEnumerable<Journal> ProcessSaleJournal(TenantContext db, DateTime dateTime, List<SystemParameter> systemParam, List<Item> items, List<Tax> taxes)
         {
             List<Journal> journals = new();
 
-            var DlvData = (from dlvheader in _db.SalesDeliveryHeaders
-                           join customer in _db.Customers on dlvheader.CustCode equals customer.Code
+            var DlvData = (from dlvheader in db.SalesDeliveryHeaders
+                           join customer in db.Customers on dlvheader.CustCode equals customer.Code
                            where dlvheader.Date.Month == dateTime.Month && dlvheader.Date.Year == dateTime.Year && dlvheader.SrcTrans == 1 && dlvheader.Mark != "V"
                            select new { Dlvheader = dlvheader, Customer = customer }).ToList();
 
             foreach (var itemData in DlvData)
             {
-                var DlvDetailData = (from dlvdetail in _db.SalesDeliveryDetails
-                                     join item in _db.Items on dlvdetail.ItemId equals item.Id
+                var DlvDetailData = (from dlvdetail in db.SalesDeliveryDetails
+                                     join item in db.Items on dlvdetail.ItemId equals item.Id
                                      where dlvdetail.Code == itemData.Dlvheader.Code
                                      select new { DlvDetail = dlvdetail, Item = item }).ToList();
 
-                var DlvDetailFreeData = (from fg in _db.SalesDeliveryDetailFreeGoods
-                                         join item in _db.Items on fg.ItemId equals item.Id
+                var DlvDetailFreeData = (from fg in db.SalesDeliveryDetailFreeGoods
+                                         join item in db.Items on fg.ItemId equals item.Id
                                          where fg.Code == itemData.Dlvheader.Code
                                          group new { fg, item } by new { fg.CoaCode, fg.ItemId, item.Initial } into grp
                                          select new
@@ -450,12 +458,12 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 short Nhpp = 0;
                 foreach (var itemDetail in DlvDetailData)
                 {
-                    var smData = _db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.DlvDetail.Id && x.RefCode1 == itemDetail.DlvDetail.Code);
+                    var smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.DlvDetail.Id && x.RefCode1 == itemDetail.DlvDetail.Code);
                     if (smData == null) continue;
                     var prorateHeaderDisc = itemData.Dlvheader.FinalDisc > 0 ? (itemData.Dlvheader.FinalDisc * itemDetail.DlvDetail.NettPrice) / DlvDetailData.Sum(x => x.DlvDetail.NettPrice) : 0;
-                    var nonVoidSM = RemoveVoidSM(_db.StockMutations.ToList());
-                    CalculateHPP(nonVoidSM, smData.ItemId, smData.RefDetailId1, "DO");
-                    smData = _db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.DlvDetail.Id && x.RefCode1 == itemDetail.DlvDetail.Code);
+                    var nonVoidSM = RemoveVoidSM(db, db.StockMutations.ToList());
+                    CalculateHPP(db, nonVoidSM, smData.ItemId, smData.RefDetailId1, "DO");
+                    smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.DlvDetail.Id && x.RefCode1 == itemDetail.DlvDetail.Code);
                     var resultHpp = smData.BaseNettPrice > 0 ? smData.BaseNettPrice * smData.BaseQty : 0m;
 
                     //Discount - Diskon
@@ -589,21 +597,21 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     }
                 }
 
-                var invDetData = _db.SalesInvoiceDetails.Where(x => x.DoCode == itemData.Dlvheader.Code).ToList();
+                var invDetData = db.SalesInvoiceDetails.Where(x => x.DoCode == itemData.Dlvheader.Code).ToList();
                 if (invDetData.Any())
                 {
                     foreach (var item in invDetData)
                     {
-                        var invData = _db.SalesInvoiceHeaders.FirstOrDefault(x => x.Code == item.Code);
+                        var invData = db.SalesInvoiceHeaders.FirstOrDefault(x => x.Code == item.Code);
                         if (invData.Mark != "V")
                         {
-                            var invMemo = _db.SalesInvoiceCreditMemos.Where(x => x.InvCode == item.Code).ToList();
+                            var invMemo = db.SalesInvoiceCreditMemos.Where(x => x.InvCode == item.Code).ToList();
                             if (invMemo.Any())
                             {
                                 short k = 0;
                                 foreach (var itemMemo in invMemo)
                                 {
-                                    var memoData = _db.CreditMemos.FirstOrDefault(x => x.Code == itemMemo.CreditMemoCode);
+                                    var memoData = db.CreditMemos.FirstOrDefault(x => x.Code == itemMemo.CreditMemoCode);
                                     if (memoData != null || memoData.Mark != "V")
                                     {
                                         journals.Add(new Journal
@@ -719,13 +727,13 @@ namespace ERP.Web.API.Domain.Services.Accounting
             return journals;
         }
 
-        private IEnumerable<Journal> ProcessCashBankJournal(DateTime dateTime, List<SystemParameter> systemParam)
+        private IEnumerable<Journal> ProcessCashBankJournal(TenantContext db, DateTime dateTime, List<SystemParameter> systemParam)
         {
             List<Journal> journals = new();
-            var cashBankData = _db.GeneralCashBankHeaders.Where(x => x.Date.Month == dateTime.Month && x.Date.Year == dateTime.Year && x.Mark != "V").ToList();
+            var cashBankData = db.GeneralCashBankHeaders.Where(x => x.Date.Month == dateTime.Month && x.Date.Year == dateTime.Year && x.Mark != "V").ToList();
             foreach (var itemData in cashBankData)
             {
-                var cashBankDetailData = _db.GeneralCashBankDetails.Where(x => x.Code == itemData.Code).ToList();
+                var cashBankDetailData = db.GeneralCashBankDetails.Where(x => x.Code == itemData.Code).ToList();
                 short i = 0;
                 short j = 0;
                 foreach (var itemDetailData in cashBankDetailData)
@@ -770,14 +778,14 @@ namespace ERP.Web.API.Domain.Services.Accounting
             return journals;
         }
 
-        private IEnumerable<Journal> ProcessBBAPJournal(List<SystemParameter> systemParam)
+        private IEnumerable<Journal> ProcessBBAPJournal(TenantContext db, List<SystemParameter> systemParam)
         {
             List<Journal> journals = new();
             var startDate = Convert.ToDateTime(systemParam.FirstOrDefault(x => x.Code == "DATA_START_DATE").Value).AddDays(-1);
-            var latestData = _db.VwBeginningBalanceAPs.OrderByDescending(x => x.Date).FirstOrDefault();
+            var latestData = db.VwBeginningBalanceAPs.OrderByDescending(x => x.Date).FirstOrDefault();
             if (latestData?.Date.Month == startDate.Month && latestData?.Date.Year == startDate.Year)
             {
-                var bbapData = _db.VwBeginningBalanceAPs.ToList();
+                var bbapData = db.VwBeginningBalanceAPs.ToList();
                 short i = 0;
                 foreach (var item in bbapData)
                 {
@@ -819,14 +827,14 @@ namespace ERP.Web.API.Domain.Services.Accounting
             return journals;
         }
 
-        private IEnumerable<Journal> ProcessBBARJournal(List<SystemParameter> systemParam)
+        private IEnumerable<Journal> ProcessBBARJournal(TenantContext db, List<SystemParameter> systemParam)
         {
             List<Journal> journals = new();
             var startDate = Convert.ToDateTime(systemParam.FirstOrDefault(x => x.Code == "DATA_START_DATE").Value).AddDays(-1);
-            var latestData = _db.VwBeginningBalanceARs.OrderByDescending(x => x.Date).FirstOrDefault();
+            var latestData = db.VwBeginningBalanceARs.OrderByDescending(x => x.Date).FirstOrDefault();
             if (latestData?.Date.Month == startDate.Month && latestData?.Date.Year == startDate.Year)
             {
-                var bbapData = _db.VwBeginningBalanceARs.ToList();
+                var bbapData = db.VwBeginningBalanceARs.ToList();
                 short i = 0;
                 foreach (var item in bbapData)
                 {
@@ -868,14 +876,14 @@ namespace ERP.Web.API.Domain.Services.Accounting
             return journals;
         }
 
-        private IEnumerable<Journal> ProcessBBDebitMemoJournal(List<SystemParameter> systemParam)
+        private IEnumerable<Journal> ProcessBBDebitMemoJournal(TenantContext db, List<SystemParameter> systemParam)
         {
             List<Journal> journals = new();
             var startDate = Convert.ToDateTime(systemParam.FirstOrDefault(x => x.Code == "DATA_START_DATE").Value).AddDays(-1);
-            var latestData = _db.VwBeginningBalanceDebitMemos.OrderByDescending(x => x.Date).FirstOrDefault();
+            var latestData = db.VwBeginningBalanceDebitMemos.OrderByDescending(x => x.Date).FirstOrDefault();
             if (latestData?.Date.Month == startDate.Month && latestData?.Date.Year == startDate.Year)
             {
-                var bbapData = _db.VwBeginningBalanceDebitMemos.ToList();
+                var bbapData = db.VwBeginningBalanceDebitMemos.ToList();
                 short i = 0;
                 foreach (var item in bbapData)
                 {
@@ -934,14 +942,14 @@ namespace ERP.Web.API.Domain.Services.Accounting
             return journals;
         }
 
-        private IEnumerable<Journal> ProcessBBCreditMemoJournal(List<SystemParameter> systemParam)
+        private IEnumerable<Journal> ProcessBBCreditMemoJournal(TenantContext db, List<SystemParameter> systemParam)
         {
             List<Journal> journals = new();
             var startDate = Convert.ToDateTime(systemParam.FirstOrDefault(x => x.Code == "DATA_START_DATE").Value).AddDays(-1);
-            var latestData = _db.VwBeginningBalanceCreditMemos.OrderByDescending(x => x.Date).FirstOrDefault();
+            var latestData = db.VwBeginningBalanceCreditMemos.OrderByDescending(x => x.Date).FirstOrDefault();
             if (latestData?.Date.Month == startDate.Month && latestData?.Date.Year == startDate.Year)
             {
-                var bbapData = _db.VwBeginningBalanceCreditMemos.ToList();
+                var bbapData = db.VwBeginningBalanceCreditMemos.ToList();
                 short i = 0;
                 foreach (var item in bbapData)
                 {
@@ -1000,11 +1008,11 @@ namespace ERP.Web.API.Domain.Services.Accounting
             return journals;
         }
 
-        private IEnumerable<Journal> ProcessPurchaseReturnJournal(DateTime dateTime, List<SystemParameter> systemParam, List<Item> items, List<Tax> taxes)
+        private IEnumerable<Journal> ProcessPurchaseReturnJournal(TenantContext db, DateTime dateTime, List<SystemParameter> systemParam, List<Item> items, List<Tax> taxes)
         {
             List<Journal> journals = new();
-            var RtnData = (from rtnheader in _db.PurchaseReturnHeaders
-                           join supplier in _db.Suppliers on rtnheader.SupCode equals supplier.Code
+            var RtnData = (from rtnheader in db.PurchaseReturnHeaders
+                           join supplier in db.Suppliers on rtnheader.SupCode equals supplier.Code
                            where rtnheader.Date.Month == dateTime.Month && rtnheader.Date.Year == dateTime.Year && rtnheader.Mark != "V"
                            select new { RtnHeader = rtnheader, Supplier = supplier }).ToList();
 
@@ -1012,11 +1020,11 @@ namespace ERP.Web.API.Domain.Services.Accounting
             {
                 if (itemData.RtnHeader.Type != 1)
                 {
-                    var RtnDetailData = (from rtndetail in _db.PurchaseReturnDetails
-                                         join item in _db.Items on rtndetail.ItemId equals item.Id
+                    var RtnDetailData = (from rtndetail in db.PurchaseReturnDetails
+                                         join item in db.Items on rtndetail.ItemId equals item.Id
                                          where rtndetail.Code == itemData.RtnHeader.Code
                                          select new { RtnDetail = rtndetail, Item = item }).ToList();
-                    var RtnDetailExData = _db.PurchaseReturnDetailExchDiffItems.Where(x => x.Code == itemData.RtnHeader.Code).ToList();
+                    var RtnDetailExData = db.PurchaseReturnDetailExchDiffItems.Where(x => x.Code == itemData.RtnHeader.Code).ToList();
                     
                     var hppData = new Dictionary<int,decimal>();
 
@@ -1024,11 +1032,11 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     short j = 0;
                     foreach (var itemDetail in RtnDetailData)
                     {
-                        var smData = _db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.RtnDetail.Id && x.RefCode1 == itemDetail.RtnDetail.Code);
+                        var smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.RtnDetail.Id && x.RefCode1 == itemDetail.RtnDetail.Code);
                         if (smData == null) continue;
-                        var nonVoidSM = RemoveVoidSM(_db.StockMutations.ToList());
-                        CalculateHPP(nonVoidSM, smData.ItemId, smData.RefDetailId1, "PR");
-                        smData = _db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.RtnDetail.Id && x.RefCode1 == itemDetail.RtnDetail.Code);
+                        var nonVoidSM = RemoveVoidSM(db, db.StockMutations.ToList());
+                        CalculateHPP(db, nonVoidSM, smData.ItemId, smData.RefDetailId1, "PR");
+                        smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.RtnDetail.Id && x.RefCode1 == itemDetail.RtnDetail.Code);
                         var resultHpp = smData.BaseNettPrice > 0 ? smData.BaseNettPrice * smData.BaseQty : 0m;
 
                         hppData.Add(itemDetail.RtnDetail.ItemId, resultHpp);
@@ -1113,8 +1121,8 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     }
 
                     //Receive Process
-                    var RcvData = (from rcvheader in _db.PurchaseReceiveHeaders
-                                   join supplier in _db.Suppliers on rcvheader.SupCode equals supplier.Code
+                    var RcvData = (from rcvheader in db.PurchaseReceiveHeaders
+                                   join supplier in db.Suppliers on rcvheader.SupCode equals supplier.Code
                                    where rcvheader.TransCode == itemData.RtnHeader.Code && rcvheader.Mark != "V"
                                    select new { RcvHeader = rcvheader, Supplier = supplier }).ToList();
 
@@ -1122,19 +1130,19 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     {
                         foreach (var itemRcvData in RcvData)
                         {
-                            var RcvDetailData = (from rcvdetail in _db.PurchaseReceiveDetails
-                                                 join item in _db.Items on rcvdetail.ItemId equals item.Id
+                            var RcvDetailData = (from rcvdetail in db.PurchaseReceiveDetails
+                                                 join item in db.Items on rcvdetail.ItemId equals item.Id
                                                  where rcvdetail.Code == itemRcvData.RcvHeader.Code
                                                  select new { RcvDetail = rcvdetail, Item = item }).ToList();
                             short k = 0;
                             short l = 0;
                             foreach (var itemDetail in RcvDetailData)
                             {
-                                var smData = _db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.RcvDetail.Id && x.RefCode1 == itemDetail.RcvDetail.Code);
+                                var smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.RcvDetail.Id && x.RefCode1 == itemDetail.RcvDetail.Code);
                                 if (smData == null) continue;
-                                var nonVoidSM = RemoveVoidSM(_db.StockMutations.ToList());
-                                CalculateHPP(nonVoidSM, smData.ItemId, smData.RefDetailId1, "RCV");
-                                smData = _db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.RcvDetail.Id && x.RefCode1 == itemDetail.RcvDetail.Code);
+                                var nonVoidSM = RemoveVoidSM(db, db.StockMutations.ToList());
+                                CalculateHPP(db, nonVoidSM, smData.ItemId, smData.RefDetailId1, "RCV");
+                                smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.RcvDetail.Id && x.RefCode1 == itemDetail.RcvDetail.Code);
                                 var resultHpp = smData.BaseNettPrice > 0 ? smData.BaseNettPrice * smData.BaseQty : 0m;
 
                                 //Inventory
@@ -1239,18 +1247,18 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 }
                 else
                 {
-                    var RtnDetailData = (from rtndetail in _db.PurchaseReturnDetails
-                                         join item in _db.Items on rtndetail.ItemId equals item.Id
+                    var RtnDetailData = (from rtndetail in db.PurchaseReturnDetails
+                                         join item in db.Items on rtndetail.ItemId equals item.Id
                                          where rtndetail.Code == itemData.RtnHeader.Code
                                          select new { RtnDetail = rtndetail, Item = item }).ToList();
                     short i = 0;
                     foreach (var itemDetail in RtnDetailData)
                     {
-                        var smData = _db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.RtnDetail.Id && x.RefCode1 == itemDetail.RtnDetail.Code);
+                        var smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.RtnDetail.Id && x.RefCode1 == itemDetail.RtnDetail.Code);
                         if (smData == null) continue;
-                        var nonVoidSM = RemoveVoidSM(_db.StockMutations.ToList());
-                        CalculateHPP(nonVoidSM, smData.ItemId, smData.RefDetailId1, "PR");
-                        smData = _db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.RtnDetail.Id && x.RefCode1 == itemDetail.RtnDetail.Code);
+                        var nonVoidSM = RemoveVoidSM(db, db.StockMutations.ToList());
+                        CalculateHPP(db, nonVoidSM, smData.ItemId, smData.RefDetailId1, "PR");
+                        smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.RtnDetail.Id && x.RefCode1 == itemDetail.RtnDetail.Code);
                         var resultHpp = smData.BaseNettPrice > 0 ? smData.BaseNettPrice * smData.BaseQty : 0m;
 
                         //Inventory
@@ -1334,11 +1342,11 @@ namespace ERP.Web.API.Domain.Services.Accounting
             return journals;
         }
 
-        private IEnumerable<Journal> ProcessSalesReturnJournal(DateTime dateTime, List<SystemParameter> systemParam, List<Item> items, List<Tax> taxes)
+        private IEnumerable<Journal> ProcessSalesReturnJournal(TenantContext db, DateTime dateTime, List<SystemParameter> systemParam, List<Item> items, List<Tax> taxes)
         {
             List<Journal> journals = new();
-            var RtnData = (from rtnheader in _db.SalesReturnHeaders
-                           join customer in _db.Customers on rtnheader.CustCode equals customer.Code
+            var RtnData = (from rtnheader in db.SalesReturnHeaders
+                           join customer in db.Customers on rtnheader.CustCode equals customer.Code
                            where rtnheader.Date.Month == dateTime.Month && rtnheader.Date.Year == dateTime.Year && rtnheader.Mark != "V"
                            select new { RtnHeader = rtnheader, Customer = customer }).ToList();
 
@@ -1346,11 +1354,11 @@ namespace ERP.Web.API.Domain.Services.Accounting
             {
                 if (itemData.RtnHeader.Type != 1)
                 {
-                    var RtnDetailData = (from rtndetail in _db.SalesReturnDetails
-                                         join item in _db.Items on rtndetail.ItemId equals item.Id
+                    var RtnDetailData = (from rtndetail in db.SalesReturnDetails
+                                         join item in db.Items on rtndetail.ItemId equals item.Id
                                          where rtndetail.Code == itemData.RtnHeader.Code
                                          select new { RtnDetail = rtndetail, Item = item }).ToList();
-                    var RtnDetailExData = _db.SalesReturnDetailExchDiffItems.Where(x => x.Code == itemData.RtnHeader.Code).ToList();
+                    var RtnDetailExData = db.SalesReturnDetailExchDiffItems.Where(x => x.Code == itemData.RtnHeader.Code).ToList();
 
                     var hppData = new Dictionary<int, decimal>();
 
@@ -1360,11 +1368,11 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     short k = 0;
                     foreach (var itemDetail in RtnDetailData)
                     {
-                        var smData = _db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.RtnDetail.Id && x.RefCode1 == itemDetail.RtnDetail.Code);
+                        var smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.RtnDetail.Id && x.RefCode1 == itemDetail.RtnDetail.Code);
                         if (smData == null) continue;
-                        var nonVoidSM = RemoveVoidSM(_db.StockMutations.ToList());
-                        CalculateHPP(nonVoidSM, smData.ItemId, smData.RefDetailId1, "SR");
-                        smData = _db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.RtnDetail.Id && x.RefCode1 == itemDetail.RtnDetail.Code);
+                        var nonVoidSM = RemoveVoidSM(db, db.StockMutations.ToList());
+                        CalculateHPP(db, nonVoidSM, smData.ItemId, smData.RefDetailId1, "SR");
+                        smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.RtnDetail.Id && x.RefCode1 == itemDetail.RtnDetail.Code);
                         var resultHpp = smData.BaseNettPrice > 0 ? smData.BaseNettPrice * smData.BaseQty : 0m;
 
                         hppData.Add(itemDetail.RtnDetail.ItemId, resultHpp);
@@ -1463,16 +1471,16 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     });
                     
                     //Delivery Process
-                    var DlvData = (from dlvheader in _db.SalesDeliveryHeaders
-                                   join customer in _db.Customers on dlvheader.CustCode equals customer.Code
+                    var DlvData = (from dlvheader in db.SalesDeliveryHeaders
+                                   join customer in db.Customers on dlvheader.CustCode equals customer.Code
                                    where dlvheader.TransCode == itemData.RtnHeader.Code && dlvheader.Mark != "V"
                                    select new { DlvHeader = dlvheader, Customer = customer }).ToList();
                     if (DlvData.Any())
                     {
                         foreach (var itemDlvData in DlvData)
                         {
-                            var DlvDetailData = (from dlvdetail in _db.SalesDeliveryDetails
-                                                 join item in _db.Items on dlvdetail.ItemId equals item.Id
+                            var DlvDetailData = (from dlvdetail in db.SalesDeliveryDetails
+                                                 join item in db.Items on dlvdetail.ItemId equals item.Id
                                                  where dlvdetail.Code == itemDlvData.DlvHeader.Code 
                                                  select new { DlvDetail = dlvdetail, Item = item }).ToList();
                             short l = 0;
@@ -1480,11 +1488,11 @@ namespace ERP.Web.API.Domain.Services.Accounting
                             short n = 0;
                             foreach (var itemDetail in DlvDetailData)
                             {
-                                var smData = _db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.DlvDetail.Id && x.RefCode1 == itemDetail.DlvDetail.Code);
+                                var smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.DlvDetail.Id && x.RefCode1 == itemDetail.DlvDetail.Code);
                                 if (smData == null) continue;
-                                var nonVoidSM = RemoveVoidSM(_db.StockMutations.ToList());
-                                CalculateHPP(nonVoidSM, smData.ItemId, smData.RefDetailId1, "DO");
-                                smData = _db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.DlvDetail.Id && x.RefCode1 == itemDetail.DlvDetail.Code);
+                                var nonVoidSM = RemoveVoidSM(db, db.StockMutations.ToList());
+                                CalculateHPP(db, nonVoidSM, smData.ItemId, smData.RefDetailId1, "DO");
+                                smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.DlvDetail.Id && x.RefCode1 == itemDetail.DlvDetail.Code);
                                 var resultHpp = smData.BaseNettPrice > 0 ? smData.BaseNettPrice * smData.BaseQty : 0m;
 
                                 //Inventory using COGS for Amount
@@ -1608,8 +1616,8 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 }
                 else
                 {
-                    var RtnDetailData = (from rtndetail in _db.SalesReturnDetails
-                                         join item in _db.Items on rtndetail.ItemId equals item.Id
+                    var RtnDetailData = (from rtndetail in db.SalesReturnDetails
+                                         join item in db.Items on rtndetail.ItemId equals item.Id
                                          where rtndetail.Code == itemData.RtnHeader.Code
                                          select new { RtnDetail = rtndetail, Item = item }).ToList();
 
@@ -1619,12 +1627,12 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     short k = 0;
                     foreach (var itemDetail in RtnDetailData)
                     {
-                        var smData = _db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.RtnDetail.Id && x.RefCode1 == itemDetail.RtnDetail.Code);
+                        var smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.RtnDetail.Id && x.RefCode1 == itemDetail.RtnDetail.Code);
                         if (smData == null) continue;
 
-                        var nonVoidSM = RemoveVoidSM(_db.StockMutations.ToList());
-                        CalculateHPP(nonVoidSM, smData.ItemId, smData.RefDetailId1, "SR");
-                        smData = _db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.RtnDetail.Id && x.RefCode1 == itemDetail.RtnDetail.Code);
+                        var nonVoidSM = RemoveVoidSM(db, db.StockMutations.ToList());
+                        CalculateHPP(db, nonVoidSM, smData.ItemId, smData.RefDetailId1, "SR");
+                        smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.RtnDetail.Id && x.RefCode1 == itemDetail.RtnDetail.Code);
                         var resultHpp = smData.BaseNettPrice > 0 ? smData.BaseNettPrice * smData.BaseQty : 0m;
 
                         //Persediaan Barang
@@ -1724,11 +1732,11 @@ namespace ERP.Web.API.Domain.Services.Accounting
             return journals;
         }
 
-        private IEnumerable<Journal> ProcessExpeditionJournal(DateTime dateTime, List<SystemParameter> systemParam)
+        private IEnumerable<Journal> ProcessExpeditionJournal(TenantContext db, DateTime dateTime, List<SystemParameter> systemParam)
         {
             List<Journal> journals = new();
-            var expeditionData = (from expheader in _db.ExpeditionInvoiceHeaders
-                                  join supplier in _db.Suppliers on expheader.SupCode equals supplier.Code
+            var expeditionData = (from expheader in db.ExpeditionInvoiceHeaders
+                                  join supplier in db.Suppliers on expheader.SupCode equals supplier.Code
                                   where expheader.Date.Month == dateTime.Month && expheader.Date.Year == dateTime.Year && expheader.Mark != "V"
                                   select new { ExpHeader = expheader, Supplier = supplier }).ToList();
             short i = 0;
@@ -1774,12 +1782,12 @@ namespace ERP.Web.API.Domain.Services.Accounting
             return journals;
         }
 
-        private IEnumerable<Journal> ProcessFixedAssetJournal(DateTime dateTime, List<SystemParameter> systemParam)
+        private IEnumerable<Journal> ProcessFixedAssetJournal(TenantContext db, DateTime dateTime, List<SystemParameter> systemParam)
         {
             List<Journal> journals = new();
-            var fixedAssetData = (from fixedAsset in _db.FixedAssets
-                                  join supplier in _db.Suppliers on fixedAsset.SupCode equals supplier.Code
-                                  join assetType in _db.AssetTypes on fixedAsset.TypeId equals assetType.Id
+            var fixedAssetData = (from fixedAsset in db.FixedAssets
+                                  join supplier in db.Suppliers on fixedAsset.SupCode equals supplier.Code
+                                  join assetType in db.AssetTypes on fixedAsset.TypeId equals assetType.Id
                                   where fixedAsset.PurchaseDate.Month == dateTime.Month && fixedAsset.PurchaseDate.Year == dateTime.Year && fixedAsset.Mark != "V"
                                   select new { FixedAsset = fixedAsset, Supplier = supplier, AssetType = assetType }).ToList();
             short i = 0;
@@ -1823,12 +1831,13 @@ namespace ERP.Web.API.Domain.Services.Accounting
 
             return journals;
         }
-        private IEnumerable<Journal> ProcessDepreciationFixedAssetJournal(DateTime dateTime, List<SystemParameter> systemParam)
+        
+        private IEnumerable<Journal> ProcessDepreciationFixedAssetJournal(TenantContext db, DateTime dateTime, List<SystemParameter> systemParam)
         {
             List<Journal> journals = new();
-            var fixedAssetData = (from fixedAsset in _db.FixedAssets
-                                  join supplier in _db.Suppliers on fixedAsset.SupCode equals supplier.Code
-                                  join assetType in _db.AssetTypes on fixedAsset.TypeId equals assetType.Id
+            var fixedAssetData = (from fixedAsset in db.FixedAssets
+                                  join supplier in db.Suppliers on fixedAsset.SupCode equals supplier.Code
+                                  join assetType in db.AssetTypes on fixedAsset.TypeId equals assetType.Id
                                   where fixedAsset.DepreciationMethod == 2 && fixedAsset.StartDepreciateOn.Month <= dateTime.Month &&
                                   fixedAsset.StartDepreciateOn.Month + fixedAsset.EstimatedLife >= dateTime.Month && fixedAsset.PurchaseDate.Year == dateTime.Year && fixedAsset.Mark != "V"
                                   select new { FixedAsset = fixedAsset, Supplier = supplier, AssetType = assetType }).ToList();
@@ -1845,10 +1854,10 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 {
                     if (dataMonth.Month == dateTime.Month)
                     {
-                        var hData = _db.FixedAssetHistories.FirstOrDefault(x => x.Code == itemData.FixedAsset.Code && x.NumberOfMonth == dataMonth.Month);
+                        var hData = db.FixedAssetHistories.FirstOrDefault(x => x.Code == itemData.FixedAsset.Code && x.NumberOfMonth == dataMonth.Month);
                         if (hData == null)
                         {
-                            _db.FixedAssetHistories.Add(new FixedAssetHistory
+                            db.FixedAssetHistories.Add(new FixedAssetHistory
                             {
                                 Code = itemData.FixedAsset.Code,
                                 JournalCode = itemData.FixedAsset.Code,
@@ -1865,9 +1874,9 @@ namespace ERP.Web.API.Domain.Services.Accounting
                             hData.DepreciateValue = depreciationValue;
                             hData.BookValue = bookValue;
 
-                            _db.FixedAssetHistories.Update(hData);
+                            db.FixedAssetHistories.Update(hData);
                         }
-                        _db.SaveChanges();
+                        db.SaveChanges();
 
                         //Beban Depresiasi
                         journals.Add(new Journal
@@ -1910,13 +1919,13 @@ namespace ERP.Web.API.Domain.Services.Accounting
             return journals;
         }
 
-        private IEnumerable<Journal> ProcessEndYearAssetJournal(DateTime dateTime, List<SystemParameter> systemParam, IEnumerable<Journal> depreJournals)
+        private IEnumerable<Journal> ProcessEndYearAssetJournal(TenantContext db, DateTime dateTime, List<SystemParameter> systemParam, IEnumerable<Journal> depreJournals)
         {
             List<Journal> journals = new();
 
             if (dateTime.Month == 12)
             {
-                var historyJournal = _db.Journals.Where(x => x.TypeCode == "ASSET" && new[] { 1, 4 }.Contains(x.Group) && x.Date.Year == dateTime.Year).ToList();
+                var historyJournal = db.Journals.Where(x => x.TypeCode == "ASSET" && new[] { 1, 4 }.Contains(x.Group) && x.Date.Year == dateTime.Year).ToList();
                 historyJournal.AddRange(depreJournals.Where(x => new[] { 1, 4 }.Contains(x.Group)).ToList());
 
                 //Akumulasi Depresiasi
@@ -1993,17 +2002,17 @@ namespace ERP.Web.API.Domain.Services.Accounting
             return journals;
         }
 
-        private IEnumerable<Journal> ProcessBBInventoryJournal(List<SystemParameter> systemParam)
+        private IEnumerable<Journal> ProcessBBInventoryJournal(TenantContext db, List<SystemParameter> systemParam)
         {
             List<Journal> journals = new();
             var startDate = Convert.ToDateTime(systemParam.FirstOrDefault(x => x.Code == "DATA_START_DATE").Value).AddDays(-1);
-            var latestData = _db.VwBeginningBalanceStockHeaders.OrderByDescending(x => x.Date).FirstOrDefault();
+            var latestData = db.VwBeginningBalanceStockHeaders.OrderByDescending(x => x.Date).FirstOrDefault();
             if (latestData?.Date.Month == startDate.Month && latestData?.Date.Year == startDate.Year)
             {
-                var bbapData = _db.VwBeginningBalanceStockHeaders.ToList();
+                var bbapData = db.VwBeginningBalanceStockHeaders.ToList();
                 foreach (var item in bbapData)
                 {
-                    var detailData = _db.VwBeginningBalanceStockDetails.Where(x => x.Code == item.Code).ToList();
+                    var detailData = db.VwBeginningBalanceStockDetails.Where(x => x.Code == item.Code).ToList();
 
                     short i = 0;
                     foreach (var itemDetail in detailData)
@@ -2047,15 +2056,15 @@ namespace ERP.Web.API.Domain.Services.Accounting
             return journals;
         }
 
-        private IEnumerable<Journal> ProcessEndYearJournal(DateTime dateTime, List<SystemParameter> systemParam)
+        private IEnumerable<Journal> ProcessEndYearJournal(TenantContext db, DateTime dateTime, List<SystemParameter> systemParam)
         {
             List<Journal> journals = new();
             if (dateTime.Month == 12)
             {
-                var nonSpecialAcc = _db.Journals.Where(x => Convert.ToInt32(x.CoaCode) < 400000).ToList();
+                var nonSpecialAcc = db.Journals.Where(x => Convert.ToInt32(x.CoaCode) < 400000).ToList();
                 var holdAmount = nonSpecialAcc.Where(x => x.Type == "D").Sum(x => x.Amount) - nonSpecialAcc.Where(x => x.Type == "C").Sum(x => x.Amount);
 
-                var specialAcc = _db.Journals.Where(x => Convert.ToInt32(x.CoaCode) >= 400000).ToList();
+                var specialAcc = db.Journals.Where(x => Convert.ToInt32(x.CoaCode) >= 400000).ToList();
 
                 journals.Add(new Journal
                 {
@@ -2098,18 +2107,18 @@ namespace ERP.Web.API.Domain.Services.Accounting
             return journals;
         }
 
-        private IEnumerable<Journal> ProcessAdjustmentJournal(DateTime dateTime, List<SystemParameter> systemParam)
+        private IEnumerable<Journal> ProcessAdjustmentJournal(TenantContext db, DateTime dateTime, List<SystemParameter> systemParam)
         {
             List<Journal> journals = new();
 
-            var adjData = _db.AdjustmentHeaders.Where(x => x.Date.Month == dateTime.Month && x.Date.Year == dateTime.Year && x.Mark != "V").ToList();
+            var adjData = db.AdjustmentHeaders.Where(x => x.Date.Month == dateTime.Month && x.Date.Year == dateTime.Year && x.Mark != "V").ToList();
 
             short i = 0;
             short j = 0;
             foreach (var itemData in adjData)
             {
-                var adjDetailData = (from adjdetail in _db.AdjustmentDetails
-                                     join item in _db.Items on adjdetail.ItemId equals item.Id
+                var adjDetailData = (from adjdetail in db.AdjustmentDetails
+                                     join item in db.Items on adjdetail.ItemId equals item.Id
                                      where adjdetail.Code == itemData.Code
                                      select new { AdjDetail = adjdetail, Item = item }).ToList();
 
@@ -2117,12 +2126,12 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 short l = 0;
                 foreach (var itemDetail in adjDetailData)
                 {
-                    var smData = _db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.AdjDetail.Id && x.RefCode1 == itemDetail.AdjDetail.Code);
+                    var smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.AdjDetail.Id && x.RefCode1 == itemDetail.AdjDetail.Code);
                     if (smData == null) continue;
 
-                    var nonVoidSM = RemoveVoidSM(_db.StockMutations.ToList());
-                    CalculateHPP(nonVoidSM, smData.ItemId, smData.RefDetailId1, "ADJ");
-                    smData = _db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.AdjDetail.Id && x.RefCode1 == itemDetail.AdjDetail.Code);
+                    var nonVoidSM = RemoveVoidSM(db, db.StockMutations.ToList());
+                    CalculateHPP(db, nonVoidSM, smData.ItemId, smData.RefDetailId1, "ADJ");
+                    smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.AdjDetail.Id && x.RefCode1 == itemDetail.AdjDetail.Code);
                     var resultHpp = smData.BaseNettPrice > 0 ? smData.BaseNettPrice * smData.BaseQty : 0m;
 
                     if (itemData.Type == 1)
@@ -2230,17 +2239,18 @@ namespace ERP.Web.API.Domain.Services.Accounting
 
             return journals;
         }
-        private IEnumerable<Journal> ProcessGeneralJournal(DateTime dateTime)
+        
+        private IEnumerable<Journal> ProcessGeneralJournal(TenantContext db, DateTime dateTime)
         {
             List<Journal> journals = new();
 
-            var dataHeader = _db.GeneralJournalHeaders
+            var dataHeader = db.GeneralJournalHeaders
                 .Where(x => x.Date.Month == dateTime.Month && x.Date.Year == dateTime.Year && x.Mark != "V")
                 .ToList();
 
             foreach (var itemData in dataHeader)
             {
-                var dataDetail = _db.GeneralJournalDetails.Where(x => x.Code == itemData.Code).ToList();
+                var dataDetail = db.GeneralJournalDetails.Where(x => x.Code == itemData.Code).ToList();
 
                 short i = 0;
                 short j = 0;
@@ -2268,11 +2278,11 @@ namespace ERP.Web.API.Domain.Services.Accounting
             return journals;
         }
 
-        private IEnumerable<Journal> ProcessTransferStockJournal(DateTime dateTime, List<SystemParameter> systemParam)
+        private IEnumerable<Journal> ProcessTransferStockJournal(TenantContext db, DateTime dateTime, List<SystemParameter> systemParam)
         {
             List<Journal> journals = new();
 
-            var dataHeader = _db.TransferStockHeaders
+            var dataHeader = db.TransferStockHeaders
                 .Where(x => x.Date.Month == dateTime.Month && x.Date.Year == dateTime.Year && x.Mark != "V")
                 .ToList();
 
@@ -2280,8 +2290,8 @@ namespace ERP.Web.API.Domain.Services.Accounting
 
             foreach (var itemData in dataHeader)
             {
-                var dataDetail = (from tsdetail in _db.TransferStockDetails
-                                     join item in _db.Items on tsdetail.ItemId equals item.Id
+                var dataDetail = (from tsdetail in db.TransferStockDetails
+                                     join item in db.Items on tsdetail.ItemId equals item.Id
                                      where tsdetail.Code == itemData.Code
                                      select new { TsDetail = tsdetail, Item = item }).ToList();
 
@@ -2289,16 +2299,16 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 short j = 0;
                 foreach (var itemDetail in dataDetail)
                 {
-                    var smData = _db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.TsDetail.Id && x.RefCode1 == itemDetail.TsDetail.Code);
+                    var smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.TsDetail.Id && x.RefCode1 == itemDetail.TsDetail.Code);
                     if (smData == null) continue;
 
-                    var nonVoidSM = RemoveVoidSM(_db.StockMutations.ToList());
+                    var nonVoidSM = RemoveVoidSM(db, db.StockMutations.ToList());
                     var resultHpp = 0m;
                     if (itemData.Type != "IN")
                     {
                         var srcType = new[] { "OUT", "DT" }.Contains(itemData.Type) ? "TS" : "CNEE";
-                        CalculateHPP(nonVoidSM, smData.ItemId, smData.RefDetailId1, srcType);
-                        smData = _db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.TsDetail.Id && x.RefCode1 == itemDetail.TsDetail.Code);
+                        CalculateHPP(db, nonVoidSM, smData.ItemId, smData.RefDetailId1, srcType);
+                        smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.TsDetail.Id && x.RefCode1 == itemDetail.TsDetail.Code);
                         resultHpp = smData.BaseNettPrice > 0 ? smData.BaseNettPrice * smData.BaseQty : 0m;
                     }
 
@@ -2396,7 +2406,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
             return journals;
         }
 
-        private void CalculateHPP(IEnumerable<StockMutation> stockMutations, int itemId, long id, string srcCode)
+        private void CalculateHPP(TenantContext db, IEnumerable<StockMutation> stockMutations, int itemId, long id, string srcCode)
         {
             decimal latestQty = 0;
             decimal latestStockValue = 0;
@@ -2418,11 +2428,11 @@ namespace ERP.Web.API.Domain.Services.Accounting
 
                 List<string> srcType = new() { "BB", "RCV", "DO", "SR", "ADJ", "TS", "PR", "CNEE"};
 
-                var doData = _db.SalesDeliveryHeaders.ToList();
+                var doData = db.SalesDeliveryHeaders.ToList();
 
-                var srData = _db.SalesReturnHeaders.ToList();
+                var srData = db.SalesReturnHeaders.ToList();
 
-                var rcvData = _db.PurchaseReceiveHeaders.ToList();
+                var rcvData = db.PurchaseReceiveHeaders.ToList();
 
                 var listSM = stockMutations.Where(x => x.Id != firstSM.Id
                             && srcType.Contains(x.Src)
@@ -2447,7 +2457,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                         {
                             item.BaseNettPrice = hpp;
                             item.NettPrice = hpp * item.BaseQty / item.Qty;
-                            _db.StockMutations.Update(item);
+                            db.StockMutations.Update(item);
                         }
                         latestStockValue += item.BaseNettPrice * item.BaseQty;
                         latestQty += item.BaseQty;
@@ -2458,7 +2468,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                         item.NettPrice = hpp * item.BaseQty / item.Qty;
                         latestStockValue += item.BaseNettPrice * Math.Abs(item.BaseQty);
                         latestQty += item.BaseQty;
-                        _db.StockMutations.Update(item);
+                        db.StockMutations.Update(item);
                     }
                     else
                     {
@@ -2466,28 +2476,26 @@ namespace ERP.Web.API.Domain.Services.Accounting
                         item.NettPrice = hpp * item.BaseQty / item.Qty;
                         latestStockValue -= item.BaseNettPrice * item.BaseQty;
                         latestQty -= item.BaseQty;
-                        _db.StockMutations.Update(item);
+                        db.StockMutations.Update(item);
                     }
                     if (latestStockValue > 0 && latestQty > 0)
                         hpp = latestStockValue / latestQty;
                 }
-                _db.SaveChanges();
+                db.SaveChanges();
             }
         }
 
-        private List<StockMutation> RemoveVoidSM(List<StockMutation> data)
+        private static List<StockMutation> RemoveVoidSM(TenantContext db, List<StockMutation> data)
         {
             var result = data;
             var listVoid = new List<string>();
 
-            listVoid.AddRange(_db.PurchaseReceiveHeaders.Where(x => x.Mark == "V").Select(x => x.Code).ToList());
-            listVoid.AddRange(_db.SalesDeliveryHeaders.Where(x => x.Mark == "V").Select(x => x.Code).ToList());
-            listVoid.AddRange(_db.AdjustmentHeaders.Where(x => x.Mark == "V").Select(x => x.Code).ToList());
-            listVoid.AddRange(_db.TransferStockHeaders.Where(x => x.Mark == "V").Select(x => x.Code).ToList());
-            listVoid.AddRange(_db.PurchaseReturnHeaders.Where(x => x.Mark == "V").Select(x => x.Code).ToList());
-            listVoid.AddRange(_db.SalesReturnHeaders.Where(x => x.Mark == "V").Select(x => x.Code).ToList());
-
-
+            listVoid.AddRange(db.PurchaseReceiveHeaders.Where(x => x.Mark == "V").Select(x => x.Code).ToList());
+            listVoid.AddRange(db.SalesDeliveryHeaders.Where(x => x.Mark == "V").Select(x => x.Code).ToList());
+            listVoid.AddRange(db.AdjustmentHeaders.Where(x => x.Mark == "V").Select(x => x.Code).ToList());
+            listVoid.AddRange(db.TransferStockHeaders.Where(x => x.Mark == "V").Select(x => x.Code).ToList());
+            listVoid.AddRange(db.PurchaseReturnHeaders.Where(x => x.Mark == "V").Select(x => x.Code).ToList());
+            listVoid.AddRange(db.SalesReturnHeaders.Where(x => x.Mark == "V").Select(x => x.Code).ToList());
 
             result = result.Where(x => !listVoid.Contains(x.RefCode1)).ToList();
 
@@ -2496,7 +2504,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
 
         public IEnumerable<PostingLog> GetPostingHistory(JournalRequest data)
         {
-            var plData = _db.PostingLogs.ToList();
+            var plData = _ctx.PostingLogs.ToList();
             return plData.Where(x => x.Period.StartsWith(data.Date.Year.ToString()));
         }
 
@@ -2504,7 +2512,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
         {
             var bbPeriod =
                 Convert
-                    .ToDateTime(_db.SystemParameters.FirstOrDefault(x => x.Code == "DATA_START_DATE")?.Value)
+                    .ToDateTime(_ctx.SystemParameters.FirstOrDefault(x => x.Code == "DATA_START_DATE")?.Value)
                     .AddMonths(-1);
 
             DateTime startDate = new(postDate.Year, 1, 1);
@@ -2512,15 +2520,15 @@ namespace ERP.Web.API.Domain.Services.Accounting
             DateTime endDate = new(postDate.Year, postDate.Month, 1);
             for (var dataMonth = startDate; dataMonth.Date < endDate.Date; dataMonth = dataMonth.AddMonths(1))
             {
-                var plData = _db.PostingLogs.FirstOrDefault(x => x.Period == $"{dataMonth.Year}{(dataMonth.Month > 9 ? dataMonth.Month : "0" + dataMonth.Month)}");
+                var plData = _ctx.PostingLogs.FirstOrDefault(x => x.Period == $"{dataMonth.Year}{(dataMonth.Month > 9 ? dataMonth.Month : "0" + dataMonth.Month)}");
                 if (plData == null)
                 {
-                    _db.PostingLogs.Add(new PostingLog
+                    _ctx.PostingLogs.Add(new PostingLog
                     {
                         Period = $"{dataMonth.Year}{(dataMonth.Month > 9 ? dataMonth.Month : "0" + dataMonth.Month)}",
                         IsPosted = false
                     });
-                    _db.SaveChanges();
+                    _ctx.SaveChanges();
 
                     return false;
                 }
