@@ -71,17 +71,17 @@ namespace ERP.Web.API.Domain.Services.Sales
 
             var data = (new[] { new { Code = "", Date = new DateTime(), Total = (decimal)0, Type = "" } })
                 .Union(from h in Db.GeneralCashBankHeaders
-                        join d in Db.GeneralCashBankDetails on h.Code equals d.Code
-                        where h.Mark == "A" && d.TransCode == code
-                        select new
-                        {
-                            h.Code,
-                            h.Date,
-                            Total = h.Amount,
-                            Type = "Kas Bank"
-                        }).Union(from dpH in Db.DeliveryPlanHeaders
-                                 where dpD.Contains(dpH.Code) && dpH.Mark != "V"
-                                 select new { dpH.Code, dpH.Date, Total = (decimal)0, Type = "Rencana Pengiriman" })
+                       join d in Db.GeneralCashBankDetails on h.Code equals d.Code
+                       where h.Mark == "A" && d.TransCode == code
+                       select new
+                       {
+                           h.Code,
+                           h.Date,
+                           Total = h.Amount,
+                           Type = "Kas Bank"
+                       }).Union(from dpH in Db.DeliveryPlanHeaders
+                                where dpD.Contains(dpH.Code) && dpH.Mark != "V"
+                                select new { dpH.Code, dpH.Date, Total = (decimal)0, Type = "Rencana Pengiriman" })
                 .Skip(1); ;
 
             return data.ToDynamicList();
@@ -460,77 +460,22 @@ namespace ERP.Web.API.Domain.Services.Sales
                     return result;
                 }
 
+                var taxes = Db.Taxes.ToList();
+                List<decimal> totalDetail = new();
+                List<decimal> totalTax = new();
+                List<decimal> totalDpp = new();
+
                 data.ApprovedBy = null;
                 data.ApprovedDate = null;
 
                 // Restore Credit Used
                 RestoreCreditUsed(data.Code, data.CustCode);
 
-                // Update Order header data
                 var orderData = Db.SalesOrderHeaders.FirstOrDefault(x => x.Code == data.SoCode);
-                orderData.Date = data.Date;
-                orderData.CustCode = data.CustCode;
-                orderData.PaymentTermId = data.PaymentTermId;
-                orderData.SalesBy = data.SalesBy;
-                orderData.WarehouseCode = data.WarehouseCode;
-                orderData.CurrCode = data.CurrCode;
-                orderData.Rate = data.Rate;
-                orderData.SubTotal = data.SubTotal;
-                orderData.FinalDiscPercent = data.FinalDiscPercent;
-                orderData.FinalDisc = data.FinalDisc;
-                orderData.IncludeTax = data.IncludeTax;
-                orderData.TaxAmount = data.TaxAmount;
-                orderData.Total = data.Total;
-                orderData.Dpp = data.Dpp;
-                orderData.Notes = data.Notes;
-                orderData.Mark = data.Mark;
-                orderData.UpdatedBy = data.UpdatedBy;
-                orderData.UpdatedDate = data.UpdatedDate;
-                Db.SalesOrderHeaders.Update(orderData);
-                Db.Entry(orderData).Property(e => e.Code).IsModified = false;
-                Db.Entry(orderData).Property(e => e.CreatedBy).IsModified = false;
-                Db.Entry(orderData).Property(e => e.CreatedDate).IsModified = false;
-
-                // Update Delivery header data
                 var invDetail = Db.SalesInvoiceDetails.FirstOrDefault(x => x.Code == data.Code);
                 var deliveryData = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.Code == invDetail.DoCode);
-                deliveryData.Date = data.Date;
-                deliveryData.TransCode = orderData.Code;
-                deliveryData.CustCode = data.CustCode;
-                deliveryData.WarehouseCode = data.WarehouseCode;
-                deliveryData.ShippedBy = data.SalesBy;
-                deliveryData.CurrCode = data.CurrCode;
-                deliveryData.Rate = data.Rate;
-                deliveryData.SubTotal = data.SubTotal;
-                deliveryData.FinalDiscPercent = data.FinalDiscPercent;
-                deliveryData.FinalDisc = data.FinalDisc;
-                deliveryData.IncludeTax = data.IncludeTax;
-                deliveryData.TaxAmount = data.TaxAmount;
-                deliveryData.Total = data.Total;
-                deliveryData.Dpp = data.Dpp;
-                deliveryData.Mark = "INV";
-                deliveryData.Notes = data.Notes;
-                deliveryData.UpdatedBy = data.UpdatedBy;
-                deliveryData.UpdatedDate = data.UpdatedDate;
-                Db.SalesDeliveryHeaders.Update(deliveryData);
-                Db.Entry(deliveryData).Property(e => e.Code).IsModified = false;
-                Db.Entry(deliveryData).Property(e => e.SrcTrans).IsModified = false;
-                Db.Entry(deliveryData).Property(e => e.CreatedBy).IsModified = false;
-                Db.Entry(deliveryData).Property(e => e.CreatedDate).IsModified = false;
-
-                // Update Invoice detail data
                 var InvoiceDetailData = Db.SalesInvoiceDetails.FirstOrDefault(x => x.Code == data.Code);
-                InvoiceDetailData.SubTotal = data.SubTotal;
-                InvoiceDetailData.FinalDisc = data.FinalDisc;
-                InvoiceDetailData.TaxAmount = data.TaxAmount;
-                InvoiceDetailData.Total = data.Total;
-                InvoiceDetailData.Dpp = data.Dpp;
-                Db.SalesInvoiceDetails.Update(InvoiceDetailData);
-                Db.Entry(InvoiceDetailData).Property(e => e.Code).IsModified = false;
 
-
-                // Restore Credit Note
-                RestoreCreditMemo(data.Code);
 
                 // Update Order Detail data
                 // Get detail data that exists in order before
@@ -544,6 +489,31 @@ namespace ERP.Web.API.Domain.Services.Sales
                 short i = 0;
                 foreach (var item in data.ItemDetails)
                 {
+                    var taxData = taxes.FirstOrDefault(x => x.Id == item.TaxId);
+                    var discHeaderProrate = 0m;
+                    if (data.FinalDisc > 0)
+                    {
+                        discHeaderProrate = (item.UnitPrice / data.ItemDetails.Sum(x => x.UnitPrice)) * data.FinalDisc;
+                    }
+
+                    if (data.IncludeTax)
+                    {
+                        item.TaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) - ((item.UnitPrice - item.Disc - discHeaderProrate) / (1 + (taxData.Rate / 100)));
+                        item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate;
+                        item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate - item.TaxAmount;
+                    }
+                    else
+                    {
+                        item.TaxAmount = (item.UnitPrice - item.Disc) * (taxData.Rate / 100);
+                        item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate + item.TaxAmount;
+                        item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate;
+                    }
+
+                    item.Total = item.Qty * item.NettPrice;
+                    totalDetail.Add(item.Total);
+                    totalTax.Add(item.Qty * item.TaxAmount);
+                    totalDpp.Add(item.Qty * item.Dpp);
+
                     if (item.Id == 0)
                     {
                         var orderDetail = new SalesOrderDetail
@@ -586,9 +556,37 @@ namespace ERP.Web.API.Domain.Services.Sales
                     }
                     else
                     {
-                        item.LineNo = ++i;
+                        var orderDetail = new SalesOrderDetail
+                        {
+                            Code = item.Code,
+                            LineNo = ++i,
+                            ItemId = item.ItemId,
+                            UomId = item.UomId,
+                            UnitId = item.UnitId,
+                            Qty = item.Qty,
+                            Length = item.Length,
+                            Width = item.Width,
+                            Height = item.Height,
+                            Weight = item.Weight,
+                            DimensionMeasurement = item.DimensionMeasurement,
+                            WeightMeasurement = item.WeightMeasurement,
+                            QtyDlv = 0,
+                            UnitPrice = item.UnitPrice,
+                            Disc = item.Disc,
+                            TaxId = item.TaxId,
+                            TaxAmount = item.TaxAmount,
+                            NettPrice = item.NettPrice,
+                            Total = item.Total,
+                            Dpp = item.Dpp,
+                            Notes = item.Notes,
+                            CoaInventory = item.CoaInventory,
+                            CoaCogs = item.CoaCogs,
+                            CoaSls = item.CoaSls,
+                            CoaSlsDisc = item.CoaSlsDisc,
+                            CoaSlsReturn = item.CoaSlsReturn
+                        };
 
-                        Db.SalesOrderDetails.Update(item);
+                        Db.SalesOrderDetails.Update(orderDetail);
                         Db.Entry(item).Property(e => e.Code).IsModified = false;
 
                         if (item.FreeItemDetails.Any() || item.DiscountItemDetails.Any())
@@ -687,6 +685,28 @@ namespace ERP.Web.API.Domain.Services.Sales
                 short j = 0;
                 foreach (var item in data.ItemDetails)
                 {
+                    var taxData = taxes.FirstOrDefault(x => x.Id == item.TaxId);
+                    var discHeaderProrate = 0m;
+                    if (data.FinalDisc > 0)
+                    {
+                        discHeaderProrate = (item.UnitPrice / data.ItemDetails.Sum(x => x.UnitPrice)) * data.FinalDisc;
+                    }
+
+                    if (data.IncludeTax)
+                    {
+                        item.TaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) - ((item.UnitPrice - item.Disc - discHeaderProrate) / (1 + (taxData.Rate / 100)));
+                        item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate;
+                        item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate - item.TaxAmount;
+                    }
+                    else
+                    {
+                        item.TaxAmount = (item.UnitPrice - item.Disc) * (taxData.Rate / 100);
+                        item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate + item.TaxAmount;
+                        item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate;
+                    }
+
+                    item.Total = item.Qty * item.NettPrice;
+
                     var deliveryDetail = new SalesDeliveryDetail
                     {
                         Code = InvoiceDetailData.DoCode,
@@ -750,6 +770,73 @@ namespace ERP.Web.API.Domain.Services.Sales
                     }
                 }
 
+                data.SubTotal = totalDetail.Sum();
+                data.TaxAmount = Math.Round(totalTax.Sum());
+                data.Dpp = Math.Round(totalDpp.Sum()) - data.FinalDisc;
+                data.Total = data.SubTotal - data.FinalDisc;
+
+                // Update Order header data
+                orderData.Date = data.Date;
+                orderData.CustCode = data.CustCode;
+                orderData.PaymentTermId = data.PaymentTermId;
+                orderData.SalesBy = data.SalesBy;
+                orderData.WarehouseCode = data.WarehouseCode;
+                orderData.CurrCode = data.CurrCode;
+                orderData.Rate = data.Rate;
+                orderData.SubTotal = data.SubTotal;
+                orderData.FinalDiscPercent = data.FinalDiscPercent;
+                orderData.FinalDisc = data.FinalDisc;
+                orderData.IncludeTax = data.IncludeTax;
+                orderData.TaxAmount = data.TaxAmount;
+                orderData.Total = data.Total;
+                orderData.Dpp = data.Dpp;
+                orderData.Notes = data.Notes;
+                orderData.Mark = data.Mark;
+                orderData.UpdatedBy = data.UpdatedBy;
+                orderData.UpdatedDate = data.UpdatedDate;
+                Db.SalesOrderHeaders.Update(orderData);
+                Db.Entry(orderData).Property(e => e.Code).IsModified = false;
+                Db.Entry(orderData).Property(e => e.CreatedBy).IsModified = false;
+                Db.Entry(orderData).Property(e => e.CreatedDate).IsModified = false;
+
+
+                // Update Delivery header data
+                deliveryData.Date = data.Date;
+                deliveryData.TransCode = orderData.Code;
+                deliveryData.CustCode = data.CustCode;
+                deliveryData.WarehouseCode = data.WarehouseCode;
+                deliveryData.ShippedBy = data.SalesBy;
+                deliveryData.CurrCode = data.CurrCode;
+                deliveryData.Rate = data.Rate;
+                deliveryData.SubTotal = data.SubTotal;
+                deliveryData.FinalDiscPercent = data.FinalDiscPercent;
+                deliveryData.FinalDisc = data.FinalDisc;
+                deliveryData.IncludeTax = data.IncludeTax;
+                deliveryData.TaxAmount = data.TaxAmount;
+                deliveryData.Total = data.Total;
+                deliveryData.Dpp = data.Dpp;
+                deliveryData.Mark = "INV";
+                deliveryData.Notes = data.Notes;
+                deliveryData.UpdatedBy = data.UpdatedBy;
+                deliveryData.UpdatedDate = data.UpdatedDate;
+                Db.SalesDeliveryHeaders.Update(deliveryData);
+                Db.Entry(deliveryData).Property(e => e.Code).IsModified = false;
+                Db.Entry(deliveryData).Property(e => e.SrcTrans).IsModified = false;
+                Db.Entry(deliveryData).Property(e => e.CreatedBy).IsModified = false;
+                Db.Entry(deliveryData).Property(e => e.CreatedDate).IsModified = false;
+
+                // Update Invoice detail data
+                InvoiceDetailData.SubTotal = data.SubTotal;
+                InvoiceDetailData.FinalDisc = data.FinalDisc;
+                InvoiceDetailData.TaxAmount = data.TaxAmount;
+                InvoiceDetailData.Total = data.Total;
+                InvoiceDetailData.Dpp = data.Dpp;
+                Db.SalesInvoiceDetails.Update(InvoiceDetailData);
+                Db.Entry(InvoiceDetailData).Property(e => e.Code).IsModified = false;
+
+
+                // Restore Credit Note
+                RestoreCreditMemo(data.Code);
 
                 // Get detail data that exists in invoice before
                 var delMemos = Db.SalesInvoiceCreditMemos
@@ -932,21 +1019,24 @@ namespace ERP.Web.API.Domain.Services.Sales
                     else
                     {
                         var oldStock = Db.StockMutations.FirstOrDefault(x => x.ItemId == item.ItemId && x.RefCode1 == code);
-                        if (uom.IsBaseUnit)
+                        if (oldStock != null)
                         {
-                            if (item.Qty > (stock.QtyOnHand -  oldStock.BaseQty))
+                            if (uom.IsBaseUnit)
                             {
-                                result = true;
+                                if (item.Qty > (stock.QtyOnHand - oldStock.BaseQty))
+                                {
+                                    result = true;
+                                }
                             }
-                        }
-                        else
-                        {
-                            var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= uom.Seq).Select(x => x.Conversion).ToList();
-                            var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
-                            var baseQty = item.Qty * multipliedQty;
-                            if (baseQty > (stock.QtyOnHand - oldStock.BaseQty))
+                            else
                             {
-                                result = true;
+                                var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= uom.Seq).Select(x => x.Conversion).ToList();
+                                var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
+                                var baseQty = item.Qty * multipliedQty;
+                                if (baseQty > (stock.QtyOnHand - oldStock.BaseQty))
+                                {
+                                    result = true;
+                                }
                             }
                         }
                     }
