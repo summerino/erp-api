@@ -115,17 +115,45 @@ namespace ERP.Web.API.Domain.Services.Sales
                     return result;
                 }
 
+                var taxes = Db.Taxes.ToList();
+                List<decimal> totalDetail = new();
+                List<decimal> totalTax = new();
+                List<decimal> totalDpp = new();
+
                 // Get new code
                 var newCode = GetNewCode("SO_NUM_FMT", data.Date);
 
-                // Insert header data
                 data.Code = newCode;
-                Db.SalesOrderHeaders.Add(data);
 
                 // Insert detail data
                 short i = 0;
                 foreach (var item in data.ItemDetails)
                 {
+                    var taxData = taxes.FirstOrDefault(x => x.Id == item.TaxId);
+                    var discHeaderProrate = 0m;
+                    if (data.FinalDisc > 0)
+                    {
+                        discHeaderProrate = (item.UnitPrice / data.ItemDetails.Sum(x => x.UnitPrice)) * data.FinalDisc;
+                    }
+
+                    if (data.IncludeTax)
+                    {
+                        item.TaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) - ((item.UnitPrice - item.Disc - discHeaderProrate) / (1 + (taxData.Rate / 100)));
+                        item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate;
+                        item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate - item.TaxAmount;
+                    }
+                    else
+                    {
+                        item.TaxAmount = (item.UnitPrice - item.Disc) * (taxData.Rate / 100);
+                        item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate + item.TaxAmount;
+                        item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate;
+                    }
+
+                    item.Total = item.Qty * item.NettPrice;
+                    totalDetail.Add(item.Total);
+                    totalTax.Add(item.Qty * item.TaxAmount);
+                    totalDpp.Add(item.Qty * item.Dpp);
+
                     var orderDetail = new SalesOrderDetail
                     {
                         Code = newCode,
@@ -215,6 +243,12 @@ namespace ERP.Web.API.Domain.Services.Sales
                         Db.SaveChanges();
                     }
                 }
+
+                data.SubTotal = totalDetail.Sum();
+                data.TaxAmount = Math.Round(totalTax.Sum());
+                data.Dpp = Math.Round(totalDpp.Sum()) - data.FinalDisc;
+                data.Total = data.SubTotal - data.FinalDisc;
+                Db.SalesOrderHeaders.Add(data);
 
                 // Update Credit Used
                 UpdateCreditUsed(data.CustCode, data.Total);
@@ -461,17 +495,16 @@ namespace ERP.Web.API.Domain.Services.Sales
                     return result;
                 }
 
+                var taxes = Db.Taxes.ToList();
+                List<decimal> totalDetail = new();
+                List<decimal> totalTax = new();
+                List<decimal> totalDpp = new();
+
                 data.ApprovedBy = null;
                 data.ApprovedDate = null;
 
                 // Restore Credit Used
                 RestoreCreditUsed(data.Code, data.CustCode);
-
-                // Update header data
-                Db.SalesOrderHeaders.Update(data);
-                Db.Entry(data).Property(e => e.Code).IsModified = false;
-                Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
-                Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
 
                 // Get detail data that exists in order before
                 var delDetails = Db.SalesOrderDetails
@@ -485,6 +518,31 @@ namespace ERP.Web.API.Domain.Services.Sales
                 short i = 0;
                 foreach (var item in data.ItemDetails)
                 {
+                    var taxData = taxes.FirstOrDefault(x => x.Id == item.TaxId);
+                    var discHeaderProrate = 0m;
+                    if (data.FinalDisc > 0)
+                    {
+                        discHeaderProrate = (item.UnitPrice / data.ItemDetails.Sum(x => x.UnitPrice)) * data.FinalDisc;
+                    }
+
+                    if (data.IncludeTax)
+                    {
+                        item.TaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) - ((item.UnitPrice - item.Disc - discHeaderProrate) / (1 + (taxData.Rate / 100)));
+                        item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate;
+                        item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate - item.TaxAmount;
+                    }
+                    else
+                    {
+                        item.TaxAmount = (item.UnitPrice - item.Disc) * (taxData.Rate / 100);
+                        item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate + item.TaxAmount;
+                        item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate;
+                    }
+
+                    item.Total = item.Qty * item.NettPrice;
+                    totalDetail.Add(item.Total);
+                    totalTax.Add(item.Qty * item.TaxAmount);
+                    totalDpp.Add(item.Qty * item.Dpp);
+
                     if (item.Id <= 0)
                     {
                         var orderDetail = new SalesOrderDetail
@@ -623,6 +681,16 @@ namespace ERP.Web.API.Domain.Services.Sales
                         }
                     }
                 }
+
+                data.SubTotal = totalDetail.Sum();
+                data.TaxAmount = Math.Round(totalTax.Sum());
+                data.Dpp = Math.Round(totalDpp.Sum()) - data.FinalDisc;
+                data.Total = data.SubTotal - data.FinalDisc;
+                // Update header data
+                Db.SalesOrderHeaders.Update(data);
+                Db.Entry(data).Property(e => e.Code).IsModified = false;
+                Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
+                Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
 
                 // Update Credit Used
                 UpdateCreditUsed(data.CustCode, data.Total);

@@ -102,40 +102,45 @@ namespace ERP.Web.API.Domain.Services.Sales
                     return result;
                 }
 
+                var taxes = Db.Taxes.ToList();
+                List<decimal> totalDetail = new();
+                List<decimal> totalTax = new();
+                List<decimal> totalDpp = new();
+
                 // Sales Order
                 var newCode = GetNewCode("DI_NUM_FMT", data.Date);
-                Db.SalesOrderHeaders.Add(new SalesOrderHeader
-                {
-                    Code = newCode,
-                    Date = data.Date,
-                    CustCode = data.CustCode,
-                    PaymentTermId = data.PaymentTermId,
-                    SalesBy = data.SalesBy,
-                    WarehouseCode = data.WarehouseCode,
-                    CurrCode = data.CurrCode,
-                    Rate = data.Rate,
-                    SubTotal = data.SubTotal,
-                    FinalDiscPercent = data.FinalDiscPercent,
-                    FinalDisc = data.FinalDisc,
-                    IncludeTax = data.IncludeTax,
-                    TaxAmount = data.TaxAmount,
-                    Total = data.Total,
-                    Dpp = data.Dpp,
-                    Notes = data.Notes,
-                    Mark = data.Mark,
-                    CreatedBy = data.CreatedBy,
-                    CreatedDate = data.CreatedDate,
-                    UpdatedBy = data.UpdatedBy,
-                    UpdatedDate = data.UpdatedDate,
-                    FromDirectInvoice = true
-                });
-
+               
                 // Credit Used
                 UpdateCreditUsed(data.CustCode, data.Total);
 
                 short i = 0;
                 foreach (var item in data.ItemDetails)
                 {
+                    var taxData = taxes.FirstOrDefault(x => x.Id == item.TaxId);
+                    var discHeaderProrate = 0m;
+                    if (data.FinalDisc > 0)
+                    {
+                        discHeaderProrate = (item.UnitPrice / data.ItemDetails.Sum(x => x.UnitPrice)) * data.FinalDisc;
+                    }
+
+                    if (data.IncludeTax)
+                    {
+                        item.TaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) - ((item.UnitPrice - item.Disc - discHeaderProrate) / (1 + (taxData.Rate / 100)));
+                        item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate;
+                        item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate - item.TaxAmount;
+                    }
+                    else
+                    {
+                        item.TaxAmount = (item.UnitPrice - item.Disc) * (taxData.Rate / 100);
+                        item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate + item.TaxAmount;
+                        item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate;
+                    }
+
+                    item.Total = item.Qty * item.NettPrice;
+                    totalDetail.Add(item.Total);
+                    totalTax.Add(item.Qty * item.TaxAmount);
+                    totalDpp.Add(item.Qty * item.Dpp);
+
                     var orderDetail = new SalesOrderDetail
                     {
                         Code = newCode,
@@ -219,6 +224,37 @@ namespace ERP.Web.API.Domain.Services.Sales
                         Db.SaveChanges();
                     }
                 }
+
+                data.SubTotal = totalDetail.Sum();
+                data.TaxAmount = Math.Round(totalTax.Sum());
+                data.Dpp = Math.Round(totalDpp.Sum()) - data.FinalDisc;
+                data.Total = data.SubTotal - data.FinalDisc;
+
+                Db.SalesOrderHeaders.Add(new SalesOrderHeader
+                {
+                    Code = newCode,
+                    Date = data.Date,
+                    CustCode = data.CustCode,
+                    PaymentTermId = data.PaymentTermId,
+                    SalesBy = data.SalesBy,
+                    WarehouseCode = data.WarehouseCode,
+                    CurrCode = data.CurrCode,
+                    Rate = data.Rate,
+                    SubTotal = data.SubTotal,
+                    FinalDiscPercent = data.FinalDiscPercent,
+                    FinalDisc = data.FinalDisc,
+                    IncludeTax = data.IncludeTax,
+                    TaxAmount = data.TaxAmount,
+                    Total = data.Total,
+                    Dpp = data.Dpp,
+                    Notes = data.Notes,
+                    Mark = data.Mark,
+                    CreatedBy = data.CreatedBy,
+                    CreatedDate = data.CreatedDate,
+                    UpdatedBy = data.UpdatedBy,
+                    UpdatedDate = data.UpdatedDate,
+                    FromDirectInvoice = true
+                });
 
                 // Sales Delivery
                 Db.SalesDeliveryHeaders.Add(new SalesDeliveryHeader
