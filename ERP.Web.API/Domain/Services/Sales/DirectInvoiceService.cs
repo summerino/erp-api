@@ -109,7 +109,8 @@ namespace ERP.Web.API.Domain.Services.Sales
 
                 // Sales Order
                 var newCode = GetNewCode("DI_NUM_FMT", data.Date);
-               
+                data.Code = newCode;
+
                 // Credit Used
                 UpdateCreditUsed(data.CustCode, data.Total);
 
