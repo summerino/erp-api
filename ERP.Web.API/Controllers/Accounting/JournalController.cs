@@ -48,6 +48,19 @@ namespace ERP.Web.API.Controllers.Accounting
 
             var userId = _claim.UserId;
 
+            //var t = new Thread(new ThreadStart(() =>
+            //{
+            //    try
+            //    {
+            //        _js.PostingJournal(data, userId);
+            //    }
+            //    catch (Exception)
+            //    {
+            //        throw;
+            //    }
+            //}));
+            //t.Start();
+
             _ffs.Execute(repo =>
             {
                 return repo.PostingJournal(data, userId);

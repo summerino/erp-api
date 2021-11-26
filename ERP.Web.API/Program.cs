@@ -58,6 +58,9 @@ using Swift.Framework;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+
 // Add services to the container.
 
 // Configure JwtSetting
@@ -268,6 +271,7 @@ builder.Services.AddScoped<IJournalStateService, JournalStateService>();
 
 //Special services
 builder.Services.AddScoped<IFireForgetService, FireForgetService>();
+
 #region Mobile
 // General services
 builder.Services.AddScoped<IImageService, ImageService>();

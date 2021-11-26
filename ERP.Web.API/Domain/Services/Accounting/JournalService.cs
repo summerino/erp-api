@@ -13,10 +13,12 @@ namespace ERP.Web.API.Domain.Services.Accounting
     public class JournalService : IJournalService
     {
         private readonly TenantContext _db;
+        private readonly ILogger<JournalService> _logger;
 
-        public JournalService(TenantContext db)
+        public JournalService(TenantContext db, ILogger<JournalService> logger)
         {
             _db = db;
+            _logger = logger;
         }
 
         public SaveResult PostingJournal(JournalRequest data, int userId)
@@ -28,6 +30,8 @@ namespace ERP.Web.API.Domain.Services.Accounting
 
             try
             {
+                _logger.LogInformation("Inside IJournalService PostingJournal.");
+
                 var stateData = new JournalState
                 {
                     Date = DateTime.Now,
