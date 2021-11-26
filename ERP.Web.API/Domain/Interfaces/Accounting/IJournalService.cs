@@ -6,7 +6,7 @@ namespace ERP.Web.API.Domain.Interfaces.Accounting
 {
     public interface IJournalService
     {
-        Task PostingJournal(JournalRequest data, int userId);
+        SaveResult PostingJournal(JournalRequest data, int userId);
 
         IEnumerable<PostingLog> GetPostingHistory(JournalRequest data);
 

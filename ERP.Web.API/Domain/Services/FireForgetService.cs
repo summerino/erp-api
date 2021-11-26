@@ -1,4 +1,5 @@
-﻿using ERP.Web.API.Domain.Interfaces;
+﻿using ERP.Common;
+using ERP.Web.API.Domain.Interfaces;
 using ERP.Web.API.Domain.Interfaces.Accounting;
 using ERP.Web.API.Domain.Services.Accounting;
 
@@ -12,7 +13,7 @@ namespace ERP.Web.API.Domain.Services
             _ssf = ssf;
         }
 
-        public void Execute(Func<IJournalService, Task> DoWork)
+        public void Execute(Func<IJournalService, SaveResult> DoWork)
         {
             var t = new Thread(new ThreadStart(() =>
             {

@@ -19,15 +19,15 @@ namespace ERP.Web.API.Domain.Services.Accounting
             _db = db;
         }
 
-        public Task PostingJournal(JournalRequest data, int userId)
+        public SaveResult PostingJournal(JournalRequest data, int userId)
         {
+            var result = new SaveResult(false);
             var systemParam = _db.SystemParameters.ToList();
             var items = _db.Items.ToList();
             var taxes = _db.Taxes.ToList();
 
             try
             {
-
                 var stateData = new JournalState
                 {
                     Date = DateTime.Now,
@@ -241,10 +241,14 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 stateData.Notes = ex.InnerException?.Message ?? ex.Message;
                 _db.JournalStates.Update(stateData);
                 _db.SaveChanges();
-                return Task.CompletedTask;
+
+                result.Message = ex.InnerException?.Message ?? ex.Message;
+                return result;
             }
 
-            return Task.CompletedTask;
+            result.Success = true;
+            result.Message = "Posting jurnal selesai.";
+            return result;
         }
 
         private IEnumerable<Journal> ProcessPurchaseJournal(DateTime dateTime, List<SystemParameter> systemParam, List<Item> items, List<Tax> taxes)
