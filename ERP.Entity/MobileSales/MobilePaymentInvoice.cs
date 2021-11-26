@@ -37,7 +37,7 @@ namespace ERP.Entity.MobileSales
         [StringLength(17)]
         public string TransCode { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal Amount { get; set; }
 
         [StringLength(256)]

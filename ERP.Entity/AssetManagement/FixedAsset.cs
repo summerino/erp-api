@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 using ERP.Entity.Core;
 
 namespace ERP.Entity.AssetManagement
@@ -24,13 +25,13 @@ namespace ERP.Entity.AssetManagement
         [Column(TypeName = "date")]
         public DateTime StartDepreciateOn { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal PurchaseValue { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal AcquiredValue { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal SalvageValue { get; set; }
 
         public int DepreciationMonth { get; set; }
@@ -63,10 +64,10 @@ namespace ERP.Entity.AssetManagement
 
         public int DepreciationMethod { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal InitDepreciationExpense { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal BookValue { get; set; }
 
         [StringLength(256)]
@@ -86,7 +87,7 @@ namespace ERP.Entity.AssetManagement
 
         public int DepartmentId { get; set; }
         
-        [Column(TypeName = "decimal(5, 2)")]
+        [Precision(5, 2)]
         public decimal Percentage { get; set; }
     }
 
@@ -113,10 +114,10 @@ namespace ERP.Entity.AssetManagement
         [Column(TypeName = "date")]
         public DateTime DepreciateDate { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal DepreciateValue { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal BookValue { get; set; }
     }
 
@@ -187,13 +188,13 @@ namespace ERP.Entity.AssetManagement
         [Column(TypeName = "date")]
         public DateTime StartDepreciateOn { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal PurchaseValue { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal AcquiredValue { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal SalvageValue { get; set; }
 
         public int DepreciationMonth { get; set; }
@@ -226,10 +227,10 @@ namespace ERP.Entity.AssetManagement
 
         public int DepreciationMethod { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal InitDepreciationExpense { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
+        [Precision(18, 2)]
         public decimal BookValue { get; set; }
 
         [StringLength(256)]

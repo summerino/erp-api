@@ -178,6 +178,7 @@ namespace ERP.Entity
         public DbSet<MobileVisitLog> MobileVisitLogs { get; set; }
         public DbSet<VwMobileVisitLog> VwMobileVisitLogs { get; set; }
         public DbSet<MobileVisitReason> MobileVisitReasons { get; set; }
+        public DbSet<MobileVisitPerformanceReport> MobileVisitPerformanceReports { get; set; }
 
         // Mobile Warehouse entities
         public DbSet<MobileDeliveryItemHeader> MobileDeliveryItemHeaders { get; set; }
@@ -278,6 +279,7 @@ namespace ERP.Entity
         public DbSet<SystemManagement.Action> Actions { get; set; }
         public DbSet<Company> Companies { get; set; }
         public DbSet<VwCompany> VwCompanies { get; set; }
+        public DbSet<JournalState> JournalStates { get; set; }
         public DbSet<Menu> Menus { get; set; }
         public DbSet<MenuAction> MenuActions { get; set; }
         public DbSet<Role> Roles { get; set; }
@@ -1500,6 +1502,11 @@ namespace ERP.Entity
                     .HasForeignKey(d => d.VisitReasonId)
                     .OnDelete(DeleteBehavior.NoAction);
             });
+
+            //Mobile Visit Performance Report
+            modelBuilder.Entity<MobileVisitPerformanceReport>()
+                .HasNoKey()
+                .ToTable("MobileVisitPerformanceReport", t => t.ExcludeFromMigrations());
 
             // Mobile Warehouse entities
             // Mobile Delivery Item model

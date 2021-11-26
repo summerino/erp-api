@@ -19,41 +19,92 @@ namespace ERP.Web.API.Domain.Services.Mobile.HumanResource
 
         public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, int userId, string date)
         {
-            var day = DateTime.Now.Date;
-            var month = DateTime.ParseExact(date, "yyyy-MM", null).Month;
+            var data_attendance = (from attendance in Db.Attendances
+                                   join user in Db.Users on attendance.EmployeeId equals user.EmployeeId
+                                   where user.Id.Equals(userId)
+                                   select new Attendance
+                                   {
+                                       Id = attendance.Id,
+                                       Date = attendance.Date,
+                                       EmployeeId = user.Id,
+                                       CheckIn = attendance.CheckIn,
+                                       CheckInLat = attendance.CheckInLat,
+                                       CheckInLng = attendance.CheckInLng,
+                                       CheckInImage = attendance.CheckInImage,
+                                       CheckInNotes = attendance.CheckInNotes,
+                                       CheckOut = attendance.CheckOut,
+                                       CheckOutLat = attendance.CheckOutLat,
+                                       CheckOutLng = attendance.CheckOutLng,
+                                       CheckOutImage = attendance.CheckOutImage,
+                                       CheckOutNotes = attendance.CheckOutNotes,
+                                       TotalHours = attendance.TotalHours
+                                   }).AsQueryable();
+
             var year = DateTime.ParseExact(date, "yyyy-MM", null).Year;
+            var month = DateTime.ParseExact(date, "yyyy-MM", null).Month;
+            var day = DateTime.Now.Day;
+            var selected_date = DateTime.DaysInMonth(year, month);
 
-            var data = (from attendance in Db.Attendances
-                        join user in Db.Users on attendance.EmployeeId equals user.EmployeeId
-                        where user.Id.Equals(userId)
-                        select new Attendance
-                        {
-                            Id = attendance.Id,
-                            Date = attendance.Date,
-                            EmployeeId = user.Id,
-                            CheckIn = attendance.CheckIn,
-                            CheckInLat = attendance.CheckInLat,
-                            CheckInLng = attendance.CheckInLng,
-                            CheckInImage = attendance.CheckInImage,
-                            CheckInNotes = attendance.CheckInNotes,
-                            CheckOut = attendance.CheckOut,
-                            CheckOutLat = attendance.CheckOutLat,
-                            CheckOutLng = attendance.CheckOutLng,
-                            CheckOutImage = attendance.CheckOutImage,
-                            CheckOutNotes = attendance.CheckOutNotes,
-                            TotalHours = attendance.TotalHours
-                        }).AsQueryable();
+            if (month == DateTime.Now.Month && year == DateTime.Now.Year)
+            {
+                var data_date = Enumerable.Range(1, day)  // Days: 1, 2 ... 31 etc.
+                        .Select(day => new DateTime(year, month, day)) // Map each day to a date
+                        .ToList();
 
-            data = data.Where(x => x.Date.Month.Equals(month) && x.Date.Year.Equals(year));
+                var data = (from dd in data_date
+                            join attend in data_attendance on dd.Date.Date equals attend.Date.Date
+                            into attendances
+                            from attend in attendances.DefaultIfEmpty()
+                            select new Attendance
+                            {
+                                Id = attend?.Id ?? 0,
+                                Date = dd.Date.Date,
+                                EmployeeId = userId,
+                                CheckIn = attend?.CheckIn,
+                                CheckInLat = attend?.CheckInLat,
+                                CheckInLng = attend?.CheckInLng,
+                                CheckInImage = attend?.CheckInImage,
+                                CheckInNotes = attend?.CheckInNotes,
+                                CheckOut = attend?.CheckOut,
+                                CheckOutLat = attend?.CheckOutLat,
+                                CheckOutLng = attend?.CheckOutLng,
+                                CheckOutImage = attend?.CheckOutImage,
+                                CheckOutNotes = attend?.CheckOutNotes,
+                                TotalHours = attend?.TotalHours
+                            }).AsQueryable();
 
-            //if (!string.IsNullOrEmpty(date))
-            //{
-            //    var month = DateTime.ParseExact(date, "yyyy-MM", null).Month;
-            //    var year = DateTime.ParseExact(date, "yyyy-MM", null).Year;
-            //    data = data.Where(x => x.Date.Month.Equals(month) && x.Date.Year.Equals(year));
-            //}
+                return data.ToDataSourceResult(skip, take, filter, sort);
+            }
+            else
+            {
+                var data_date = Enumerable.Range(1, selected_date)  // Days: 1, 2 ... 31 etc.
+                        .Select(day => new DateTime(year, month, day)) // Map each day to a date
+                        .ToList();
 
-            return data.ToDataSourceResult(skip, take, filter, sort);
+                var data = (from dd in data_date
+                            join attend in data_attendance on dd.Date.Date equals attend.Date.Date
+                            into attendances
+                            from attend in attendances.DefaultIfEmpty()
+                            select new Attendance
+                            {
+                                Id = attend?.Id ?? 0,
+                                Date = dd.Date.Date,
+                                EmployeeId = userId,
+                                CheckIn = attend?.CheckIn,
+                                CheckInLat = attend?.CheckInLat,
+                                CheckInLng = attend?.CheckInLng,
+                                CheckInImage = attend?.CheckInImage,
+                                CheckInNotes = attend?.CheckInNotes,
+                                CheckOut = attend?.CheckOut,
+                                CheckOutLat = attend?.CheckOutLat,
+                                CheckOutLng = attend?.CheckOutLng,
+                                CheckOutImage = attend?.CheckOutImage,
+                                CheckOutNotes = attend?.CheckOutNotes,
+                                TotalHours = attend?.TotalHours
+                            }).AsQueryable();
+
+                return data.ToDataSourceResult(skip, take, filter, sort);
+            }
         }
 
         public SaveResult AddAttendance(AttendanceRequest data, int UserId)
@@ -69,8 +120,9 @@ namespace ERP.Web.API.Domain.Services.Mobile.HumanResource
                     result.Message = "User sudah melakukan absensi.";
                     return result;
                 }
-                var entity = Db.Attendances.FirstOrDefault(at => at.Date == data.ClockTime.Date && at.EmployeeId == employeeId);
 
+                var entity = Db.Attendances.FirstOrDefault(at => at.Date == data.ClockTime.Date && at.EmployeeId == employeeId);
+                data.ClockTime = DateTime.Now;
                 if (entity != null)
                 {
                     if (data.Type == "in")

@@ -19,7 +19,7 @@ namespace ERP.Entity.Accounting
         [StringLength(3)]
         public string CurrCode { get; set; }
 
-        [Column(TypeName = "decimal(19, 6)")]
+        [Precision(19, 6)]
         public decimal Amount { get; set; }
     }
 }

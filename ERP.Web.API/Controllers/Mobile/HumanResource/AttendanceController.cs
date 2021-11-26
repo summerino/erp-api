@@ -61,7 +61,9 @@ namespace ERP.Web.API.Controllers.Mobile.HumanResource
         [HttpGet("detail")]
         public IActionResult GetDetail(long attendanceId)
         {
-            return Ok(_attendance.GetDetail(attendanceId));
+            var result = _attendance.GetDetail(attendanceId);
+
+            return Ok(result);
         }
     }
 }

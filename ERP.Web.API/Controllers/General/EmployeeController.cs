@@ -115,6 +115,19 @@ namespace ERP.Web.API.Controllers.General
             });
         }
 
+        [HttpGet("salesman-schedule-by-id-with-date")]
+        public IActionResult GetEmployeeScheduleWithDate(long id, string date)
+        {
+            var data =
+                _salesman.GetSalesmanScheduleWithDate(id, date).ToList<dynamic>();
+
+            return Ok(new ApiResponse
+            {
+                RowCount = data.Count,
+                TableData = data
+            });
+        }
+
         [HttpGet("salesman-schedule-customer")]
         public IActionResult GetEmployeeScheduleDetailData(string ids)
         {

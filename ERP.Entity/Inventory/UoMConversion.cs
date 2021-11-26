@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 using ERP.Entity.Core;
 
 namespace ERP.Entity.Inventory
@@ -19,7 +20,7 @@ namespace ERP.Entity.Inventory
         [StringLength(20)]
         public string UnitEquivalent { get; set; }
 
-        [Column(TypeName = "decimal(19, 6)")]
+        [Precision(19, 6)]
         public decimal Conversion { get; set; }
 
         public bool IsBaseUnit { get; set; }

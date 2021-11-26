@@ -189,6 +189,14 @@ namespace ERP.Web.API.Domain.Services.Inventory
         {
             var result = new SaveResult(false);
 
+            var wqData = Db.WarehouseQuantities.Where(x => x.ItemId == data.Id);
+            // Checking item used on trans
+            if (wqData.Any())
+            {
+                result.Message = "Data tidak bisa diperbarui karena sudah digunakan pada transaksi.";
+                return result;
+            }
+
             // Checking initial already exists or not
             if (IsInitialExists(data.Initial, data.Id))
             {

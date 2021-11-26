@@ -25,7 +25,7 @@ namespace ERP.Web.API.Domain.Services.Mobile.Sales
                             Code = dpHeader.Code,
                             Date = dpHeader.Date,
                             srcTrans = dpHeader.SrcTrans,
-                            WarehouseCode = dpHeader.Code,
+                            WarehouseCode = dpHeader.WarehouseCode,
                             WarehouseName = warehouse.Name,
                             VehicleId = dpHeader.VehicleId,
                             Vehicle = dpHeader.VehicleNo,

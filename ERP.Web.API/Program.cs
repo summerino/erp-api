@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Bold.Licensing;
 using ERP.Entity;
+using ERP.Web.API.Domain.Interfaces;
 using ERP.Web.API.Domain.Interfaces.Accounting;
 using ERP.Web.API.Domain.Interfaces.AssetManagement;
 using ERP.Web.API.Domain.Interfaces.Auth;
@@ -14,6 +15,7 @@ using ERP.Web.API.Domain.Interfaces.Finance;
 using ERP.Web.API.Domain.Interfaces.General;
 using ERP.Web.API.Domain.Interfaces.HumanResource;
 using ERP.Web.API.Domain.Interfaces.Inventory;
+using ERP.Web.API.Domain.Interfaces.Mobile.CustomerDeliverySchedule;
 using ERP.Web.API.Domain.Interfaces.Mobile.CustomerTransaction;
 using ERP.Web.API.Domain.Interfaces.Mobile.General;
 using ERP.Web.API.Domain.Interfaces.Mobile.HumanResource;
@@ -36,6 +38,7 @@ using ERP.Web.API.Domain.Services.Finance;
 using ERP.Web.API.Domain.Services.General;
 using ERP.Web.API.Domain.Services.HumanResource;
 using ERP.Web.API.Domain.Services.Inventory;
+using ERP.Web.API.Domain.Services.Mobile.CustomerDeliverySchedule;
 using ERP.Web.API.Domain.Services.Mobile.CustomerTransaction;
 using ERP.Web.API.Domain.Services.Mobile.General;
 using ERP.Web.API.Domain.Services.Mobile.HumanResource;
@@ -222,6 +225,8 @@ builder.Services.AddScoped<IMobileVisitLogService, MobileVisitLogService>();
 builder.Services.AddScoped<IMobilePaymentInvoiceService, MobilePaymentInvoiceService>();
 builder.Services.AddScoped<IMobileOrderService, MobileOrderService>();
 builder.Services.AddScoped<IMobilePaymentMethodService, MobilePaymentMethodService>();
+builder.Services.AddScoped<IMobileVisitPerformanceReportService, MobileVisitPerformanceReportService>();
+builder.Services.AddScoped<IMobileActivityLogReportService, MobileActivityLogReportService>();
 
 // Mobile Warehouse services
 builder.Services.AddScoped<IMobileReceiveItemService, MobileReceiveItemService>();
@@ -259,7 +264,10 @@ builder.Services.AddScoped<IMenuService, MenuService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<ISystemParameterService, SystemParameterService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IJournalStateService, JournalStateService>();
 
+//Special services
+builder.Services.AddScoped<IFireForgetService, FireForgetService>();
 #region Mobile
 // General services
 builder.Services.AddScoped<IImageService, ImageService>();
@@ -291,6 +299,12 @@ builder.Services.AddScoped<ERP.Web.API.Domain.Interfaces.Mobile.TransferStock.IM
 
 //Activity Log
 builder.Services.AddScoped<IActivityLogService, ActivityLogService>();
+
+// Cutomer Delivery Schedule
+builder.Services.AddScoped<ICustomerDeliveryScheduleService, CustomerDeliveryScheduleService>();
+
+// Cutomer Promotion
+builder.Services.AddScoped<ICustomerPromotionService, CustomerPromotionService>();
 #endregion
 
 var app = builder.Build();

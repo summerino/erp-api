@@ -6,6 +6,7 @@ using ERP.Web.API.Domain.Interfaces.Accounting;
 using ERP.Web.API.Domain.Interfaces.Auth;
 using ERP.Web.API.Model;
 using ERP.Web.API.Model.Accounting;
+using ERP.Web.API.Domain.Interfaces;
 
 namespace ERP.Web.API.Controllers.Accounting
 {
@@ -17,16 +18,18 @@ namespace ERP.Web.API.Controllers.Accounting
         private readonly IClosingMonthService _cm;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
+        private readonly IFireForgetService _ffs;
 
         private const int MenuId = (int)Menu.Posting;
 
         public JournalController(IJournalService journalService, IClosingMonthService cm,
-            IClaimService claimService, IAuthService authService)
+            IClaimService claimService, IAuthService authService, IFireForgetService ffs)
         {
             _js = journalService;
             _cm = cm;
             _claim = claimService;
             _auth = authService;
+            _ffs = ffs;
         }
 
         [HttpPost]
@@ -40,9 +43,17 @@ namespace ERP.Web.API.Controllers.Accounting
             if (_cm.IsMonthClosed(new List<string> { data.Date.ToString("yyyyMM") }))
                 return Ok(new SaveResult(false, "Periode sudah ditutup. Silakan hubungi departemen akuntansi."));
 
-            var result = _js.PostingJournal(data, _claim.UserId);
+            if (!_js.CheckPrevPeriod(data.Date))
+                return Ok(new SaveResult(false, "Tidak dapat melakukan posting karena terdapat periode sebelumnya yang belum dipost."));
 
-            return Ok(result);
+            var userId = _claim.UserId;
+
+            _ffs.Execute(repo =>
+            {
+                return repo.PostingJournal(data, userId);
+            });
+
+            return Ok();
         }
 
         [HttpPost("lists")]

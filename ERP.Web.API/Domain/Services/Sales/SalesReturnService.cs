@@ -63,9 +63,16 @@ namespace ERP.Web.API.Domain.Services.Sales
 
         public List<dynamic> GetRelatedTransactions(string code)
         {
-            var data = from dt in Db.VwCreditMemos
-                       where dt.TransCode == code
-                       select dt;
+            var data = (
+                        new[] { new { Code = "", Date = new DateTime(), Mark = "", Type = "" } }
+                        ).Union(from dt in Db.VwCreditMemos
+                                where dt.TransCode == code && dt.Mark != "V"
+                                select new { dt.Code, dt.Date, dt.Mark, Type = "Nota Kredit" }
+                        ).Union(
+                        from dt in Db.SalesDeliveryHeaders
+                        where dt.TransCode == code && dt.Mark != "V"
+                        select new { dt.Code, dt.Date, dt.Mark, Type = "Surat Jalan" }
+                        ).Skip(1);
 
             return data.ToDynamicList();
         }
