@@ -60,10 +60,13 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 tenantCtx.PostingStates.Add(stateData);
                 tenantCtx.SaveChanges();
 
-                var typeBB = new[] { "BB_AP", "BB_AR", "BB_DM", "BB_CM", "BB_INVT" };
-                var removedBB = tenantCtx.Journals.Where(x => typeBB.Contains(x.SrcTrans)).ToList();
-                if (removedBB != null)
-                    tenantCtx.RemoveRange(removedBB);
+                if (data.Date < Convert.ToDateTime(systemParam.FirstOrDefault(x => x.Code == "DATA_START_DATE").Value))
+                {
+                    var typeBB = new[] { "BB_AP", "BB_AR", "BB_DM", "BB_CM", "BB_INVT" };
+                    var removedBB = tenantCtx.Journals.Where(x => typeBB.Contains(x.SrcTrans)).ToList();
+                    if (removedBB != null)
+                        tenantCtx.RemoveRange(removedBB);
+                }
 
                 stateData.Step++; //2
                 tenantCtx.PostingStates.Update(stateData);
@@ -211,17 +214,15 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     tenantCtx.PostingStates.Update(stateData);
                     tenantCtx.SaveChanges();
 
-                    var removedEY = tenantCtx.Journals.Where(x => x.Code == "ENDYEAR-" + data.Date.Year.ToString()).ToList();
-                    if (removedEY != null)
-                        tenantCtx.RemoveRange(removedEY);
+                    tenantCtx.Database.ExecuteSqlRaw(
+                    "DELETE Accounting.Journal WHERE Code = {0}",
+                    "ENDYEAR-" + data.Date.Year.ToString());
 
                     stateData.Step++; //20
                     tenantCtx.PostingStates.Update(stateData);
                     tenantCtx.SaveChanges();
 
-                    var journalEY = ProcessEndYearJournal(tenantCtx, data.Date, systemParam);
-                    if (journalEY != null)
-                        tenantCtx.AddRange(journalEY);
+                    ProcessEndYearJournal(tenantCtx, data.Date);
                 }
 
                 stateData.Step++; // 21 or 19
@@ -2056,55 +2057,155 @@ namespace ERP.Web.API.Domain.Services.Accounting
             return journals;
         }
 
-        private IEnumerable<Journal> ProcessEndYearJournal(TenantContext db, DateTime dateTime, List<SystemParameter> systemParam)
+        private void ProcessEndYearJournal(TenantContext db, DateTime dateTime)
         {
-            List<Journal> journals = new();
-            if (dateTime.Month == 12)
-            {
-                var nonSpecialAcc = db.Journals.Where(x => Convert.ToInt32(x.CoaCode) < 400000).ToList();
-                var holdAmount = nonSpecialAcc.Where(x => x.Type == "D").Sum(x => x.Amount) - nonSpecialAcc.Where(x => x.Type == "C").Sum(x => x.Amount);
+            db.Database.ExecuteSqlRaw(@"CREATE TABLE #tmp_jur (
+	                    [jur_code] [varchar](40) NOT NULL,
+	                    [jur_code_dt] [varchar](50) NOT NULL,
+	                    [jur_date] [date] NOT NULL,
+	                    [jur_coa] [varchar](6) NOT NULL,
+	                    [jur_type] [varchar](20) NOT NULL,
+	                    [jur_notes] [varchar](256) NOT NULL,
+	                    [jur_ref_1] [varchar](40) NOT NULL,
+	                    [jur_ref_2] [varchar](40) NOT NULL,
+	                    [jur_ref_3] [varchar](40) NOT NULL,
+	                    [jur_ref_4] [varchar](40) NOT NULL,
+	                    [jur_group] [int] NOT NULL,
+	                    [jur_curr] [varchar](3) NOT NULL,
+	                    [jur_period] [varchar](8) NOT NULL,
+	                    [jur_custom_rate] [decimal](18, 6) NOT NULL,
+	                    [jur_dc] [varchar](1) NOT NULL,
+	                    [jur_amount] [decimal](18, 6) NOT NULL,
+	                    [jur_src] [varchar](10) NOT NULL
+                    ) ON [PRIMARY];
 
-                var specialAcc = db.Journals.Where(x => Convert.ToInt32(x.CoaCode) >= 400000).ToList();
+                    DECLARE @RefDate DATE, @StartDate DATE, @EndDate DATE
+                        SET @RefDate = {0}
+                        SET @StartDate = DATEADD(yy, DATEDIFF(yy, 0, @RefDate), 0)
+                        SET @EndDate = DATEADD(yy, 1, DATEADD(d, -1, @StartDate))
+                   
+                    ;WITH cte_coa AS (
+                        SELECT Code
+                        FROM Accounting.COA
+                        WHERE Code >= '400000'
+                    )
+                    ,cte_endyear_1 AS (
+                        SELECT TBA.*
+                        ,CASE WHEN TBA.CurrCode = 'IDR'
+                            THEN 1
+                            ELSE CASE WHEN TBA.Period = 'CUSTOM' THEN CustomRate ELSE ISNULL(TBC.Amount,0) END
+                        END AS currRate
+                        FROM (
+                            SELECT CoaCode
+                            ,Period,CurrCode,CustomRate
+                            ,CASE WHEN [Type] = 'D' THEN Amount ELSE -Amount END AS amountOc
+                            FROM Accounting.Journal
+                            WHERE YEAR([Date]) = YEAR(@RefDate)
+                            AND Code <> 'ENDYEAR' + FORMAT(@RefDate,'yyyy')
+                        ) TBA
+                        INNER JOIN cte_coa TBB
+                            ON TBB.Code = TBA.CoaCode
+                        LEFT JOIN Accounting.CurrencyRate TBC
+                            ON TBC.CurrCode = TBA.CurrCode
+                    )
+                    ,cte_endyear_2 AS (
+                        SELECT CoaCode
+                        ,SUM(amountOc * currRate) AS amountIdr
+                        FROM cte_endyear_1
+                        GROUP BY CoaCode
+                    )
+                    SELECT *
+                    ,'ENDYEAR' + FORMAT(@RefDate,'yyyy') AS jur_code
+                    ,@EndDate AS jur_date,'ADJ_ENDYEAR' AS jur_type
+                    ,'' AS jur_ref1,'' AS jur_ref2,'' AS jur_ref3,'' AS jur_ref4
+                    ,1 AS jur_group,'IDR' AS jur_curr,'CUSTOM' AS jur_period,0 AS jur_custom_rate
+                    ,CASE WHEN amountIdr < 0 THEN 'C' ELSE 'D' END AS jur_dc
+                    ,CASE WHEN amountIdr < 0 THEN -amountIdr ELSE amountIdr END AS jur_amount
+                    INTO #TmpJurEndYear
+                    FROM cte_endyear_2
 
-                journals.Add(new Journal
-                {
-                    Code = "ENDYEAR-" + dateTime.Year.ToString(),
-                    LineNo = 1,
-                    Date = new DateTime(dateTime.Year, dateTime.Month, DateTime.DaysInMonth(dateTime.Year, dateTime.Month)),
-                    CoaCode = systemParam.FirstOrDefault(x => x.Code == "RETAINED_EARNING_COA")?.Value ?? "",
-                    TypeCode = "ADJ_END_YEAR",
-                    Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_RETAINED_EARNING")?.Value ?? ""}").Trim(),
-                    RefCode1 = "",
-                    Group = 1,
-                    CurrCode = "IDR",
-                    Period = new DateTime(dateTime.Year, dateTime.Month, DateTime.DaysInMonth(dateTime.Year, dateTime.Month)).ToString("yyyyMMdd"),
-                    Type = holdAmount > 0 ? "D" : "C",
-                    Amount = holdAmount,
-                    SrcTrans = "END_YEAR"
-                });
+                    INSERT INTO #tmp_jur (jur_code,jur_code_dt,jur_date,jur_coa,jur_type
+                        ,jur_notes,jur_ref_1,jur_ref_2,jur_ref_3,jur_ref_4,jur_group,jur_curr,jur_period,jur_custom_rate
+                        ,jur_dc,jur_amount,jur_src
+                    )
+                    SELECT jur_code,'',jur_date
+                    ,'320001'
+                    , jur_type
+                    , 'Laba Ditahan'
+                    ,jur_ref1,jur_ref2,jur_ref3,jur_ref4,jur_group,jur_curr,jur_period,jur_custom_rate
+                    ,jur_dc,jur_amount,'ENDYEAR'
+                    FROM #TmpJurEndYear;
+                
+                    INSERT INTO #tmp_jur (jur_code,jur_code_dt,jur_date,jur_coa,jur_type
+                        ,jur_notes,jur_ref_1,jur_ref_2,jur_ref_3,jur_ref_4,jur_group,jur_curr,jur_period,jur_custom_rate
+                        ,jur_dc,jur_amount,jur_src
+                    )
+                    SELECT jur_code,'',jur_date
+                    ,CoaCode,jur_type,'Laba Ditahan'
+                    ,jur_ref1,jur_ref2,jur_ref3,jur_ref4,jur_group,jur_curr,jur_period,jur_custom_rate
+                    ,CASE WHEN jur_dc = 'D' THEN 'C' ELSE 'D' END
+                    ,jur_amount,'ENDYEAR'
+                    FROM #TmpJurEndYear;
+                
+                    DROP TABLE #TmpJurEndYear;
 
-                short i = 0;
-                foreach (var item in specialAcc)
-                {
-                    journals.Add(new Journal
-                    {
-                        Code = "ENDYEAR-" + dateTime.Year.ToString(),
-                        LineNo = i++,
-                        Date = new DateTime(dateTime.Year, dateTime.Month, DateTime.DaysInMonth(dateTime.Year, dateTime.Month)),
-                        CoaCode = item.CoaCode,
-                        TypeCode = "ADJ_END_YEAR",
-                        Notes = item.Notes ?? "",
-                        RefCode1 = "",
-                        Group = 2,
-                        CurrCode = "IDR",
-                        Period = new DateTime(dateTime.Year, dateTime.Month, DateTime.DaysInMonth(dateTime.Year, dateTime.Month)).ToString("yyyyMMdd"),
-                        Type = item.Type,
-                        Amount = item.Amount,
-                        SrcTrans = "END_YEAR"
-                    });
-                }
-            }
-            return journals;
+                    WITH cte_tmp_jur_group AS(
+                        SELECT jur_code, jur_date
+                        , jur_coa, jur_type, jur_notes
+                        , jur_ref_1, jur_ref_2, jur_ref_3, jur_ref_4
+                        , jur_group
+                        , jur_curr, jur_period, jur_custom_rate
+                        , SUM (
+                            CASE WHEN jur_dc = 'D' THEN jur_amount
+                                ELSE -jur_amount END
+                        ) AS jur_amount
+                        , jur_src
+                        FROM #tmp_jur
+                        GROUP BY jur_code, jur_date
+                        , jur_coa, jur_type, jur_notes
+                        , jur_ref_1, jur_ref_2, jur_ref_3, jur_ref_4
+                        , jur_group
+                        , jur_curr, jur_period, jur_custom_rate
+                        , jur_src
+                    )
+                    SELECT jur_code, jur_date
+                    , jur_coa, jur_type, jur_notes
+                    , jur_ref_1, jur_ref_2, jur_ref_3, jur_ref_4
+                    , jur_group
+                    , jur_curr, jur_period, jur_custom_rate
+                    , CASE WHEN jur_amount > 0 THEN 'D'
+                        ELSE 'C' END AS jur_dc
+                    ,CASE WHEN jur_amount > 0 THEN jur_amount
+                        ELSE - jur_amount END AS jur_amount
+                    ,jur_src
+                    ,ROW_NUMBER() OVER(PARTITION BY jur_code ORDER BY jur_code, jur_group, jur_type, jur_amount) AS jur_lineno
+                    INTO #tmp_jur_final
+                    FROM cte_tmp_jur_group;
+
+
+                DELETE FROM Accounting.Journal
+                WHERE EXISTS(
+                    SELECT jur_code
+
+                    FROM #tmp_jur_final
+                        WHERE jur_code = Code
+                );
+
+                INSERT INTO Accounting.Journal
+                SELECT jur_code,jur_lineno,jur_date
+                    ,jur_coa,jur_type,jur_notes
+                    ,jur_ref_1,jur_ref_2,jur_ref_3,jur_ref_4
+                    ,jur_group
+                    ,jur_curr,jur_period,jur_custom_rate,jur_dc,jur_amount
+                    ,jur_src
+                    FROM #tmp_jur_final
+                    WHERE jur_amount > 0;
+
+                DROP TABLE #tmp_jur_final;
+                    DELETE FROM #tmp_jur;
+
+
+                    DROP TABLE #tmp_jur;", dateTime);
         }
 
         private IEnumerable<Journal> ProcessAdjustmentJournal(TenantContext db, DateTime dateTime, List<SystemParameter> systemParam)
