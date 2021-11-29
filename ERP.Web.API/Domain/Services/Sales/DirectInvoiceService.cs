@@ -556,42 +556,42 @@ namespace ERP.Web.API.Domain.Services.Sales
                     }
                     else
                     {
-                        var orderDetail = new SalesOrderDetail
+                        var orderDetail = Db.SalesOrderDetails.FirstOrDefault(x => x.Id == item.Id);
+                        if (orderDetail != null)
                         {
-                            Code = item.Code,
-                            LineNo = ++i,
-                            ItemId = item.ItemId,
-                            UomId = item.UomId,
-                            UnitId = item.UnitId,
-                            Qty = item.Qty,
-                            Length = item.Length,
-                            Width = item.Width,
-                            Height = item.Height,
-                            Weight = item.Weight,
-                            DimensionMeasurement = item.DimensionMeasurement,
-                            WeightMeasurement = item.WeightMeasurement,
-                            QtyDlv = 0,
-                            UnitPrice = item.UnitPrice,
-                            Disc = item.Disc,
-                            TaxId = item.TaxId,
-                            TaxAmount = item.TaxAmount,
-                            NettPrice = item.NettPrice,
-                            Total = item.Total,
-                            Dpp = item.Dpp,
-                            Notes = item.Notes,
-                            CoaInventory = item.CoaInventory,
-                            CoaCogs = item.CoaCogs,
-                            CoaSls = item.CoaSls,
-                            CoaSlsDisc = item.CoaSlsDisc,
-                            CoaSlsReturn = item.CoaSlsReturn
-                        };
+                            orderDetail.LineNo = ++i;
+                            orderDetail.ItemId = item.ItemId;
+                            orderDetail.UomId = item.UomId;
+                            orderDetail.UnitId = item.UnitId;
+                            orderDetail.Qty = item.Qty;
+                            orderDetail.Length = item.Length;
+                            orderDetail.Width = item.Width;
+                            orderDetail.Height = item.Height;
+                            orderDetail.Weight = item.Weight;
+                            orderDetail.DimensionMeasurement = item.DimensionMeasurement;
+                            orderDetail.WeightMeasurement = item.WeightMeasurement;
+                            orderDetail.QtyDlv = 0;
+                            orderDetail.UnitPrice = item.UnitPrice;
+                            orderDetail.Disc = item.Disc;
+                            orderDetail.TaxId = item.TaxId;
+                            orderDetail.TaxAmount = item.TaxAmount;
+                            orderDetail.NettPrice = item.NettPrice;
+                            orderDetail.Total = item.Total;
+                            orderDetail.Dpp = item.Dpp;
+                            orderDetail.Notes = item.Notes;
+                            orderDetail.CoaInventory = item.CoaInventory;
+                            orderDetail.CoaCogs = item.CoaCogs;
+                            orderDetail.CoaSls = item.CoaSls;
+                            orderDetail.CoaSlsDisc = item.CoaSlsDisc;
+                            orderDetail.CoaSlsReturn = item.CoaSlsReturn;
 
-                        Db.SalesOrderDetails.Update(orderDetail);
-                        Db.Entry(item).Property(e => e.Code).IsModified = false;
+                            Db.SalesOrderDetails.Update(orderDetail);
+                            Db.Entry(item).Property(e => e.Code).IsModified = false;
 
-                        if (item.FreeItemDetails.Any() || item.DiscountItemDetails.Any())
-                        {
-                            listOrderIdDetail.Add(item.Id);
+                            if (item.FreeItemDetails.Any() || item.DiscountItemDetails.Any())
+                            {
+                                listOrderIdDetail.Add(item.Id);
+                            }
                         }
                     }
 
