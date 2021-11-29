@@ -28,7 +28,7 @@ namespace ERP.Web.API.Domain.Services
                 {
                     var optionsBuilder = new DbContextOptionsBuilder<TenantContext>();
                     optionsBuilder.UseSqlServer(
-                        $"Server={tenant.ServerName};Database={tenant.DatabaseName};User Id={tenant.ServerUserId};Password={tenant.ServerPassword}");
+                        $"Server={tenant.ServerName};Database={tenant.DatabaseName};User Id={tenant.ServerUserId};Password={tenant.ServerPassword};Command Timeout=600");
 
                     var tenantCtx = new TenantContext(optionsBuilder.Options, _catalogCtx, _claim);
                     await tenantCtx.Database.MigrateAsync();

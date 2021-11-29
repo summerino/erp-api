@@ -37,7 +37,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
 
             var optionsBuilder = new DbContextOptionsBuilder<TenantContext>();
             optionsBuilder.UseSqlServer(
-                $"Server={tenant.ServerName};Database={tenant.DatabaseName};User Id={tenant.ServerUserId};Password={tenant.ServerPassword}");
+                $"Server={tenant.ServerName};Database={tenant.DatabaseName};User Id={tenant.ServerUserId};Password={tenant.ServerPassword};Command Timeout=600");
                 
             var tenantCtx = new TenantContext(optionsBuilder.Options, _catalogCtx, _claim);
 
@@ -69,9 +69,9 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 tenantCtx.PostingStates.Update(stateData);
                 tenantCtx.SaveChanges();
 
-                var removed = tenantCtx.Journals.Where(x => x.Date.Month == data.Date.Month && x.Date.Year == data.Date.Year).ToList();
-                if (removed != null)
-                    tenantCtx.RemoveRange(removed);
+                tenantCtx.Database.ExecuteSqlRaw(
+                    "DELETE Accounting.Journal WHERE YEAR([Date]) = {0} AND MONTH([Date]) = {1}",
+                    data.Date.Year, data.Date.Month);
 
                 stateData.Step++; //3
                 tenantCtx.PostingStates.Update(stateData);
