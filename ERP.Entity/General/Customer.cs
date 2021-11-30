@@ -80,6 +80,8 @@ namespace ERP.Entity.General
         [Column("MobileIPAddress")]
         [StringLength(40)]
         public string MobileIpAddress { get; set; }
+
+        public string FirebaseTokenId { get; set; }
     }
 
     public class VwCustomer : BaseEntityWithActive
@@ -137,6 +139,8 @@ namespace ERP.Entity.General
         public string MobileTokenId { get; set; }
 
         public string MobileIpAddress { get; set; }
+
+        public string FirebaseTokenId { get; set; }
 
 
         public string TypeName { get; set; }
