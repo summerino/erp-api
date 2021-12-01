@@ -139,6 +139,14 @@ namespace ERP.Web.API.Controllers.Sales
             return Ok(result);
         }
 
+        [HttpGet("verify-sales")]
+        public IActionResult IsSalesHasScheduledVisitOrder(int salesId, string date)
+        {
+            var result = _visitOrder.IsSalesHasScheduledVisitOrder(salesId, date);
+
+            return Ok(result);
+        }
+
         private (bool, string) Validate(VisitOrderRequest data)
         {
             var periods = new List<string> { data.Date.ToString("yyyyMM") };
