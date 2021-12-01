@@ -14,6 +14,8 @@ namespace ERP.Web.API.Domain.Interfaces.Sales
 
         IEnumerable<VwVisitOrderInvoice> GetVisitOrderInvoice(string code);
 
+        bool IsSalesHasScheduledVisitOrder(int salesId, string date);
+
         SaveResult Insert(VisitOrderRequest data);
 
         SaveResult Update(VisitOrderRequest data);

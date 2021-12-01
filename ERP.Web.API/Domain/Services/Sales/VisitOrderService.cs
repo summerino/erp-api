@@ -255,10 +255,16 @@ namespace ERP.Web.API.Domain.Services.Sales
             result.Message = "Data perintah kunjungan berhasil dihapus.";
             return result;
         }
+        public bool IsSalesHasScheduledVisitOrder(int salesId, string date)
+        {
+            return IsEmployeeAssignedInSameDate(Convert.ToDateTime(date), salesId);
+        }
 
         private bool IsEmployeeAssignedInSameDate(DateTime date, long id)
         {
-            return Db.VwVisitOrders.Any(x => x.SalesmanId == id && x.Date == date && x.Mark == "A");
+            return Db.VwVisitOrders.Any(x => x.SalesmanId == id && x.Date == date && x.Mark == "A" && x.VisitPlanCode != null);
         }
+
+
     }
 }
