@@ -1,12 +1,11 @@
 ﻿using System;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using ERP.Entity.Core;
 
-namespace ERP.Entity.SystemManagement
+namespace ERP.Entity.Accounting
 {
-    [Table("JournalState", Schema = Schema.SystemManagement)]
-    public class JournalState
+    [Table("PostingState", Schema = Schema.Accounting)]
+    public class PostingState
     {
         public int Id { get; set; }
 

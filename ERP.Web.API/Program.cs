@@ -227,6 +227,7 @@ builder.Services.AddScoped<IMobileOrderService, MobileOrderService>();
 builder.Services.AddScoped<IMobilePaymentMethodService, MobilePaymentMethodService>();
 builder.Services.AddScoped<IMobileVisitPerformanceReportService, MobileVisitPerformanceReportService>();
 builder.Services.AddScoped<IMobileActivityLogReportService, MobileActivityLogReportService>();
+builder.Services.AddScoped<IMobileMapTrackingReportService, MobileMapTrackingReportService>();
 
 // Mobile Warehouse services
 builder.Services.AddScoped<IMobileReceiveItemService, MobileReceiveItemService>();
@@ -264,10 +265,10 @@ builder.Services.AddScoped<IMenuService, MenuService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<ISystemParameterService, SystemParameterService>();
 builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<IJournalStateService, JournalStateService>();
 
 //Special services
 builder.Services.AddScoped<IFireForgetService, FireForgetService>();
+
 #region Mobile
 // General services
 builder.Services.AddScoped<IImageService, ImageService>();

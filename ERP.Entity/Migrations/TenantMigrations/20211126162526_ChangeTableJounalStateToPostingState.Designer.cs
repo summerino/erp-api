@@ -4,6 +4,7 @@ using ERP.Entity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ERP.Entity.Migrations.TenantMigrations
 {
     [DbContext(typeof(TenantContext))]
-    partial class TenantContextModelSnapshot : ModelSnapshot
+    [Migration("20211126162526_ChangeTableJounalStateToPostingState")]
+    partial class ChangeTableJounalStateToPostingState
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -3291,10 +3293,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .IsUnicode(false)
                         .HasColumnType("varchar(50)");
 
-                    b.Property<string>("FirebaseTokenId")
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
-
                     b.Property<string>("Initial")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -4096,10 +4094,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(max)");
 
                     b.Property<string>("Fax")
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
-
-                    b.Property<string>("FirebaseTokenId")
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
 
@@ -5329,8 +5323,8 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
 
                     b.Property<decimal>("BaseNettPrice")
-                        .HasPrecision(22, 9)
-                        .HasColumnType("decimal(22,9)");
+                        .HasPrecision(19, 6)
+                        .HasColumnType("decimal(19,6)");
 
                     b.Property<decimal>("BaseQty")
                         .HasPrecision(18, 6)
@@ -15969,10 +15963,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.Property<long?>("EmployeeId")
                         .HasColumnType("bigint");
 
-                    b.Property<string>("FirebaseTokenId")
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
-
                     b.Property<string>("Initial")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -16166,10 +16156,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("bigint");
 
                     b.Property<string>("EmployeeInitial")
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
-
-                    b.Property<string>("FirebaseTokenId")
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
 

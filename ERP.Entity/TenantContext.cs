@@ -57,6 +57,7 @@ namespace ERP.Entity
         public DbSet<IncomeStatementResult> IncomeStatementResults { get; set; }
         public DbSet<ReportJournalResult> ReportJournalResults { get; set; }
         public DbSet<PostingLog> PostingLogs { get; set; }
+        public DbSet<PostingState> PostingStates { get; set; }
         public DbSet<TrialBalanceResult> TrialBalanceResults { get; set; }
         public DbSet<BsIsDetailResult> BsIsDetailResults { get; set; }
 
@@ -279,7 +280,6 @@ namespace ERP.Entity
         public DbSet<SystemManagement.Action> Actions { get; set; }
         public DbSet<Company> Companies { get; set; }
         public DbSet<VwCompany> VwCompanies { get; set; }
-        public DbSet<JournalState> JournalStates { get; set; }
         public DbSet<Menu> Menus { get; set; }
         public DbSet<MenuAction> MenuActions { get; set; }
         public DbSet<Role> Roles { get; set; }
@@ -304,7 +304,7 @@ namespace ERP.Entity
                      !string.IsNullOrWhiteSpace(tenant.ServerUserId) || !string.IsNullOrWhiteSpace(tenant.ServerPassword)))
                 {
                     optionsBuilder.UseSqlServer(
-                        $"Server={tenant.ServerName};Database={tenant.DatabaseName};User Id={tenant.ServerUserId};Password={tenant.ServerPassword}");
+                        $"Server={tenant.ServerName};Database={tenant.DatabaseName};User Id={tenant.ServerUserId};Password={tenant.ServerPassword};Command Timeout=600");
                 }
                 else
                 {

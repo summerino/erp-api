@@ -6,7 +6,6 @@ using ERP.Web.API.Domain.Interfaces.Accounting;
 using ERP.Web.API.Domain.Interfaces.Auth;
 using ERP.Web.API.Model;
 using ERP.Web.API.Model.Accounting;
-using ERP.Web.API.Domain.Interfaces;
 
 namespace ERP.Web.API.Controllers.Accounting
 {
@@ -18,27 +17,25 @@ namespace ERP.Web.API.Controllers.Accounting
         private readonly IClosingMonthService _cm;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
-        private readonly IFireForgetService _ffs;
+        private readonly IServiceScopeFactory _scopeFactory;
 
         private const int MenuId = (int)Menu.Posting;
 
-        public JournalController(IJournalService journalService, IClosingMonthService cm,
-            IClaimService claimService, IAuthService authService, IFireForgetService ffs)
+        public JournalController(IJournalService journal, IClosingMonthService cm,
+            IClaimService claim, IAuthService auth, IServiceScopeFactory scopeFactory)
         {
-            _js = journalService;
+            _js = journal;
             _cm = cm;
-            _claim = claimService;
-            _auth = authService;
-            _ffs = ffs;
+            _claim = claim;
+            _auth = auth;
+            _scopeFactory = scopeFactory;
         }
 
         [HttpPost]
         public IActionResult OnPost(JournalRequest data)
         {
             if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Post }).Any())
-            {
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
 
             if (_cm.IsMonthClosed(new List<string> { data.Date.ToString("yyyyMM") }))
                 return Ok(new SaveResult(false, "Periode sudah ditutup. Silakan hubungi departemen akuntansi."));
@@ -47,10 +44,14 @@ namespace ERP.Web.API.Controllers.Accounting
                 return Ok(new SaveResult(false, "Tidak dapat melakukan posting karena terdapat periode sebelumnya yang belum dipost."));
 
             var userId = _claim.UserId;
+            var tenantId = _claim.TenantId;
 
-            _ffs.Execute(repo =>
+            // Fire and forget
+            Task.Run(() =>
             {
-                return repo.PostingJournal(data, userId);
+                using var scope = _scopeFactory.CreateScope();
+                var repo = scope.ServiceProvider.GetRequiredService<IJournalService>();
+                repo.PostingJournal(data, userId, tenantId);
             });
 
             return Ok();
@@ -73,6 +74,13 @@ namespace ERP.Web.API.Controllers.Accounting
                 RowCount = result.Count,
                 TableData = result
             });
+        }
+
+        [HttpGet("state")]
+        public IActionResult GetPostingState()
+        {
+            var data = _js.GetPostingState(_claim.UserId);
+            return Ok(data);
         }
     }
 }

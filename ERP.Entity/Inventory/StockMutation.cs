@@ -40,7 +40,7 @@ namespace ERP.Entity.Inventory
         [Precision(18, 6)]
         public decimal BaseQty { get; set; }
 
-        [Precision(19, 6)]
+        [Precision(22, 9)]
         public decimal BaseNettPrice { get; set; }
 
         [Required]

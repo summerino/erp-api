@@ -58,6 +58,8 @@ namespace ERP.Entity.SystemManagement
         [Column("MobileIPAddress")]
         [StringLength(40)]
         public string MobileIpAddress { get; set; }
+
+        public string FirebaseTokenId { get; set; }
     }
 
     public class VwUser : BaseEntityWithActive
@@ -97,6 +99,8 @@ namespace ERP.Entity.SystemManagement
         public string MobileTokenId { get; set; }
 
         public string MobileIpAddress { get; set; }
+
+        public string FirebaseTokenId { get; set; }
 
 
         public string RoleName { get; set; }
