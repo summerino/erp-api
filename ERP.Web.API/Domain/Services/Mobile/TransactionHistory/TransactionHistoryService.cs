@@ -509,7 +509,6 @@ namespace ERP.Web.API.Domain.Services.Mobile.TransactionHistory
                         }).AsQueryable();
 
             return data.ToDataSourceResult(skip, take, filter, sort);
-            throw new NotImplementedException();
         }
     }
 }
