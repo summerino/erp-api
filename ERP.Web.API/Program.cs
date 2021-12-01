@@ -306,6 +306,9 @@ builder.Services.AddScoped<ICustomerDeliveryScheduleService, CustomerDeliverySch
 
 // Cutomer Promotion
 builder.Services.AddScoped<ICustomerPromotionService, CustomerPromotionService>();
+
+// Cutomer Order
+builder.Services.AddScoped<ICustomerOrderService, CustomerOrderService>();
 #endregion
 
 var app = builder.Build();
