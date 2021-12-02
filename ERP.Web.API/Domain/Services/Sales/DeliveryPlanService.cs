@@ -46,20 +46,54 @@ namespace ERP.Web.API.Domain.Services.Sales
             throw new NotImplementedException();
         }
 
-        public List<dynamic> GetAllTransaction(string warehousecode)
+        public DataSourceResult GetAllTransaction(string warehouseCode, IEnumerable<Filter> filter)
         {
-            var data = (
-                        new[] { new { Code = "", SoCode = "", Date = new DateTime(), Mark = "", Type = "" } }
-                        ).Union(from dt in Db.VwSalesDeliveryHeaders
-                                where dt.WarehouseCode == warehousecode && !new[] { "V", "INV" }.Contains(dt.Mark)
-                                select new { dt.Code, SoCode = dt.TransCode, dt.Date, dt.Mark, Type = "Surat Jalan" }
+            var data = (from dt in Db.VwSalesDeliveryHeaders
+                        where dt.WarehouseCode == warehouseCode 
+                        && !new[] { "V", "INV" }.Contains(dt.Mark) 
+                        && !((from ddp in Db.DeliveryPlanDetails
+                             join dp in Db.DeliveryPlanHeaders on ddp.Code equals dp.Code
+                             where dp.Mark != "V"
+                             select ddp.TransCode).Union(from ddp in Db.DeliveryPlanDetails
+                                                         join dp in Db.DeliveryPlanHeaders on ddp.Code equals dp.Code
+                                                         where dp.Mark != "V" && ddp.IsFailShipment && Db.DeliveryPlanUndeliveredItems.Any(x => x.DlvPlanDetailId == ddp.Id)
+                                                         select ddp.TransCode)).Contains(dt.Code)
+                        select new
+                        {
+                            dt.Code,
+                            SoCode = dt.TransCode,
+                            dt.Date,
+                            dt.Mark,
+                            Type = "Surat Jalan",
+                            dt.CustName,
+                            dt.CustAddress,
+                            dt.CustArea
+                        }
                         ).Union(
                         from dt in Db.VwSalesInvoiceHeaders
-                        where dt.FromDirectInvoice == true && !new[] { "V", "INV" }.Contains(dt.Mark)
-                        select new { dt.Code, dt.SoCode, dt.Date, dt.Mark, Type = "Penjualan Langsung" }
-                        ).Skip(1);
+                        where dt.FromDirectInvoice == true 
+                        && !new[] { "V", "INV" }.Contains(dt.Mark)
+                        && !((from ddp in Db.DeliveryPlanDetails
+                              join dp in Db.DeliveryPlanHeaders on ddp.Code equals dp.Code
+                              where dp.Mark != "V"
+                              select ddp.TransCode).Union(from ddp in Db.DeliveryPlanDetails
+                                                          join dp in Db.DeliveryPlanHeaders on ddp.Code equals dp.Code
+                                                          where dp.Mark != "V" && ddp.IsFailShipment && Db.DeliveryPlanUndeliveredItems.Any(x => x.DlvPlanDetailId == ddp.Id)
+                                                          select ddp.TransCode)).Contains(dt.Code)
+                        select new
+                        {
+                            dt.Code,
+                            dt.SoCode,
+                            dt.Date,
+                            dt.Mark,
+                            Type = "Penjualan Langsung",
+                            dt.CustName,
+                            dt.CustAddress,
+                            dt.CustArea
+                        }
+                        );
 
-            return data.ToDynamicList();
+            return data.AsQueryable().ToDataSourceResult(0, data.Count(), null, null);
         }
 
         public SaveResult Insert(DeliveryPlanRequest data)

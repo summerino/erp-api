@@ -122,6 +122,8 @@ namespace ERP.Entity.Sales
         public string ApprovedInitial { get; set; }
 
         public string Status { get; set; }
+
+        public string SalesName { get; set; }
     }
 
     [Table("SalesOrderDetail", Schema = Schema.Sales)]
