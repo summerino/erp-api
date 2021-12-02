@@ -28,7 +28,7 @@ namespace ERP.Web.API.Domain.Services.Inventory
 					WHEN sm.Src IN('TS', 'CNEE') AND sm.[Type] = 'OH' AND sm.BaseQty > 0 THEN 3
 					WHEN sm.Src = 'DO' AND sr.[Type] = 2 THEN 4
 					WHEN sm.Src = 'ADJ' AND sm.BaseQty < 0 THEN 5
-					WHEN sm.Src IN('DO', 'PR') THEN 5
+					WHEN sm.Src IN('DO', 'DOF', 'PR') THEN 5
 					WHEN sm.Src IN('TS', 'CNEE') AND sm.[Type] = 'OH' AND sm.BaseQty < 0 THEN 5
 					ELSE 6
 					END";
