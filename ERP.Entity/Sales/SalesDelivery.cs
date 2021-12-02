@@ -127,6 +127,10 @@ namespace ERP.Entity.Sales
         public string UpdatedInitial { get; set; }
 
         public string Status { get; set; }
+
+        public string CustAddress { get; set; }
+
+        public string CustArea { get; set; }
     }
 
     [Table("SalesDeliveryDetail", Schema = Schema.Sales)]

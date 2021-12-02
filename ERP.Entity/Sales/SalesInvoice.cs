@@ -82,6 +82,10 @@ namespace ERP.Entity.Sales
         public string ApprovedInitial { get; set; }
 
         public string Status { get; set; }
+
+        public string CustAddress { get; set; }
+
+        public string CustArea { get; set; }
     }
 
     [Table("SalesInvoiceDetail", Schema = Schema.Sales)]
