@@ -38,7 +38,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
             var optionsBuilder = new DbContextOptionsBuilder<TenantContext>();
             optionsBuilder.UseSqlServer(
                 $"Server={tenant.ServerName};Database={tenant.DatabaseName};User Id={tenant.ServerUserId};Password={tenant.ServerPassword};Command Timeout=600");
-                
+
             var tenantCtx = new TenantContext(optionsBuilder.Options, _catalogCtx, _claim);
 
             var systemParam = tenantCtx.SystemParameters.ToList();
@@ -1026,8 +1026,8 @@ namespace ERP.Web.API.Domain.Services.Accounting
                                          where rtndetail.Code == itemData.RtnHeader.Code
                                          select new { RtnDetail = rtndetail, Item = item }).ToList();
                     var RtnDetailExData = db.PurchaseReturnDetailExchDiffItems.Where(x => x.Code == itemData.RtnHeader.Code).ToList();
-                    
-                    var hppData = new Dictionary<int,decimal>();
+
+                    var hppData = new Dictionary<int, decimal>();
 
                     short i = 0;
                     short j = 0;
@@ -1470,7 +1470,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                         Amount = Math.Abs(itemData.RtnHeader.Total) - journals.Where(x => x.Code == itemData.RtnHeader.Code && x.Group == 3).Sum(x => x.Amount),
                         SrcTrans = "SR"
                     });
-                    
+
                     //Delivery Process
                     var DlvData = (from dlvheader in db.SalesDeliveryHeaders
                                    join customer in db.Customers on dlvheader.CustCode equals customer.Code
@@ -1482,7 +1482,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                         {
                             var DlvDetailData = (from dlvdetail in db.SalesDeliveryDetails
                                                  join item in db.Items on dlvdetail.ItemId equals item.Id
-                                                 where dlvdetail.Code == itemDlvData.DlvHeader.Code 
+                                                 where dlvdetail.Code == itemDlvData.DlvHeader.Code
                                                  select new { DlvDetail = dlvdetail, Item = item }).ToList();
                             short l = 0;
                             short m = 0;
@@ -1832,7 +1832,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
 
             return journals;
         }
-        
+
         private IEnumerable<Journal> ProcessDepreciationFixedAssetJournal(TenantContext db, DateTime dateTime, List<SystemParameter> systemParam)
         {
             List<Journal> journals = new();
@@ -2340,7 +2340,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
 
             return journals;
         }
-        
+
         private IEnumerable<Journal> ProcessGeneralJournal(TenantContext db, DateTime dateTime)
         {
             List<Journal> journals = new();
@@ -2392,9 +2392,9 @@ namespace ERP.Web.API.Domain.Services.Accounting
             foreach (var itemData in dataHeader)
             {
                 var dataDetail = (from tsdetail in db.TransferStockDetails
-                                     join item in db.Items on tsdetail.ItemId equals item.Id
-                                     where tsdetail.Code == itemData.Code
-                                     select new { TsDetail = tsdetail, Item = item }).ToList();
+                                  join item in db.Items on tsdetail.ItemId equals item.Id
+                                  where tsdetail.Code == itemData.Code
+                                  select new { TsDetail = tsdetail, Item = item }).ToList();
 
                 short i = 0;
                 short j = 0;
@@ -2413,10 +2413,10 @@ namespace ERP.Web.API.Domain.Services.Accounting
                         resultHpp = smData.BaseNettPrice > 0 ? smData.BaseNettPrice * smData.BaseQty : 0m;
                     }
 
-                    if(itemData.Type == "OUT")
+                    if (itemData.Type == "OUT")
                         dataHPP.Add(new { Code = itemData.Code, ItemId = itemDetail.TsDetail.ItemId, HPP = resultHpp });
 
-                    if(itemData.Type == "IN")
+                    if (itemData.Type == "IN")
                     {
                         var valueHPP = dataHPP.FirstOrDefault(x => x.Code == itemData.OriginTransferCode && x.ItemId == itemDetail.TsDetail.ItemId);
                         if (valueHPP != null)
@@ -2462,7 +2462,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                         });
                     }
                 }
-                
+
                 if (!new[] { "C", "RC", "DT" }.Contains(itemData.Type))
                 {
                     //Barang Terkirim
@@ -2501,7 +2501,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                         SrcTrans = "TS"
                     });
                 }
-                
+
             }
 
             return journals;
@@ -2527,13 +2527,15 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 latestQty += firstSM.BaseQty;
                 hpp = latestStockValue / latestQty;
 
-                List<string> srcType = new() { "BB", "RCV", "DO", "SR", "ADJ", "TS", "PR", "CNEE"};
+                List<string> srcType = new() { "BB", "RCV", "DO", "DOF", "SR", "ADJ", "TS", "PR", "CNEE" };
 
                 var doData = db.SalesDeliveryHeaders.ToList();
 
                 var srData = db.SalesReturnHeaders.ToList();
 
                 var rcvData = db.PurchaseReceiveHeaders.ToList();
+
+                var tsData = db.TransferStockHeaders.ToList();
 
                 var listSM = stockMutations.Where(x => x.Id != firstSM.Id
                             && srcType.Contains(x.Src)
@@ -2545,43 +2547,101 @@ namespace ERP.Web.API.Domain.Services.Accounting
                             .ThenBy(x => x.Src == "BB")
                             .ThenBy(x => x.Src == "RCV")
                             .ThenBy(x => (x.Src == "ADJ" && x.BaseQty > 0) || x.Src == "SR" || (new[] { "TS", "CNEE" }.Contains(x.Src) && x.Type == "OH" && x.BaseQty > 0))
-                            .ThenBy(x => x.Src == "DO" && (srData.FirstOrDefault(z => z.Code == (doData.FirstOrDefault(y => y.Code == x.RefCode1)?.TransCode ?? ""))?.Type ?? 1) == 2)
-                            .ThenBy(x => (x.Src == "ADJ" && x.BaseQty < 0) || (new[] {"TS", "CNEE"}.Contains(x.Src) && x.Type == "OH" && x.BaseQty < 0) || (new[] { "DO", "PR" }.Contains(x.Src)))
+                            .ThenBy(x => x.Src == "DO" && (srData.FirstOrDefault(z => z.Code == (doData.FirstOrDefault(y => y.Code == x.RefCode1)?.TransCode ?? ""))?.Type ?? 0) == 2)
+                            .ThenBy(x => (x.Src == "ADJ" && x.BaseQty < 0) || (new[] { "TS", "CNEE" }.Contains(x.Src) && x.Type == "OH" && x.BaseQty < 0) || (new[] { "DO", "DOF", "PR" }.Contains(x.Src)))
                             .ThenBy(x => x.Id)
                             .ToList();
 
                 foreach (var item in listSM)
                 {
-                    if (new[] { "RCV","BB","SR" }.Contains(item.Src))
+                    if (new[] { "RCV", "BB", "SR" }.Contains(item.Src))
                     {
-                        if (item.Src == "SR" || (item.Src == "RCV" && (rcvData.FirstOrDefault(x => x.Code == item.RefCode1)?.SrcTrans ?? 0) == 2))
+                        var rcvFromPR = (item.Src == "RCV" && (rcvData.FirstOrDefault(x => x.Code == item.RefCode1)?.SrcTrans ?? 0) == 2);
+                        if (item.Src == "SR" || rcvFromPR)
                         {
-                            item.BaseNettPrice = hpp;
-                            item.NettPrice = hpp * item.BaseQty / item.Qty;
+                            item.BaseNettPrice = rcvFromPR ? listSM.FirstOrDefault(x => x.RefCode1 == item.RefCode2)?.BaseNettPrice ?? 0m : hpp;
+                            item.NettPrice = rcvFromPR ? listSM.FirstOrDefault(x => x.RefCode1 == item.RefCode2)?.NettPrice ?? 0m : hpp * item.BaseQty / item.Qty;
                             db.StockMutations.Update(item);
                         }
                         latestStockValue += item.BaseNettPrice * item.BaseQty;
                         latestQty += item.BaseQty;
+                        if (item.Src == "BB" || item.Src == "RCV" && (rcvData.FirstOrDefault(x => x.Code == item.RefCode1)?.SrcTrans ?? 0) == 1)
+                        {
+                            if (latestStockValue > 0 && latestQty > 0)
+                                hpp = latestStockValue / latestQty;
+                        }
                     }
-                    else if (new[] { "ADJ", "TS", "CNEE"}.Contains(item.Src))
+                    else if (new[] { "ADJ", "TS", "CNEE" }.Contains(item.Src))
                     {
-                        item.BaseNettPrice = hpp;
-                        item.NettPrice = hpp * item.BaseQty / item.Qty;
-                        latestStockValue += item.BaseNettPrice * Math.Abs(item.BaseQty);
+                        if (item.Src == "TS" && (tsData.FirstOrDefault(x => x.Code == item.RefCode1)?.Type ?? "") == "OUT")
+                        {
+                            item.BaseNettPrice = hpp;
+                            item.NettPrice = hpp * item.BaseQty / item.Qty;
+                        }
+                        else if (item.Src == "TS" && (tsData.FirstOrDefault(x => x.Code == item.RefCode1)?.Type ?? "") == "IN")
+                        {
+                            item.BaseNettPrice = listSM.FirstOrDefault(x => x.RefCode1 == item.RefCode2)?.BaseNettPrice ?? 0m;
+                            item.NettPrice = listSM.FirstOrDefault(x => x.RefCode1 == item.RefCode2)?.NettPrice ?? 0m;
+                        }
+                        else
+                        {
+                            item.BaseNettPrice = hpp;
+                            item.NettPrice = hpp * item.BaseQty / item.Qty;
+                        }
+
+                        latestStockValue += item.BaseNettPrice * item.BaseQty;
                         latestQty += item.BaseQty;
                         db.StockMutations.Update(item);
                     }
                     else
                     {
-                        item.BaseNettPrice = hpp;
-                        item.NettPrice = hpp * item.BaseQty / item.Qty;
+                        if (item.Src == "DO" && (srData.FirstOrDefault(z => z.Code == (doData.FirstOrDefault(y => y.Code == item.RefCode1)?.TransCode ?? ""))?.Type ?? 0) == 2)
+                        {
+                            item.BaseNettPrice = listSM.FirstOrDefault(x => x.RefCode1 == item.RefCode2)?.BaseNettPrice ?? 0m;
+                            item.NettPrice = listSM.FirstOrDefault(x => x.RefCode1 == item.RefCode2)?.NettPrice ?? 0m;
+                        }
+                        else
+                        {
+                            item.BaseNettPrice = hpp;
+                            item.NettPrice = hpp * item.BaseQty / item.Qty;
+                        }
                         latestStockValue -= item.BaseNettPrice * item.BaseQty;
                         latestQty -= item.BaseQty;
                         db.StockMutations.Update(item);
                     }
-                    if (latestStockValue > 0 && latestQty > 0)
-                        hpp = latestStockValue / latestQty;
                 }
+                //foreach (var item in listSM)
+                //{
+                //    if (new[] { "RCV", "BB", "SR" }.Contains(item.Src))
+                //    {
+                //        if (item.Src == "SR" || (item.Src == "RCV" && (rcvData.FirstOrDefault(x => x.Code == item.RefCode1)?.SrcTrans ?? 0) == 2))
+                //        {
+                //            item.BaseNettPrice = hpp;
+                //            item.NettPrice = hpp * item.BaseQty / item.Qty;
+                //            db.StockMutations.Update(item);
+                //        }
+                //        latestStockValue += item.BaseNettPrice * item.BaseQty;
+                //        latestQty += item.BaseQty;
+                //    }
+                //    else if (new[] { "ADJ", "TS", "CNEE" }.Contains(item.Src))
+                //    {
+                //        item.BaseNettPrice = hpp;
+                //        item.NettPrice = hpp * item.BaseQty / item.Qty;
+                //        latestStockValue += item.BaseNettPrice * Math.Abs(item.BaseQty);
+                //        latestQty += item.BaseQty;
+                //        db.StockMutations.Update(item);
+                //    }
+                //    else
+                //    {
+                //        item.BaseNettPrice = hpp;
+                //        item.NettPrice = hpp * item.BaseQty / item.Qty;
+                //        latestStockValue -= item.BaseNettPrice * item.BaseQty;
+                //        latestQty -= item.BaseQty;
+                //        db.StockMutations.Update(item);
+                //    }
+                //    if (latestStockValue > 0 && latestQty > 0)
+                //        hpp = latestStockValue / latestQty;
+                //}
                 db.SaveChanges();
             }
         }
@@ -2623,7 +2683,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     .AddMonths(-1);
 
             DateTime startDate = new(postDate.Year, 1, 1);
-            startDate = startDate > bbPeriod ? startDate : bbPeriod; 
+            startDate = startDate > bbPeriod ? startDate : bbPeriod;
             DateTime endDate = new(postDate.Year, postDate.Month, 1);
             for (var dataMonth = startDate; dataMonth.Date < endDate.Date; dataMonth = dataMonth.AddMonths(1))
             {
