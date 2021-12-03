@@ -22,6 +22,12 @@ namespace ERP.Web.API.Domain.Services.MobileSales
         {
             var result = new SaveResult(false);
 
+            if (!data.Any())
+                return new SaveResult(false, "Tidak ada data yang di proses");
+
+            if (data.Any(x => x.Mark != "A"))
+                return new SaveResult(false, "Tidak dapat menyetujui data yang sudah disetujui atau ditolak");
+
             using var transaction = Db.Database.BeginTransaction();
             try
             {
@@ -428,14 +434,11 @@ namespace ERP.Web.API.Domain.Services.MobileSales
             if (!data.Any())
                 return new SaveResult(false, "Tidak ada data yang di proses");
 
+            if (data.Any(x => x.Mark != "A"))
+                return new SaveResult(false, "Tidak dapat menolak data yang sudah disetujui atau ditolak");
+
             foreach (var item in data)
             {
-                if (item.Mark == "REJ")
-                {
-                    result.Message = "Data pesanan mobile tidak bisa ditolak karena dalam status ditolak.";
-                    return result;
-                }
-
                 var orderData = Db.MobileOrderHeaders.FirstOrDefault(x => x.Code == item.Code);
                 orderData.RejectedBy = userId;
                 orderData.RejectedDate = DateTime.Now;
