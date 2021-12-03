@@ -5,7 +5,7 @@ namespace ERP.Web.API.Domain.Interfaces.Mobile.CustomerDeliverySchedule
 {
     public interface ICustomerDeliveryScheduleService
     {
-        DataSourceResult GetDataDeliveryScheduleHeader(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, DateTime? date, string search, string custCode);
+        DataSourceResult GetDataDeliveryScheduleHeader(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, string date, string search, string custCode);
         IEnumerable<DeliveryScheduleDetailModel> GetDataDeliveryScheduleDetail(string code);
     }
 }

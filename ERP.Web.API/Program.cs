@@ -272,6 +272,7 @@ builder.Services.AddScoped<IFireForgetService, FireForgetService>();
 #region Mobile
 // General services
 builder.Services.AddScoped<IImageService, ImageService>();
+builder.Services.AddScoped<ICustomerFirebaseTokenService, CustomerFirebaseTokenService>();
 builder.Services.AddScoped<IVisitInformationService, VisitInformationService>();
 
 // Human Resource Services

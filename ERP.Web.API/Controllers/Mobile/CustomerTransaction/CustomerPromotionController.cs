@@ -29,7 +29,7 @@ namespace ERP.Web.API.Controllers.Mobile.CustomerTransaction
         {
             var data = _customerPromotion.GetDataPromotion(skip, take,
                     JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
-                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"), date, search, _claim.UserCode);
+                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"), search, _claim.UserCode);
 
             var result = ((List<PromotionHeaderModel>)data.Data).ToList<dynamic>();
 
