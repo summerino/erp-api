@@ -2610,6 +2610,38 @@ namespace ERP.Web.API.Domain.Services.Accounting
                         db.StockMutations.Update(item);
                     }
                 }
+                //foreach (var item in listSM)
+                //{
+                //    if (new[] { "RCV", "BB", "SR" }.Contains(item.Src))
+                //    {
+                //        if (item.Src == "SR" || (item.Src == "RCV" && (rcvData.FirstOrDefault(x => x.Code == item.RefCode1)?.SrcTrans ?? 0) == 2))
+                //        {
+                //            item.BaseNettPrice = hpp;
+                //            item.NettPrice = hpp * item.BaseQty / item.Qty;
+                //            db.StockMutations.Update(item);
+                //        }
+                //        latestStockValue += item.BaseNettPrice * item.BaseQty;
+                //        latestQty += item.BaseQty;
+                //    }
+                //    else if (new[] { "ADJ", "TS", "CNEE" }.Contains(item.Src))
+                //    {
+                //        item.BaseNettPrice = hpp;
+                //        item.NettPrice = hpp * item.BaseQty / item.Qty;
+                //        latestStockValue += item.BaseNettPrice * Math.Abs(item.BaseQty);
+                //        latestQty += item.BaseQty;
+                //        db.StockMutations.Update(item);
+                //    }
+                //    else
+                //    {
+                //        item.BaseNettPrice = hpp;
+                //        item.NettPrice = hpp * item.BaseQty / item.Qty;
+                //        latestStockValue -= item.BaseNettPrice * item.BaseQty;
+                //        latestQty -= item.BaseQty;
+                //        db.StockMutations.Update(item);
+                //    }
+                //    if (latestStockValue > 0 && latestQty > 0)
+                //        hpp = latestStockValue / latestQty;
+                //}
                 db.SaveChanges();
             }
         }
