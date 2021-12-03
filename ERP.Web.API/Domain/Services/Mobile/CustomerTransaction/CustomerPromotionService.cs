@@ -15,22 +15,51 @@ namespace ERP.Web.API.Domain.Services.Mobile.CustomerTransaction
             Db = db;
         }
 
-        public DataSourceResult GetDataPromotion(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, DateTime? date, string search, string custCode)
+        public DataSourceResult GetDataPromotion(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, string search, string custCode)
         {
-            var data = from header in Db.VwPromoHeaders
+            var custTypeId = getCustTypeId(custCode);
+
+            var data_1 = from header in Db.VwPromoHeaders
+                         where header.Mark.Equals("A") && header.ApplyTo.Equals(1)
+                         select new PromotionHeaderModel
+                         {
+                             Code = header.Code,
+                             Name = header.Name,
+                             EndDate = header.EndDate,
+                             StartDate = header.StartDate,
+                             ApplyTo = header.ApplyTo,
+                         };
+            var data_2 = from header in Db.VwPromoHeaders
+                         join subject in Db.PromoSubjects on header.Code equals subject.Code
+                         where header.Mark.Equals("A") && header.ApplyTo.Equals(2) && subject.Code.Equals(custCode)
+                         select new PromotionHeaderModel
+                         {
+                             Code = header.Code,
+                             Name = header.Name,
+                             EndDate = header.EndDate,
+                             StartDate = header.StartDate,
+                             ApplyTo = header.ApplyTo,
+                         };
+
+            var data_3 = from header in Db.VwPromoHeaders
+                       join subject in Db.PromoSubjects on header.Code equals subject.Code
+                       join cust in Db.Customers on subject.CustCode equals cust.Code
+                       where header.Mark.Equals("A") && header.ApplyTo.Equals(3) && cust.TypeId.Equals(custTypeId)
                        select new PromotionHeaderModel
                        {
                            Code = header.Code,
-                           ApplyTo = header.ApplyTo,
-                           ApprovedInitial = header.ApprovedInitial,
-                           CoaCost = header.CoaCost,
-                           CreatedInitial = header.CreatedInitial,
                            Name = header.Name,
                            EndDate = header.EndDate,
                            StartDate = header.StartDate,
-                           Status = header.Status,
-                           UpdatedInitial = header.UpdatedInitial,
+                           ApplyTo = header.ApplyTo,
                        };
+
+            var data = (data_1.Union(data_2)).Union(data_3);
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                data = data.Where(x => x.Code.Contains(search) || x.Name.Contains(search));
+            }
 
             return data.ToDataSourceResult(skip, take, filter, sort);
         }
@@ -60,6 +89,11 @@ namespace ERP.Web.API.Domain.Services.Mobile.CustomerTransaction
                        };
 
             return data;
+        }
+
+        private int getCustTypeId(string custCode)
+        {
+            return Db.Customers.FirstOrDefault(t => t.Code == custCode).TypeId;
         }
     }
 }

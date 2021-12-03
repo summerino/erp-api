@@ -1,13 +1,11 @@
 ﻿using ERP.Common.Models;
 using ERP.Entity;
 using ERP.Web.API.Domain.Interfaces.Mobile.CustomerDeliverySchedule;
-using ERP.Web.API.Domain.Interfaces.Mobile.CustomerTransaction;
 using ERP.Web.API.Domain.Models.Mobile.CustomerDeliverySchedule;
 using ERP.Web.API.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using System.Linq.Dynamic.Core;
 
 namespace ERP.Web.API.Controllers.Mobile.CustomerDeliverySchedule
 {
@@ -26,7 +24,7 @@ namespace ERP.Web.API.Controllers.Mobile.CustomerDeliverySchedule
         }
 
         [HttpGet]
-        public IActionResult GetData(string filters, string sorts, int skip, int take, DateTime? date, string search)
+        public IActionResult GetData(string filters, string sorts, int skip, int take, string date, string search)
         {
             var data =
                 _customerDeliverySchedule.GetDataDeliveryScheduleHeader(skip, take,
