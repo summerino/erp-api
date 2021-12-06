@@ -103,7 +103,7 @@ namespace ERP.Web.API.Domain.Services.Inventory
 				LEFT JOIN Inventory.Item im on im.Id = sm.ItemId
 				LEFT JOIN Sales.SalesDeliveryHeader do ON do.Code = sm.RefCode1
 				LEFT JOIN Sales.SalesReturnHeader sr ON sr.Code = do.TransCode
-				WHERE sm.Src IN ('RCV','DO','TS','ADJ','BB','PR','CNEE','DOF') AND sm.[Type] = 'OH' " + (string.IsNullOrEmpty(whCode) ? "" : $"AND sm.WarehouseCode = '{whCode.Replace("'", "''")}'") + orderQuery).ToList();
+				WHERE sm.Src IN ('RCV','DO','TS','ADJ','BB','PR','CNEE','DOF', 'SR') AND sm.[Type] = 'OH' " + (string.IsNullOrEmpty(whCode) ? "" : $"AND sm.WarehouseCode = '{whCode.Replace("'", "''")}'") + orderQuery).ToList();
 
 			var itemData = _db.ReportByItems.FromSqlRaw(qsetUnit +
 				@"SELECT im.Id, im.Initial, im.[Name],
@@ -144,11 +144,11 @@ namespace ERP.Web.API.Domain.Services.Inventory
 					var data = _db.SalesDeliveryDetails.FirstOrDefault(x => x.Code == itemSmData.TransCode && x.ItemId == itemSmData.ItemId);
 					taxAmount = data?.TaxAmount ?? 0m;
 				}
-				else if (itemSmData.SrcTrans == "Penerimaan")
-				{
-					var data = _db.PurchaseReceiveDetails.FirstOrDefault(x => x.Code == itemSmData.TransCode && x.ItemId == itemSmData.ItemId);
-					taxAmount = data?.TaxAmount ?? 0m;
-				}
+				//else if (itemSmData.SrcTrans == "Penerimaan")
+				//{
+				//	var data = _db.PurchaseReceiveDetails.FirstOrDefault(x => x.Code == itemSmData.TransCode && x.ItemId == itemSmData.ItemId);
+				//	taxAmount = data?.TaxAmount ?? 0m;
+				//}
 				else if (itemSmData.SrcTrans == "Retur Pembelian")
 				{
 					var data = _db.PurchaseReturnDetails.FirstOrDefault(x => x.Code == itemSmData.TransCode && x.ItemId == itemSmData.ItemId);
