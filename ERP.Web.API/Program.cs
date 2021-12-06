@@ -114,6 +114,9 @@ builder.Services.AddAuthorization(options =>
 
     options.AddPolicy(AppConstant.ValidateMobileCustomerTokenPolicy, policy =>
         policy.Requirements.Add(new MobileCustomerSessionRequirement()));
+
+    options.AddPolicy(AppConstant.ValidateAllMobileTokenPolicy, policy =>
+        policy.Requirements.Add(new MobileAllSessionRequirement()));
 });
 
 // Add authentication service
@@ -148,6 +151,7 @@ builder.Services
 builder.Services.AddScoped<IAuthorizationHandler, UserSessionHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, MobileUserSessionHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, MobileCustomerSessionHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, MobileAllSessionHandler>();
 builder.Services.AddScoped<ITenantService, TenantService>();
 builder.Services.AddScoped<IShardingService, ShardingService>();
 builder.Services.AddScoped<IClaimService, ClaimService>();
@@ -335,14 +339,6 @@ using (var scope = app.Services.CreateScope())
     var shardingService = scope.ServiceProvider.GetRequiredService<IShardingService>();
     shardingService.ApplyMigrationAsync().GetAwaiter().GetResult();
 }
-
-// Catalog db migration
-//var catalogCtx = app.Services.GetRequiredService<CatalogContext>();
-//catalogCtx.Database.Migrate();
-
-// Tenant db migration in sharding service
-//var shardingService = app.Services.GetRequiredService<IShardingService>();
-//shardingService.ApplyMigrationAsync().GetAwaiter().GetResult();
 
 // Initialize configuration for swift
 Builder.InitConfiguration(builder.Configuration.GetConnectionString("CatalogConnection"));

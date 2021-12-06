@@ -4,6 +4,7 @@
     {
         public const string ValidateMobileTokenPolicy = "ValidateMobileToken";
         public const string ValidateMobileCustomerTokenPolicy = "ValidateMobileCustomerToken";
+        public const string ValidateAllMobileTokenPolicy = "ValidateAllMobileToken";
         public static string UnAuthMessage = "Operasi tidak dapat dilanjutkan, harap hubungi administrator.";
     }
 
