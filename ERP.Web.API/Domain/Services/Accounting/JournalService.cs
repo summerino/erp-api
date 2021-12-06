@@ -2537,30 +2537,54 @@ namespace ERP.Web.API.Domain.Services.Accounting
 
                 var tsData = db.TransferStockHeaders.ToList();
 
-                var listSM = stockMutations.Where(x => x.Id != firstSM.Id
-                            && srcType.Contains(x.Src)
-                            && x.ItemId == itemId
-                            && x.BaseQty != 0
-                            && x.Date >= firstSM.Date
-                            && x.Date <= currentSM.Date)
-                            .OrderBy(x => x.Date)
-                            .ThenBy(x => x.Src == "BB")
-                            .ThenBy(x => x.Src == "RCV")
-                            .ThenBy(x => (x.Src == "ADJ" && x.BaseQty > 0) || x.Src == "SR" || (new[] { "TS", "CNEE" }.Contains(x.Src) && x.Type == "OH" && x.BaseQty > 0))
-                            .ThenBy(x => x.Src == "DO" && (srData.FirstOrDefault(z => z.Code == (doData.FirstOrDefault(y => y.Code == x.RefCode1)?.TransCode ?? ""))?.Type ?? 0) == 2)
-                            .ThenBy(x => (x.Src == "ADJ" && x.BaseQty < 0) || (new[] { "TS", "CNEE" }.Contains(x.Src) && x.Type == "OH" && x.BaseQty < 0) || (new[] { "DO", "DOF", "PR" }.Contains(x.Src)))
-                            .ThenBy(x => x.Id)
-                            .ToList();
+                var prData = db.PurchaseReturnHeaders.ToList();
+
+                //var listSM = stockMutations.Where(x => x.Id != firstSM.Id
+                //            && srcType.Contains(x.Src)
+                //            && x.ItemId == itemId
+                //            && x.BaseQty != 0
+                //            && x.Date >= firstSM.Date
+                //            && x.Date <= currentSM.Date)
+                //            .OrderBy(x => x.Date)
+                //            .ThenBy(x => x.Src == "BB")
+                //            .ThenBy(x => x.Src == "RCV")
+                //            .ThenBy(x => (x.Src == "ADJ" && x.BaseQty > 0) || x.Src == "SR" || (new[] { "TS", "CNEE" }.Contains(x.Src) && x.Type == "OH" && x.BaseQty > 0))
+                //            .ThenBy(x => x.Src == "DO" && (srData.FirstOrDefault(z => z.Code == (doData.FirstOrDefault(y => y.Code == x.RefCode1)?.TransCode ?? ""))?.Type ?? 0) == 2)
+                //            .ThenBy(x => (x.Src == "ADJ" && x.BaseQty < 0) || (new[] { "TS", "CNEE" }.Contains(x.Src) && x.Type == "OH" && x.BaseQty < 0) || (new[] { "DO", "DOF", "PR" }.Contains(x.Src)))
+                //            .ThenBy(x => x.Id)
+                //            .ToList();
+
+                var orderQuery = @" ORDER BY sm.Date, CASE
+					WHEN sm.Src = 'BB' THEN 1
+					WHEN sm.Src = 'RCV' THEN 2
+					WHEN sm.Src = 'ADJ' AND sm.BaseQty > 0 THEN 3
+					WHEN sm.Src = 'SR' THEN 3
+					WHEN sm.Src IN('TS', 'CNEE') AND sm.[Type] = 'OH' AND sm.BaseQty > 0 THEN 3
+					WHEN sm.Src = 'DO' AND sr.[Type] = 2 THEN 4
+					WHEN sm.Src = 'ADJ' AND sm.BaseQty < 0 THEN 5
+					WHEN sm.Src IN('DO', 'DOF', 'PR') THEN 5
+					WHEN sm.Src IN('TS', 'CNEE') AND sm.[Type] = 'OH' AND sm.BaseQty < 0 THEN 5
+					ELSE 6
+					END";
+
+                var listSM = db.StockMutations.FromSqlRaw(@"SELECT sm.*
+				FROM Inventory.StockMutation sm
+				LEFT JOIN Inventory.Item im on im.Id = sm.ItemId
+				LEFT JOIN Sales.SalesDeliveryHeader do ON do.Code = sm.RefCode1
+				LEFT JOIN Sales.SalesReturnHeader sr ON sr.Code = do.TransCode
+				WHERE sm.Src IN ('RCV','DO','TS','ADJ','BB','PR','CNEE','DOF','SR') AND sm.[Type] = 'OH' " +
+                $"AND sm.ItemId = {itemId} AND sm.BaseQty != 0 AND sm.Date >= '{firstSM.Date}' " +
+                $"AND sm.Date <= '{currentSM.Date}' AND sm.Id != {firstSM.Id}" + orderQuery).ToList();
 
                 foreach (var item in listSM)
                 {
                     if (new[] { "RCV", "BB", "SR" }.Contains(item.Src))
                     {
-                        var rcvFromPR = (item.Src == "RCV" && (rcvData.FirstOrDefault(x => x.Code == item.RefCode1)?.SrcTrans ?? 0) == 2);
-                        if (item.Src == "SR" || rcvFromPR)
+                        var rcvFromPRDI = (item.Src == "RCV" && (prData.FirstOrDefault(z => z.Code == (rcvData.FirstOrDefault(y => y.Code == item.RefCode1)?.TransCode ?? ""))?.Type ?? 0) == 3);
+                        if (item.Src == "SR" || rcvFromPRDI)
                         {
-                            item.BaseNettPrice = rcvFromPR ? listSM.FirstOrDefault(x => x.RefCode1 == item.RefCode2)?.BaseNettPrice ?? 0m : hpp;
-                            item.NettPrice = rcvFromPR ? listSM.FirstOrDefault(x => x.RefCode1 == item.RefCode2)?.NettPrice ?? 0m : hpp * item.BaseQty / item.Qty;
+                            item.BaseNettPrice = hpp;
+                            item.NettPrice = hpp * item.BaseQty / item.Qty;
                             db.StockMutations.Update(item);
                         }
                         latestStockValue += item.BaseNettPrice * item.BaseQty;
@@ -2595,10 +2619,10 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     }
                     else
                     {
-                        if (item.Src == "DO" && (srData.FirstOrDefault(z => z.Code == (doData.FirstOrDefault(y => y.Code == item.RefCode1)?.TransCode ?? ""))?.Type ?? 0) == 2)
+                        if (item.Src == "DO" && (srData.FirstOrDefault(z => z.Code == (doData.FirstOrDefault(y => y.Code == item.RefCode1)?.TransCode ?? ""))?.Type ?? 0) == 3)
                         {
-                            item.BaseNettPrice = listSM.FirstOrDefault(x => x.RefCode1 == item.RefCode2)?.BaseNettPrice ?? 0m;
-                            item.NettPrice = listSM.FirstOrDefault(x => x.RefCode1 == item.RefCode2)?.NettPrice ?? 0m;
+                            item.BaseNettPrice = hpp;
+                            item.NettPrice = hpp * item.BaseQty / item.Qty;
                         }
                         else
                         {
@@ -2608,6 +2632,29 @@ namespace ERP.Web.API.Domain.Services.Accounting
                         latestStockValue -= item.BaseNettPrice * item.BaseQty;
                         latestQty -= item.BaseQty;
                         db.StockMutations.Update(item);
+                    }
+                }
+
+                if (listSM.Where(x => new[] { "RCV", "DO" }.Contains(x.Src)).Any())
+                {
+                    foreach (var item in listSM)
+                    {
+                        var rcvFromPR = (item.Src == "RCV" && (rcvData.FirstOrDefault(x => x.Code == item.RefCode1)?.SrcTrans ?? 0) == 2);
+                        if (rcvFromPR)
+                        {
+                            if ((prData.FirstOrDefault(x => x.Code == item.RefCode2)?.Type ?? 0) == 2)
+                            {
+                                item.BaseNettPrice = listSM.FirstOrDefault(x => x.RefCode1 == item.RefCode2)?.BaseNettPrice ?? 0m;
+                                item.NettPrice = listSM.FirstOrDefault(x => x.RefCode1 == item.RefCode2)?.NettPrice ?? 0m;
+                                db.StockMutations.Update(item);
+                            }
+                        }
+                        else if (item.Src == "DO" && (srData.FirstOrDefault(z => z.Code == (doData.FirstOrDefault(y => y.Code == item.RefCode1)?.TransCode ?? ""))?.Type ?? 0) == 2)
+                        {
+                            item.BaseNettPrice = listSM.FirstOrDefault(x => x.RefCode1 == item.RefCode2)?.BaseNettPrice ?? 0m;
+                            item.NettPrice = listSM.FirstOrDefault(x => x.RefCode1 == item.RefCode2)?.NettPrice ?? 0m;
+                            db.StockMutations.Update(item);
+                        }
                     }
                 }
                 //foreach (var item in listSM)
