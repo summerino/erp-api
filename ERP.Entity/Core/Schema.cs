@@ -9,6 +9,7 @@
         public const string General = "General";
         public const string HumanResource = "HumanResource";
         public const string Inventory = "Inventory";
+        public const string MobileCustomer = "MobileCustomer";
         public const string MobileSales = "MobileSales";
         public const string MobileWarehouse = "MobileWarehouse";
         public const string Purchasing = "Purchasing";

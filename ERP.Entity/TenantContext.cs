@@ -1,18 +1,18 @@
-﻿using System;
-using System.Linq;
-using Microsoft.EntityFrameworkCore;
-using ERP.Entity.Accounting;
+﻿using ERP.Entity.Accounting;
 using ERP.Entity.AssetManagement;
 using ERP.Entity.Core;
 using ERP.Entity.Expedition;
 using ERP.Entity.Finance;
 using ERP.Entity.General;
 using ERP.Entity.Inventory;
+using ERP.Entity.MobileSales;
+using ERP.Entity.MobileWarehouse;
 using ERP.Entity.Purchase;
 using ERP.Entity.Sales;
 using ERP.Entity.SystemManagement;
-using ERP.Entity.MobileSales;
-using ERP.Entity.MobileWarehouse;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Linq;
 
 namespace ERP.Entity
 {
@@ -151,6 +151,14 @@ namespace ERP.Entity
         public DbSet<ReportByItem> ReportByItems { get; set; }
         public DbSet<ReportByWarehouse> ReportByWarehouses { get; set; }
 
+        // Mobile Customer entities
+        public DbSet<MobileCustomer.MobileOrderHeader> MobileCustomerOrderHeaders { get; set; }
+        public DbSet<MobileCustomer.VwMobileOrderHeader> VwMobileCustomerOrderHeaders { get; set; }
+        public DbSet<MobileCustomer.MobileOrderDetail> MobileCustomerOrderDetails { get; set; }
+        public DbSet<MobileCustomer.VwMobileOrderDetail> VwMobileCustomerOrderDetails { get; set; }
+        public DbSet<MobileCustomer.MobileOrderDetailDiscount> MobileCustomerOrderDetailDiscounts { get; set; }
+        public DbSet<MobileCustomer.MobileOrderDetailFreeGood> MobileCustomerOrderDetailFreeGoods { get; set; }
+
         // Mobile Sales entities
         public DbSet<MobileActivityLog> MobileActivityLogs { get; set; }
         public DbSet<MobileCostHeader> MobileCostHeaders { get; set; }
@@ -158,7 +166,7 @@ namespace ERP.Entity
         public DbSet<MobileCostDetail> MobileCostDetails { get; set; }
         public DbSet<VwMobileCostDetail> VwMobileCostDetails { get; set; }
         public DbSet<MobileCostImage> MobileCostImages { get; set; }
-        public DbSet<MobileCustomer> MobileCustomers { get; set; }
+        public DbSet<MobileSales.MobileCustomer> MobileCustomers { get; set; }
         public DbSet<VwMobileCustomer> VwMobileCustomers { get; set; }
         public DbSet<MobileItemRequestHeader> MobileItemRequestHeaders { get; set; }
         public DbSet<VwMobileItemRequestHeader> VwMobileItemRequestHeaders { get; set; }
@@ -1129,6 +1137,132 @@ namespace ERP.Entity
                .HasNoKey()
                .ToTable("ReportByWarehouse", t => t.ExcludeFromMigrations());
 
+            // Mobile Customer entities
+            // Mobile Order model
+            modelBuilder.Entity<MobileCustomer.MobileOrderHeader>(entity =>
+            {
+                entity.HasKey(e => e.Code)
+                    .HasName("PK_MobileCustomer_MobileOrderHeader");
+
+                entity.Property(e => e.Mark)
+                    .IsRequired();
+
+                entity.HasOne<SalesOrderHeader>()
+                    .WithMany()
+                    .HasForeignKey(d => d.SalesOrderCode)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            modelBuilder.Entity<MobileCustomer.VwMobileOrderHeader>()
+                .HasNoKey()
+                .ToView("vwMobileOrderHeader", Schema.MobileCustomer);
+
+            modelBuilder.Entity<MobileCustomer.MobileOrderDetail>(entity =>
+            {
+                entity.HasKey(e => e.Id)
+                    .HasName("PK_MobileCustomer_MobileOrderDetail");
+
+                entity.Property(e => e.Code)
+                    .IsRequired();
+
+                entity.HasOne<MobileCustomer.MobileOrderHeader>()
+                    .WithMany()
+                    .HasForeignKey(d => d.Code)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Item>()
+                    .WithMany()
+                    .HasForeignKey(d => d.ItemId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<UoM>()
+                    .WithMany()
+                    .HasForeignKey(d => d.UomId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<UoMConversion>()
+                    .WithMany()
+                    .HasForeignKey(d => d.UnitId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Tax>()
+                    .WithMany()
+                    .HasForeignKey(d => d.TaxId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            modelBuilder.Entity<MobileCustomer.VwMobileOrderDetail>()
+                .HasNoKey()
+                .ToView("vwMobileOrderDetail", Schema.MobileCustomer);
+
+            modelBuilder.Entity<MobileCustomer.MobileOrderDetailDiscount>(entity =>
+            {
+                entity.HasKey(e => e.Id)
+                    .HasName("PK_MobileCustomer_MobileOrderDetailDiscount");
+
+                entity.Property(e => e.Code)
+                    .IsRequired();
+
+                entity.HasOne<MobileCustomer.MobileOrderHeader>()
+                    .WithMany()
+                    .HasForeignKey(d => d.Code)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<MobileCustomer.MobileOrderDetail>()
+                    .WithMany()
+                    .HasForeignKey(d => d.OrderDetailId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<PromoHeader>()
+                    .WithMany()
+                    .HasForeignKey(d => d.PromoCode)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<PromoDetail>()
+                    .WithMany()
+                    .HasForeignKey(d => d.PromoDetailId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            modelBuilder.Entity<MobileCustomer.MobileOrderDetailFreeGood>(entity =>
+            {
+                entity.HasKey(e => e.Id)
+                    .HasName("PK_MobileCustomer_MobileOrderDetailFreeGood");
+
+                entity.Property(e => e.Code)
+                    .IsRequired();
+
+                entity.HasOne<MobileCustomer.MobileOrderHeader>()
+                    .WithMany()
+                    .HasForeignKey(d => d.Code)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<MobileCustomer.MobileOrderDetail>()
+                    .WithMany()
+                    .HasForeignKey(d => d.OrderDetailId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<PromoHeader>()
+                    .WithMany()
+                    .HasForeignKey(d => d.PromoCode)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Item>()
+                    .WithMany()
+                    .HasForeignKey(d => d.ItemId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<UoM>()
+                    .WithMany()
+                    .HasForeignKey(d => d.UomId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<UoMConversion>()
+                    .WithMany()
+                    .HasForeignKey(d => d.UnitId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
             // Mobile Sales entities
             // Mobile Cost model
             modelBuilder.Entity<MobileCostHeader>(entity =>
@@ -1178,7 +1312,7 @@ namespace ERP.Entity
             });
 
             // Mobile Customer model
-            modelBuilder.Entity<MobileCustomer>(entity =>
+            modelBuilder.Entity<MobileSales.MobileCustomer>(entity =>
             {
                 entity.Property(e => e.Mark)
                     .IsRequired();

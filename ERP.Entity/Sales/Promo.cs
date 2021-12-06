@@ -28,6 +28,8 @@ namespace ERP.Entity.Sales
         [Required]
         [StringLength(6)]
         public string CoaCost { get; set; }
+
+        public string Content { get; set; }
     }
 
     public class VwPromoHeader : BaseEntityWithMarkAndApproved
@@ -43,6 +45,8 @@ namespace ERP.Entity.Sales
         public short ApplyTo { get; set; }
 
         public string CoaCost { get; set; }
+        
+        public string Content { get; set; }
 
 
         public string CreatedInitial { get; set; }
