@@ -517,7 +517,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                     totalTax.Add(item.Qty * item.TaxAmount);
                     totalDpp.Add(item.Qty * item.Dpp);
 
-                    if (item.Id == 0)
+                    if (item.Id < 0)
                     {
                         var orderDetail = new SalesOrderDetail
                         {
