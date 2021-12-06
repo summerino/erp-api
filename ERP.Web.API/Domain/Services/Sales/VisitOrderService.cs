@@ -54,11 +54,14 @@ namespace ERP.Web.API.Domain.Services.Sales
             using var transaction = Db.Database.BeginTransaction();
             try
             {
-                // Checking if employee is assigned in same date
-                if (IsEmployeeAssignedInSameDate(data.Date, data.SalesmanId))
+                if (data.VisitPlanCode != null)
                 {
-                    result.Message = "Karyawan tidak dapat dipilih pada tanggal yang sama.";
-                    return result;
+                    // Checking if employee is assigned in same date
+                    if (IsEmployeeAssignedInSameDate(data.Date, data.SalesmanId))
+                    {
+                        result.Message = "Karyawan tidak dapat dipilih pada tanggal yang sama.";
+                        return result;
+                    }
                 }
 
                 // Get new code
