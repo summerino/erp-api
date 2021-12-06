@@ -147,7 +147,14 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 }
                 else
                 {
-                    item.Mark = false;
+                    if (item.Kode == null)
+                    {
+                        item.Mark = true;
+                    }
+                    else
+                    {
+                        item.Mark = false;
+                    }
                 }
             }
             return data;
