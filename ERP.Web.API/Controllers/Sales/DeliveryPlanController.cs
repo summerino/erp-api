@@ -91,14 +91,15 @@ namespace ERP.Web.API.Controllers.Sales
         }
 
         [HttpGet("all-trans")]
-        public IActionResult GetAllTransaction(string code)
+        public IActionResult GetAllTransaction(string warehouseCode, string filters)
         {
-            var data = _dp.GetAllTransaction(code);
+            var data = _dp.GetAllTransaction(warehouseCode,
+                JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"));
 
             return Ok(new ApiResponse
             {
-                RowCount = data.Count,
-                TableData = data
+                RowCount = data.Total,
+                TableData = data.Data.ToDynamicList()
             });
         }
 

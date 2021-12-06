@@ -16,7 +16,8 @@ namespace ERP.Web.API.Domain.Interfaces.Sales
 
         List<dynamic> GetRelatedTransactions(string code);
 
-        List<dynamic> GetAllTransaction(string warehousecode);
+        DataSourceResult GetAllTransaction(string warehouseCode, IEnumerable<Filter> filter);
+
 
         SaveResult Insert(DeliveryPlanRequest data);
 

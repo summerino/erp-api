@@ -15,7 +15,7 @@ namespace ERP.Web.API.Domain.Services.Mobile.CustomerDeliverySchedule
             Db = db;
         }
 
-        public DataSourceResult GetDataDeliveryScheduleHeader(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, DateTime? date, string search, string custCode)
+        public DataSourceResult GetDataDeliveryScheduleHeader(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, string date, string search, string custCode)
         {
             var data =
                         //from header in Db.VwMobileDeliveryItemHeaders
@@ -39,15 +39,20 @@ namespace ERP.Web.API.Domain.Services.Mobile.CustomerDeliverySchedule
                             WarehouseName = warehouse.Name
                         };
 
-            //if (date != null && date != "")
-            //{
-            //    var date1 = DateTime.ParseExact(date, "yyyy-MM-dd", null);
-            //    data = data.Where(x => x.Date.Equals(date1));
-            //}
-            if (date.HasValue)
+            if (!string.IsNullOrEmpty(search))
             {
-                data = data.Where(x => x.Date.Date.Equals(date));
+                data = data.Where(x => x.Code.Contains(search) || x.WarehouseName.Contains(search));
             }
+
+            if (date != null && date != "")
+            {
+                var date1 = DateTime.ParseExact(date, "yyyy-MM-dd", null);
+                data = data.Where(x => x.Date.Equals(date1));
+            }
+            //if (date.HasValue)
+            //{
+            //    data = data.Where(x => x.Date.Date.Equals(date));
+            //}
 
             return data.ToDataSourceResult(skip, take, filter, sort);
         }
@@ -56,16 +61,42 @@ namespace ERP.Web.API.Domain.Services.Mobile.CustomerDeliverySchedule
         {
             var data = from sDlvdetail in Db.VwSalesDeliveryDetails
                        where sDlvdetail.Code == code
+                       group new { sDlvdetail } by new
+                       {
+                           sDlvdetail.Code,
+                           sDlvdetail.LineNo,
+                           sDlvdetail.ItemId,
+                           sDlvdetail.ItemInitial,
+                           sDlvdetail.ItemName,
+                           sDlvdetail.NettPrice,
+                           sDlvdetail.OrderQty,
+                           sDlvdetail.OutstandingQty,
+                           sDlvdetail.SoDetailId,
+                           sDlvdetail.UnitPrice,
+                           sDlvdetail.UnitId,
+                           sDlvdetail.UnitName,
+                           sDlvdetail.UomId,
+                           //sDlvdetail.TaxAmount,
+                       } into g
                        select new DeliveryScheduleDetailModel
                        {
-                           Code = sDlvdetail.Code,
-                           ItemId = sDlvdetail.ItemId,
-                           ItemInitial = sDlvdetail.ItemInitial,
-                           ItemName = sDlvdetail.ItemName,
-                           UnitPrice = sDlvdetail.UnitPrice,
-                           UnitId = sDlvdetail.UnitId,
-                           UnitName = sDlvdetail.UnitName,
-                           UomId = sDlvdetail.UomId
+                           Code = g.Key.Code,
+                           LineNo = g.Key.LineNo,
+                           Disc = g.Sum(dsc => dsc.sDlvdetail.Disc),
+                           ItemId = g.Key.ItemId,
+                           ItemInitial = g.Key.ItemInitial,
+                           ItemName = g.Key.ItemName,
+                           NettPrice = g.Key.NettPrice,
+                           OrderQty = g.Key.OrderQty,
+                           OutstandingQty = g.Key.OutstandingQty,
+                           Qty = g.Sum(qt => qt.sDlvdetail.Qty),
+                           SoDetailId = g.Key.SoDetailId,
+                           UnitPrice = g.Key.UnitPrice,
+                           UnitId = g.Key.UnitId,
+                           UnitName = g.Key.UnitName,
+                           UomId = g.Key.UomId,
+                           //TaxAmount = g.Key.TaxAmount,
+                           Total = g.Sum(tl => tl.sDlvdetail.Total)
                        };
 
             return data;

@@ -272,6 +272,7 @@ builder.Services.AddScoped<IFireForgetService, FireForgetService>();
 #region Mobile
 // General services
 builder.Services.AddScoped<IImageService, ImageService>();
+builder.Services.AddScoped<ICustomerFirebaseTokenService, CustomerFirebaseTokenService>();
 builder.Services.AddScoped<IVisitInformationService, VisitInformationService>();
 
 // Human Resource Services
@@ -306,6 +307,9 @@ builder.Services.AddScoped<ICustomerDeliveryScheduleService, CustomerDeliverySch
 
 // Cutomer Promotion
 builder.Services.AddScoped<ICustomerPromotionService, CustomerPromotionService>();
+
+// Cutomer Order
+builder.Services.AddScoped<ICustomerOrderService, CustomerOrderService>();
 #endregion
 
 var app = builder.Build();
