@@ -2556,7 +2556,8 @@ namespace ERP.Web.API.Domain.Services.Accounting
 
                 var orderQuery = @" ORDER BY sm.Date, CASE
 					WHEN sm.Src = 'BB' THEN 1
-					WHEN sm.Src = 'RCV' THEN 2
+					WHEN sm.Src = 'RCV' AND rcv.SrcTrans = 1 THEN 2
+					WHEN sm.Src = 'RCV' AND rcv.SrcTrans = 2 THEN 3
 					WHEN sm.Src = 'ADJ' AND sm.BaseQty > 0 THEN 3
 					WHEN sm.Src = 'SR' THEN 3
 					WHEN sm.Src IN('TS', 'CNEE') AND sm.[Type] = 'OH' AND sm.BaseQty > 0 THEN 3
@@ -2572,6 +2573,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
 				LEFT JOIN Inventory.Item im on im.Id = sm.ItemId
 				LEFT JOIN Sales.SalesDeliveryHeader do ON do.Code = sm.RefCode1
 				LEFT JOIN Sales.SalesReturnHeader sr ON sr.Code = do.TransCode
+                LEFT JOIN Purchasing.PurchaseReceiveHeader rcv ON rcv.Code = sm.RefCode1
 				WHERE sm.Src IN ('RCV','DO','TS','ADJ','BB','PR','CNEE','DOF','SR') AND sm.[Type] = 'OH' " +
                 $"AND sm.ItemId = {itemId} AND sm.BaseQty != 0 AND sm.Date >= '{firstSM.Date}' " +
                 $"AND sm.Date <= '{currentSM.Date}' AND sm.Id != {firstSM.Id}" + orderQuery).ToList();
