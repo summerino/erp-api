@@ -41,4 +41,25 @@ namespace ERP.Entity.Purchase
 
         public decimal RemainderAmount { get; set; }
     }
+
+    public class ReportByInvoice
+    {
+        public DateTime Date { get; set; }
+
+        public DateTime? DueDate { get; set; }
+
+        public string Code { get; set; }
+
+        public string OrderCode { get; set; }
+
+        public string SupCode { get; set; }
+
+        public string SupName { get; set; }
+
+        public decimal TotalAmount { get; set; }
+
+        public decimal PaidAmount { get; set; }
+
+        public decimal RemainderAmount { get; set; }
+    }
 }
