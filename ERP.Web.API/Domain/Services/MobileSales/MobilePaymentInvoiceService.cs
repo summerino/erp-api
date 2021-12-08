@@ -100,6 +100,7 @@ namespace ERP.Web.API.Domain.Services.MobileSales
                         };
                         Db.GeneralCashBankDetails.Add(detailCBData);
 
+                        item.Mark = "APR";
                         item.ApprovedBy = userId;
                         item.ApprovedDate = headCBData.ApprovedDate;
                         Db.MobilePaymentInvoices.Update(item);
