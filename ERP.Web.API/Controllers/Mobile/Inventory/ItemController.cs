@@ -9,7 +9,7 @@ using ERP.Web.API.Model;
 
 namespace ERP.Web.API.Controllers.Mobile.Inventory
 {
-    [Authorize(AppConstant.ValidateMobileTokenPolicy)]
+    [Authorize(AppConstant.ValidateAllMobileTokenPolicy)]
     [Route("mobile/[controller]")]
     [ApiController]
     public class ItemController : ControllerBase

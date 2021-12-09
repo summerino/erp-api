@@ -126,7 +126,8 @@ namespace ERP.Web.API.Domain.Services.Purchase
                     var discHeaderProrate = 0m;
                     if (data.FinalDisc > 0)
                     {
-                        discHeaderProrate = (item.UnitPrice / data.ItemDetails.Sum(x => x.UnitPrice)) * data.FinalDisc / item.Qty;
+                        discHeaderProrate = (data.FinalDisc / data.ItemDetails.Sum(x => x.UnitPrice * x.Qty)) * (item.Qty * item.UnitPrice);
+                        discHeaderProrate /= item.Qty;
                     }
 
                     if (data.IncludeTax)
@@ -137,7 +138,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                     }
                     else
                     {
-                        item.TaxAmount = (item.UnitPrice - item.Disc) * (taxData.Rate / 100);
+                        item.TaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) * (taxData.Rate / 100);
                         item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate + item.TaxAmount;
                         item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate;
                     }
@@ -192,7 +193,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                 data.SubTotal = totalDetail.Sum();
                 data.TaxAmount = Math.Round(totalTax.Sum());
                 data.Dpp = Math.Round(totalDpp.Sum());
-                data.Total = data.SubTotal;
+                data.Total = data.SubTotal - data.FinalDisc;
                 Db.PurchaseOrderHeaders.Add(data);
 
                 if (data.IsPoRcv)
@@ -462,7 +463,8 @@ namespace ERP.Web.API.Domain.Services.Purchase
                     var discHeaderProrate = 0m;
                     if (data.FinalDisc > 0)
                     {
-                        discHeaderProrate = (item.UnitPrice / data.ItemDetails.Sum(x => x.UnitPrice)) * data.FinalDisc / item.Qty;
+                        discHeaderProrate = (data.FinalDisc / data.ItemDetails.Sum(x => x.UnitPrice * x.Qty)) * (item.Qty * item.UnitPrice);
+                        discHeaderProrate /= item.Qty;
                     }
 
                     if (data.IncludeTax)
@@ -473,7 +475,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                     }
                     else
                     {
-                        item.TaxAmount = (item.UnitPrice - item.Disc) * (taxData.Rate / 100);
+                        item.TaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) * (taxData.Rate / 100);
                         item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate + item.TaxAmount;
                         item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate;
                     }
@@ -543,7 +545,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                 data.SubTotal = totalDetail.Sum();
                 data.TaxAmount = Math.Round(totalTax.Sum());
                 data.Dpp = Math.Round(totalDpp.Sum());
-                data.Total = data.SubTotal;
+                data.Total = data.SubTotal - data.FinalDisc;
                 // Update header data
                 Db.PurchaseOrderHeaders.Update(data);
                 Db.Entry(data).Property(e => e.Code).IsModified = false;

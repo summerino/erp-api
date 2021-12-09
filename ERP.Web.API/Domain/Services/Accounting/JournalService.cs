@@ -2646,7 +2646,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                         CurrCode = "IDR",
                         Period = itemData.Date.ToString("yyyyMMdd"),
                         Type = new[] { "C", "RC", "OUT", "DT" }.Contains(itemData.Type) ? "C" : "D",
-                        Amount = resultHpp,
+                        Amount = Math.Abs(resultHpp),
                         SrcTrans = "TS"
                     });
 
@@ -2666,7 +2666,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                             CurrCode = "IDR",
                             Period = itemData.Date.ToString("yyyyMMdd"),
                             Type = new[] { "C", "RC", "DT" }.Contains(itemData.Type) ? "D" : "C",
-                            Amount = resultHpp,
+                            Amount = Math.Abs(resultHpp),
                             SrcTrans = "TS"
                         });
                     }

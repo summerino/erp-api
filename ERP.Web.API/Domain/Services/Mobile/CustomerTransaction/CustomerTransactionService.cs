@@ -34,6 +34,7 @@ namespace ERP.Web.API.Domain.Services.Mobile.CustomerTransaction
                         where cust.Code.Equals(custCode)
                         select new CustomerProfileModel
                         {
+                            Code = custCode,
                             Initial = cust.Initial,
                             Name = cust.Name,
                             Address1 = cust.Address1,
