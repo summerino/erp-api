@@ -93,7 +93,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                         }
                         );
 
-            return data.AsQueryable().ToDataSourceResult(0, data.Count(), null, null);
+            return data.AsQueryable().ToDataSourceResult(0, data.Count(), filter, null);
         }
 
         public SaveResult Insert(DeliveryPlanRequest data)
@@ -117,6 +117,13 @@ namespace ERP.Web.API.Domain.Services.Sales
                     if (Db.DeliveryPlanDetails.Any(x => x.TransCode == item.TransCode))
                     {
                         result.Message = "Data rencana pengiriman tidak bisa ditambahkan karena terdapat surat jalan yang sudah digunakan.";
+                        return result;
+                    }
+
+                    var doData = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.Code == item.TransCode);
+                    if (doData.Date > data.Date)
+                    {
+                        result.Message = "Data rencana pengiriman tidak bisa ditambahkan karena terdapat surat jalan yang tanggalnya lebih besar dari rencana pengiriman.";
                         return result;
                     }
 
@@ -214,6 +221,13 @@ namespace ERP.Web.API.Domain.Services.Sales
                     if (Db.DeliveryPlanDetails.Any(x => x.TransCode == item.TransCode && x.Code != data.Code))
                     {
                         result.Message = "Data rencana pengiriman tidak bisa diperbarui karena terdapat surat jalan yang sudah digunakan.";
+                        return result;
+                    }
+
+                    var doData = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.Code == item.TransCode);
+                    if (doData.Date > data.Date)
+                    {
+                        result.Message = "Data rencana pengiriman tidak bisa ditambahkan karena terdapat surat jalan yang tanggalnya lebih besar dari rencana pengiriman.";
                         return result;
                     }
 

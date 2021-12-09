@@ -144,6 +144,12 @@ namespace ERP.Web.API.Domain.Services.Sales
                     return result;
                 }
 
+                if (Db.Attendances.Any(x => x.EmployeeId == data.SalesmanId && x.Date == data.Date))
+                {
+                    result.Message = $"Data perintah kunjungan tidak bisa diubah karena penjual sudah absen masuk pada tanggal {data.Date:dd-MMM-yyyy}.";
+                    return result;
+                }
+
                 // Update header data
 				data.ApprovedBy = null;
                 data.ApprovedDate = null;

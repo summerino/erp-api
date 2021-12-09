@@ -52,9 +52,9 @@ namespace ERP.Web.API.Domain.Services.MobileSales
                         List<long> idOrderDetail = new();
                         var newCode = GetNewCode("DI_NUM_FMT", itemData.Date);
                         var salesData = Db.Employees.FirstOrDefault(x => x.Id == itemData.SalesBy);
-                        var detailData = Db.MobileOrderDetails.Where(x => x.Code == itemData.Code);
-                        var detailDiscData = Db.MobileOrderDetailDiscounts.Where(x => x.Code == itemData.Code);
-                        var detailFreeData = Db.MobileOrderDetailFreeGoods.Where(x => x.Code == itemData.Code);
+                        var detailData = Db.MobileOrderDetails.Where(x => x.Code == itemData.Code).ToList();
+                        var detailDiscData = Db.MobileOrderDetailDiscounts.Where(x => x.Code == itemData.Code).ToList();
+                        var detailFreeData = Db.MobileOrderDetailFreeGoods.Where(x => x.Code == itemData.Code).ToList();
                         var memoData = (from h in Db.SalesInvoiceCreditMemos
                                         join d in Db.CreditMemos on h.CreditMemoCode equals d.Code
                                         where h.InvCode == newCode
@@ -75,9 +75,9 @@ namespace ERP.Web.API.Domain.Services.MobileSales
                                                      d.Date,
                                                      d.Type,
                                                      CreditMemoAmount = h.CreditMemoAmount
-                                                 });
+                                                 }).ToList();
                         // Sales Order
-                        Db.SalesOrderHeaders.Add(new SalesOrderHeader
+                        var soData = new SalesOrderHeader
                         {
                             Code = newCode,
                             Date = itemData.Date,
@@ -103,7 +103,9 @@ namespace ERP.Web.API.Domain.Services.MobileSales
                             ApprovedBy = userId,
                             ApprovedDate = DateTime.Now,
                             FromDirectInvoice = true
-                        });
+                        };
+
+                        Db.SalesOrderHeaders.Add(soData);
 
                         // Credit Used
                         UpdateCreditUsed(itemData.CustCode, itemData.Total);
@@ -358,6 +360,13 @@ namespace ERP.Web.API.Domain.Services.MobileSales
                                 "UPDATE Sales.SalesOrderHeader SET Mark='CLS' WHERE Code={0} AND Mark='CMP'", newCode);
                         }
                         UpdateCreditMemo(itemData.Code);
+
+                        itemData.Mark = "APR";
+                        itemData.SalesOrderCode = newCode;
+                        itemData.ApprovedBy = userId;
+                        itemData.ApprovedDate = soData.ApprovedDate;
+                        Db.MobileOrderHeaders.Update(itemData);
+                        Db.SaveChanges();
                     }
 
                     transaction.Commit();
