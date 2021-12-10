@@ -227,6 +227,8 @@ namespace ERP.Entity
         public DbSet<ReportBySupplier> ReportBySuppliers { get; set; }
         public DbSet<ReportByReceive> ReportByReceives { get; set; }
         public DbSet<ReportByInvoice> ReportByInvoices { get; set; }
+        public DbSet<ReportByInvoiceAPMutation> ReportByInvoiceAPMutations { get; set; }
+        public DbSet<ReportBySupplierMutation> ReportBySupplierMutations { get; set; }
 
         // Sales entities
         public DbSet<Area> Areas { get; set; }
@@ -1960,6 +1962,14 @@ namespace ERP.Entity
             modelBuilder.Entity<ReportByInvoice>()
                .HasNoKey()
                .ToTable("ReportByInvoice", t => t.ExcludeFromMigrations());
+
+            modelBuilder.Entity<ReportBySupplierMutation>()
+               .HasNoKey()
+               .ToTable("ReportBySupplierMutation", t => t.ExcludeFromMigrations());
+
+            modelBuilder.Entity<ReportByInvoiceAPMutation>()
+               .HasNoKey()
+               .ToTable("ReportByInvoiceAPMutation", t => t.ExcludeFromMigrations());
 
             // Sales entities
             // Area model
