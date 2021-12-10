@@ -164,32 +164,35 @@ namespace ERP.Web.API.Domain.Services.Sales
                 short i = 0;
                 foreach (var item in data.ItemDetails)
                 {
-                    var taxData = taxes.FirstOrDefault(x => x.Id == item.TaxId);
-                    var discHeaderProrate = 0m;
-                    if (data.FinalDisc > 0)
+                    if (data.SrcTrans == 1)
                     {
-                        discHeaderProrate = (data.FinalDisc / data.ItemDetails.Sum(x => x.UnitPrice * x.Qty)) * (item.Qty * item.UnitPrice);
-                        discHeaderProrate /= item.Qty;
-                    }
+                        var taxData = taxes.FirstOrDefault(x => x.Id == item.TaxId);
+                        var discHeaderProrate = 0m;
+                        if (data.FinalDisc > 0)
+                        {
+                            discHeaderProrate = (data.FinalDisc / data.ItemDetails.Sum(x => x.UnitPrice * x.Qty)) * (item.Qty * item.UnitPrice);
+                            discHeaderProrate /= item.Qty;
+                        }
 
-                    if (data.IncludeTax)
-                    {
-                        item.TaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) - ((item.UnitPrice - item.Disc - discHeaderProrate) / (1 + (taxData.Rate / 100)));
-                        item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate;
-                        item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate - item.TaxAmount;
-                    }
-                    else
-                    {
-                        item.TaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) * (taxData.Rate / 100);
-                        item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate + item.TaxAmount;
-                        item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate;
-                    }
+                        if (data.IncludeTax)
+                        {
+                            item.TaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) - ((item.UnitPrice - item.Disc - discHeaderProrate) / (1 + (taxData.Rate / 100)));
+                            item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate;
+                            item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate - item.TaxAmount;
+                        }
+                        else
+                        {
+                            item.TaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) * (taxData.Rate / 100);
+                            item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate + item.TaxAmount;
+                            item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate;
+                        }
 
-                    item.FinalDiscHeader = discHeaderProrate;
-                    item.Total = item.Qty * item.NettPrice;
-                    totalDetail.Add(item.Total);
-                    totalTax.Add(item.Qty * item.TaxAmount);
-                    totalDpp.Add(item.Qty * item.Dpp);
+                        item.FinalDiscHeader = discHeaderProrate;
+                        item.Total = item.Qty * item.NettPrice;
+                        totalDetail.Add(item.Total);
+                        totalTax.Add(item.Qty * item.TaxAmount);
+                        totalDpp.Add(item.Qty * item.Dpp);
+                    }
 
                     var deliveryDetail = new SalesDeliveryDetail
                     {
@@ -253,10 +256,14 @@ namespace ERP.Web.API.Domain.Services.Sales
                     }
                 }
 
-                data.SubTotal = totalDetail.Sum();
-                data.TaxAmount = Math.Round(totalTax.Sum());
-                data.Dpp = Math.Round(totalDpp.Sum());
-                data.Total = data.SubTotal - data.FinalDisc;
+                if (data.SrcTrans == 1)
+                {
+                    data.SubTotal = totalDetail.Sum();
+                    data.TaxAmount = Math.Round(totalTax.Sum());
+                    data.Dpp = Math.Round(totalDpp.Sum());
+                    data.Total = data.SubTotal - data.FinalDisc;
+                }
+ 
                 Db.SalesDeliveryHeaders.Add(data);
 
                 if (data.IsSoInv)
@@ -443,32 +450,35 @@ namespace ERP.Web.API.Domain.Services.Sales
                 short i = 0;
                 foreach (var item in data.ItemDetails)
                 {
-                    var taxData = taxes.FirstOrDefault(x => x.Id == item.TaxId);
-                    var discHeaderProrate = 0m;
-                    if (data.FinalDisc > 0)
+                    if (data.SrcTrans == 1)
                     {
-                        discHeaderProrate = (data.FinalDisc / data.ItemDetails.Sum(x => x.UnitPrice * x.Qty)) * (item.Qty * item.UnitPrice);
-                        discHeaderProrate /= item.Qty;
-                    }
+                        var taxData = taxes.FirstOrDefault(x => x.Id == item.TaxId);
+                        var discHeaderProrate = 0m;
+                        if (data.FinalDisc > 0)
+                        {
+                            discHeaderProrate = (data.FinalDisc / data.ItemDetails.Sum(x => x.UnitPrice * x.Qty)) * (item.Qty * item.UnitPrice);
+                            discHeaderProrate /= item.Qty;
+                        }
 
-                    if (data.IncludeTax)
-                    {
-                        item.TaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) - ((item.UnitPrice - item.Disc - discHeaderProrate) / (1 + (taxData.Rate / 100)));
-                        item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate;
-                        item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate - item.TaxAmount;
-                    }
-                    else
-                    {
-                        item.TaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) * (taxData.Rate / 100);
-                        item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate + item.TaxAmount;
-                        item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate;
-                    }
+                        if (data.IncludeTax)
+                        {
+                            item.TaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) - ((item.UnitPrice - item.Disc - discHeaderProrate) / (1 + (taxData.Rate / 100)));
+                            item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate;
+                            item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate - item.TaxAmount;
+                        }
+                        else
+                        {
+                            item.TaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) * (taxData.Rate / 100);
+                            item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate + item.TaxAmount;
+                            item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate;
+                        }
 
-                    item.FinalDiscHeader = discHeaderProrate;
-                    item.Total = item.Qty * item.NettPrice;
-                    totalDetail.Add(item.Total);
-                    totalTax.Add(item.Qty * item.TaxAmount);
-                    totalDpp.Add(item.Qty * item.Dpp);
+                        item.FinalDiscHeader = discHeaderProrate;
+                        item.Total = item.Qty * item.NettPrice;
+                        totalDetail.Add(item.Total);
+                        totalTax.Add(item.Qty * item.TaxAmount);
+                        totalDpp.Add(item.Qty * item.Dpp);
+                    }
 
                     if (item.Id <= 0)
                     {
@@ -559,10 +569,13 @@ namespace ERP.Web.API.Domain.Services.Sales
                     }
                 }
 
-                data.SubTotal = totalDetail.Sum();
-                data.TaxAmount = Math.Round(totalTax.Sum());
-                data.Dpp = Math.Round(totalDpp.Sum());
-                data.Total = data.SubTotal - data.FinalDisc;
+                if (data.SrcTrans == 1)
+                {
+                    data.SubTotal = totalDetail.Sum();
+                    data.TaxAmount = Math.Round(totalTax.Sum());
+                    data.Dpp = Math.Round(totalDpp.Sum());
+                    data.Total = data.SubTotal - data.FinalDisc;
+                }
                 // Update header data
                 Db.SalesDeliveryHeaders.Update(data);
                 Db.Entry(data).Property(e => e.Code).IsModified = false;
