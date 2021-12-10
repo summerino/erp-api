@@ -131,12 +131,10 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     var startDate = Db.SystemParameters.FirstOrDefault(x => x.Code == "DATA_START_DATE");
                     var isDuplicate = data.Where(x => x.Kode == item.Kode).GroupBy(x => x.Kode).Any(g => g.Count() > 1);
 
-                    if (
-                        ((item.Nilai - result.PaidAmount) < 0) ||
+                    if (((item.Nilai - result.PaidAmount) < 0) ||
                         (cust == null) ||
                         (item.Tanggal > Convert.ToDateTime(startDate.Value)) ||
-                        isDuplicate
-                    )
+                        isDuplicate)
                     {
                         item.Mark = true;
                     }
@@ -147,7 +145,14 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 }
                 else
                 {
-                    if (item.Kode == null)
+                    var cust = Db.Customers.FirstOrDefault(x => x.Code == item.Kodepelanggan);
+                    var startDate = Db.SystemParameters.FirstOrDefault(x => x.Code == "DATA_START_DATE");
+                    var isDuplicate = data.Where(x => x.Kode == item.Kode).GroupBy(x => x.Kode).Any(g => g.Count() > 1);
+
+                    if (item.Kode == null ||
+                        (cust == null) ||
+                        (item.Tanggal > Convert.ToDateTime(startDate.Value)) ||
+                        isDuplicate)
                     {
                         item.Mark = true;
                     }
