@@ -41,7 +41,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                     foreach (var itemInv in invData)
                     {
                         var totCb = cbDetail.Where(x => x.TransCode == itemInv.Code).Sum(x => x.TransAmount);
-                        itemInv.PaidAmount = totCb * itemInv.TotalAmount / itemInv.TotalAmount;
+                        itemInv.PaidAmount = totCb;
                         itemInv.RemainderAmount = itemInv.TotalAmount - itemInv.PaidAmount;
                     }
 
