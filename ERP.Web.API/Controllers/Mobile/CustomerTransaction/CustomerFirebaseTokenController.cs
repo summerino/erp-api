@@ -1,5 +1,6 @@
 ﻿using ERP.Entity;
 using ERP.Web.API.Domain.Interfaces.Mobile.CustomerTransaction;
+using ERP.Web.API.Domain.Models.Mobile.General;
 using ERP.Web.API.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -21,9 +22,9 @@ namespace ERP.Web.API.Controllers.Mobile.General
         }
 
         [HttpPost]
-        public IActionResult OnPost(string firebaseTokenId)
+        public IActionResult OnPost(FirebaseTokenModel data)
         {
-            var result = _token.AddCustomerFirebaseToken(firebaseTokenId, _claim.UserCode);
+            var result = _token.AddCustomerFirebaseToken(data, _claim.UserCode);
             return Ok(result);
         }
     }
