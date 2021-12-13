@@ -263,6 +263,7 @@ builder.Services.AddScoped<ISalesReturnService, SalesReturnService>();
 builder.Services.AddScoped<IVisitOrderService, VisitOrderService>();
 builder.Services.AddScoped<IVisitPlanService, VisitPlanService>();
 builder.Services.AddScoped<IARReportService, ARReportService>();
+builder.Services.AddScoped<IARMutationReportService, ARMutationReportService>();
 
 // System Management services
 builder.Services.AddScoped<IActionService, ActionService>();

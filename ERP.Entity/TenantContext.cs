@@ -286,6 +286,8 @@ namespace ERP.Entity
         public DbSet<VwVisitPlanDetailCustomer> VwVisitPlanDetailCustomers { get; set; }
         public DbSet<ReportByCustomer> ReportByCustomers { get; set; }
         public DbSet<ReportByDelivery> ReportByDeliveries { get; set; }
+        public DbSet<ReportByCustomerMutation> ReportByCustomerMutations { get; set; }
+        public DbSet<ReportByDeliveryARMutation> ReportByDeliveryARMutations { get; set; }
 
         // System Management entities
         public DbSet<SystemManagement.Action> Actions { get; set; }
@@ -2363,6 +2365,14 @@ namespace ERP.Entity
             modelBuilder.Entity<ReportByDelivery>()
                .HasNoKey()
                .ToTable("ReportByDelivery", t => t.ExcludeFromMigrations());
+
+            modelBuilder.Entity<ReportByCustomerMutation>()
+                .HasNoKey()
+                .ToTable("ReportByCustomerMutation", t => t.ExcludeFromMigrations());
+
+            modelBuilder.Entity<ReportByDeliveryARMutation>()
+               .HasNoKey()
+               .ToTable("ReportByDeliveryARMutation", t => t.ExcludeFromMigrations());
 
             // System Management entities
             // Company model
