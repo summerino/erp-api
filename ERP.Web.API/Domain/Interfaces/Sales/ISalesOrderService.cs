@@ -20,7 +20,7 @@ namespace ERP.Web.API.Domain.Interfaces.Sales
 
         IEnumerable<VwSalesOrderHeader> GetInCompleteInvoiceData(string searchBy, string search, string invCode);
 
-        SaveResult Insert(SalesOrderRequest data);
+        SaveResult Insert(SalesOrderRequest data, bool isOverLimit);
 
         SaveResult Update(SalesOrderRequest data);
 
