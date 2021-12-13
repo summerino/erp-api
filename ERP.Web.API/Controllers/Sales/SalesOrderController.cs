@@ -154,7 +154,7 @@ namespace ERP.Web.API.Controllers.Sales
             data.UpdatedBy = data.CreatedBy;
             data.UpdatedDate = data.CreatedDate;
             
-            var result = _so.Insert(data);
+            var result = _so.Insert(data, _auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.OverLimit }).Any());
 
             return Ok(result);
         }

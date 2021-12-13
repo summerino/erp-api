@@ -92,7 +92,7 @@ namespace ERP.Web.API.Domain.Services.Sales
             };
         }
 
-        public SaveResult Insert(SalesOrderRequest data)
+        public SaveResult Insert(SalesOrderRequest data, bool isOverLimit)
         {
             var result = new SaveResult(false);
             var listIdDetail = new List<long>();
@@ -109,7 +109,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                     return result;
                 }
 
-                if (!CheckCreditLimit(data.CustCode, data.Total)) 
+                if (!isOverLimit && !CheckCreditLimit(data.CustCode, data.Total)) 
                 {
                     result.Message = "Nilai transaksi lebih besar dari nilai batas kredit.";
                     return result;
@@ -1132,7 +1132,7 @@ namespace ERP.Web.API.Domain.Services.Sales
         }
 
         #region Credit Used - Limit
-        private bool CheckCreditLimit(string custCode, decimal total) => Db.Customers.Any(c => c.Code.Equals(custCode) && (c.PaymentTermId == 1 || (c.CreditLimit - c.CreditUsed) >= total)); 
+        private bool CheckCreditLimit(string custCode, decimal total) => Db.Customers.Any(c => c.Code.Equals(custCode) && (c.CreditLimit > 0 ? (c.CreditLimit - c.CreditUsed) >= total : true));
         private void RestoreCreditUsed(string transCode, string custCode)
         {
             var prevAmount = Db.SalesOrderHeaders.AsNoTracking().FirstOrDefault(x => x.Code.Equals(transCode))?.Total;
