@@ -554,11 +554,8 @@ namespace ERP.Web.API.Domain.Services.Sales
 
                         Db.SalesOrderDetails.Add(orderDetail);
 
-                        if (item.FreeItemDetails.Any() || item.DiscountItemDetails.Any())
-                        {
-                            Db.SaveChanges();
-                            listOrderIdDetail.Add(orderDetail.Id);
-                        }
+                        Db.SaveChanges();
+                        listOrderIdDetail.Add(orderDetail.Id);
                     }
                     else
                     {
@@ -595,10 +592,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                             Db.SalesOrderDetails.Update(orderDetail);
                             Db.Entry(item).Property(e => e.Code).IsModified = false;
 
-                            if (item.FreeItemDetails.Any() || item.DiscountItemDetails.Any())
-                            {
-                                listOrderIdDetail.Add(item.Id);
-                            }
+                            listOrderIdDetail.Add(item.Id);
                         }
                     }
 
@@ -741,11 +735,8 @@ namespace ERP.Web.API.Domain.Services.Sales
                     };
                     Db.SalesDeliveryDetails.Add(deliveryDetail);
 
-                    if (item.FreeItemDetails.Any())
-                    {
-                        Db.SaveChanges();
-                        listDeliveryIdDetail.Add(deliveryDetail.Id);
-                    }
+                    Db.SaveChanges();
+                    listDeliveryIdDetail.Add(deliveryDetail.Id);
 
                     var delFreeDetails = Db.SalesDeliveryDetailFreeGoods
                         .Where(d => d.Code == data.Code && d.DlvOrderDetailId == item.Id && !item.FreeItemDetails.Select(x => x.Id).Contains(d.Id))

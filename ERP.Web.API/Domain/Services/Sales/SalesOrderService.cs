@@ -189,11 +189,8 @@ namespace ERP.Web.API.Domain.Services.Sales
 
                     Db.SalesOrderDetails.Add(orderDetail);
 
-                    if (data.IsSoDlv || data.IsSoInv || item.FreeItemDetails.Any() || item.DiscountItemDetails.Any())
-                    {
-                        Db.SaveChanges();
-                        listIdDetail.Add(orderDetail.Id);
-                    }
+                    Db.SaveChanges();
+                    listIdDetail.Add(orderDetail.Id);
 
                     if (item.DiscountItemDetails != null)
                     {
@@ -583,11 +580,8 @@ namespace ERP.Web.API.Domain.Services.Sales
 
                         Db.SalesOrderDetails.Add(orderDetail);
 
-                        if (data.IsSoDlv || data.IsSoInv || item.FreeItemDetails.Any() || item.DiscountItemDetails.Any())
-                        {
-                            Db.SaveChanges();
-                            listIdDetail.Add(orderDetail.Id);
-                        }
+                        Db.SaveChanges();
+                        listIdDetail.Add(orderDetail.Id);
                     }
                     else
                     {
@@ -596,10 +590,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                         Db.SalesOrderDetails.Update(item);
                         Db.Entry(item).Property(e => e.Code).IsModified = false;
 
-                        if (data.IsSoDlv || data.IsSoInv || item.FreeItemDetails.Any() || item.DiscountItemDetails.Any())
-                        {
-                            listIdDetail.Add(item.Id);
-                        }
+                        listIdDetail.Add(item.Id);
                     }
 
                     if (item.DiscountItemDetails != null)
