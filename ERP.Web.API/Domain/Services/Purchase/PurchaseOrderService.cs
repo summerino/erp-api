@@ -126,7 +126,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                     var discHeaderProrate = 0m;
                     if (data.FinalDisc > 0)
                     {
-                        discHeaderProrate = (data.FinalDisc / data.ItemDetails.Sum(x => x.UnitPrice * x.Qty)) * (item.Qty * item.UnitPrice);
+                        discHeaderProrate = (data.FinalDisc / data.ItemDetails.Sum(x => (x.UnitPrice - x.Disc) * x.Qty)) * (item.Qty * (item.UnitPrice - item.Disc));
                         discHeaderProrate /= item.Qty;
                     }
 
@@ -193,7 +193,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                 data.SubTotal = totalDetail.Sum();
                 data.TaxAmount = Math.Round(totalTax.Sum());
                 data.Dpp = Math.Round(totalDpp.Sum());
-                data.Total = data.SubTotal - data.FinalDisc;
+                data.Total = data.SubTotal;
                 Db.PurchaseOrderHeaders.Add(data);
 
                 if (data.IsPoRcv)
@@ -463,7 +463,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                     var discHeaderProrate = 0m;
                     if (data.FinalDisc > 0)
                     {
-                        discHeaderProrate = (data.FinalDisc / data.ItemDetails.Sum(x => x.UnitPrice * x.Qty)) * (item.Qty * item.UnitPrice);
+                        discHeaderProrate = (data.FinalDisc / data.ItemDetails.Sum(x => (x.UnitPrice - x.Disc) * x.Qty)) * (item.Qty * (item.UnitPrice - item.Disc));
                         discHeaderProrate /= item.Qty;
                     }
 
@@ -545,7 +545,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                 data.SubTotal = totalDetail.Sum();
                 data.TaxAmount = Math.Round(totalTax.Sum());
                 data.Dpp = Math.Round(totalDpp.Sum());
-                data.Total = data.SubTotal - data.FinalDisc;
+                data.Total = data.SubTotal;
                 // Update header data
                 Db.PurchaseOrderHeaders.Update(data);
                 Db.Entry(data).Property(e => e.Code).IsModified = false;
