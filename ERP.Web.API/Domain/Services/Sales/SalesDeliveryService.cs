@@ -508,11 +508,8 @@ namespace ERP.Web.API.Domain.Services.Sales
                         };
                         Db.SalesDeliveryDetails.Add(deliveryDetail);
 
-                        if (item.FreeItemDetails != null)
-                        {
-                            Db.SaveChanges();
-                            listIdDetail.Add(deliveryDetail.Id);
-                        }
+                        Db.SaveChanges();
+                        listIdDetail.Add(deliveryDetail.Id);
                     }
                     else
                     {
@@ -521,10 +518,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                         Db.SalesDeliveryDetails.Update(item);
                         Db.Entry(item).Property(e => e.Code).IsModified = false;
 
-                        if (item.FreeItemDetails != null)
-                        {
-                            listIdDetail.Add(item.Id);
-                        }
+                        listIdDetail.Add(item.Id);
                     }
 
                     if (item.FreeItemDetails != null)
