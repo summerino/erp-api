@@ -67,17 +67,6 @@ namespace ERP.Web.API.Domain.Services.Purchase
                 }
             }
 
-            foreach (var itemSup in supData)
-            {
-                itemSup.TotalTrans = invData.Count(x => x.SupCode == itemSup.Code);
-                itemSup.BeginningBalance = invData.Where(x => x.SupCode == itemSup.Code).Sum(x => x.BeginningBalance);
-                itemSup.TransAmount = invData.Where(x => x.SupCode == itemSup.Code).Sum(x => x.TransAmount);
-                itemSup.PaidAmount = invData.Where(x => x.SupCode == itemSup.Code).Sum(x => x.PaidAmount);
-                itemSup.EndingBalance = invData.Where(x => x.SupCode == itemSup.Code).Sum(x => x.EndingBalance);
-            }
-
-            supData = supData.Where(x => x.TotalTrans > 0).ToList();
-
             if (!string.IsNullOrEmpty(status))
             {
                 if (status == "NP")
@@ -89,6 +78,17 @@ namespace ERP.Web.API.Domain.Services.Purchase
                     invData = invData.Where(x => x.EndingBalance == 0).ToList();
                 }
             }
+
+            foreach (var itemSup in supData)
+            {
+                itemSup.TotalTrans = invData.Count(x => x.SupCode == itemSup.Code);
+                itemSup.BeginningBalance = invData.Where(x => x.SupCode == itemSup.Code).Sum(x => x.BeginningBalance);
+                itemSup.TransAmount = invData.Where(x => x.SupCode == itemSup.Code).Sum(x => x.TransAmount);
+                itemSup.PaidAmount = invData.Where(x => x.SupCode == itemSup.Code).Sum(x => x.PaidAmount);
+                itemSup.EndingBalance = invData.Where(x => x.SupCode == itemSup.Code).Sum(x => x.EndingBalance);
+            }
+
+            supData = supData.Where(x => x.TotalTrans > 0).ToList();
 
             if (type == 1)
             {
@@ -118,10 +118,10 @@ namespace ERP.Web.API.Domain.Services.Purchase
                 supData.Add(new ReportBySupplierMutation
                 {
                     Name = "Total",
-                    BeginningBalance = invData.Sum(x => x.BeginningBalance),
-                    TransAmount = invData.Sum(x => x.TransAmount),
-                    PaidAmount = invData.Sum(x => x.PaidAmount),
-                    EndingBalance = invData.Sum(x => x.EndingBalance),
+                    BeginningBalance = supData.Sum(x => x.BeginningBalance),
+                    TransAmount = supData.Sum(x => x.TransAmount),
+                    PaidAmount = supData.Sum(x => x.PaidAmount),
+                    EndingBalance = supData.Sum(x => x.EndingBalance),
                 });
 
                 return supData.AsQueryable().ToDataSourceResult(0, supData.Count, null, null);

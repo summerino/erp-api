@@ -16,10 +16,10 @@ namespace ERP.Web.API.Controllers.Purchase
         }
 
         [HttpGet]
-        public IActionResult GetData(int type, string startDate, string EndDate, string supCode, string status)
+        public IActionResult GetData(int type, string startDate, string endDate, string supCode, string status)
         {
             var result =
-                _apm.GetData(type, startDate, EndDate, supCode, status);
+                _apm.GetData(type, startDate, endDate, supCode, status);
 
             return Ok(new ApiResponse
             {
