@@ -1,7 +1,7 @@
-﻿using ERP.Web.API.Domain.Interfaces.MobileSales;
-using ERP.Web.API.Model;
+﻿using System.Linq.Dynamic.Core;
 using Microsoft.AspNetCore.Mvc;
-using System.Linq.Dynamic.Core;
+using ERP.Web.API.Domain.Interfaces.MobileSales;
+using ERP.Web.API.Model;
 
 namespace ERP.Web.API.Controllers.MobileSales
 {
@@ -10,18 +10,20 @@ namespace ERP.Web.API.Controllers.MobileSales
     public class MobileMapTrackingReportController : ControllerBase
     {
         private readonly IMobileMapTrackingReportService _mmt;
+
         public MobileMapTrackingReportController(IMobileMapTrackingReportService mmt)
         {
             _mmt = mmt;
         }
 
         [HttpGet]
-        public IActionResult GetData(int salesId, int type, string startDate, string endDate)
+        public IActionResult GetData(string date, int salesId, int type)
         {
-            var result = _mmt.GetData(salesId, type, startDate, endDate);
+            var result = _mmt.GetData(date, salesId, type);
 
             var data = result.Select(x => new
             {
+                x.TrackedDate,
                 x.Lat,
                 x.Lng
             }).ToList<dynamic>();
