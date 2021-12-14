@@ -92,6 +92,7 @@
         DebitMemo = 40,
         AccountPayableReport = 92,
         AccountPayableMutationReport = 131,
+        AccountPayableAgingReport = 133,
 
         // Sales
         Area = 42,
@@ -108,6 +109,7 @@
         VisitOrder = 55,
         AccountReceivableReport = 93,
         AccountReceivableMutationReport = 132,
+        AccountReceivableAgingReport = 134,
 
         // Expedition
         ExpeditionInvoice = 70,
