@@ -327,7 +327,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                         short f = 0;
                         foreach (var freeItem in item.FreeItemDetails)
                         {
-                            Db.SalesDeliveryDetailFreeGoods.Add(new SalesDeliveryDetailFreeGood
+                            var dlvFreeDetail = new SalesDeliveryDetailFreeGood
                             {
                                 Code = newCode,
                                 DlvOrderDetailId = deliveryDetail.Id,
@@ -339,10 +339,13 @@ namespace ERP.Web.API.Domain.Services.Sales
                                 Qty = freeItem.Qty,
                                 UnitPrice = freeItem.UnitPrice,
                                 CoaCode = freeItem.CoaCode
-                            });
+                            };
 
-                            var orderFreeDetail = Db.SalesOrderDetailFreeGoods.FirstOrDefault(x => x.Id == freeItem.Id);
-                            orderFreeDetail.QtyClosed += freeItem.Qty;
+                            Db.SalesDeliveryDetailFreeGoods.Add(dlvFreeDetail);
+                            Db.SaveChanges();
+
+                            var orderFreeDetail = Db.SalesOrderDetailFreeGoods.FirstOrDefault(x => x.Code == newCode && x.ItemId == dlvFreeDetail.ItemId && x.UnitId == dlvFreeDetail.UnitId);
+                            orderFreeDetail.QtyClosed += dlvFreeDetail.Qty;
                             Db.SalesOrderDetailFreeGoods.Update(orderFreeDetail);
                         }
                         Db.SaveChanges();
