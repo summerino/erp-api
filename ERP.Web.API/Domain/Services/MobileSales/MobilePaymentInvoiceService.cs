@@ -48,17 +48,29 @@ namespace ERP.Web.API.Domain.Services.MobileSales
                             return result;
                         }
 
-                        var voiData = Db.VisitOrderInvoices.FirstOrDefault(x => x.Code == voData.Code && x.InvCode == item.TransCode);
-                        if (voiData == null)
+                        if (item.SrcTrans == "INV")
                         {
-                            result.Message = $"Data perintah kunjungan {vlData.VisitOrderCode} - {item.TransCode} tidak ada.";
-                            return result;
-                        }
+                            var voiData = Db.VisitOrderInvoices.FirstOrDefault(x => x.Code == voData.Code && x.InvCode == item.TransCode);
+                            if (voiData == null)
+                            {
+                                result.Message = $"Data perintah kunjungan {vlData.VisitOrderCode} - {item.TransCode} tidak ada.";
+                                return result;
+                            }
 
-                        voiData.Collecting = (item.NotesFailCollect == null);
-                        voiData.FailCollect = (item.NotesFailCollect != null);
-                        voiData.NotesFailCollect = item.NotesFailCollect;
-                        Db.VisitOrderInvoices.Update(voiData);
+                            voiData.Collecting = (item.NotesFailCollect == null);
+                            voiData.FailCollect = (item.NotesFailCollect != null);
+                            voiData.NotesFailCollect = item.NotesFailCollect;
+                            Db.VisitOrderInvoices.Update(voiData);
+                        }
+                        else if (item.SrcTrans == "ORD")
+                        {
+                            var voiData = Db.MobileOrderHeaders.FirstOrDefault(x => x.Code == item.TransCode);
+                            if (voiData == null)
+                            {
+                                result.Message = $"Data pesanan mobile {item.TransCode} tidak ada.";
+                                return result;
+                            }
+                        }
 
                         var newCode = GetNewCode("CB_NUM_FMT", DateTime.Now);
 
