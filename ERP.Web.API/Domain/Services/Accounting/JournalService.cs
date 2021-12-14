@@ -511,7 +511,6 @@ namespace ERP.Web.API.Domain.Services.Accounting
                                          select new { InvDetail = invdetail, RcvData = rcvdata }).ToList();
 
                     short i = 0;
-                    short j = 0;
 
                     foreach (var itemDetail in InvDetailData)
                     {
