@@ -51,13 +51,10 @@ namespace ERP.Web.API.Domain.Services.Sales
             var data = (from dt in Db.VwSalesDeliveryHeaders
                         where dt.WarehouseCode == warehouseCode 
                         && !new[] { "V", "INV" }.Contains(dt.Mark) 
-                        && !((from ddp in Db.DeliveryPlanDetails
+                        && !(from ddp in Db.DeliveryPlanDetails
                              join dp in Db.DeliveryPlanHeaders on ddp.Code equals dp.Code
-                             where dp.Mark != "V"
-                             select ddp.TransCode).Union(from ddp in Db.DeliveryPlanDetails
-                                                         join dp in Db.DeliveryPlanHeaders on ddp.Code equals dp.Code
-                                                         where dp.Mark != "V" && ddp.IsFailShipment && Db.DeliveryPlanUndeliveredItems.Any(x => x.DlvPlanDetailId == ddp.Id)
-                                                         select ddp.TransCode)).Contains(dt.Code)
+                             where dp.Mark != "V" && ddp.FailedSendAll
+                             select ddp.TransCode).Contains(dt.Code)
                         select new
                         {
                             dt.Code,
@@ -73,13 +70,10 @@ namespace ERP.Web.API.Domain.Services.Sales
                         from dt in Db.VwSalesInvoiceHeaders
                         where dt.FromDirectInvoice == true 
                         && !new[] { "V", "INV" }.Contains(dt.Mark)
-                        && !((from ddp in Db.DeliveryPlanDetails
-                              join dp in Db.DeliveryPlanHeaders on ddp.Code equals dp.Code
-                              where dp.Mark != "V"
-                              select ddp.TransCode).Union(from ddp in Db.DeliveryPlanDetails
-                                                          join dp in Db.DeliveryPlanHeaders on ddp.Code equals dp.Code
-                                                          where dp.Mark != "V" && ddp.IsFailShipment && Db.DeliveryPlanUndeliveredItems.Any(x => x.DlvPlanDetailId == ddp.Id)
-                                                          select ddp.TransCode)).Contains(dt.Code)
+                        && !(from ddp in Db.DeliveryPlanDetails
+                             join dp in Db.DeliveryPlanHeaders on ddp.Code equals dp.Code
+                             where dp.Mark != "V" && ddp.FailedSendAll
+                             select ddp.TransCode).Contains(dt.Code)
                         select new
                         {
                             dt.Code,
@@ -136,6 +130,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                         Weight = item.Weight,
                         SrcTrans = item.SrcTrans,
                         IsFailShipment = item.IsFailShipment,
+                        FailedSendAll = item.FailedSendAll,
                         NotesFailShipment = item.NotesFailShipment
                     };
 
@@ -242,6 +237,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                             Weight = item.Weight,
                             SrcTrans = item.SrcTrans,
                             IsFailShipment = item.IsFailShipment,
+                            FailedSendAll = item.FailedSendAll,
                             NotesFailShipment = item.NotesFailShipment
                         };
 
