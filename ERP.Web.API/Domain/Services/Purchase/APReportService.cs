@@ -47,6 +47,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
 
                     foreach (var itemBB in bbData)
                     {
+                        var totCb = cbDetail.Where(x => x.TransCode == itemBB.Code).Sum(x => x.TransAmount);
                         invData.Add(new Entity.Purchase.ReportByInvoice
                         {
                             Date = itemBB.Date,
@@ -56,7 +57,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                             SupCode = itemBB.SupCode,
                             SupName = itemBB.SupName,
                             TotalAmount = itemBB.Amount,
-                            PaidAmount = itemBB.PaidAmount,
+                            PaidAmount = totCb,
                             RemainderAmount = itemBB.Amount - itemBB.PaidAmount
                         });
                     }
