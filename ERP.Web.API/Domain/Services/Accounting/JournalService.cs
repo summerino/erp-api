@@ -629,9 +629,11 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 var DlvDetailFreeData = (from fg in db.SalesDeliveryDetailFreeGoods
                                          join item in db.Items on fg.ItemId equals item.Id
                                          where fg.Code == itemData.Dlvheader.Code
-                                         group new { fg, item } by new { fg.CoaCode, fg.ItemId, item.Initial } into grp
+                                         group new { fg, item } by new { fg.Id, fg.Code, fg.CoaCode, fg.ItemId, item.Initial } into grp
                                          select new
                                          {
+                                             grp.Key.Id,
+                                             grp.Key.Code,
                                              grp.Key.CoaCode,
                                              grp.Key.ItemId,
                                              grp.Key.Initial,
@@ -873,6 +875,13 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 {
                     foreach (var itemFreeDetail in DlvDetailFreeData)
                     {
+                        var smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemFreeDetail.Id && x.RefCode1 == itemFreeDetail.Code);
+                        if (smData == null) continue;
+                        var nonVoidSM = RemoveVoidSM(db, db.StockMutations.ToList());
+                        CalculateHPP(db, nonVoidSM, smData.ItemId, smData.RefDetailId1, "DOF");
+                        smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemFreeDetail.Id && x.RefCode1 == itemFreeDetail.Code);
+                        var resultHpp = smData.BaseNettPrice > 0 ? smData.BaseNettPrice * smData.BaseQty : 0m;
+
                         journals.Add(new Journal
                         {
                             Code = itemData.Dlvheader.Code,
@@ -886,7 +895,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                             CurrCode = itemData.Dlvheader.CurrCode,
                             Period = itemData.Dlvheader.Date.ToString("yyyyMMdd"),
                             Type = "D",
-                            Amount = itemFreeDetail.UnitPrice,
+                            Amount = resultHpp,
                             SrcTrans = "DLV"
                         });
 
@@ -904,7 +913,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                             CurrCode = itemData.Dlvheader.CurrCode,
                             Period = itemData.Dlvheader.Date.ToString("yyyyMMdd"),
                             Type = "C",
-                            Amount = itemFreeDetail.UnitPrice,
+                            Amount = resultHpp,
                             SrcTrans = "DLV"
                         });
                     }
