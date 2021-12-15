@@ -182,13 +182,13 @@ namespace ERP.Web.API.Domain.Services.Purchase
                         {
                             Code = newCode,
                             LineNo = ++j,
-                            ReturnDetailId = listItemDetails[j-1].Id,
+                            ReturnDetailId = listItemDetails.Count > 1 ?  listItemDetails[j-1].Id : listItemDetails[0].Id,
                             ItemId = item.ItemId,
                             UomId = item.UomId,
                             UnitId = item.UnitId,
                             Qty = item.Qty,
                             QtyRcv = item.QtyRcv,
-                            WarehouseCode = listItemDetails[j-1].WarehouseCode,
+                            WarehouseCode = listItemDetails.Count > 1 ? listItemDetails[j-1].WarehouseCode : listItemDetails[0].WarehouseCode,
                             UnitPrice = item.UnitPrice,
                             TaxId = item.TaxId,
                             TaxAmount = item.TaxAmount,
@@ -352,13 +352,13 @@ namespace ERP.Web.API.Domain.Services.Purchase
                             {
                                 Code = data.Code,
                                 LineNo = ++j,
-                                ReturnDetailId = listItemDetails[j - 1].Id,
+                                ReturnDetailId = listItemDetails.Count > 1 ? listItemDetails[j - 1].Id : listItemDetails[0].Id,
                                 ItemId = item.ItemId,
                                 UomId = item.UomId,
                                 UnitId = item.UnitId,
                                 Qty = item.Qty,
                                 QtyRcv = item.QtyRcv,
-                                WarehouseCode = listItemDetails[j - 1].WarehouseCode,
+                                WarehouseCode = listItemDetails.Count > 1 ? listItemDetails[j - 1].WarehouseCode : listItemDetails[0].WarehouseCode,
                                 UnitPrice = item.UnitPrice,
                                 TaxId = item.TaxId,
                                 TaxAmount = item.TaxAmount,
@@ -370,7 +370,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                         else
                         {
                             item.LineNo = ++j;
-                            item.WarehouseCode = listItemDetails[j - 1].WarehouseCode;
+                            item.WarehouseCode = listItemDetails.Count > 1 ? listItemDetails[j - 1].WarehouseCode : listItemDetails[0].WarehouseCode;
                             Db.PurchaseReturnDetailExchDiffItems.Update(item);
                             Db.Entry(item).Property(e => e.Code).IsModified = false;
                         }
