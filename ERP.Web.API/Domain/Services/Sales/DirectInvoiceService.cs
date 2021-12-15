@@ -689,30 +689,6 @@ namespace ERP.Web.API.Domain.Services.Sales
                 short j = 0;
                 foreach (var item in data.ItemDetails)
                 {
-                    var taxData = taxes.FirstOrDefault(x => x.Id == item.TaxId);
-                    var discHeaderProrate = 0m;
-                    if (data.FinalDisc > 0)
-                    {
-                        discHeaderProrate = (data.FinalDisc / data.ItemDetails.Sum(x => (x.UnitPrice - x.Disc) * x.Qty)) * (item.Qty * (item.UnitPrice - item.Disc));
-                        discHeaderProrate /= item.Qty;
-                    }
-
-                    if (data.IncludeTax)
-                    {
-                        item.TaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) - ((item.UnitPrice - item.Disc - discHeaderProrate) / (1 + (taxData.Rate / 100)));
-                        item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate;
-                        item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate - item.TaxAmount;
-                    }
-                    else
-                    {
-                        item.TaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) * (taxData.Rate / 100);
-                        item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate + item.TaxAmount;
-                        item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate;
-                    }
-
-                    item.FinalDiscHeader = discHeaderProrate;
-                    item.Total = item.Qty * item.NettPrice;
-
                     var deliveryDetail = new SalesDeliveryDetail
                     {
                         Code = InvoiceDetailData.DoCode,
