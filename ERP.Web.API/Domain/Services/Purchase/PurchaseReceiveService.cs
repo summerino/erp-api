@@ -155,13 +155,13 @@ namespace ERP.Web.API.Domain.Services.Purchase
 
                         if (data.IncludeTax)
                         {
-                            item.TaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) - ((item.UnitPrice - item.Disc - discHeaderProrate) / (1 + (taxData.Rate / 100)));
+                            item.TaxAmount = item.Type  == 1 ? 0m : (item.UnitPrice - item.Disc - discHeaderProrate) - ((item.UnitPrice - item.Disc - discHeaderProrate) / (1 + (taxData.Rate / 100)));
                             item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate;
                             item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate - item.TaxAmount;
                         }
                         else
                         {
-                            item.TaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) * (taxData.Rate / 100);
+                            item.TaxAmount = item.Type == 1 ? 0m : (item.UnitPrice - item.Disc - discHeaderProrate) * (taxData.Rate / 100);
                             item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate + item.TaxAmount;
                             item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate;
                         }
@@ -169,7 +169,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                         item.FinalDiscHeader = discHeaderProrate;
                         item.Total = item.Qty * item.NettPrice;
                         totalDetail.Add(item.Total);
-                        totalTax.Add(item.Qty * item.TaxAmount);
+                        totalTax.Add(item.TaxAmount != 0 ? item.Qty * item.TaxAmount : 0m);
                         totalDpp.Add(item.Qty * item.Dpp);
                     }
 
