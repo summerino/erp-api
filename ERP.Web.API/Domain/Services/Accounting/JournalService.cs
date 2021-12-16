@@ -335,8 +335,8 @@ namespace ERP.Web.API.Domain.Services.Accounting
                         var ivnValue = (itemDetail.RcvDetail.UnitPrice - itemDetail.RcvDetail.Disc - prorateHeaderDisc) * itemDetail.RcvDetail.Qty;
                         var taxValue = journals.Where(x => x.Code == itemData.RcvHeader.Code && x.RefCode2 == itemDetail.Item.Initial && x.Group == 3).Sum(x => x.Amount);
                         if (itemData.RcvHeader.TaxAmount > 0)
-                            //if (itemData.RcvHeader.IncludeTax)
-                            ivnValue -= taxValue;
+                            if (itemData.RcvHeader.IncludeTax)
+                                ivnValue -= taxValue;
 
                         //Inventory
                         journals.Add(new Journal
