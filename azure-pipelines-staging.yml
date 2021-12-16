@@ -12,6 +12,7 @@ pool:
 variables:
   buildConfiguration: 'Staging'
 
+steps:
 - task: DotNetCoreCLI@2
   inputs:
     command: 'publish'
