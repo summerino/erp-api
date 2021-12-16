@@ -10,7 +10,7 @@ pool:
   vmImage: windows-2022
 
 variables:
-  buildConfiguration: 'Staging'
+  buildConfiguration: 'Release'
 
 steps:
 - task: DotNetCoreCLI@2
