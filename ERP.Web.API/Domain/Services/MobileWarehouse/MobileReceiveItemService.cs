@@ -295,7 +295,7 @@ namespace ERP.Web.API.Domain.Services.MobileWarehouse
             }
 
             result.Success = true;
-            result.Message = "Data penerimaan barang mobile berhasil disimpan.";
+            result.Message = "Data penerimaan barang mobile berhasil disetujui.";
             return result;
         }
 
