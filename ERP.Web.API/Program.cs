@@ -246,7 +246,7 @@ builder.Services.AddScoped<IPurchaseReceiveService, PurchaseReceiveService>();
 builder.Services.AddScoped<IPurchaseReturnService, PurchaseReturnService>();
 builder.Services.AddScoped<IAPReportService, APReportService>();
 builder.Services.AddScoped<IAPMutationReportService, APMutationReportService>();
-
+builder.Services.AddScoped<IAPAgingReportService, APAgingReportService>();
 
 // Sales services
 builder.Services.AddScoped<IAreaService, AreaService>();
