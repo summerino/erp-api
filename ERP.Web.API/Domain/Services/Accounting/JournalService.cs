@@ -286,57 +286,10 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 {
                     foreach (var itemDetail in RcvDetailData)
                     {
-                        var prorateHeaderDisc = itemData.RcvHeader.FinalDisc > 0 ? (itemData.RcvHeader.FinalDisc * itemDetail.RcvDetail.NettPrice) / RcvDetailData.Sum(x => x.RcvDetail.NettPrice) : 0;
-                        if (itemDetail.RcvDetail.TaxAmount > 0)
-                        {
-                            //PPN
-                            if (itemData.RcvHeader.IncludeTax)
-                            {
-                                journals.Add(new Journal
-                                {
-                                    Code = itemData.RcvHeader.Code,
-                                    LineNo = ++j,
-                                    Date = itemData.RcvHeader.Date,
-                                    CoaCode = string.IsNullOrWhiteSpace(taxes.FirstOrDefault(x => x.Id == itemDetail.RcvDetail.TaxId)?.CoaCode) ? systemParam.FirstOrDefault(x => x.Code == "TAX_IN_COA")?.Value ?? "" : taxes.FirstOrDefault(x => x.Id == itemDetail.RcvDetail.TaxId)?.CoaCode,
-                                    TypeCode = "PPN",
-                                    Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_TAX_IN")?.Value ?? ""} {itemDetail.Item.Initial}").Trim(),
-                                    RefCode1 = itemData.RcvHeader.TransCode,
-                                    RefCode2 = itemDetail.Item.Initial,
-                                    Group = 3,
-                                    CurrCode = itemData.RcvHeader.CurrCode,
-                                    Period = itemData.RcvHeader.Date.ToString("yyyyMMdd"),
-                                    Type = "D",
-                                    Amount = itemDetail.RcvDetail.TaxAmount * itemDetail.RcvDetail.Qty,
-                                    SrcTrans = "RCV"
-                                });
-                            }
-                            else
-                            {
-                                journals.Add(new Journal
-                                {
-                                    Code = itemData.RcvHeader.Code,
-                                    LineNo = ++j,
-                                    Date = itemData.RcvHeader.Date,
-                                    CoaCode = string.IsNullOrWhiteSpace(taxes.FirstOrDefault(x => x.Id == itemDetail.RcvDetail.TaxId)?.CoaCode) ? systemParam.FirstOrDefault(x => x.Code == "TAX_OUT_COA")?.Value ?? "" : taxes.FirstOrDefault(x => x.Id == itemDetail.RcvDetail.TaxId)?.CoaCode,
-                                    TypeCode = "PPN",
-                                    Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_TAX_OUT")?.Value ?? ""} {itemDetail.Item.Initial}").Trim(),
-                                    RefCode1 = itemData.RcvHeader.TransCode,
-                                    RefCode2 = itemDetail.Item.Initial,
-                                    Group = 3,
-                                    CurrCode = itemData.RcvHeader.CurrCode,
-                                    Period = itemData.RcvHeader.Date.ToString("yyyyMMdd"),
-                                    Type = "D",
-                                    Amount = itemDetail.RcvDetail.TaxAmount * itemDetail.RcvDetail.Qty,
-                                    SrcTrans = "RCV"
-                                });
-                            }
-                        }
-
-                        var ivnValue = (itemDetail.RcvDetail.UnitPrice - itemDetail.RcvDetail.Disc - prorateHeaderDisc) * itemDetail.RcvDetail.Qty;
-                        var taxValue = journals.Where(x => x.Code == itemData.RcvHeader.Code && x.RefCode2 == itemDetail.Item.Initial && x.Group == 3).Sum(x => x.Amount);
+                        var ivnValue = (itemDetail.RcvDetail.UnitPrice - itemDetail.RcvDetail.Disc - itemDetail.RcvDetail.FinalDiscHeader) * itemDetail.RcvDetail.Qty;
                         if (itemData.RcvHeader.TaxAmount > 0)
                             if (itemData.RcvHeader.IncludeTax)
-                                ivnValue -= taxValue;
+                                ivnValue -= itemDetail.RcvDetail.TaxAmount * itemDetail.RcvDetail.Qty;
 
                         //Inventory
                         journals.Add(new Journal
@@ -510,6 +463,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                                          where invdetail.Code == itemData.InvHeader.Code
                                          select new { InvDetail = invdetail, RcvData = rcvdata }).ToList();
 
+                    decimal taxAmount = 0m;
                     short i = 0;
 
                     foreach (var itemDetail in InvDetailData)
@@ -534,29 +488,26 @@ namespace ERP.Web.API.Domain.Services.Accounting
                         });
 
                         //PPN
-                        var taxJournal = journals.Where(x => x.Code == itemDetail.RcvData.Code && x.Group == 3).ToList();
-                        journals.Add(new Journal
-                        {
-                            Code = itemData.InvHeader.Code,
-                            LineNo = 1,
-                            Date = itemData.InvHeader.Date,
-                            CoaCode = systemParam.FirstOrDefault(x => x.Code == "TAX_IN_COA")?.Value ?? "",
-                            TypeCode = "PPN",
-                            Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_TAX_IN")?.Value ?? ""} {itemData.Supplier.Initial}").Trim(),
-                            RefCode1 = itemData.InvHeader.PoCode,
-                            Group = 2,
-                            CurrCode = itemData.InvHeader.CurrCode,
-                            Period = itemData.InvHeader.Date.ToString("yyyyMMdd"),
-                            Type = "D",
-                            Amount = taxJournal.Sum(x => x.Amount),
-                            SrcTrans = "PI"
-                        });
-
-                        foreach (var itemTax in taxJournal)
-                        {
-                            journals.Remove(itemTax);
-                        }
+                        taxAmount += itemDetail.RcvData.TaxAmount;
                     }
+
+                    //PPN
+                    journals.Add(new Journal
+                    {
+                        Code = itemData.InvHeader.Code,
+                        LineNo = 1,
+                        Date = itemData.InvHeader.Date,
+                        CoaCode = systemParam.FirstOrDefault(x => x.Code == "TAX_IN_COA")?.Value ?? "",
+                        TypeCode = "PPN",
+                        Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_TAX_IN")?.Value ?? ""} {itemData.Supplier.Initial}").Trim(),
+                        RefCode1 = itemData.InvHeader.PoCode,
+                        Group = 2,
+                        CurrCode = itemData.InvHeader.CurrCode,
+                        Period = itemData.InvHeader.Date.ToString("yyyyMMdd"),
+                        Type = "D",
+                        Amount = taxAmount,
+                        SrcTrans = "PI"
+                    });
 
                     var invMemo = db.PurchaseInvoiceDebitMemos.Where(x => x.InvCode == itemData.InvHeader.Code).ToList();
                     if (invMemo.Any())
