@@ -67,6 +67,12 @@ namespace ERP.Entity.Purchase
 
         [Precision(19, 6)]
         public decimal PaidAmount { get; set; }
+
+        [StringLength(50)]
+        public string TaxInvoiceNo { get; set; }
+
+        [Column(TypeName = "date")]
+        public DateTime? TaxInvoiceDate { get; set; }
     }
 
     public class VwPurchaseReceiveHeader : BaseEntityWithMarkAndApproved
@@ -106,8 +112,12 @@ namespace ERP.Entity.Purchase
         public decimal Total { get; set; }
 
         public decimal Dpp { get; set; }
-        
+
         public decimal PaidAmount { get; set; }
+
+        public string TaxInvoiceNo { get; set; }
+
+        public DateTime? TaxInvoiceDate { get; set; }
 
 
         public string SupName { get; set; }

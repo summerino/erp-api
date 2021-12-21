@@ -1,4 +1,7 @@
-﻿using ERP.Entity.Accounting;
+﻿using System;
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
+using ERP.Entity.Accounting;
 using ERP.Entity.AssetManagement;
 using ERP.Entity.Core;
 using ERP.Entity.Expedition;
@@ -10,9 +13,6 @@ using ERP.Entity.MobileWarehouse;
 using ERP.Entity.Purchase;
 using ERP.Entity.Sales;
 using ERP.Entity.SystemManagement;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Linq;
 
 namespace ERP.Entity
 {
