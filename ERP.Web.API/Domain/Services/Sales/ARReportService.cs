@@ -50,6 +50,7 @@ namespace ERP.Web.API.Domain.Services.Sales
 
             foreach (var itemBB in bbData)
             {
+                var totCb = cbDetail.Where(x => x.TransCode == itemBB.Code).Sum(x => x.TransAmount);
                 dlvData.Add(new Entity.Sales.ReportByDelivery
                 {
                     Date = itemBB.Date,
@@ -62,8 +63,8 @@ namespace ERP.Web.API.Domain.Services.Sales
                     CustCode = itemBB.CustCode,
                     CustName = itemBB.CustName,
                     TotalAmount = itemBB.Amount,
-                    PaidAmount = itemBB.PaidAmount,
-                    RemainderAmount = itemBB.Amount - itemBB.PaidAmount
+                    PaidAmount = totCb,
+                    RemainderAmount = itemBB.Amount - totCb
                 });
             }
 

@@ -58,7 +58,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                             SupName = itemBB.SupName,
                             TotalAmount = itemBB.Amount,
                             PaidAmount = totCb,
-                            RemainderAmount = itemBB.Amount - itemBB.PaidAmount
+                            RemainderAmount = itemBB.Amount - totCb
                         });
                     }
 

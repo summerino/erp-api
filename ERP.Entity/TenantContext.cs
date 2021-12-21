@@ -231,6 +231,7 @@ namespace ERP.Entity
         public DbSet<ReportBySupplierMutation> ReportBySupplierMutations { get; set; }
         public DbSet<ReportBySupplierAging> ReportBySupplierAgings { get; set; }
         public DbSet<ReportByInvoiceAPAging> ReportByInvoiceAPAgings { get; set; }
+        public DbSet<ReportByDebitMemo> ReportByDebitMemos { get; set; }
 
 
         // Sales entities
@@ -1985,6 +1986,10 @@ namespace ERP.Entity
             modelBuilder.Entity<ReportByInvoiceAPAging>()
                .HasNoKey()
                .ToTable("ReportByInvoiceAPAging", t => t.ExcludeFromMigrations());
+
+            modelBuilder.Entity<ReportByDebitMemo>()
+               .HasNoKey()
+               .ToTable("ReportByDebitMemo", t => t.ExcludeFromMigrations());
 
             // Sales entities
             // Area model
