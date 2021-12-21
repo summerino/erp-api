@@ -8,10 +8,12 @@ namespace ERP.Web.API.Domain.Services.MobileSales
     public class MobileActivityLogReportService : IMobileActivityLogReportService
     {
         private readonly TenantContext _db;
+
         public MobileActivityLogReportService(TenantContext db)
         {
             _db = db;
         }
+
         public DataSourceResult GetData(string username, string typeCode, string note, string startDate, string endDate)
         {
             var data = _db.MobileActivityLogs.ToList();

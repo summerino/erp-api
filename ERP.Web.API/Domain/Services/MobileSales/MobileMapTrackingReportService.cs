@@ -1,7 +1,6 @@
 ﻿using ERP.Entity;
 using ERP.Entity.Sales;
 using ERP.Web.API.Domain.Interfaces.MobileSales;
-using Microsoft.EntityFrameworkCore;
 
 namespace ERP.Web.API.Domain.Services.MobileSales
 {
@@ -23,6 +22,26 @@ namespace ERP.Web.API.Domain.Services.MobileSales
             return type == 1
                 ? data.OrderBy(y => y.TrackedDate)
                 : data.OrderByDescending(y => y.TrackedDate).Take(1);
+        }
+
+        public IEnumerable<object> GetCustomerData(string date, int salesId)
+        {
+            var visitOrderCustomers =
+                _db.VisitOrderCustomers
+                    .Where(voc =>
+                        _db.VisitOrders
+                            .Where(vo => vo.Date == Convert.ToDateTime(date) && vo.SalesmanId == salesId && vo.Mark == "A")
+                            .Select(vo => vo.Code).Contains(voc.Code));
+
+            var customerAddresses =
+                _db.CustomerAddress
+                    .Where(ca => visitOrderCustomers.Select(voc => voc.CustCode).Contains(ca.Code) && ca.Lat.HasValue && ca.Lng.HasValue);
+
+            var data = from ca in customerAddresses
+                join c in _db.Customers on ca.Code equals c.Code
+                select new { c.Code, c.Name, ca.Lat, ca.Lng };
+
+            return data;
         }
     }
 }
