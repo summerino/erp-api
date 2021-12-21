@@ -66,9 +66,49 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     var removedBB = tenantCtx.Journals.Where(x => typeBB.Contains(x.SrcTrans)).ToList();
                     if (removedBB != null)
                         tenantCtx.RemoveRange(removedBB);
+
+                    stateData.Step++; //2
+                    tenantCtx.PostingStates.Update(stateData);
+                    tenantCtx.SaveChanges();
+
+                    var journalBBAP = ProcessBBAPJournal(tenantCtx, systemParam);
+                    if (journalBBAP != null)
+                        tenantCtx.AddRange(journalBBAP);
+
+                    stateData.Step++; //3
+                    tenantCtx.PostingStates.Update(stateData);
+                    tenantCtx.SaveChanges();
+
+                    var journalBBAR = ProcessBBARJournal(tenantCtx, systemParam);
+                    if (journalBBAR != null)
+                        tenantCtx.AddRange(journalBBAR);
+
+                    stateData.Step++; //4
+                    tenantCtx.PostingStates.Update(stateData);
+                    tenantCtx.SaveChanges();
+
+                    var journalBBDM = ProcessBBDebitMemoJournal(tenantCtx, systemParam);
+                    if (journalBBDM != null)
+                        tenantCtx.AddRange(journalBBDM);
+
+                    stateData.Step++; //5
+                    tenantCtx.PostingStates.Update(stateData);
+                    tenantCtx.SaveChanges();
+
+                    var journalBBCM = ProcessBBCreditMemoJournal(tenantCtx, systemParam);
+                    if (journalBBCM != null)
+                        tenantCtx.AddRange(journalBBCM);
+
+                    stateData.Step++; //6
+                    tenantCtx.PostingStates.Update(stateData);
+                    tenantCtx.SaveChanges();
+
+                    var journalINVT = ProcessBBInventoryJournal(tenantCtx, systemParam);
+                    if (journalINVT != null)
+                        tenantCtx.AddRange(journalINVT);
                 }
 
-                stateData.Step++; //2
+                stateData.Step++; //2 /7
                 tenantCtx.PostingStates.Update(stateData);
                 tenantCtx.SaveChanges();
 
@@ -76,7 +116,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     "DELETE Accounting.Journal WHERE YEAR([Date]) = {0} AND MONTH([Date]) = {1}",
                     data.Date.Year, data.Date.Month);
 
-                stateData.Step++; //3
+                stateData.Step++; //3 /8
                 tenantCtx.PostingStates.Update(stateData);
                 tenantCtx.SaveChanges();
 
@@ -84,7 +124,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 if (journalRCV != null)
                     tenantCtx.AddRange(journalRCV);
 
-                stateData.Step++; //4
+                stateData.Step++; //4 /9
                 tenantCtx.PostingStates.Update(stateData);
                 tenantCtx.SaveChanges();
 
@@ -92,7 +132,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 if (journalPR != null)
                     tenantCtx.AddRange(journalPR);
 
-                stateData.Step++; //5
+                stateData.Step++; //5 /10
                 tenantCtx.PostingStates.Update(stateData);
                 tenantCtx.SaveChanges();
 
@@ -100,7 +140,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 if (journalDO != null)
                     tenantCtx.AddRange(journalDO);
 
-                stateData.Step++; //6
+                stateData.Step++; //6 /11
                 tenantCtx.PostingStates.Update(stateData);
                 tenantCtx.SaveChanges();
 
@@ -108,7 +148,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 if (journalSR != null)
                     tenantCtx.AddRange(journalSR);
 
-                stateData.Step++; //7
+                stateData.Step++; //7 /12
                 tenantCtx.PostingStates.Update(stateData);
                 tenantCtx.SaveChanges();
 
@@ -116,47 +156,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 if (journalCB != null)
                     tenantCtx.AddRange(journalCB);
 
-                stateData.Step++; //8
-                tenantCtx.PostingStates.Update(stateData);
-                tenantCtx.SaveChanges();
-
-                var journalBBAP = ProcessBBAPJournal(tenantCtx, systemParam);
-                if (journalBBAP != null)
-                    tenantCtx.AddRange(journalBBAP);
-
-                stateData.Step++; //9
-                tenantCtx.PostingStates.Update(stateData);
-                tenantCtx.SaveChanges();
-
-                var journalBBAR = ProcessBBARJournal(tenantCtx, systemParam);
-                if (journalBBAR != null)
-                    tenantCtx.AddRange(journalBBAR);
-
-                stateData.Step++; //10
-                tenantCtx.PostingStates.Update(stateData);
-                tenantCtx.SaveChanges();
-
-                var journalBBDM = ProcessBBDebitMemoJournal(tenantCtx, systemParam);
-                if (journalBBDM != null)
-                    tenantCtx.AddRange(journalBBDM);
-
-                stateData.Step++; //11
-                tenantCtx.PostingStates.Update(stateData);
-                tenantCtx.SaveChanges();
-
-                var journalBBCM = ProcessBBCreditMemoJournal(tenantCtx, systemParam);
-                if (journalBBCM != null)
-                    tenantCtx.AddRange(journalBBCM);
-
-                stateData.Step++; //12
-                tenantCtx.PostingStates.Update(stateData);
-                tenantCtx.SaveChanges();
-
-                var journalINVT = ProcessBBInventoryJournal(tenantCtx, systemParam);
-                if (journalINVT != null)
-                    tenantCtx.AddRange(journalINVT);
-
-                stateData.Step++; //13
+                stateData.Step++; //8 /13
                 tenantCtx.PostingStates.Update(stateData);
                 tenantCtx.SaveChanges();
 
@@ -164,7 +164,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 if (journalEXP != null)
                     tenantCtx.AddRange(journalEXP);
 
-                stateData.Step++; //14
+                stateData.Step++; //9 /14
                 tenantCtx.PostingStates.Update(stateData);
                 tenantCtx.SaveChanges();
 
@@ -172,7 +172,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 if (journalFA != null)
                     tenantCtx.AddRange(journalFA);
 
-                stateData.Step++; //15
+                stateData.Step++; //9 /15
                 tenantCtx.PostingStates.Update(stateData);
                 tenantCtx.SaveChanges();
 
@@ -180,7 +180,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 if (journalDFA != null)
                     tenantCtx.AddRange(journalDFA);
 
-                stateData.Step++; //16
+                stateData.Step++; //10 /16
                 tenantCtx.PostingStates.Update(stateData);
                 tenantCtx.SaveChanges();
 
@@ -192,7 +192,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 if (journalADJ != null)
                     tenantCtx.AddRange(journalADJ);
 
-                stateData.Step++; //17
+                stateData.Step++; //11 /17
                 tenantCtx.PostingStates.Update(stateData);
                 tenantCtx.SaveChanges();
 
@@ -200,7 +200,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 if (journalGJ != null)
                     tenantCtx.AddRange(journalGJ);
 
-                stateData.Step++; //18
+                stateData.Step++; //12 /18
                 tenantCtx.PostingStates.Update(stateData);
                 tenantCtx.SaveChanges();
 
@@ -210,7 +210,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
 
                 if (data.Date.Month == 12)
                 {
-                    stateData.Step++; //19
+                    stateData.Step++; //13 /19
                     tenantCtx.PostingStates.Update(stateData);
                     tenantCtx.SaveChanges();
 
@@ -218,14 +218,14 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     "DELETE Accounting.Journal WHERE Code = {0}",
                     "ENDYEAR-" + data.Date.Year.ToString());
 
-                    stateData.Step++; //20
+                    stateData.Step++; //14 /20
                     tenantCtx.PostingStates.Update(stateData);
                     tenantCtx.SaveChanges();
 
                     ProcessEndYearJournal(tenantCtx, data.Date);
                 }
 
-                stateData.Step++; // 21 or 19
+                stateData.Step++; //13 /15 /21
                 tenantCtx.PostingStates.Update(stateData);
                 tenantCtx.SaveChanges();
 
