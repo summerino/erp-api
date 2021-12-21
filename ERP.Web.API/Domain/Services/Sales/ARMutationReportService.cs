@@ -35,6 +35,8 @@ namespace ERP.Web.API.Domain.Services.Sales
 
             var cbData = _db.GeneralCashBankHeaders.Where(x => x.Mark != "V").ToList();
 
+            var bbData = _db.VwBeginningBalanceARs.Where(x => x.IsActive && x.Date <= Convert.ToDateTime(endDate)).ToList();
+
             if (!string.IsNullOrEmpty(endDate))
             {
                 dlvData = dlvData.Where(x => x.Date <= Convert.ToDateTime(endDate)).ToList();
@@ -73,6 +75,51 @@ namespace ERP.Web.API.Domain.Services.Sales
                     item.PaidAmount = totDlv > 0 ? (totCcb * item.TransAmount / totDlv) : 0;
                     item.EndingBalance = item.TransAmount - item.PaidAmount;
                 }
+            }
+
+            foreach (var itemBB in bbData)
+            {
+                var newData = new ReportByDeliveryARMutation
+                {
+                    Date = itemBB.Date,
+                    DueDate = itemBB.DueDate,
+                    Code = itemBB.Code,
+                    CustCode = itemBB.CustCode,
+                    CustName = itemBB.CustName,
+                    BeginningBalance = 0m,
+                    TransAmount = itemBB.Amount,
+                    PaidAmount = 0m,
+                    EndingBalance = 0m
+                };
+
+                if (!string.IsNullOrEmpty(startDate))
+                {
+                    if (itemBB.Date < Convert.ToDateTime(startDate))
+                    {
+                        var bcbData = cbData.Where(x => x.Date < Convert.ToDateTime(startDate)).ToList();
+                        var totBcb = cbDetail.Where(x => x.TransCode == newData.Code && bcbData.Select(y => y.Code).Contains(x.Code)).Sum(x => x.TransAmount);
+                        var totCcb = cbDetail.Where(x => x.TransCode == newData.Code && !bcbData.Select(y => y.Code).Contains(x.Code)).Sum(x => x.TransAmount);
+                        newData.BeginningBalance = newData.TransAmount - totBcb;
+                        newData.PaidAmount = totCcb;
+                        newData.EndingBalance = newData.BeginningBalance - newData.PaidAmount;
+                        newData.TransAmount = 0;
+                    }
+                    else
+                    {
+                        var ccbData = cbData.Where(x => x.Date >= Convert.ToDateTime(startDate)).ToList();
+                        var totCcb = cbDetail.Where(x => x.TransCode == newData.Code && ccbData.Select(y => y.Code).Contains(x.Code)).Sum(x => x.TransAmount);
+                        newData.PaidAmount = totCcb;
+                        newData.EndingBalance = newData.TransAmount - newData.PaidAmount;
+                    }
+                }
+                else
+                {
+                    var totCcb = cbDetail.Where(x => x.TransCode == newData.Code && cbData.Select(y => y.Code).Contains(x.Code)).Sum(x => x.TransAmount);
+                    newData.PaidAmount = totCcb;
+                    newData.EndingBalance = newData.TransAmount - newData.PaidAmount;
+                }
+
+                dlvData.Add(newData);
             }
 
             if (!string.IsNullOrEmpty(status))
