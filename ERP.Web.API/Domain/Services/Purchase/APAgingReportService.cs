@@ -55,7 +55,37 @@ namespace ERP.Web.API.Domain.Services.Purchase
 							inv.Total ELSE 0 END AS decimal) AS Due90
 							FROM Purchasing.PurchaseInvoiceHeader inv
 							LEFT JOIN General.Supplier sp on sp.Code = inv.SupCode
-							WHERE inv.Mark IN('A', 'PP', 'CMP'))
+							WHERE inv.Mark IN('A', 'PP', 'CMP')
+							UNION
+							SELECT bb.[Date], bb.DueDate, bb.Code, '' AS OrderCode, bb.SupCode, bb.SupName, bb.Amount - bb.PaidAmount AS RemainderAmount,
+							CAST (CASE WHEN DATEDIFF(DAY, bb.DueDate, GETDATE()) > 90 THEN
+							bb.Amount ELSE 0 END AS decimal) AS Past90,
+							CAST (CASE WHEN DATEDIFF(DAY, bb.DueDate, GETDATE()) > 60 AND DATEDIFF(DAY, bb.DueDate, GETDATE()) <= 90 THEN
+							bb.Amount ELSE 0 END AS decimal) AS Past61To90,
+							CAST (CASE WHEN DATEDIFF(DAY, bb.DueDate, GETDATE()) > 30 AND DATEDIFF(DAY, bb.DueDate, GETDATE()) <= 60 THEN
+							bb.Amount ELSE 0 END AS decimal) AS Past31To60,
+							CAST (CASE WHEN DATEDIFF(DAY, bb.DueDate, GETDATE()) >= 15 AND DATEDIFF(DAY, bb.DueDate, GETDATE()) <= 30 THEN
+							bb.Amount ELSE 0 END AS decimal) AS Past15To30,
+							CAST (CASE WHEN DATEDIFF(DAY, bb.DueDate, GETDATE()) >= 8 AND DATEDIFF(DAY, bb.DueDate, GETDATE()) <= 14 THEN
+							bb.Amount ELSE 0 END AS decimal) AS Past8To14,
+							CAST (CASE WHEN DATEDIFF(DAY, bb.DueDate, GETDATE()) >= 1 AND DATEDIFF(DAY, bb.DueDate, GETDATE()) <= 7 THEN
+							bb.Amount ELSE 0 END AS decimal) AS Past1To7,
+							CAST (CASE WHEN DATEDIFF(DAY, bb.DueDate, GETDATE()) = 0 THEN
+							bb.Amount ELSE 0 END AS decimal) AS DueToday,
+							CAST (CASE WHEN DATEDIFF(DAY, GETDATE(), bb.DueDate) >= 1 AND DATEDIFF(DAY, GETDATE(), bb.DueDate) <= 7 THEN
+							bb.Amount ELSE 0 END AS decimal) AS Due1To7,
+							CAST (CASE WHEN DATEDIFF(DAY, GETDATE(), bb.DueDate) >= 8 AND DATEDIFF(DAY, GETDATE(), bb.DueDate) <= 14 THEN
+							bb.Amount ELSE 0 END AS decimal) AS Due8To14,
+							CAST (CASE WHEN DATEDIFF(DAY, GETDATE(), bb.DueDate) >= 15 AND DATEDIFF(DAY, GETDATE(), bb.DueDate) <= 30 THEN
+							bb.Amount ELSE 0 END AS decimal) AS Due15To30,
+							CAST (CASE WHEN DATEDIFF(DAY, GETDATE(), bb.DueDate) > 30 AND DATEDIFF(DAY, GETDATE(), bb.DueDate) <= 60 THEN
+							bb.Amount ELSE 0 END AS decimal) AS Due31To60,
+							CAST (CASE WHEN DATEDIFF(DAY, GETDATE(), bb.DueDate) > 60 AND DATEDIFF(DAY, GETDATE(), bb.DueDate) <= 90 THEN
+							bb.Amount ELSE 0 END AS decimal) AS Due61To90,
+							CAST (CASE WHEN DATEDIFF(DAY, GETDATE(), bb.DueDate) > 90 THEN
+							bb.Amount ELSE 0 END AS decimal) AS Due90
+							FROM Accounting.vwBeginningBalanceAP bb
+							WHERE bb.IsActive = 1)
 							SELECT *FROM cte_apa_report " + (string.IsNullOrEmpty(duration) ? "" : $"WHERE {duration.Replace("'", "''")} > 0")).ToList();
 
 			invData = invData.Where(x => x.Date <= Convert.ToDateTime(date)).ToList();
@@ -78,6 +108,8 @@ namespace ERP.Web.API.Domain.Services.Purchase
 				itemSup.Due61To90 = invData.Where(x => x.SupCode == itemSup.Code).Sum(x => x.Due61To90);
 				itemSup.Due90 = invData.Where(x => x.SupCode == itemSup.Code).Sum(x => x.Due90);
 			}
+
+			invData = invData.Where(x => x.RemainderAmount > 0).ToList();
 
 			if (type == 1)
 			{
