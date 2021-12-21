@@ -28,12 +28,13 @@ namespace ERP.Web.API.Domain.Services.Purchase
 
             var cbData = _db.GeneralCashBankHeaders.Where(x => x.Mark != "V").ToList();
 
-            var bbData = _db.VwBeginningBalanceAPs.Where(x => x.IsActive && x.Date <= Convert.ToDateTime(endDate)).ToList();
+            var bbData = _db.VwBeginningBalanceAPs.Where(x => x.IsActive).ToList();
 
             if (!string.IsNullOrEmpty(endDate))
             {
                 invData = invData.Where(x => x.Date <= Convert.ToDateTime(endDate)).ToList();
                 cbData = cbData.Where(x => (x.ChequeDate ?? x.Date) <= Convert.ToDateTime(endDate)).ToList();
+                bbData = bbData.Where(x => x.Date <= Convert.ToDateTime(endDate)).ToList();
             }
 
             var cbDetail = _db.GeneralCashBankDetails.Where(x => cbData.Select(c => c.Code).Contains(x.Code)).ToList();
@@ -126,6 +127,10 @@ namespace ERP.Web.API.Domain.Services.Purchase
                     invData = invData.Where(x => x.EndingBalance == 0).ToList();
                 }
             }
+
+            invData = invData
+                .Where(x => x.BeginningBalance > 0 || x.TransAmount > 0 || x.PaidAmount > 0 || x.EndingBalance > 0)
+                .OrderBy(x => x.Date).ToList();
 
             foreach (var itemSup in supData)
             {
