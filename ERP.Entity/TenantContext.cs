@@ -294,6 +294,7 @@ namespace ERP.Entity
         public DbSet<ReportByDeliveryARMutation> ReportByDeliveryARMutations { get; set; }
         public DbSet<ReportByCustomerAging> ReportByCustomerAgings { get; set; }
         public DbSet<ReportByDeliveryARAging> ReportByDeliveryARAgings { get; set; }
+        public DbSet<ReportByCreditMemo> ReportByCreditMemos { get; set; }
 
         // System Management entities
         public DbSet<SystemManagement.Action> Actions { get; set; }
@@ -2399,6 +2400,10 @@ namespace ERP.Entity
             modelBuilder.Entity<ReportByDeliveryARAging>()
                .HasNoKey()
                .ToTable("ReportByDeliveryARAging", t => t.ExcludeFromMigrations());
+
+            modelBuilder.Entity<ReportByCreditMemo>()
+               .HasNoKey()
+               .ToTable("ReportByCreditMemo", t => t.ExcludeFromMigrations());
 
 
             // System Management entities
