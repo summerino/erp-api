@@ -266,6 +266,7 @@ builder.Services.AddScoped<IVisitPlanService, VisitPlanService>();
 builder.Services.AddScoped<IARReportService, ARReportService>();
 builder.Services.AddScoped<IARMutationReportService, ARMutationReportService>();
 builder.Services.AddScoped<IARAgingReportService, ARAgingReportService>();
+builder.Services.AddScoped<ICreditMemoReportService, CreditMemoReportService>();
 
 // System Management services
 builder.Services.AddScoped<IActionService, ActionService>();
