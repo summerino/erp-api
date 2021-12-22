@@ -63,7 +63,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 if (data.Date < Convert.ToDateTime(systemParam.FirstOrDefault(x => x.Code == "DATA_START_DATE").Value))
                 {
                     tenantCtx.Database.ExecuteSqlRaw(
-                    "DELETE Accounting.Journal WHERE TypeCode IN ('BB_AP', 'BB_AR', 'BB_DM', 'BB_CM', 'BB_INVT'");
+                    "DELETE Accounting.Journal WHERE TypeCode IN ('BB_AP', 'BB_AR', 'BB_DM', 'BB_CM', 'BB_INVT')");
 
                     stateData.Step++; //2
                     tenantCtx.PostingStates.Update(stateData);
