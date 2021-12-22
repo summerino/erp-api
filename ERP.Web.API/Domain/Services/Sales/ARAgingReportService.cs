@@ -30,41 +30,73 @@ namespace ERP.Web.API.Domain.Services.Sales
 
             var dlvData = _db.ReportByDeliveryARAgings.FromSqlRaw(@"WITH cte_ara_report AS (SELECT dlv.[Date], inv.DueDate, dlv.Code, dlv.TransCode AS SrcCode, inv.Code AS InvCode, sls.FirstName AS SlsName, dlv.CustCode, sp.[Name] AS CustName, dlv.Total - dlv.PaidAmount AS RemainderAmount,
 							CAST (CASE WHEN DATEDIFF(DAY, inv.DueDate, GETDATE()) > 90 THEN
-							dlv.Total ELSE 0 END AS decimal) AS Past90,
+							dlv.Total - dlv.PaidAmount ELSE 0 END AS decimal) AS Past90,
 							CAST (CASE WHEN DATEDIFF(DAY, inv.DueDate, GETDATE()) > 60 AND DATEDIFF(DAY, inv.DueDate, GETDATE()) <= 90 THEN
-							dlv.Total ELSE 0 END AS decimal) AS Past61To90,
+							dlv.Total - dlv.PaidAmount ELSE 0 END AS decimal) AS Past61To90,
 							CAST (CASE WHEN DATEDIFF(DAY, inv.DueDate, GETDATE()) > 30 AND DATEDIFF(DAY, inv.DueDate, GETDATE()) <= 60 THEN
-							dlv.Total ELSE 0 END AS decimal) AS Past31To60,
+							dlv.Total - dlv.PaidAmount ELSE 0 END AS decimal) AS Past31To60,
 							CAST (CASE WHEN DATEDIFF(DAY, inv.DueDate, GETDATE()) >= 15 AND DATEDIFF(DAY, inv.DueDate, GETDATE()) <= 30 THEN
-							dlv.Total ELSE 0 END AS decimal) AS Past15To30,
+							dlv.Total - dlv.PaidAmount ELSE 0 END AS decimal) AS Past15To30,
 							CAST (CASE WHEN DATEDIFF(DAY, inv.DueDate, GETDATE()) >= 8 AND DATEDIFF(DAY, inv.DueDate, GETDATE()) <= 14 THEN
-							dlv.Total ELSE 0 END AS decimal) AS Past8To14,
+							dlv.Total - dlv.PaidAmount ELSE 0 END AS decimal) AS Past8To14,
 							CAST (CASE WHEN DATEDIFF(DAY, inv.DueDate, GETDATE()) >= 1 AND DATEDIFF(DAY, inv.DueDate, GETDATE()) <= 7 THEN
-							dlv.Total ELSE 0 END AS decimal) AS Past1To7,
+							dlv.Total - dlv.PaidAmount ELSE 0 END AS decimal) AS Past1To7,
 							CAST (CASE WHEN DATEDIFF(DAY, inv.DueDate, GETDATE()) = 0 THEN
-							dlv.Total ELSE 0 END AS decimal) AS DueToday,
+							dlv.Total - dlv.PaidAmount ELSE 0 END AS decimal) AS DueToday,
 							CAST (CASE WHEN DATEDIFF(DAY, GETDATE(), inv.DueDate) >= 1 AND DATEDIFF(DAY, GETDATE(), inv.DueDate) <= 7 THEN
-							dlv.Total ELSE 0 END AS decimal) AS Due1To7,
+							dlv.Total - dlv.PaidAmount ELSE 0 END AS decimal) AS Due1To7,
 							CAST (CASE WHEN DATEDIFF(DAY, GETDATE(), inv.DueDate) >= 8 AND DATEDIFF(DAY, GETDATE(), inv.DueDate) <= 14 THEN
-							dlv.Total ELSE 0 END AS decimal) AS Due8To14,
+							dlv.Total - dlv.PaidAmount ELSE 0 END AS decimal) AS Due8To14,
 							CAST (CASE WHEN DATEDIFF(DAY, GETDATE(), inv.DueDate) >= 15 AND DATEDIFF(DAY, GETDATE(), inv.DueDate) <= 30 THEN
-							dlv.Total ELSE 0 END AS decimal) AS Due15To30,
+							dlv.Total - dlv.PaidAmount ELSE 0 END AS decimal) AS Due15To30,
 							CAST (CASE WHEN DATEDIFF(DAY, GETDATE(), inv.DueDate) > 30 AND DATEDIFF(DAY, GETDATE(), inv.DueDate) <= 60 THEN
-							dlv.Total ELSE 0 END AS decimal) AS Due31To60,
+							dlv.Total - dlv.PaidAmount ELSE 0 END AS decimal) AS Due31To60,
 							CAST (CASE WHEN DATEDIFF(DAY, GETDATE(), inv.DueDate) > 60 AND DATEDIFF(DAY, GETDATE(), inv.DueDate) <= 90 THEN
-							dlv.Total ELSE 0 END AS decimal) AS Due61To90,
+							dlv.Total - dlv.PaidAmount ELSE 0 END AS decimal) AS Due61To90,
 							CAST (CASE WHEN DATEDIFF(DAY, GETDATE(), inv.DueDate) > 90 THEN
-							dlv.Total ELSE 0 END AS decimal) AS Due90
+							dlv.Total - dlv.PaidAmount ELSE 0 END AS decimal) AS Due90
                             FROM Sales.SalesDeliveryHeader dlv
                             LEFT JOIN Sales.SalesOrderHeader so ON so.Code = dlv.TransCode
                             LEFT JOIN General.Employee sls ON sls.Id = so.SalesBy
                             LEFT JOIN General.Customer sp ON sp.Code = dlv.CustCode
                             LEFT JOIN Sales.SalesInvoiceDetail invD ON invD.DOCode = dlv.Code
                             LEFT JOIN Sales.SalesInvoiceHeader inv ON inv.Code = invD.Code AND inv.Mark IN('A','PP','CMP')
-                            WHERE dlv.Mark IN('A','INV')" + (slsId > 0 ? $" AND so.SalesBy = {slsId} " : " ") + 
-							@") SELECT * FROM cte_ara_report " + (string.IsNullOrEmpty(duration) ? "" : $"WHERE {duration.Replace("'", "''")} > 0")).ToList();
+                            WHERE dlv.Mark IN('A','INV')" + (slsId > 0 ? $" AND so.SalesBy = {slsId} " : " ") + @"
+							UNION
+							SELECT bb.[Date], bb.DueDate, bb.Code, '' AS OrderCode, '' AS SrcCode, '' AS SlsName, bb.CustCode, bb.CustName, bb.Amount - bb.PaidAmount AS RemainderAmount,
+							CAST (CASE WHEN DATEDIFF(DAY, bb.DueDate, GETDATE()) > 90 THEN
+							bb.Amount - bb.PaidAmount ELSE 0 END AS decimal) AS Past90,
+							CAST (CASE WHEN DATEDIFF(DAY, bb.DueDate, GETDATE()) > 60 AND DATEDIFF(DAY, bb.DueDate, GETDATE()) <= 90 THEN
+							bb.Amount - bb.PaidAmount ELSE 0 END AS decimal) AS Past61To90,
+							CAST (CASE WHEN DATEDIFF(DAY, bb.DueDate, GETDATE()) > 30 AND DATEDIFF(DAY, bb.DueDate, GETDATE()) <= 60 THEN
+							bb.Amount - bb.PaidAmount ELSE 0 END AS decimal) AS Past31To60,
+							CAST (CASE WHEN DATEDIFF(DAY, bb.DueDate, GETDATE()) >= 15 AND DATEDIFF(DAY, bb.DueDate, GETDATE()) <= 30 THEN
+							bb.Amount - bb.PaidAmount ELSE 0 END AS decimal) AS Past15To30,
+							CAST (CASE WHEN DATEDIFF(DAY, bb.DueDate, GETDATE()) >= 8 AND DATEDIFF(DAY, bb.DueDate, GETDATE()) <= 14 THEN
+							bb.Amount - bb.PaidAmount ELSE 0 END AS decimal) AS Past8To14,
+							CAST (CASE WHEN DATEDIFF(DAY, bb.DueDate, GETDATE()) >= 1 AND DATEDIFF(DAY, bb.DueDate, GETDATE()) <= 7 THEN
+							bb.Amount - bb.PaidAmount ELSE 0 END AS decimal) AS Past1To7,
+							CAST (CASE WHEN DATEDIFF(DAY, bb.DueDate, GETDATE()) = 0 THEN
+							bb.Amount - bb.PaidAmount ELSE 0 END AS decimal) AS DueToday,
+							CAST (CASE WHEN DATEDIFF(DAY, GETDATE(), bb.DueDate) >= 1 AND DATEDIFF(DAY, GETDATE(), bb.DueDate) <= 7 THEN
+							bb.Amount - bb.PaidAmount ELSE 0 END AS decimal) AS Due1To7,
+							CAST (CASE WHEN DATEDIFF(DAY, GETDATE(), bb.DueDate) >= 8 AND DATEDIFF(DAY, GETDATE(), bb.DueDate) <= 14 THEN
+							bb.Amount - bb.PaidAmount ELSE 0 END AS decimal) AS Due8To14,
+							CAST (CASE WHEN DATEDIFF(DAY, GETDATE(), bb.DueDate) >= 15 AND DATEDIFF(DAY, GETDATE(), bb.DueDate) <= 30 THEN
+							bb.Amount - bb.PaidAmount ELSE 0 END AS decimal) AS Due15To30,
+							CAST (CASE WHEN DATEDIFF(DAY, GETDATE(), bb.DueDate) > 30 AND DATEDIFF(DAY, GETDATE(), bb.DueDate) <= 60 THEN
+							bb.Amount - bb.PaidAmount ELSE 0 END AS decimal) AS Due31To60,
+							CAST (CASE WHEN DATEDIFF(DAY, GETDATE(), bb.DueDate) > 60 AND DATEDIFF(DAY, GETDATE(), bb.DueDate) <= 90 THEN
+							bb.Amount - bb.PaidAmount ELSE 0 END AS decimal) AS Due61To90,
+							CAST (CASE WHEN DATEDIFF(DAY, GETDATE(), bb.DueDate) > 90 THEN
+							bb.Amount - bb.PaidAmount ELSE 0 END AS decimal) AS Due90
+							FROM Accounting.vwBeginningBalanceAR bb
+							WHERE bb.IsActive = 1)" +
+							@" SELECT * FROM cte_ara_report " + (string.IsNullOrEmpty(duration) ? "" : $"WHERE {duration.Replace("'", "''")} > 0")).ToList();
 
 			dlvData = dlvData.Where(x => x.Date <= Convert.ToDateTime(date)).ToList();
+
+			dlvData = dlvData.Where(x => x.RemainderAmount > 0).ToList();
 
 			foreach (var itemCus in cusData)
 			{
