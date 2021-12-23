@@ -60,11 +60,12 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 tenantCtx.PostingStates.Add(stateData);
                 tenantCtx.SaveChanges();
 
+                tenantCtx.Database.ExecuteSqlRaw(
+                    "DELETE Accounting.Journal WHERE YEAR([Date]) = {0} AND MONTH([Date]) = {1}",
+                    data.Date.Year, data.Date.Month);
+
                 if (data.Date < Convert.ToDateTime(systemParam.FirstOrDefault(x => x.Code == "DATA_START_DATE").Value))
                 {
-                    tenantCtx.Database.ExecuteSqlRaw(
-                    "DELETE Accounting.Journal WHERE TypeCode IN ('BB_AP', 'BB_AR', 'BB_DM', 'BB_CM', 'BB_INVT')");
-
                     stateData.Step++; //2
                     tenantCtx.PostingStates.Update(stateData);
                     tenantCtx.SaveChanges();
@@ -110,19 +111,11 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 tenantCtx.PostingStates.Update(stateData);
                 tenantCtx.SaveChanges();
 
-                tenantCtx.Database.ExecuteSqlRaw(
-                    "DELETE Accounting.Journal WHERE YEAR([Date]) = {0} AND MONTH([Date]) = {1}",
-                    data.Date.Year, data.Date.Month);
-
-                stateData.Step++; //3 /8
-                tenantCtx.PostingStates.Update(stateData);
-                tenantCtx.SaveChanges();
-
                 var journalRCV = ProcessPurchaseJournal(tenantCtx, data.Date, systemParam, items, taxes);
                 if (journalRCV != null)
                     tenantCtx.AddRange(journalRCV);
 
-                stateData.Step++; //4 /9
+                stateData.Step++; //3 /8
                 tenantCtx.PostingStates.Update(stateData);
                 tenantCtx.SaveChanges();
 
@@ -130,7 +123,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 if (journalPR != null)
                     tenantCtx.AddRange(journalPR);
 
-                stateData.Step++; //5 /10
+                stateData.Step++; //4 /9
                 tenantCtx.PostingStates.Update(stateData);
                 tenantCtx.SaveChanges();
 
@@ -138,7 +131,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 if (journalDO != null)
                     tenantCtx.AddRange(journalDO);
 
-                stateData.Step++; //6 /11
+                stateData.Step++; //5 /10
                 tenantCtx.PostingStates.Update(stateData);
                 tenantCtx.SaveChanges();
 
@@ -146,7 +139,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 if (journalSR != null)
                     tenantCtx.AddRange(journalSR);
 
-                stateData.Step++; //7 /12
+                stateData.Step++; //6 /11
                 tenantCtx.PostingStates.Update(stateData);
                 tenantCtx.SaveChanges();
 
@@ -154,7 +147,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 if (journalCB != null)
                     tenantCtx.AddRange(journalCB);
 
-                stateData.Step++; //8 /13
+                stateData.Step++; //7 /12
                 tenantCtx.PostingStates.Update(stateData);
                 tenantCtx.SaveChanges();
 
@@ -162,7 +155,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 if (journalEXP != null)
                     tenantCtx.AddRange(journalEXP);
 
-                stateData.Step++; //9 /14
+                stateData.Step++; //8 /13
                 tenantCtx.PostingStates.Update(stateData);
                 tenantCtx.SaveChanges();
 
@@ -170,7 +163,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 if (journalFA != null)
                     tenantCtx.AddRange(journalFA);
 
-                stateData.Step++; //9 /15
+                stateData.Step++; //9 /14
                 tenantCtx.PostingStates.Update(stateData);
                 tenantCtx.SaveChanges();
 
@@ -178,7 +171,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 if (journalDFA != null)
                     tenantCtx.AddRange(journalDFA);
 
-                stateData.Step++; //10 /16
+                stateData.Step++; //10 /15
                 tenantCtx.PostingStates.Update(stateData);
                 tenantCtx.SaveChanges();
 
@@ -190,7 +183,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 if (journalADJ != null)
                     tenantCtx.AddRange(journalADJ);
 
-                stateData.Step++; //11 /17
+                stateData.Step++; //11 /16
                 tenantCtx.PostingStates.Update(stateData);
                 tenantCtx.SaveChanges();
 
@@ -198,7 +191,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 if (journalGJ != null)
                     tenantCtx.AddRange(journalGJ);
 
-                stateData.Step++; //12 /18
+                stateData.Step++; //12 /17
                 tenantCtx.PostingStates.Update(stateData);
                 tenantCtx.SaveChanges();
 
@@ -208,7 +201,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
 
                 if (data.Date.Month == 12)
                 {
-                    stateData.Step++; //13 /19
+                    stateData.Step++; //13 /18
                     tenantCtx.PostingStates.Update(stateData);
                     tenantCtx.SaveChanges();
 
@@ -216,14 +209,14 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     "DELETE Accounting.Journal WHERE Code = {0}",
                     "ENDYEAR-" + data.Date.Year.ToString());
 
-                    stateData.Step++; //14 /20
+                    stateData.Step++; //14 /19
                     tenantCtx.PostingStates.Update(stateData);
                     tenantCtx.SaveChanges();
 
                     ProcessEndYearJournal(tenantCtx, data.Date);
                 }
 
-                stateData.Step++; //13 /15 /21
+                stateData.Step++; //13 /18 /20
                 tenantCtx.PostingStates.Update(stateData);
                 tenantCtx.SaveChanges();
 
@@ -451,7 +444,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
             {
                 var InvData = (from invheader in db.PurchaseInvoiceHeaders
                                join supplier in db.Suppliers on invheader.SupCode equals supplier.Code
-                               where invheader.Date.Month == dateTime.Month && invheader.Date.Year == dateTime.Year &&  invheader.Mark != "V"
+                               where invheader.Date.Month == dateTime.Month && invheader.Date.Year == dateTime.Year && invheader.Mark != "V"
                                select new { InvHeader = invheader, Supplier = supplier }).ToList();
 
                 foreach (var itemData in InvData)
@@ -1394,7 +1387,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                         if (itemDetail.RtnDetail.TaxAmount > 0)
                         {
                             taxAmount += itemDetail.RtnDetail.Qty * itemDetail.RtnDetail.TaxAmount;
-                            
+
                         }
                     }
                     //Pajak - PPN
@@ -1792,7 +1785,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                         if (itemDetail.RtnDetail.TaxAmount > 0)
                         {
                             taxAmount += itemDetail.RtnDetail.TaxAmount * itemDetail.RtnDetail.Qty;
-                            
+
                         }
                     }
 
