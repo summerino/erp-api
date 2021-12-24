@@ -248,6 +248,7 @@ builder.Services.AddScoped<IAPReportService, APReportService>();
 builder.Services.AddScoped<IAPMutationReportService, APMutationReportService>();
 builder.Services.AddScoped<IAPAgingReportService, APAgingReportService>();
 builder.Services.AddScoped<IDebitMemoReportService, DebitMemoReportService>();
+builder.Services.AddScoped<IPurchaseOrderReportService, PurchaseOrderReportService>();
 
 // Sales services
 builder.Services.AddScoped<IAreaService, AreaService>();
