@@ -2,6 +2,7 @@
 {
     public class TransactionHistoryBySubGroup
     {
+        public long SalesId { get; set; }
         public DateTime Date { get; set; }
         public decimal Total { get; set; }
     }
