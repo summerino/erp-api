@@ -265,7 +265,10 @@ namespace ERP.Web.API.Controllers.Purchase
                     return (false, "Detail tidak boleh kosong.");
 
                 if (data.ItemDetails.GroupBy(x => new { x.ItemId, x.UnitId }).Any(x => x.Count() > 1))
-                    return (false, "Terdapat barang dengan satuan yang sama pada bagian detail.");
+                    return (false, "Terdapat barang dengan satuan yang sama pada bagian detail barang keluar.");
+
+                if (data.Type == 3 && data.DiffItemDetails.GroupBy(x => new { x.ItemId, x.UnitId }).Any(x => x.Count() > 1))
+                    return (false, "Terdapat barang dengan satuan yang sama pada bagian detail barang masuk.");
 
                 if (data.ItemDetails.Sum(x => x.Qty) <= 0)
                     return(false, "Jumlah qty barang tidak boleh nol.");

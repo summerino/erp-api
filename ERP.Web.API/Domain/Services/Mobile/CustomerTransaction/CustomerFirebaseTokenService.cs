@@ -1,6 +1,7 @@
 ﻿using ERP.Common;
 using ERP.Entity;
 using ERP.Web.API.Domain.Interfaces.Mobile.CustomerTransaction;
+using ERP.Web.API.Domain.Models.Mobile.General;
 using Microsoft.EntityFrameworkCore;
 
 namespace ERP.Web.API.Domain.Services.Mobile.CustomerTransaction
@@ -22,7 +23,7 @@ namespace ERP.Web.API.Domain.Services.Mobile.CustomerTransaction
             Db = db;
         }
 
-        public SaveResult AddCustomerFirebaseToken(string firebaseTokenId, string userCode)
+        public SaveResult AddCustomerFirebaseToken(FirebaseTokenModel data, string userCode)
         {
             //var username = Db.Customers.Where(x => x.Code.Equals(userCode)).Select(y => y.MobileUsername).SingleOrDefault()!;
             var result = new SaveResult(false);
@@ -48,7 +49,7 @@ namespace ERP.Web.API.Domain.Services.Mobile.CustomerTransaction
                 }
 
                 //post token
-                tenantCustomer.FirebaseTokenId = firebaseTokenId;
+                tenantCustomer.FirebaseTokenId = data.FirebaseTokenId;
 
                 Db.SaveChanges();
 
@@ -61,7 +62,7 @@ namespace ERP.Web.API.Domain.Services.Mobile.CustomerTransaction
             }
 
             result.Success = true;
-            result.Data = firebaseTokenId;
+            result.Data = data.FirebaseTokenId;
             result.Message = "Token berhasil disimpan.";
             return result;
         }

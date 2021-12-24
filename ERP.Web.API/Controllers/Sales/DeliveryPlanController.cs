@@ -67,6 +67,7 @@ namespace ERP.Web.API.Controllers.Sales
                     x.SrcTrans,
                     x.IsFailShipment,
                     x.NotesFailShipment,
+                    x.FailedSendAll,
                     UndeliveredItems = uData.Where(d => d.DlvPlanDetailId == x.Id).OrderBy(d => d.LineNo)
                 })
                 .ToList<dynamic>();

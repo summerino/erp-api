@@ -69,6 +69,12 @@ namespace ERP.Entity.Sales
         [Precision(19, 6)]
         public decimal PaidAmount { get; set; }
 
+        [StringLength(50)]
+        public string TaxInvoiceNo { get; set; }
+
+        [Column(TypeName = "date")]
+        public DateTime? TaxInvoiceDate { get; set; }
+
         [StringLength(256)]
         public string Notes { get; set; }
 
@@ -112,8 +118,12 @@ namespace ERP.Entity.Sales
         public decimal Total { get; set; }
 
         public decimal Dpp { get; set; }
-        
+
         public decimal PaidAmount { get; set; }
+
+        public string TaxInvoiceNo { get; set; }
+
+        public DateTime? TaxInvoiceDate { get; set; }
 
         public string Notes { get; set; }
 

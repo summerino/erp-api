@@ -41,12 +41,13 @@ namespace ERP.Web.API.Domain.Services.Purchase
                     foreach (var itemInv in invData)
                     {
                         var totCb = cbDetail.Where(x => x.TransCode == itemInv.Code).Sum(x => x.TransAmount);
-                        itemInv.PaidAmount = totCb * itemInv.TotalAmount / itemInv.TotalAmount;
+                        itemInv.PaidAmount = totCb;
                         itemInv.RemainderAmount = itemInv.TotalAmount - itemInv.PaidAmount;
                     }
 
                     foreach (var itemBB in bbData)
                     {
+                        var totCb = cbDetail.Where(x => x.TransCode == itemBB.Code).Sum(x => x.TransAmount);
                         invData.Add(new Entity.Purchase.ReportByInvoice
                         {
                             Date = itemBB.Date,
@@ -56,8 +57,8 @@ namespace ERP.Web.API.Domain.Services.Purchase
                             SupCode = itemBB.SupCode,
                             SupName = itemBB.SupName,
                             TotalAmount = itemBB.Amount,
-                            PaidAmount = itemBB.PaidAmount,
-                            RemainderAmount = itemBB.Amount - itemBB.PaidAmount
+                            PaidAmount = totCb,
+                            RemainderAmount = itemBB.Amount - totCb
                         });
                     }
 

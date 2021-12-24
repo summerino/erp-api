@@ -21,6 +21,12 @@ namespace ERP.Web.API.Domain.Services.MobileWarehouse
         {
             var result = new SaveResult(false);
 
+            if (!data.Any())
+                return new SaveResult(false, "Tidak ada data yang di proses");
+
+            if (data.Any(x => x.Mark != "A"))
+                return new SaveResult(false, "Tidak dapat menyetujui data yang sudah disetujui atau ditolak");
+
             var items = Db.Items.Where(x => x.IsActive).ToList();
 
             using var transaction = Db.Database.BeginTransaction();
@@ -83,7 +89,15 @@ namespace ERP.Web.API.Domain.Services.MobileWarehouse
                     // Execute sp_update_transfer_stock
                     Db.Database.ExecuteSqlRaw("EXEC sp_update_transfer_stock {0}, {1}, {2}",
                         tsHeadData.Code, tsHeadData.Date, 0);
+
+                    itemData.Mark = "APR";
+                    itemData.ApprovedBy = userId;
+                    itemData.ApprovedDate = tsHeadData.ApprovedDate;
+                    Db.MobileTransferStockHeaders.Update(itemData);
                 }
+
+                // Save changes
+                Db.SaveChanges();
 
                 transaction.Commit();
             }
@@ -122,14 +136,11 @@ namespace ERP.Web.API.Domain.Services.MobileWarehouse
             if (!data.Any())
                 return new SaveResult(false, "Tidak ada data yang di proses");
 
+            if (data.Any(x => x.Mark != "A"))
+                return new SaveResult(false, "Tidak dapat menolak data yang sudah disetujui atau ditolak");
+
             foreach (var item in data)
             {
-                if (item.Mark == "REJ")
-                {
-                    result.Message = "Data transfer persediaan mobile tidak bisa ditolak karena dalam status ditolak.";
-                    return result;
-                }
-
                 var tsData = Db.MobileTransferStockHeaders.FirstOrDefault(x => x.Code == item.Code);
                 tsData.RejectedBy = userId;
                 tsData.RejectedDate = DateTime.Now;

@@ -107,6 +107,8 @@ namespace ERP.Entity.Sales
 
         public bool IsFailShipment { get; set; }
 
+        public bool FailedSendAll { get; set; }
+
         [StringLength(256)]
         public string NotesFailShipment { get; set; }
     }

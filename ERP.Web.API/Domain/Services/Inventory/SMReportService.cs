@@ -140,30 +140,30 @@ namespace ERP.Web.API.Domain.Services.Inventory
 
             foreach (var itemSmData in smData)
             {
-				var taxAmount = 0m;
-				if (itemSmData.SrcTrans == "Penjualan Langsung" || itemSmData.SrcTrans == "Surat Jalan")
-				{
-					var data = _db.SalesDeliveryDetails.FirstOrDefault(x => x.Code == itemSmData.TransCode && x.ItemId == itemSmData.ItemId);
-					taxAmount = data?.TaxAmount ?? 0m;
-				}
-				//else if (itemSmData.SrcTrans == "Penerimaan")
+				//var taxAmount = 0m;
+				//if (itemSmData.SrcTrans == "Penjualan Langsung" || itemSmData.SrcTrans == "Surat Jalan")
 				//{
-				//	var data = _db.PurchaseReceiveDetails.FirstOrDefault(x => x.Code == itemSmData.TransCode && x.ItemId == itemSmData.ItemId);
+				//	var data = _db.SalesDeliveryDetails.FirstOrDefault(x => x.Code == itemSmData.TransCode && x.ItemId == itemSmData.ItemId);
 				//	taxAmount = data?.TaxAmount ?? 0m;
 				//}
-				else if (itemSmData.SrcTrans == "Retur Pembelian")
-				{
-					var data = _db.PurchaseReturnDetails.FirstOrDefault(x => x.Code == itemSmData.TransCode && x.ItemId == itemSmData.ItemId);
-					taxAmount = data?.TaxAmount ?? 0m;
-				}
-				else if (itemSmData.SrcTrans == "Retur Penjualan")
-				{
-					var data = _db.SalesReturnDetails.FirstOrDefault(x => x.Code == itemSmData.TransCode && x.ItemId == itemSmData.ItemId);
-					taxAmount = data?.TaxAmount ?? 0m;
-				}
+                //else if (itemSmData.SrcTrans == "Penerimaan")
+                //{
+                //    var data = _db.PurchaseReceiveDetails.FirstOrDefault(x => x.Code == itemSmData.TransCode && x.ItemId == itemSmData.ItemId);
+                //    taxAmount = data?.TaxAmount ?? 0m;
+                //}
+				//else if (itemSmData.SrcTrans == "Retur Pembelian")
+				//{
+				//	var data = _db.PurchaseReturnDetails.FirstOrDefault(x => x.Code == itemSmData.TransCode && x.ItemId == itemSmData.ItemId);
+				//	taxAmount = data?.TaxAmount ?? 0m;
+				//}
+				//else if (itemSmData.SrcTrans == "Retur Penjualan")
+				//{
+				//	var data = _db.SalesReturnDetails.FirstOrDefault(x => x.Code == itemSmData.TransCode && x.ItemId == itemSmData.ItemId);
+				//	taxAmount = data?.TaxAmount ?? 0m;
+				//}
 
-				itemSmData.InvIn = (itemSmData.QtyIn * itemSmData.HPP) - (itemSmData.QtyIn * taxAmount);
-				itemSmData.InvOut = (itemSmData.QtyOut * itemSmData.HPP) - (itemSmData.QtyOut * taxAmount);
+				itemSmData.InvIn = (itemSmData.QtyIn * itemSmData.HPP);
+				itemSmData.InvOut = (itemSmData.QtyOut * itemSmData.HPP);
 			}
 
 			var initData = smData.Where(x => x.Date < Convert.ToDateTime(startDate)).ToList();

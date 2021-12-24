@@ -245,6 +245,9 @@ builder.Services.AddScoped<IPurchaseOrderService, PurchaseOrderService>();
 builder.Services.AddScoped<IPurchaseReceiveService, PurchaseReceiveService>();
 builder.Services.AddScoped<IPurchaseReturnService, PurchaseReturnService>();
 builder.Services.AddScoped<IAPReportService, APReportService>();
+builder.Services.AddScoped<IAPMutationReportService, APMutationReportService>();
+builder.Services.AddScoped<IAPAgingReportService, APAgingReportService>();
+builder.Services.AddScoped<IDebitMemoReportService, DebitMemoReportService>();
 
 // Sales services
 builder.Services.AddScoped<IAreaService, AreaService>();
@@ -261,6 +264,9 @@ builder.Services.AddScoped<ISalesReturnService, SalesReturnService>();
 builder.Services.AddScoped<IVisitOrderService, VisitOrderService>();
 builder.Services.AddScoped<IVisitPlanService, VisitPlanService>();
 builder.Services.AddScoped<IARReportService, ARReportService>();
+builder.Services.AddScoped<IARMutationReportService, ARMutationReportService>();
+builder.Services.AddScoped<IARAgingReportService, ARAgingReportService>();
+builder.Services.AddScoped<ICreditMemoReportService, CreditMemoReportService>();
 
 // System Management services
 builder.Services.AddScoped<IActionService, ActionService>();

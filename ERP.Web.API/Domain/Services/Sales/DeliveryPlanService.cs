@@ -12,7 +12,7 @@ namespace ERP.Web.API.Domain.Services.Sales
     public class DeliveryPlanService : GeneralService<DeliveryPlanHeader>, IDeliveryPlanService
     {
         public DeliveryPlanService(TenantContext db)
-            :base(db)
+            : base(db)
         {
 
         }
@@ -48,50 +48,27 @@ namespace ERP.Web.API.Domain.Services.Sales
 
         public DataSourceResult GetAllTransaction(string warehouseCode, IEnumerable<Filter> filter)
         {
-            var data = (from dt in Db.VwSalesDeliveryHeaders
-                        where dt.WarehouseCode == warehouseCode 
-                        && !new[] { "V", "INV" }.Contains(dt.Mark) 
-                        && !((from ddp in Db.DeliveryPlanDetails
-                             join dp in Db.DeliveryPlanHeaders on ddp.Code equals dp.Code
-                             where dp.Mark != "V"
-                             select ddp.TransCode).Union(from ddp in Db.DeliveryPlanDetails
-                                                         join dp in Db.DeliveryPlanHeaders on ddp.Code equals dp.Code
-                                                         where dp.Mark != "V" && ddp.IsFailShipment && Db.DeliveryPlanUndeliveredItems.Any(x => x.DlvPlanDetailId == ddp.Id)
-                                                         select ddp.TransCode)).Contains(dt.Code)
+            var data = from dt in Db.VwSalesDeliveryHeaders
+                       where dt.WarehouseCode == warehouseCode
+                       && dt.Mark != "V" && (!(from ddp in Db.DeliveryPlanDetails
+                                               join dp in Db.DeliveryPlanHeaders on ddp.Code equals dp.Code
+                                               where dp.Mark != "V"
+                                               select ddp.TransCode).Contains(dt.Code)
+                        || (from ddp in Db.DeliveryPlanDetails
+                            join dp in Db.DeliveryPlanHeaders on ddp.Code equals dp.Code
+                            where dp.Mark != "V" && ddp.FailedSendAll
+                            select ddp.TransCode).Contains(dt.Code))
                         select new
                         {
                             dt.Code,
                             SoCode = dt.TransCode,
                             dt.Date,
                             dt.Mark,
-                            Type = "Surat Jalan",
+                            Type = dt.FromDirectInvoice ? "Penjualan Langsung" : "Surat Jalan",
                             dt.CustName,
                             dt.CustAddress,
                             dt.CustArea
-                        }
-                        ).Union(
-                        from dt in Db.VwSalesInvoiceHeaders
-                        where dt.FromDirectInvoice == true 
-                        && !new[] { "V", "INV" }.Contains(dt.Mark)
-                        && !((from ddp in Db.DeliveryPlanDetails
-                              join dp in Db.DeliveryPlanHeaders on ddp.Code equals dp.Code
-                              where dp.Mark != "V"
-                              select ddp.TransCode).Union(from ddp in Db.DeliveryPlanDetails
-                                                          join dp in Db.DeliveryPlanHeaders on ddp.Code equals dp.Code
-                                                          where dp.Mark != "V" && ddp.IsFailShipment && Db.DeliveryPlanUndeliveredItems.Any(x => x.DlvPlanDetailId == ddp.Id)
-                                                          select ddp.TransCode)).Contains(dt.Code)
-                        select new
-                        {
-                            dt.Code,
-                            dt.SoCode,
-                            dt.Date,
-                            dt.Mark,
-                            Type = "Penjualan Langsung",
-                            dt.CustName,
-                            dt.CustAddress,
-                            dt.CustArea
-                        }
-                        );
+                        };
 
             return data.AsQueryable().ToDataSourceResult(0, data.Count(), filter, null);
         }
@@ -114,7 +91,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                 short i = 0;
                 foreach (var item in data.ItemDetails)
                 {
-                    if (Db.DeliveryPlanDetails.Any(x => x.TransCode == item.TransCode))
+                    if (Db.DeliveryPlanDetails.Any(x => x.TransCode == item.TransCode && !x.FailedSendAll))
                     {
                         result.Message = "Data rencana pengiriman tidak bisa ditambahkan karena terdapat surat jalan yang sudah digunakan.";
                         return result;
@@ -136,6 +113,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                         Weight = item.Weight,
                         SrcTrans = item.SrcTrans,
                         IsFailShipment = item.IsFailShipment,
+                        FailedSendAll = item.FailedSendAll,
                         NotesFailShipment = item.NotesFailShipment
                     };
 
@@ -218,7 +196,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                 short i = 0;
                 foreach (var item in data.ItemDetails)
                 {
-                    if (Db.DeliveryPlanDetails.Any(x => x.TransCode == item.TransCode && x.Code != data.Code))
+                    if (Db.DeliveryPlanDetails.Any(x => x.TransCode == item.TransCode && x.Code != data.Code && !x.FailedSendAll))
                     {
                         result.Message = "Data rencana pengiriman tidak bisa diperbarui karena terdapat surat jalan yang sudah digunakan.";
                         return result;
@@ -242,6 +220,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                             Weight = item.Weight,
                             SrcTrans = item.SrcTrans,
                             IsFailShipment = item.IsFailShipment,
+                            FailedSendAll = item.FailedSendAll,
                             NotesFailShipment = item.NotesFailShipment
                         };
 

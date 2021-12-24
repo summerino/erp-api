@@ -154,7 +154,7 @@ namespace ERP.Web.API.Controllers.Sales
             data.UpdatedBy = data.CreatedBy;
             data.UpdatedDate = data.CreatedDate;
             
-            var result = _so.Insert(data);
+            var result = _so.Insert(data, _auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.OverLimit }).Any());
 
             return Ok(result);
         }
@@ -233,8 +233,14 @@ namespace ERP.Web.API.Controllers.Sales
                 if (!data.ItemDetails.Any())
                     return (false, "Detail tidak boleh kosong.");
 
-                if (data.ItemDetails.GroupBy(x => new { x.ItemId, x.UnitId }).Any(x => x.Count() > 1))
-                    return (false, "Terdapat barang dengan satuan yang sama pada bagian detail.");
+                //if (data.ItemDetails.GroupBy(x => new { x.ItemId, x.UnitId }).Any(x => x.Count() > 1))
+                //    return (false, "Terdapat barang dengan satuan yang sama pada bagian detail.");
+
+                if (data.ItemDetails.Any(x => x.NettPrice <= 0))
+                    return (false, "Terdapat barang dengan nilai minus.");
+
+                if (data.Total <= 0)
+                    return (false, "Nilai total tidak boleh minus.");
             }
 
             return (true, "");

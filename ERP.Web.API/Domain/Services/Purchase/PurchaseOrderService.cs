@@ -126,7 +126,8 @@ namespace ERP.Web.API.Domain.Services.Purchase
                     var discHeaderProrate = 0m;
                     if (data.FinalDisc > 0)
                     {
-                        discHeaderProrate = (item.UnitPrice / data.ItemDetails.Sum(x => x.UnitPrice)) * data.FinalDisc / item.Qty;
+                        discHeaderProrate = (data.FinalDisc / data.ItemDetails.Sum(x => (x.UnitPrice - x.Disc) * x.Qty)) * (item.Qty * (item.UnitPrice - item.Disc));
+                        discHeaderProrate /= item.Qty;
                     }
 
                     if (data.IncludeTax)
@@ -137,7 +138,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                     }
                     else
                     {
-                        item.TaxAmount = (item.UnitPrice - item.Disc) * (taxData.Rate / 100);
+                        item.TaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) * (taxData.Rate / 100);
                         item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate + item.TaxAmount;
                         item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate;
                     }
@@ -462,7 +463,8 @@ namespace ERP.Web.API.Domain.Services.Purchase
                     var discHeaderProrate = 0m;
                     if (data.FinalDisc > 0)
                     {
-                        discHeaderProrate = (item.UnitPrice / data.ItemDetails.Sum(x => x.UnitPrice)) * data.FinalDisc / item.Qty;
+                        discHeaderProrate = (data.FinalDisc / data.ItemDetails.Sum(x => (x.UnitPrice - x.Disc) * x.Qty)) * (item.Qty * (item.UnitPrice - item.Disc));
+                        discHeaderProrate /= item.Qty;
                     }
 
                     if (data.IncludeTax)
@@ -473,7 +475,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                     }
                     else
                     {
-                        item.TaxAmount = (item.UnitPrice - item.Disc) * (taxData.Rate / 100);
+                        item.TaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) * (taxData.Rate / 100);
                         item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate + item.TaxAmount;
                         item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate;
                     }
@@ -924,7 +926,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                                  SupTypeId = sup.TypeId,
                                  SupTypeName = supType.Name,
                                  Mark = order.Mark,
-                                 WarehouseCode = order.WarehouseCode,
+                                 WarehouseCode = order.WarehouseCode ?? "",
                                  srcTrans = 1
                              }).AsQueryable();
 
@@ -944,7 +946,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                                  SupTypeId = sup.TypeId,
                                  SupTypeName = supType.Name,
                                  Mark = retur.Mark,
-                                 WarehouseCode = returDetail.WarehouseCode,
+                                 WarehouseCode = returDetail.WarehouseCode ?? "",
                                  srcTrans = 2
                              }).AsQueryable();
 
@@ -983,7 +985,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                                Type = order_d.Type,
                                UnitId = order_d.UnitId,
                                UomId = order_d.UomId,
-                               WarehouseCode = order_h.WarehouseCode,
+                               WarehouseCode = order_h.WarehouseCode ?? "",
 
                                ItemInitial = item.Initial,
                                ItemName = order_d.ItemName,
@@ -1008,7 +1010,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                                Type = retur_h.Type, // type apa?
                                UnitId = retur_d.UnitId,
                                UomId = retur_d.UomId,
-                               WarehouseCode = retur_d.WarehouseCode,
+                               WarehouseCode = retur_d.WarehouseCode ?? "",
 
                                ItemInitial = item.Initial,
                                ItemName = retur_d.ItemName,

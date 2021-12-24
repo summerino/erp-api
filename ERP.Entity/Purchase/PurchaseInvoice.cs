@@ -42,6 +42,12 @@ namespace ERP.Entity.Purchase
         [Precision(18, 2)]
         public decimal Total { get; set; }
 
+        [StringLength(50)]
+        public string TaxInvoiceNo { get; set; }
+
+        [Column(TypeName = "date")]
+        public DateTime? TaxInvoiceDate { get; set; }
+
         [StringLength(256)]
         public string Notes { get; set; }
     }
@@ -67,7 +73,12 @@ namespace ERP.Entity.Purchase
         public decimal PaidAmount { get; set; }
 
         public decimal Total { get; set; }
+
         public decimal Remaining { get; set; }
+
+        public string TaxInvoiceNo { get; set; }
+
+        public DateTime? TaxInvoiceDate { get; set; }
 
         public string Notes { get; set; }
 

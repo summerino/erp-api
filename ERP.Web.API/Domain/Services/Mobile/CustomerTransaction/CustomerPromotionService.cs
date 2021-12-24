@@ -28,6 +28,7 @@ namespace ERP.Web.API.Domain.Services.Mobile.CustomerTransaction
                              EndDate = header.EndDate,
                              StartDate = header.StartDate,
                              ApplyTo = header.ApplyTo,
+                             Content = header.Content,
                          };
             var data_2 = from header in Db.VwPromoHeaders
                          join subject in Db.PromoSubjects on header.Code equals subject.Code
@@ -39,6 +40,7 @@ namespace ERP.Web.API.Domain.Services.Mobile.CustomerTransaction
                              EndDate = header.EndDate,
                              StartDate = header.StartDate,
                              ApplyTo = header.ApplyTo,
+                             Content = header.Content,
                          };
 
             var data_3 = from header in Db.VwPromoHeaders
@@ -52,6 +54,7 @@ namespace ERP.Web.API.Domain.Services.Mobile.CustomerTransaction
                            EndDate = header.EndDate,
                            StartDate = header.StartDate,
                            ApplyTo = header.ApplyTo,
+                           Content = header.Content,
                        };
 
             var data = (data_1.Union(data_2)).Union(data_3);

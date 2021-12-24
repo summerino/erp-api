@@ -7,44 +7,41 @@ namespace ERP.Web.API.Domain.Services.MobileSales
     public class MobileMapTrackingReportService : IMobileMapTrackingReportService
     {
         private readonly TenantContext _db;
+
         public MobileMapTrackingReportService(TenantContext db)
         {
             _db = db;
         }
-        public IEnumerable<SalesmanMapTrackingHistory> GetData(int salesId, int type, string startDate, string endDate)
+
+        public IEnumerable<SalesmanMapTrackingHistory> GetData(string date, int salesId, int type)
         {
-            var data = _db.SalesmanMapTrackingHistories.ToList();
+            var data = 
+                _db.SalesmanMapTrackingHistories
+                    .Where(x => x.TrackedDate.Date == Convert.ToDateTime(date) && x.SalesmanId == salesId);
 
-            data = data.Where(x => x.SalesmanId == salesId).ToList();
+            return type == 1
+                ? data.OrderBy(y => y.TrackedDate)
+                : data.OrderByDescending(y => y.TrackedDate).Take(1);
+        }
 
-            if (type == 1)
-            {
-                if (!string.IsNullOrEmpty(startDate) && !string.IsNullOrEmpty(endDate))
-                {
-                    data = data.Where(x => x.TrackedDate >= Convert.ToDateTime(startDate) && x.TrackedDate <= Convert.ToDateTime(endDate)).ToList();
-                }
-                else if (!string.IsNullOrEmpty(startDate))
-                {
-                    data = data.Where(x => x.TrackedDate >= Convert.ToDateTime(startDate)).ToList();
-                }
-                else if (!string.IsNullOrEmpty(endDate))
-                {
-                    data = data.Where(x => x.TrackedDate <= Convert.ToDateTime(endDate)).ToList();
-                }
+        public IEnumerable<object> GetCustomerData(string date, int salesId)
+        {
+            var visitOrderCustomers =
+                _db.VisitOrderCustomers
+                    .Where(voc =>
+                        _db.VisitOrders
+                            .Where(vo => vo.Date == Convert.ToDateTime(date) && vo.SalesmanId == salesId && vo.Mark == "A")
+                            .Select(vo => vo.Code).Contains(voc.Code));
 
-                data = data.OrderByDescending(y => y.TrackedDate).ToList();
+            var customerAddresses =
+                _db.CustomerAddress
+                    .Where(ca => visitOrderCustomers.Select(voc => voc.CustCode).Contains(ca.Code) && ca.Lat.HasValue && ca.Lng.HasValue);
 
-                return data;
-            } 
-            else
-            {
-                List<SalesmanMapTrackingHistory> result = new();
-                var lastData = data.OrderByDescending(y => y.TrackedDate).FirstOrDefault();
-                if (lastData != null)
-                    result.Add(lastData);
-                
-                return result;  
-            }
+            var data = from ca in customerAddresses
+                join c in _db.Customers on ca.Code equals c.Code
+                select new { c.Code, c.Name, ca.Lat, ca.Lng };
+
+            return data;
         }
     }
 }

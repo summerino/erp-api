@@ -1,4 +1,7 @@
-﻿using ERP.Entity.Accounting;
+﻿using System;
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
+using ERP.Entity.Accounting;
 using ERP.Entity.AssetManagement;
 using ERP.Entity.Core;
 using ERP.Entity.Expedition;
@@ -10,9 +13,6 @@ using ERP.Entity.MobileWarehouse;
 using ERP.Entity.Purchase;
 using ERP.Entity.Sales;
 using ERP.Entity.SystemManagement;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Linq;
 
 namespace ERP.Entity
 {
@@ -227,6 +227,12 @@ namespace ERP.Entity
         public DbSet<ReportBySupplier> ReportBySuppliers { get; set; }
         public DbSet<ReportByReceive> ReportByReceives { get; set; }
         public DbSet<ReportByInvoice> ReportByInvoices { get; set; }
+        public DbSet<ReportByInvoiceAPMutation> ReportByInvoiceAPMutations { get; set; }
+        public DbSet<ReportBySupplierMutation> ReportBySupplierMutations { get; set; }
+        public DbSet<ReportBySupplierAging> ReportBySupplierAgings { get; set; }
+        public DbSet<ReportByInvoiceAPAging> ReportByInvoiceAPAgings { get; set; }
+        public DbSet<ReportByDebitMemo> ReportByDebitMemos { get; set; }
+
 
         // Sales entities
         public DbSet<Area> Areas { get; set; }
@@ -284,6 +290,11 @@ namespace ERP.Entity
         public DbSet<VwVisitPlanDetailCustomer> VwVisitPlanDetailCustomers { get; set; }
         public DbSet<ReportByCustomer> ReportByCustomers { get; set; }
         public DbSet<ReportByDelivery> ReportByDeliveries { get; set; }
+        public DbSet<ReportByCustomerMutation> ReportByCustomerMutations { get; set; }
+        public DbSet<ReportByDeliveryARMutation> ReportByDeliveryARMutations { get; set; }
+        public DbSet<ReportByCustomerAging> ReportByCustomerAgings { get; set; }
+        public DbSet<ReportByDeliveryARAging> ReportByDeliveryARAgings { get; set; }
+        public DbSet<ReportByCreditMemo> ReportByCreditMemos { get; set; }
 
         // System Management entities
         public DbSet<SystemManagement.Action> Actions { get; set; }
@@ -1961,6 +1972,26 @@ namespace ERP.Entity
                .HasNoKey()
                .ToTable("ReportByInvoice", t => t.ExcludeFromMigrations());
 
+            modelBuilder.Entity<ReportBySupplierMutation>()
+               .HasNoKey()
+               .ToTable("ReportBySupplierMutation", t => t.ExcludeFromMigrations());
+
+            modelBuilder.Entity<ReportByInvoiceAPMutation>()
+               .HasNoKey()
+               .ToTable("ReportByInvoiceAPMutation", t => t.ExcludeFromMigrations());
+
+            modelBuilder.Entity<ReportBySupplierAging>()
+               .HasNoKey()
+               .ToTable("ReportBySupplierAging", t => t.ExcludeFromMigrations());
+
+            modelBuilder.Entity<ReportByInvoiceAPAging>()
+               .HasNoKey()
+               .ToTable("ReportByInvoiceAPAging", t => t.ExcludeFromMigrations());
+
+            modelBuilder.Entity<ReportByDebitMemo>()
+               .HasNoKey()
+               .ToTable("ReportByDebitMemo", t => t.ExcludeFromMigrations());
+
             // Sales entities
             // Area model
             modelBuilder.Entity<VwArea>()
@@ -2353,6 +2384,27 @@ namespace ERP.Entity
             modelBuilder.Entity<ReportByDelivery>()
                .HasNoKey()
                .ToTable("ReportByDelivery", t => t.ExcludeFromMigrations());
+
+            modelBuilder.Entity<ReportByCustomerMutation>()
+                .HasNoKey()
+                .ToTable("ReportByCustomerMutation", t => t.ExcludeFromMigrations());
+
+            modelBuilder.Entity<ReportByDeliveryARMutation>()
+               .HasNoKey()
+               .ToTable("ReportByDeliveryARMutation", t => t.ExcludeFromMigrations());
+
+            modelBuilder.Entity<ReportByCustomerAging>()
+               .HasNoKey()
+               .ToTable("ReportByCustomerAging", t => t.ExcludeFromMigrations());
+
+            modelBuilder.Entity<ReportByDeliveryARAging>()
+               .HasNoKey()
+               .ToTable("ReportByDeliveryARAging", t => t.ExcludeFromMigrations());
+
+            modelBuilder.Entity<ReportByCreditMemo>()
+               .HasNoKey()
+               .ToTable("ReportByCreditMemo", t => t.ExcludeFromMigrations());
+
 
             // System Management entities
             // Company model

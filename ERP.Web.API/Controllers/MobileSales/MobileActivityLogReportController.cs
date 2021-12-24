@@ -1,8 +1,7 @@
-﻿using ERP.Web.API.Domain.Interfaces.MobileSales;
-using ERP.Web.API.Model;
-using Microsoft.AspNetCore.Http;
+﻿using System.Linq.Dynamic.Core;
 using Microsoft.AspNetCore.Mvc;
-using System.Linq.Dynamic.Core;
+using ERP.Web.API.Domain.Interfaces.MobileSales;
+using ERP.Web.API.Model;
 
 namespace ERP.Web.API.Controllers.MobileSales
 {
@@ -11,6 +10,7 @@ namespace ERP.Web.API.Controllers.MobileSales
     public class MobileActivityLogReportController : ControllerBase
     {
         private readonly IMobileActivityLogReportService _mal;
+
         public MobileActivityLogReportController(IMobileActivityLogReportService mal)
         {
             _mal = mal;

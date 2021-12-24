@@ -44,12 +44,13 @@ namespace ERP.Web.API.Domain.Services.Sales
                 var invData = _db.SalesInvoiceCreditMemos.Where(x => x.InvCode == itemDlv.InvCode).ToList();
                 var totDlv = dlvData.Where(x => x.InvCode == itemDlv.InvCode).Sum(x => x.TotalAmount);
                 var totCb = cbDetail.Where(x => x.TransCode == itemDlv.InvCode).Sum(x => x.TransAmount);
-                itemDlv.PaidAmount = (totCb * itemDlv.TotalAmount / totDlv) + invData?.Sum(x => x.CreditMemoAmount) ?? 0;
+                itemDlv.PaidAmount = totDlv > 0 ?(totCb * itemDlv.TotalAmount / totDlv) + (invData?.Sum(x => x.CreditMemoAmount) ?? 0) : 0 + (invData?.Sum(x => x.CreditMemoAmount) ?? 0);
                 itemDlv.RemainderAmount = itemDlv.TotalAmount - itemDlv.PaidAmount;
             }
 
             foreach (var itemBB in bbData)
             {
+                var totCb = cbDetail.Where(x => x.TransCode == itemBB.Code).Sum(x => x.TransAmount);
                 dlvData.Add(new Entity.Sales.ReportByDelivery
                 {
                     Date = itemBB.Date,
@@ -62,8 +63,8 @@ namespace ERP.Web.API.Domain.Services.Sales
                     CustCode = itemBB.CustCode,
                     CustName = itemBB.CustName,
                     TotalAmount = itemBB.Amount,
-                    PaidAmount = itemBB.PaidAmount,
-                    RemainderAmount = itemBB.Amount - itemBB.PaidAmount
+                    PaidAmount = totCb,
+                    RemainderAmount = itemBB.Amount - totCb
                 });
             }
 

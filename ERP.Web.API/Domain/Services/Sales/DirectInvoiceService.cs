@@ -102,6 +102,13 @@ namespace ERP.Web.API.Domain.Services.Sales
                     return result;
                 }
 
+                var (isDuplicate, message) = CheckDuplicateDetail(data.ItemDetails);
+                if (isDuplicate)
+                {
+                    result.Message = message;
+                    return result;
+                }
+
                 var taxes = Db.Taxes.ToList();
                 List<decimal> totalDetail = new();
                 List<decimal> totalTax = new();
@@ -121,7 +128,8 @@ namespace ERP.Web.API.Domain.Services.Sales
                     var discHeaderProrate = 0m;
                     if (data.FinalDisc > 0)
                     {
-                        discHeaderProrate = (item.UnitPrice / data.ItemDetails.Sum(x => x.UnitPrice)) * data.FinalDisc / item.Qty;
+                        discHeaderProrate = (data.FinalDisc / data.ItemDetails.Sum(x => (x.UnitPrice - x.Disc) * x.Qty)) * (item.Qty * (item.UnitPrice - item.Disc));
+                        discHeaderProrate /= item.Qty;
                     }
 
                     if (data.IncludeTax)
@@ -132,7 +140,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                     }
                     else
                     {
-                        item.TaxAmount = (item.UnitPrice - item.Disc) * (taxData.Rate / 100);
+                        item.TaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) * (taxData.Rate / 100);
                         item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate + item.TaxAmount;
                         item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate;
                     }
@@ -326,7 +334,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                         short f = 0;
                         foreach (var freeItem in item.FreeItemDetails)
                         {
-                            Db.SalesDeliveryDetailFreeGoods.Add(new SalesDeliveryDetailFreeGood
+                            var dlvFreeDetail = new SalesDeliveryDetailFreeGood
                             {
                                 Code = newCode,
                                 DlvOrderDetailId = deliveryDetail.Id,
@@ -338,10 +346,13 @@ namespace ERP.Web.API.Domain.Services.Sales
                                 Qty = freeItem.Qty,
                                 UnitPrice = freeItem.UnitPrice,
                                 CoaCode = freeItem.CoaCode
-                            });
+                            };
 
-                            var orderFreeDetail = Db.SalesOrderDetailFreeGoods.FirstOrDefault(x => x.Id == freeItem.Id);
-                            orderFreeDetail.QtyClosed += freeItem.Qty;
+                            Db.SalesDeliveryDetailFreeGoods.Add(dlvFreeDetail);
+                            Db.SaveChanges();
+
+                            var orderFreeDetail = Db.SalesOrderDetailFreeGoods.FirstOrDefault(x => x.Code == newCode && x.ItemId == dlvFreeDetail.ItemId && x.UnitId == dlvFreeDetail.UnitId);
+                            orderFreeDetail.QtyClosed += dlvFreeDetail.Qty;
                             Db.SalesOrderDetailFreeGoods.Update(orderFreeDetail);
                         }
                         Db.SaveChanges();
@@ -462,6 +473,13 @@ namespace ERP.Web.API.Domain.Services.Sales
                     return result;
                 }
 
+                var (isDuplicate, message) = CheckDuplicateDetail(data.ItemDetails);
+                if (isDuplicate)
+                {
+                    result.Message = message;
+                    return result;
+                }
+
                 var taxes = Db.Taxes.ToList();
                 List<decimal> totalDetail = new();
                 List<decimal> totalTax = new();
@@ -495,7 +513,8 @@ namespace ERP.Web.API.Domain.Services.Sales
                     var discHeaderProrate = 0m;
                     if (data.FinalDisc > 0)
                     {
-                        discHeaderProrate = (item.UnitPrice / data.ItemDetails.Sum(x => x.UnitPrice)) * data.FinalDisc / item.Qty;
+                        discHeaderProrate = (data.FinalDisc / data.ItemDetails.Sum(x => (x.UnitPrice - x.Disc) * x.Qty)) * (item.Qty * (item.UnitPrice - item.Disc));
+                        discHeaderProrate /= item.Qty;
                     }
 
                     if (data.IncludeTax)
@@ -506,7 +525,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                     }
                     else
                     {
-                        item.TaxAmount = (item.UnitPrice - item.Disc) * (taxData.Rate / 100);
+                        item.TaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) * (taxData.Rate / 100);
                         item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate + item.TaxAmount;
                         item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate;
                     }
@@ -552,11 +571,8 @@ namespace ERP.Web.API.Domain.Services.Sales
 
                         Db.SalesOrderDetails.Add(orderDetail);
 
-                        if (item.FreeItemDetails.Any() || item.DiscountItemDetails.Any())
-                        {
-                            Db.SaveChanges();
-                            listOrderIdDetail.Add(orderDetail.Id);
-                        }
+                        Db.SaveChanges();
+                        listOrderIdDetail.Add(orderDetail.Id);
                     }
                     else
                     {
@@ -593,10 +609,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                             Db.SalesOrderDetails.Update(orderDetail);
                             Db.Entry(item).Property(e => e.Code).IsModified = false;
 
-                            if (item.FreeItemDetails.Any() || item.DiscountItemDetails.Any())
-                            {
-                                listOrderIdDetail.Add(item.Id);
-                            }
+                            listOrderIdDetail.Add(item.Id);
                         }
                     }
 
@@ -690,29 +703,6 @@ namespace ERP.Web.API.Domain.Services.Sales
                 short j = 0;
                 foreach (var item in data.ItemDetails)
                 {
-                    var taxData = taxes.FirstOrDefault(x => x.Id == item.TaxId);
-                    var discHeaderProrate = 0m;
-                    if (data.FinalDisc > 0)
-                    {
-                        discHeaderProrate = (item.UnitPrice / data.ItemDetails.Sum(x => x.UnitPrice)) * data.FinalDisc / item.Qty;
-                    }
-
-                    if (data.IncludeTax)
-                    {
-                        item.TaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) - ((item.UnitPrice - item.Disc - discHeaderProrate) / (1 + (taxData.Rate / 100)));
-                        item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate;
-                        item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate - item.TaxAmount;
-                    }
-                    else
-                    {
-                        item.TaxAmount = (item.UnitPrice - item.Disc) * (taxData.Rate / 100);
-                        item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate + item.TaxAmount;
-                        item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate;
-                    }
-
-                    item.FinalDiscHeader = discHeaderProrate;
-                    item.Total = item.Qty * item.NettPrice;
-
                     var deliveryDetail = new SalesDeliveryDetail
                     {
                         Code = InvoiceDetailData.DoCode,
@@ -738,11 +728,8 @@ namespace ERP.Web.API.Domain.Services.Sales
                     };
                     Db.SalesDeliveryDetails.Add(deliveryDetail);
 
-                    if (item.FreeItemDetails.Any())
-                    {
-                        Db.SaveChanges();
-                        listDeliveryIdDetail.Add(deliveryDetail.Id);
-                    }
+                    Db.SaveChanges();
+                    listDeliveryIdDetail.Add(deliveryDetail.Id);
 
                     var delFreeDetails = Db.SalesDeliveryDetailFreeGoods
                         .Where(d => d.Code == data.Code && d.DlvOrderDetailId == item.Id && !item.FreeItemDetails.Select(x => x.Id).Contains(d.Id))
@@ -1054,6 +1041,20 @@ namespace ERP.Web.API.Domain.Services.Sales
                 }
             }
             return result;
+        }
+
+        private (bool, string) CheckDuplicateDetail(IEnumerable<SalesOrderDetail> data)
+        {
+            var tData = data.GroupBy(x => new { x.ItemId, x.UnitId }).Where(y => y.Count() > 1);
+            var errorList = "";
+            foreach (var itemData in tData)
+            {
+                var item = Db.Items.FirstOrDefault(x => x.Id == itemData.Key.ItemId);
+                var uom = Db.UoMConversions.FirstOrDefault(x => x.Id == itemData.Key.UnitId);
+                errorList += $"&bull; Barang {item.Initial} dengan satuan {uom.UnitEquivalent} tidak dapat duplikat.<br/>";
+            }
+
+            return (errorList != "", errorList);
         }
 
         #region Credit Used - Limit
