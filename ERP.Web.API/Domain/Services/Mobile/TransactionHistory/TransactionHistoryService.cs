@@ -70,8 +70,8 @@ namespace ERP.Web.API.Domain.Services.Mobile.TransactionHistory
                               join sod in Db.MobileOrderDetails on so.Code equals sod.Code
                               join c in Db.Customers on so.CustCode equals c.Code
                               join i in Db.Items on sod.ItemId equals i.Id
-                              join u in Db.UoMs on sod.UomId equals u.Id
-                              group new { so, sod, i, u } by new { so.Date, so.SalesBy, c.Code, sod.ItemId, i.Name, sod.UnitPrice, sod.UomId, u.BaseUnit } into g
+                              join u in Db.UoMConversions on sod.UnitId equals u.Id
+                              group new { so, sod, i, u } by new { so.Date, so.SalesBy, c.Code, sod.ItemId, i.Name, sod.UnitPrice, sod.UomId, u.UnitEquivalent } into g
                               select new TransactionItemDetail
                               {
                                   SalesId = g.Key.SalesBy,
@@ -80,7 +80,7 @@ namespace ERP.Web.API.Domain.Services.Mobile.TransactionHistory
                                   ItemId = g.Key.ItemId,
                                   ItemName = g.Key.Name,
                                   Quantity = g.Sum(qt => qt.sod.Qty),
-                                  Unit = g.Key.BaseUnit,
+                                  Unit = g.Key.UnitEquivalent,
                                   Price = g.Key.UnitPrice,
                                   Discount = g.Sum(dc => dc.sod.Disc),
                                   Total = g.Sum(tl => tl.sod.Total)
@@ -90,8 +90,8 @@ namespace ERP.Web.API.Domain.Services.Mobile.TransactionHistory
                              join sod in Db.SalesOrderDetails on so.Code equals sod.Code
                              join c in Db.Customers on so.CustCode equals c.Code
                              join i in Db.Items on sod.ItemId equals i.Id
-                             join u in Db.UoMs on sod.UomId equals u.Id
-                             group new { so, sod, i, u } by new { so.Date, so.SalesBy, c.Code, sod.ItemId, i.Name, sod.UnitPrice, sod.UomId, u.BaseUnit } into g
+                             join u in Db.UoMConversions on sod.UnitId equals u.Id
+                             group new { so, sod, i, u } by new { so.Date, so.SalesBy, c.Code, sod.ItemId, i.Name, sod.UnitPrice, sod.UomId, u.UnitEquivalent } into g
                              select new TransactionItemDetail
                              {
                                  SalesId = g.Key.SalesBy,
@@ -100,7 +100,7 @@ namespace ERP.Web.API.Domain.Services.Mobile.TransactionHistory
                                  ItemId = g.Key.ItemId,
                                  ItemName = g.Key.Name,
                                  Quantity = g.Sum(qt => qt.sod.Qty),
-                                 Unit = g.Key.BaseUnit,
+                                 Unit = g.Key.UnitEquivalent,
                                  Price = g.Key.UnitPrice,
                                  Discount = g.Sum(dc => dc.sod.Disc),
                                  Total = g.Sum(tl => tl.sod.Total)
@@ -136,8 +136,8 @@ namespace ERP.Web.API.Domain.Services.Mobile.TransactionHistory
             var dataMobile = (from so in Db.MobileOrderHeaders.Where(x => x.SalesOrderCode.Equals(null))
                               join sod in Db.MobileOrderDetails on so.Code equals sod.Code
                               join c in Db.Customers on so.CustCode equals c.Code
-                              join u in Db.UoMs on sod.UomId equals u.Id
-                              group new { so, sod } by new { so.Date, so.SalesBy, c.Code, c.Name, sod.ItemId, sod.UnitPrice, sod.UomId, u.BaseUnit } into g
+                              join u in Db.UoMConversions on sod.UnitId equals u.Id
+                              group new { so, sod } by new { so.Date, so.SalesBy, c.Code, c.Name, sod.ItemId, sod.UnitPrice, sod.UomId, u.UnitEquivalent } into g
                               select new TransactionCustomerDetail
                               {
                                   SalesId = g.Key.SalesBy,
@@ -147,15 +147,15 @@ namespace ERP.Web.API.Domain.Services.Mobile.TransactionHistory
                                   ItemId = g.Key.ItemId,
                                   ItemName = g.Key.Name,
                                   Quantity = g.Sum(qt => qt.sod.Qty),
-                                  Unit = g.Key.BaseUnit,
+                                  Unit = g.Key.UnitEquivalent,
                                   Total = g.Sum(tl => tl.sod.Total)
                               }).AsQueryable();
 
             var dataOrder = (from so in Db.SalesOrderHeaders
                              join sod in Db.SalesOrderDetails on so.Code equals sod.Code
                              join c in Db.Customers on so.CustCode equals c.Code
-                             join u in Db.UoMs on sod.UomId equals u.Id
-                             group new { so, sod } by new { so.Date, so.SalesBy, c.Code, c.Name, sod.ItemId, sod.UnitPrice, sod.UomId, u.BaseUnit } into g
+                             join u in Db.UoMConversions on sod.UnitId equals u.Id
+                             group new { so, sod } by new { so.Date, so.SalesBy, c.Code, c.Name, sod.ItemId, sod.UnitPrice, sod.UomId, u.UnitEquivalent } into g
                              select new TransactionCustomerDetail
                              {
                                  SalesId = g.Key.SalesBy,
@@ -165,7 +165,7 @@ namespace ERP.Web.API.Domain.Services.Mobile.TransactionHistory
                                  ItemId = g.Key.ItemId,
                                  ItemName = g.Key.Name,
                                  Quantity = g.Sum(qt => qt.sod.Qty),
-                                 Unit = g.Key.BaseUnit,
+                                 Unit = g.Key.UnitEquivalent,
                                  Total = g.Sum(tl => tl.sod.Total)
                              }).AsQueryable();
 
@@ -230,8 +230,8 @@ namespace ERP.Web.API.Domain.Services.Mobile.TransactionHistory
             var dataMobile = (from so in Db.MobileOrderHeaders.Where(x => x.SalesOrderCode.Equals(null))
                               join sod in Db.MobileOrderDetails on so.Code equals sod.Code
                               join i in Db.Items on sod.ItemId equals i.Id
-                              join u in Db.UoMs on sod.UomId equals u.Id
-                              group new { so, sod, i, u } by new { so.SalesBy, so.Date, sod.ItemId, i.Name, sod.UomId, u.BaseUnit } into g
+                              join u in Db.UoMConversions on sod.UnitId equals u.Id
+                              group new { so, sod, i, u } by new { so.SalesBy, so.Date, sod.ItemId, i.Name, sod.UomId, u.UnitEquivalent } into g
                               select new TransactionHistoryByProduct
                               {
                                   SalesId = g.Key.SalesBy,
@@ -239,15 +239,15 @@ namespace ERP.Web.API.Domain.Services.Mobile.TransactionHistory
                                   ItemId = g.Key.ItemId,
                                   ItemName = g.Key.Name,
                                   Quantity = g.Sum(qt => qt.sod.Qty),
-                                  Unit = g.Key.BaseUnit,
+                                  Unit = g.Key.UnitEquivalent,
                                   Total = g.Sum(tl => tl.sod.Total)
                               }).AsQueryable();
 
             var dataOrder = (from so in Db.SalesOrderHeaders
                              join sod in Db.SalesOrderDetails on so.Code equals sod.Code
                              join i in Db.Items on sod.ItemId equals i.Id
-                             join u in Db.UoMs on sod.UomId equals u.Id
-                             group new { so, sod, i, u } by new { so.SalesBy, so.Date, sod.ItemId, i.Name, sod.UomId, u.BaseUnit } into g
+                             join u in Db.UoMConversions on sod.UnitId equals u.Id
+                             group new { so, sod, i, u } by new { so.SalesBy, so.Date, sod.ItemId, i.Name, sod.UomId, u.UnitEquivalent } into g
                              select new TransactionHistoryByProduct
                              {
                                  SalesId = g.Key.SalesBy,
@@ -255,7 +255,7 @@ namespace ERP.Web.API.Domain.Services.Mobile.TransactionHistory
                                  ItemId = g.Key.ItemId,
                                  ItemName = g.Key.Name,
                                  Quantity = g.Sum(qt => qt.sod.Qty),
-                                 Unit = g.Key.BaseUnit,
+                                 Unit = g.Key.UnitEquivalent,
                                  Total = g.Sum(tl => tl.sod.Total)
                              }).AsQueryable();
 
@@ -421,10 +421,11 @@ namespace ERP.Web.API.Domain.Services.Mobile.TransactionHistory
                               (x.SubGroup1.Equals(subGroup) || x.SubGroup2.Equals(subGroup) ||
                               x.SubGroup3.Equals(subGroup) || x.SubGroup4.Equals(subGroup) ||
                               x.SubGroup5.Equals(subGroup))) on sod.ItemId equals i.Id
-                              join u in Db.UoMs on sod.UomId equals u.Id
-                              group new { so, sod } by new { so.Date, sod.ItemId } into g
+                              join u in Db.UoMConversions on sod.UnitId equals u.Id
+                              group new { so, sod } by new { so.SalesBy, so.Date, sod.ItemId } into g
                               select new TransactionHistoryBySubGroup
                               {
+                                  SalesId = g.Key.SalesBy,
                                   Date = g.Key.Date,
                                   Total = g.Sum(tl => tl.sod.Total)
                               }).AsQueryable();
@@ -435,18 +436,20 @@ namespace ERP.Web.API.Domain.Services.Mobile.TransactionHistory
                               (x.SubGroup1.Equals(subGroup) || x.SubGroup2.Equals(subGroup) ||
                               x.SubGroup3.Equals(subGroup) || x.SubGroup4.Equals(subGroup) ||
                               x.SubGroup5.Equals(subGroup))) on sod.ItemId equals i.Id
-                             join u in Db.UoMs on sod.UomId equals u.Id
-                             group new { so, sod } by new { so.Date, sod.ItemId } into g
+                             join u in Db.UoMConversions on sod.UnitId equals u.Id
+                             group new { so, sod } by new { so.SalesBy, so.Date, sod.ItemId } into g
                              select new TransactionHistoryBySubGroup
                              {
+                                 SalesId = g.Key.SalesBy,
                                  Date = g.Key.Date,
                                  Total = g.Sum(tl => tl.sod.Total)
                              }).AsQueryable();
 
             var data = (from so in dataOrder.Union(dataMobile)
-                        group so by new { so.Date } into g
+                        group so by new { so.SalesId, so.Date } into g
                         select new TransactionHistoryBySubGroup
                         {
+                            SalesId = g.Key.SalesId,
                             Date = g.Key.Date,
                             Total = g.Sum(tl => tl.Total)
                         }).AsQueryable();
@@ -463,14 +466,15 @@ namespace ERP.Web.API.Domain.Services.Mobile.TransactionHistory
                               (x.SubGroup1.Equals(subGroup) || x.SubGroup2.Equals(subGroup) ||
                               x.SubGroup3.Equals(subGroup) || x.SubGroup4.Equals(subGroup) ||
                               x.SubGroup5.Equals(subGroup))) on sod.ItemId equals i.Id
-                              join u in Db.UoMs on sod.UomId equals u.Id
-                              group new { so, sod, i, u } by new { sod.ItemId, i.Name, u.BaseUnit, sod.UnitPrice } into g
+                              join u in Db.UoMConversions on sod.UnitId equals u.Id
+                              group new { so, sod, i, u } by new { so.SalesBy, sod.ItemId, i.Name, u.UnitEquivalent, sod.UnitPrice } into g
                               select new TransactionHistoryItemBySubGroup
                               {
+                                  SalesId = g.Key.SalesBy,
                                   ItemId = g.Key.ItemId,
                                   ItemName = g.Key.Name,
                                   Quantity = g.Sum(qt => qt.sod.Qty),
-                                  Unit = g.Key.BaseUnit,
+                                  Unit = g.Key.UnitEquivalent,
                                   Price = g.Key.UnitPrice,
                                   Discount = g.Sum(dc => dc.sod.Disc),
                                   Total = g.Sum(tl => tl.sod.Total)
@@ -482,23 +486,25 @@ namespace ERP.Web.API.Domain.Services.Mobile.TransactionHistory
                               (x.SubGroup1.Equals(subGroup) || x.SubGroup2.Equals(subGroup) ||
                               x.SubGroup3.Equals(subGroup) || x.SubGroup4.Equals(subGroup) ||
                               x.SubGroup5.Equals(subGroup))) on sod.ItemId equals i.Id
-                             join u in Db.UoMs on sod.UomId equals u.Id
-                             group new { so, sod, i, u } by new { sod.ItemId, i.Name, u.BaseUnit, sod.UnitPrice } into g
+                             join u in Db.UoMConversions on sod.UnitId equals u.Id
+                             group new { so, sod, i, u } by new { so.SalesBy, sod.ItemId, i.Name, u.UnitEquivalent, sod.UnitPrice } into g
                              select new TransactionHistoryItemBySubGroup
                              {
+                                 SalesId = g.Key.SalesBy,
                                  ItemId = g.Key.ItemId,
                                  ItemName = g.Key.Name,
                                  Quantity = g.Sum(qt => qt.sod.Qty),
-                                 Unit = g.Key.BaseUnit,
+                                 Unit = g.Key.UnitEquivalent,
                                  Price = g.Key.UnitPrice,
                                  Discount = g.Sum(dc => dc.sod.Disc),
                                  Total = g.Sum(tl => tl.sod.Total)
                              }).AsQueryable();
 
             var data = (from so in dataOrder.Union(dataMobile)
-                        group so by new { so.ItemId, so.ItemName, so.Unit, so.Price } into g
+                        group so by new { so.SalesId, so.ItemId, so.ItemName, so.Unit, so.Price } into g
                         select new TransactionHistoryItemBySubGroup
                         {
+                            SalesId = g.Key.SalesId,
                             ItemId = g.Key.ItemId,
                             ItemName = g.Key.ItemName,
                             Quantity = g.Sum(qt => qt.Quantity),

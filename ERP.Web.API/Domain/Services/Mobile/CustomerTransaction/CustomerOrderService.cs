@@ -77,11 +77,11 @@ namespace ERP.Web.API.Domain.Services.Mobile.CustomerTransaction
 
         public DataSourceResult GetCustomerOrderHeader(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, DateTime? date, string custCode)
         {
-            var data = Db.MobileCustomerOrderHeaders.Where(x => x.CustCode.Equals(custCode)).AsQueryable();
+            var data = Db.MobileCustomerOrderHeaders.Where(x => x.CustCode.Equals(custCode)).OrderByDescending(x => x.Date).AsQueryable();
 
             if (date.HasValue)
             {
-                data = data.Where(x => x.Date.Equals(date.Value)).OrderByDescending(x=>x.Date);
+                data = data.Where(x => x.Date.Equals(date.Value));
             }
 
             return data.ToDataSourceResult(skip, take, filter, sort);
