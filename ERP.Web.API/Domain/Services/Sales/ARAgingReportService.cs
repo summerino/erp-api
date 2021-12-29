@@ -61,7 +61,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                             LEFT JOIN General.Customer sp ON sp.Code = dlv.CustCode
                             LEFT JOIN Sales.SalesInvoiceDetail invD ON invD.DOCode = dlv.Code
                             LEFT JOIN Sales.SalesInvoiceHeader inv ON inv.Code = invD.Code AND inv.Mark IN('A','PP','CMP')
-                            WHERE dlv.Mark IN('A','INV')" + (slsId > 0 ? $" AND so.SalesBy = {slsId} " : " ") + @"
+                            WHERE dlv.Mark IN('A','INV') AND dlv.SrcTrans = 1" + (slsId > 0 ? $" AND so.SalesBy = {slsId} " : " ") + @"
 							UNION
 							SELECT bb.[Date], bb.DueDate, bb.Code, '' AS OrderCode, '' AS SrcCode, '' AS SlsName, bb.CustCode, bb.CustName, bb.Amount - bb.PaidAmount AS RemainderAmount,
 							CAST (CASE WHEN DATEDIFF(DAY, bb.DueDate, GETDATE()) > 90 THEN
