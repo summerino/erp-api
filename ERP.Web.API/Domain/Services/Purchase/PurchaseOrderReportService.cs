@@ -58,7 +58,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
             {
                 if (type == 1)
                 {
-                    if (!itemId.HasValue || itemId <= 0)
+                    if (itemId.HasValue || itemId > 0)
                     {
                         poData = poData.Where(x => poDetailData.Select(y => y.Code).Contains(x.Code)).ToList();
                     }
