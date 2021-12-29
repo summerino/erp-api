@@ -352,6 +352,9 @@ namespace ERP.Web.API.Domain.Services.MobileWarehouse
         {
             var result = new SaveResult(false);
 
+            if(data.Mark != "A")
+                return new SaveResult(false, "Data dengan status selain aktif tidak dapat diubah.");
+
             using var transaction = Db.Database.BeginTransaction();
             try
             {
