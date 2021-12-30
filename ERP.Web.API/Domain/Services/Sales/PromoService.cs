@@ -345,9 +345,9 @@ namespace ERP.Web.API.Domain.Services.Sales
             return result;
         }
 
-        public IEnumerable<string> GetListPromo(string code)
+        public IEnumerable<object> GetListPromo(string code)
         {
-            var result = new List<string>();
+            var result = new List<object>();
 
             var data = (from d in Db.SalesOrderDetailDiscounts
                         where d.Code == code
@@ -366,7 +366,49 @@ namespace ERP.Web.API.Domain.Services.Sales
                 {
                     var promoData = Db.PromoHeaders.FirstOrDefault(x => x.Code == item.PromoCode);
                     if (promoData != null)
-                        result.Add(promoData.Name);
+                    {
+                        var tierData = GetDetailTierData();
+                        var detailData = GetDetailData(promoData.Code)
+                            .Select(x => new
+                            {
+                                x.Id,
+                                x.ApplyTo,
+                                x.ItemId,
+                                x.PromoType,
+                                x.IsPercentage,
+                                x.ValuePercentage,
+                                x.ValueAmount,
+                                x.IsPromoWithBudget,
+                                x.BudgetMaximumValue,
+                                x.OverBudgetAction,
+                                PromoTierList = tierData.Where(y => y.PromoDetailId == x.Id)
+                            }).ToList<dynamic>();
+
+                        var subjectData = GetSubjectData(promoData.Code).ToList<dynamic>();
+
+                        var nObj = new
+                        {
+                            promoData.ApplyTo,
+                            promoData.ApprovedBy,
+                            promoData.ApprovedDate,
+                            promoData.CoaCost,
+                            promoData.Code,
+                            promoData.Content,
+                            promoData.CreatedBy,
+                            promoData.CreatedDate,
+                            promoData.EndDate,
+                            promoData.Mark,
+                            promoData.Name,
+                            promoData.StartDate,
+                            promoData.UpdatedBy,
+                            promoData.UpdatedDate,
+                            itemDetails = detailData,
+                            subject = subjectData,
+                            usePromo = true
+                        };
+
+                        result.Add(nObj);
+                    }
                 }
             }
 
