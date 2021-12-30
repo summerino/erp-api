@@ -2,6 +2,7 @@
 {
     public class ItemInformationModel
     {
+        public string UnitName { get;set; }
         public decimal? Stock { get; set; }
         public DateTime? LastUpdateStock { get; set; }
         public decimal? LastOrder { get; set; }

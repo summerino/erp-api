@@ -18,7 +18,7 @@ namespace ERP.Web.API.Domain.Services.Inventory
         }
 
         public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
-            List<int> category,string warehouseCode, string search, string mobileLastSync)
+            List<int> category, string warehouseCode, string search, string mobileLastSync)
         {
             var data = Db.VwItems.AsQueryable();
 
@@ -55,7 +55,7 @@ namespace ERP.Web.API.Domain.Services.Inventory
 
             if (!string.IsNullOrEmpty(warehouseCode))
             {
-                wq = wq.Where(x=>x.WarehouseCode.Equals(warehouseCode))
+                wq = wq.Where(x => x.WarehouseCode.Equals(warehouseCode))
                         .GroupBy(x => new { x.ItemId, x.WarehouseCode })
                         .Select(X =>
                         new WarehouseQuantity
@@ -85,7 +85,7 @@ namespace ERP.Web.API.Domain.Services.Inventory
                            }).AsQueryable();
             }
 
-            
+
 
             data = (from x in data
                     join y in wq on x.Id equals y.ItemId into gd
@@ -149,7 +149,7 @@ namespace ERP.Web.API.Domain.Services.Inventory
                         QtyOnOrder = g.QtyOnOrder == 0 ? 0 : g.QtyOnOrder,
                         QtyOnTransfer = g.QtyOnTransfer == 0 ? 0 : g.QtyOnTransfer
                     });
-            
+
             return data.ToDataSourceResult(skip, take, filter, sort);
         }
 
@@ -257,28 +257,28 @@ namespace ERP.Web.API.Domain.Services.Inventory
             var result = (
                         new[] { new { Code = "", Date = new DateTime(), Type = "", CustName = "", Qty = 0, QtyDlv = 0, QtyRemain = 0 } }
                         ).Union(from h in header
-                          join d in details on h.Code equals d.Code
-                          select new
-                          {
-                              Code = h.Code,
-                              Date = h.Date,
-                              Type = h.FromDirectInvoice == true ? "Penjualan Langsung" : "Order Penjualan",
-                              CustName = h.CustName,
-                              Qty = Convert.ToInt32(d.Qty),
-                              QtyDlv = Convert.ToInt32(d.QtyDlv),
-                              QtyRemain = Convert.ToInt32(d.Qty - d.QtyDlv)
-                          }).Union(from h in header
-                          join f in free on h.Code equals f.Code
-                          select new
-                          {
-                              Code = h.Code,
-                              Date = h.Date,
-                              Type = "Bonus",
-                              CustName = h.CustName,
-                              Qty = Convert.ToInt32(f.Qty),
-                              QtyDlv = Convert.ToInt32(f.QtyClosed),
-                              QtyRemain = Convert.ToInt32(f.Qty - f.QtyClosed)
-                          }).Skip(1);
+                                join d in details on h.Code equals d.Code
+                                select new
+                                {
+                                    Code = h.Code,
+                                    Date = h.Date,
+                                    Type = h.FromDirectInvoice == true ? "Penjualan Langsung" : "Order Penjualan",
+                                    CustName = h.CustName,
+                                    Qty = Convert.ToInt32(d.Qty),
+                                    QtyDlv = Convert.ToInt32(d.QtyDlv),
+                                    QtyRemain = Convert.ToInt32(d.Qty - d.QtyDlv)
+                                }).Union(from h in header
+                                         join f in free on h.Code equals f.Code
+                                         select new
+                                         {
+                                             Code = h.Code,
+                                             Date = h.Date,
+                                             Type = "Bonus",
+                                             CustName = h.CustName,
+                                             Qty = Convert.ToInt32(f.Qty),
+                                             QtyDlv = Convert.ToInt32(f.QtyClosed),
+                                             QtyRemain = Convert.ToInt32(f.Qty - f.QtyClosed)
+                                         }).Skip(1);
             return result;
         }
 
@@ -300,7 +300,7 @@ namespace ERP.Web.API.Domain.Services.Inventory
                           }).ToDynamicList();
 
             return result;
-            
+
         }
 
         public IEnumerable<dynamic> GetRelatedTransferTrans(string whid, int itemid)
@@ -333,6 +333,19 @@ namespace ERP.Web.API.Domain.Services.Inventory
 
             var stock = dataStock.Sum(p => p.QtyOnHand - p.QtyOnOrder);
 
+            var uomId = Db.Items.Where(x=>x.Id.Equals(itemId)).Select(y=>y.UomId).First();
+
+            var conv= new List<UoMConversion>();
+            if (uomId.HasValue)
+            {
+                conv = Db.UoMConversions.Where(y => y.UomId.Equals(uomId)).OrderBy(x => x.Seq).ToList();
+            }
+
+            for (var i = 0; i < conv.Count; i++)
+            {
+                stock /= conv[i].Conversion;
+            }
+
             DateTime? lastUpdate = null;
             if (dataStock.Any())
             {
@@ -341,16 +354,32 @@ namespace ERP.Web.API.Domain.Services.Inventory
 
 
             var data = (from sh in Db.SalesOrderHeaders
-                join sd in Db.SalesOrderDetails on sh.Code equals sd.Code
-                where sd.ItemId == itemId && sh.CustCode == custCode
-                select new
-                {
-                    sd.Qty,
-                    sh.UpdatedDate
-                });
+                        join sd in Db.SalesOrderDetails on sh.Code equals sd.Code
+                        join u in Db.UoMConversions on sd.UnitId equals u.Id
+                        where sd.ItemId == itemId && sh.CustCode == custCode
+                        select new ItemInformtionDetailModel
+                        {
+                            Seq = u.Seq,
+                            UomId = sd.UomId,
+                            UnitId = sd.UnitId,
+                            Qty = sd.Qty,
+                            UpdatedDate = sh.UpdatedDate
+                        }).ToList();
 
             if (data.Any())
             {
+
+                foreach (var item in data)
+                {
+                    if (item.Seq != conv.Count)
+                    {
+                        for (var i = item.Seq; i < conv.Count; i++)
+                        {
+                            item.Qty /= conv[i].Conversion;
+                        }
+                    }
+                }
+
                 DateTime? maxUpdate = data.Max(p => p.UpdatedDate);
                 var maxOrder = data.Max(p => p.Qty);
                 var avgOrder = data.Average(p => p.Qty);
@@ -358,6 +387,7 @@ namespace ERP.Web.API.Domain.Services.Inventory
 
                 return new ItemInformationModel
                 {
+                    UnitName = conv[conv.Count-1].UnitEquivalent,
                     Stock = stock,
                     LastUpdateStock = lastUpdate,
                     MaxOrder = maxOrder,
