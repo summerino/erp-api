@@ -15,16 +15,30 @@ namespace ERP.Web.API.Domain.Services.Purchase
         }
         public DataSourceResult GetData(int type, string startDate, string endDate, string supCode, string status, int? itemId, string code, bool isDetail)
         {
-            var poData = _db.ReportByPOs.FromSqlRaw(@"SELECT po.[Date], po.Code, po.SupCode, po.SupName, po.SubTotal, po.FinalDisc AS Disc, po.DPP, po.TaxAmount, po.Total
-                        FROM Purchasing.vwPurchaseOrderHeader po" +
+            var poData = _db.ReportByPOs.FromSqlRaw(@"SELECT po.[Date], po.Code, po.SupCode,
+                            po.SupName, po.SubTotal, po.FinalDisc AS Disc, 
+                            po.DPP, po.TaxAmount, po.Total,
+                            CASE po.Mark
+	                            WHEN 'A' THEN 'Aktif'
+	                            WHEN 'V' THEN 'Void'
+	                            WHEN 'PR' THEN 'Diterima Sebagian'
+	                            WHEN 'CMP' THEN 'Diterima Seluruhnya'
+	                            WHEN 'CLS' THEN 'Ditutup' END AS [Status]
+                            FROM Purchasing.vwPurchaseOrderHeader po" +
                         (string.IsNullOrEmpty(status) ? "" : $" WHERE po.Mark = '{status.Replace("'", "''")}'")).ToList();
 
             var poDetailData = _db.ReportByDetailPOs.FromSqlRaw(@"SELECT po.[Date], po.Code, po.SupCode, po.SupName,
                         im.Initial AS ItemInitial, im.[Name] AS ItemName, po_d.Qty, po_d.Total AS SubTotal, po_d.UnitName AS Unit,
-                        po_d.Disc, po_d.FinalDiscHeader AS DiscHeader, po_d.DPP, po_d.TaxAmount, po_d.Total
+                        po_d.Disc, po_d.FinalDiscHeader AS DiscHeader, po_d.DPP, po_d.TaxAmount, po_d.Total,
+						CASE po.Mark
+							WHEN 'A' THEN 'Aktif'
+							WHEN 'V' THEN 'Void'
+							WHEN 'PR' THEN 'Diterima Sebagian'
+							WHEN 'CMP' THEN 'Diterima Seluruhnya'
+							WHEN 'CLS' THEN 'Ditutup' END AS [Status]
                         FROM Purchasing.vwPurchaseOrderDetail po_d
 						LEFT JOIN Purchasing.vwPurchaseOrderHeader po on po.Code = po_d.Code
-						LEFT JOIN Inventory.Item im on im.Id = po_d.ItemId " +
+						LEFT JOIN Inventory.Item im on im.Id = po_d.ItemId" +
                         (!itemId.HasValue || itemId <= 0  ? "" : $" WHERE po_d.ItemId = {itemId}")).ToList();
 
             var itemData = _db.ReportByItemPOs.FromSqlRaw(@"SELECT im.Initial, im.[Name], CAST (0 AS int) AS TotalTrans, CAST (0 AS decimal) AS Qty,

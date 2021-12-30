@@ -69,6 +69,8 @@ namespace ERP.Entity.Purchase
         public decimal TaxAmount { get; set; }
 
         public decimal Total { get; set; }
+
+        public string Status { get; set; }
     }
 
     public class ReportByDetailPO
@@ -100,5 +102,7 @@ namespace ERP.Entity.Purchase
         public decimal TaxAmount { get; set; }
 
         public decimal Total { get; set; }
+
+        public string Status { get; set; }
     }
 }

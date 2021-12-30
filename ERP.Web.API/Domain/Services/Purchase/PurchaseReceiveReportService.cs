@@ -15,13 +15,24 @@ namespace ERP.Web.API.Domain.Services.Purchase
         }
         public DataSourceResult GetData(int type, int? srcTrans, string startDate, string endDate, string supCode, string status, int? itemId, string code, bool isDetail)
         {
-            var rcvData = _db.ReportByRCVs.FromSqlRaw(@"SELECT rcv.[Date], rcv.Code, CAST(rcv.SrcTrans AS int) AS SrcTrans, rcv.TransCode, rcv.RefNo, rcv.SupCode, rcv.SupName, rcv.SubTotal, rcv.FinalDisc AS Disc, rcv.DPP, rcv.TaxAmount, rcv.Total
-                        FROM Purchasing.vwPurchaseReceiveHeader rcv" +
+            var rcvData = _db.ReportByRCVs.FromSqlRaw(@"SELECT rcv.[Date], rcv.Code, CAST(rcv.SrcTrans AS int) AS SrcTrans,
+                            rcv.TransCode, rcv.RefNo, rcv.SupCode,
+                            rcv.SupName, rcv.SubTotal, rcv.FinalDisc AS Disc,
+                            rcv.DPP, rcv.TaxAmount, rcv.Total,
+                            CASE rcv.Mark
+	                            WHEN 'A' THEN 'Aktif'
+	                            WHEN 'V' THEN 'Void'
+	                            WHEN 'INV' THEN 'Sudah Difakturkan' END AS [Status]
+                            FROM Purchasing.vwPurchaseReceiveHeader rcv" +
                         (string.IsNullOrEmpty(status) ? "" : $" WHERE rcv.Mark = '{status.Replace("'", "''")}'")).ToList();
 
             var rcvDetailData = _db.ReportByDetailRCVs.FromSqlRaw(@"SELECT rcv.[Date], rcv.Code, rcv.SupCode, rcv.SupName, CAST(rcv.SrcTrans AS int) AS SrcTrans, rcv.TransCode, rcv.RefNo,
                         im.Initial AS ItemInitial, im.[Name] AS ItemName, wh.[Name] AS WarehouseName, rcv_d.Qty, rcv_d.Total AS SubTotal, rcv_d.UnitName AS Unit,
-                        rcv_d.Disc, rcv_d.FinalDiscHeader AS DiscHeader, rcv_d.DPP, rcv_d.TaxAmount, rcv_d.Total
+                        rcv_d.Disc, rcv_d.FinalDiscHeader AS DiscHeader, rcv_d.DPP, rcv_d.TaxAmount, rcv_d.Total,
+                        CASE rcv.Mark
+							WHEN 'A' THEN 'Aktif'
+							WHEN 'V' THEN 'Void'
+							WHEN 'INV' THEN 'Sudah Difakturkan' END AS [Status]
                         FROM Purchasing.vwPurchaseReceiveDetail rcv_d
 						LEFT JOIN Purchasing.vwPurchaseReceiveHeader rcv on rcv.Code = rcv_d.Code
 						LEFT JOIN Inventory.Item im on im.Id = rcv_d.ItemId
