@@ -232,6 +232,12 @@ namespace ERP.Entity
         public DbSet<ReportBySupplierAging> ReportBySupplierAgings { get; set; }
         public DbSet<ReportByInvoiceAPAging> ReportByInvoiceAPAgings { get; set; }
         public DbSet<ReportByDebitMemo> ReportByDebitMemos { get; set; }
+        public DbSet<ReportByPO> ReportByPOs { get; set; }
+        public DbSet<ReportByDetailPO> ReportByDetailPOs { get; set; }
+        public DbSet<ReportBySupplierPO> ReportBySupplierPOs { get; set; }
+        public DbSet<ReportByItemPO> ReportByItemPOs { get; set; }
+        public DbSet<ReportByDetailRCV> ReportByDetailRCVs { get; set; }
+        public DbSet<ReportByRCV> ReportByRCVs { get; set; }
 
 
         // Sales entities
@@ -1991,6 +1997,30 @@ namespace ERP.Entity
             modelBuilder.Entity<ReportByDebitMemo>()
                .HasNoKey()
                .ToTable("ReportByDebitMemo", t => t.ExcludeFromMigrations());
+
+            modelBuilder.Entity<ReportByPO>()
+               .HasNoKey()
+               .ToTable("ReportByPO", t => t.ExcludeFromMigrations());
+
+            modelBuilder.Entity<ReportByDetailPO>()
+               .HasNoKey()
+               .ToTable("ReportByDetailPO", t => t.ExcludeFromMigrations());
+
+            modelBuilder.Entity<ReportByItemPO>()
+               .HasNoKey()
+               .ToTable("ReportByItemPO", t => t.ExcludeFromMigrations());
+
+            modelBuilder.Entity<ReportBySupplierPO>()
+               .HasNoKey()
+               .ToTable("ReportBySupplierPO", t => t.ExcludeFromMigrations());
+
+            modelBuilder.Entity<ReportByRCV>()
+               .HasNoKey()
+               .ToTable("ReportByRCV", t => t.ExcludeFromMigrations());
+
+            modelBuilder.Entity<ReportByDetailRCV>()
+               .HasNoKey()
+               .ToTable("ReportByDetailRCV", t => t.ExcludeFromMigrations());
 
             // Sales entities
             // Area model

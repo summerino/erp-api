@@ -45,6 +45,14 @@ namespace ERP.Web.API.Domain.Services.MobileSales
                         return result;
                     }
 
+                    var custAddData = Db.CustomerAddress.FirstOrDefault(x => x.Code == item.CustCode && x.IsDefault);
+                    if (custAddData != null)
+                    {
+                        custAddData.Lat = item.Lat;
+                        custAddData.Lng = item.Lng;
+                        Db.CustomerAddress.Update(custAddData);
+                    }
+
                     if (item.VisitOrderCode == null && item.Scheduled)
                     {
                         // Get new code
