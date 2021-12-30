@@ -24,7 +24,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                         po_d.Disc, po_d.FinalDiscHeader AS DiscHeader, po_d.DPP, po_d.TaxAmount, po_d.Total
                         FROM Purchasing.vwPurchaseOrderDetail po_d
 						LEFT JOIN Purchasing.vwPurchaseOrderHeader po on po.Code = po_d.Code
-						LEFT JOIN Inventory.Item im on im.Id = po_d.ItemId " +
+						LEFT JOIN Inventory.Item im on im.Id = po_d.ItemId" +
                         (!itemId.HasValue || itemId <= 0  ? "" : $" WHERE po_d.ItemId = {itemId}")).ToList();
 
             var itemData = _db.ReportByItemPOs.FromSqlRaw(@"SELECT im.Initial, im.[Name], CAST (0 AS int) AS TotalTrans, CAST (0 AS decimal) AS Qty,
