@@ -86,7 +86,7 @@ namespace ERP.Web.API.Controllers.Sales
                     TotTax = x.Qty * x.TaxAmount,
                     TotDPP = x.Qty * x.Dpp,
                     State = "",
-                    discPromo = discData.Where(d => d.OrderDetailId == x.Id)
+                    discPromo = discData.Where(d => d.OrderDetailId == x.Id).OrderBy(d => d.LineNo)
                 })
                 .ToList<dynamic>();
 
