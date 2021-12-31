@@ -240,6 +240,8 @@ namespace ERP.Entity
         public DbSet<ReportByRCV> ReportByRCVs { get; set; }
         public DbSet<ReportByPInv> ReportByPInvs { get; set; }
         public DbSet<ReportByDetailPInv> ReportByDetailPInvs { get; set; }
+        public DbSet<ReportByPR> ReportByPRs { get; set; }
+        public DbSet<ReportByDetailPR> ReportByDetailPRs { get; set; }
 
 
         // Sales entities
@@ -2031,6 +2033,14 @@ namespace ERP.Entity
             modelBuilder.Entity<ReportByDetailPInv>()
                .HasNoKey()
                .ToTable("ReportByDetailPInv", t => t.ExcludeFromMigrations());
+
+            modelBuilder.Entity<ReportByPR>()
+               .HasNoKey()
+               .ToTable("ReportByPR", t => t.ExcludeFromMigrations());
+
+            modelBuilder.Entity<ReportByDetailPR>()
+               .HasNoKey()
+               .ToTable("ReportByDetailPR", t => t.ExcludeFromMigrations());
 
             // Sales entities
             // Area model
