@@ -250,6 +250,7 @@ builder.Services.AddScoped<IAPAgingReportService, APAgingReportService>();
 builder.Services.AddScoped<IDebitMemoReportService, DebitMemoReportService>();
 builder.Services.AddScoped<IPurchaseOrderReportService, PurchaseOrderReportService>();
 builder.Services.AddScoped<IPurchaseReceiveReportService, PurchaseReceiveReportService>();
+builder.Services.AddScoped<IPurchaseInvoiceReportService, PurchaseInvoiceReportService>();
 builder.Services.AddScoped<IPurchaseReturnReportService, PurchaseReturnReportService>();
 
 // Sales services
