@@ -16,7 +16,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
         public DataSourceResult GetData(int type, string startDate, string endDate, string supCode, string status, int? itemId, string code, bool isDetail)
         {
             var poData = _db.ReportByPOs.FromSqlRaw(@"SELECT po.[Date], po.Code, po.SupCode,
-                            po.SupName, po.SubTotal, po.FinalDisc AS Disc, 
+                            po.SupName, SUM(po_d.Qty * po_d.UnitPrice) AS SubTotal, SUM((po_d.Disc * po_d.Qty) + (po_d.FinalDiscHeader * po_d.Qty)) AS Disc, 
                             po.DPP, po.TaxAmount, po.Total,
                             CASE po.Mark
 	                            WHEN 'A' THEN 'Aktif'
@@ -24,33 +24,35 @@ namespace ERP.Web.API.Domain.Services.Purchase
 	                            WHEN 'PR' THEN 'Diterima Sebagian'
 	                            WHEN 'CMP' THEN 'Diterima Seluruhnya'
 	                            WHEN 'CLS' THEN 'Ditutup' END AS [Status]
-                            FROM Purchasing.vwPurchaseOrderHeader po" +
-                        (string.IsNullOrEmpty(status) ? "" : $" WHERE po.Mark = '{status.Replace("'", "''")}'")).ToList();
+                            FROM Purchasing.vwPurchaseOrderHeader po
+                            LEFT JOIN Purchasing.vwPurchaseOrderDetail po_d ON po.Code = po_d.Code" +
+                            (string.IsNullOrEmpty(status) ? "" : $" WHERE po.Mark = '{status.Replace("'", "''")}'") +
+                            " GROUP BY po.[Date], po.Code, po.SupCode, po.SupName, po.SubTotal, po.DPP, po.TaxAmount, po.Total, po.Mark").ToList();
 
             var poDetailData = _db.ReportByDetailPOs.FromSqlRaw(@"SELECT po.[Date], po.Code, po.SupCode, po.SupName,
-                        im.Initial AS ItemInitial, im.[Name] AS ItemName, po_d.Qty, po_d.Total AS SubTotal, po_d.UnitName AS Unit,
-                        po_d.Disc, po_d.FinalDiscHeader AS DiscHeader, po_d.DPP, po_d.TaxAmount, po_d.Total,
-						CASE po.Mark
-							WHEN 'A' THEN 'Aktif'
-							WHEN 'V' THEN 'Void'
-							WHEN 'PR' THEN 'Diterima Sebagian'
-							WHEN 'CMP' THEN 'Diterima Seluruhnya'
-							WHEN 'CLS' THEN 'Ditutup' END AS [Status]
-                        FROM Purchasing.vwPurchaseOrderDetail po_d
-						LEFT JOIN Purchasing.vwPurchaseOrderHeader po on po.Code = po_d.Code
-						LEFT JOIN Inventory.Item im on im.Id = po_d.ItemId" +
-                        (!itemId.HasValue || itemId <= 0  ? "" : $" WHERE po_d.ItemId = {itemId}")).ToList();
+                            im.Initial AS ItemInitial, im.[Name] AS ItemName, po_d.Qty, po_d.UnitPrice * po_d.Qty AS SubTotal, po_d.UnitName AS Unit,
+                            po_d.Disc * po_d.Qty AS Disc, po_d.FinalDiscHeader * po_d.Qty AS DiscHeader, po_d.DPP * po_d.Qty AS DPP, po_d.TaxAmount * po_d.Qty AS TaxAmount, po_d.Total,
+						    CASE po.Mark
+							    WHEN 'A' THEN 'Aktif'
+							    WHEN 'V' THEN 'Void'
+							    WHEN 'PR' THEN 'Diterima Sebagian'
+							    WHEN 'CMP' THEN 'Diterima Seluruhnya'
+							    WHEN 'CLS' THEN 'Ditutup' END AS [Status]
+                            FROM Purchasing.vwPurchaseOrderDetail po_d
+						    LEFT JOIN Purchasing.vwPurchaseOrderHeader po on po.Code = po_d.Code
+						    LEFT JOIN Inventory.Item im on im.Id = po_d.ItemId" +
+                            (!itemId.HasValue || itemId <= 0  ? "" : $" WHERE po_d.ItemId = {itemId}")).ToList();
 
             var itemData = _db.ReportByItemPOs.FromSqlRaw(@"SELECT im.Initial, im.[Name], CAST (0 AS int) AS TotalTrans, CAST (0 AS decimal) AS Qty,
-                        CAST (0 AS decimal) AS SubTotal, CAST (0 AS decimal) AS Disc, CAST (0 AS decimal) AS DiscHeader,
-                        CAST (0 AS decimal) AS Dpp, CAST (0 AS decimal) AS TaxAmount, CAST (0 AS decimal) AS Total
-                        FROM Inventory.Item im GROUP BY im.Initial, im.[Name]").ToList();
+                            CAST (0 AS decimal) AS SubTotal, CAST (0 AS decimal) AS Disc, CAST (0 AS decimal) AS DiscHeader,
+                            CAST (0 AS decimal) AS Dpp, CAST (0 AS decimal) AS TaxAmount, CAST (0 AS decimal) AS Total
+                            FROM Inventory.Item im GROUP BY im.Initial, im.[Name]").ToList();
 
             var supData = _db.ReportBySupplierPOs.FromSqlRaw(@"SELECT sp.Code, sp.[Name], CAST (0 AS int) AS TotalTrans, CAST (0 AS decimal) AS SubTotal,
-                        CAST (0 AS decimal) AS Disc, CAST (0 AS decimal) AS Dpp, CAST (0 AS decimal) AS TaxAmount, CAST (0 AS decimal) AS Total
-                        FROM General.Supplier sp
-                        WHERE sp.IsActive = 1
-                        GROUP BY sp.Code, sp.[Name]").ToList();
+                            CAST (0 AS decimal) AS Disc, CAST (0 AS decimal) AS Dpp, CAST (0 AS decimal) AS TaxAmount, CAST (0 AS decimal) AS Total
+                            FROM General.Supplier sp
+                            WHERE sp.IsActive = 1
+                            GROUP BY sp.Code, sp.[Name]").ToList();
 
             if (!string.IsNullOrEmpty(startDate) && !string.IsNullOrEmpty(endDate))
             {

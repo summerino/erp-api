@@ -31,32 +31,32 @@ namespace ERP.Web.API.Domain.Services.Purchase
                             "GROUP BY inv.[Date], inv.DueDate, inv.Code, inv.POCode, inv.RefNo, inv.SupCode, inv.SupName, inv.Mark").ToList();
 
             var invDetailData = _db.ReportByDetailPInvs.FromSqlRaw(@"SELECT inv.[Date], inv.DueDate, inv.Code,
-                                    inv.POCode AS OrderCode, inv.RefNo,
-                                    inv.SupCode, inv.SupName, inv_d.RcvCode,
-                                    im.Initial AS ItemInitial, im.[Name] AS ItemName, rcv_d.Qty, 
-                                    rcv_d.UnitName AS Unit, rcv_d.Total AS SubTotal, rcv_d.Disc,
-                                    rcv_d.FinalDiscHeader AS DiscHeader, rcv_d.DPP, rcv_d.TaxAmount, rcv_d.Total,
-                                    CASE inv.Mark
-	                                    WHEN 'A' THEN 'Aktif'
-	                                    WHEN 'V' THEN 'Void'
-	                                    WHEN 'PP' THEN 'Aktif'
-	                                    WHEN 'CMP' THEN 'Aktif' END AS [Status]
-                                    FROM Purchasing.PurchaseInvoiceDetail inv_d 
-                                    LEFT JOIN Purchasing.vwPurchaseInvoiceHeader inv on inv_d.Code = inv.Code
-                                    LEFT JOIN Purchasing.vwPurchaseReceiveDetail rcv_d on inv_d.RcvCode = rcv_d.Code
-                                    LEFT JOIN Inventory.Item im on im.Id = rcv_d.ItemId" +
-                        (!itemId.HasValue || itemId <= 0 ? "" : $" WHERE rcv_d.ItemId = {itemId}")).ToList();
+                            inv.POCode AS OrderCode, inv.RefNo,
+                            inv.SupCode, inv.SupName, inv_d.RcvCode,
+                            im.Initial AS ItemInitial, im.[Name] AS ItemName, rcv_d.Qty, 
+                            rcv_d.UnitName AS Unit, rcv_d.Total AS SubTotal, rcv_d.Disc,
+                            rcv_d.FinalDiscHeader AS DiscHeader, rcv_d.DPP, rcv_d.TaxAmount, rcv_d.Total,
+                            CASE inv.Mark
+	                            WHEN 'A' THEN 'Aktif'
+	                            WHEN 'V' THEN 'Void'
+	                            WHEN 'PP' THEN 'Aktif'
+	                            WHEN 'CMP' THEN 'Aktif' END AS [Status]
+                            FROM Purchasing.PurchaseInvoiceDetail inv_d 
+                            LEFT JOIN Purchasing.vwPurchaseInvoiceHeader inv on inv_d.Code = inv.Code
+                            LEFT JOIN Purchasing.vwPurchaseReceiveDetail rcv_d on inv_d.RcvCode = rcv_d.Code
+                            LEFT JOIN Inventory.Item im on im.Id = rcv_d.ItemId" +
+                            (!itemId.HasValue || itemId <= 0 ? "" : $" WHERE rcv_d.ItemId = {itemId}")).ToList();
 
             var itemData = _db.ReportByItemPOs.FromSqlRaw(@"SELECT im.Initial, im.[Name], CAST (0 AS int) AS TotalTrans, CAST (0 AS decimal) AS Qty,
-                        CAST (0 AS decimal) AS SubTotal, CAST (0 AS decimal) AS Disc, CAST (0 AS decimal) AS DiscHeader,
-                        CAST (0 AS decimal) AS Dpp, CAST (0 AS decimal) AS TaxAmount, CAST (0 AS decimal) AS Total
-                        FROM Inventory.Item im GROUP BY im.Initial, im.[Name]").ToList();
+                            CAST (0 AS decimal) AS SubTotal, CAST (0 AS decimal) AS Disc, CAST (0 AS decimal) AS DiscHeader,
+                            CAST (0 AS decimal) AS Dpp, CAST (0 AS decimal) AS TaxAmount, CAST (0 AS decimal) AS Total
+                            FROM Inventory.Item im GROUP BY im.Initial, im.[Name]").ToList();
 
             var supData = _db.ReportBySupplierPOs.FromSqlRaw(@"SELECT sp.Code, sp.[Name], CAST (0 AS int) AS TotalTrans, CAST (0 AS decimal) AS SubTotal,
-                        CAST (0 AS decimal) AS Disc, CAST (0 AS decimal) AS Dpp, CAST (0 AS decimal) AS TaxAmount, CAST (0 AS decimal) AS Total
-                        FROM General.Supplier sp
-                        WHERE sp.IsActive = 1
-                        GROUP BY sp.Code, sp.[Name]").ToList();
+                            CAST (0 AS decimal) AS Disc, CAST (0 AS decimal) AS Dpp, CAST (0 AS decimal) AS TaxAmount, CAST (0 AS decimal) AS Total
+                            FROM General.Supplier sp
+                            WHERE sp.IsActive = 1
+                            GROUP BY sp.Code, sp.[Name]").ToList();
 
             if (!string.IsNullOrEmpty(startDate) && !string.IsNullOrEmpty(endDate))
             {
