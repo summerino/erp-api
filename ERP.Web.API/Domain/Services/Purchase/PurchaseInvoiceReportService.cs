@@ -28,7 +28,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                             FROM Purchasing.vwPurchaseInvoiceHeader inv
                             LEFT JOIN Purchasing.PurchaseInvoiceDetail inv_d on inv.Code = inv_d.Code" +
                             (string.IsNullOrEmpty(status) ? "" : status == "A" ? $" WHERE inv.Mark IN ('A','PP','CMP')" : $" WHERE inv.Mark = '{status.Replace("'", "''")}'") +
-                            "GROUP BY inv.[Date], inv.DueDate, inv.Code, inv.POCode, inv.RefNo, inv.SupCode, inv.SupName, inv.Mark").ToList();
+                            " GROUP BY inv.[Date], inv.DueDate, inv.Code, inv.POCode, inv.RefNo, inv.SupCode, inv.SupName, inv.Mark").ToList();
 
             var invDetailData = _db.ReportByDetailPInvs.FromSqlRaw(@"SELECT inv.[Date], inv.DueDate, inv.Code,
                             inv.POCode AS OrderCode, inv.RefNo,

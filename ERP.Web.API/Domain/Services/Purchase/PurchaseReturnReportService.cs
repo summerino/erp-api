@@ -32,7 +32,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                             FROM Purchasing.vwPurchaseReturnHeader pr
                             LEFT JOIN Purchasing.vwPurchaseReturnDetail pr_d ON pr.Code = pr_d.Code" +
                             (string.IsNullOrEmpty(status) ? "" : $" WHERE pr.Mark = '{status.Replace("'", "''")}'") +
-                            @"GROUP BY pr.[Date], pr.Code, pr.SupCode, pr.SupName, 
+                            @" GROUP BY pr.[Date], pr.Code, pr.SupCode, pr.SupName, 
                             pr.DPP, pr.TaxAmount, pr.Total, pr.[Type], pr.Mark").ToList();
 
             var prDetailData = _db.ReportByDetailPRs.FromSqlRaw(@"SELECT pr.[Date], pr.Code, pr.SupCode, pr.SupName,

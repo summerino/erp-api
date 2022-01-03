@@ -26,7 +26,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                             FROM Purchasing.vwPurchaseReceiveHeader rcv
                             LEFT JOIN Purchasing.vwPurchaseReceiveDetail rcv_d ON rcv.Code = rcv_d.Code" +
                             (string.IsNullOrEmpty(status) ? "" : $" WHERE rcv.Mark = '{status.Replace("'", "''")}'") +
-                            @"GROUP BY rcv.[Date], rcv.Code, rcv.SrcTrans,
+                            @" GROUP BY rcv.[Date], rcv.Code, rcv.SrcTrans,
                             rcv.TransCode, rcv.RefNo, rcv.SupCode,
                             rcv.SupName, rcv.DPP, rcv.TaxAmount,
                             rcv.Total, rcv.Mark").ToList();
