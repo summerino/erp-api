@@ -224,14 +224,6 @@ namespace ERP.Entity
         public DbSet<VwPurchaseReturnDetail> VwPurchaseReturnDetails { get; set; }
         public DbSet<PurchaseReturnDetailExchDiffItem> PurchaseReturnDetailExchDiffItems { get; set; }
         public DbSet<VwPurchaseReturnDetailExchDiffItem> VwPurchaseReturnDetailExchDiffItems { get; set; }
-        public DbSet<ReportBySupplier> ReportBySuppliers { get; set; }
-        public DbSet<ReportByReceive> ReportByReceives { get; set; }
-        public DbSet<ReportByInvoice> ReportByInvoices { get; set; }
-        public DbSet<ReportByInvoiceAPMutation> ReportByInvoiceAPMutations { get; set; }
-        public DbSet<ReportBySupplierMutation> ReportBySupplierMutations { get; set; }
-        public DbSet<ReportBySupplierAging> ReportBySupplierAgings { get; set; }
-        public DbSet<ReportByInvoiceAPAging> ReportByInvoiceAPAgings { get; set; }
-        public DbSet<ReportByDebitMemo> ReportByDebitMemos { get; set; }
         public DbSet<ReportByPO> ReportByPOs { get; set; }
         public DbSet<ReportByDetailPO> ReportByDetailPOs { get; set; }
         public DbSet<ReportBySupplierPO> ReportBySupplierPOs { get; set; }
@@ -242,7 +234,14 @@ namespace ERP.Entity
         public DbSet<ReportByDetailPInv> ReportByDetailPInvs { get; set; }
         public DbSet<ReportByPR> ReportByPRs { get; set; }
         public DbSet<ReportByDetailPR> ReportByDetailPRs { get; set; }
-
+        public DbSet<ReportBySupplier> ReportBySuppliers { get; set; }
+        public DbSet<ReportByReceive> ReportByReceives { get; set; }
+        public DbSet<ReportByInvoice> ReportByInvoices { get; set; }
+        public DbSet<ReportByInvoiceAPMutation> ReportByInvoiceAPMutations { get; set; }
+        public DbSet<ReportBySupplierMutation> ReportBySupplierMutations { get; set; }
+        public DbSet<ReportBySupplierAging> ReportBySupplierAgings { get; set; }
+        public DbSet<ReportByInvoiceAPAging> ReportByInvoiceAPAgings { get; set; }
+        public DbSet<ReportByDebitMemo> ReportByDebitMemos { get; set; }
 
         // Sales entities
         public DbSet<Area> Areas { get; set; }
