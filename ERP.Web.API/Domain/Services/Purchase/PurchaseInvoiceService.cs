@@ -89,7 +89,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
             try
             {
                 // Checking purchase order mark
-                if (IsPurchaseOrderInvalid(data.PoCode))
+                if (IsPurchaseOrderInvalid(data.PoCode) && data.Mark != "A")
                 {
                     result.Message = "Data faktur pembelian tidak bisa disimpan karena status order pembelian bukan diterima sebagian atau selesai.";
                     return result;
@@ -191,7 +191,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                 }
 
                 // Checking purchase order mark
-                if (IsPurchaseOrderInvalid(data.PoCode))
+                if (IsPurchaseOrderInvalid(data.PoCode) && data.Mark != "A")
                 {
                     result.Message = "Data faktur pembelian tidak bisa diubah karena status order pembelian bukan diterima sebagian atau selesai.";
                     return result;
