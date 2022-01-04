@@ -19,12 +19,14 @@ namespace ERP.Web.API.Controllers.Purchase
         [HttpGet]
         public IActionResult GetData(int type, string startDate, string endDate,
             string supCode, string status, int? itemId,
-            string code, bool isDetail)
+            string code, bool isDetail, int? unitId,
+            int? categoryId)
         {
             var result =
                 _prp.GetData(type, startDate, endDate,
                     supCode, status, itemId,
-                    code, isDetail);
+                    code, isDetail, unitId,
+                    categoryId);
 
             return Ok(new ApiResponse
             {

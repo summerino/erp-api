@@ -226,8 +226,8 @@ namespace ERP.Entity
         public DbSet<VwPurchaseReturnDetailExchDiffItem> VwPurchaseReturnDetailExchDiffItems { get; set; }
         public DbSet<ReportByPO> ReportByPOs { get; set; }
         public DbSet<ReportByDetailPO> ReportByDetailPOs { get; set; }
-        public DbSet<ReportBySupplierPO> ReportBySupplierPOs { get; set; }
-        public DbSet<ReportByItemPO> ReportByItemPOs { get; set; }
+        public DbSet<ReportBySupplierPurchase> ReportBySupplierPurchases { get; set; }
+        public DbSet<ReportByItemPurchase> ReportByItemPurchases { get; set; }
         public DbSet<ReportByDetailRCV> ReportByDetailRCVs { get; set; }
         public DbSet<ReportByRCV> ReportByRCVs { get; set; }
         public DbSet<ReportByPInv> ReportByPInvs { get; set; }
@@ -242,6 +242,8 @@ namespace ERP.Entity
         public DbSet<ReportBySupplierAging> ReportBySupplierAgings { get; set; }
         public DbSet<ReportByInvoiceAPAging> ReportByInvoiceAPAgings { get; set; }
         public DbSet<ReportByDebitMemo> ReportByDebitMemos { get; set; }
+        public DbSet<ReportByItemCategoryPurchase> ReportByItemCategoryPurchases { get; set; }
+
 
         // Sales entities
         public DbSet<Area> Areas { get; set; }
@@ -2009,13 +2011,13 @@ namespace ERP.Entity
                .HasNoKey()
                .ToTable("ReportByDetailPO", t => t.ExcludeFromMigrations());
 
-            modelBuilder.Entity<ReportByItemPO>()
+            modelBuilder.Entity<ReportByItemPurchase>()
                .HasNoKey()
-               .ToTable("ReportByItemPO", t => t.ExcludeFromMigrations());
+               .ToTable("ReportByItemPurchase", t => t.ExcludeFromMigrations());
 
-            modelBuilder.Entity<ReportBySupplierPO>()
+            modelBuilder.Entity<ReportBySupplierPurchase>()
                .HasNoKey()
-               .ToTable("ReportBySupplierPO", t => t.ExcludeFromMigrations());
+               .ToTable("ReportBySupplierPurchase", t => t.ExcludeFromMigrations());
 
             modelBuilder.Entity<ReportByRCV>()
                .HasNoKey()
@@ -2040,6 +2042,10 @@ namespace ERP.Entity
             modelBuilder.Entity<ReportByDetailPR>()
                .HasNoKey()
                .ToTable("ReportByDetailPR", t => t.ExcludeFromMigrations());
+
+            modelBuilder.Entity<ReportByItemCategoryPurchase>()
+               .HasNoKey()
+               .ToTable("ReportByItemCategoryPurchase", t => t.ExcludeFromMigrations());
 
             // Sales entities
             // Area model
