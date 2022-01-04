@@ -57,9 +57,15 @@ namespace ERP.Entity.Purchase
 
         public string ItemName { get; set; }
 
+        public int CategoryId { get; set; }
+
+        public string CategoryInitial { get; set; }
+
         public decimal Qty { get; set; }
 
-        public string Unit { get; set; }
+        public int UnitId { get; set; }
+
+        public string UnitName { get; set; }
 
         public decimal SubTotal { get; set; }
 
