@@ -90,11 +90,11 @@ namespace ERP.Web.API.Domain.Services.MobileWarehouse
                     foreach (var itemDetail in rcvDetailData)
                     {
                         var itemMaster = Db.Items.FirstOrDefault(x => x.Id == itemDetail.ItemId);
-                        if (rcvHeadData.SrcTrans == 2)
+                        if (itemDetail.Type == 0)
                         {
-                            var detailData = rtnDetailData.FirstOrDefault(x => x.ItemId == itemDetail.ItemId);
+                            var detailData = poDetailData.FirstOrDefault(x => x.ItemId == itemDetail.ItemId);
                             var taxData = Db.Taxes.FirstOrDefault(x => x.Id == detailData.TaxId);
-                            var taxAmount = rcvHeadData.IncludeTax ? Math.Round((detailData.UnitPrice - detailData.Disc) - ((detailData.UnitPrice - detailData.Disc) / (1 + (taxData.Rate / 100)))) 
+                            var taxAmount = rcvHeadData.IncludeTax ? Math.Round((detailData.UnitPrice - detailData.Disc) - ((detailData.UnitPrice - detailData.Disc) / (1 + (taxData.Rate / 100))))
                                 : Math.Round((detailData.UnitPrice - detailData.Disc) * (taxData.Rate / 100));
                             var nettPrice = rcvHeadData.IncludeTax ? detailData.UnitPrice - detailData.Disc : detailData.UnitPrice - detailData.Disc + taxAmount;
                             var dpp = rcvHeadData.IncludeTax ? detailData.UnitPrice - detailData.Disc - taxAmount : detailData.UnitPrice - detailData.Disc;
@@ -124,79 +124,41 @@ namespace ERP.Web.API.Domain.Services.MobileWarehouse
                                 WarehouseCode = itemDetail.WarehouseCode,
                                 Type = itemDetail.Type
                             });
-                        } 
+                        }
                         else
                         {
-                            if (itemDetail.Type == 0)
-                            {
-                                var detailData = poDetailData.FirstOrDefault(x => x.ItemId == itemDetail.ItemId);
-                                var taxData = Db.Taxes.FirstOrDefault(x => x.Id == detailData.TaxId);
-                                var taxAmount = rcvHeadData.IncludeTax ? Math.Round((detailData.UnitPrice - detailData.Disc) - ((detailData.UnitPrice - detailData.Disc) / (1 + (taxData.Rate / 100))))
-                                    : Math.Round((detailData.UnitPrice - detailData.Disc) * (taxData.Rate / 100));
-                                var nettPrice = rcvHeadData.IncludeTax ? detailData.UnitPrice - detailData.Disc : detailData.UnitPrice - detailData.Disc + taxAmount;
-                                var dpp = rcvHeadData.IncludeTax ? detailData.UnitPrice - detailData.Disc - taxAmount : detailData.UnitPrice - detailData.Disc;
+                            var mItem = Db.Items.FirstOrDefault(x => x.Id == itemDetail.ItemId);
+                            var taxData = Db.Taxes.FirstOrDefault(x => x.Id == mItem.PurchaseTaxId);
+                            var taxAmount = mItem.BuyPrice.Value > 0 ? (rcvHeadData.IncludeTax ? Math.Round(mItem.BuyPrice.Value - (mItem.BuyPrice.Value / (1 + (taxData.Rate / 100))))
+                                : Math.Round(mItem.BuyPrice.Value * (taxData.Rate / 100))) : 0m;
+                            var nettPrice = mItem.BuyPrice.Value > 0 ? (rcvHeadData.IncludeTax ? mItem.BuyPrice.Value : mItem.BuyPrice.Value + taxAmount) : 0m;
+                            var dpp = mItem.BuyPrice.Value > 0 ?  (rcvHeadData.IncludeTax ? mItem.BuyPrice.Value - taxAmount : mItem.BuyPrice.Value) : 0m;
 
-                                Db.PurchaseReceiveDetails.Add(new PurchaseReceiveDetail
-                                {
-                                    Code = newCode,
-                                    LineNo = ++i,
-                                    TransDetailId = itemDetail.TransDetailId,
-                                    ItemId = itemDetail.ItemId,
-                                    Qty = itemDetail.Qty,
-                                    UomId = itemDetail.UomId,
-                                    UnitId = itemDetail.UnitId,
-                                    Length = itemMaster.Length,
-                                    Width = itemMaster.Width,
-                                    Height = itemMaster.Height,
-                                    Weight = itemMaster.Weight,
-                                    DimensionMeasurement = itemMaster.DimensionMeasurement,
-                                    WeightMeasurement = itemMaster.WeightMeasurement,
-                                    UnitPrice = detailData.UnitPrice,
-                                    Disc = detailData.Disc,
-                                    TaxId = detailData.TaxId,
-                                    TaxAmount = taxAmount,
-                                    NettPrice = nettPrice,
-                                    Total = itemDetail.Qty * nettPrice,
-                                    Dpp = dpp,
-                                    WarehouseCode = itemDetail.WarehouseCode,
-                                    Type = itemDetail.Type
-                                });
-                            }
-                            else
+                            Db.PurchaseReceiveDetails.Add(new PurchaseReceiveDetail
                             {
-                                var mItem = Db.Items.FirstOrDefault(x => x.Id == itemDetail.ItemId);
-                                var taxData = Db.Taxes.FirstOrDefault(x => x.Id == mItem.PurchaseTaxId);
-                                var taxAmount = mItem.BuyPrice.Value > 0 ? (rcvHeadData.IncludeTax ? Math.Round(mItem.BuyPrice.Value - (mItem.BuyPrice.Value / (1 + (taxData.Rate / 100))))
-                                    : Math.Round(mItem.BuyPrice.Value * (taxData.Rate / 100))) : 0m;
-                                var nettPrice = mItem.BuyPrice.Value > 0 ? (rcvHeadData.IncludeTax ? mItem.BuyPrice.Value : mItem.BuyPrice.Value + taxAmount) : 0m;
-                                var dpp = mItem.BuyPrice.Value > 0 ?  (rcvHeadData.IncludeTax ? mItem.BuyPrice.Value - taxAmount : mItem.BuyPrice.Value) : 0m;
-
-                                Db.PurchaseReceiveDetails.Add(new PurchaseReceiveDetail
-                                {
-                                    Code = newCode,
-                                    LineNo = ++i,
-                                    TransDetailId = itemDetail.TransDetailId,
-                                    ItemId = itemDetail.ItemId,
-                                    Qty = itemDetail.Qty,
-                                    UomId = itemDetail.UomId,
-                                    UnitId = itemDetail.UnitId,
-                                    Length = itemMaster.Length,
-                                    Width = itemMaster.Width,
-                                    Height = itemMaster.Height,
-                                    Weight = itemMaster.Weight,
-                                    DimensionMeasurement = itemMaster.DimensionMeasurement,
-                                    WeightMeasurement = itemMaster.WeightMeasurement,
-                                    UnitPrice = mItem?.BuyPrice.Value ?? 0m,
-                                    Disc = 0m,
-                                    TaxId = mItem?.PurchaseTaxId.Value,
-                                    TaxAmount = taxAmount,
-                                    NettPrice = nettPrice,
-                                    Total = itemDetail.Qty * nettPrice,
-                                    Dpp = dpp,
-                                    WarehouseCode = itemDetail.WarehouseCode,
-                                    Type = itemDetail.Type
-                                });
-                            }
+                                Code = newCode,
+                                LineNo = ++i,
+                                TransDetailId = itemDetail.TransDetailId,
+                                ItemId = itemDetail.ItemId,
+                                Qty = itemDetail.Qty,
+                                UomId = itemDetail.UomId,
+                                UnitId = itemDetail.UnitId,
+                                Length = itemMaster.Length,
+                                Width = itemMaster.Width,
+                                Height = itemMaster.Height,
+                                Weight = itemMaster.Weight,
+                                DimensionMeasurement = itemMaster.DimensionMeasurement,
+                                WeightMeasurement = itemMaster.WeightMeasurement,
+                                UnitPrice = mItem?.BuyPrice.Value ?? 0m,
+                                Disc = 0m,
+                                TaxId = mItem?.PurchaseTaxId.Value,
+                                TaxAmount = taxAmount,
+                                NettPrice = nettPrice,
+                                Total = itemDetail.Qty * nettPrice,
+                                Dpp = dpp,
+                                WarehouseCode = itemDetail.WarehouseCode,
+                                Type = itemDetail.Type
+                            });
                         }
                     }
 
