@@ -306,6 +306,11 @@ namespace ERP.Entity
         public DbSet<ReportByCustomerAging> ReportByCustomerAgings { get; set; }
         public DbSet<ReportByDeliveryARAging> ReportByDeliveryARAgings { get; set; }
         public DbSet<ReportByCreditMemo> ReportByCreditMemos { get; set; }
+        public DbSet<ReportByItemCategorySales> ReportByItemCategorySales { get; set; }
+        public DbSet<ReportByItemSales> ReportByItemSales { get; set; }
+        public DbSet<ReportByCustomerSales> ReportByCustomerSales { get; set; }
+        public DbSet<ReportBySO> ReportBySOs { get; set; }
+        public DbSet<ReportByDetailSO> ReportByDetailSOs { get; set; }
 
         // System Management entities
         public DbSet<SystemManagement.Action> Actions { get; set; }
@@ -2460,6 +2465,25 @@ namespace ERP.Entity
                .HasNoKey()
                .ToTable("ReportByCreditMemo", t => t.ExcludeFromMigrations());
 
+            modelBuilder.Entity<ReportBySO>()
+               .HasNoKey()
+               .ToTable("ReportBySO", t => t.ExcludeFromMigrations());
+
+            modelBuilder.Entity<ReportByDetailSO>()
+               .HasNoKey()
+               .ToTable("ReportByDetailSO", t => t.ExcludeFromMigrations());
+
+            modelBuilder.Entity<ReportByItemCategorySales>()
+               .HasNoKey()
+               .ToTable("ReportByItemCategorySales", t => t.ExcludeFromMigrations());
+
+            modelBuilder.Entity<ReportByItemSales>()
+               .HasNoKey()
+               .ToTable("ReportByItemSales", t => t.ExcludeFromMigrations());
+
+            modelBuilder.Entity<ReportByCustomerSales>()
+               .HasNoKey()
+               .ToTable("ReportByCustomerSales", t => t.ExcludeFromMigrations());
 
             // System Management entities
             // Company model
