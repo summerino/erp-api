@@ -29,7 +29,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                             FROM Sales.vwSalesOrderHeader so
                             LEFT JOIN Sales.vwSalesOrderDetail so_d ON so_d.Code = so.Code" +
                             (string.IsNullOrEmpty(status) ? "" : $" WHERE so.Mark = '{status.Replace("'", "''")}'") +
-                            " GROUP BY so.[Date], so.Code, so.CustCode, so.CustName, so.SubTotal, so.DPP, so.TaxAmount, so.Total, so.Mark").ToList();
+                            " GROUP BY so.[Date], so.Code, so.CustCode, so.CustName, so.DPP, so.TaxAmount, so.Total, so.Mark").ToList();
 
             var soDetailData = _db.ReportByDetailSOs.FromSqlRaw(@"SELECT so.[Date], so.Code, so.CustCode,so.CustName,
                             im.Initial AS ItemInitial, im.[Name] AS ItemName, so_d.Qty,
