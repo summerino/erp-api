@@ -273,6 +273,7 @@ builder.Services.AddScoped<IARAgingReportService, ARAgingReportService>();
 builder.Services.AddScoped<ICreditMemoReportService, CreditMemoReportService>();
 builder.Services.AddScoped<ISalesOrderReportService, SalesOrderReportService>();
 builder.Services.AddScoped<ISalesDeliveryReportService, SalesDeliveryReportService>();
+builder.Services.AddScoped<ISalesInvoiceReportService, SalesInvoiceReportService>();
 
 // System Management services
 builder.Services.AddScoped<IActionService, ActionService>();
