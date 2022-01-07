@@ -315,6 +315,8 @@ namespace ERP.Entity
         public DbSet<ReportByDetailDO> ReportByDetailDOs { get; set; }
         public DbSet<ReportBySI> ReportBySIs { get; set; }
         public DbSet<ReportByDetailSI> ReportByDetailSIs { get; set; }
+        public DbSet<ReportBySR> ReportBySRs { get; set; }
+        public DbSet<ReportByDetailSR> ReportByDetailSRs { get; set; }
 
         // System Management entities
         public DbSet<SystemManagement.Action> Actions { get; set; }
@@ -2504,6 +2506,14 @@ namespace ERP.Entity
             modelBuilder.Entity<ReportByDetailSI>()
                .HasNoKey()
                .ToTable("ReportByDetailSI", t => t.ExcludeFromMigrations());
+
+            modelBuilder.Entity<ReportBySR>()
+               .HasNoKey()
+               .ToTable("ReportBySR", t => t.ExcludeFromMigrations());
+
+            modelBuilder.Entity<ReportByDetailSR>()
+               .HasNoKey()
+               .ToTable("ReportByDetailSR", t => t.ExcludeFromMigrations());
 
             // System Management entities
             // Company model
