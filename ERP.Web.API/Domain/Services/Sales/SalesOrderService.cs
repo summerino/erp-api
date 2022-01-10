@@ -1079,21 +1079,24 @@ namespace ERP.Web.API.Domain.Services.Sales
                     else
                     {
                         var oldStock = Db.StockMutations.FirstOrDefault(x => x.ItemId == item.ItemId && x.RefCode1 == code);
-                        if (uom.IsBaseUnit)
+                        if (oldStock != null)
                         {
-                            if (item.Qty > (stock.QtyOnHand - (stock.QtyOnOrder - oldStock.BaseQty)))
+                            if (uom.IsBaseUnit)
                             {
-                                result = true;
+                                if (item.Qty > (stock.QtyOnHand - (stock.QtyOnOrder - oldStock.BaseQty)))
+                                {
+                                    result = true;
+                                }
                             }
-                        }
-                        else
-                        {
-                            var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= uom.Seq).Select(x => x.Conversion).ToList();
-                            var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
-                            var baseQty = item.Qty * multipliedQty;
-                            if (baseQty > (stock.QtyOnHand - (stock.QtyOnOrder - oldStock.BaseQty)))
+                            else
                             {
-                                result = true;
+                                var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= uom.Seq).Select(x => x.Conversion).ToList();
+                                var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
+                                var baseQty = item.Qty * multipliedQty;
+                                if (baseQty > (stock.QtyOnHand - (stock.QtyOnOrder - oldStock.BaseQty)))
+                                {
+                                    result = true;
+                                }
                             }
                         }
                     }
