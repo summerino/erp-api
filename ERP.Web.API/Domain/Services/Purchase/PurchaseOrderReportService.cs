@@ -15,9 +15,9 @@ namespace ERP.Web.API.Domain.Services.Purchase
         }
         public DataSourceResult GetData(int type, string startDate, string endDate, string supCode, string status, int? itemId, string code, bool isDetail, int? unitId, int? categoryId)
         {
-            var poData = _db.ReportByPOs.FromSqlRaw(@"SELECT po.[Date], po.Code, po.SupCode,
-                            po.SupName, SUM(po_d.Qty * po_d.UnitPrice) AS SubTotal, SUM((po_d.Disc * po_d.Qty) + (po_d.FinalDiscHeader * po_d.Qty)) AS Disc, 
-                            po.DPP, po.TaxAmount, po.Total,
+            var poData = _db.ReportByPOs.FromSqlRaw(@"SELECT po.[Date], po.Code, po.SupCode, po.SupName,
+                            SUM(po_d.Qty * po_d.UnitPrice) AS GrossAmount, SUM(po_d.Qty * (po_d.UnitPrice - po_d.Disc - po_d.FinalDiscHeader)) AS SubTotal,
+                            SUM(po_d.Qty * (po_d.Disc + po_d.FinalDiscHeader)) AS Disc, po.DPP, po.TaxAmount, po.Total,
                             CASE po.Mark
 	                            WHEN 'A' THEN 'Aktif'
 	                            WHEN 'V' THEN 'Void'
@@ -31,15 +31,19 @@ namespace ERP.Web.API.Domain.Services.Purchase
 
             var poDetailData = _db.ReportByDetailPOs.FromSqlRaw(@"SELECT po.[Date], po.Code, po.SupCode, po.SupName,
                             im.Initial AS ItemInitial, im.[Name] AS ItemName, po_d.Qty,
-                            po_d.UnitPrice * po_d.Qty AS SubTotal, po_d.UnitId, po_d.UnitName,
-                            po_d.Disc * po_d.Qty AS Disc, po_d.FinalDiscHeader * po_d.Qty AS DiscHeader,
-                            po_d.DPP * po_d.Qty AS DPP, po_d.TaxAmount * po_d.Qty AS TaxAmount, po_d.Total,
+                            po_d.UnitId, po_d.UnitName, po_d.UnitPrice AS GrossAmount,
+                            po_d.Disc AS Disc, po_d.FinalDiscHeader AS DiscHeader,
+                            po_d.UnitPrice - po_d.Disc - po_d.FinalDiscHeader AS SubTotal,
+                            po_d.DPP, po_d.TaxAmount, po_d.NettPrice,
+                            po_d.UnitPrice * po_d.Qty AS TotalGrossAmount, (po_d.UnitPrice - po_d.Disc - po_d.FinalDiscHeader) * po_d.Qty AS TotalAfterDisc,
+                            po_d.Disc * po_d.Qty AS TotalDisc, po_d.FinalDiscHeader * po_d.Qty AS TotalDiscHeader,
+                            po_d.DPP * po_d.Qty AS TotalDPP, po_d.TaxAmount * po_d.Qty AS TotalTaxAmount, po_d.Total, po_d.NettPrice * po_d.Qty AS TotalNettPrice,
                             CASE po.Mark
-	                            WHEN 'A' THEN 'Aktif'
-	                            WHEN 'V' THEN 'Void'
-	                            WHEN 'PR' THEN 'Diterima Sebagian'
-	                            WHEN 'CMP' THEN 'Diterima Seluruhnya'
-	                            WHEN 'CLS' THEN 'Ditutup' END AS [Status],
+                                WHEN 'A' THEN 'Aktif'
+                                WHEN 'V' THEN 'Void'
+                                WHEN 'PR' THEN 'Diterima Sebagian'
+                                WHEN 'CMP' THEN 'Diterima Seluruhnya'
+                                WHEN 'CLS' THEN 'Ditutup' END AS [Status],
                             ic.Id AS CategoryId, ic.Initial AS CategoryInitial
                             FROM Purchasing.vwPurchaseOrderDetail po_d
                             LEFT JOIN Purchasing.vwPurchaseOrderHeader po ON po.Code = po_d.Code
@@ -52,7 +56,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                             uc.Id AS UnitId, uc.UnitEquivalent AS UnitName,
                             CAST (0 AS int) AS TotalTrans, CAST (0 AS decimal) AS Qty, CAST (0 AS decimal) AS SubTotal,
                             CAST (0 AS decimal) AS Disc, CAST (0 AS decimal) AS DiscHeader, CAST (0 AS decimal) AS Dpp,
-                            CAST (0 AS decimal) AS TaxAmount, CAST (0 AS decimal) AS Total
+                            CAST (0 AS decimal) AS TaxAmount, CAST (0 AS decimal) AS Total, CAST (0 AS decimal) AS GrossAmount
                             FROM Inventory.Item im
                             LEFT JOIN Purchasing.PurchaseOrderDetail po_d ON po_d.ItemId = im.Id
                             LEFT JOIN Inventory.ItemCategory ic ON ic.Id = im.CategoryId
@@ -60,8 +64,10 @@ namespace ERP.Web.API.Domain.Services.Purchase
                             WHERE uc.Id IS NOT NULL
                             GROUP BY im.Initial, im.[Name], ic.Id, ic.Initial, uc.Id, uc.UnitEquivalent").ToList();
 
-            var supData = _db.ReportBySupplierPurchases.FromSqlRaw(@"SELECT sp.Code, sp.[Name], CAST (0 AS int) AS TotalTrans, CAST (0 AS decimal) AS SubTotal,
-                            CAST (0 AS decimal) AS Disc, CAST (0 AS decimal) AS Dpp, CAST (0 AS decimal) AS TaxAmount, CAST (0 AS decimal) AS Total
+            var supData = _db.ReportBySupplierPurchases.FromSqlRaw(@"SELECT sp.Code, sp.[Name], CAST (0 AS int) AS TotalTrans,
+                            CAST (0 AS decimal) AS SubTotal, CAST (0 AS decimal) AS GrossAmount, 
+                            CAST (0 AS decimal) AS Disc, CAST (0 AS decimal) AS DiscHeader,
+                            CAST (0 AS decimal) AS Dpp, CAST (0 AS decimal) AS TaxAmount, CAST (0 AS decimal) AS Total
                             FROM General.Supplier sp
                             WHERE sp.IsActive = 1
                             GROUP BY sp.Code, sp.[Name]").ToList();
@@ -70,7 +76,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                             uc.Id AS UnitId, uc.UnitEquivalent AS UnitName,
                             CAST (0 AS int) AS TotalTrans, CAST (0 AS decimal) AS Qty, CAST (0 AS decimal) AS SubTotal,
                             CAST (0 AS decimal) AS Disc, CAST (0 AS decimal) AS DiscHeader, CAST (0 AS decimal) AS Dpp,
-                            CAST (0 AS decimal) AS TaxAmount, CAST (0 AS decimal) AS Total
+                            CAST (0 AS decimal) AS TaxAmount, CAST (0 AS decimal) AS Total, CAST (0 AS decimal) AS GrossAmount
                             FROM Inventory.ItemCategory ic
                             LEFT JOIN Inventory.Item im ON im.CategoryId = ic.Id 
                             LEFT JOIN Purchasing.PurchaseOrderDetail po_d ON po_d.ItemId = im.Id
@@ -121,6 +127,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                     poData.Add(new Entity.Purchase.ReportByPO
                     {
                         Code = "Total",
+                        GrossAmount = poData.Sum(x => x.GrossAmount),
                         SubTotal = poData.Sum(x => x.SubTotal),
                         Disc = poData.Sum(x => x.Disc),
                         Dpp = poData.Sum(x => x.Dpp),
@@ -150,11 +157,12 @@ namespace ERP.Web.API.Domain.Services.Purchase
                     foreach (var itemSup in supData)
                     {
                         itemSup.TotalTrans = poDetailData.Count(x => x.SupCode == itemSup.Code);
-                        itemSup.SubTotal = poDetailData.Where(x => x.SupCode == itemSup.Code).Sum(x => x.SubTotal);
-                        itemSup.Disc = poDetailData.Where(x => x.SupCode == itemSup.Code).Sum(x => x.Disc);
-                        itemSup.Dpp = poDetailData.Where(x => x.SupCode == itemSup.Code).Sum(x => x.Dpp);
-                        itemSup.TaxAmount = poDetailData.Where(x => x.SupCode == itemSup.Code).Sum(x => x.TaxAmount);
-                        itemSup.Total = poDetailData.Where(x => x.SupCode == itemSup.Code).Sum(x => x.Total);
+                        itemSup.GrossAmount = poDetailData.Where(x => x.SupCode == itemSup.Code).Sum(x => x.TotalGrossAmount);
+                        itemSup.Disc = poDetailData.Where(x => x.SupCode == itemSup.Code).Sum(x => x.TotalDisc + x.TotalDiscHeader);
+                        itemSup.SubTotal = poDetailData.Where(x => x.SupCode == itemSup.Code).Sum(x => x.TotalAfterDisc);
+                        itemSup.Dpp = poDetailData.Where(x => x.SupCode == itemSup.Code).Sum(x => x.TotalDpp);
+                        itemSup.TaxAmount = poDetailData.Where(x => x.SupCode == itemSup.Code).Sum(x => x.TotalTaxAmount);
+                        itemSup.Total = poDetailData.Where(x => x.SupCode == itemSup.Code).Sum(x => x.TotalNettPrice);
                     }
 
                     supData = supData.Where(x => x.TotalTrans > 0).OrderBy(x => x.Code).ToList();
@@ -163,6 +171,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                     {
                         Name = "Total",
                         TotalTrans = supData.Sum(x => x.TotalTrans),
+                        GrossAmount = supData.Sum(x => x.GrossAmount),
                         SubTotal = supData.Sum(x => x.SubTotal),
                         Disc = supData.Sum(x => x.Disc),
                         Dpp = supData.Sum(x => x.Dpp),
@@ -193,12 +202,13 @@ namespace ERP.Web.API.Domain.Services.Purchase
                     {
                         item.TotalTrans = poDetailData.Count(x => x.ItemInitial == item.Initial && x.UnitId == item.UnitId);
                         item.Qty = poDetailData.Where(x => x.ItemInitial == item.Initial && x.UnitId == item.UnitId).Sum(x => x.Qty);
-                        item.SubTotal = poDetailData.Where(x => x.ItemInitial == item.Initial && x.UnitId == item.UnitId).Sum(x => x.SubTotal);
-                        item.Disc = poDetailData.Where(x => x.ItemInitial == item.Initial && x.UnitId == item.UnitId).Sum(x => x.Disc);
-                        item.DiscHeader = poDetailData.Where(x => x.ItemInitial == item.Initial && x.UnitId == item.UnitId).Sum(x => x.DiscHeader);
-                        item.Dpp = poDetailData.Where(x => x.ItemInitial == item.Initial && x.UnitId == item.UnitId).Sum(x => x.Dpp);
-                        item.TaxAmount = poDetailData.Where(x => x.ItemInitial == item.Initial && x.UnitId == item.UnitId).Sum(x => x.TaxAmount);
-                        item.Total = poDetailData.Where(x => x.ItemInitial == item.Initial && x.UnitId == item.UnitId).Sum(x => x.Total);
+                        item.GrossAmount = poDetailData.Where(x => x.ItemInitial == item.Initial && x.UnitId == item.UnitId).Sum(x => x.TotalGrossAmount);
+                        item.SubTotal = poDetailData.Where(x => x.ItemInitial == item.Initial && x.UnitId == item.UnitId).Sum(x => x.TotalAfterDisc);
+                        item.Disc = poDetailData.Where(x => x.ItemInitial == item.Initial && x.UnitId == item.UnitId).Sum(x => x.TotalDisc);
+                        item.DiscHeader = poDetailData.Where(x => x.ItemInitial == item.Initial && x.UnitId == item.UnitId).Sum(x => x.TotalDiscHeader);
+                        item.Dpp = poDetailData.Where(x => x.ItemInitial == item.Initial && x.UnitId == item.UnitId).Sum(x => x.TotalDpp);
+                        item.TaxAmount = poDetailData.Where(x => x.ItemInitial == item.Initial && x.UnitId == item.UnitId).Sum(x => x.TotalTaxAmount);
+                        item.Total = poDetailData.Where(x => x.ItemInitial == item.Initial && x.UnitId == item.UnitId).Sum(x => x.TotalNettPrice);
                     }
 
                     itemData = itemData.Where(x => x.TotalTrans > 0).OrderBy(x => x.Initial).ToList();
@@ -208,6 +218,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                         Name = "Total",
                         TotalTrans = itemData.Sum(x => x.TotalTrans),
                         Qty = itemData.Sum(x => x.Qty),
+                        GrossAmount = itemData.Sum(x => x.GrossAmount),
                         SubTotal = itemData.Sum(x => x.SubTotal),
                         Disc = itemData.Sum(x => x.Disc),
                         DiscHeader = itemData.Sum(x => x.DiscHeader),
@@ -218,7 +229,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
 
                     return itemData.AsQueryable().ToDataSourceResult(0, itemData.Count, null, null);
                 }
-                else
+                else if (type == 4)
                 {
                     if (!string.IsNullOrEmpty(status))
                     {
@@ -234,12 +245,13 @@ namespace ERP.Web.API.Domain.Services.Purchase
                     {
                         item.TotalTrans = poDetailData.Count(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId);
                         item.Qty = poDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).Sum(x => x.Qty);
-                        item.SubTotal = poDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).Sum(x => x.SubTotal);
-                        item.Disc = poDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).Sum(x => x.Disc);
-                        item.DiscHeader = poDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).Sum(x => x.DiscHeader);
-                        item.Dpp = poDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).Sum(x => x.Dpp);
-                        item.TaxAmount = poDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).Sum(x => x.TaxAmount);
-                        item.Total = poDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).Sum(x => x.Total);
+                        item.GrossAmount = poDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).Sum(x => x.TotalGrossAmount);
+                        item.SubTotal = poDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).Sum(x => x.TotalAfterDisc);
+                        item.Disc = poDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).Sum(x => x.TotalDisc);
+                        item.DiscHeader = poDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).Sum(x => x.TotalDiscHeader);
+                        item.Dpp = poDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).Sum(x => x.TotalDpp);
+                        item.TaxAmount = poDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).Sum(x => x.TotalTaxAmount);
+                        item.Total = poDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).Sum(x => x.TotalNettPrice);
                     }
 
                     itemCategoryData = itemCategoryData.Where(x => x.TotalTrans > 0).OrderBy(x => x.Initial).ToList();
@@ -249,6 +261,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                         Name = "Total",
                         TotalTrans = itemCategoryData.Sum(x => x.TotalTrans),
                         Qty = itemCategoryData.Sum(x => x.Qty),
+                        GrossAmount = itemCategoryData.Sum(x => x.GrossAmount),
                         SubTotal = itemCategoryData.Sum(x => x.SubTotal),
                         Disc = itemCategoryData.Sum(x => x.Disc),
                         DiscHeader = itemCategoryData.Sum(x => x.DiscHeader),
@@ -258,6 +271,45 @@ namespace ERP.Web.API.Domain.Services.Purchase
                     });
 
                     return itemCategoryData.AsQueryable().ToDataSourceResult(0, itemCategoryData.Count, null, null);
+                }
+                else
+                {
+                    if (!string.IsNullOrEmpty(status))
+                    {
+                        poDetailData = poDetailData.Where(x => poData.Select(y => y.Code).Contains(x.Code)).ToList();
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(supCode))
+                    {
+                        poDetailData = poDetailData.Where(x => x.SupCode == supCode).ToList();
+                    }
+
+                    if (categoryId.HasValue || categoryId > 0)
+                    {
+                        poDetailData = poDetailData.Where(x => itemCategoryData.Select(y => y.CategoryId).Contains(x.CategoryId)).ToList();
+                    }
+
+                    if (unitId.HasValue || unitId > 0)
+                    {
+                        poDetailData = poDetailData.Where(x => x.UnitId == unitId).ToList();
+                    }
+
+                    poDetailData = poDetailData.OrderBy(x => x.Date).ToList();
+
+                    poDetailData.Add(new Entity.Purchase.ReportByDetailPO
+                    {
+                        Code = "Total",
+                        Qty = poDetailData.Sum(x => x.Qty),
+                        TotalGrossAmount = poDetailData.Sum(x => x.TotalGrossAmount),
+                        TotalDisc = poDetailData.Sum(x => x.TotalDisc),
+                        TotalDiscHeader = poDetailData.Sum(x => x.TotalDiscHeader),
+                        TotalAfterDisc = poDetailData.Sum(x => x.TotalAfterDisc),
+                        TotalDpp = poDetailData.Sum(x => x.TotalDpp),
+                        TotalTaxAmount = poDetailData.Sum(x => x.TotalTaxAmount),
+                        TotalNettPrice = poDetailData.Sum(x => x.TotalNettPrice)
+                    });
+
+                    return poDetailData.AsQueryable().ToDataSourceResult(0, poDetailData.Count, null, null);
                 }
             }
             else
@@ -275,12 +327,13 @@ namespace ERP.Web.API.Domain.Services.Purchase
                     {
                         Code = "Total",
                         Qty = poDetailData.Sum(x => x.Qty),
-                        SubTotal = poDetailData.Sum(x => x.SubTotal),
-                        Disc = poDetailData.Sum(x => x.Disc),
-                        DiscHeader = poDetailData.Sum(x => x.DiscHeader),
-                        Dpp = poDetailData.Sum(x => x.Dpp),
-                        TaxAmount = poDetailData.Sum(x => x.TaxAmount),
-                        Total = poDetailData.Sum(x => x.Total)
+                        TotalGrossAmount = poDetailData.Sum(x => x.TotalGrossAmount),
+                        TotalDisc = poDetailData.Sum(x => x.TotalDisc),
+                        TotalDiscHeader = poDetailData.Sum(x => x.TotalDiscHeader),
+                        TotalAfterDisc = poDetailData.Sum(x => x.TotalAfterDisc),
+                        TotalDpp = poDetailData.Sum(x => x.TotalDpp),
+                        TotalTaxAmount = poDetailData.Sum(x => x.TotalTaxAmount),
+                        TotalNettPrice = poDetailData.Sum(x => x.TotalNettPrice)
                     });
 
                     return poDetailData.AsQueryable().ToDataSourceResult(0, poDetailData.Count, null, null);
@@ -313,12 +366,13 @@ namespace ERP.Web.API.Domain.Services.Purchase
                     {
                         Code = "Total",
                         Qty = poDetailData.Sum(x => x.Qty),
-                        SubTotal = poDetailData.Sum(x => x.SubTotal),
-                        Disc = poDetailData.Sum(x => x.Disc),
-                        DiscHeader = poDetailData.Sum(x => x.DiscHeader),
-                        Dpp = poDetailData.Sum(x => x.Dpp),
-                        TaxAmount = poDetailData.Sum(x => x.TaxAmount),
-                        Total = poDetailData.Sum(x => x.Total)
+                        TotalGrossAmount = poDetailData.Sum(x => x.TotalGrossAmount),
+                        TotalDisc = poDetailData.Sum(x => x.TotalDisc),
+                        TotalDiscHeader = poDetailData.Sum(x => x.TotalDiscHeader),
+                        TotalAfterDisc = poDetailData.Sum(x => x.TotalAfterDisc),
+                        TotalDpp = poDetailData.Sum(x => x.TotalDpp),
+                        TotalTaxAmount = poDetailData.Sum(x => x.TotalTaxAmount),
+                        TotalNettPrice = poDetailData.Sum(x => x.TotalNettPrice)
                     });
 
                     return poDetailData.AsQueryable().ToDataSourceResult(0, poDetailData.Count, null, null);

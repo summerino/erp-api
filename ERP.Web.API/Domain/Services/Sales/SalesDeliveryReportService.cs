@@ -105,12 +105,7 @@ namespace ERP.Web.API.Domain.Services.Sales
 
             if (srcTrans.HasValue || srcTrans > 0)
             {
-                if (srcTrans.Value == 1)
-                {
-                    doData = doData.Where(x => x.SrcTrans == srcTrans.Value).ToList();
-                    doDetailData = doDetailData.Where(x => x.SrcTrans == srcTrans.Value).ToList();
-                }
-                else if (srcTrans.Value == 2)
+                if (srcTrans.Value == 1 || srcTrans.Value == 2)
                 {
                     doData = doData.Where(x => x.SrcTrans == srcTrans.Value).ToList();
                     doDetailData = doDetailData.Where(x => x.SrcTrans == srcTrans.Value).ToList();

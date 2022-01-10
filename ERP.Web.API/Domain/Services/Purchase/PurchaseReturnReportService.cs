@@ -17,7 +17,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
         public DataSourceResult GetData(int type, string startDate, string endDate, string supCode, string status, int? itemId, string code, bool isDetail, int? unitId, int? categoryId)
         {
             var prData = _db.ReportByPRs.FromSqlRaw(@"SELECT pr.[Date], pr.Code, pr.SupCode,
-                            pr.SupName, SUM(pr_d.UnitPrice * pr_d.Qty) AS SubTotal,
+                            pr.SupName, SUM(pr_d.UnitPrice * pr_d.Qty) AS GrossAmount,
                             pr.DPP, pr.TaxAmount, pr.Total,
                             CASE pr.[Type] 
 	                            When '1' THEN 'Tukar Memo'
@@ -36,9 +36,11 @@ namespace ERP.Web.API.Domain.Services.Purchase
                             pr.DPP, pr.TaxAmount, pr.Total, pr.[Type], pr.Mark").ToList();
 
             var prDetailData = _db.ReportByDetailPRs.FromSqlRaw(@"SELECT pr.[Date], pr.Code, pr.SupCode, pr.SupName,
-                            im.Initial AS ItemInitial, im.[Name] AS ItemName, wh.[Name] AS WarehouseName,
-                            pr_d.Qty, pr_d.UnitPrice * pr_d.Qty AS SubTotal, pr_d.UnitId, pr_d.UnitName,
-                            pr_d.DPP  * pr_d.Qty AS DPP, pr_d.TaxAmount * pr_d.Qty AS TaxAmount, pr_d.Total,
+                            im.Initial AS ItemInitial, im.[Name] AS ItemName, wh.[Name] AS WarehouseName, pr_d.Qty,
+                            pr_d.UnitId, pr_d.UnitName, pr_d.UnitPrice AS GrossAmount,
+                            pr_d.DPP, pr_d.TaxAmount, pr_d.NettPrice,
+                            pr_d.UnitPrice * pr_d.Qty AS TotalGrossAmount, pr_d.DPP * pr_d.Qty AS TotalDPP,
+                            pr_d.TaxAmount * pr_d.Qty AS TotalTaxAmount, pr_d.NettPrice * pr_d.Qty AS TotalNettPrice,
                             CASE pr.[Type] 
 	                            When '1' THEN 'Tukar Memo'
 	                            When '2' THEN 'Tukar Barang Sama'
@@ -62,7 +64,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                             uc.Id AS UnitId, uc.UnitEquivalent AS UnitName,
                             CAST (0 AS int) AS TotalTrans, CAST (0 AS decimal) AS Qty, CAST (0 AS decimal) AS SubTotal,
                             CAST (0 AS decimal) AS Disc, CAST (0 AS decimal) AS DiscHeader, CAST (0 AS decimal) AS Dpp,
-                            CAST (0 AS decimal) AS TaxAmount, CAST (0 AS decimal) AS Total
+                            CAST (0 AS decimal) AS TaxAmount, CAST (0 AS decimal) AS Total, CAST (0 AS decimal) AS GrossAmount
                             FROM Inventory.Item im
                             LEFT JOIN Purchasing.PurchaseReturnDetail rtn_d ON rtn_d.ItemId = im.Id
                             LEFT JOIN Inventory.ItemCategory ic ON ic.Id = im.CategoryId
@@ -70,8 +72,10 @@ namespace ERP.Web.API.Domain.Services.Purchase
                             WHERE uc.Id IS NOT NULL
                             GROUP BY im.Initial, im.[Name], ic.Id, ic.Initial, uc.Id, uc.UnitEquivalent").ToList();
 
-            var supData = _db.ReportBySupplierPurchases.FromSqlRaw(@"SELECT sp.Code, sp.[Name], CAST (0 AS int) AS TotalTrans, CAST (0 AS decimal) AS SubTotal,
-                            CAST (0 AS decimal) AS Disc, CAST (0 AS decimal) AS Dpp, CAST (0 AS decimal) AS TaxAmount, CAST (0 AS decimal) AS Total
+            var supData = _db.ReportBySupplierPurchases.FromSqlRaw(@"SELECT sp.Code, sp.[Name], CAST (0 AS int) AS TotalTrans,
+                            CAST (0 AS decimal) AS SubTotal, CAST (0 AS decimal) AS GrossAmount, 
+                            CAST (0 AS decimal) AS Disc, CAST (0 AS decimal) AS DiscHeader,
+                            CAST (0 AS decimal) AS Dpp, CAST (0 AS decimal) AS TaxAmount, CAST (0 AS decimal) AS Total
                             FROM General.Supplier sp
                             WHERE sp.IsActive = 1
                             GROUP BY sp.Code, sp.[Name]").ToList();
@@ -80,7 +84,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                             uc.Id AS UnitId, uc.UnitEquivalent AS UnitName,
                             CAST (0 AS int) AS TotalTrans, CAST (0 AS decimal) AS Qty, CAST (0 AS decimal) AS SubTotal,
                             CAST (0 AS decimal) AS Disc, CAST (0 AS decimal) AS DiscHeader, CAST (0 AS decimal) AS Dpp,
-                            CAST (0 AS decimal) AS TaxAmount, CAST (0 AS decimal) AS Total
+                            CAST (0 AS decimal) AS TaxAmount, CAST (0 AS decimal) AS Total, CAST (0 AS decimal) AS GrossAmount
                             FROM Inventory.ItemCategory ic
                             LEFT JOIN Inventory.Item im ON im.CategoryId = ic.Id 
                             LEFT JOIN Purchasing.PurchaseReturnDetail rtn_d ON rtn_d.ItemId = im.Id
@@ -131,7 +135,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                     prData.Add(new Entity.Purchase.ReportByPR
                     {
                         Code = "Total",
-                        SubTotal = prData.Sum(x => x.SubTotal),
+                        GrossAmount = prData.Sum(x => x.GrossAmount),
                         Dpp = prData.Sum(x => x.Dpp),
                         TaxAmount = prData.Sum(x => x.TaxAmount),
                         Total = prData.Sum(x => x.Total)
@@ -159,10 +163,10 @@ namespace ERP.Web.API.Domain.Services.Purchase
                     foreach (var itemSup in supData)
                     {
                         itemSup.TotalTrans = prDetailData.Count(x => x.SupCode == itemSup.Code);
-                        itemSup.SubTotal = prDetailData.Where(x => x.SupCode == itemSup.Code).Sum(x => x.SubTotal);
-                        itemSup.Dpp = prDetailData.Where(x => x.SupCode == itemSup.Code).Sum(x => x.Dpp);
-                        itemSup.TaxAmount = prDetailData.Where(x => x.SupCode == itemSup.Code).Sum(x => x.TaxAmount);
-                        itemSup.Total = prDetailData.Where(x => x.SupCode == itemSup.Code).Sum(x => x.Total);
+                        itemSup.GrossAmount = prDetailData.Where(x => x.SupCode == itemSup.Code).Sum(x => x.TotalGrossAmount);
+                        itemSup.Dpp = prDetailData.Where(x => x.SupCode == itemSup.Code).Sum(x => x.TotalDpp);
+                        itemSup.TaxAmount = prDetailData.Where(x => x.SupCode == itemSup.Code).Sum(x => x.TotalTaxAmount);
+                        itemSup.Total = prDetailData.Where(x => x.SupCode == itemSup.Code).Sum(x => x.TotalNettPrice);
                     }
 
                     supData = supData.Where(x => x.TotalTrans > 0).OrderBy(x => x.Code).ToList();
@@ -171,8 +175,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                     {
                         Name = "Total",
                         TotalTrans = supData.Sum(x => x.TotalTrans),
-                        SubTotal = supData.Sum(x => x.SubTotal),
-                        Disc = supData.Sum(x => x.Disc),
+                        GrossAmount = supData.Sum(x => x.GrossAmount),
                         Dpp = supData.Sum(x => x.Dpp),
                         TaxAmount = supData.Sum(x => x.TaxAmount),
                         Total = supData.Sum(x => x.Total)
@@ -201,10 +204,10 @@ namespace ERP.Web.API.Domain.Services.Purchase
                     {
                         item.TotalTrans = prDetailData.Count(x => x.ItemInitial == item.Initial && x.UnitId == item.UnitId);
                         item.Qty = prDetailData.Where(x => x.ItemInitial == item.Initial && x.UnitId == item.UnitId).Sum(x => x.Qty);
-                        item.SubTotal = prDetailData.Where(x => x.ItemInitial == item.Initial && x.UnitId == item.UnitId).Sum(x => x.SubTotal);
-                        item.Dpp = prDetailData.Where(x => x.ItemInitial == item.Initial && x.UnitId == item.UnitId).Sum(x => x.Dpp);
-                        item.TaxAmount = prDetailData.Where(x => x.ItemInitial == item.Initial && x.UnitId == item.UnitId).Sum(x => x.TaxAmount);
-                        item.Total = prDetailData.Where(x => x.ItemInitial == item.Initial && x.UnitId == item.UnitId).Sum(x => x.Total);
+                        item.GrossAmount = prDetailData.Where(x => x.ItemInitial == item.Initial && x.UnitId == item.UnitId).Sum(x => x.TotalGrossAmount);
+                        item.Dpp = prDetailData.Where(x => x.ItemInitial == item.Initial && x.UnitId == item.UnitId).Sum(x => x.TotalDpp);
+                        item.TaxAmount = prDetailData.Where(x => x.ItemInitial == item.Initial && x.UnitId == item.UnitId).Sum(x => x.TotalTaxAmount);
+                        item.Total = prDetailData.Where(x => x.ItemInitial == item.Initial && x.UnitId == item.UnitId).Sum(x => x.TotalNettPrice);
                     }
 
                     itemData = itemData.Where(x => x.TotalTrans > 0).OrderBy(x => x.Initial).ToList();
@@ -214,7 +217,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                         Name = "Total",
                         TotalTrans = itemData.Sum(x => x.TotalTrans),
                         Qty = itemData.Sum(x => x.Qty),
-                        SubTotal = itemData.Sum(x => x.SubTotal),
+                        GrossAmount = itemData.Sum(x => x.GrossAmount),
                         Disc = itemData.Sum(x => x.Disc),
                         DiscHeader = itemData.Sum(x => x.DiscHeader),
                         Dpp = itemData.Sum(x => x.Dpp),
@@ -224,7 +227,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
 
                     return itemData.AsQueryable().ToDataSourceResult(0, itemData.Count, null, null);
                 }
-                else
+                else if (type == 4)
                 {
                     if (!string.IsNullOrEmpty(status))
                     {
@@ -240,10 +243,10 @@ namespace ERP.Web.API.Domain.Services.Purchase
                     {
                         item.TotalTrans = prDetailData.Count(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId);
                         item.Qty = prDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).Sum(x => x.Qty);
-                        item.SubTotal = prDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).Sum(x => x.SubTotal);
-                        item.Dpp = prDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).Sum(x => x.Dpp);
-                        item.TaxAmount = prDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).Sum(x => x.TaxAmount);
-                        item.Total = prDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).Sum(x => x.Total);
+                        item.GrossAmount = prDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).Sum(x => x.TotalGrossAmount);
+                        item.Dpp = prDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).Sum(x => x.TotalDpp);
+                        item.TaxAmount = prDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).Sum(x => x.TotalTaxAmount);
+                        item.Total = prDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).Sum(x => x.TotalNettPrice);
                     }
 
                     itemCategoryData = itemCategoryData.Where(x => x.TotalTrans > 0).OrderBy(x => x.Initial).ToList();
@@ -253,15 +256,49 @@ namespace ERP.Web.API.Domain.Services.Purchase
                         Name = "Total",
                         TotalTrans = itemCategoryData.Sum(x => x.TotalTrans),
                         Qty = itemCategoryData.Sum(x => x.Qty),
-                        SubTotal = itemCategoryData.Sum(x => x.SubTotal),
-                        Disc = itemCategoryData.Sum(x => x.Disc),
-                        DiscHeader = itemCategoryData.Sum(x => x.DiscHeader),
+                        GrossAmount = itemCategoryData.Sum(x => x.GrossAmount),
                         Dpp = itemCategoryData.Sum(x => x.Dpp),
                         TaxAmount = itemCategoryData.Sum(x => x.TaxAmount),
                         Total = itemCategoryData.Sum(x => x.Total)
                     });
 
                     return itemCategoryData.AsQueryable().ToDataSourceResult(0, itemCategoryData.Count, null, null);
+                }
+                else
+                {
+                    if (!string.IsNullOrEmpty(status))
+                    {
+                        prDetailData = prDetailData.Where(x => prData.Select(y => y.Code).Contains(x.Code)).ToList();
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(supCode))
+                    {
+                        prDetailData = prDetailData.Where(x => x.SupCode == supCode).ToList();
+                    }
+
+                    if (categoryId.HasValue || categoryId > 0)
+                    {
+                        prDetailData = prDetailData.Where(x => itemCategoryData.Select(y => y.CategoryId).Contains(x.CategoryId)).ToList();
+                    }
+
+                    if (unitId.HasValue || unitId > 0)
+                    {
+                        prDetailData = prDetailData.Where(x => x.UnitId == unitId).ToList();
+                    }
+
+                    prDetailData = prDetailData.OrderBy(x => x.Date).ToList();
+
+                    prDetailData.Add(new Entity.Purchase.ReportByDetailPR
+                    {
+                        Code = "Total",
+                        Qty = prDetailData.Sum(x => x.Qty),
+                        TotalGrossAmount = prDetailData.Sum(x => x.TotalGrossAmount),
+                        TotalDpp = prDetailData.Sum(x => x.TotalDpp),
+                        TotalTaxAmount = prDetailData.Sum(x => x.TotalTaxAmount),
+                        TotalNettPrice = prDetailData.Sum(x => x.TotalNettPrice)
+                    });
+
+                    return prDetailData.AsQueryable().ToDataSourceResult(0, prDetailData.Count, null, null);
                 }
             }
             else
@@ -279,10 +316,10 @@ namespace ERP.Web.API.Domain.Services.Purchase
                     {
                         Code = "Total",
                         Qty = prDetailData.Sum(x => x.Qty),
-                        SubTotal = prDetailData.Sum(x => x.SubTotal),
-                        Dpp = prDetailData.Sum(x => x.Dpp),
-                        TaxAmount = prDetailData.Sum(x => x.TaxAmount),
-                        Total = prDetailData.Sum(x => x.Total)
+                        TotalGrossAmount = prDetailData.Sum(x => x.TotalGrossAmount),
+                        TotalDpp = prDetailData.Sum(x => x.TotalDpp),
+                        TotalTaxAmount = prDetailData.Sum(x => x.TotalTaxAmount),
+                        TotalNettPrice = prDetailData.Sum(x => x.TotalNettPrice)
                     });
 
                     return prDetailData.AsQueryable().ToDataSourceResult(0, prDetailData.Count, null, null);
@@ -315,10 +352,10 @@ namespace ERP.Web.API.Domain.Services.Purchase
                     {
                         Code = "Total",
                         Qty = prDetailData.Sum(x => x.Qty),
-                        SubTotal = prDetailData.Sum(x => x.SubTotal),
-                        Dpp = prDetailData.Sum(x => x.Dpp),
-                        TaxAmount = prDetailData.Sum(x => x.TaxAmount),
-                        Total = prDetailData.Sum(x => x.Total)
+                        TotalGrossAmount = prDetailData.Sum(x => x.TotalGrossAmount),
+                        TotalDpp = prDetailData.Sum(x => x.TotalDpp),
+                        TotalTaxAmount = prDetailData.Sum(x => x.TotalTaxAmount),
+                        TotalNettPrice = prDetailData.Sum(x => x.TotalNettPrice)
                     });
 
                     return prDetailData.AsQueryable().ToDataSourceResult(0, prDetailData.Count, null, null);

@@ -22,6 +22,8 @@ namespace ERP.Entity.Purchase
 
         public string SupName { get; set; }
 
+        public decimal GrossAmount { get; set; }
+
         public decimal SubTotal { get; set; }
 
         public decimal Disc { get; set; }
@@ -33,6 +35,10 @@ namespace ERP.Entity.Purchase
         public decimal Total { get; set; }
 
         public string Status { get; set; }
+
+        public string TaxInvoiceNo { get; set; }
+
+        public DateTime? TaxInvoiceDate { get; set; }
     }
 
     public class ReportByDetailRCV
@@ -67,18 +73,38 @@ namespace ERP.Entity.Purchase
 
         public string UnitName { get; set; }
 
-        public decimal SubTotal { get; set; }
+        public decimal? GrossAmount { get; set; }
 
-        public decimal Disc { get; set; }
+        public decimal? SubTotal { get; set; }
 
-        public decimal DiscHeader { get; set; }
+        public decimal? Disc { get; set; }
 
-        public decimal Dpp { get; set; }
+        public decimal? DiscHeader { get; set; }
 
-        public decimal TaxAmount { get; set; }
+        public decimal? Dpp { get; set; }
 
-        public decimal Total { get; set; }
+        public decimal? TaxAmount { get; set; }
+
+        public decimal? NettPrice { get; set; }
+
+        public decimal TotalGrossAmount { get; set; }
+
+        public decimal TotalDisc { get; set; }
+
+        public decimal TotalDiscHeader { get; set; }
+
+        public decimal TotalAfterDisc { get; set; }
+
+        public decimal TotalDpp { get; set; }
+
+        public decimal TotalTaxAmount { get; set; }
+
+        public decimal TotalNettPrice { get; set; }
 
         public string Status { get; set; }
+
+        public string TaxInvoiceNo { get; set; }
+
+        public DateTime? TaxInvoiceDate { get; set; }
     }
 }

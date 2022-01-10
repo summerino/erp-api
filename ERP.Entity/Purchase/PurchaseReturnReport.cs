@@ -18,7 +18,7 @@ namespace ERP.Entity.Purchase
 
         public string SupName { get; set; }
 
-        public decimal SubTotal { get; set; }
+        public decimal GrossAmount { get; set; }
 
         public decimal Dpp { get; set; }
 
@@ -57,13 +57,21 @@ namespace ERP.Entity.Purchase
 
         public string UnitName { get; set; }
 
-        public decimal SubTotal { get; set; }
+        public decimal? GrossAmount { get; set; }
 
-        public decimal Dpp { get; set; }
+        public decimal? Dpp { get; set; }
 
-        public decimal TaxAmount { get; set; }
+        public decimal? TaxAmount { get; set; }
 
-        public decimal Total { get; set; }
+        public decimal? NettPrice { get; set; }
+
+        public decimal TotalGrossAmount { get; set; }
+
+        public decimal TotalDpp { get; set; }
+
+        public decimal TotalTaxAmount { get; set; }
+
+        public decimal TotalNettPrice { get; set; }
 
         public string Status { get; set; }
     }
