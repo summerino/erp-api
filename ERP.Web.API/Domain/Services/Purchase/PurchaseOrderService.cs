@@ -117,7 +117,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                 var newCode = GetNewCode("PO_NUM_FMT", data.Date);
 
                 data.Code = newCode;
-                
+
                 // Insert detail data
                 short i = 0;
                 foreach (var item in data.ItemDetails)
@@ -896,7 +896,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
             return result;
         }
 
-        private (bool,string) CheckDuplicateDetail(IEnumerable<PurchaseOrderDetail> data) 
+        private (bool, string) CheckDuplicateDetail(IEnumerable<PurchaseOrderDetail> data)
         {
             var tData = data.GroupBy(x => new { x.ItemId, x.UnitId }).Where(y => y.Count() > 1);
             var errorList = "";
@@ -906,7 +906,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                 var uom = Db.UoMConversions.FirstOrDefault(x => x.Id == itemData.Key.UnitId);
                 errorList += $"&bull; Barang {item.Initial} dengan satuan {uom.UnitEquivalent} tidak dapat duplikat.<br/>";
             }
-                
+
             return (errorList != "", errorList);
         }
 
@@ -950,6 +950,8 @@ namespace ERP.Web.API.Domain.Services.Purchase
                                  srcTrans = 2
                              }).AsQueryable();
 
+            dataRetur = dataRetur.Where(x => x.Mark != "CMP" && x.Mark != "V");
+
             var data = dataOrder.Union(dataRetur);
 
             if (!string.IsNullOrEmpty(search))
@@ -973,51 +975,48 @@ namespace ERP.Web.API.Domain.Services.Purchase
                 var data = from order_d in Db.VwPurchaseOrderDetails
                            join order_h in Db.VwPurchaseOrderHeaders on order_d.Code equals order_h.Code
                            join item in Db.Items on order_d.ItemId equals item.Id
-                           where order_d.Code.Equals(code) && order_d.Qty <= order_d.QtyRcv
+                           where order_d.Code.Equals(code) && order_d.Qty > order_d.QtyRcv
                            select new PurchaseOrderDetailModel
                            {
                                Code = order_d.Code,
                                LineNo = order_d.LineNo,
                                ItemId = order_d.ItemId,
+                               ItemInitial = item.Initial,
+                               ItemName = order_d.ItemName,
+                               UnitName = order_d.UnitName,
                                OrderQty = order_d.Qty,
                                ReceiveQty = order_d.QtyRcv,
                                TransDetailId = 2,
                                Type = order_d.Type,
                                UnitId = order_d.UnitId,
                                UomId = order_d.UomId,
-                               WarehouseCode = order_h.WarehouseCode ?? "",
-
-                               ItemInitial = item.Initial,
-                               ItemName = order_d.ItemName,
-                               UnitName = order_d.UnitName
+                               WarehouseCode = order_h.WarehouseCode ?? ""
                            };
-                return data;
+                return data.OrderBy(x => x.LineNo);
             }
             else
             {
                 var data = from retur_d in Db.VwPurchaseReturnDetails
-                           join retur_h in Db.VwPurchaseReturnHeaders on retur_d.Code equals retur_h.Code
                            join item in Db.Items on retur_d.ItemId equals item.Id
-                           where retur_d.Code.Equals(code) && retur_d.Qty <= retur_d.QtyRcv
+                           where retur_d.Code.Equals(code) && retur_d.Qty > retur_d.QtyRcv
                            select new PurchaseOrderDetailModel
                            {
                                Code = retur_d.Code,
                                LineNo = retur_d.LineNo,
                                ItemId = retur_d.ItemId,
+                               ItemInitial = item.Initial,
+                               ItemName = retur_d.ItemName,
+                               UnitName = retur_d.UnitName,
                                OrderQty = retur_d.Qty,
                                ReceiveQty = retur_d.QtyRcv,
                                TransDetailId = 1,
-                               Type = retur_h.Type, // type apa?
+                               Type = 0,
                                UnitId = retur_d.UnitId,
                                UomId = retur_d.UomId,
-                               WarehouseCode = retur_d.WarehouseCode ?? "",
-
-                               ItemInitial = item.Initial,
-                               ItemName = retur_d.ItemName,
-                               UnitName = retur_d.UnitName
+                               WarehouseCode = retur_d.WarehouseCode ?? ""
                            };
 
-                return data;
+                return data.OrderBy(x => x.LineNo);
             }
         }
 
@@ -1145,7 +1144,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
             try
             {
                 var date = DateTime.Now;
-                var newCode = GetNewCode("RCV_NUM_FMT", data.Date);
+                var newCode = GetNewCode("MOB_RCV_NUM_FMT", data.Date);
 
                 data.Code = newCode;
 

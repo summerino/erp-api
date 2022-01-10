@@ -49,7 +49,7 @@ namespace ERP.Web.API.Domain.Services.Mobile.NetRevenue
                                   });
 
             var data = leftoutrtjoin.Union(rightouterjoin);
-            
+
             if (date != null && date != "")
             {
                 var date1 = DateTime.ParseExact(date, "yyyy-MM-dd", null);
@@ -74,6 +74,7 @@ namespace ERP.Web.API.Domain.Services.Mobile.NetRevenue
                            CoaName = coa.Name,
                            Amount = payment.Amount,
                        };
+
             return data.ToList();
         }
 
@@ -92,6 +93,7 @@ namespace ERP.Web.API.Domain.Services.Mobile.NetRevenue
                            CoaName = coa.Name,
                            Amount = cost.Amount
                        };
+
             return data.ToList();
         }
 
@@ -111,6 +113,7 @@ namespace ERP.Web.API.Domain.Services.Mobile.NetRevenue
                            Amount = payment.Amount,
                            TransCode = payment.TransCode,
                        };
+
             return data.ToDataSourceResult(skip, take, filter, sort);
         }
     }
