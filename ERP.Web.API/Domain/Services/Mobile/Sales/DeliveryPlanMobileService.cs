@@ -198,7 +198,7 @@ namespace ERP.Web.API.Domain.Services.Mobile.Sales
             try
             {
                 var date = DateTime.Now;
-                var newCode = GetNewCode("DLV_PLAN_NUM_FMT", DateTime.Now.Date);
+                var newCode = GetNewCode("MOB_DLV_NUM_FMT", DateTime.Now.Date);
 
                 data.Code = newCode;
 
