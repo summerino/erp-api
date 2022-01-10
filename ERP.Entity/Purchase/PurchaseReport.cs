@@ -23,6 +23,8 @@ namespace ERP.Entity.Purchase
 
         public string UnitName { get; set; }
 
+        public decimal GrossAmount { get; set; }
+
         public decimal SubTotal { get; set; }
 
         public decimal Disc { get; set; }
@@ -43,6 +45,8 @@ namespace ERP.Entity.Purchase
         public string Name { get; set; }
 
         public int TotalTrans { get; set; }
+
+        public decimal GrossAmount { get; set; }
 
         public decimal SubTotal { get; set; }
 
@@ -72,6 +76,8 @@ namespace ERP.Entity.Purchase
         public int UnitId { get; set; }
 
         public string UnitName { get; set; }
+
+        public decimal GrossAmount { get; set; }
 
         public decimal SubTotal { get; set; }
 
