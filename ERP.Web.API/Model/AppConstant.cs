@@ -127,6 +127,7 @@
         // Finance
         CashBank = 82,
         InterCashBank = 83,
+        OutstandingChequeReport = 149,
 
         // Accounting
         COA = 66,
