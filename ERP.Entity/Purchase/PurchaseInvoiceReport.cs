@@ -28,6 +28,8 @@ namespace ERP.Entity.Purchase
 
         public decimal Disc { get; set; }
 
+        public decimal DiscHeader { get; set; }
+
         public decimal Dpp { get; set; }
 
         public decimal TaxAmount { get; set; }
