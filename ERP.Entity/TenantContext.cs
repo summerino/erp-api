@@ -150,6 +150,7 @@ namespace ERP.Entity
         public DbSet<ReportByStockMutation> ReportByStockMutations { get; set; }
         public DbSet<ReportByItem> ReportByItems { get; set; }
         public DbSet<ReportByWarehouse> ReportByWarehouses { get; set; }
+        public DbSet<ReportByTypeSM> ReportByTypeSMs { get; set; }
 
         // Mobile Customer entities
         public DbSet<MobileCustomer.MobileOrderHeader> MobileCustomerOrderHeaders { get; set; }
@@ -1170,6 +1171,10 @@ namespace ERP.Entity
             modelBuilder.Entity<ReportByWarehouse>()
                .HasNoKey()
                .ToTable("ReportByWarehouse", t => t.ExcludeFromMigrations());
+
+            modelBuilder.Entity<ReportByTypeSM>()
+               .HasNoKey()
+               .ToTable("ReportByTypeSM", t => t.ExcludeFromMigrations());
 
             // Mobile Customer entities
             // Mobile Order model
