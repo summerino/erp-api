@@ -55,7 +55,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                             SELECT ch.[Date], ch.DueDate, ch.Code, 
                             ch.OrderCode, ch.SupCode, ch.SupName, ch.RefNo,
                             SUM(ch.GrossAmount) AS GrossAmount, SUM(ch.SubTotal) AS SubTotal,
-                            SUM(ch.Disc) AS Disc, SUM(ch.DiscHeader) AS DiscHeader, SUM(ch.DPP) AS DPP,
+                            SUM(ch.Disc + ch.DiscHeader) AS Disc, SUM(ch.DPP) AS DPP,
                             SUM(ch.TaxAmount) AS TaxAmount, SUM(ch.Total) AS Total, ch.[Status]
                             FROM cte_header ch
                             GROUP BY ch.[Date], ch.DueDate, ch.Code, ch.OrderCode, ch.SupCode, ch.SupName, ch.RefNo, ch.[Status]").ToList();
@@ -184,7 +184,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                         Code = "Total",
                         GrossAmount = invData.Sum(x => x.GrossAmount),
                         SubTotal = invData.Sum(x => x.SubTotal),
-                        Disc = invData.Sum(x => x.Disc + x.DiscHeader),
+                        Disc = invData.Sum(x => x.Disc),
                         Dpp = invData.Sum(x => x.Dpp),
                         TaxAmount = invData.Sum(x => x.TaxAmount),
                         Total = invData.Sum(x => x.Total)
