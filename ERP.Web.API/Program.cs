@@ -189,6 +189,7 @@ builder.Services.AddScoped<ICashBankService, CashBankService>();
 builder.Services.AddScoped<ICashBankTypeService, CashBankTypeService>();
 builder.Services.AddScoped<IInterCashBankService, InterCashBankService>();
 builder.Services.AddScoped<ICBReportService, CBReportService>();
+builder.Services.AddScoped<IOutstandingChequeReportService, OutstandingChequeReportService>();
 
 // General services
 builder.Services.AddScoped<IApprovalService, ApprovalService>();
