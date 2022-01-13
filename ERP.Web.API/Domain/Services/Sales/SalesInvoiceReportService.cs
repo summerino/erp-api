@@ -30,7 +30,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                             LEFT JOIN Sales.vwSalesDeliveryHeader dlv ON inv_d.DOCode = dlv.Code
                             LEFT JOIN Sales.SalesDeliveryDetail dlv_d ON dlv.Code = dlv_d.Code" +
                             (string.IsNullOrEmpty(status) ? "" : status == "A" ? $" WHERE inv.Mark IN('A', 'PP', 'CMP')" : $" WHERE inv.Mark = '{status.Replace("'", "''")}'") +
-                            @"GROUP BY inv.[Date], inv.DueDate, inv.Code, inv.SOCode, inv.CustCode, inv.CustName, dlv.DPP, dlv.TaxAmount, dlv.Total, inv.Mark)
+                            @" GROUP BY inv.[Date], inv.DueDate, inv.Code, inv.SOCode, inv.CustCode, inv.CustName, dlv.DPP, dlv.TaxAmount, dlv.Total, inv.Mark)
                             SELECT ch.[Date], ch.DueDate, ch.Code, 
                             ch.OrderCode, ch.CustCode, ch.CustName,
                             SUM(ch.GrossAmount) AS GrossAmount, SUM(ch.SubTotal) AS SubTotal,
