@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 using ERP.Entity.Core;
+using System;
 
 namespace ERP.Entity.MobileWarehouse
 {
@@ -28,7 +29,6 @@ namespace ERP.Entity.MobileWarehouse
         
         public string SignatureImage { get; set; }
 
-
         public string CreatedInitial { get; set; }
 
         public string UpdatedInitial { get; set; }
@@ -38,6 +38,16 @@ namespace ERP.Entity.MobileWarehouse
         public string RejectedInitial { get; set; }
 
         public string Status { get; set; }
+
+        public DateTime Date { get; set; }
+
+        public string WarehouseCodeFrom { get; set; }
+
+        public string WarehouseInitialFrom { get; set; }
+
+        public string WarehouseCodeTo { get; set; }
+
+        public string WarehouseInitialTo { get; set; }
     }
 
     [Table("MobileTransferStockDetail", Schema = Schema.MobileWarehouse)]
