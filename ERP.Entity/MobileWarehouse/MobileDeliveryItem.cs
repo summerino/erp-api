@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 using ERP.Entity.Core;
+using System;
 
 namespace ERP.Entity.MobileWarehouse
 {
@@ -38,6 +39,12 @@ namespace ERP.Entity.MobileWarehouse
         public string RejectedInitial { get; set; }
 
         public string Status { get; set; }
+
+        public DateTime Date { get; set; }
+
+        public string WarehouseCode { get; set; }
+
+        public string WarehouseInitial { get; set; }
     }
 
     [Table("MobileDeliveryItemDetail", Schema = Schema.MobileWarehouse)]

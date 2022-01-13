@@ -188,7 +188,7 @@ namespace ERP.Web.API.Domain.Services.MobileWarehouse
 
                             if (isFailedtoSend)
                             {
-                                var dplDetailData = dplDetailList.FirstOrDefault(x => x.Code == itemData.Code && x.TransCode == itemDoData.Code);
+                                var dplDetailData = dplDetailList.FirstOrDefault(x => x.Code == itemData.DlvPlanCode && x.TransCode == itemDoData.Code);
                                 var dplUndelivData = dplUndelivList.FirstOrDefault(x => x.ItemId == itemDetail.ItemId && x.DlvPlanDetailId == dplDetailData.Id);
 
                                 if (dplUndelivData != null)
@@ -224,16 +224,18 @@ namespace ERP.Web.API.Domain.Services.MobileWarehouse
                                 dplHeadData.ApprovedDate = DateTime.Now;
                                 Db.DeliveryPlanHeaders.Update(dplHeadData);
 
-                                var doDetailData = doDetailList.FirstOrDefault(x => x.ItemId == itemDetail.ItemId);
-                                var doFreeData = doFreeList.FirstOrDefault(x => x.ItemId == itemDetail.ItemId);
 
                                 if (isBonus)
                                 {
+                                    var doFreeData = doFreeList.FirstOrDefault(x => x.ItemId == itemDetail.ItemId);
+                                    if (doFreeData == null) continue;
                                     doFreeData.Qty -= qtyFailedtoSend;
                                     Db.SalesDeliveryDetailFreeGoods.Update(doFreeData);
                                 }
                                 else
                                 {
+                                    var doDetailData = doDetailList.FirstOrDefault(x => x.ItemId == itemDetail.ItemId);
+                                    if (doDetailData == null) continue;
                                     doDetailData.Qty -= qtyFailedtoSend;
                                     doDetailData.Total -= (doDetailData.NettPrice * qtyFailedtoSend);
                                     Db.SalesDeliveryDetails.Update(doDetailData);
