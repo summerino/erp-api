@@ -88,6 +88,7 @@ namespace ERP.Entity
         public DbSet<VwOutstandingCreditMemo> VwOutstandingCreditMemos { get; set; }
         public DbSet<VwOutstandingDebitMemo> VwOutstandingDebitMemos { get; set; }
         public DbSet<VwDebitCreditPayment> VwDebitCreditPayments { get; set; }
+        public DbSet<OutstandingChequeReport> OutstandingChequeReports { get; set; }
 
         // General entities
         public DbSet<VwApproval> VwApprovals { get; set; }
@@ -712,6 +713,11 @@ namespace ERP.Entity
             modelBuilder.Entity<VwDebitCreditPayment>()
                 .HasNoKey()
                 .ToView("VwDebitCreditPayment", Schema.Finance);
+
+            // Finance Report model
+            modelBuilder.Entity<OutstandingChequeReport>()
+                .HasNoKey()
+                .ToTable("OutstandingChequeReport", t => t.ExcludeFromMigrations());
 
             // General entities
             // Approval model
