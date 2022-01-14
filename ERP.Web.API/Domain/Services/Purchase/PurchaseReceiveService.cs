@@ -204,8 +204,8 @@ namespace ERP.Web.API.Domain.Services.Purchase
                 if (data.SrcTrans == 1)
                 {
                     data.SubTotal = totalDetail.Sum();
-                    data.TaxAmount = Math.Round(totalTax.Sum());
-                    data.Dpp = Math.Round(totalDpp.Sum());
+                    data.TaxAmount = totalTax.Sum();
+                    data.Dpp = totalDpp.Sum();
                     data.Total = data.SubTotal;
                 }
                 Db.PurchaseReceiveHeaders.Add(data);
@@ -454,8 +454,8 @@ namespace ERP.Web.API.Domain.Services.Purchase
                 if (data.SrcTrans == 1)
                 {
                     data.SubTotal = totalDetail.Sum();
-                    data.TaxAmount = Math.Round(totalTax.Sum());
-                    data.Dpp = Math.Round(totalDpp.Sum());
+                    data.TaxAmount = totalTax.Sum();
+                    data.Dpp = totalDpp.Sum();
                     data.Total = data.SubTotal;
                 }
                 // Update header data
