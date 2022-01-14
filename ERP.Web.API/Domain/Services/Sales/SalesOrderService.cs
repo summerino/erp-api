@@ -252,8 +252,8 @@ namespace ERP.Web.API.Domain.Services.Sales
                 }
 
                 data.SubTotal = totalDetail.Sum();
-                data.TaxAmount = Math.Round(totalTax.Sum());
-                data.Dpp = Math.Round(totalDpp.Sum());
+                data.TaxAmount = totalTax.Sum();
+                data.Dpp = totalDpp.Sum();
                 data.Total = data.SubTotal;
                 Db.SalesOrderHeaders.Add(data);
 
@@ -694,8 +694,8 @@ namespace ERP.Web.API.Domain.Services.Sales
                 }
 
                 data.SubTotal = totalDetail.Sum();
-                data.TaxAmount = Math.Round(totalTax.Sum());
-                data.Dpp = Math.Round(totalDpp.Sum());
+                data.TaxAmount = totalTax.Sum();
+                data.Dpp = totalDpp.Sum();
                 data.Total = data.SubTotal;
                 // Update header data
                 Db.SalesOrderHeaders.Update(data);
