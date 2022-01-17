@@ -109,6 +109,12 @@ namespace ERP.Web.API.Domain.Services.Sales
                     return result;
                 }
 
+                if (data.FinalDisc > data.SubTotal)
+                {
+                    result.Message = "Data penjualan langsung tidak bisa disimpan karena nilai diskon final lebih besar dari nilai total.";
+                    return result;
+                }
+
                 if (!isOverLimit && !CheckCreditLimit(data.CustCode, data.Total)) 
                 {
                     result.Message = "Nilai transaksi lebih besar dari nilai batas kredit.";
@@ -499,6 +505,12 @@ namespace ERP.Web.API.Domain.Services.Sales
                 if (checkQty && IsQtyExcess(data.WarehouseCode, data.ItemDetails, data.Code))
                 {
                     result.Message = "Data order penjualan tidak bisa disimpan karena qty yang dipesan lebih besar dari qty tersedia.";
+                    return result;
+                }
+
+                if (data.FinalDisc > data.SubTotal)
+                {
+                    result.Message = "Data penjualan langsung tidak bisa disimpan karena nilai diskon final lebih besar dari nilai total.";
                     return result;
                 }
 
