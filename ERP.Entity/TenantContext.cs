@@ -260,6 +260,7 @@ namespace ERP.Entity
         public DbSet<VwPromoHeader> VwPromoHeaders { get; set; }
         public DbSet<PromoSubject> PromoSubjects { get; set; }
         public DbSet<PromoDetail> PromoDetails { get; set; }
+        public DbSet<PromoDetailMultipleItem> PromoDetailMultipleItems { get; set; }
         public DbSet<PromoDetailTier> PromoDetailTiers { get; set; }
         public DbSet<SalesDeliveryHeader> SalesDeliveryHeaders { get; set; }
         public DbSet<VwSalesDeliveryHeader> VwSalesDeliveryHeaders { get; set; }
@@ -2208,6 +2209,19 @@ namespace ERP.Entity
                 entity.HasOne<PromoHeader>()
                     .WithMany()
                     .HasForeignKey(d => d.Code)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            modelBuilder.Entity<PromoDetailMultipleItem>(entity =>
+            {
+                entity.HasOne<PromoDetail>()
+                    .WithMany()
+                    .HasForeignKey(d => d.PromoDetailId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Item>()
+                    .WithMany()
+                    .HasForeignKey(d => d.ItemId)
                     .OnDelete(DeleteBehavior.NoAction);
             });
 

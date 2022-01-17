@@ -73,6 +73,7 @@ namespace ERP.Entity.Sales
     }
     
     [Table("PromoDetail", Schema = Schema.Sales)]
+    [Index(nameof(ItemId))]
     public class PromoDetail
     {
         public long Id { get; set; }
@@ -117,6 +118,16 @@ namespace ERP.Entity.Sales
 
         [StringLength(50)]
         public string SubGroup5 { get; set; }
+    }
+
+    [Table("PromoDetailMultipleItem", Schema = Schema.Sales)]
+    public class PromoDetailMultipleItem
+    {
+        public long Id { get; set; }
+
+        public long PromoDetailId { get; set; }
+
+        public int ItemId { get; set; }
     }
 
     [Table("PromoDetailTier", Schema = Schema.Sales)]
