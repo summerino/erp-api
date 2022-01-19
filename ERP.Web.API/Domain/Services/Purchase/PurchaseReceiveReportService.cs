@@ -55,41 +55,53 @@ namespace ERP.Web.API.Domain.Services.Purchase
                             rcv_d.UnitPrice AS GrossAmount,
                             CASE rcv_d.[Type]
 	                            WHEN 0 THEN rcv_d.Disc
-	                            WHEN 1 THEN rcv_d.UnitPrice END AS Disc,
+	                            WHEN 1 THEN rcv_d.UnitPrice
+								ELSE CAST(0 AS decimal) END AS Disc,
                             CASE rcv_d.[Type]
 	                            WHEN 0 THEN rcv_d.FinalDiscHeader
-	                            WHEN 1 THEN CAST(0 AS decimal) END AS DiscHeader,
+	                            WHEN 1 THEN CAST(0 AS decimal)
+								ELSE CAST(0 AS decimal) END AS DiscHeader,
                             CASE rcv_d.[Type]
 	                            WHEN 0 THEN rcv_d.TaxAmount
-	                            WHEN 1 THEN CAST(0 AS decimal) END AS TaxAmount,
+	                            WHEN 1 THEN CAST(0 AS decimal)
+								ELSE CAST(0 AS decimal) END AS TaxAmount,
                             CASE rcv_d.[Type]
 	                            WHEN 0 THEN rcv_d.UnitPrice - rcv_d.Disc - rcv_d.FinalDiscHeader
-	                            WHEN 1 THEN CAST(0 AS decimal) END AS SubTotal,
+	                            WHEN 1 THEN CAST(0 AS decimal)
+								ELSE CAST(0 AS decimal) END AS SubTotal,
                             CASE rcv_d.[Type]
 	                            WHEN 0 THEN rcv_d.DPP
-	                            WHEN 1 THEN CAST(0 AS decimal) END AS DPP,
+	                            WHEN 1 THEN CAST(0 AS decimal)
+								ELSE CAST(0 AS decimal) END AS DPP,
                             CASE rcv_d.[Type]
 	                            WHEN 0 THEN rcv_d.NettPrice
-	                            WHEN 1 THEN CAST(0 AS decimal) END AS NettPrice,
+	                            WHEN 1 THEN CAST(0 AS decimal)
+								ELSE CAST(0 AS decimal) END AS NettPrice,
                             rcv_d.UnitPrice * rcv_d.Qty AS TotalGrossAmount,
                             CASE rcv_d.[Type]
 	                            WHEN 0 THEN rcv_d.Disc * rcv_d.Qty
-	                            WHEN 1 THEN rcv_d.UnitPrice * rcv_d.Qty END AS TotalDisc,
+	                            WHEN 1 THEN rcv_d.UnitPrice * rcv_d.Qty
+								ELSE CAST(0 AS decimal) END AS TotalDisc,
                             CASE rcv_d.[Type]
 	                            WHEN 0 THEN rcv_d.FinalDiscHeader * rcv_d.Qty
-	                            WHEN 1 THEN CAST(0 AS decimal) END AS TotalDiscHeader,
+	                            WHEN 1 THEN CAST(0 AS decimal)
+								ELSE CAST(0 AS decimal) END AS TotalDiscHeader,
                             CASE rcv_d.[Type]
 	                            WHEN 0 THEN (rcv_d.UnitPrice - rcv_d.Disc - rcv_d.FinalDiscHeader) * rcv_d.Qty
-	                            WHEN 1 THEN CAST(0 AS decimal) END AS TotalAfterDisc,
+	                            WHEN 1 THEN CAST(0 AS decimal)
+								ELSE CAST(0 AS decimal) END AS TotalAfterDisc,
                             CASE rcv_d.[Type]
 	                            WHEN 0 THEN rcv_d.DPP * rcv_d.Qty
-	                            WHEN 1 THEN CAST(0 AS decimal) END AS TotalDPP,
+	                            WHEN 1 THEN CAST(0 AS decimal)
+								ELSE CAST(0 AS decimal) END AS TotalDPP,
                             CASE rcv_d.[Type]
 	                            WHEN 0 THEN rcv_d.TaxAmount * rcv_d.Qty
-	                            WHEN 1 THEN CAST(0 AS decimal) END AS TotalTaxAmount,
+	                            WHEN 1 THEN CAST(0 AS decimal)
+								ELSE CAST(0 AS decimal) END AS TotalTaxAmount,
                             CASE rcv_d.[Type]
 	                            WHEN 0 THEN rcv_d.NettPrice * rcv_d.Qty
-	                            WHEN 1 THEN CAST(0 AS decimal) END AS TotalNettPrice,
+	                            WHEN 1 THEN CAST(0 AS decimal)
+								ELSE CAST(0 AS decimal) END AS TotalNettPrice,
                             CASE rcv.Mark
 	                            WHEN 'A' THEN 'Aktif'
 	                            WHEN 'V' THEN 'Void'
