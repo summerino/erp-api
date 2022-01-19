@@ -54,6 +54,7 @@ namespace ERP.Web.API.Controllers.Sales
         public IActionResult GetDetailData(string code)
         {
             var tierData = _promo.GetDetailTierData();
+            var multiData = _promo.GetMultipleItemsData();
             var data = _promo.GetDetailData(code)
                 .Select(x => new
                 {
@@ -67,7 +68,8 @@ namespace ERP.Web.API.Controllers.Sales
                     x.IsPromoWithBudget,
                     x.BudgetMaximumValue,
                     x.OverBudgetAction,
-                    PromoTierList = tierData.Where(y => y.PromoDetailId == x.Id)
+                    PromoTierList = tierData.Where(y => y.PromoDetailId == x.Id),
+                    MultipleItem = multiData.Where(z => z.PromoDetailId == x.Id)
                 })
                 .ToList<dynamic>();
 

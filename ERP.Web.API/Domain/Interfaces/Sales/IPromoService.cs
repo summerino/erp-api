@@ -12,6 +12,8 @@ namespace ERP.Web.API.Domain.Interfaces.Sales
 
         IEnumerable<PromoDetail> GetDetailData(string code);
 
+        IEnumerable<PromoDetailMultipleItem> GetMultipleItemsData();
+
         IEnumerable<PromoDetailTier> GetDetailTierData();
 
         IEnumerable<PromoSubject> GetSubjectData(string code);

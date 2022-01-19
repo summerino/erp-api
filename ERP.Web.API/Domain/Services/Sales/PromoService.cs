@@ -35,6 +35,10 @@ namespace ERP.Web.API.Domain.Services.Sales
         {
             return Db.PromoDetails.Where(x => x.Code == code).OrderBy(x => x.LineNo);
         }
+        public IEnumerable<PromoDetailMultipleItem> GetMultipleItemsData()
+        {
+            return Db.PromoDetailMultipleItems.ToList();
+        }
 
         public IEnumerable<PromoDetailTier> GetDetailTierData()
         {
@@ -63,6 +67,14 @@ namespace ERP.Web.API.Domain.Services.Sales
                 short i = 0;
                 foreach (var item in data.ItemDetails)
                 {
+                    if (item.ApplyTo == 4 && item.MultipleItem.Count() < 2)
+                    {
+                        result.Message = @"Penambahan data gagal karena terdapat
+                                        detail promo dengan tipe beberapa barang
+                                        dengan barang kurang dari 2.";
+                        return result;
+                    }
+
                     var newItem = new PromoDetail
                     {
                         Code = data.Code,
@@ -83,6 +95,18 @@ namespace ERP.Web.API.Domain.Services.Sales
                     Db.SaveChanges();
 
                     var idNewItem = newItem.Id;
+
+                    if (item.MultipleItem.Count() > 1)
+                    {
+                        foreach (var mItem in item.MultipleItem)
+                        {
+                            Db.PromoDetailMultipleItems.Add(new PromoDetailMultipleItem
+                            {
+                                PromoDetailId = idNewItem,
+                                ItemId = mItem.ItemId
+                            });
+                        }
+                    }
 
                     if (item.PromoTierList.Any())
                     {
@@ -180,6 +204,14 @@ namespace ERP.Web.API.Domain.Services.Sales
                 short i = 0;
                 foreach (var item in data.ItemDetails)
                 {
+                    if (item.ApplyTo == 4 && item.MultipleItem.Count() < 2)
+                    {
+                        result.Message = @"Penambahan data gagal karena terdapat
+                                        detail promo dengan tipe beberapa barang
+                                        dengan barang kurang dari 2.";
+                        return result;
+                    }
+
                     var delTierDetails = Db.PromoDetailTiers
                                             .Where(d => d.PromoDetailId == item.Id && !item.PromoTierList.Select(x => x.Id).Contains(d.Id))
                                             .ToList();
@@ -218,6 +250,23 @@ namespace ERP.Web.API.Domain.Services.Sales
                         Db.Entry(item).Property(e => e.Code).IsModified = false;
 
                         idDetail = item.Id;
+                    }
+
+                    var delMultiItem = Db.PromoDetailMultipleItems
+                                            .Where(d => d.PromoDetailId == idDetail)
+                                            .ToList();
+
+                    Db.PromoDetailMultipleItems.RemoveRange(delMultiItem);
+                    if (item.MultipleItem.Count() > 1)
+                    {
+                        foreach (var mItem in item.MultipleItem)
+                        {
+                            Db.PromoDetailMultipleItems.Add(new PromoDetailMultipleItem
+                            {
+                                PromoDetailId = idDetail,
+                                ItemId = mItem.ItemId
+                            });
+                        }
                     }
 
                     if (item.PromoTierList.Any())

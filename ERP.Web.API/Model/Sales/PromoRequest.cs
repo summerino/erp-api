@@ -17,6 +17,8 @@ namespace ERP.Web.API.Model.Sales
     {
         public IEnumerable<PromoDetailTier> PromoTierList { get; set; }
 
+        public IEnumerable<PromoDetailMultipleItem> MultipleItem { get; set; }
+
         public int? SaleUnit { get; set; }
 
         public bool ApplyToAllUnit { get; set; }
