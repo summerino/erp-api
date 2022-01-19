@@ -27,8 +27,9 @@ namespace ERP.Web.API.Domain.Services.Sales
 	                            WHEN 'CMP' THEN 'Dikirim Seluruhnya'
 	                            WHEN 'CLS' THEN 'Ditutup' END AS [Status]
                             FROM Sales.vwSalesOrderHeader so
-                            LEFT JOIN Sales.vwSalesOrderDetail so_d ON so_d.Code = so.Code" +
-                            (string.IsNullOrEmpty(status) ? "" : $" WHERE so.Mark = '{status.Replace("'", "''")}'") +
+                            LEFT JOIN Sales.vwSalesOrderDetail so_d ON so_d.Code = so.Code
+                            WHERE so.FromDirectInvoice = 0" +
+                            (string.IsNullOrEmpty(status) ? "" : $" AND so.Mark = '{status.Replace("'", "''")}'") +
                             " GROUP BY so.[Date], so.Code, so.CustCode, so.CustName, so.DPP, so.TaxAmount, so.Total, so.Mark").ToList();
 
             var soDetailData = _db.ReportByDetailSOs.FromSqlRaw(@"SELECT so.[Date], so.Code, so.CustCode,so.CustName,
