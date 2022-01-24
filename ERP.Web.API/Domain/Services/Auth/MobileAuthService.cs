@@ -547,6 +547,7 @@ namespace ERP.Web.API.Domain.Services.Auth
             tenantCustomer.MobileIpAddress = null;
             tenantCustomer.MobileTokenId = null;
             tenantCustomer.MobileSessionId = null;
+            tenantCustomer.FirebaseTokenId = null;
 
             tenantCtx.SaveChanges();
 
