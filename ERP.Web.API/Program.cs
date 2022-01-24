@@ -55,6 +55,8 @@ using ERP.Web.API.Model;
 using ERP.Web.API.Model.Auth;
 using Newtonsoft.Json.Serialization;
 using Swift.Framework;
+using ERP.Web.API.Domain.Interfaces.Mobile.Warehouse;
+using ERP.Web.API.Domain.Services.Mobile.Warehouse;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -317,6 +319,9 @@ builder.Services.AddScoped<ICustomerTransactionService, CustomerTransactionServi
 
 //Transfer Stock
 builder.Services.AddScoped<ERP.Web.API.Domain.Interfaces.Mobile.TransferStock.IMobileTransferStockService, ERP.Web.API.Domain.Services.Mobile.TransferStock.MobileTransferStockService>();
+
+// Warehouse Profile
+builder.Services.AddScoped<IWarehouseProfileService, WarehouseProfileService>();
 
 //Activity Log
 builder.Services.AddScoped<IActivityLogService, ActivityLogService>();

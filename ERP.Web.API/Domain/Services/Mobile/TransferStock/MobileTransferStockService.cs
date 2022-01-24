@@ -21,17 +21,24 @@ namespace ERP.Web.API.Domain.Services.Mobile.TransferStock
                        join gi in Db.Warehouses on th.WarehouseCodeFrom equals gi.Code
                        join go in Db.Warehouses on th.WarehouseCodeTo equals go.Code
                        join emp1 in Db.Employees.Where(x => x.Type.Equals(2)) on th.WarehouseCodeFrom equals emp1.WarehouseCode
-                        into a1
+                       into a1
                        from sub1 in a1.DefaultIfEmpty()
                        join emp2 in Db.Employees.Where(x => x.Type.Equals(2)) on th.WarehouseCodeTo equals emp2.WarehouseCode
                        into a2
                        from sub2 in a2.DefaultIfEmpty()
-                       where ((th.Type == "IN" && th.WarehouseCodeTo == wh) || (th.Type == "OUT" && th.WarehouseCodeFrom == wh))
+                       where (
+                            (th.Type == "IN" && th.WarehouseCodeTo == wh) || (th.Type == "OUT" && th.WarehouseCodeFrom == wh)
+                            || (th.Type == "DT" && th.WarehouseCodeTo == wh && th.WarehouseCodeFrom != wh)
+                            || (th.Type == "DT" && th.WarehouseCodeTo != wh && th.WarehouseCodeFrom == wh)
+                       )
                        select new MobileTransferStockHeaderModel
                        {
                            Code = thm.Code,
                            Date = th.Date,
                            Type = th.Type,
+                           TypeInitial = th.TypeInitial,
+                           TransferCode = thm.TransferCode ?? "",
+                           WarehouseCode = wh,
                            WarehouseCodeFrom = th.WarehouseCodeFrom,
                            WarehouseCodeTo = th.WarehouseCodeTo,
                            WarehouseInitialFrom = th.WarehouseInitialFrom,
@@ -39,9 +46,7 @@ namespace ERP.Web.API.Domain.Services.Mobile.TransferStock
                            WarehouseNameFrom = gi.Name,
                            WarehouseNameTo = go.Name,
                            SalesNameFrom = sub1 != null ? sub1.FirstName + ' ' + sub1.LastName : "",
-                           SalesNameTo = sub2 != null ? sub2.FirstName + ' ' + sub2.LastName : "",
-                           TypeInitial = th.TypeInitial
-
+                           SalesNameTo = sub2 != null ? sub2.FirstName + ' ' + sub2.LastName : ""
                        };
 
             if (date.HasValue)
@@ -54,8 +59,7 @@ namespace ERP.Web.API.Domain.Services.Mobile.TransferStock
                 data = data.Where(x => x.WarehouseNameFrom.Contains(search) || x.WarehouseNameTo.Contains(search) || x.Code.Contains(search));
             }
 
-            return data;
-
+            return data.OrderByDescending(x => x.Date);
         }
 
         public IEnumerable<MobileTransferStockDetailModel> getMobileTransferStockDetail(string code)
@@ -88,22 +92,29 @@ namespace ERP.Web.API.Domain.Services.Mobile.TransferStock
                         join emp2 in Db.Employees.Where(x => x.Type.Equals(2)) on th.WarehouseCodeTo equals emp2.WarehouseCode
                         into a2
                         from sub2 in a2.DefaultIfEmpty()
-                        where ((th.Type == "IN" && th.WarehouseCodeTo == wh) || (th.Type == "OUT" && th.WarehouseCodeFrom == wh)) && th.Mark == "A"
+                        where (
+                            (th.Type == "IN" && th.WarehouseCodeTo == wh) || (th.Type == "OUT" && th.WarehouseCodeFrom == wh)
+                            || (th.Type == "DT" && th.WarehouseCodeTo == wh && th.WarehouseCodeFrom != wh)
+                            || (th.Type == "DT" && th.WarehouseCodeTo != wh && th.WarehouseCodeFrom == wh)
+                        )
+                        && th.Mark == "A"
                         select new MobileTransferStockHeaderModel
                         {
                             Code = th.Code,
                             Date = th.Date,
                             Type = th.Type,
+                            TypeInitial = th.TypeInitial,
+                            TransferCode = th.OriginTransferCode ?? "",
+                            WarehouseCode = wh,
                             WarehouseCodeFrom = th.WarehouseCodeFrom,
                             WarehouseCodeTo = th.WarehouseCodeTo,
                             WarehouseInitialFrom = th.WarehouseInitialFrom,
                             WarehouseInitialTo = th.WarehouseInitialTo,
                             WarehouseNameFrom = gi.Name,
                             WarehouseNameTo = go.Name,
-                            SalesNameFrom = sub1!=null?sub1.FirstName + ' ' + sub1.LastName:"",
-                            SalesNameTo = sub2!=null?sub2.FirstName + ' ' + sub2.LastName:"",
-                            TypeInitial = th.TypeInitial
-                        }) ;
+                            SalesNameFrom = sub1 != null ? sub1.FirstName + ' ' + sub1.LastName : "",
+                            SalesNameTo = sub2 != null ? sub2.FirstName + ' ' + sub2.LastName : ""
+                        });
 
             if (date.HasValue)
             {
@@ -115,7 +126,7 @@ namespace ERP.Web.API.Domain.Services.Mobile.TransferStock
                 data = data.Where(x => x.WarehouseNameFrom.Contains(search) || x.WarehouseNameTo.Contains(search) || x.Code.Contains(search));
             }
 
-            return data;
+            return data.OrderByDescending(x => x.Date);
         }
 
         public IEnumerable<MobileTransferStockDetailModel> getTransferStockDetail(string code)
@@ -139,57 +150,68 @@ namespace ERP.Web.API.Domain.Services.Mobile.TransferStock
         {
             var result = new SaveResult(false);
 
-            using var transaction = Db.Database.BeginTransaction();
-            try
+            var existed_transfer_stock_code = Db.MobileTransferStockHeaders.Any(x => x.TransferCode == data.Code);
+            if (!existed_transfer_stock_code)
             {
-                var date = DateTime.Now;
-                // Get new code
-                var newCode = GetNewCode("MOB_TS_NUM_FMT", date);
-
-                // Insert header data
-                Db.MobileTransferStockHeaders.Add(new MobileTransferStockHeader
+                using var transaction = Db.Database.BeginTransaction();
+                try
                 {
-                    Code = newCode,
-                    TransferCode = data.Code,
-                    SignatureImage = data.SignatureImage,
-                    Mark = "A",
-                    CreatedBy = userId,
-                    CreatedDate = date,
-                    UpdatedBy = userId,
-                    UpdatedDate = date,
-                });
+                    var date = DateTime.Now;
+                    // Get new code
+                    var newCode = GetNewCode("MOB_TS_NUM_FMT", date);
 
-                // Insert detail data
-                short i = 0;
-                foreach (var item in data.Details)
-                {
-                    Db.MobileTransferStockDetails.Add(new MobileTransferStockDetail
+                    // Insert header data
+                    Db.MobileTransferStockHeaders.Add(new MobileTransferStockHeader
                     {
                         Code = newCode,
-                        LineNo = ++i,
-                        ItemId = item.ItemId,
-                        UnitId = item.UnitId,
-                        UomId = item.UomId,
-                        OriginalQty = item.OriginalQty,
-                        RealizeQty = item.RealizeQty
+                        TransferCode = data.Code,
+                        SignatureImage = data.SignatureImage,
+                        Mark = "A",
+                        CreatedBy = userId,
+                        CreatedDate = date,
+                        UpdatedBy = userId,
+                        UpdatedDate = date,
                     });
+
+                    // Insert detail data
+                    short i = 0;
+                    foreach (var item in data.Details)
+                    {
+                        Db.MobileTransferStockDetails.Add(new MobileTransferStockDetail
+                        {
+                            Code = newCode,
+                            LineNo = ++i,
+                            ItemId = item.ItemId,
+                            UnitId = item.UnitId,
+                            UomId = item.UomId,
+                            OriginalQty = item.OriginalQty,
+                            RealizeQty = item.RealizeQty
+                        });
+                    }
+
+                    // Save changes
+                    Db.SaveChanges();
+
+                    transaction.Commit();
+
+                }
+                catch (Exception ex)
+                {
+                    result.Message = ex.InnerException?.Message ?? ex.Message;
+                    return result;
                 }
 
-                // Save changes
-                Db.SaveChanges();
-
-                transaction.Commit();
-            }
-            catch (Exception ex)
-            {
-                result.Message = ex.InnerException?.Message ?? ex.Message;
+                result.Success = true;
+                result.Data = data.Code;
+                result.Message = "Transfer Stok berhasil disimpan.";
                 return result;
             }
-
-            result.Success = true;
-            result.Data = data.Code;
-            result.Message = "Transfer Stok berhasil disimpan.";
-            return result;
+            else
+            {
+                result.Success = false;
+                result.Message = "Transfer Stok sudah pernah disimpan";
+                return result;
+            }
         }
     }
 }

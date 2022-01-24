@@ -27,7 +27,8 @@ namespace ERP.Web.API.Domain.Interfaces.Mobile.Sales
             var data =
                 _deliveryPlan.GetData(skip, take,
                     JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
-                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"), search, date);
+                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
+                    search, date, _claim.UserId);
 
             var result = ((List<DeliveryPlanHeaderModel>)data.Data).ToList<dynamic>();
 
@@ -52,7 +53,8 @@ namespace ERP.Web.API.Domain.Interfaces.Mobile.Sales
             DataSourceResult data =
                 _deliveryPlan.GetLogData(skip, take,
                     JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
-                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"), search, date);
+                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
+                    search, date, _claim.UserId);
 
             List<dynamic> result = ((List<DeliveryItemHeaderModel>)data.Data).ToList<dynamic>();
 

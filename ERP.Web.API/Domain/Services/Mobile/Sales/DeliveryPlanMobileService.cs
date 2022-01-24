@@ -16,10 +16,13 @@ namespace ERP.Web.API.Domain.Services.Mobile.Sales
             _db = db;
         }
 
-        public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, string search, string date)
+        public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, string search, string date, int userId)
         {
+            var empId = Db.Users.Where(x => x.Id.Equals(userId)).Select(y => y.EmployeeId).Single();
+            var wh = Db.Employees.Where(x => x.Id.Equals(empId)).Select(y => y.WarehouseCode).Single();
             var data = (from dpHeader in Db.VwDeliveryPlanHeaders
                         join warehouse in Db.Warehouses on dpHeader.WarehouseCode equals warehouse.Code
+                        where dpHeader.WarehouseCode.Equals(wh)
                         select new DeliveryPlanHeaderModel
                         {
                             Code = dpHeader.Code,
@@ -135,12 +138,15 @@ namespace ERP.Web.API.Domain.Services.Mobile.Sales
             return data;
         }
 
-        public DataSourceResult GetLogData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, string search, string date)
+        public DataSourceResult GetLogData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, string search, string date, int userId)
         {
+            var empId = Db.Users.Where(x => x.Id.Equals(userId)).Select(y => y.EmployeeId).Single();
+            var wh = Db.Employees.Where(x => x.Id.Equals(empId)).Select(y => y.WarehouseCode).Single();
             var data = from header in _db.VwMobileDeliveryItemHeaders
                        join dlvPlanHeader in _db.VwDeliveryPlanHeaders on header.DlvPlanCode equals dlvPlanHeader.Code
                        join warehouse in _db.VwWarehouses on dlvPlanHeader.WarehouseCode equals warehouse.Code
                        join driver in _db.VwEmployees on dlvPlanHeader.DriverId equals driver.Id
+                       where header.WarehouseCode.Equals(wh)
                        select new DeliveryItemHeaderModel
                        {
                            Code = header.Code,
@@ -194,55 +200,65 @@ namespace ERP.Web.API.Domain.Services.Mobile.Sales
         {
             var result = new SaveResult(false);
 
-            using var transaction = _db.Database.BeginTransaction();
-            try
+            var existed_transfer_stock_code = Db.MobileDeliveryItemHeaders.Any(x => x.DlvPlanCode == data.DlvPlanCode); // check code sebelumnya
+            if (!existed_transfer_stock_code)
             {
-                var date = DateTime.Now;
-                var newCode = GetNewCode("MOB_DLV_NUM_FMT", DateTime.Now.Date);
-
-                data.Code = newCode;
-
-                _db.MobileDeliveryItemHeaders.Add(new MobileDeliveryItemHeader
+                using var transaction = _db.Database.BeginTransaction();
+                try
                 {
-                    Code = newCode,
-                    DlvPlanCode = data.DlvPlanCode,
-                    SignatureImage = data.SignatureImage,
-                    Mark = "A",
-                    CreatedBy = userId,
-                    CreatedDate = date,
-                    UpdatedBy = userId,
-                    UpdatedDate = date
-                });
+                    var date = DateTime.Now;
+                    var newCode = GetNewCode("MOB_DLV_NUM_FMT", DateTime.Now.Date);
 
-                short i = 0;
-                foreach (var dlv in data.DPDetails)
-                {
-                    _db.MobileDeliveryItemDetails.Add(new MobileDeliveryItemDetail
+                    data.Code = newCode;
+
+                    _db.MobileDeliveryItemHeaders.Add(new MobileDeliveryItemHeader
                     {
                         Code = newCode,
-                        LineNo = ++i,
-                        ItemId = dlv.ItemId,
-                        OriginalQty = dlv.OriginalQty,
-                        RealizeQty = dlv.RealizeQty,
-                        UomId = dlv.UomId,
-                        UnitId = dlv.UnitId
+                        DlvPlanCode = data.DlvPlanCode,
+                        SignatureImage = data.SignatureImage,
+                        Mark = "A",
+                        CreatedBy = userId,
+                        CreatedDate = date,
+                        UpdatedBy = userId,
+                        UpdatedDate = date
                     });
+
+                    short i = 0;
+                    foreach (var dlv in data.DPDetails)
+                    {
+                        _db.MobileDeliveryItemDetails.Add(new MobileDeliveryItemDetail
+                        {
+                            Code = newCode,
+                            LineNo = ++i,
+                            ItemId = dlv.ItemId,
+                            OriginalQty = dlv.OriginalQty,
+                            RealizeQty = dlv.RealizeQty,
+                            UomId = dlv.UomId,
+                            UnitId = dlv.UnitId
+                        });
+                    }
+
+                    _db.SaveChanges();
+
+                    transaction.Commit();
+                }
+                catch (Exception ex)
+                {
+                    result.Message = ex.InnerException?.Message ?? ex.Message;
+                    return result;
                 }
 
-                _db.SaveChanges();
-
-                transaction.Commit();
-            }
-            catch (Exception ex)
-            {
-                result.Message = ex.InnerException?.Message ?? ex.Message;
+                result.Success = true;
+                result.Data = data;
+                result.Message = "Data pengeluaran barang berhasil disimpan.";
                 return result;
             }
-
-            result.Success = true;
-            result.Data = data;
-            result.Message = "Data pengeluaran barang berhasil disimpan.";
-            return result;
+            else
+            {
+                result.Success = false;
+                result.Message = "Surat Jalan sudah pernah dibuat dan disimpan";
+                return result;
+            }
         }
     }
 }
