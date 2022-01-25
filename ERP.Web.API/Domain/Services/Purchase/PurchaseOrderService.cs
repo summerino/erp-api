@@ -913,6 +913,8 @@ namespace ERP.Web.API.Domain.Services.Purchase
         #region Mobile
         public DataSourceResult GetDataForMobile(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, string search, string date)
         {
+            var mobileReceive = (from mobilePO in Db.MobileReceiveItemHeaders
+                                 select mobilePO).ToList();
             var dataOrder = (from order in Db.PurchaseOrderHeaders
                              join sup in Db.Suppliers on order.SupCode equals sup.Code
                              join supType in Db.SupplierTypes on sup.TypeId equals supType.Id
@@ -930,6 +932,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                                  srcTrans = 1
                              }).AsQueryable();
 
+            dataOrder = dataOrder.Where(x => !mobileReceive.Select(t => t.TransCode).Contains(x.Code));
             dataOrder = dataOrder.Where(x => x.Mark != "CMP" && x.Mark != "CLS" && x.Mark != "V");
 
             var dataRetur = (from retur in Db.PurchaseReturnHeaders
@@ -950,6 +953,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                                  srcTrans = 2
                              }).AsQueryable();
 
+            dataRetur = dataRetur.Where(x => !mobileReceive.Select(t => t.TransCode).Contains(x.Code));
             dataRetur = dataRetur.Where(x => x.Mark != "CMP" && x.Mark != "V");
 
             var data = dataOrder.Union(dataRetur);
