@@ -129,6 +129,21 @@ namespace ERP.Web.API.Domain.Services.Sales
                 }
 
                 var taxes = Db.Taxes.ToList();
+                var promos = Db.PromoHeaders
+                            .Select(x => new
+                            {
+                                x.Code,
+                                x.Name,
+                                x.StartDate,
+                                x.EndDate,
+                                x.ApplyTo,
+                                x.CoaCost,
+                                x.Content,
+                                x.Mark,
+                                Subject = Db.PromoSubjects.Where(y => y.Code == x.Code).ToList(),
+                            }).Where(x => x.StartDate >= data.Date && data.Date <= x.EndDate).ToList();
+                var items = Db.Items.ToList();
+                var uomConversions = Db.UoMConversions.ToList();
                 List<decimal> totalDetail = new();
                 List<decimal> totalTax = new();
                 List<decimal> totalDpp = new();
@@ -140,8 +155,247 @@ namespace ERP.Web.API.Domain.Services.Sales
 
                 // Insert detail data
                 short i = 0;
+                List<SalesOrderDetailFreeGood> bonusPromoMulti = new();
                 foreach (var item in data.ItemDetails)
                 {
+                    //Promo
+                    var listPromo = promos.Where(x => x.ApplyTo == 1 ||
+                                    x.Subject.Select(y => y.CustCode).Contains(data.CustCode) ||
+                                    x.Subject.Select(y => y.CustTypeId).Contains(data.CustTypeId)).ToArray();
+
+                    List<SalesOrderDetailDiscount> discPromo = new();
+                    List<SalesOrderDetailFreeGood> bonusPromo = new();
+                    if (listPromo.Any())
+                    {
+                        foreach (var dataPromo in listPromo)
+                        {
+                            var listDetailPromo = Db.PromoDetails.Where(x => x.Code == dataPromo.Code).ToList();
+                            foreach (var detailPromo in listDetailPromo)
+                            {
+                                var detailTierPromo = Db.PromoDetailTiers.Where(x => x.PromoDetailId == detailPromo.Id).ToList();
+                                var detailMultiPromo = Db.PromoDetailMultipleItems.Where(x => x.PromoDetailId == detailPromo.Id).ToList();
+                                var applyTo = detailPromo.ApplyTo;
+                                var ctItem = items.FirstOrDefault(j => j.Id == item.ItemId);
+                                if ((applyTo == 1 && detailPromo.ItemId == item.ItemId)
+                                    || (applyTo == 3 && ctItem.CategoryId == detailPromo.ItemId))
+                                {
+                                    switch (detailPromo.PromoType)
+                                    {
+                                        case 1:
+                                            // Apply to Barang - Promo Method Reguler
+                                            discPromo.Add(new SalesOrderDetailDiscount
+                                            {
+                                                PromoCode = dataPromo.Code,
+                                                PromoDetailId = detailPromo.Id,
+                                                Name = dataPromo.Name,
+                                                //promoMethod: 1, 
+                                                Value = detailPromo.IsPercentage ?
+                                                        detailPromo.ValuePercentage :
+                                                        detailPromo.ValueAmount,
+                                                //nettPrice: 0, 
+                                                CoaCode = dataPromo.CoaCost,
+                                                Amount = detailPromo.IsPercentage ?
+                                                        item.UnitPrice * (detailPromo.ValuePercentage / 100) :
+                                                        detailPromo.ValueAmount,
+                                                //fromPromo: true, 
+                                                IsPercentage = detailPromo.IsPercentage
+                                            });
+                                            break;
+                                        case 2:
+                                            // Apply to Barang - Promo Method Qty Barang
+                                            var tierData = detailTierPromo.FirstOrDefault(x => item.Qty >= x.FromQty && item.Qty <= x.ToQty);
+                                            if (tierData != null)
+                                            {
+                                                if (tierData.ApplyToAllUnit)
+                                                {
+                                                    var promoUnit = uomConversions.FirstOrDefault(x => x.Id == tierData.SaleUnit);
+                                                    var itemUnit = uomConversions.FirstOrDefault(x => x.Id == item.UnitId);
+                                                    if (itemUnit.Seq >= promoUnit.Seq)
+                                                    {
+                                                        discPromo.Add(new SalesOrderDetailDiscount
+                                                        {
+                                                            PromoCode = dataPromo.Code,
+                                                            PromoDetailId = detailPromo.Id,
+                                                            Name = dataPromo.Name,
+                                                            //promoMethod: 1, 
+                                                            Value = tierData.Value,
+                                                            //nettPrice: 0, 
+                                                            CoaCode = dataPromo.CoaCost,
+                                                            Amount = detailPromo.IsPercentage ?
+                                                                item.UnitPrice * (tierData.Value / 100) : tierData.Value,
+                                                            //fromPromo: true, 
+                                                            IsPercentage = detailPromo.IsPercentage
+                                                        });
+                                                    }
+                                                }
+                                                else if (item.UnitId == tierData.SaleUnit)
+                                                {
+                                                    discPromo.Add(new SalesOrderDetailDiscount
+                                                    {
+                                                        PromoCode = dataPromo.Code,
+                                                        PromoDetailId = detailPromo.Id,
+                                                        Name = dataPromo.Name,
+                                                        //promoMethod: 1,
+                                                        Value = tierData.Value,
+                                                        //nettPrice: 0,
+                                                        CoaCode = dataPromo.CoaCost,
+                                                        Amount = detailPromo.IsPercentage ?
+                                                            item.UnitPrice * (tierData.Value / 100) : tierData.Value,
+                                                        //fromPromo: true,
+                                                        IsPercentage = detailPromo.IsPercentage
+                                                    });
+                                                }
+                                            }
+                                            break;
+                                        case 3:
+                                            // Apply to Barang - Promo Method Bonus
+                                            var tierData3 = detailTierPromo.FirstOrDefault(x => item.Qty >= x.FromQty && item.Qty <= x.ToQty);
+                                            if (tierData3 != null)
+                                            {
+                                                var freeItem = items.FirstOrDefault(x => x.Id == tierData3.FreeGoodItemId);
+                                                if (tierData3.IsMultiple)
+                                                {
+                                                    if (item.UnitId == tierData3.SaleUnit)
+                                                    {
+                                                        var multipleValue = Math.Floor(item.Qty / tierData3.FromQty);
+                                                        bonusPromo.Add(new SalesOrderDetailFreeGood
+                                                        {
+                                                            PromoCode = dataPromo.Code,
+                                                            ItemId = freeItem.Id,
+                                                            UomId = (int)freeItem.UomId,
+                                                            UnitId = Convert.ToInt32(tierData3.UnitFreeGood),
+                                                            Qty = multipleValue * tierData3.Value,
+                                                            QtyClosed = 0m,
+                                                            UnitPrice = (decimal)freeItem.SellPrice,
+                                                            CoaCode = dataPromo.CoaCost
+                                                        });
+                                                    }
+                                                }
+                                                else if (item.UnitId == tierData3.SaleUnit)
+                                                {
+                                                    bonusPromo.Add(new SalesOrderDetailFreeGood
+                                                    {
+                                                        PromoCode = dataPromo.Code,
+                                                        ItemId = freeItem.Id,
+                                                        UomId = (int)freeItem.UomId,
+                                                        UnitId = Convert.ToInt32(tierData3.UnitFreeGood),
+                                                        Qty = tierData3.Value,
+                                                        QtyClosed = 0m,
+                                                        UnitPrice = (decimal)freeItem.SellPrice,
+                                                        CoaCode = dataPromo.CoaCost
+                                                    });
+                                                }
+                                            }
+                                            break;
+                                        case 4:
+                                            // Apply to Barang - Promo Method Payment Term
+                                            var tierData4 = detailTierPromo.FirstOrDefault(x => x.PaymentTermId == data.PaymentTermId);
+                                            if (tierData4 != null)
+                                            {
+                                                discPromo.Add(new SalesOrderDetailDiscount
+                                                {
+                                                    PromoCode = dataPromo.Code,
+                                                    PromoDetailId = detailPromo.Id,
+                                                    Name = dataPromo.Name,
+                                                    //promoMethod: 1,
+                                                    Value = tierData4.Value,
+                                                    //nettPrice: 0,
+                                                    CoaCode = dataPromo.CoaCost,
+                                                    Amount = tierData4.IsPercentage ?
+                                                        item.UnitPrice * (tierData4.Value / 100) :
+                                                        tierData4.Value,
+                                                    //fromPromo: true,
+                                                    IsPercentage = detailPromo.IsPercentage
+                                                });
+                                            }
+                                            break;
+                                    }
+                                }
+                                else if (applyTo == 4)
+                                {
+                                    var multiItem = detailMultiPromo.Select(y => y.ItemId);
+                                    var isApplicable = data.ItemDetails.Select(x => x.ItemId).Intersect(multiItem);
+                                    if (multiItem.Count() == isApplicable.Count())
+                                    {
+                                        switch (detailPromo.PromoType)
+                                        {
+                                            case 2:
+                                                // Apply to Barang - Promo Method Qty Barang
+                                                var miData2 = data.ItemDetails.Where(x => multiItem.Contains(x.ItemId));
+                                                var tierData = detailTierPromo.FirstOrDefault(x => miData2.Sum(x => x.Qty) >= x.FromQty && miData2.Sum(x => x.Qty) <= x.ToQty);
+                                                if (tierData != null)
+                                                {
+                                                    var valueDisc = detailPromo.IsPercentage ?
+                                                            item.UnitPrice * (tierData.Value / 100) : tierData.Value;
+                                                    var prorateDisc = (valueDisc / data.ItemDetails.Sum(x => x.UnitPrice * x.Qty)) * (item.Qty * item.UnitPrice);
+                                                    prorateDisc /= item.Qty;
+                                                    discPromo.Add(new SalesOrderDetailDiscount
+                                                    {
+                                                        PromoCode = dataPromo.Code,
+                                                        PromoDetailId = detailPromo.Id,
+                                                        Name = dataPromo.Name,
+                                                        //promoMethod: 1,
+                                                        Value = tierData.Value,
+                                                        //nettPrice: 0,
+                                                        CoaCode = dataPromo.CoaCost,
+                                                        Amount = prorateDisc,
+                                                        //fromPromo: true,
+                                                        IsPercentage = detailPromo.IsPercentage
+                                                    });
+                                                }
+                                                break;
+                                            case 3:
+                                                // Apply to Barang - Promo Method Bonus
+                                                var miData3 = data.ItemDetails.Where(x => multiItem.Contains(x.ItemId));
+                                                var tierData3 = detailTierPromo.FirstOrDefault(x => miData3.Sum(x => x.Qty) >= x.FromQty && miData3.Sum(x => x.Qty) <= x.ToQty);
+                                                if (tierData3 != null)
+                                                {
+                                                    var freeItem = items.FirstOrDefault(x => x.Id == tierData3.FreeGoodItemId);
+                                                    if (tierData3.IsMultiple)
+                                                    {
+                                                        var multipleValue = Math.Floor(miData3.Sum(x => x.Qty) / tierData3.FromQty);
+                                                        bonusPromoMulti.Add(new SalesOrderDetailFreeGood
+                                                        {
+                                                            PromoCode = dataPromo.Code,
+                                                            ItemId = freeItem.Id,
+                                                            UomId = (int)freeItem.UomId,
+                                                            UnitId = Convert.ToInt32(tierData3.UnitFreeGood),
+                                                            Qty = multipleValue * tierData3.Value,
+                                                            QtyClosed = 0m,
+                                                            UnitPrice = (decimal)freeItem.SellPrice,
+                                                            CoaCode = dataPromo.CoaCost
+                                                        });
+                                                    }
+                                                    else
+                                                    {
+                                                        bonusPromoMulti.Add(new SalesOrderDetailFreeGood
+                                                        {
+                                                            PromoCode = dataPromo.Code,
+                                                            ItemId = freeItem.Id,
+                                                            UomId = (int)freeItem.UomId,
+                                                            UnitId = Convert.ToInt32(tierData3.UnitFreeGood),
+                                                            Qty = tierData3.Value,
+                                                            QtyClosed = 0m,
+                                                            UnitPrice = (decimal)freeItem.SellPrice,
+                                                            CoaCode = dataPromo.CoaCost
+                                                        });
+                                                    }
+                                                }
+                                                break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if (item.DiscountItemDetails.Any())
+                    {
+                        discPromo.AddRange(item.DiscountItemDetails);
+                    }
+
+                    item.Disc = discPromo.Sum(x => x.Amount);
+
                     var taxData = taxes.FirstOrDefault(x => x.Id == item.TaxId);
                     var discHeaderProrate = 0m;
                     if (data.FinalDisc > 0)
@@ -205,53 +459,52 @@ namespace ERP.Web.API.Domain.Services.Sales
                     Db.SaveChanges();
                     listIdDetail.Add(orderDetail.Id);
 
-                    if (item.DiscountItemDetails != null)
+                    if (discPromo.Any())
                     {
-                        if (item.DiscountItemDetails.Any())
+                        short d = 0;
+                        foreach (var discItem in discPromo)
                         {
-                            short d = 0;
-                            foreach (var discItem in item.DiscountItemDetails)
+                            Db.SalesOrderDetailDiscounts.Add(new SalesOrderDetailDiscount
                             {
-                                Db.SalesOrderDetailDiscounts.Add(new SalesOrderDetailDiscount
-                                {
-                                    Code = newCode,
-                                    OrderDetailId = orderDetail.Id,
-                                    LineNo = ++d,
-                                    PromoCode = discItem.PromoCode,
-                                    PromoDetailId = discItem.PromoDetailId,
-                                    Name = discItem.Name,
-                                    IsPercentage = discItem.IsPercentage,
-                                    Value = discItem.Value,
-                                    Amount = discItem.Amount,
-                                    CoaCode = discItem.CoaCode
-                                });
-                            }
+                                Code = newCode,
+                                OrderDetailId = orderDetail.Id,
+                                LineNo = ++d,
+                                PromoCode = discItem.PromoCode,
+                                PromoDetailId = discItem.PromoDetailId,
+                                Name = discItem.Name,
+                                IsPercentage = discItem.IsPercentage,
+                                Value = discItem.Value,
+                                Amount = discItem.Amount,
+                                CoaCode = discItem.CoaCode
+                            });
                         }
                         Db.SaveChanges();
                     }
 
-                    if (item.FreeItemDetails != null)
+                    if (bonusPromoMulti.Any() && orderDetail.LineNo == 1)
                     {
-                        if (item.FreeItemDetails.Any())
+                        bonusPromo.AddRange(bonusPromoMulti);
+                    }
+
+                    if (bonusPromo.Any())
+                    {
+                        short f = 0;
+                        foreach (var freeItem in bonusPromo)
                         {
-                            short f = 0;
-                            foreach (var freeItem in item.FreeItemDetails)
+                            Db.SalesOrderDetailFreeGoods.Add(new SalesOrderDetailFreeGood
                             {
-                                Db.SalesOrderDetailFreeGoods.Add(new SalesOrderDetailFreeGood
-                                {
-                                    Code = newCode,
-                                    OrderDetailId = orderDetail.Id,
-                                    LineNo = ++f,
-                                    PromoCode = freeItem.PromoCode,
-                                    ItemId = freeItem.ItemId,
-                                    UomId = freeItem.UomId,
-                                    UnitId = freeItem.UnitId,
-                                    Qty = freeItem.Qty,
-                                    QtyClosed = freeItem.QtyClosed,
-                                    UnitPrice = freeItem.UnitPrice,
-                                    CoaCode = freeItem.CoaCode
-                                });
-                            }
+                                Code = newCode,
+                                OrderDetailId = orderDetail.Id,
+                                LineNo = ++f,
+                                PromoCode = freeItem.PromoCode,
+                                ItemId = freeItem.ItemId,
+                                UomId = freeItem.UomId,
+                                UnitId = freeItem.UnitId,
+                                Qty = freeItem.Qty,
+                                QtyClosed = freeItem.QtyClosed,
+                                UnitPrice = freeItem.UnitPrice,
+                                CoaCode = freeItem.CoaCode
+                            });
                         }
                         Db.SaveChanges();
                     }
@@ -522,6 +775,21 @@ namespace ERP.Web.API.Domain.Services.Sales
                 }
 
                 var taxes = Db.Taxes.ToList();
+                var promos = Db.PromoHeaders
+                            .Select(x => new
+                            {
+                                x.Code,
+                                x.Name,
+                                x.StartDate,
+                                x.EndDate,
+                                x.ApplyTo,
+                                x.CoaCost,
+                                x.Content,
+                                x.Mark,
+                                Subject = Db.PromoSubjects.Where(y => y.Code == x.Code).ToList(),
+                            }).Where(x => x.StartDate >= data.Date && data.Date <= x.EndDate).ToList();
+                var items = Db.Items.ToList();
+                var uomConversions = Db.UoMConversions.ToList();
                 List<decimal> totalDetail = new();
                 List<decimal> totalTax = new();
                 List<decimal> totalDpp = new();
@@ -542,8 +810,248 @@ namespace ERP.Web.API.Domain.Services.Sales
 
                 // Update detail data
                 short i = 0;
+                List<SalesOrderDetailFreeGood> bonusPromoMulti = new();
                 foreach (var item in data.ItemDetails)
                 {
+                    //Promo
+                    var listPromo = promos.Where(x => x.ApplyTo == 1 ||
+                                    x.Subject.Select(y => y.CustCode).Contains(data.CustCode) ||
+                                    x.Subject.Select(y => y.CustTypeId).Contains(data.CustTypeId)).ToList();
+
+                    List<SalesOrderDetailDiscount> discPromo = new();
+                    List<SalesOrderDetailFreeGood> bonusPromo = new();
+                    if (listPromo.Any())
+                    {
+                        foreach (var dataPromo in listPromo)
+                        {
+                            var listDetailPromo = Db.PromoDetails.Where(x => x.Code == dataPromo.Code).ToList();
+                            foreach (var detailPromo in listDetailPromo)
+                            {
+                                var detailTierPromo = Db.PromoDetailTiers.Where(x => x.PromoDetailId == detailPromo.Id).ToList();
+                                var detailMultiPromo = Db.PromoDetailMultipleItems.Where(x => x.PromoDetailId == detailPromo.Id).ToList();
+                                var applyTo = detailPromo.ApplyTo;
+                                var ctItem = items.FirstOrDefault(j => j.Id == item.ItemId);
+                                if ((applyTo == 1 && detailPromo.ItemId == item.ItemId)
+                                    || (applyTo == 3 && ctItem.CategoryId == detailPromo.ItemId))
+                                {
+                                    switch (detailPromo.PromoType)
+                                    {
+                                        case 1:
+                                            // Apply to Barang - Promo Method Reguler
+                                            discPromo.Add(new SalesOrderDetailDiscount
+                                            {
+                                                PromoCode = dataPromo.Code,
+                                                PromoDetailId = detailPromo.Id,
+                                                Name = dataPromo.Name,
+                                                //promoMethod: 1, 
+                                                Value = detailPromo.IsPercentage ?
+                                                        detailPromo.ValuePercentage :
+                                                        detailPromo.ValueAmount,
+                                                //nettPrice: 0, 
+                                                CoaCode = dataPromo.CoaCost,
+                                                Amount = detailPromo.IsPercentage ?
+                                                        item.UnitPrice * (detailPromo.ValuePercentage / 100) :
+                                                        detailPromo.ValueAmount,
+                                                //fromPromo: true, 
+                                                IsPercentage = detailPromo.IsPercentage
+                                            });
+                                            break;
+                                        case 2:
+                                            // Apply to Barang - Promo Method Qty Barang
+                                            var tierData = detailTierPromo.FirstOrDefault(x => item.Qty >= x.FromQty && item.Qty <= x.ToQty);
+                                            if (tierData != null)
+                                            {
+                                                if (tierData.ApplyToAllUnit)
+                                                {
+                                                    var promoUnit = uomConversions.FirstOrDefault(x => x.Id == tierData.SaleUnit);
+                                                    var itemUnit = uomConversions.FirstOrDefault(x => x.Id == item.UnitId);
+                                                    if (itemUnit.Seq >= promoUnit.Seq)
+                                                    {
+                                                        discPromo.Add(new SalesOrderDetailDiscount
+                                                        {
+                                                            PromoCode = dataPromo.Code,
+                                                            PromoDetailId = detailPromo.Id,
+                                                            Name = dataPromo.Name,
+                                                            //promoMethod: 1, 
+                                                            Value = tierData.Value,
+                                                            //nettPrice: 0, 
+                                                            CoaCode = dataPromo.CoaCost,
+                                                            Amount = detailPromo.IsPercentage ?
+                                                                item.UnitPrice * (tierData.Value / 100) : tierData.Value,
+                                                            //fromPromo: true, 
+                                                            IsPercentage = detailPromo.IsPercentage
+                                                        });
+                                                    }
+                                                }
+                                                else if (item.UnitId == tierData.SaleUnit)
+                                                {
+                                                    discPromo.Add(new SalesOrderDetailDiscount
+                                                    {
+                                                        PromoCode = dataPromo.Code,
+                                                        PromoDetailId = detailPromo.Id,
+                                                        Name = dataPromo.Name,
+                                                        //promoMethod: 1,
+                                                        Value = tierData.Value,
+                                                        //nettPrice: 0,
+                                                        CoaCode = dataPromo.CoaCost,
+                                                        Amount = detailPromo.IsPercentage ?
+                                                            item.UnitPrice * (tierData.Value / 100) : tierData.Value,
+                                                        //fromPromo: true,
+                                                        IsPercentage = detailPromo.IsPercentage
+                                                    });
+                                                }
+                                            }
+                                            break;
+                                        case 3:
+                                            // Apply to Barang - Promo Method Bonus
+                                            var tierData3 = detailTierPromo.FirstOrDefault(x => item.Qty >= x.FromQty && item.Qty <= x.ToQty);
+                                            if (tierData3 != null)
+                                            {
+                                                var freeItem = items.FirstOrDefault(x => x.Id == tierData3.FreeGoodItemId);
+                                                if (tierData3.IsMultiple)
+                                                {
+                                                    if (item.UnitId == tierData3.SaleUnit)
+                                                    {
+                                                        var multipleValue = Math.Floor(item.Qty / tierData3.FromQty);
+                                                        bonusPromo.Add(new SalesOrderDetailFreeGood
+                                                        {
+                                                            PromoCode = dataPromo.Code,
+                                                            ItemId = freeItem.Id,
+                                                            UomId = (int)freeItem.UomId,
+                                                            UnitId = Convert.ToInt32(tierData3.UnitFreeGood),
+                                                            Qty = multipleValue * tierData3.Value,
+                                                            QtyClosed = 0m,
+                                                            UnitPrice = (decimal)freeItem.SellPrice,
+                                                            CoaCode = dataPromo.CoaCost
+                                                        });
+                                                    }
+                                                }
+                                                else if (item.UnitId == tierData3.SaleUnit)
+                                                {
+                                                    bonusPromo.Add(new SalesOrderDetailFreeGood
+                                                    {
+                                                        PromoCode = dataPromo.Code,
+                                                        ItemId = freeItem.Id,
+                                                        UomId = (int)freeItem.UomId,
+                                                        UnitId = Convert.ToInt32(tierData3.UnitFreeGood),
+                                                        Qty = tierData3.Value,
+                                                        QtyClosed = 0m,
+                                                        UnitPrice = (decimal)freeItem.SellPrice,
+                                                        CoaCode = dataPromo.CoaCost
+                                                    });
+                                                }
+                                            }
+                                            break;
+                                        case 4:
+                                            // Apply to Barang - Promo Method Payment Term
+                                            var tierData4 = detailTierPromo.FirstOrDefault(x => x.PaymentTermId == data.PaymentTermId);
+                                            if (tierData4 != null)
+                                            {
+                                                discPromo.Add(new SalesOrderDetailDiscount
+                                                {
+                                                    PromoCode = dataPromo.Code,
+                                                    PromoDetailId = detailPromo.Id,
+                                                    Name = dataPromo.Name,
+                                                    //promoMethod: 1,
+                                                    Value = tierData4.Value,
+                                                    //nettPrice: 0,
+                                                    CoaCode = dataPromo.CoaCost,
+                                                    Amount = tierData4.IsPercentage ?
+                                                        item.UnitPrice * (tierData4.Value / 100) :
+                                                        tierData4.Value,
+                                                    //fromPromo: true,
+                                                    IsPercentage = detailPromo.IsPercentage
+                                                });
+                                            }
+                                            break;
+                                    }
+                                }
+                                else if (applyTo == 4)
+                                {
+                                    var multiItem = detailMultiPromo.Select(y => y.ItemId);
+                                    var isApplicable = data.ItemDetails.Select(x => x.ItemId).Intersect(multiItem);
+                                    if (multiItem.Count() == isApplicable.Count())
+                                    {
+                                        switch (detailPromo.PromoType)
+                                        {
+                                            case 2:
+                                                // Apply to Barang - Promo Method Qty Barang
+                                                var miData2 = data.ItemDetails.Where(x => multiItem.Contains(x.ItemId));
+                                                var tierData = detailTierPromo.FirstOrDefault(x => miData2.Sum(x => x.Qty) >= x.FromQty && miData2.Sum(x => x.Qty) <= x.ToQty);
+                                                if (tierData != null)
+                                                {
+                                                    var valueDisc = detailPromo.IsPercentage ?
+                                                            item.UnitPrice * (tierData.Value / 100) : tierData.Value;
+                                                    var prorateDisc = (valueDisc / data.ItemDetails.Sum(x => x.UnitPrice * x.Qty)) * (item.Qty * item.UnitPrice);
+                                                    prorateDisc /= item.Qty;
+                                                    discPromo.Add(new SalesOrderDetailDiscount
+                                                    {
+                                                        PromoCode = dataPromo.Code,
+                                                        PromoDetailId = detailPromo.Id,
+                                                        Name = dataPromo.Name,
+                                                        //promoMethod: 1,
+                                                        Value = tierData.Value,
+                                                        //nettPrice: 0,
+                                                        CoaCode = dataPromo.CoaCost,
+                                                        Amount = prorateDisc,
+                                                        //fromPromo: true,
+                                                        IsPercentage = detailPromo.IsPercentage
+                                                    });
+                                                }
+                                                break;
+                                            case 3:
+                                                // Apply to Barang - Promo Method Bonus
+                                                var miData3 = data.ItemDetails.Where(x => multiItem.Contains(x.ItemId));
+                                                var tierData3 = detailTierPromo.FirstOrDefault(x => miData3.Sum(x => x.Qty) >= x.FromQty && miData3.Sum(x => x.Qty) <= x.ToQty);
+                                                if (tierData3 != null)
+                                                {
+                                                    var freeItem = items.FirstOrDefault(x => x.Id == tierData3.FreeGoodItemId);
+                                                    if (tierData3.IsMultiple)
+                                                    {
+                                                        var multipleValue = Math.Floor(miData3.Sum(x => x.Qty) / tierData3.FromQty);
+                                                        bonusPromoMulti.Add(new SalesOrderDetailFreeGood
+                                                        {
+                                                            PromoCode = dataPromo.Code,
+                                                            ItemId = freeItem.Id,
+                                                            UomId = (int)freeItem.UomId,
+                                                            UnitId = Convert.ToInt32(tierData3.UnitFreeGood),
+                                                            Qty = multipleValue * tierData3.Value,
+                                                            QtyClosed = 0m,
+                                                            UnitPrice = (decimal)freeItem.SellPrice,
+                                                            CoaCode = dataPromo.CoaCost
+                                                        });
+                                                    }
+                                                    else
+                                                    {
+                                                        bonusPromoMulti.Add(new SalesOrderDetailFreeGood
+                                                        {
+                                                            PromoCode = dataPromo.Code,
+                                                            ItemId = freeItem.Id,
+                                                            UomId = (int)freeItem.UomId,
+                                                            UnitId = Convert.ToInt32(tierData3.UnitFreeGood),
+                                                            Qty = tierData3.Value,
+                                                            QtyClosed = 0m,
+                                                            UnitPrice = (decimal)freeItem.SellPrice,
+                                                            CoaCode = dataPromo.CoaCost
+                                                        });
+                                                    }
+                                                }
+                                                break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    item.DiscountItemDetails = item.DiscountItemDetails.Where(x => x.PromoCode == null);
+                    if (item.DiscountItemDetails.Any())
+                    {
+                        discPromo.AddRange(item.DiscountItemDetails);
+                    }
+
+                    item.Disc = discPromo.Sum(x => x.Amount);
+
                     var taxData = taxes.FirstOrDefault(x => x.Id == item.TaxId);
                     var discHeaderProrate = 0m;
                     if (data.FinalDisc > 0)
@@ -619,21 +1127,21 @@ namespace ERP.Web.API.Domain.Services.Sales
                         listIdDetail.Add(item.Id);
                     }
 
-                    if (item.DiscountItemDetails != null)
+                    if (discPromo != null)
                     {
                         //Remove deleted detail
                         var delDiscDetails = Db.SalesOrderDetailDiscounts
-                        .Where(d => d.Code == data.Code && d.OrderDetailId == item.Id && !item.DiscountItemDetails.Select(x => x.Id).Contains(d.Id))
+                        .Where(d => d.Code == data.Code && d.OrderDetailId == item.Id && !discPromo.Select(x => x.Id).Contains(d.Id))
                         .ToList();
 
                         Db.SalesOrderDetailDiscounts.RemoveRange(delDiscDetails);
 
-                        if (item.DiscountItemDetails.Any())
+                        if (discPromo.Any())
                         {
                             short d = 0;
-                            foreach (var discItem in item.DiscountItemDetails)
+                            foreach (var discItem in discPromo)
                             {
-                                if (discItem.Id < 0)
+                                if (discItem.Id <= 0)
                                 {
                                     Db.SalesOrderDetailDiscounts.Add(new SalesOrderDetailDiscount
                                     {
@@ -661,21 +1169,26 @@ namespace ERP.Web.API.Domain.Services.Sales
                         }
                     }
 
-                    if (item.FreeItemDetails != null)
+                    if (bonusPromoMulti.Any() && item.LineNo == 1)
+                    {
+                        bonusPromo.AddRange(bonusPromoMulti);
+                    }
+
+                    if (bonusPromo != null)
                     {
                         //Remove Deleted detail
                         var delFreeDetails = Db.SalesOrderDetailFreeGoods
-                        .Where(d => d.Code == data.Code && d.OrderDetailId == item.Id && !item.FreeItemDetails.Select(x => x.Id).Contains(d.Id))
+                        .Where(d => d.Code == data.Code && d.OrderDetailId == item.Id && !bonusPromo.Select(x => x.Id).Contains(d.Id))
                         .ToList();
 
                         Db.SalesOrderDetailFreeGoods.RemoveRange(delFreeDetails);
 
-                        if (item.FreeItemDetails.Any())
+                        if (bonusPromo.Any())
                         {
                             short f = 0;
-                            foreach (var freeItem in item.FreeItemDetails)
+                            foreach (var freeItem in bonusPromo)
                             {
-                                if (freeItem.Id < 0)
+                                if (freeItem.Id <= 0)
                                 {
                                     Db.SalesOrderDetailFreeGoods.Add(new SalesOrderDetailFreeGood
                                     {
