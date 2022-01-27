@@ -26,20 +26,11 @@ namespace ERP.Web.API.Controllers.Mobile.Purchase
         }
 
         [HttpGet]
-        public IActionResult GetData(string filters, string sorts, string search, int skip, int take, string date)
+        public IActionResult GetData(DateTime? date, string search)
         {
-            var data =
-                _purchaseOrder.GetDataForMobile(skip, take,
-                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
-                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"), search, date);
+            var result = _purchaseOrder.GetDataForMobile(date, search, _claim.UserId);
 
-            var result = ((List<PurchaseOrderHeaderModel>)data.Data).ToList<dynamic>();
-
-            return Ok(new MobileApiResponse
-            {
-                Count = data.Total,
-                Data = result
-            }); ;
+            return Ok(result);
         }
 
         [HttpGet("item")]

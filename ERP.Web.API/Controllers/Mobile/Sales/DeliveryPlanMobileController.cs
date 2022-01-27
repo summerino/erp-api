@@ -22,21 +22,11 @@ namespace ERP.Web.API.Domain.Interfaces.Mobile.Sales
         }
 
         [HttpGet]
-        public IActionResult GetData(string filters, string sorts, string search, int skip, int take, string date)
+        public IActionResult GetData(DateTime? date, string search)
         {
-            var data =
-                _deliveryPlan.GetData(skip, take,
-                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
-                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
-                    search, date, _claim.UserId);
+            var data = _deliveryPlan.GetData(date, search, _claim.UserId);
 
-            var result = ((List<DeliveryPlanHeaderModel>)data.Data).ToList<dynamic>();
-
-            return Ok(new MobileApiResponse
-            {
-                Count = data.Total,
-                Data = result
-            }); ;
+            return Ok(data);
         }
 
         [HttpGet("item")]
