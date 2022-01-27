@@ -117,7 +117,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                 var newCode = GetNewCode("PO_NUM_FMT", data.Date);
 
                 data.Code = newCode;
-                
+
                 // Insert detail data
                 short i = 0;
                 foreach (var item in data.ItemDetails)
@@ -191,8 +191,8 @@ namespace ERP.Web.API.Domain.Services.Purchase
                 }
 
                 data.SubTotal = totalDetail.Sum();
-                data.TaxAmount = Math.Round(totalTax.Sum());
-                data.Dpp = Math.Round(totalDpp.Sum());
+                data.TaxAmount = totalTax.Sum();
+                data.Dpp = totalDpp.Sum();
                 data.Total = data.SubTotal;
                 Db.PurchaseOrderHeaders.Add(data);
 
@@ -543,8 +543,8 @@ namespace ERP.Web.API.Domain.Services.Purchase
                 }
 
                 data.SubTotal = totalDetail.Sum();
-                data.TaxAmount = Math.Round(totalTax.Sum());
-                data.Dpp = Math.Round(totalDpp.Sum());
+                data.TaxAmount = totalTax.Sum();
+                data.Dpp = totalDpp.Sum();
                 data.Total = data.SubTotal;
                 // Update header data
                 Db.PurchaseOrderHeaders.Update(data);
@@ -896,7 +896,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
             return result;
         }
 
-        private (bool,string) CheckDuplicateDetail(IEnumerable<PurchaseOrderDetail> data) 
+        private (bool, string) CheckDuplicateDetail(IEnumerable<PurchaseOrderDetail> data)
         {
             var tData = data.GroupBy(x => new { x.ItemId, x.UnitId }).Where(y => y.Count() > 1);
             var errorList = "";
@@ -906,13 +906,15 @@ namespace ERP.Web.API.Domain.Services.Purchase
                 var uom = Db.UoMConversions.FirstOrDefault(x => x.Id == itemData.Key.UnitId);
                 errorList += $"&bull; Barang {item.Initial} dengan satuan {uom.UnitEquivalent} tidak dapat duplikat.<br/>";
             }
-                
+
             return (errorList != "", errorList);
         }
 
         #region Mobile
         public DataSourceResult GetDataForMobile(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, string search, string date)
         {
+            var mobileReceive = (from mobilePO in Db.MobileReceiveItemHeaders
+                                 select mobilePO).ToList();
             var dataOrder = (from order in Db.PurchaseOrderHeaders
                              join sup in Db.Suppliers on order.SupCode equals sup.Code
                              join supType in Db.SupplierTypes on sup.TypeId equals supType.Id
@@ -930,6 +932,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                                  srcTrans = 1
                              }).AsQueryable();
 
+            dataOrder = dataOrder.Where(x => !mobileReceive.Select(t => t.TransCode).Contains(x.Code));
             dataOrder = dataOrder.Where(x => x.Mark != "CMP" && x.Mark != "CLS" && x.Mark != "V");
 
             var dataRetur = (from retur in Db.PurchaseReturnHeaders
@@ -949,6 +952,9 @@ namespace ERP.Web.API.Domain.Services.Purchase
                                  WarehouseCode = returDetail.WarehouseCode ?? "",
                                  srcTrans = 2
                              }).AsQueryable();
+
+            dataRetur = dataRetur.Where(x => !mobileReceive.Select(t => t.TransCode).Contains(x.Code));
+            dataRetur = dataRetur.Where(x => x.Mark != "CMP" && x.Mark != "V");
 
             var data = dataOrder.Union(dataRetur);
 
@@ -973,51 +979,48 @@ namespace ERP.Web.API.Domain.Services.Purchase
                 var data = from order_d in Db.VwPurchaseOrderDetails
                            join order_h in Db.VwPurchaseOrderHeaders on order_d.Code equals order_h.Code
                            join item in Db.Items on order_d.ItemId equals item.Id
-                           where order_d.Code.Equals(code) && order_d.Qty <= order_d.QtyRcv
+                           where order_d.Code.Equals(code) && order_d.Qty > order_d.QtyRcv
                            select new PurchaseOrderDetailModel
                            {
                                Code = order_d.Code,
                                LineNo = order_d.LineNo,
                                ItemId = order_d.ItemId,
+                               ItemInitial = item.Initial,
+                               ItemName = order_d.ItemName,
+                               UnitName = order_d.UnitName,
                                OrderQty = order_d.Qty,
                                ReceiveQty = order_d.QtyRcv,
-                               TransDetailId = 2,
+                               TransDetailId = order_d.Id,
                                Type = order_d.Type,
                                UnitId = order_d.UnitId,
                                UomId = order_d.UomId,
-                               WarehouseCode = order_h.WarehouseCode ?? "",
-
-                               ItemInitial = item.Initial,
-                               ItemName = order_d.ItemName,
-                               UnitName = order_d.UnitName
+                               WarehouseCode = order_h.WarehouseCode ?? ""
                            };
-                return data;
+                return data.OrderBy(x => x.LineNo);
             }
             else
             {
                 var data = from retur_d in Db.VwPurchaseReturnDetails
-                           join retur_h in Db.VwPurchaseReturnHeaders on retur_d.Code equals retur_h.Code
                            join item in Db.Items on retur_d.ItemId equals item.Id
-                           where retur_d.Code.Equals(code) && retur_d.Qty <= retur_d.QtyRcv
+                           where retur_d.Code.Equals(code) && retur_d.Qty > retur_d.QtyRcv
                            select new PurchaseOrderDetailModel
                            {
                                Code = retur_d.Code,
                                LineNo = retur_d.LineNo,
                                ItemId = retur_d.ItemId,
-                               OrderQty = retur_d.Qty,
-                               ReceiveQty = retur_d.QtyRcv,
-                               TransDetailId = 1,
-                               Type = retur_h.Type, // type apa?
-                               UnitId = retur_d.UnitId,
-                               UomId = retur_d.UomId,
-                               WarehouseCode = retur_d.WarehouseCode ?? "",
-
                                ItemInitial = item.Initial,
                                ItemName = retur_d.ItemName,
-                               UnitName = retur_d.UnitName
+                               UnitName = retur_d.UnitName,
+                               OrderQty = retur_d.Qty,
+                               ReceiveQty = retur_d.QtyRcv,
+                               TransDetailId = retur_d.Id,
+                               Type = 0,
+                               UnitId = retur_d.UnitId,
+                               UomId = retur_d.UomId,
+                               WarehouseCode = retur_d.WarehouseCode ?? ""
                            };
 
-                return data;
+                return data.OrderBy(x => x.LineNo);
             }
         }
 
@@ -1037,8 +1040,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                                  SrcTrans = rcvHeader.SrcTrans,
                                  SupCode = rcvHeader.SupCode,
                                  SupName = sup.Name,
-                                 SupPhone = sup.Phone,
-                                 TransCode = rcvHeader.TransCode
+                                 SupPhone = sup.Phone
                              };
 
             var data_return = from rcvHeader in Db.MobileReceiveItemHeaders
@@ -1055,8 +1057,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                                   SrcTrans = rcvHeader.SrcTrans,
                                   SupCode = rcvHeader.SupCode,
                                   SupName = sup.Name,
-                                  SupPhone = sup.Phone,
-                                  TransCode = rcvHeader.TransCode
+                                  SupPhone = sup.Phone
                               };
 
             var data = (data_order.AsQueryable()).Union(data_return.AsQueryable());
@@ -1085,26 +1086,44 @@ namespace ERP.Web.API.Domain.Services.Purchase
                            join header in Db.MobileReceiveItemHeaders on detail.Code equals header.Code
                            join orderHeader in Db.PurchaseOrderHeaders on header.TransCode equals orderHeader.Code
                            join orderDetail in Db.PurchaseOrderDetails on orderHeader.Code equals orderDetail.Code
-                           where detail.Code.Equals(code)
-                           select new ReceiveItemDetailModel
+                           group orderDetail by new
                            {
-                               Code = detail.Code,
-                               Id = detail.Id,
-                               ItemId = detail.ItemId,
-                               LineNo = detail.LineNo,
-                               Qty = detail.Qty,
-                               TransDetailId = detail.TransDetailId,
-                               Type = detail.Type,
-                               UnitId = detail.UnitId,
-                               UomId = detail.UomId,
-                               UnitEquivalent = uom.UnitEquivalent,
-                               WarehouseCode = detail.WarehouseCode,
+                               detail.Code,
+                               detail.Id,
+                               detail.ItemId,
+                               detail.LineNo,
+                               detail.Qty,
+                               detail.TransDetailId,
+                               detail.Type,
+                               detail.UnitId,
+                               detail.UomId,
+                               uom.UnitEquivalent,
+                               detail.WarehouseCode,
                                ItemInitial = item.Initial,
                                ItemName = item.Name,
                                QtyOrder = orderDetail.Qty,
                                QtyRemain = orderDetail.Qty - detail.Qty
+                           } into oD
+                           select new ReceiveItemDetailModel
+                           {
+                               Code = oD.Key.Code,
+                               Id = oD.Key.Id,
+                               ItemId = oD.Key.ItemId,
+                               LineNo = oD.Key.LineNo,
+                               Qty = oD.Key.Qty,
+                               TransDetailId = oD.Key.TransDetailId,
+                               Type = oD.Key.Type,
+                               UnitId = oD.Key.UnitId,
+                               UomId = oD.Key.UomId,
+                               UnitEquivalent = oD.Key.UnitEquivalent,
+                               WarehouseCode = oD.Key.WarehouseCode,
+                               ItemInitial = oD.Key.ItemInitial,
+                               ItemName = oD.Key.ItemName,
+                               QtyOrder = oD.Key.Qty,
+                               QtyRemain = oD.Key.QtyOrder - oD.Key.Qty
                            };
-                return data;
+
+                return data.Where(x => x.Code.Equals(code)).OrderBy(x => x.LineNo);
             }
             else
             {
@@ -1114,26 +1133,44 @@ namespace ERP.Web.API.Domain.Services.Purchase
                            join header in Db.MobileReceiveItemHeaders on detail.Code equals header.Code
                            join returnHeader in Db.PurchaseReturnHeaders on header.TransCode equals returnHeader.Code
                            join returnDetail in Db.PurchaseReturnDetails on returnHeader.Code equals returnDetail.Code
-                           where detail.Code.Equals(code)
-                           select new ReceiveItemDetailModel
+                           group returnDetail by new
                            {
-                               Code = detail.Code,
-                               Id = detail.Id,
-                               ItemId = detail.ItemId,
-                               LineNo = detail.LineNo,
-                               Qty = detail.Qty,
-                               TransDetailId = detail.TransDetailId,
-                               Type = detail.Type,
-                               UnitId = detail.UnitId,
-                               UomId = detail.UomId,
-                               UnitEquivalent = uom.UnitEquivalent,
-                               WarehouseCode = detail.WarehouseCode,
+                               detail.Code,
+                               detail.Id,
+                               detail.ItemId,
+                               detail.LineNo,
+                               detail.Qty,
+                               detail.TransDetailId,
+                               detail.Type,
+                               detail.UnitId,
+                               detail.UomId,
+                               uom.UnitEquivalent,
+                               detail.WarehouseCode,
                                ItemInitial = item.Initial,
                                ItemName = item.Name,
                                QtyOrder = returnDetail.Qty,
                                QtyRemain = returnDetail.Qty - detail.Qty
+                           } into rD
+                           select new ReceiveItemDetailModel
+                           {
+                               Code = rD.Key.Code,
+                               Id = rD.Key.Id,
+                               ItemId = rD.Key.ItemId,
+                               LineNo = rD.Key.LineNo,
+                               Qty = rD.Key.Qty,
+                               TransDetailId = rD.Key.TransDetailId,
+                               Type = rD.Key.Type,
+                               UnitId = rD.Key.UnitId,
+                               UomId = rD.Key.UomId,
+                               UnitEquivalent = rD.Key.UnitEquivalent,
+                               WarehouseCode = rD.Key.WarehouseCode,
+                               ItemInitial = rD.Key.ItemInitial,
+                               ItemName = rD.Key.ItemName,
+                               QtyOrder = rD.Key.Qty,
+                               QtyRemain = rD.Key.QtyOrder - rD.Key.Qty
                            };
-                return data;
+
+                return data.Where(x => x.Code.Equals(code)).OrderBy(x => x.LineNo);
             }
         }
 
@@ -1141,61 +1178,71 @@ namespace ERP.Web.API.Domain.Services.Purchase
         {
             var result = new SaveResult(false);
 
-            using var transaction = Db.Database.BeginTransaction();
-            try
+            var existed_transfer_stock_code = Db.MobileReceiveItemHeaders.Any(x => x.TransCode == data.TransCode); // check code sebelumnya
+            if (!existed_transfer_stock_code)
             {
-                var date = DateTime.Now;
-                var newCode = GetNewCode("RCV_NUM_FMT", data.Date);
-
-                data.Code = newCode;
-
-                Db.MobileReceiveItemHeaders.Add(new MobileReceiveItemHeader
+                using var transaction = Db.Database.BeginTransaction();
+                try
                 {
-                    Code = newCode,
-                    Date = date,
-                    TransCode = data.TransCode,
-                    SrcTrans = data.SrcTrans,
-                    SupCode = data.SupCode,
-                    ReceiveBy = userId,
-                    SignatureImage = data.SignatureImage,
-                    Mark = "A",
-                    CreatedBy = userId,
-                    CreatedDate = date,
-                    UpdatedBy = userId,
-                    UpdatedDate = date
-                });
+                    var date = DateTime.Now;
+                    var newCode = GetNewCode("MOB_RCV_NUM_FMT", data.Date);
 
-                short i = 0;
-                foreach (var rcv in data.PODetails)
-                {
-                    rcv.Code = newCode;
-                    Db.MobileReceiveItemDetails.Add(new MobileReceiveItemDetail
+                    data.Code = newCode;
+
+                    Db.MobileReceiveItemHeaders.Add(new MobileReceiveItemHeader
                     {
-                        Code = rcv.Code,
-                        LineNo = ++i,
-                        ItemId = rcv.ItemId,
-                        Qty = rcv.Qty,
-                        TransDetailId = rcv.TransDetailId,
-                        Type = rcv.Type,
-                        UnitId = rcv.UnitId,
-                        UomId = rcv.UomId,
-                        WarehouseCode = rcv.WarehouseCode
+                        Code = newCode,
+                        Date = date,
+                        TransCode = data.TransCode,
+                        SrcTrans = data.SrcTrans,
+                        SupCode = data.SupCode,
+                        ReceiveBy = userId,
+                        SignatureImage = data.SignatureImage,
+                        Mark = "A",
+                        CreatedBy = userId,
+                        CreatedDate = date,
+                        UpdatedBy = userId,
+                        UpdatedDate = date
                     });
+
+                    short i = 0;
+                    foreach (var rcv in data.PODetails)
+                    {
+                        rcv.Code = newCode;
+                        Db.MobileReceiveItemDetails.Add(new MobileReceiveItemDetail
+                        {
+                            Code = rcv.Code,
+                            LineNo = ++i,
+                            ItemId = rcv.ItemId,
+                            Qty = rcv.Qty,
+                            TransDetailId = rcv.TransDetailId,
+                            Type = rcv.Type,
+                            UnitId = rcv.UnitId,
+                            UomId = rcv.UomId,
+                            WarehouseCode = rcv.WarehouseCode
+                        });
+                    }
+
+                    Db.SaveChanges();
+                    transaction.Commit();
+                }
+                catch (Exception ex)
+                {
+                    result.Message = ex.InnerException?.Message ?? ex.Message;
+                    return result;
                 }
 
-                Db.SaveChanges();
-                transaction.Commit();
-            }
-            catch (Exception ex)
-            {
-                result.Message = ex.InnerException?.Message ?? ex.Message;
+                result.Success = true;
+                result.Data = data;
+                result.Message = "Penerimaan barang berhasil disimpan.";
                 return result;
             }
-
-            result.Success = true;
-            result.Data = data;
-            result.Message = "Data penerimaan barang berhasil disimpan.";
-            return result;
+            else
+            {
+                result.Success = false;
+                result.Message = "Penerimaan barang sudah pernah disimpan";
+                return result;
+            }
         }
         #endregion
     }

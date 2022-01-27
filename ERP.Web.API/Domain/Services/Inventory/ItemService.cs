@@ -399,6 +399,7 @@ namespace ERP.Web.API.Domain.Services.Inventory
             {
                 return new ItemInformationModel
                 {
+                    UnitName = conv[conv.Count - 1].UnitEquivalent,
                     Stock = stock,
                     MaxOrder = 0,
                     AvgOrder = 0,

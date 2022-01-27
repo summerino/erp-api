@@ -55,6 +55,8 @@ using ERP.Web.API.Model;
 using ERP.Web.API.Model.Auth;
 using Newtonsoft.Json.Serialization;
 using Swift.Framework;
+using ERP.Web.API.Domain.Interfaces.Mobile.Warehouse;
+using ERP.Web.API.Domain.Services.Mobile.Warehouse;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -189,6 +191,7 @@ builder.Services.AddScoped<ICashBankService, CashBankService>();
 builder.Services.AddScoped<ICashBankTypeService, CashBankTypeService>();
 builder.Services.AddScoped<IInterCashBankService, InterCashBankService>();
 builder.Services.AddScoped<ICBReportService, CBReportService>();
+builder.Services.AddScoped<IOutstandingChequeReportService, OutstandingChequeReportService>();
 
 // General services
 builder.Services.AddScoped<IApprovalService, ApprovalService>();
@@ -250,6 +253,8 @@ builder.Services.AddScoped<IAPAgingReportService, APAgingReportService>();
 builder.Services.AddScoped<IDebitMemoReportService, DebitMemoReportService>();
 builder.Services.AddScoped<IPurchaseOrderReportService, PurchaseOrderReportService>();
 builder.Services.AddScoped<IPurchaseReceiveReportService, PurchaseReceiveReportService>();
+builder.Services.AddScoped<IPurchaseInvoiceReportService, PurchaseInvoiceReportService>();
+builder.Services.AddScoped<IPurchaseReturnReportService, PurchaseReturnReportService>();
 
 // Sales services
 builder.Services.AddScoped<IAreaService, AreaService>();
@@ -269,6 +274,10 @@ builder.Services.AddScoped<IARReportService, ARReportService>();
 builder.Services.AddScoped<IARMutationReportService, ARMutationReportService>();
 builder.Services.AddScoped<IARAgingReportService, ARAgingReportService>();
 builder.Services.AddScoped<ICreditMemoReportService, CreditMemoReportService>();
+builder.Services.AddScoped<ISalesOrderReportService, SalesOrderReportService>();
+builder.Services.AddScoped<ISalesDeliveryReportService, SalesDeliveryReportService>();
+builder.Services.AddScoped<ISalesInvoiceReportService, SalesInvoiceReportService>();
+builder.Services.AddScoped<ISalesReturnReportService, SalesReturnReportService>();
 
 // System Management services
 builder.Services.AddScoped<IActionService, ActionService>();
@@ -310,6 +319,9 @@ builder.Services.AddScoped<ICustomerTransactionService, CustomerTransactionServi
 
 //Transfer Stock
 builder.Services.AddScoped<ERP.Web.API.Domain.Interfaces.Mobile.TransferStock.IMobileTransferStockService, ERP.Web.API.Domain.Services.Mobile.TransferStock.MobileTransferStockService>();
+
+// Warehouse Profile
+builder.Services.AddScoped<IWarehouseProfileService, WarehouseProfileService>();
 
 //Activity Log
 builder.Services.AddScoped<IActivityLogService, ActivityLogService>();

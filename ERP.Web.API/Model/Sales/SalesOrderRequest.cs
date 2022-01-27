@@ -17,6 +17,8 @@ namespace ERP.Web.API.Model.Sales
         public bool IsSoInv { get; set; }
 
         public DateTime? OriginalDate { get; set; }
+
+        public int CustTypeId { get; set; }
     }
 
     public class SalesOrderDetailRequest : SalesOrderDetail

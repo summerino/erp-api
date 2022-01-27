@@ -188,7 +188,7 @@ namespace ERP.Web.API.Domain.Services.MobileWarehouse
 
                             if (isFailedtoSend)
                             {
-                                var dplDetailData = dplDetailList.FirstOrDefault(x => x.Code == itemData.Code && x.TransCode == itemDoData.Code);
+                                var dplDetailData = dplDetailList.FirstOrDefault(x => x.Code == itemData.DlvPlanCode && x.TransCode == itemDoData.Code);
                                 var dplUndelivData = dplUndelivList.FirstOrDefault(x => x.ItemId == itemDetail.ItemId && x.DlvPlanDetailId == dplDetailData.Id);
 
                                 if (dplUndelivData != null)
@@ -224,16 +224,18 @@ namespace ERP.Web.API.Domain.Services.MobileWarehouse
                                 dplHeadData.ApprovedDate = DateTime.Now;
                                 Db.DeliveryPlanHeaders.Update(dplHeadData);
 
-                                var doDetailData = doDetailList.FirstOrDefault(x => x.ItemId == itemDetail.ItemId);
-                                var doFreeData = doFreeList.FirstOrDefault(x => x.ItemId == itemDetail.ItemId);
 
                                 if (isBonus)
                                 {
+                                    var doFreeData = doFreeList.FirstOrDefault(x => x.ItemId == itemDetail.ItemId);
+                                    if (doFreeData == null) continue;
                                     doFreeData.Qty -= qtyFailedtoSend;
                                     Db.SalesDeliveryDetailFreeGoods.Update(doFreeData);
                                 }
                                 else
                                 {
+                                    var doDetailData = doDetailList.FirstOrDefault(x => x.ItemId == itemDetail.ItemId);
+                                    if (doDetailData == null) continue;
                                     doDetailData.Qty -= qtyFailedtoSend;
                                     doDetailData.Total -= (doDetailData.NettPrice * qtyFailedtoSend);
                                     Db.SalesDeliveryDetails.Update(doDetailData);
@@ -264,19 +266,22 @@ namespace ERP.Web.API.Domain.Services.MobileWarehouse
                                         var siDetailData = Db.SalesInvoiceDetails.FirstOrDefault(x => x.DoCode == itemDoData.Code);
                                         var siHeadData = Db.SalesInvoiceHeaders.FirstOrDefault(x => x.Code == siDetailData.Code);
 
-                                        siDetailData.SubTotal -= (doDetailData.NettPrice * qtyFailedtoSend);
-                                        siDetailData.TaxAmount -= (doDetailData.TaxAmount * qtyFailedtoSend);
-                                        siDetailData.Total -= (doDetailData.NettPrice * qtyFailedtoSend);
-                                        siDetailData.Dpp -= (doDetailData.Dpp * qtyFailedtoSend);
-                                        Db.SalesInvoiceDetails.Update(siDetailData);
-
-                                        siHeadData.Total -= (doDetailData.NettPrice * qtyFailedtoSend);
-                                        if(siHeadData.Total < siHeadData.PaidAmount)
+                                        if (siHeadData.Total > 0)
                                         {
-                                            result.Message = "Data pengeluaran barang mobile gagal disetujui karena terdapat total faktur lebih kecil dari total pembayaran.";
-                                            return result;
+                                            siDetailData.SubTotal -= (doDetailData.NettPrice * qtyFailedtoSend);
+                                            siDetailData.TaxAmount -= (doDetailData.TaxAmount * qtyFailedtoSend);
+                                            siDetailData.Total -= (doDetailData.NettPrice * qtyFailedtoSend);
+                                            siDetailData.Dpp -= (doDetailData.Dpp * qtyFailedtoSend);
+                                            Db.SalesInvoiceDetails.Update(siDetailData);
+
+                                            siHeadData.Total -= (doDetailData.NettPrice * qtyFailedtoSend);
+                                            if (siHeadData.Total < siHeadData.PaidAmount)
+                                            {
+                                                result.Message = "Data pengeluaran barang mobile gagal disetujui karena terdapat total faktur lebih kecil dari total pembayaran.";
+                                                return result;
+                                            }
+                                            Db.SalesInvoiceHeaders.Update(siHeadData);
                                         }
-                                        Db.SalesInvoiceHeaders.Update(siHeadData);
 
                                         // Update sales delivery to invoiced
                                         Db.Database.ExecuteSqlRaw("UPDATE Sales.SalesDeliveryHeader SET Mark='INV' WHERE Code={0}", itemDoData.Code);

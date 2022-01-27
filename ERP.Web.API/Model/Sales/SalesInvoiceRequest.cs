@@ -34,6 +34,9 @@ namespace ERP.Web.API.Model.Sales
         public DateTime? OriginalDate { get; set; }
 
         public DateTime? OriginalDueDate { get; set; }
+
+        public int CustTypeId { get; set; }
+
     }
 
     public class DirectInvoiceRequest : DirectInvoiceHeader

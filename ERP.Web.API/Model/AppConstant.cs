@@ -90,6 +90,10 @@
         PurchaseInvoice = 38,
         PurchaseReturn = 39,
         DebitMemo = 40,
+        PurchaseOrderReport = 140,
+        PurchaseReceiveReport = 141,
+        PurchaseInvoiceReport = 142,
+        PurchaseReturnReport = 143,
         AccountPayableReport = 92,
         AccountPayableMutationReport = 131,
         AccountPayableAgingReport = 133,
@@ -108,6 +112,10 @@
         CreditMemo = 49,
         VisitPlan = 54,
         VisitOrder = 55,
+        SalesOrderReport = 145,
+        SalesDeliveryReport = 146,
+        SalesInvoiceReport = 147,
+        SalesReturnReport = 148,
         AccountReceivableReport = 93,
         AccountReceivableMutationReport = 132,
         AccountReceivableAgingReport = 134,
@@ -119,6 +127,7 @@
         // Finance
         CashBank = 82,
         InterCashBank = 83,
+        OutstandingChequeReport = 149,
 
         // Accounting
         COA = 66,

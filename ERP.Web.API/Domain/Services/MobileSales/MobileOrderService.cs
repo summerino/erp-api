@@ -290,12 +290,13 @@ namespace ERP.Web.API.Domain.Services.MobileSales
                             }
                         }
 
+                        var ptData = Db.PaymentTerms.FirstOrDefault(x => x.Id == itemData.PaymentTermId);
                         // Sales Invoice
                         Db.SalesInvoiceHeaders.Add(new SalesInvoiceHeader
                         {
                             Code = newCode,
                             Date = itemData.Date,
-                            //DueDate = itemData.DueDate,
+                            DueDate = itemData.Date.AddDays(ptData?.Due ?? 0),
                             SoCode = newCode,
                             CustCode = itemData.CustCode,
                             IssuedBy = itemData.SalesBy,

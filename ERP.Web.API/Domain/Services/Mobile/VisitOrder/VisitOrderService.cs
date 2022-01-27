@@ -938,22 +938,22 @@ namespace ERP.Web.API.Domain.Services.Mobile.VisitOrder
                         join cu in Db.VwCustomers on dv.CustCode equals cu.Code
                         select new VisitLogByDateModel
                         {
-                            Code=dv.Code,
-                            Date=dv.Date,
-                            CustCode=dv.CustCode,
-                            CustInitial=cu.Initial,
-                            CustName=cu.Name,
-                            StartTime=dv.StartTime,
-                            EndTime=dv.EndTime,
-                            Visited=dv.Visited,
-                            Scheduled=dv.Scheduled,
-                            UnscheduledVisitReasonId=dv.UnscheduledVisitReasonId,
-                            AreaId1=cu.AreaId1,
+                            Code = dv.Code,
+                            Date = dv.Date,
+                            CustCode = dv.CustCode,
+                            CustInitial = cu.Initial,
+                            CustName = cu.Name,
+                            StartTime = dv.StartTime,
+                            EndTime = dv.EndTime,
+                            Visited = dv.Visited,
+                            Scheduled = dv.Scheduled,
+                            UnscheduledVisitReasonId = dv.UnscheduledVisitReasonId,
+                            AreaId1 = cu.AreaId1,
                             AreaId2 = cu.AreaId2,
                             AreaId3 = cu.AreaId3,
                             AreaId4 = cu.AreaId4,
                             AreaId5 = cu.AreaId5,
-                            AreaName1=cu.AreaName1,
+                            AreaName1 = cu.AreaName1,
                             AreaName2 = cu.AreaName2,
                             AreaName3 = cu.AreaName3,
                             AreaName4 = cu.AreaName4,
@@ -988,28 +988,28 @@ namespace ERP.Web.API.Domain.Services.Mobile.VisitOrder
                         where vl.Code == code
                         select new VisitLogDetailModel
                         {
-                            VisitOrderCode=vl.VisitOrderCode,
-                            Date=vl.Date,
-                            Code=vl.Code,
-                            CustCode=vl.CustCode,
-                            CustInitial=vl.CustomerInitial,
-                            CustName=vl.CustomerName,
-                            Scheduled=vl.Scheduled,
-                            Visited=vl.Visited,
-                            Lat=vl.Lat,
-                            Lng=vl.Lng,
-                            StartTime=vl.StartTime,
-                            EndTime=vl.EndTime,
-                            Total=vl.Total,
-                            Image=vl.Image,
-                            UnscheduledVisitReasonId=vl.UnscheduledVisitReasonId,
-                            UnscheduledVisitReasonName=sub.Name,
-                            NoOrderReasonId=vl.NoOrderReasonId,
-                            NoOrderReasonName=sub2.Name,
-                            NoVisitReasonId=vl.NoVisitReasonId,
-                            NoVisitReasonName=sub3.Name,
-                            OnGoing=false,
-                            IsDraft=false
+                            VisitOrderCode = vl.VisitOrderCode,
+                            Date = vl.Date,
+                            Code = vl.Code,
+                            CustCode = vl.CustCode,
+                            CustInitial = vl.CustomerInitial,
+                            CustName = vl.CustomerName,
+                            Scheduled = vl.Scheduled,
+                            Visited = vl.Visited,
+                            Lat = vl.Lat,
+                            Lng = vl.Lng,
+                            StartTime = vl.StartTime,
+                            EndTime = vl.EndTime,
+                            Total = vl.Total,
+                            Image = vl.Image,
+                            UnscheduledVisitReasonId = vl.UnscheduledVisitReasonId,
+                            UnscheduledVisitReasonName = sub.Name,
+                            NoOrderReasonId = vl.NoOrderReasonId,
+                            NoOrderReasonName = sub2.Name,
+                            NoVisitReasonId = vl.NoVisitReasonId,
+                            NoVisitReasonName = sub3.Name,
+                            OnGoing = false,
+                            IsDraft = false
                         }).Single();
 
             return data;
@@ -1017,7 +1017,7 @@ namespace ERP.Web.API.Domain.Services.Mobile.VisitOrder
 
         public IEnumerable<OrderDetailRequestModel> GetOrderDetailRequest(string orderCode)
         {
-            List<OrderDetailRequestModel> data=new();
+            List<OrderDetailRequestModel> data = new();
 
             var details = (from od in Db.MobileOrderDetails
                            join it in Db.Items on od.ItemId equals it.Id
@@ -1048,17 +1048,17 @@ namespace ERP.Web.API.Domain.Services.Mobile.VisitOrder
 
             foreach (var detail in details)
             {
-                
+
                 var discounts = (from od in Db.MobileOrderDetailDiscounts
                                  where od.OrderDetailId == detail.Id
                                  select new PromoDiscountModel
                                  {
-                                     PromoCode=od.PromoCode,
-                                     PromoDetailId=od.PromoDetailId,
-                                     Name=od.Name,
-                                     IsPercentage=od.IsPercentage,
-                                     Value=od.Value,
-                                     Amount=od.Amount,
+                                     PromoCode = od.PromoCode,
+                                     PromoDetailId = od.PromoDetailId,
+                                     Name = od.Name,
+                                     IsPercentage = od.IsPercentage,
+                                     Value = od.Value,
+                                     Amount = od.Amount,
                                  });
                 var freeGoods = (from fg in Db.MobileOrderDetailFreeGoods
                                  join it in Db.Items on fg.ItemId equals it.Id
@@ -1066,14 +1066,14 @@ namespace ERP.Web.API.Domain.Services.Mobile.VisitOrder
                                  where fg.OrderDetailId == detail.Id
                                  select new PromoFreeGoodsModel
                                  {
-                                     PromoCode=fg.PromoCode,
-                                     ItemId=fg.ItemId,
-                                     ItemName=it.Name,
-                                     UomId=fg.UomId,
-                                     UnitId=fg.UnitId,
-                                     UnitName=un.UnitEquivalent,
-                                     Qty=fg.Qty,
-                                     UnitPrice=fg.UnitPrice
+                                     PromoCode = fg.PromoCode,
+                                     ItemId = fg.ItemId,
+                                     ItemName = it.Name,
+                                     UomId = fg.UomId,
+                                     UnitId = fg.UnitId,
+                                     UnitName = un.UnitEquivalent,
+                                     Qty = fg.Qty,
+                                     UnitPrice = fg.UnitPrice
                                  });
 
                 data.Add(new OrderDetailRequestModel
@@ -1095,8 +1095,8 @@ namespace ERP.Web.API.Domain.Services.Mobile.VisitOrder
                     NettPrice = detail.NettPrice,
                     Total = detail.Total,
                     Dpp = detail.Dpp,
-                    Discounts=discounts,
-                    FreeGoods=freeGoods
+                    Discounts = discounts,
+                    FreeGoods = freeGoods
                 });
             }
             return data;
@@ -1109,7 +1109,7 @@ namespace ERP.Web.API.Domain.Services.Mobile.VisitOrder
                         join curr in Db.Currencies on oh.CurrCode equals curr.Code
                         join pt in Db.PaymentTerms on oh.PaymentTermId equals pt.Id into py
                         from sub in py.DefaultIfEmpty()
-                        where oh.VisitLogCode==visitLogCode
+                        where oh.VisitLogCode == visitLogCode
                         select new OrderHeaderModel
                         {
                             Code = oh.Code,

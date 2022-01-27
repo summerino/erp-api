@@ -7,7 +7,6 @@
         public DateTime PODate { get; set; }
         public string PONumber { get; set; }
         public string RcvCode { get; set; }
-        public string TransCode { get; set; }
         public short SrcTrans { get; set; }
         public string SupCode { get; set; }
         public string SupName { get; set; }

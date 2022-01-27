@@ -108,9 +108,9 @@ namespace ERP.Web.API.Domain.Services.Purchase
                     }
 
                     // Checking purchase order mark
-                    if (transData.Mark is "V" or "CLS")
+                    if (transData.Mark is "V")
                     {
-                        result.Message = "Data penerimaan pembelian tidak bisa disimpan karena data order pembelian sudah ditandai sebagai void atau tutup.";
+                        result.Message = "Data penerimaan pembelian tidak bisa disimpan karena data order pembelian sudah ditandai sebagai void.";
                         return result;
                     }
 
@@ -204,8 +204,8 @@ namespace ERP.Web.API.Domain.Services.Purchase
                 if (data.SrcTrans == 1)
                 {
                     data.SubTotal = totalDetail.Sum();
-                    data.TaxAmount = Math.Round(totalTax.Sum());
-                    data.Dpp = Math.Round(totalDpp.Sum());
+                    data.TaxAmount = totalTax.Sum();
+                    data.Dpp = totalDpp.Sum();
                     data.Total = data.SubTotal;
                 }
                 Db.PurchaseReceiveHeaders.Add(data);
@@ -341,9 +341,9 @@ namespace ERP.Web.API.Domain.Services.Purchase
                     }
 
                     // Checking purchase order mark
-                    if (transData.Mark is "V" or "CLS")
+                    if (transData.Mark is "V")
                     {
-                        result.Message = "Data penerimaan pembelian tidak bisa diubah karena data order pembelian sudah ditandai sebagai void atau tutup.";
+                        result.Message = "Data penerimaan pembelian tidak bisa diubah karena data order pembelian sudah ditandai sebagai void.";
                         return result;
                     }
 
@@ -454,8 +454,8 @@ namespace ERP.Web.API.Domain.Services.Purchase
                 if (data.SrcTrans == 1)
                 {
                     data.SubTotal = totalDetail.Sum();
-                    data.TaxAmount = Math.Round(totalTax.Sum());
-                    data.Dpp = Math.Round(totalDpp.Sum());
+                    data.TaxAmount = totalTax.Sum();
+                    data.Dpp = totalDpp.Sum();
                     data.Total = data.SubTotal;
                 }
                 // Update header data

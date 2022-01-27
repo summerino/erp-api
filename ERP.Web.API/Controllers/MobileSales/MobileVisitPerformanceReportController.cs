@@ -1,8 +1,7 @@
-﻿using ERP.Web.API.Domain.Interfaces.MobileSales;
-using ERP.Web.API.Model;
-using Microsoft.AspNetCore.Http;
+﻿using System.Linq.Dynamic.Core;
 using Microsoft.AspNetCore.Mvc;
-using System.Linq.Dynamic.Core;
+using ERP.Web.API.Domain.Interfaces.MobileSales;
+using ERP.Web.API.Model;
 
 namespace ERP.Web.API.Controllers.MobileSales
 {
@@ -17,14 +16,14 @@ namespace ERP.Web.API.Controllers.MobileSales
         }
 
         [HttpGet]
-        public IActionResult GetData(int? salesId, string startDate, string endDate)
+        public IActionResult GetData(string startDate, string endDate, int? salesId)
         {
-            var result = _mvp.GetData(salesId, startDate, endDate);
+            var result = _mvp.GetData(startDate, endDate, salesId).ToList<dynamic>();
 
             return Ok(new ApiResponse
             {
-                RowCount = result.Total,
-                TableData = result.Data.ToDynamicList()
+                RowCount = result.Count,
+                TableData = result
             });
         }
     }

@@ -88,6 +88,7 @@ namespace ERP.Entity
         public DbSet<VwOutstandingCreditMemo> VwOutstandingCreditMemos { get; set; }
         public DbSet<VwOutstandingDebitMemo> VwOutstandingDebitMemos { get; set; }
         public DbSet<VwDebitCreditPayment> VwDebitCreditPayments { get; set; }
+        public DbSet<OutstandingChequeReport> OutstandingChequeReports { get; set; }
 
         // General entities
         public DbSet<VwApproval> VwApprovals { get; set; }
@@ -150,6 +151,7 @@ namespace ERP.Entity
         public DbSet<ReportByStockMutation> ReportByStockMutations { get; set; }
         public DbSet<ReportByItem> ReportByItems { get; set; }
         public DbSet<ReportByWarehouse> ReportByWarehouses { get; set; }
+        public DbSet<ReportByTypeSM> ReportByTypeSMs { get; set; }
 
         // Mobile Customer entities
         public DbSet<MobileCustomer.MobileOrderHeader> MobileCustomerOrderHeaders { get; set; }
@@ -224,6 +226,16 @@ namespace ERP.Entity
         public DbSet<VwPurchaseReturnDetail> VwPurchaseReturnDetails { get; set; }
         public DbSet<PurchaseReturnDetailExchDiffItem> PurchaseReturnDetailExchDiffItems { get; set; }
         public DbSet<VwPurchaseReturnDetailExchDiffItem> VwPurchaseReturnDetailExchDiffItems { get; set; }
+        public DbSet<ReportByPO> ReportByPOs { get; set; }
+        public DbSet<ReportByDetailPO> ReportByDetailPOs { get; set; }
+        public DbSet<ReportBySupplierPurchase> ReportBySupplierPurchases { get; set; }
+        public DbSet<ReportByItemPurchase> ReportByItemPurchases { get; set; }
+        public DbSet<ReportByDetailRCV> ReportByDetailRCVs { get; set; }
+        public DbSet<ReportByRCV> ReportByRCVs { get; set; }
+        public DbSet<ReportByPInv> ReportByPInvs { get; set; }
+        public DbSet<ReportByDetailPInv> ReportByDetailPInvs { get; set; }
+        public DbSet<ReportByPR> ReportByPRs { get; set; }
+        public DbSet<ReportByDetailPR> ReportByDetailPRs { get; set; }
         public DbSet<ReportBySupplier> ReportBySuppliers { get; set; }
         public DbSet<ReportByReceive> ReportByReceives { get; set; }
         public DbSet<ReportByInvoice> ReportByInvoices { get; set; }
@@ -232,12 +244,7 @@ namespace ERP.Entity
         public DbSet<ReportBySupplierAging> ReportBySupplierAgings { get; set; }
         public DbSet<ReportByInvoiceAPAging> ReportByInvoiceAPAgings { get; set; }
         public DbSet<ReportByDebitMemo> ReportByDebitMemos { get; set; }
-        public DbSet<ReportByPO> ReportByPOs { get; set; }
-        public DbSet<ReportByDetailPO> ReportByDetailPOs { get; set; }
-        public DbSet<ReportBySupplierPO> ReportBySupplierPOs { get; set; }
-        public DbSet<ReportByItemPO> ReportByItemPOs { get; set; }
-        public DbSet<ReportByDetailRCV> ReportByDetailRCVs { get; set; }
-        public DbSet<ReportByRCV> ReportByRCVs { get; set; }
+        public DbSet<ReportByItemCategoryPurchase> ReportByItemCategoryPurchases { get; set; }
 
 
         // Sales entities
@@ -253,6 +260,7 @@ namespace ERP.Entity
         public DbSet<VwPromoHeader> VwPromoHeaders { get; set; }
         public DbSet<PromoSubject> PromoSubjects { get; set; }
         public DbSet<PromoDetail> PromoDetails { get; set; }
+        public DbSet<PromoDetailMultipleItem> PromoDetailMultipleItems { get; set; }
         public DbSet<PromoDetailTier> PromoDetailTiers { get; set; }
         public DbSet<SalesDeliveryHeader> SalesDeliveryHeaders { get; set; }
         public DbSet<VwSalesDeliveryHeader> VwSalesDeliveryHeaders { get; set; }
@@ -301,6 +309,17 @@ namespace ERP.Entity
         public DbSet<ReportByCustomerAging> ReportByCustomerAgings { get; set; }
         public DbSet<ReportByDeliveryARAging> ReportByDeliveryARAgings { get; set; }
         public DbSet<ReportByCreditMemo> ReportByCreditMemos { get; set; }
+        public DbSet<ReportByItemCategorySales> ReportByItemCategorySales { get; set; }
+        public DbSet<ReportByItemSales> ReportByItemSales { get; set; }
+        public DbSet<ReportByCustomerSales> ReportByCustomerSales { get; set; }
+        public DbSet<ReportBySO> ReportBySOs { get; set; }
+        public DbSet<ReportByDetailSO> ReportByDetailSOs { get; set; }
+        public DbSet<ReportByDO> ReportByDOs { get; set; }
+        public DbSet<ReportByDetailDO> ReportByDetailDOs { get; set; }
+        public DbSet<ReportBySI> ReportBySIs { get; set; }
+        public DbSet<ReportByDetailSI> ReportByDetailSIs { get; set; }
+        public DbSet<ReportBySR> ReportBySRs { get; set; }
+        public DbSet<ReportByDetailSR> ReportByDetailSRs { get; set; }
 
         // System Management entities
         public DbSet<SystemManagement.Action> Actions { get; set; }
@@ -695,6 +714,11 @@ namespace ERP.Entity
             modelBuilder.Entity<VwDebitCreditPayment>()
                 .HasNoKey()
                 .ToView("VwDebitCreditPayment", Schema.Finance);
+
+            // Finance Report model
+            modelBuilder.Entity<OutstandingChequeReport>()
+                .HasNoKey()
+                .ToTable("OutstandingChequeReport", t => t.ExcludeFromMigrations());
 
             // General entities
             // Approval model
@@ -1154,6 +1178,10 @@ namespace ERP.Entity
             modelBuilder.Entity<ReportByWarehouse>()
                .HasNoKey()
                .ToTable("ReportByWarehouse", t => t.ExcludeFromMigrations());
+
+            modelBuilder.Entity<ReportByTypeSM>()
+               .HasNoKey()
+               .ToTable("ReportByTypeSM", t => t.ExcludeFromMigrations());
 
             // Mobile Customer entities
             // Mobile Order model
@@ -2006,13 +2034,13 @@ namespace ERP.Entity
                .HasNoKey()
                .ToTable("ReportByDetailPO", t => t.ExcludeFromMigrations());
 
-            modelBuilder.Entity<ReportByItemPO>()
+            modelBuilder.Entity<ReportByItemPurchase>()
                .HasNoKey()
-               .ToTable("ReportByItemPO", t => t.ExcludeFromMigrations());
+               .ToTable("ReportByItemPurchase", t => t.ExcludeFromMigrations());
 
-            modelBuilder.Entity<ReportBySupplierPO>()
+            modelBuilder.Entity<ReportBySupplierPurchase>()
                .HasNoKey()
-               .ToTable("ReportBySupplierPO", t => t.ExcludeFromMigrations());
+               .ToTable("ReportBySupplierPurchase", t => t.ExcludeFromMigrations());
 
             modelBuilder.Entity<ReportByRCV>()
                .HasNoKey()
@@ -2021,6 +2049,26 @@ namespace ERP.Entity
             modelBuilder.Entity<ReportByDetailRCV>()
                .HasNoKey()
                .ToTable("ReportByDetailRCV", t => t.ExcludeFromMigrations());
+
+            modelBuilder.Entity<ReportByPInv>()
+               .HasNoKey()
+               .ToTable("ReportByPInv", t => t.ExcludeFromMigrations());
+
+            modelBuilder.Entity<ReportByDetailPInv>()
+               .HasNoKey()
+               .ToTable("ReportByDetailPInv", t => t.ExcludeFromMigrations());
+
+            modelBuilder.Entity<ReportByPR>()
+               .HasNoKey()
+               .ToTable("ReportByPR", t => t.ExcludeFromMigrations());
+
+            modelBuilder.Entity<ReportByDetailPR>()
+               .HasNoKey()
+               .ToTable("ReportByDetailPR", t => t.ExcludeFromMigrations());
+
+            modelBuilder.Entity<ReportByItemCategoryPurchase>()
+               .HasNoKey()
+               .ToTable("ReportByItemCategoryPurchase", t => t.ExcludeFromMigrations());
 
             // Sales entities
             // Area model
@@ -2161,6 +2209,19 @@ namespace ERP.Entity
                 entity.HasOne<PromoHeader>()
                     .WithMany()
                     .HasForeignKey(d => d.Code)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            modelBuilder.Entity<PromoDetailMultipleItem>(entity =>
+            {
+                entity.HasOne<PromoDetail>()
+                    .WithMany()
+                    .HasForeignKey(d => d.PromoDetailId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Item>()
+                    .WithMany()
+                    .HasForeignKey(d => d.ItemId)
                     .OnDelete(DeleteBehavior.NoAction);
             });
 
@@ -2435,6 +2496,49 @@ namespace ERP.Entity
                .HasNoKey()
                .ToTable("ReportByCreditMemo", t => t.ExcludeFromMigrations());
 
+            modelBuilder.Entity<ReportBySO>()
+               .HasNoKey()
+               .ToTable("ReportBySO", t => t.ExcludeFromMigrations());
+
+            modelBuilder.Entity<ReportByDetailSO>()
+               .HasNoKey()
+               .ToTable("ReportByDetailSO", t => t.ExcludeFromMigrations());
+
+            modelBuilder.Entity<ReportByItemCategorySales>()
+               .HasNoKey()
+               .ToTable("ReportByItemCategorySales", t => t.ExcludeFromMigrations());
+
+            modelBuilder.Entity<ReportByItemSales>()
+               .HasNoKey()
+               .ToTable("ReportByItemSales", t => t.ExcludeFromMigrations());
+
+            modelBuilder.Entity<ReportByCustomerSales>()
+               .HasNoKey()
+               .ToTable("ReportByCustomerSales", t => t.ExcludeFromMigrations());
+
+            modelBuilder.Entity<ReportByDO>()
+               .HasNoKey()
+               .ToTable("ReportByDO", t => t.ExcludeFromMigrations());
+
+            modelBuilder.Entity<ReportByDetailDO>()
+               .HasNoKey()
+               .ToTable("ReportByDetailDO", t => t.ExcludeFromMigrations());
+
+            modelBuilder.Entity<ReportBySI>()
+               .HasNoKey()
+               .ToTable("ReportBySI", t => t.ExcludeFromMigrations());
+
+            modelBuilder.Entity<ReportByDetailSI>()
+               .HasNoKey()
+               .ToTable("ReportByDetailSI", t => t.ExcludeFromMigrations());
+
+            modelBuilder.Entity<ReportBySR>()
+               .HasNoKey()
+               .ToTable("ReportBySR", t => t.ExcludeFromMigrations());
+
+            modelBuilder.Entity<ReportByDetailSR>()
+               .HasNoKey()
+               .ToTable("ReportByDetailSR", t => t.ExcludeFromMigrations());
 
             // System Management entities
             // Company model

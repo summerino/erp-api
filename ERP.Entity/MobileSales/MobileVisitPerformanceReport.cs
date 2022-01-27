@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ERP.Entity.MobileSales
 {
@@ -10,7 +6,9 @@ namespace ERP.Entity.MobileSales
     {
         public DateTime Date { get; set; }
 
-        public int SalesmanId { get; set; }
+        public long SalesmanId { get; set; }
+
+        public string SalesmanName { get; set; }
 
         public int Scheduled { get; set; }
 

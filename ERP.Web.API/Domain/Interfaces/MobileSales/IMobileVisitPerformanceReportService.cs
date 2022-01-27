@@ -1,9 +1,9 @@
-﻿using ERP.Common.Models;
+﻿using ERP.Entity.MobileSales;
 
 namespace ERP.Web.API.Domain.Interfaces.MobileSales
 {
     public interface IMobileVisitPerformanceReportService
     {
-        DataSourceResult GetData(int? salesId, string startDate, string endDate);
+        IEnumerable<MobileVisitPerformanceReport> GetData(string startDate, string endDate, int? salesId);
     }
 }
