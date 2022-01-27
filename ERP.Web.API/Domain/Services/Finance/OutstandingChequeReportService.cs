@@ -34,20 +34,21 @@ namespace ERP.Web.API.Domain.Services.Finance
 							ELSE CAST(0 as decimal) END AS BalanceIn,
 						CASE 
 							WHEN cb_d.TypeAmount = 'C' THEN abs(cb_d.Amount)
-							ELSE CAST(0 as decimal) END AS BalanceOut
+							ELSE CAST(0 as decimal) END AS BalanceOut,
+						cb.CoaName AS CoaNameHeader
 						FROM Finance.vwGeneralCashBankDetail cb_d
 						LEFT JOIN Purchasing.vwPurchaseInvoiceHeader pi_h ON pi_h.Code = cb_d.TransCode
 						LEFT JOIN Sales.vwSalesInvoiceHeader si_h ON si_h.Code = cb_d.TransCode
 						LEFT JOIN Expedition.vwExpeditionInvoiceHeader ep_h ON ep_h.Code = cb_d.TransCode
 						LEFT JOIN Purchasing.vwDebitMemo dm ON dm.Code = cb_d.TransCode
 						LEFT JOIN Sales.vwCreditMemo cm ON cm.Code = cb_d.TransCode
-						LEFT JOIN Finance.GeneralCashBankHeader cb ON cb.Code = cb_d.Code
+						LEFT JOIN Finance.vwGeneralCashBankHeader cb ON cb.Code = cb_d.Code
 						WHERE cb.ChequeDate IS NOT NULL" +
 						(string.IsNullOrEmpty(coaCode) ? "" : $" AND cb_d.CoaCode = '{coaCode.Replace("'", "''")}'") +
 						" ORDER BY cb.ChequeDate ASC, cb_d.CoaName ASC, BalanceIn DESC, BalanceOut DESC").ToList();
 
 			if (!string.IsNullOrEmpty(date))
-				ocData = ocData.Where(x => x.Date <= Convert.ToDateTime(date)).ToList();
+				ocData = ocData.Where(x => x.Date >= Convert.ToDateTime(date)).ToList();
 
 			if (ocData.Any())
             {
