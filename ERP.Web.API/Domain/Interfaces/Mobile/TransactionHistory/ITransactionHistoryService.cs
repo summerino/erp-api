@@ -15,6 +15,7 @@ namespace ERP.Web.API.Domain.Interfaces.Mobile.TransactionHistory
         IEnumerable<ItemSubGroupModel> GetSubGroup();
         DataSourceResult GetDataBySubGroup(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, int groupId, string subGroup);
         DataSourceResult GetItemBySubGroup(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,DateTime date, int groupId, string subGroup);
+        DataSourceResult GetDataBySubGroupSummary(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, DateTime date);
 
     }
 }

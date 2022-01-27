@@ -230,5 +230,23 @@ namespace ERP.Web.API.Controllers.Mobile.TransactionHistory
                 Data = result
             });
         }
+
+        [HttpGet("by-subgroup-summary")]
+        public IActionResult GetDataByGroupSummary(string filters, string sorts, int skip, int take, DateTime date)
+        {
+            var data =
+                _transactionHistory.GetDataBySubGroupSummary(skip, take,
+                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),date
+                     );
+
+            var result = ((List<TransactionHistoryBySubGroupSummary>)data.Data).ToList<dynamic>();
+
+            return Ok(new MobileApiResponse
+            {
+                Count = data.Total,
+                Data = result
+            });
+        }
     }
 }
