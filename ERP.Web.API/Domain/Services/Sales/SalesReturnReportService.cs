@@ -25,12 +25,10 @@ namespace ERP.Web.API.Domain.Services.Sales
                             CASE sr.Mark
 	                            WHEN 'A' THEN 'Aktif'
 	                            WHEN 'V' THEN 'Void'
-	                            WHEN 'PS' THEN 'Aktif'
-	                            WHEN 'CMP' THEN 'Aktif'
-	                            WHEN 'CLS' THEN 'Aktif' END AS [Status]
+	                            WHEN 'CMP' THEN 'Dikirim Seluruhnya' END AS [Status]
                             FROM Sales.vwSalesReturnHeader sr
                             LEFT JOIN Sales.vwSalesReturnDetail sr_d ON sr_d.Code = sr.Code" +
-                            (string.IsNullOrEmpty(status) ? "" : status == "A" ? $" WHERE sr.Mark IN('A', 'PS', 'CMP', 'CLS')" : $" WHERE sr.Mark = '{status.Replace("'", "''")}'") +
+                            (string.IsNullOrEmpty(status) ? "" : $" WHERE sr.Mark = '{status.Replace("'", "''")}'") +
                             " GROUP BY sr.[Date], sr.Code, sr.CustCode, sr.CustName, sr.DPP, sr.TaxAmount, sr.Total, sr.Mark, sr.[Type]").ToList();
 
             var srDetailData = _db.ReportByDetailSRs.FromSqlRaw(@"SELECT sr.[Date], sr.Code, sr.CustCode,sr.CustName,
