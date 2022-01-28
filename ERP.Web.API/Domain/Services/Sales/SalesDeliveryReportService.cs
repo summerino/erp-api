@@ -51,8 +51,9 @@ namespace ERP.Web.API.Domain.Services.Sales
                             LEFT JOIN Sales.vwSalesDeliveryHeader do ON do.Code = do_d.Code
                             LEFT JOIN Inventory.Item im ON im.Id = do_d.ItemId
                             LEFT JOIN Inventory.ItemCategory ic ON ic.Id = im.CategoryId
-                            LEFT JOIN Inventory.Warehouse wh ON wh.Code = do.WarehouseCode" +
-                            (!itemId.HasValue || itemId <= 0 ? "" : $" WHERE do_d.ItemId = {itemId}")).ToList();
+                            LEFT JOIN Inventory.Warehouse wh ON wh.Code = do.WarehouseCode
+                            WHERE do.FromDirectInvoice = 0" +
+                            (!itemId.HasValue || itemId <= 0 ? "" : $" AND do_d.ItemId = {itemId}")).ToList();
 
             var itemData = _db.ReportByItemSales.FromSqlRaw(@"SELECT im.Initial, im.[Name], 
                             ic.Id AS CategoryId, ic.Initial AS CategoryInitial,
@@ -62,9 +63,10 @@ namespace ERP.Web.API.Domain.Services.Sales
                             CAST (0 AS decimal) AS TaxAmount, CAST (0 AS decimal) AS Total, CAST (0 AS decimal) AS GrossAmount
                             FROM Inventory.Item im
                             LEFT JOIN Sales.SalesDeliveryDetail do_d ON do_d.ItemId = im.Id
+                            LEFT JOIN Sales.SalesDeliveryHeader do ON do.Code = do_d.Code
                             LEFT JOIN Inventory.ItemCategory ic ON ic.Id = im.CategoryId
                             LEFT JOIN Inventory.UoMConversion uc ON uc.Id = do_d.UnitId
-                            WHERE uc.Id IS NOT NULL
+                            WHERE uc.Id IS NOT NULL AND do.FromDirectInvoice = 0
                             GROUP BY im.Initial, im.[Name], ic.Id, ic.Initial, uc.Id, uc.UnitEquivalent").ToList();
 
             var custData = _db.ReportByCustomerSales.FromSqlRaw(@"SELECT cs.Code, cs.[Name], CAST (0 AS int) AS TotalTrans,
@@ -83,8 +85,9 @@ namespace ERP.Web.API.Domain.Services.Sales
                             FROM Inventory.ItemCategory ic
                             LEFT JOIN Inventory.Item im ON im.CategoryId = ic.Id 
                             LEFT JOIN Sales.SalesDeliveryDetail do_d ON do_d.ItemId = im.Id
+                            LEFT JOIN Sales.SalesDeliveryHeader do ON do.Code = do_d.Code
                             LEFT JOIN Inventory.UoMConversion uc ON uc.Id = do_d.UnitId
-                            WHERE uc.Id IS NOT NULL" +
+                            WHERE uc.Id IS NOT NULL AND do.FromDirectInvoice = 0" +
                             (!categoryId.HasValue || categoryId <= 0 ? "" : $" AND ic.Id = {categoryId}") +
                             " GROUP BY ic.Id, ic.Initial, ic.[Name], uc.Id, uc.UnitEquivalent").ToList();
 
