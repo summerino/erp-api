@@ -14,8 +14,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
 {
     public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurchaseOrderService
     {
-        public PurchaseOrderService(TenantContext db)
-            : base(db)
+        public PurchaseOrderService(TenantContext db) : base(db)
         {
         }
 
@@ -911,13 +910,16 @@ namespace ERP.Web.API.Domain.Services.Purchase
         }
 
         #region Mobile
-        public DataSourceResult GetDataForMobile(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, string search, string date)
+        public IEnumerable<PurchaseOrderHeaderModel> GetDataForMobile(DateTime? date, string search, int userId)
         {
             var mobileReceive = (from mobilePO in Db.MobileReceiveItemHeaders
                                  select mobilePO).ToList();
+            var empId = Db.Users.Where(x => x.Id.Equals(userId)).Select(y => y.EmployeeId).Single();
+            var wh = Db.Employees.Where(x => x.Id.Equals(empId)).Select(y => y.WarehouseCode).Single();
             var dataOrder = (from order in Db.PurchaseOrderHeaders
                              join sup in Db.Suppliers on order.SupCode equals sup.Code
                              join supType in Db.SupplierTypes on sup.TypeId equals supType.Id
+                             where order.WarehouseCode.Equals(wh)
                              select new PurchaseOrderHeaderModel
                              {
                                  Code = order.Code,
@@ -927,7 +929,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                                  SupPhone = sup.Phone,
                                  SupTypeId = sup.TypeId,
                                  SupTypeName = supType.Name,
-                                 Mark = order.Mark,
+                                 Mark = order.Mark ?? "",
                                  WarehouseCode = order.WarehouseCode ?? "",
                                  srcTrans = 1
                              }).AsQueryable();
@@ -939,6 +941,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                              join returDetail in Db.PurchaseReturnDetails on retur.Code equals returDetail.Code
                              join sup in Db.Suppliers on retur.SupCode equals sup.Code
                              join supType in Db.SupplierTypes on sup.TypeId equals supType.Id
+                             where returDetail.WarehouseCodeIn.Equals(wh)
                              select new PurchaseOrderHeaderModel
                              {
                                  Code = retur.Code,
@@ -948,7 +951,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                                  SupPhone = sup.Phone,
                                  SupTypeId = sup.TypeId,
                                  SupTypeName = supType.Name,
-                                 Mark = retur.Mark,
+                                 Mark = retur.Mark ?? "",
                                  WarehouseCode = returDetail.WarehouseCode ?? "",
                                  srcTrans = 2
                              }).AsQueryable();
@@ -963,13 +966,14 @@ namespace ERP.Web.API.Domain.Services.Purchase
                 data = data.Where(x => x.Code.Contains(search) || x.SupName.Contains(search));
             }
 
-            if (date != null && date != "")
+            if (date != null && date.HasValue)
             {
-                var date1 = DateTime.ParseExact(date, "yyyy-MM-dd", null);
-                data = data.Where(x => x.Date.Equals(date1));
+                //var date1 = DateTime.ParseExact(date, "yyyy-MM-dd", null);
+                data = data.Where(x => x.Date.Equals(date));
             }
 
-            return data.ToDataSourceResult(skip, take, filter, sort);
+            //return data.ToDataSourceResult(skip, take, filter, sort);
+            return data;
         }
 
         public IEnumerable<PurchaseOrderDetailModel> GetDetailDataForMobile(string code, int srcTrans)
@@ -996,7 +1000,9 @@ namespace ERP.Web.API.Domain.Services.Purchase
                                UomId = order_d.UomId,
                                WarehouseCode = order_h.WarehouseCode ?? ""
                            };
-                return data.OrderBy(x => x.LineNo);
+
+                data = data.OrderBy(x => x.LineNo);
+                return data;
             }
             else
             {
@@ -1020,7 +1026,8 @@ namespace ERP.Web.API.Domain.Services.Purchase
                                WarehouseCode = retur_d.WarehouseCode ?? ""
                            };
 
-                return data.OrderBy(x => x.LineNo);
+                data = data.OrderBy(x => x.LineNo);
+                return data;
             }
         }
 
@@ -1111,7 +1118,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                                ItemId = oD.Key.ItemId,
                                LineNo = oD.Key.LineNo,
                                Qty = oD.Key.Qty,
-                               TransDetailId = oD.Key.TransDetailId,
+                               TransDetailId = oD.Key.TransDetailId ?? 0,
                                Type = oD.Key.Type,
                                UnitId = oD.Key.UnitId,
                                UomId = oD.Key.UomId,
@@ -1119,11 +1126,12 @@ namespace ERP.Web.API.Domain.Services.Purchase
                                WarehouseCode = oD.Key.WarehouseCode,
                                ItemInitial = oD.Key.ItemInitial,
                                ItemName = oD.Key.ItemName,
-                               QtyOrder = oD.Key.Qty,
-                               QtyRemain = oD.Key.QtyOrder - oD.Key.Qty
+                               QtyOrder = oD.Key.Type == 1 ? 0 : oD.Key.QtyOrder,
+                               QtyRemain = oD.Key.Type == 1 ? 0 : (oD.Key.QtyOrder - oD.Key.Qty)
                            };
 
-                return data.Where(x => x.Code.Equals(code)).OrderBy(x => x.LineNo);
+                data = data.Where(x => x.Code.Equals(code)).OrderBy(x => x.LineNo);
+                return data;
             }
             else
             {
@@ -1158,7 +1166,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                                ItemId = rD.Key.ItemId,
                                LineNo = rD.Key.LineNo,
                                Qty = rD.Key.Qty,
-                               TransDetailId = rD.Key.TransDetailId,
+                               TransDetailId = rD.Key.TransDetailId ?? 0,
                                Type = rD.Key.Type,
                                UnitId = rD.Key.UnitId,
                                UomId = rD.Key.UomId,
@@ -1166,11 +1174,12 @@ namespace ERP.Web.API.Domain.Services.Purchase
                                WarehouseCode = rD.Key.WarehouseCode,
                                ItemInitial = rD.Key.ItemInitial,
                                ItemName = rD.Key.ItemName,
-                               QtyOrder = rD.Key.Qty,
-                               QtyRemain = rD.Key.QtyOrder - rD.Key.Qty
+                               QtyOrder = rD.Key.Type == 1 ? 0 : rD.Key.QtyOrder,
+                               QtyRemain = rD.Key.Type == 1 ? 0 : (rD.Key.QtyOrder - rD.Key.Qty)
                            };
 
-                return data.Where(x => x.Code.Equals(code)).OrderBy(x => x.LineNo);
+                data = data.Where(x => x.Code.Equals(code)).OrderBy(x => x.LineNo);
+                return data;
             }
         }
 
@@ -1178,7 +1187,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
         {
             var result = new SaveResult(false);
 
-            var existed_transfer_stock_code = Db.MobileReceiveItemHeaders.Any(x => x.TransCode == data.TransCode); // check code sebelumnya
+            var existed_transfer_stock_code = Db.MobileReceiveItemHeaders.Any(x => x.TransCode == data.TransCode); // check code existed submission
             if (!existed_transfer_stock_code)
             {
                 using var transaction = Db.Database.BeginTransaction();
@@ -1215,7 +1224,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                             LineNo = ++i,
                             ItemId = rcv.ItemId,
                             Qty = rcv.Qty,
-                            TransDetailId = rcv.TransDetailId,
+                            TransDetailId = rcv.Type == 1 ? null : rcv.TransDetailId,
                             Type = rcv.Type,
                             UnitId = rcv.UnitId,
                             UomId = rcv.UomId,
