@@ -290,7 +290,8 @@ namespace ERP.Web.API.Domain.Services.MobileSales
                             }
                         }
 
-                        var ptData = Db.PaymentTerms.FirstOrDefault(x => x.Id == itemData.PaymentTermId);
+                        var custData = Db.Customers.FirstOrDefault(x => x.Code == itemData.CustCode);
+                        var ptData = Db.PaymentTerms.FirstOrDefault(x => x.Id == custData.PaymentTermId);
                         // Sales Invoice
                         Db.SalesInvoiceHeaders.Add(new SalesInvoiceHeader
                         {
