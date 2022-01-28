@@ -31,6 +31,7 @@ namespace ERP.Web.API.Domain.Services.MobileSales
             using var transaction = Db.Database.BeginTransaction();
             try
             {
+                var sysparamData = Db.SystemParameters.ToList();
                 foreach (var itemData in data)
                 {
                     var vlData = Db.MobileVisitLogs.FirstOrDefault(x => x.Code == itemData.VisitLogCode);
@@ -139,11 +140,11 @@ namespace ERP.Web.API.Domain.Services.MobileSales
                                 Total = itemDetail.Total,
                                 Dpp = itemDetail.Dpp,
                                 Notes = $"Created from Mobile Order {itemData.Code}",
-                                CoaInventory = barangData.CoaInventory,
-                                CoaCogs = barangData.CoaCogs,
-                                CoaSls = barangData.CoaSls,
-                                CoaSlsDisc = barangData.CoaSlsDisc,
-                                CoaSlsReturn = barangData.CoaSlsReturn
+                                CoaInventory = barangData.CoaInventory ?? sysparamData.FirstOrDefault(x => x.Code == "INVENTORY_COA")?.Value,
+                                CoaCogs = barangData.CoaCogs ?? sysparamData.FirstOrDefault(x => x.Code == "COGS_COA")?.Value,
+                                CoaSls = barangData.CoaSls ?? sysparamData.FirstOrDefault(x => x.Code == "SLS_COA")?.Value,
+                                CoaSlsDisc = barangData.CoaSlsDisc ?? sysparamData.FirstOrDefault(x => x.Code == "SLS_DISC_COA")?.Value,
+                                CoaSlsReturn = barangData.CoaSlsReturn ?? sysparamData.FirstOrDefault(x => x.Code == "SLS_RTN_COA")?.Value
                             };
 
                             Db.SalesOrderDetails.Add(orderDetail);
@@ -170,7 +171,7 @@ namespace ERP.Web.API.Domain.Services.MobileSales
                                         IsPercentage = discItem.IsPercentage,
                                         Value = discItem.Value,
                                         Amount = discItem.Amount,
-                                        CoaCode = barangData.CoaSlsDisc
+                                        CoaCode = barangData.CoaSlsDisc ?? sysparamData.FirstOrDefault(x => x.Code == "SLS_DISC_COA")?.Value
                                     });
                                 }
                                 Db.SaveChanges();
@@ -193,7 +194,7 @@ namespace ERP.Web.API.Domain.Services.MobileSales
                                         Qty = freeItem.Qty,
                                         QtyClosed = freeItem.Qty,
                                         UnitPrice = freeItem.UnitPrice,
-                                        CoaCode = barangData.CoaSlsDisc
+                                        CoaCode = barangData.CoaSlsDisc ?? sysparamData.FirstOrDefault(x => x.Code == "SLS_DISC_COA")?.Value
                                     });
                                 }
                                 Db.SaveChanges();
@@ -279,7 +280,7 @@ namespace ERP.Web.API.Domain.Services.MobileSales
                                         UnitId = freeItem.UnitId,
                                         Qty = freeItem.Qty,
                                         UnitPrice = freeItem.UnitPrice,
-                                        CoaCode = barangData.CoaSlsDisc
+                                        CoaCode = barangData.CoaSlsDisc ?? sysparamData.FirstOrDefault(x => x.Code == "SLS_DISC_COA")?.Value
                                     });
 
                                     var orderFreeDetail = Db.SalesOrderDetailFreeGoods.FirstOrDefault(x => x.Id == freeItem.Id);
