@@ -5,7 +5,7 @@ namespace ERP.Web.API.Domain.Interfaces.Mobile.CustomerTransaction
 {
     public interface ICustomerPromotionService
     {
-        DataSourceResult GetDataPromotion(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,string search, string custCode);
+        IEnumerable<PromotionHeaderModel> GetDataPromotion(string search, string custCode);
         IEnumerable<PromotionDetailModel> GetDataPromotionDetail(string code);
     }
 }

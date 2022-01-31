@@ -53,6 +53,8 @@ namespace ERP.Web.API.Domain.Services.Mobile.Sales
                 data = data.Where(x => x.Date.Equals(date));
             }
 
+            data = data.OrderByDescending(x => x.Date);
+
             return data;
         }
 
