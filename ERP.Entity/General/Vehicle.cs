@@ -40,8 +40,10 @@ namespace ERP.Entity.General
 
         public int TypeId { get; set; }
 
+        [Precision(18, 2)]
         public decimal MaxLoadVolume { get; set; }
 
+        [Precision(18, 2)]
         public decimal MaxLoadWeight { get; set; }
 
         public long DriverId { get; set; }

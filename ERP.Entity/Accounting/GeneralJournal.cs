@@ -39,8 +39,10 @@ namespace ERP.Entity.Accounting
 
         public string CurrCode { get; set; }
 
+        [Precision(19, 6)]
         public decimal Rate { get; set; }
 
+        [Precision(18, 2)]
         public decimal Total { get; set; }
 
         public string Notes { get; set; }

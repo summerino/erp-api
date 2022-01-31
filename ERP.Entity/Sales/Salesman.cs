@@ -161,8 +161,10 @@ namespace ERP.Entity.Sales
 
         public int PaymentTermId { get; set; }
 
+        [Precision(18, 2)]
         public decimal CreditLimit { get; set; }
 
+        [Precision(18, 2)]
         public decimal CreditUsed { get; set; }
 
         public string RefNo { get; set; }

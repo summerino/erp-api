@@ -98,8 +98,10 @@ namespace ERP.Entity.MobileSales
 
         public int? AreaId5 { get; set; }
 
+        [Precision(9, 6)]
         public decimal? Lat { get; set; }
 
+        [Precision(9, 6)]
         public decimal? Lng { get; set; }
 
 

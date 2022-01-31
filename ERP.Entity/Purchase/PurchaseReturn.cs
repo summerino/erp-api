@@ -91,24 +91,32 @@ namespace ERP.Entity.Purchase
 
         public string CurrCode { get; set; }
 
+        [Precision(18, 2)]
         public decimal Rate { get; set; }
 
+        [Precision(18, 2)]
         public decimal ShipmentFee { get; set; }
 
+        [Precision(18, 2)]
         public decimal HandlingFee { get; set; }
 
+        [Precision(18, 2)]
         public decimal SubTotal { get; set; }
 
+        [Precision(18, 2)]
         public decimal FinalDisc { get; set; }
 
         public bool NoTax { get; set; }
 
         public bool IncludeTax { get; set; }
 
+        [Precision(18, 2)]
         public decimal TaxAmount { get; set; }
 
+        [Precision(18, 2)]
         public decimal Total { get; set; }
 
+        [Precision(18, 2)]
         public decimal Dpp { get; set; }
 
         public string TaxInvoiceNo { get; set; }
@@ -217,38 +225,50 @@ namespace ERP.Entity.Purchase
 
         public int UnitId { get; set; }
 
+        [Precision(18, 2)]
         public decimal Qty { get; set; }
 
+        [Precision(18, 2)]
         public decimal QtyRcv { get; set; }
 
         public string WarehouseCode { get; set; }
 
         public string WarehouseCodeIn { get; set; }
 
+        [Precision(18, 2)]
         public decimal? Length { get; set; }
 
+        [Precision(18, 2)]
         public decimal? Width { get; set; }
 
+        [Precision(18, 2)]
         public decimal? Height { get; set; }
 
+        [Precision(18, 3)]
         public decimal? Weight { get; set; }
 
         public string DimensionMeasurement { get; set; }
 
         public string WeightMeasurement { get; set; }
 
+        [Precision(19, 6)]
         public decimal UnitPrice { get; set; }
 
+        [Precision(19, 6)]
         public decimal Disc { get; set; }
 
         public int? TaxId { get; set; }
 
+        [Precision(19, 6)]
         public decimal TaxAmount { get; set; }
 
+        [Precision(19, 6)]
         public decimal NettPrice { get; set; }
 
+        [Precision(19, 6)]
         public decimal Total { get; set; }
 
+        [Precision(19, 6)]
         public decimal Dpp { get; set; }
 
 
@@ -258,6 +278,7 @@ namespace ERP.Entity.Purchase
 
         public string ItemUomBuyName { get; set; }
 
+        [Precision(18, 2)]
         public decimal? ItemBuyPrice { get; set; }
 
         public string UomInitial { get; set; }
@@ -326,22 +347,29 @@ namespace ERP.Entity.Purchase
 
         public int UnitId { get; set; }
 
+        [Precision(18, 2)]
         public decimal Qty { get; set; }
 
+        [Precision(18, 2)]
         public decimal QtyRcv { get; set; }
 
         public string WarehouseCode { get; set; }
 
+        [Precision(19, 6)]
         public decimal UnitPrice { get; set; }
 
         public int? TaxId { get; set; }
 
+        [Precision(18, 2)]
         public decimal TaxAmount { get; set; }
 
+        [Precision(19, 6)]
         public decimal NettPrice { get; set; }
 
+        [Precision(19, 6)]
         public decimal Total { get; set; }
 
+        [Precision(19, 6)]
         public decimal Dpp { get; set; }
 
 
@@ -355,6 +383,7 @@ namespace ERP.Entity.Purchase
 
         public string ItemUomBuyName { get; set; }
 
+        [Precision(18, 2)]
         public decimal? ItemBuyPrice { get; set; }
     }
 }

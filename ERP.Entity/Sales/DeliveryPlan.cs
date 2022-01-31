@@ -56,12 +56,16 @@ namespace ERP.Entity.Sales
 
         public string WarehouseCode { get; set; }
 
+        [Precision(19, 6)]
         public decimal TotalVolume { get; set; }
 
+        [Precision(19, 6)]
         public decimal TotalWeight { get; set; }
 
+        [Precision(18, 2)]
         public decimal TotalVehicleVolume { get; set; }
 
+        [Precision(18, 2)]
         public decimal TotalVehicleWeight { get; set; }
 
         public string Notes { get; set; }

@@ -97,6 +97,7 @@ namespace ERP.Entity.MobileSales
 
         public int UnitId { get; set; }
 
+        [Precision(18, 2)]
         public decimal Qty { get; set; }
 
         public string ItemName { get; set; }

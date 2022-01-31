@@ -64,6 +64,7 @@ namespace ERP.Entity.MobileSales
 
         public string TransCode { get; set; }
 
+        [Precision(18, 2)]
         public decimal Amount { get; set; }
 
         public string NotesFailCollect { get; set; }
@@ -89,6 +90,5 @@ namespace ERP.Entity.MobileSales
         public string CoaName { get; set; }
 
         public string Status { get; set; }
-
     }
 }

@@ -34,10 +34,12 @@ namespace ERP.Entity.Inventory
 
         public int? UomSellId { get; set; }
 
+        [Precision(18, 2)]
         public decimal? SellPrice { get; set; }
 
         public int? UomBuyId { get; set; }
 
+        [Precision(18, 2)]
         public decimal? BuyPrice { get; set; }
 
         public int? SalesTaxId { get; set; }
@@ -126,6 +128,7 @@ namespace ERP.Entity.Inventory
 
         public short TypeId { get; set; }
 
+        [Precision(19, 6)]
         public decimal? CostOfGoodSold { get; set; }
 
         public short? StockType { get; set; }
@@ -134,10 +137,12 @@ namespace ERP.Entity.Inventory
 
         public int? UomSellId { get; set; }
 
+        [Precision(18, 2)]
         public decimal? SellPrice { get; set; }
 
         public int? UomBuyId { get; set; }
 
+        [Precision(18, 2)]
         public decimal? BuyPrice { get; set; }
 
         public int? SalesTaxId { get; set; }
@@ -176,14 +181,18 @@ namespace ERP.Entity.Inventory
 
         public string CoaExpense { get; set; }
 
+        [Precision(18, 2)]
         public decimal? Length { get; set; }
 
+        [Precision(18, 2)]
         public decimal? Width { get; set; }
 
+        [Precision(18, 2)]
         public decimal? Height { get; set; }
 
         public string DimensionMeasurement { get; set; }
 
+        [Precision(18, 3)]
         public decimal? Weight { get; set; }
 
         public string WeightMeasurement { get; set; }
@@ -198,20 +207,29 @@ namespace ERP.Entity.Inventory
         public string UomSellName { get; set; }
 
         public string UomBuyName { get; set; }
+
         public int? BuySeq { get; set; }
+
         public int? SellSeq { get; set; }
 
+        [Precision(19, 6)]
         public decimal? QtyOnHand { get; set; }
 
+        [Precision(19, 6)]
         public decimal? QtyOnOrder { get; set; } 
 
+        [Precision(19, 6)]
         public decimal? QtyOnIndent { get; set; }
 
+        [Precision(19, 6)]
         public decimal? QtyOnTransfer { get; set; }
 
+        [Precision(19, 6)]
         public decimal SellQtyAvailable { get; set; }
 
+        [Precision(19, 6)]
         public decimal BuyQtyAvailable { get; set; }
+
         public string WarehouseCode { get; set; }
 
         public string CreatedInitial { get; set; }

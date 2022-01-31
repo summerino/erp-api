@@ -172,20 +172,14 @@ namespace ERP.Entity.AssetManagement
 
     public class VwFixedAsset : BaseEntityWithMarkAndApproved
     {
-        [Key]
-        [StringLength(17)]
         public string Code { get; set; }
 
-        [Required]
-        [StringLength(50)]
         public string Name { get; set; }
 
         public int TypeId { get; set; }
 
-        [Column(TypeName = "date")]
         public DateTime PurchaseDate { get; set; }
 
-        [Column(TypeName = "date")]
         public DateTime StartDepreciateOn { get; set; }
 
         [Precision(18, 2)]
@@ -201,26 +195,16 @@ namespace ERP.Entity.AssetManagement
 
         public int DepartmentId { get; set; }
 
-        [Required]
-        [StringLength(8)]
         public string SupCode { get; set; }
 
-        [Required]
-        [StringLength(17)]
         public string PurchaseOrderNo { get; set; }
 
-        [Required]
-        [StringLength(17)]
         public string InvoiceNo { get; set; }
 
-        [Required]
-        [StringLength(17)]
         public string PaymentVoucherNo { get; set; }
 
         public int YearWarranty { get; set; }
 
-        [Required]
-        [StringLength(17)]
         public string CodeWarranty { get; set; }
 
         public short EstimatedLife { get; set; }
@@ -233,15 +217,13 @@ namespace ERP.Entity.AssetManagement
         [Precision(18, 2)]
         public decimal BookValue { get; set; }
 
-        [StringLength(256)]
         public string Notes { get; set; }
 
-        [StringLength(6)]
         public string CoaExpense { get; set; }
 
-        //--------------------------------------
 
         public string SupName { get; set; }
+
         public string AssetType { get; set; }
 
         public string CreatedInitial { get; set; }

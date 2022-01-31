@@ -44,8 +44,10 @@ namespace ERP.Entity.MobileSales
 
         public string CurrCode { get; set; }
 
+        [Precision(18, 2)]
         public decimal Rate { get; set; }
 
+        [Precision(18, 2)]
         public decimal Total { get; set; }
 
         public string CreatedInitial { get; set; }
@@ -92,6 +94,7 @@ namespace ERP.Entity.MobileSales
 
         public string CoaCode { get; set; }
 
+        [Precision(18, 2)]
         public decimal Amount { get; set; }
 
         public string CoaName { get; set; }

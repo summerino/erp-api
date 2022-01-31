@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 using ERP.Entity.Core;
 
 namespace ERP.Entity.Sales
@@ -141,6 +142,7 @@ namespace ERP.Entity.Sales
 
         public string SalesName { get; set; }
 
+        [Precision(18, 2)]
         public decimal Total { get; set; }
     }
 }

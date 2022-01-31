@@ -61,15 +61,19 @@ namespace ERP.Entity.Expedition
 
         public string CurrCode { get; set; }
 
+        [Precision(18, 2)]
         public decimal Rate { get; set; }
 
+        [Precision(18, 2)]
         public decimal Amount { get; set; }
 
+        [Precision(18, 2)]
         public decimal PaidAmount { get; set; }
 
         public string Notes { get; set; }
 
 
+        [Precision(19, 2)]
         public decimal Remaining { get; set; }
 
         public string SupInitial { get; set; }

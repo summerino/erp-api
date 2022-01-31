@@ -80,8 +80,10 @@ namespace ERP.Entity.MobileWarehouse
 
         public int ItemId { get; set; }
 
+        [Precision(18, 2)]
         public decimal OriginalQty { get; set; }
 
+        [Precision(18, 2)]
         public decimal RealizeQty { get; set; }
 
         public int UomId { get; set; }
@@ -97,6 +99,7 @@ namespace ERP.Entity.MobileWarehouse
 
         public string ItemUomSellName { get; set; }
 
+        [Precision(18, 2)]
         public decimal? ItemSellPrice { get; set; }
 
         public string UomInitial { get; set; }

@@ -44,14 +44,19 @@ namespace ERP.Entity.Inventory
 
         public int ItemId { get; set; }
 
+        [Precision(19, 6)]
         public decimal QtyOnHand { get; set; }
 
+        [Precision(19, 6)]
         public decimal QtyOnOrder { get; set; }
 
+        [Precision(19, 6)]
         public decimal QtyOnIndent { get; set; }
 
+        [Precision(19, 6)]
         public decimal QtyReorderPoint { get; set; }
 
+        [Precision(19, 6)]
         public decimal QtyOnTransfer { get; set; }
 
         public DateTime UpdatedDate { get; set; }

@@ -106,6 +106,7 @@ namespace ERP.Entity.Inventory
 
         public int UnitId { get; set; }
 
+        [Precision(19, 6)]
         public decimal Qty { get; set; }
 
         public string Notes { get; set; }
