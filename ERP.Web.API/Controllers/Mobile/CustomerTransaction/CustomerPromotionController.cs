@@ -25,19 +25,11 @@ namespace ERP.Web.API.Controllers.Mobile.CustomerTransaction
         }
 
         [HttpGet]
-        public IActionResult GetDataPromotion(int skip, int take, string filters, string sorts, DateTime? date, string search)
+        public IActionResult GetData(string search)
         {
-            var data = _customerPromotion.GetDataPromotion(skip, take,
-                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
-                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"), search, _claim.UserCode);
+            var result = _customerPromotion.GetDataPromotion(search, _claim.UserCode);
 
-            var result = ((List<PromotionHeaderModel>)data.Data).ToList<dynamic>();
-
-            return Ok(new MobileApiResponse
-            {
-                Count = data.Total,
-                Data = result
-            });
+            return Ok(result);
         }
 
         [HttpGet("detail")]

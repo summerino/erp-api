@@ -15,7 +15,7 @@ namespace ERP.Web.API.Domain.Services.Mobile.CustomerTransaction
             Db = db;
         }
 
-        public DataSourceResult GetDataPromotion(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, string search, string custCode)
+        public IEnumerable<PromotionHeaderModel> GetDataPromotion(string search, string custCode)
         {
             var custTypeId = getCustTypeId(custCode);
 
@@ -30,9 +30,10 @@ namespace ERP.Web.API.Domain.Services.Mobile.CustomerTransaction
                              ApplyTo = header.ApplyTo,
                              Content = header.Content,
                          };
+
             var data_2 = from header in Db.VwPromoHeaders
                          join subject in Db.PromoSubjects on header.Code equals subject.Code
-                         where header.Mark.Equals("A") && header.ApplyTo.Equals(2) && subject.Code.Equals(custCode)
+                         where header.Mark.Equals("A") && header.ApplyTo.Equals(2) && subject.CustCode.Equals(custCode)
                          select new PromotionHeaderModel
                          {
                              Code = header.Code,
@@ -44,18 +45,18 @@ namespace ERP.Web.API.Domain.Services.Mobile.CustomerTransaction
                          };
 
             var data_3 = from header in Db.VwPromoHeaders
-                       join subject in Db.PromoSubjects on header.Code equals subject.Code
-                       join cust in Db.Customers on subject.CustCode equals cust.Code
-                       where header.Mark.Equals("A") && header.ApplyTo.Equals(3) && cust.TypeId.Equals(custTypeId)
-                       select new PromotionHeaderModel
-                       {
-                           Code = header.Code,
-                           Name = header.Name,
-                           EndDate = header.EndDate,
-                           StartDate = header.StartDate,
-                           ApplyTo = header.ApplyTo,
-                           Content = header.Content,
-                       };
+                         join subject in Db.PromoSubjects on header.Code equals subject.Code
+                         join cust in Db.Customers on subject.CustCode equals cust.Code
+                         where header.Mark.Equals("A") && header.ApplyTo.Equals(3) && cust.TypeId.Equals(custTypeId)
+                         select new PromotionHeaderModel
+                         {
+                             Code = header.Code,
+                             Name = header.Name,
+                             EndDate = header.EndDate,
+                             StartDate = header.StartDate,
+                             ApplyTo = header.ApplyTo,
+                             Content = header.Content,
+                         };
 
             var data = (data_1.Union(data_2)).Union(data_3);
 
@@ -64,7 +65,7 @@ namespace ERP.Web.API.Domain.Services.Mobile.CustomerTransaction
                 data = data.Where(x => x.Code.Contains(search) || x.Name.Contains(search));
             }
 
-            return data.ToDataSourceResult(skip, take, filter, sort);
+            return data;
         }
 
         public IEnumerable<PromotionDetailModel> GetDataPromotionDetail(string code)

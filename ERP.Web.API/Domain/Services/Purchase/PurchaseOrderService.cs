@@ -912,10 +912,11 @@ namespace ERP.Web.API.Domain.Services.Purchase
         #region Mobile
         public IEnumerable<PurchaseOrderHeaderModel> GetDataForMobile(DateTime? date, string search, int userId)
         {
-            var mobileReceive = (from mobilePO in Db.MobileReceiveItemHeaders
-                                 select mobilePO).ToList();
             var empId = Db.Users.Where(x => x.Id.Equals(userId)).Select(y => y.EmployeeId).Single();
             var wh = Db.Employees.Where(x => x.Id.Equals(empId)).Select(y => y.WarehouseCode).Single();
+            var mobileReceive = (from mobilePO in Db.MobileReceiveItemHeaders
+                                 select mobilePO).ToList();
+
             var dataOrder = (from order in Db.PurchaseOrderHeaders
                              join sup in Db.Suppliers on order.SupCode equals sup.Code
                              join supType in Db.SupplierTypes on sup.TypeId equals supType.Id
@@ -968,11 +969,11 @@ namespace ERP.Web.API.Domain.Services.Purchase
 
             if (date != null && date.HasValue)
             {
-                //var date1 = DateTime.ParseExact(date, "yyyy-MM-dd", null);
                 data = data.Where(x => x.Date.Equals(date));
             }
 
-            //return data.ToDataSourceResult(skip, take, filter, sort);
+            data = data.OrderByDescending(x => x.Date);
+
             return data;
         }
 
