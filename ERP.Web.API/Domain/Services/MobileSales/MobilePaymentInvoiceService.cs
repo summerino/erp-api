@@ -70,6 +70,17 @@ namespace ERP.Web.API.Domain.Services.MobileSales
                                 result.Message = $"Data pesanan mobile {item.TransCode} tidak ada.";
                                 return result;
                             }
+
+                            switch (voiData.Mark)
+                            {
+                                case "A":
+                                    result.Message = $"Data pesanan mobile {item.TransCode} status masih aktif (belum disetujui).";
+                                    return result;
+
+                                case "REJ":
+                                    result.Message = $"Data pesanan mobile {item.TransCode} status ditolak.";
+                                    return result;
+                            }
                         }
 
                         var newCode = GetNewCode("CB_NUM_FMT", DateTime.Now);
@@ -95,13 +106,14 @@ namespace ERP.Web.API.Domain.Services.MobileSales
                         Db.GeneralCashBankHeaders.Add(headCBData);
 
                         var cusData = Db.Customers.FirstOrDefault(x => x.Code == item.CustCode);
+                        var ordData = Db.MobileOrderHeaders.FirstOrDefault(x => x.Code == item.TransCode);
 
                         var detailCBData = new GeneralCashBankDetail
                         {
                             Code = newCode,
                             LineNo = 1,
                             Type = "AR",
-                            TransCode = item.TransCode,
+                            TransCode = item.SrcTrans == "ORD" ? ordData?.SalesOrderCode ?? "" : item.TransCode,
                             CoaCode = item.CoaCode,
                             CurrCode = "IDR",
                             Rate = 1,
