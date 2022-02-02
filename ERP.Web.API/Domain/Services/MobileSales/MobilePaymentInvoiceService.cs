@@ -131,7 +131,27 @@ namespace ERP.Web.API.Domain.Services.MobileSales
 
                         Db.SaveChanges();
 
-                        string query = $"update General.Customer set CreditUsed= (CreditUsed - {item.Amount}) where code = '{item.CustCode}'";
+                        var queries = new List<string>
+                        {
+                            $"update General.Customer set CreditUsed= (CreditUsed - {item.Amount}) where code = '{item.CustCode}'"
+                        };
+
+                        var header = Db.SalesInvoiceHeaders.SingleOrDefault(x => x.Code == (item.SrcTrans == "ORD" ? ordData.SalesOrderCode ?? "" : item.TransCode));
+                        if (header == null) continue;
+                        var mark = header.Total == (header.PaidAmount + item.Amount) ? "CMP" : "PP";
+
+                        queries.Add(
+                            $"UPDATE Sales.SalesInvoiceHeader SET PaidAmount= PaidAmount + '{item.Amount}', Mark='{mark}' WHERE Code='{item.TransCode}';");
+
+                        var detail = Db.SalesInvoiceDetails.Where(x => x.Code == (item.SrcTrans == "ORD" ? ordData.SalesOrderCode ?? "" : item.TransCode));
+                        foreach (var item2 in detail)
+                        {
+                            var proRateValue = (header.PaidAmount + item.Amount) * item2.Total / header.Total;
+                            queries.Add(
+                                $"UPDATE Sales.SalesDeliveryHeader SET PaidAmount= PaidAmount + '{proRateValue}' WHERE Code='{item2.DoCode}';");
+                        }
+
+                        var query = string.Join("", queries);
                         Db.Database.ExecuteSqlRaw(query);
                     }
                     else
