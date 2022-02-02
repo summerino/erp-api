@@ -48,7 +48,7 @@ namespace ERP.Web.API.Domain.Services.Finance
 						" ORDER BY cb.ChequeDate ASC, cb_d.CoaName ASC, BalanceIn DESC, BalanceOut DESC").ToList();
 
 			if (!string.IsNullOrEmpty(date))
-				ocData = ocData.Where(x => x.Date >= Convert.ToDateTime(date)).ToList();
+				ocData = ocData.Where(x => x.ChequeDate >= Convert.ToDateTime(date)).ToList();
 
 			if (ocData.Any())
             {
