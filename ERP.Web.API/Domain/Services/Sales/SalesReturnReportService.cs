@@ -17,7 +17,7 @@ namespace ERP.Web.API.Domain.Services.Sales
         {
             var srData = _db.ReportBySRs.FromSqlRaw(@"SELECT sr.[Date], sr.Code, sr.CustCode, sr.CustName,
                             SUM(sr_d.Qty * (sr_d.UnitPrice - sr_d.Disc)) AS SubTotal, SUM(sr_d.Qty * sr_d.DPP) AS DPP,
-                            SUM(sr_d.Qty * sr_d.TaxAmount) AS TaxAmount, sr.Total,
+                            SUM(sr_d.Qty * sr_d.TaxAmount) AS TaxAmount, SUM(sr_d.Qty * sr_d.NettPrice) AS Total,
                             CASE sr.[Type]
 	                            WHEN '1' THEN 'Tukar Memo'
 	                            WHEN '2' THEN 'Tukar Barang Sama'
@@ -29,7 +29,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                             FROM Sales.vwSalesReturnHeader sr
                             LEFT JOIN Sales.vwSalesReturnDetail sr_d ON sr_d.Code = sr.Code" +
                             (string.IsNullOrEmpty(status) ? "" : $" WHERE sr.Mark = '{status.Replace("'", "''")}'") +
-                            " GROUP BY sr.[Date], sr.Code, sr.CustCode, sr.CustName, sr.DPP, sr.TaxAmount, sr.Total, sr.Mark, sr.[Type]").ToList();
+                            " GROUP BY sr.[Date], sr.Code, sr.CustCode, sr.CustName, sr.Mark, sr.[Type]").ToList();
 
             var srDetailData = _db.ReportByDetailSRs.FromSqlRaw(@"SELECT sr.[Date], sr.Code, sr.CustCode,sr.CustName,
                             im.Initial AS ItemInitial, im.[Name] AS ItemName, sr_d.Qty,

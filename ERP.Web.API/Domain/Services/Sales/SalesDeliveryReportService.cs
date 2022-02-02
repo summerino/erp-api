@@ -20,7 +20,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                             CAST(do.SrcTrans AS int) AS SrcTrans, do.TransCode, wh.[Name] AS WarehouseName,
                             SUM(do_d.Qty * do_d.UnitPrice) AS GrossAmount, SUM(do_d.Qty * (do_d.UnitPrice - do_d.Disc - do_d.FinalDiscHeader)) AS SubTotal,
                             SUM(do_d.Qty * do_d.Disc) AS Disc, SUM(do_d.Qty * do_d.FinalDiscHeader) AS DiscHeader,
-                            do.DPP, do.TaxAmount, do.Total,
+                            SUM(do_d.DPP * do_d.Qty) AS DPP, SUM(do_d.TaxAmount * do_d.Qty) AS TaxAmount, SUM(do_d.NettPrice * do_d.Qty) AS Total,
                             CASE do.Mark
 	                            WHEN 'A' THEN 'Aktif'
 	                            WHEN 'V' THEN 'Void'
@@ -30,7 +30,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                             LEFT JOIN Inventory.Warehouse wh ON wh.Code = do.WarehouseCode
                             WHERE do.FromDirectInvoice = 0" +
                             (string.IsNullOrEmpty(status) ? "" : $" AND do.Mark = '{status.Replace("'", "''")}'") +
-                            " GROUP BY do.[Date], do.Code, do.CustCode, do.CustName, do.SrcTrans, do.TransCode, wh.[Name], do.DPP, do.TaxAmount, do.Total, do.Mark").ToList();
+                            " GROUP BY do.[Date], do.Code, do.CustCode, do.CustName, do.SrcTrans, do.TransCode, wh.[Name], do.Mark").ToList();
 
             var doDetailData = _db.ReportByDetailDOs.FromSqlRaw(@"SELECT do.[Date], do.Code, do.CustCode, do.CustName,
                             CAST(do.SrcTrans AS int) AS SrcTrans, do.TransCode, wh.[Name] AS WarehouseName,
@@ -179,7 +179,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                         itemCust.SubTotal = doDetailData.Where(x => x.CustCode == itemCust.Code).Sum(x => x.TotalAfterDisc);
                         itemCust.Dpp = doDetailData.Where(x => x.CustCode == itemCust.Code).Sum(x => x.TotalDpp);
                         itemCust.TaxAmount = doDetailData.Where(x => x.CustCode == itemCust.Code).Sum(x => x.TotalTaxAmount);
-                        itemCust.Total = doDetailData.Where(x => x.CustCode == itemCust.Code).Sum(x => x.Total);
+                        itemCust.Total = doDetailData.Where(x => x.CustCode == itemCust.Code).Sum(x => x.TotalNettPrice);
                     }
 
                     custData = custData.Where(x => x.TotalTrans > 0).OrderBy(x => x.Code).ToList();
@@ -226,7 +226,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                         item.SubTotal = doDetailData.Where(x => x.ItemInitial == item.Initial && x.UnitId == item.UnitId).Sum(x => x.TotalAfterDisc);
                         item.Dpp = doDetailData.Where(x => x.ItemInitial == item.Initial && x.UnitId == item.UnitId).Sum(x => x.TotalDpp);
                         item.TaxAmount = doDetailData.Where(x => x.ItemInitial == item.Initial && x.UnitId == item.UnitId).Sum(x => x.TotalTaxAmount);
-                        item.Total = doDetailData.Where(x => x.ItemInitial == item.Initial && x.UnitId == item.UnitId).Sum(x => x.Total);
+                        item.Total = doDetailData.Where(x => x.ItemInitial == item.Initial && x.UnitId == item.UnitId).Sum(x => x.TotalNettPrice);
                     }
 
                     itemData = itemData.Where(x => x.TotalTrans > 0).OrderBy(x => x.Initial).ToList();
@@ -269,7 +269,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                         item.SubTotal = doDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).Sum(x => x.TotalAfterDisc);
                         item.Dpp = doDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).Sum(x => x.TotalDpp);
                         item.TaxAmount = doDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).Sum(x => x.TotalTaxAmount);
-                        item.Total = doDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).Sum(x => x.Total);
+                        item.Total = doDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).Sum(x => x.TotalNettPrice);
                     }
 
                     itemCategoryData = itemCategoryData.Where(x => x.TotalTrans > 0).OrderBy(x => x.Initial).ToList();

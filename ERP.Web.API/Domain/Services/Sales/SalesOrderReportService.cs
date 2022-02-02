@@ -19,7 +19,7 @@ namespace ERP.Web.API.Domain.Services.Sales
             var soData = _db.ReportBySOs.FromSqlRaw(@"SELECT so.[Date], so.Code, so.CustCode, so.CustName,
                             SUM(so_d.Qty * so_d.UnitPrice) AS GrossAmount, SUM(so_d.Qty * (so_d.UnitPrice - so_d.Disc - so_d.FinalDiscHeader)) AS SubTotal,
                             SUM(so_d.Qty * so_d.Disc) AS Disc, SUM(so_d.Qty * so_d.FinalDiscHeader) AS DiscHeader,
-                            so.DPP, so.TaxAmount, so.Total,
+                            SUM(so_d.DPP * so_d.Qty) AS DPP, SUM(so_d.TaxAmount * so_d.Qty) AS TaxAmount, SUM(so_d.NettPrice * so_d.Qty) AS Total,
                             CASE so.Mark
 	                            WHEN 'A' THEN 'Aktif'
 	                            WHEN 'V' THEN 'Void'
@@ -30,7 +30,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                             LEFT JOIN Sales.vwSalesOrderDetail so_d ON so_d.Code = so.Code
                             WHERE so.FromDirectInvoice = 0" +
                             (string.IsNullOrEmpty(status) ? "" : $" AND so.Mark = '{status.Replace("'", "''")}'") +
-                            " GROUP BY so.[Date], so.Code, so.CustCode, so.CustName, so.DPP, so.TaxAmount, so.Total, so.Mark").ToList();
+                            " GROUP BY so.[Date], so.Code, so.CustCode, so.CustName, so.Mark").ToList();
 
             var soDetailData = _db.ReportByDetailSOs.FromSqlRaw(@"SELECT so.[Date], so.Code, so.CustCode,so.CustName,
                             im.Initial AS ItemInitial, im.[Name] AS ItemName, so_d.Qty,
@@ -170,7 +170,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                         itemCust.SubTotal = soDetailData.Where(x => x.CustCode == itemCust.Code).Sum(x => x.TotalAfterDisc);
                         itemCust.Dpp = soDetailData.Where(x => x.CustCode == itemCust.Code).Sum(x => x.TotalDpp);
                         itemCust.TaxAmount = soDetailData.Where(x => x.CustCode == itemCust.Code).Sum(x => x.TotalTaxAmount);
-                        itemCust.Total = soDetailData.Where(x => x.CustCode == itemCust.Code).Sum(x => x.Total);
+                        itemCust.Total = soDetailData.Where(x => x.CustCode == itemCust.Code).Sum(x => x.TotalNettPrice);
                     }
 
                     custData = custData.Where(x => x.TotalTrans > 0).OrderBy(x => x.Code).ToList();
@@ -217,7 +217,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                         item.SubTotal = soDetailData.Where(x => x.ItemInitial == item.Initial && x.UnitId == item.UnitId).Sum(x => x.TotalAfterDisc);
                         item.Dpp = soDetailData.Where(x => x.ItemInitial == item.Initial && x.UnitId == item.UnitId).Sum(x => x.TotalDpp);
                         item.TaxAmount = soDetailData.Where(x => x.ItemInitial == item.Initial && x.UnitId == item.UnitId).Sum(x => x.TotalTaxAmount);
-                        item.Total = soDetailData.Where(x => x.ItemInitial == item.Initial && x.UnitId == item.UnitId).Sum(x => x.Total);
+                        item.Total = soDetailData.Where(x => x.ItemInitial == item.Initial && x.UnitId == item.UnitId).Sum(x => x.TotalNettPrice);
                     }
 
                     itemData = itemData.Where(x => x.TotalTrans > 0).OrderBy(x => x.Initial).ToList();
@@ -260,7 +260,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                         item.SubTotal = soDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).Sum(x => x.TotalAfterDisc);
                         item.Dpp = soDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).Sum(x => x.TotalDpp);
                         item.TaxAmount = soDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).Sum(x => x.TotalTaxAmount);
-                        item.Total = soDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).Sum(x => x.Total);
+                        item.Total = soDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).Sum(x => x.TotalNettPrice);
                     }
 
                     itemCategoryData = itemCategoryData.Where(x => x.TotalTrans > 0).OrderBy(x => x.Initial).ToList();
