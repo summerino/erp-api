@@ -141,7 +141,7 @@ namespace ERP.Web.API.Domain.Services.MobileSales
                         var mark = header.Total == (header.PaidAmount + item.Amount) ? "CMP" : "PP";
 
                         queries.Add(
-                            $"UPDATE Sales.SalesInvoiceHeader SET PaidAmount= PaidAmount + '{item.Amount}', Mark='{mark}' WHERE Code='{item.TransCode}';");
+                            $"UPDATE Sales.SalesInvoiceHeader SET PaidAmount= PaidAmount + '{item.Amount}', Mark='{mark}' WHERE Code='{(item.SrcTrans == "ORD" ? ordData.SalesOrderCode ?? "" : item.TransCode)}';");
 
                         var detail = Db.SalesInvoiceDetails.Where(x => x.Code == (item.SrcTrans == "ORD" ? ordData.SalesOrderCode ?? "" : item.TransCode));
                         foreach (var item2 in detail)
