@@ -25,7 +25,9 @@ namespace ERP.Web.API.Domain.Services.Sales
                             CASE sr.Mark
 	                            WHEN 'A' THEN 'Aktif'
 	                            WHEN 'V' THEN 'Void'
-	                            WHEN 'CMP' THEN 'Dikirim Seluruhnya' END AS [Status]
+	                            WHEN 'PS' THEN 'Dikirim Sebagian'
+	                            WHEN 'CMP' THEN 'Dikirim Seluruhnya'
+                                WHEN 'CLS' THEN 'Ditutup' END AS [Status]
                             FROM Sales.vwSalesReturnHeader sr
                             LEFT JOIN Sales.vwSalesReturnDetail sr_d ON sr_d.Code = sr.Code" +
                             (string.IsNullOrEmpty(status) ? "" : $" WHERE sr.Mark = '{status.Replace("'", "''")}'") +
@@ -40,9 +42,9 @@ namespace ERP.Web.API.Domain.Services.Sales
                             CASE sr.Mark
                                 WHEN 'A' THEN 'Aktif'
                                 WHEN 'V' THEN 'Void'
-                                WHEN 'PS' THEN 'Aktif'
-                                WHEN 'CMP' THEN 'Aktif'
-                                WHEN 'CLS' THEN 'Aktif' END AS [Status],
+                                WHEN 'PS' THEN 'Dikirim Sebagian'
+                                WHEN 'CMP' THEN 'Dikirim Seluruhnya'
+                                WHEN 'CLS' THEN 'Ditutup' END AS [Status],
                             ic.Id AS CategoryId, ic.Initial AS CategoryInitial,
                             CASE sr.[Type]
 	                            WHEN '1' THEN 'Tukar Memo'
