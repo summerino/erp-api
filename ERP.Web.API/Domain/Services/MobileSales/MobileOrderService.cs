@@ -111,12 +111,24 @@ namespace ERP.Web.API.Domain.Services.MobileSales
                         // Credit Used
                         UpdateCreditUsed(itemData.CustCode, itemData.Total);
 
+                        var checkQty = Db.SystemParameters.FirstOrDefault(x => x.Code == "DEF_SLS_ORD_CHECK_QTY")?.Value == "1";
 
+                        if (checkQty && IsQtyExcess(salesData.WarehouseCode, detailData))
+                        {
+                            result.Message = $"Data mobile order {itemData.Code} tidak bisa disetujui karena qty yang dipesan lebih besar dari qty yang tersedia.";
+                            return result;
+                        }
 
                         short i = 0;
                         foreach (var itemDetail in detailData)
                         {
                             var barangData = Db.Items.FirstOrDefault(x => x.Id == itemDetail.ItemId);
+                            if (!barangData.IsActive)
+                            {
+                                result.Message = $"Status barang {barangData.Initial} - {barangData.Name} pada detail {itemData.Code} tidak aktif.";
+                                return result;
+                            }
+
                             var orderDetail = new SalesOrderDetail
                             {
                                 Code = newCode,
@@ -371,9 +383,8 @@ namespace ERP.Web.API.Domain.Services.MobileSales
                         Db.MobileOrderHeaders.Update(itemData);
                         Db.SaveChanges();
                     }
-
-                    transaction.Commit();
                 }
+                transaction.Commit();
             }
             catch (Exception ex)
             {
@@ -616,6 +627,41 @@ namespace ERP.Web.API.Domain.Services.MobileSales
             result.Success = true;
             result.Data = data.Code;
             result.Message = "Data pesanan mobile berhasil diperbarui.";
+            return result;
+        }
+
+        private bool IsQtyExcess(string warehouseCode, IEnumerable<MobileOrderDetail> items)
+        {
+            var result = false;
+            foreach (var item in items)
+            {
+                var uom = Db.UoMConversions.FirstOrDefault(x => x.Id == item.UnitId);
+                var stock = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == warehouseCode && x.ItemId == item.ItemId);
+                if (stock != null)
+                {
+                    if (uom.IsBaseUnit)
+                    {
+                        if (item.Qty > (stock.QtyOnHand - stock.QtyOnOrder))
+                        {
+                            result = true;
+                        }
+                    }
+                    else
+                    {
+                        var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= uom.Seq).Select(x => x.Conversion).ToList();
+                        var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
+                        var baseQty = item.Qty * multipliedQty;
+                        if (baseQty > (stock.QtyOnHand - stock.QtyOnOrder))
+                        {
+                            result = true;
+                        }
+                    }
+                }
+                else
+                {
+                    result = true;
+                }
+            }
             return result;
         }
 
