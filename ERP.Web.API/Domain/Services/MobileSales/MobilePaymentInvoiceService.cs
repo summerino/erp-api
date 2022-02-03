@@ -83,7 +83,7 @@ namespace ERP.Web.API.Domain.Services.MobileSales
                             }
                         }
 
-                        var newCode = GetNewCode("CB_NUM_FMT", DateTime.Now);
+                        var newCode = GetNewCode("CB_NUM_FMT", item.Date);
 
                         var headCBData = new GeneralCashBankHeader
                         {
