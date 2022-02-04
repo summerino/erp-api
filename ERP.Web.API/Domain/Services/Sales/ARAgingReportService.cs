@@ -42,7 +42,7 @@ namespace ERP.Web.API.Domain.Services.Sales
 							CAST (CASE WHEN DATEDIFF(DAY, inv.DueDate, GETDATE()) >= 1 AND DATEDIFF(DAY, inv.DueDate, GETDATE()) <= 7 THEN
 							dlv.Total - dlv.PaidAmount ELSE 0 END AS decimal) AS Past1To7,
 							CAST (CASE WHEN DATEDIFF(DAY, inv.DueDate, GETDATE()) = 0 THEN
-							dlv.Total - dlv.PaidAmount ELSE 0 END AS decimal) AS DueToday,
+							dlv.Total - dlv.PaidAmount WHEN inv.DueDate IS NULL THEN dlv.Total - dlv.PaidAmount ELSE 0 END AS decimal) AS DueToday,
 							CAST (CASE WHEN DATEDIFF(DAY, GETDATE(), inv.DueDate) >= 1 AND DATEDIFF(DAY, GETDATE(), inv.DueDate) <= 7 THEN
 							dlv.Total - dlv.PaidAmount ELSE 0 END AS decimal) AS Due1To7,
 							CAST (CASE WHEN DATEDIFF(DAY, GETDATE(), inv.DueDate) >= 8 AND DATEDIFF(DAY, GETDATE(), inv.DueDate) <= 14 THEN
@@ -77,7 +77,7 @@ namespace ERP.Web.API.Domain.Services.Sales
 							CAST (CASE WHEN DATEDIFF(DAY, bb.DueDate, GETDATE()) >= 1 AND DATEDIFF(DAY, bb.DueDate, GETDATE()) <= 7 THEN
 							bb.Amount - bb.PaidAmount ELSE 0 END AS decimal) AS Past1To7,
 							CAST (CASE WHEN DATEDIFF(DAY, bb.DueDate, GETDATE()) = 0 THEN
-							bb.Amount - bb.PaidAmount ELSE 0 END AS decimal) AS DueToday,
+							bb.Amount - bb.PaidAmount WHEN bb.DueDate IS NULL THEN bb.Amount - bb.PaidAmount ELSE 0 END AS decimal) AS DueToday,
 							CAST (CASE WHEN DATEDIFF(DAY, GETDATE(), bb.DueDate) >= 1 AND DATEDIFF(DAY, GETDATE(), bb.DueDate) <= 7 THEN
 							bb.Amount - bb.PaidAmount ELSE 0 END AS decimal) AS Due1To7,
 							CAST (CASE WHEN DATEDIFF(DAY, GETDATE(), bb.DueDate) >= 8 AND DATEDIFF(DAY, GETDATE(), bb.DueDate) <= 14 THEN
