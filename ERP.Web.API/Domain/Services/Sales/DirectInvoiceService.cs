@@ -1131,6 +1131,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                         }
                     }
 
+                    item.DiscountItemDetails = item.DiscountItemDetails.Where(x => x.PromoCode == null);
                     if (item.DiscountItemDetails.Any())
                     {
                         discPromo.AddRange(item.DiscountItemDetails);
@@ -1251,7 +1252,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                     if (discPromo.Any())
                     {
                         short d = 0;
-                        foreach (var discItem in item.DiscountItemDetails)
+                        foreach (var discItem in discPromo)
                         {
                             if (discItem.Id <= 0)
                             {
