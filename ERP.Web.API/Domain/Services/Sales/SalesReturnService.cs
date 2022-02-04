@@ -401,6 +401,13 @@ namespace ERP.Web.API.Domain.Services.Sales
                     return result;
                 }
 
+                var isPaid = Db.VwCreditMemos.Where(x => x.TransCode == code && (x.Mark == "FU" || x.Mark == "PU")).Any();
+                if (isPaid)
+                {
+                    result.Message = "Data pengembalian penjualan tidak bisa ditandai sebagai void karena terdapat kredit memo yang sudah dibayarkan.";
+                    return result;
+                }
+
                 using var transaction = Db.Database.BeginTransaction();
                 try
                 {
@@ -408,6 +415,17 @@ namespace ERP.Web.API.Domain.Services.Sales
                     data.Mark = "V";
                     data.UpdatedBy = userId;
                     data.UpdatedDate = DateTime.Now;
+
+                    if (data.Type == 1)
+                    {
+                        var cmData = Db.CreditMemos.FirstOrDefault(x => x.TransCode == code);
+
+                        cmData.Mark = "V";
+                        cmData.UpdatedBy = userId;
+                        cmData.UpdatedDate = DateTime.Now;
+
+                        Db.CreditMemos.Update(cmData);
+                    }
 
                     Db.Database.ExecuteSqlRaw(
                     "EXEC sp_update_stock_mutation_from_sr {0}, {1}, {2}, {3}",
