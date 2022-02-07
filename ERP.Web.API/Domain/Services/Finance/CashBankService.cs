@@ -685,7 +685,7 @@ namespace ERP.Web.API.Domain.Services.Finance
             var listTransactions = (from cd in Db.GeneralCashBankDetails
                                     join si in Db.SalesInvoiceHeaders on cd.TransCode equals si.Code
                                     join so in Db.SalesOrderHeaders on si.SoCode equals so.Code
-                                    where cd.Type == "AR"
+                                    where cd.Code == cashBankCode
                                     select new { so.CustCode , cd.TransAmount }).ToList();
             var listQuery = new List<string>();
             foreach (var item in listTransactions)
