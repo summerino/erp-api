@@ -153,6 +153,7 @@ namespace ERP.Web.API.Domain.Services.Sales
 
                     List<SalesOrderDetailDiscount> discPromo = new();
                     List<SalesOrderDetailFreeGood> bonusPromo = new();
+                    var ctItem = items.FirstOrDefault(j => j.Id == item.ItemId);
                     if (listPromo.Any())
                     {
                         foreach (var dataPromo in listPromo)
@@ -163,7 +164,6 @@ namespace ERP.Web.API.Domain.Services.Sales
                                 var detailTierPromo = Db.PromoDetailTiers.Where(x => x.PromoDetailId == detailPromo.Id).ToList();
                                 var detailMultiPromo = Db.PromoDetailMultipleItems.Where(x => x.PromoDetailId == detailPromo.Id).ToList();
                                 var applyTo = detailPromo.ApplyTo;
-                                var ctItem = items.FirstOrDefault(j => j.Id == item.ItemId);
                                 if ((applyTo == 1 && detailPromo.ItemId == item.ItemId)
                                     || (applyTo == 3 && ctItem.CategoryId == detailPromo.ItemId))
                                 {
@@ -171,6 +171,32 @@ namespace ERP.Web.API.Domain.Services.Sales
                                     {
                                         case 1:
                                             // Apply to Barang - Promo Method Reguler
+                                            var curUom = uomConversions.FirstOrDefault(x => x.Id == item.UnitId);
+                                            var itemUom = uomConversions.FirstOrDefault(x => x.Id == ctItem.UomSellId);
+                                            var discAmount = 0m;
+                                            if (curUom.Seq > itemUom.Seq)
+                                            {
+                                                var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= curUom.Seq && x.Seq >= itemUom.Seq).Select(x => x.Conversion).ToList();
+                                                var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
+                                                discAmount = (detailPromo.IsPercentage ?
+                                                        item.UnitPrice * (detailPromo.ValuePercentage / 100) :
+                                                        detailPromo.ValueAmount) / multipliedQty;
+                                            }
+                                            else if (curUom.Seq < itemUom.Seq)
+                                            {
+                                                var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq >= curUom.Seq && x.Seq <= itemUom.Seq).Select(x => x.Conversion).ToList();
+                                                var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
+                                                discAmount = (detailPromo.IsPercentage ?
+                                                        item.UnitPrice * (detailPromo.ValuePercentage / 100) :
+                                                        detailPromo.ValueAmount) * multipliedQty;
+                                            }
+                                            else
+                                            {
+                                                discAmount = detailPromo.IsPercentage ?
+                                                        item.UnitPrice * (detailPromo.ValuePercentage / 100) :
+                                                        detailPromo.ValueAmount;
+                                            }
+
                                             discPromo.Add(new SalesOrderDetailDiscount
                                             {
                                                 PromoCode = dataPromo.Code,
@@ -179,12 +205,10 @@ namespace ERP.Web.API.Domain.Services.Sales
                                                 //promoMethod: 1, 
                                                 Value = detailPromo.IsPercentage ?
                                                         detailPromo.ValuePercentage :
-                                                        detailPromo.ValueAmount,
+                                                        discAmount,
                                                 //nettPrice: 0, 
                                                 CoaCode = dataPromo.CoaCost,
-                                                Amount = detailPromo.IsPercentage ?
-                                                        item.UnitPrice * (detailPromo.ValuePercentage / 100) :
-                                                        detailPromo.ValueAmount,
+                                                Amount = discAmount,
                                                 //fromPromo: true, 
                                                 IsPercentage = detailPromo.IsPercentage
                                             });
@@ -455,6 +479,12 @@ namespace ERP.Web.API.Domain.Services.Sales
                         item.TaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) * (taxData.Rate / 100);
                         item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate + item.TaxAmount;
                         item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate;
+                    }
+
+                    if (item.NettPrice < 0)
+                    {
+                        result.Message = $"Data penjualan langsung tidak bisa disimpan karena nilai bersih barang {ctItem.Initial} minus.";
+                        return result;
                     }
 
                     item.FinalDiscHeader = discHeaderProrate;
@@ -855,6 +885,7 @@ namespace ERP.Web.API.Domain.Services.Sales
 
                     List<SalesOrderDetailDiscount> discPromo = new();
                     List<SalesOrderDetailFreeGood> bonusPromo = new();
+                    var ctItem = items.FirstOrDefault(j => j.Id == item.ItemId);
                     if (listPromo.Any())
                     {
                         foreach (var dataPromo in listPromo)
@@ -865,7 +896,6 @@ namespace ERP.Web.API.Domain.Services.Sales
                                 var detailTierPromo = Db.PromoDetailTiers.Where(x => x.PromoDetailId == detailPromo.Id).ToList();
                                 var detailMultiPromo = Db.PromoDetailMultipleItems.Where(x => x.PromoDetailId == detailPromo.Id).ToList();
                                 var applyTo = detailPromo.ApplyTo;
-                                var ctItem = items.FirstOrDefault(j => j.Id == item.ItemId);
                                 if ((applyTo == 1 && detailPromo.ItemId == item.ItemId)
                                     || (applyTo == 3 && ctItem.CategoryId == detailPromo.ItemId))
                                 {
@@ -873,6 +903,32 @@ namespace ERP.Web.API.Domain.Services.Sales
                                     {
                                         case 1:
                                             // Apply to Barang - Promo Method Reguler
+                                            var curUom = uomConversions.FirstOrDefault(x => x.Id == item.UnitId);
+                                            var itemUom = uomConversions.FirstOrDefault(x => x.Id == ctItem.UomSellId);
+                                            var discAmount = 0m;
+                                            if (curUom.Seq > itemUom.Seq)
+                                            {
+                                                var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= curUom.Seq && x.Seq >= itemUom.Seq).Select(x => x.Conversion).ToList();
+                                                var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
+                                                discAmount = (detailPromo.IsPercentage ?
+                                                        item.UnitPrice * (detailPromo.ValuePercentage / 100) :
+                                                        detailPromo.ValueAmount) / multipliedQty;
+                                            }
+                                            else if (curUom.Seq < itemUom.Seq)
+                                            {
+                                                var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq >= curUom.Seq && x.Seq <= itemUom.Seq).Select(x => x.Conversion).ToList();
+                                                var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
+                                                discAmount = (detailPromo.IsPercentage ?
+                                                        item.UnitPrice * (detailPromo.ValuePercentage / 100) :
+                                                        detailPromo.ValueAmount) * multipliedQty;
+                                            }
+                                            else
+                                            {
+                                                discAmount = detailPromo.IsPercentage ?
+                                                        item.UnitPrice * (detailPromo.ValuePercentage / 100) :
+                                                        detailPromo.ValueAmount;
+                                            }
+
                                             discPromo.Add(new SalesOrderDetailDiscount
                                             {
                                                 PromoCode = dataPromo.Code,
@@ -881,12 +937,10 @@ namespace ERP.Web.API.Domain.Services.Sales
                                                 //promoMethod: 1, 
                                                 Value = detailPromo.IsPercentage ?
                                                         detailPromo.ValuePercentage :
-                                                        detailPromo.ValueAmount,
+                                                        discAmount,
                                                 //nettPrice: 0, 
                                                 CoaCode = dataPromo.CoaCost,
-                                                Amount = detailPromo.IsPercentage ?
-                                                        item.UnitPrice * (detailPromo.ValuePercentage / 100) :
-                                                        detailPromo.ValueAmount,
+                                                Amount = discAmount,
                                                 //fromPromo: true, 
                                                 IsPercentage = detailPromo.IsPercentage
                                             });
@@ -1158,6 +1212,12 @@ namespace ERP.Web.API.Domain.Services.Sales
                         item.TaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) * (taxData.Rate / 100);
                         item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate + item.TaxAmount;
                         item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate;
+                    }
+
+                    if (item.NettPrice < 0)
+                    {
+                        result.Message = $"Data penjualan langsung tidak bisa diperbarui karena nilai bersih barang {ctItem.Initial} minus.";
+                        return result;
                     }
 
                     item.FinalDiscHeader = discHeaderProrate;
