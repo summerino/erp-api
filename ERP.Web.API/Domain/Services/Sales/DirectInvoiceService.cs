@@ -149,7 +149,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                     //Promo
                     var listPromo = promos.Where(x => x.ApplyTo == 1 ||
                                     x.Subject.Select(y => y.CustCode).Contains(data.CustCode) ||
-                                    x.Subject.Select(y => y.CustTypeId).Contains(data.CustTypeId)).ToArray();
+                                    x.Subject.Select(y => y.CustTypeId).Contains(data.CustTypeId)).ToList();
 
                     List<SalesOrderDetailDiscount> discPromo = new();
                     List<SalesOrderDetailFreeGood> bonusPromo = new();
@@ -881,7 +881,12 @@ namespace ERP.Web.API.Domain.Services.Sales
                     //Promo
                     var listPromo = promos.Where(x => x.ApplyTo == 1 ||
                                     x.Subject.Select(y => y.CustCode).Contains(data.CustCode) ||
-                                    x.Subject.Select(y => y.CustTypeId).Contains(data.CustTypeId)).ToArray();
+                                    x.Subject.Select(y => y.CustTypeId).Contains(data.CustTypeId)).ToList();
+
+                    if (data.ListPromo != null && data.ListPromo.Any())
+                    {
+                        listPromo = listPromo.Where(x => data.ListPromo.Where(y => y.UsePromo).Select(y => y.Code).Contains(x.Code)).ToList();
+                    }
 
                     List<SalesOrderDetailDiscount> discPromo = new();
                     List<SalesOrderDetailFreeGood> bonusPromo = new();
