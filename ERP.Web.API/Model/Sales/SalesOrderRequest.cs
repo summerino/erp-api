@@ -6,6 +6,8 @@ namespace ERP.Web.API.Model.Sales
     {
         public IEnumerable<SalesOrderDetailRequest> ItemDetails { get; set; }
 
+        public IEnumerable<SalesOrderPromoRequest> ListPromo { get; set; }
+
         public DateTime DlvDate { get; set; }
 
         public bool IsSoDlv { get; set; }
@@ -35,5 +37,10 @@ namespace ERP.Web.API.Model.Sales
         public string Name { get; set; }
 
         public string UnitName { get; set; }
+    }
+
+    public class SalesOrderPromoRequest : PromoHeader
+    {
+        public bool UsePromo { get; set; }
     }
 }

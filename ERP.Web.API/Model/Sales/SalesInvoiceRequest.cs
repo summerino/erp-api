@@ -8,6 +8,7 @@ namespace ERP.Web.API.Model.Sales
         public IEnumerable<SalesInvoiceDetail> Details { get; set; }
         public IEnumerable<SalesInvoiceCreditMemo> Memos { get; set; }
         public IEnumerable<SalesOrderDetailRequest> ItemDetails { get; set; }
+        public IEnumerable<DirectInvoicePromoRequest> ListPromo { get; set; }
 
         // Direct Invoice
         public int? PaymentTermId { get; set; }
@@ -43,5 +44,10 @@ namespace ERP.Web.API.Model.Sales
     {
         public int? PaymentTermId { get; set; }
 
+    }
+
+    public class DirectInvoicePromoRequest : PromoHeader
+    {
+        public bool UsePromo { get; set; }
     }
 }
