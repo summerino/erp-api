@@ -453,7 +453,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                         }
                     }
 
-                    if (item.DiscountItemDetails.Any())
+                    if (item.DiscountItemDetails != null && item.DiscountItemDetails.Any())
                     {
                         discPromo.AddRange(item.DiscountItemDetails);
                     }
@@ -1185,10 +1185,13 @@ namespace ERP.Web.API.Domain.Services.Sales
                         }
                     }
 
-                    item.DiscountItemDetails = item.DiscountItemDetails.Where(x => x.PromoCode == null);
-                    if (item.DiscountItemDetails.Any())
+                    if (item.DiscountItemDetails != null)
                     {
-                        discPromo.AddRange(item.DiscountItemDetails);
+                        item.DiscountItemDetails = item.DiscountItemDetails.Where(x => x.PromoCode == null);
+                        if (item.DiscountItemDetails.Any())
+                        {
+                            discPromo.AddRange(item.DiscountItemDetails);
+                        }
                     }
 
                     item.Disc = discPromo.Sum(x => x.Amount);
