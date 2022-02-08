@@ -139,9 +139,6 @@ namespace ERP.Web.API.Domain.Services.Sales
                 var newCode = GetNewCode("DI_NUM_FMT", data.Date);
                 data.Code = newCode;
 
-                // Credit Used
-                UpdateCreditUsed(data.CustCode, data.Total);
-
                 short i = 0;
                 List<SalesOrderDetailFreeGood> bonusPromoMulti = new();
                 foreach (var item in data.ItemDetails)
@@ -176,7 +173,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                                             var discAmount = 0m;
                                             if (curUom.Seq > itemUom.Seq)
                                             {
-                                                var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= curUom.Seq && x.Seq >= itemUom.Seq).Select(x => x.Conversion).ToList();
+                                                var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= curUom.Seq && x.Seq > itemUom.Seq).Select(x => x.Conversion).ToList();
                                                 var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
                                                 discAmount = detailPromo.IsPercentage ?
                                                         item.UnitPrice * (detailPromo.ValuePercentage / 100) :
@@ -184,7 +181,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                                             }
                                             else if (curUom.Seq < itemUom.Seq)
                                             {
-                                                var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq >= curUom.Seq && x.Seq <= itemUom.Seq).Select(x => x.Conversion).ToList();
+                                                var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq > curUom.Seq && x.Seq <= itemUom.Seq).Select(x => x.Conversion).ToList();
                                                 var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
                                                 discAmount = detailPromo.IsPercentage ?
                                                         item.UnitPrice * (detailPromo.ValuePercentage / 100) :
@@ -751,6 +748,9 @@ namespace ERP.Web.API.Domain.Services.Sales
                     });
                 }
 
+                // Credit Used
+                UpdateCreditUsed(data.CustCode, data.Total);
+
                 Db.SaveChanges();
 
                 var dlvData = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.TransCode == newCode);
@@ -913,7 +913,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                                             var discAmount = 0m;
                                             if (curUom.Seq > itemUom.Seq)
                                             {
-                                                var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= curUom.Seq && x.Seq >= itemUom.Seq).Select(x => x.Conversion).ToList();
+                                                var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= curUom.Seq && x.Seq > itemUom.Seq).Select(x => x.Conversion).ToList();
                                                 var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
                                                 discAmount = detailPromo.IsPercentage ?
                                                         item.UnitPrice * (detailPromo.ValuePercentage / 100) :
@@ -921,7 +921,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                                             }
                                             else if (curUom.Seq < itemUom.Seq)
                                             {
-                                                var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq >= curUom.Seq && x.Seq <= itemUom.Seq).Select(x => x.Conversion).ToList();
+                                                var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq > curUom.Seq && x.Seq <= itemUom.Seq).Select(x => x.Conversion).ToList();
                                                 var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
                                                 discAmount = detailPromo.IsPercentage ?
                                                         item.UnitPrice * (detailPromo.ValuePercentage / 100) :
