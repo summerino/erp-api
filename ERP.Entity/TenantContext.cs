@@ -256,6 +256,7 @@ namespace ERP.Entity
         public DbSet<DeliveryPlanHeader> DeliveryPlanHeaders { get; set; }
         public DbSet<VwDeliveryPlanHeader> VwDeliveryPlanHeaders { get; set; }
         public DbSet<DeliveryPlanDetail> DeliveryPlanDetails { get; set; }
+        public DbSet<DeliveryPlanDetailItem> DeliveryPlanDetailItems { get; set; }
         public DbSet<DeliveryPlanUndeliveredItem> DeliveryPlanUndeliveredItems { get; set; }
         public DbSet<PromoHeader> PromoHeaders { get; set; }
         public DbSet<VwPromoHeader> VwPromoHeaders { get; set; }
@@ -2133,6 +2134,37 @@ namespace ERP.Entity
                 entity.HasOne<DeliveryPlanHeader>()
                     .WithMany()
                     .HasForeignKey(d => d.Code)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            modelBuilder.Entity<DeliveryPlanDetailItem>(entity =>
+            {
+                entity.Property(e => e.Code)
+                    .IsRequired();
+
+                entity.HasOne<DeliveryPlanHeader>()
+                    .WithMany()
+                    .HasForeignKey(d => d.Code)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<DeliveryPlanDetail>()
+                    .WithMany()
+                    .HasForeignKey(d => d.DlvPlanDetailId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Item>()
+                    .WithMany()
+                    .HasForeignKey(d => d.ItemId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<UoM>()
+                    .WithMany()
+                    .HasForeignKey(d => d.UomId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<UoMConversion>()
+                    .WithMany()
+                    .HasForeignKey(d => d.UnitId)
                     .OnDelete(DeleteBehavior.NoAction);
             });
 

@@ -117,6 +117,33 @@ namespace ERP.Entity.Sales
         public string NotesFailShipment { get; set; }
     }
 
+    [Table("DeliveryPlanDetailItem", Schema = Schema.Sales)]
+    [Index(nameof(TransDetailId))]
+    public class DeliveryPlanDetailItem
+    {
+        public long Id { get; set; }
+
+        [StringLength(17)]
+        public string Code { get; set; }
+
+        public long DlvPlanDetailId { get; set; }
+
+        public short LineNo { get; set; }
+
+        public long TransDetailId { get; set; }
+
+        public int ItemId { get; set; }
+
+        public int UomId { get; set; }
+
+        public int UnitId { get; set; }
+
+        [Precision(19, 6)]
+        public decimal Qty { get; set; }
+        
+        public int Type { get; set; }
+    }
+
     [Table("DeliveryPlanUndeliveredItem", Schema = Schema.Sales)]
     public class DeliveryPlanUndeliveredItem
     {
