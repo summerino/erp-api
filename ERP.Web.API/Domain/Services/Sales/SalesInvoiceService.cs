@@ -408,6 +408,9 @@ namespace ERP.Web.API.Domain.Services.Sales
                     // Restore Credit Memo
                     RestoreCreditMemo(code);
 
+                    // Decrease CreditUsed
+                    UpdateCreditUsed(data.CustCode, data.PaidAmount);
+
                     transaction.Commit();
                 }
                 catch (Exception ex)
