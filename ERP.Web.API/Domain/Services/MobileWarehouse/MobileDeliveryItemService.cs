@@ -72,7 +72,7 @@ namespace ERP.Web.API.Domain.Services.MobileWarehouse
                                             isFailedtoSend = (multipliedQty * qty) < doDetailData.Qty;
                                             if (isFailedtoSend)
                                             {
-                                                qtyFailedtoSend = doDetailData.Qty - (multipliedQty * qty);
+                                                qtyFailedtoSend = (multipliedQty * qty);
                                                 uomFailedtoSend = doDetailData.UomId;
                                                 unitFailedtoSend = doDetailData.UnitId;
                                                 //qty = qtyFailedtoSend;
@@ -89,7 +89,7 @@ namespace ERP.Web.API.Domain.Services.MobileWarehouse
                                             isFailedtoSend = (qty / dividedQty) < doDetailData.Qty;
                                             if (isFailedtoSend)
                                             {
-                                                qtyFailedtoSend = doDetailData.Qty - (qty / dividedQty);
+                                                qtyFailedtoSend = (qty / dividedQty);
                                                 uomFailedtoSend = doDetailData.UomId;
                                                 unitFailedtoSend = doDetailData.UnitId;
                                                 //qty = qtyFailedtoSend;
@@ -105,7 +105,7 @@ namespace ERP.Web.API.Domain.Services.MobileWarehouse
                                         isFailedtoSend = qty < doDetailData.Qty;
                                         if (isFailedtoSend)
                                         {
-                                            qtyFailedtoSend = doDetailData.Qty - qty;
+                                            qtyFailedtoSend = qty;
                                             uomFailedtoSend = doDetailData.UomId;
                                             unitFailedtoSend = doDetailData.UnitId;
                                             //qty = qtyFailedtoSend;
@@ -136,7 +136,7 @@ namespace ERP.Web.API.Domain.Services.MobileWarehouse
                                                 isFailedtoSend = (multipliedQty * qty) < doFreeData.Qty;
                                                 if (isFailedtoSend)
                                                 {
-                                                    qtyFailedtoSend = doFreeData.Qty - (multipliedQty * qty);
+                                                    qtyFailedtoSend = (multipliedQty * qty);
                                                     uomFailedtoSend = doFreeData.UomId;
                                                     unitFailedtoSend = doFreeData.UnitId;
                                                     //qty = qtyFailedtoSend;
@@ -154,7 +154,7 @@ namespace ERP.Web.API.Domain.Services.MobileWarehouse
                                                 isFailedtoSend = (qty / dividedQty) < doFreeData.Qty;
                                                 if (isFailedtoSend)
                                                 {
-                                                    qtyFailedtoSend = doFreeData.Qty - (qty / dividedQty);
+                                                    qtyFailedtoSend = (qty / dividedQty);
                                                     uomFailedtoSend = doFreeData.UomId;
                                                     unitFailedtoSend = doFreeData.UnitId;
                                                     //qty = qtyFailedtoSend;
@@ -171,7 +171,7 @@ namespace ERP.Web.API.Domain.Services.MobileWarehouse
                                             isFailedtoSend = qty < doFreeData.Qty;
                                             if (isFailedtoSend)
                                             {
-                                                qtyFailedtoSend = doFreeData.Qty - qty;
+                                                qtyFailedtoSend = qty;
                                                 uomFailedtoSend = doFreeData.UomId;
                                                 unitFailedtoSend = doFreeData.UnitId;
                                                 //qty = qtyFailedtoSend;
