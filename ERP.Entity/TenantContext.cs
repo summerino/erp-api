@@ -2307,11 +2307,6 @@ namespace ERP.Entity
                     .HasForeignKey(d => d.CustCode)
                     .OnDelete(DeleteBehavior.NoAction);
 
-                entity.HasOne<Employee>()
-                    .WithMany()
-                    .HasForeignKey(d => d.IssuedBy)
-                    .OnDelete(DeleteBehavior.NoAction);
-
                 entity.HasOne<Currency>()
                     .WithMany()
                     .HasForeignKey(d => d.CurrCode)

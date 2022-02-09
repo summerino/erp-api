@@ -23,8 +23,6 @@ namespace ERP.Entity.Inventory
 
         public int CategoryId { get; set; }
 
-        public short TypeId { get; set; }
-
         [Precision(19, 6)]
         public decimal? CostOfGoodSold { get; set; }
 
@@ -126,8 +124,6 @@ namespace ERP.Entity.Inventory
 
         public int CategoryId { get; set; }
 
-        public short TypeId { get; set; }
-
         [Precision(19, 6)]
         public decimal? CostOfGoodSold { get; set; }
 
@@ -197,8 +193,6 @@ namespace ERP.Entity.Inventory
 
         public string WeightMeasurement { get; set; }
 
-
-        public string TypeName { get; set; }
 
         public string CategoryName { get; set; }
 
