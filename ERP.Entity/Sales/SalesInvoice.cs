@@ -7,7 +7,7 @@ using ERP.Entity.Core;
 namespace ERP.Entity.Sales
 {
     [Table("SalesInvoiceHeader", Schema = Schema.Sales)]
-    public class SalesInvoiceHeader : BaseEntityWithMarkAndApproved
+    public class SalesInvoiceHeader : BaseEntityWithMarkApprovedAndViewed
     {
         [Key]
         [StringLength(17)]
@@ -45,7 +45,7 @@ namespace ERP.Entity.Sales
         public bool FromDirectInvoice { get; set; }
     }
 
-    public class VwSalesInvoiceHeader : BaseEntityWithMarkAndApproved
+    public class VwSalesInvoiceHeader : BaseEntityWithMarkApprovedAndViewed
     {
         public string Code { get; set; }
 

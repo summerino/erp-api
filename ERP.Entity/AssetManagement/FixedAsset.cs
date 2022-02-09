@@ -7,7 +7,7 @@ using ERP.Entity.Core;
 namespace ERP.Entity.AssetManagement
 {
     [Table("FixedAsset", Schema = Schema.AssetManagement)]
-    public class FixedAsset : BaseEntityWithMarkAndApproved
+    public class FixedAsset : BaseEntityWithMarkApprovedAndViewed
     {
         [Key]
         [StringLength(17)]
@@ -75,6 +75,71 @@ namespace ERP.Entity.AssetManagement
 
         [StringLength(6)]
         public string CoaExpense { get; set; }
+    }
+
+    public class VwFixedAsset : BaseEntityWithMarkApprovedAndViewed
+    {
+        public string Code { get; set; }
+
+        public string Name { get; set; }
+
+        public int TypeId { get; set; }
+
+        public DateTime PurchaseDate { get; set; }
+
+        public DateTime StartDepreciateOn { get; set; }
+
+        [Precision(18, 2)]
+        public decimal PurchaseValue { get; set; }
+
+        [Precision(18, 2)]
+        public decimal AcquiredValue { get; set; }
+
+        [Precision(18, 2)]
+        public decimal SalvageValue { get; set; }
+
+        public int DepreciationMonth { get; set; }
+
+        public int DepartmentId { get; set; }
+
+        public string SupCode { get; set; }
+
+        public string PurchaseOrderNo { get; set; }
+
+        public string InvoiceNo { get; set; }
+
+        public string PaymentVoucherNo { get; set; }
+
+        public int YearWarranty { get; set; }
+
+        public string CodeWarranty { get; set; }
+
+        public short EstimatedLife { get; set; }
+
+        public int DepreciationMethod { get; set; }
+
+        [Precision(18, 2)]
+        public decimal InitDepreciationExpense { get; set; }
+
+        [Precision(18, 2)]
+        public decimal BookValue { get; set; }
+
+        public string Notes { get; set; }
+
+        public string CoaExpense { get; set; }
+
+
+        public string SupName { get; set; }
+
+        public string AssetType { get; set; }
+
+        public string CreatedInitial { get; set; }
+
+        public string UpdatedInitial { get; set; }
+
+        public string ApprovedInitial { get; set; }
+
+        public string Status { get; set; }
     }
 
     [Table("FixedAssetDepartment", Schema = Schema.AssetManagement)]
@@ -168,70 +233,5 @@ namespace ERP.Entity.AssetManagement
 
 
         public string UpdatedInitial { get; set; }
-    }
-
-    public class VwFixedAsset : BaseEntityWithMarkAndApproved
-    {
-        public string Code { get; set; }
-
-        public string Name { get; set; }
-
-        public int TypeId { get; set; }
-
-        public DateTime PurchaseDate { get; set; }
-
-        public DateTime StartDepreciateOn { get; set; }
-
-        [Precision(18, 2)]
-        public decimal PurchaseValue { get; set; }
-
-        [Precision(18, 2)]
-        public decimal AcquiredValue { get; set; }
-
-        [Precision(18, 2)]
-        public decimal SalvageValue { get; set; }
-
-        public int DepreciationMonth { get; set; }
-
-        public int DepartmentId { get; set; }
-
-        public string SupCode { get; set; }
-
-        public string PurchaseOrderNo { get; set; }
-
-        public string InvoiceNo { get; set; }
-
-        public string PaymentVoucherNo { get; set; }
-
-        public int YearWarranty { get; set; }
-
-        public string CodeWarranty { get; set; }
-
-        public short EstimatedLife { get; set; }
-
-        public int DepreciationMethod { get; set; }
-
-        [Precision(18, 2)]
-        public decimal InitDepreciationExpense { get; set; }
-
-        [Precision(18, 2)]
-        public decimal BookValue { get; set; }
-
-        public string Notes { get; set; }
-
-        public string CoaExpense { get; set; }
-
-
-        public string SupName { get; set; }
-
-        public string AssetType { get; set; }
-
-        public string CreatedInitial { get; set; }
-
-        public string UpdatedInitial { get; set; }
-
-        public string ApprovedInitial { get; set; }
-
-        public string Status { get; set; }
     }
 }

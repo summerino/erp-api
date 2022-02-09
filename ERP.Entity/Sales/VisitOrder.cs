@@ -7,7 +7,7 @@ using ERP.Entity.Core;
 namespace ERP.Entity.Sales
 {
     [Table("VisitOrder", Schema = Schema.Sales)]
-    public class VisitOrder : BaseEntityWithMarkAndApproved
+    public class VisitOrder : BaseEntityWithMarkApprovedAndViewed
     {
         [Key]
         [StringLength(17)]

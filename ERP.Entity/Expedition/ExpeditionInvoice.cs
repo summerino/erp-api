@@ -7,7 +7,7 @@ using ERP.Entity.Core;
 namespace ERP.Entity.Expedition
 {
     [Table("ExpeditionInvoiceHeader", Schema = Schema.Expedition)]
-    public class ExpeditionInvoiceHeader : BaseEntityWithMarkAndApproved
+    public class ExpeditionInvoiceHeader : BaseEntityWithMarkApprovedAndViewed
     {
         [Key]
         [StringLength(17)]
@@ -45,7 +45,7 @@ namespace ERP.Entity.Expedition
         public string Notes { get; set; }
     }
 
-    public class VwExpeditionInvoiceHeader : BaseEntityWithMarkAndApproved
+    public class VwExpeditionInvoiceHeader : BaseEntityWithMarkApprovedAndViewed
     {
         public string Code { get; set; }
 

@@ -8,7 +8,7 @@ namespace ERP.Entity.Purchase
 {
     [Table("PurchaseReceiveHeader", Schema = Schema.Purchasing)]
     [Index(nameof(TransCode))]
-    public class PurchaseReceiveHeader : BaseEntityWithMarkAndApproved
+    public class PurchaseReceiveHeader : BaseEntityWithMarkApprovedAndViewed
     {
         [Key]
         [StringLength(17)]
@@ -75,7 +75,7 @@ namespace ERP.Entity.Purchase
         public DateTime? TaxInvoiceDate { get; set; }
     }
 
-    public class VwPurchaseReceiveHeader : BaseEntityWithMarkAndApproved
+    public class VwPurchaseReceiveHeader : BaseEntityWithMarkApprovedAndViewed
     {
         public string Code { get; set; }
 

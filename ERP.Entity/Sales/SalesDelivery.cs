@@ -8,7 +8,7 @@ namespace ERP.Entity.Sales
 {
     [Table("SalesDeliveryHeader", Schema = Schema.Sales)]
     [Index(nameof(TransCode))]
-    public class SalesDeliveryHeader : BaseEntityWithMarkAndApproved
+    public class SalesDeliveryHeader : BaseEntityWithMarkApprovedAndViewed
     {
         [Key]
         [StringLength(17)]
@@ -81,7 +81,7 @@ namespace ERP.Entity.Sales
         public bool FromDirectInvoice { get; set; }
     }
 
-    public class VwSalesDeliveryHeader : BaseEntityWithMarkAndApproved
+    public class VwSalesDeliveryHeader : BaseEntityWithMarkApprovedAndViewed
     {
         public string Code { get; set; }
 

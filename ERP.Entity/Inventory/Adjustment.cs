@@ -8,7 +8,7 @@ using ERP.Entity.Core;
 namespace ERP.Entity.Inventory
 {
     [Table("AdjustmentHeader", Schema = Schema.Inventory)]
-    public class AdjustmentHeader : BaseEntityWithMarkAndApproved
+    public class AdjustmentHeader : BaseEntityWithMarkApprovedAndViewed
     {
         [Key]
         [StringLength(17)]
@@ -27,7 +27,7 @@ namespace ERP.Entity.Inventory
         public string Notes { get; set; }
     }
 
-    public class VwAdjustmentHeader : BaseEntityWithMarkAndApproved
+    public class VwAdjustmentHeader : BaseEntityWithMarkApprovedAndViewed
     {
         public string Code { get; set; }
 

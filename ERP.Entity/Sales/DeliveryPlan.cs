@@ -7,7 +7,7 @@ using ERP.Entity.Core;
 namespace ERP.Entity.Sales
 {
     [Table("DeliveryPlanHeader", Schema = Schema.Sales)]
-    public class DeliveryPlanHeader : BaseEntityWithMarkAndApproved
+    public class DeliveryPlanHeader : BaseEntityWithMarkApprovedAndViewed
     {
         [Key]
         [StringLength(17)]
@@ -42,7 +42,7 @@ namespace ERP.Entity.Sales
         public string Notes { get; set; }
     }
 
-    public class VwDeliveryPlanHeader : BaseEntityWithMarkAndApproved
+    public class VwDeliveryPlanHeader : BaseEntityWithMarkApprovedAndViewed
     {
         public string Code { get; set; }
 

@@ -8,7 +8,7 @@ namespace ERP.Entity.Finance
 {
     [Table("GeneralCashBankHeader", Schema = Schema.Finance)]
     [Index(nameof(CoaCode))]
-    public class GeneralCashBankHeader : BaseEntityWithMarkAndApproved
+    public class GeneralCashBankHeader : BaseEntityWithMarkApprovedAndViewed
     {
         [Key]
         [StringLength(17)]
@@ -50,7 +50,7 @@ namespace ERP.Entity.Finance
         public bool IsInterCashBank { get; set; }
     }
 
-    public class VwGeneralCashBankHeader : BaseEntityWithMarkAndApproved
+    public class VwGeneralCashBankHeader : BaseEntityWithMarkApprovedAndViewed
     {
         public string Code { get; set; }
 

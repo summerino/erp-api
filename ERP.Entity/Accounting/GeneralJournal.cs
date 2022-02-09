@@ -7,7 +7,7 @@ using ERP.Entity.Core;
 namespace ERP.Entity.Accounting
 {
     [Table("GeneralJournalHeader", Schema = Schema.Accounting)]
-    public class GeneralJournalHeader : BaseEntityWithMarkAndApproved
+    public class GeneralJournalHeader : BaseEntityWithMarkApprovedAndViewed
     {
         [Key]
         [StringLength(17)]
@@ -30,9 +30,8 @@ namespace ERP.Entity.Accounting
         public string Notes { get; set; }
     }
 
-    public class VwGeneralJournalHeader : BaseEntityWithMarkAndApproved
+    public class VwGeneralJournalHeader : BaseEntityWithMarkApprovedAndViewed
     {
-
         public string Code { get; set; }
 
         public DateTime Date { get; set; }

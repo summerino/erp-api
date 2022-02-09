@@ -63,10 +63,11 @@ namespace ERP.Entity
 
         // Asset Management entities
         public DbSet<FixedAsset> FixedAssets { get; set; }
+        public DbSet<VwFixedAsset> VwFixedAssets { get; set; }
         public DbSet<FixedAssetDepartment> FixedAssetDepartments { get; set; }
         public DbSet<FixedAssetHistory> FixedAssetHistories { get; set; }
         public DbSet<AssetType> AssetTypes { get; set; }
-        public DbSet<VwFixedAsset> VwFixedAssets { get; set; }
+        public DbSet<VwAssetType> VwAssetTypes { get; set; }
 
         // Expedition entities
         public DbSet<ExpeditionInvoiceHeader> ExpeditionInvoiceHeaders { get; set; }
@@ -561,11 +562,6 @@ namespace ERP.Entity
                 .ToView("vwIncomeStatementFormatSubtotal", Schema.Accounting);
 
             // Asset Management entities
-            // Asset Type model
-            modelBuilder.Entity<VwAssetType>()
-                .HasNoKey()
-                .ToView("vwAssetType", Schema.AssetManagement);
-
             // Fixed Asset model
             modelBuilder.Entity<FixedAsset>(entity =>
             {
@@ -608,6 +604,12 @@ namespace ERP.Entity
                     .HasForeignKey(d => d.Code)
                     .OnDelete(DeleteBehavior.NoAction);
             });
+
+            // Asset Type model
+            modelBuilder.Entity<VwAssetType>()
+                .HasNoKey()
+                .ToView("vwAssetType", Schema.AssetManagement);
+
 
             // Expedition entities
             modelBuilder.Entity<ExpeditionInvoiceHeader>(entity =>
