@@ -11,7 +11,7 @@ using Newtonsoft.Json;
 
 namespace ERP.Web.API.Controllers.General
 {
-    [Route("approval")]
+    [Route("[controller]")]
     [ApiController]
     public class ApprovalController : ControllerBase
     {
@@ -45,7 +45,6 @@ namespace ERP.Web.API.Controllers.General
                 TableData = data.Data.ToDynamicList()
             });
         }
-
 
         [HttpPost]
         public IActionResult OnPost(List<ApprovalRequest> data)
