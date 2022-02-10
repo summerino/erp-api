@@ -408,8 +408,8 @@ public class SalesInvoiceService : GeneralService<SalesInvoiceHeader>, ISalesInv
                 // Restore Credit Memo
                 RestoreCreditMemo(code);
 
-                    // Decrease CreditUsed
-                    UpdateCreditUsed(data.CustCode, data.PaidAmount);
+                // Decrease CreditUsed
+                UpdateCreditUsed(data.CustCode, data.Total);
 
                     transaction.Commit();
                 }
