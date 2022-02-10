@@ -1667,6 +1667,10 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
 
                 // Restore Credit Note
                 RestoreCreditMemo(code);
+
+                // Decrease CreditUsed
+                UpdateCreditUsed(data.CustCode, data.Total);
+
                 transaction.Commit();
             }
             catch (Exception ex)
