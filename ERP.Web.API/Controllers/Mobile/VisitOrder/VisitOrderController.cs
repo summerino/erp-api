@@ -205,6 +205,15 @@ namespace ERP.Web.API.Controllers.Mobile.VisitOrder
             return Ok(data);
         }
 
+        [HttpGet("promoDetailMultipleItem")]
+        public IActionResult GetPromoDetailMultipleItem(string lastUpdate)
+        {
+            var data =
+                _visitOrder.GetPromoDetailMultipleItem(lastUpdate);
+
+            return Ok(data);
+        }
+
         [HttpGet("promoDetailTier")]
         public IActionResult GetPromoDetailTier(string lastUpdate)
         {
@@ -296,7 +305,7 @@ namespace ERP.Web.API.Controllers.Mobile.VisitOrder
         public IActionResult GetListDate(DateTime date)
         {
             var data =
-                _visitOrder.GetListDate(_claim.UserId,date);
+                _visitOrder.GetListDate(_claim.UserId, date);
 
             return Ok(data);
         }

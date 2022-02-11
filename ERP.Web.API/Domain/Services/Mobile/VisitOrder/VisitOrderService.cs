@@ -319,6 +319,29 @@ namespace ERP.Web.API.Domain.Services.Mobile.VisitOrder
             return data;
         }
 
+        public IEnumerable<PromoDetailMultipleItem> GetPromoDetailMultipleItem(string lastUpdate)
+        {
+            var header = Db.PromoHeaders.Where(x => DateTime.Now.Date >= x.StartDate && DateTime.Now.Date <= x.EndDate);
+
+            if (lastUpdate != null)
+            {
+                lastUpdate = GetLastUpdate(lastUpdate);
+                header = header.Where(x => x.UpdatedDate > DateTime.ParseExact(lastUpdate, "yyyy-MM-ddTHH:mm:ss.ffff", null));
+            }
+
+            var data = (from pdmi in Db.PromoDetailMultipleItems
+                        join pd in Db.PromoDetails on pdmi.PromoDetailId equals pd.Id
+                        join ph in header on pd.Code equals ph.Code
+                        select new PromoDetailMultipleItem
+                        {
+                            Id = pdmi.Id,
+                            PromoDetailId = pdmi.PromoDetailId,
+                            ItemId = pdmi.ItemId
+                        });
+
+            return data;
+        }
+
         public IEnumerable<PromoDetailTier> GetPromoDetailTier(string lastUpdate)
         {
             var header = Db.PromoHeaders.Where(x => DateTime.Now.Date >= x.StartDate && DateTime.Now.Date <= x.EndDate);

@@ -20,6 +20,7 @@ namespace ERP.Web.API.Domain.Interfaces.Mobile.VisitOrder
         IEnumerable<PaymentInvoiceModel> GetMobilePaymentInvoice(int userId, string lastUpdate);
         IEnumerable<PromoHeader> GetPromoHeader(string lastUpdate);
         IEnumerable<PromoDetail> GetPromoDetail(string lastUpdate);
+        IEnumerable<PromoDetailMultipleItem> GetPromoDetailMultipleItem(string lastUpdate);
         IEnumerable<PromoDetailTier> GetPromoDetailTier(string lastUpdate);
         IEnumerable<PromoSubject> GetPromoSubjects(string lastUpdate);
         IEnumerable<OrderHeaderModel> GetMobileOrderHeaders(int userId, string lastUpdate);
