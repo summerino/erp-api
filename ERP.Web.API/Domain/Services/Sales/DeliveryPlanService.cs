@@ -6,6 +6,7 @@ using ERP.Common;
 using ERP.Common.Extensions;
 using ERP.Common.Models;
 using ERP.Entity;
+using Microsoft.EntityFrameworkCore;
 
 namespace ERP.Web.API.Domain.Services.Sales
 {
@@ -141,6 +142,91 @@ namespace ERP.Web.API.Domain.Services.Sales
                                 WarehouseCode = uItem.WarehouseCode,
                                 Type = uItem.Type
                             });
+
+                            if (uItem.Type == 0)
+                            {
+                                var sdDetail = Db.SalesDeliveryDetails.FirstOrDefault(x => x.Id == uItem.DetailId);
+                                var sdHeader = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.Code == sdDetail.Code);
+                                Db.DeliveryPlanDetailItems.Add(new DeliveryPlanDetailItem
+                                {
+                                    Code = newCode,
+                                    DlvPlanDetailId = idNewItem,
+                                    LineNo = j,
+                                    TransDetailId = sdDetail.Id,
+                                    ItemId = sdDetail.ItemId,
+                                    UomId = sdDetail.UomId,
+                                    UnitId = sdDetail.UnitId,
+                                    Qty = sdDetail.Qty,
+                                    Type = uItem.Type
+                                });
+
+                                sdDetail.Qty -= uItem.Qty;
+                                sdDetail.Total -= (sdDetail.NettPrice * uItem.Qty);
+                                Db.SalesDeliveryDetails.Update(sdDetail);
+
+                                sdHeader.SubTotal -= (sdDetail.NettPrice * uItem.Qty);
+                                sdHeader.TaxAmount -= (sdDetail.TaxAmount * uItem.Qty);
+                                sdHeader.Total -= (sdDetail.NettPrice * uItem.Qty);
+                                sdHeader.Dpp -= (sdDetail.Dpp * uItem.Qty);
+                                Db.SalesDeliveryHeaders.Update(sdHeader);
+
+                                Db.Database.ExecuteSqlRaw(
+                                       "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
+                                       sdHeader.Code, sdHeader.Date, sdHeader.TransCode);
+
+                                if (sdHeader.SrcTrans == 1)
+                                {
+                                    // Execute sp_update_so_dlv_qty
+                                    Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", sdHeader.TransCode);
+                                }
+                                else
+                                {
+                                    // Execute sp_update_sr_dlv_qty
+                                    Db.Database.ExecuteSqlRaw("EXEC sp_update_sr_dlv_qty {0}", sdHeader.TransCode);
+                                }
+
+                                if (sdHeader.Mark == "INV")
+                                {
+                                    var siDetailData = Db.SalesInvoiceDetails.FirstOrDefault(x => x.DoCode == sdHeader.Code);
+                                    var siHeadData = Db.SalesInvoiceHeaders.FirstOrDefault(x => x.Code == siDetailData.Code);
+
+                                    if (siHeadData.Total > 0)
+                                    {
+                                        siDetailData.SubTotal -= (sdDetail.NettPrice * uItem.Qty);
+                                        siDetailData.TaxAmount -= (sdDetail.TaxAmount * uItem.Qty);
+                                        siDetailData.Total -= (sdDetail.NettPrice * uItem.Qty);
+                                        siDetailData.Dpp -= (sdDetail.Dpp * uItem.Qty);
+                                        Db.SalesInvoiceDetails.Update(siDetailData);
+
+                                        siHeadData.Total -= (sdDetail.NettPrice * uItem.Qty);
+                                        //if (siHeadData.Total < siHeadData.PaidAmount)
+                                        //{
+                                        //    result.Message = "Data pengeluaran barang mobile gagal disetujui karena terdapat total faktur lebih kecil dari total pembayaran.";
+                                        //    return result;
+                                        //}
+                                        Db.SalesInvoiceHeaders.Update(siHeadData);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                var sdDetail = Db.SalesDeliveryDetailFreeGoods.FirstOrDefault(x => x.Id == uItem.DetailId);
+                                Db.DeliveryPlanDetailItems.Add(new DeliveryPlanDetailItem
+                                {
+                                    Code = newCode,
+                                    DlvPlanDetailId = idNewItem,
+                                    LineNo = j,
+                                    TransDetailId = sdDetail.Id,
+                                    ItemId = sdDetail.ItemId,
+                                    UomId = sdDetail.UomId,
+                                    UnitId = sdDetail.UnitId,
+                                    Qty = sdDetail.Qty,
+                                    Type = uItem.Type
+                                });
+
+                                sdDetail.Qty -= uItem.Qty;
+                                Db.SalesDeliveryDetailFreeGoods.Update(sdDetail);
+                            }
                         }
                     }
                 }
@@ -247,6 +333,91 @@ namespace ERP.Web.API.Domain.Services.Sales
                                 WarehouseCode = uItem.WarehouseCode,
                                 Type = uItem.Type
                             });
+
+                            if (uItem.Type == 0)
+                            {
+                                var sdDetail = Db.SalesDeliveryDetails.FirstOrDefault(x => x.Id == uItem.DetailId);
+                                var sdHeader = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.Code == sdDetail.Code);
+                                Db.DeliveryPlanDetailItems.Add(new DeliveryPlanDetailItem
+                                {
+                                    Code = data.Code,
+                                    DlvPlanDetailId = idNewItem,
+                                    LineNo = j,
+                                    TransDetailId = sdDetail.Id,
+                                    ItemId = sdDetail.ItemId,
+                                    UomId = sdDetail.UomId,
+                                    UnitId = sdDetail.UnitId,
+                                    Qty = sdDetail.Qty,
+                                    Type = uItem.Type
+                                });
+
+                                sdDetail.Qty -= uItem.Qty;
+                                sdDetail.Total -= (sdDetail.NettPrice * uItem.Qty);
+                                Db.SalesDeliveryDetails.Update(sdDetail);
+
+                                sdHeader.SubTotal -= (sdDetail.NettPrice * uItem.Qty);
+                                sdHeader.TaxAmount -= (sdDetail.TaxAmount * uItem.Qty);
+                                sdHeader.Total -= (sdDetail.NettPrice * uItem.Qty);
+                                sdHeader.Dpp -= (sdDetail.Dpp * uItem.Qty);
+                                Db.SalesDeliveryHeaders.Update(sdHeader);
+
+                                Db.Database.ExecuteSqlRaw(
+                                       "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
+                                       sdHeader.Code, sdHeader.Date, sdHeader.TransCode);
+
+                                if (sdHeader.SrcTrans == 1)
+                                {
+                                    // Execute sp_update_so_dlv_qty
+                                    Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", sdHeader.TransCode);
+                                }
+                                else
+                                {
+                                    // Execute sp_update_sr_dlv_qty
+                                    Db.Database.ExecuteSqlRaw("EXEC sp_update_sr_dlv_qty {0}", sdHeader.TransCode);
+                                }
+
+                                if (sdHeader.Mark == "INV")
+                                {
+                                    var siDetailData = Db.SalesInvoiceDetails.FirstOrDefault(x => x.DoCode == sdHeader.Code);
+                                    var siHeadData = Db.SalesInvoiceHeaders.FirstOrDefault(x => x.Code == siDetailData.Code);
+
+                                    if (siHeadData.Total > 0)
+                                    {
+                                        siDetailData.SubTotal -= (sdDetail.NettPrice * uItem.Qty);
+                                        siDetailData.TaxAmount -= (sdDetail.TaxAmount * uItem.Qty);
+                                        siDetailData.Total -= (sdDetail.NettPrice * uItem.Qty);
+                                        siDetailData.Dpp -= (sdDetail.Dpp * uItem.Qty);
+                                        Db.SalesInvoiceDetails.Update(siDetailData);
+
+                                        siHeadData.Total -= (sdDetail.NettPrice * uItem.Qty);
+                                        //if (siHeadData.Total < siHeadData.PaidAmount)
+                                        //{
+                                        //    result.Message = "Data pengeluaran barang mobile gagal disetujui karena terdapat total faktur lebih kecil dari total pembayaran.";
+                                        //    return result;
+                                        //}
+                                        Db.SalesInvoiceHeaders.Update(siHeadData);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                var sdDetail = Db.SalesDeliveryDetailFreeGoods.FirstOrDefault(x => x.Id == uItem.DetailId);
+                                Db.DeliveryPlanDetailItems.Add(new DeliveryPlanDetailItem
+                                {
+                                    Code = data.Code,
+                                    DlvPlanDetailId = idNewItem,
+                                    LineNo = j,
+                                    TransDetailId = sdDetail.Id,
+                                    ItemId = sdDetail.ItemId,
+                                    UomId = sdDetail.UomId,
+                                    UnitId = sdDetail.UnitId,
+                                    Qty = sdDetail.Qty,
+                                    Type = uItem.Type
+                                });
+
+                                sdDetail.Qty -= uItem.Qty;
+                                Db.SalesDeliveryDetailFreeGoods.Update(sdDetail);
+                            }
                         }
                     } 
                     else
@@ -264,10 +435,74 @@ namespace ERP.Web.API.Domain.Services.Sales
                             var unItem = Db.DeliveryPlanUndeliveredItems.FirstOrDefault(x => x.DlvPlanDetailId == item.Id);
                             if (unItem != null)
                             {
+                                var lastQty = unItem.Qty;
                                 unItem.Qty = uItem.Qty;
 
                                 Db.DeliveryPlanUndeliveredItems.Update(unItem);
                                 Db.Entry(uItem).Property(e => e.Code).IsModified = false;
+
+                                if (uItem.Type == 0)
+                                {
+                                    var sdDetail = Db.SalesDeliveryDetails.FirstOrDefault(x => x.Id == uItem.DetailId);
+                                    var sdHeader = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.Code == sdDetail.Code);
+                                    var dpDetailItem = Db.DeliveryPlanDetailItems.FirstOrDefault(x => x.DlvPlanDetailId == uItem.Id);
+
+                                    sdDetail.Qty = dpDetailItem.Qty - uItem.Qty;
+                                    sdDetail.Total = (sdDetail.NettPrice * dpDetailItem.Qty) - (sdDetail.NettPrice * uItem.Qty);
+                                    Db.SalesDeliveryDetails.Update(sdDetail);
+
+                                    sdHeader.SubTotal += (sdDetail.NettPrice * lastQty) - (sdDetail.NettPrice * uItem.Qty);
+                                    sdHeader.TaxAmount += (sdDetail.TaxAmount * lastQty) - (sdDetail.TaxAmount * uItem.Qty);
+                                    sdHeader.Total += (sdDetail.NettPrice * lastQty) - (sdDetail.NettPrice * uItem.Qty);
+                                    sdHeader.Dpp += (sdDetail.Dpp * lastQty) - (sdDetail.Dpp * uItem.Qty);
+                                    Db.SalesDeliveryHeaders.Update(sdHeader);
+
+                                    Db.Database.ExecuteSqlRaw(
+                                           "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
+                                           sdHeader.Code, sdHeader.Date, sdHeader.TransCode);
+
+                                    if (sdHeader.SrcTrans == 1)
+                                    {
+                                        // Execute sp_update_so_dlv_qty
+                                        Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", sdHeader.TransCode);
+                                    }
+                                    else
+                                    {
+                                        // Execute sp_update_sr_dlv_qty
+                                        Db.Database.ExecuteSqlRaw("EXEC sp_update_sr_dlv_qty {0}", sdHeader.TransCode);
+                                    }
+
+                                    if (sdHeader.Mark == "INV")
+                                    {
+                                        var siDetailData = Db.SalesInvoiceDetails.FirstOrDefault(x => x.DoCode == sdHeader.Code);
+                                        var siHeadData = Db.SalesInvoiceHeaders.FirstOrDefault(x => x.Code == siDetailData.Code);
+
+                                        if (siHeadData.Total > 0)
+                                        {
+                                            siDetailData.SubTotal += (sdDetail.NettPrice * lastQty) - (sdDetail.NettPrice * uItem.Qty);
+                                            siDetailData.TaxAmount += (sdDetail.TaxAmount * lastQty) - (sdDetail.TaxAmount * uItem.Qty);
+                                            siDetailData.Total += (sdDetail.NettPrice * lastQty) - (sdDetail.NettPrice * uItem.Qty);
+                                            siDetailData.Dpp += (sdDetail.Dpp * lastQty) - (sdDetail.Dpp * uItem.Qty);
+                                            Db.SalesInvoiceDetails.Update(siDetailData);
+
+                                            siHeadData.Total -= (sdDetail.NettPrice * uItem.Qty);
+                                            //if (siHeadData.Total < siHeadData.PaidAmount)
+                                            //{
+                                            //    result.Message = "Data pengeluaran barang mobile gagal disetujui karena terdapat total faktur lebih kecil dari total pembayaran.";
+                                            //    return result;
+                                            //}
+                                            Db.SalesInvoiceHeaders.Update(siHeadData);
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    var sdDetail = Db.SalesDeliveryDetailFreeGoods.FirstOrDefault(x => x.Id == uItem.DetailId);
+                                    var dpDetailItem = Db.DeliveryPlanDetailItems.FirstOrDefault(x => x.DlvPlanDetailId == uItem.Id);
+
+                                    sdDetail.Qty = dpDetailItem.Qty - uItem.Qty;
+                                    Db.SalesDeliveryDetailFreeGoods.Update(sdDetail);
+                                }
                             } 
                             else
                             {
@@ -283,6 +518,91 @@ namespace ERP.Web.API.Domain.Services.Sales
                                     WarehouseCode = uItem.WarehouseCode,
                                     Type = uItem.Type
                                 });
+
+                                if (uItem.Type == 0)
+                                {
+                                    var sdDetail = Db.SalesDeliveryDetails.FirstOrDefault(x => x.Id == uItem.DetailId);
+                                    var sdHeader = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.Code == sdDetail.Code);
+                                    Db.DeliveryPlanDetailItems.Add(new DeliveryPlanDetailItem
+                                    {
+                                        Code = data.Code,
+                                        DlvPlanDetailId = item.Id,
+                                        LineNo = j,
+                                        TransDetailId = sdDetail.Id,
+                                        ItemId = sdDetail.ItemId,
+                                        UomId = sdDetail.UomId,
+                                        UnitId = sdDetail.UnitId,
+                                        Qty = sdDetail.Qty,
+                                        Type = uItem.Type
+                                    });
+
+                                    sdDetail.Qty -= uItem.Qty;
+                                    sdDetail.Total -= (sdDetail.NettPrice * uItem.Qty);
+                                    Db.SalesDeliveryDetails.Update(sdDetail);
+
+                                    sdHeader.SubTotal -= (sdDetail.NettPrice * uItem.Qty);
+                                    sdHeader.TaxAmount -= (sdDetail.TaxAmount * uItem.Qty);
+                                    sdHeader.Total -= (sdDetail.NettPrice * uItem.Qty);
+                                    sdHeader.Dpp -= (sdDetail.Dpp * uItem.Qty);
+                                    Db.SalesDeliveryHeaders.Update(sdHeader);
+
+                                    Db.Database.ExecuteSqlRaw(
+                                           "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
+                                           sdHeader.Code, sdHeader.Date, sdHeader.TransCode);
+
+                                    if (sdHeader.SrcTrans == 1)
+                                    {
+                                        // Execute sp_update_so_dlv_qty
+                                        Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", sdHeader.TransCode);
+                                    }
+                                    else
+                                    {
+                                        // Execute sp_update_sr_dlv_qty
+                                        Db.Database.ExecuteSqlRaw("EXEC sp_update_sr_dlv_qty {0}", sdHeader.TransCode);
+                                    }
+
+                                    if (sdHeader.Mark == "INV")
+                                    {
+                                        var siDetailData = Db.SalesInvoiceDetails.FirstOrDefault(x => x.DoCode == sdHeader.Code);
+                                        var siHeadData = Db.SalesInvoiceHeaders.FirstOrDefault(x => x.Code == siDetailData.Code);
+
+                                        if (siHeadData.Total > 0)
+                                        {
+                                            siDetailData.SubTotal -= (sdDetail.NettPrice * uItem.Qty);
+                                            siDetailData.TaxAmount -= (sdDetail.TaxAmount * uItem.Qty);
+                                            siDetailData.Total -= (sdDetail.NettPrice * uItem.Qty);
+                                            siDetailData.Dpp -= (sdDetail.Dpp * uItem.Qty);
+                                            Db.SalesInvoiceDetails.Update(siDetailData);
+
+                                            siHeadData.Total -= (sdDetail.NettPrice * uItem.Qty);
+                                            //if (siHeadData.Total < siHeadData.PaidAmount)
+                                            //{
+                                            //    result.Message = "Data pengeluaran barang mobile gagal disetujui karena terdapat total faktur lebih kecil dari total pembayaran.";
+                                            //    return result;
+                                            //}
+                                            Db.SalesInvoiceHeaders.Update(siHeadData);
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    var sdDetail = Db.SalesDeliveryDetailFreeGoods.FirstOrDefault(x => x.Id == uItem.DetailId);
+                                    Db.DeliveryPlanDetailItems.Add(new DeliveryPlanDetailItem
+                                    {
+                                        Code = data.Code,
+                                        DlvPlanDetailId = item.Id,
+                                        LineNo = j,
+                                        TransDetailId = sdDetail.Id,
+                                        ItemId = sdDetail.ItemId,
+                                        UomId = sdDetail.UomId,
+                                        UnitId = sdDetail.UnitId,
+                                        Qty = sdDetail.Qty,
+                                        Type = uItem.Type
+                                    });
+
+                                    sdDetail.Qty -= uItem.Qty;
+                                    Db.SalesDeliveryDetailFreeGoods.Update(sdDetail);
+                                }
                             }
                         }
                     }

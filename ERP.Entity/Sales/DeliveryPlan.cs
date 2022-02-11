@@ -7,7 +7,7 @@ using ERP.Entity.Core;
 namespace ERP.Entity.Sales
 {
     [Table("DeliveryPlanHeader", Schema = Schema.Sales)]
-    public class DeliveryPlanHeader : BaseEntityWithMarkAndApproved
+    public class DeliveryPlanHeader : BaseEntityWithMarkApprovedAndViewed
     {
         [Key]
         [StringLength(17)]
@@ -42,7 +42,7 @@ namespace ERP.Entity.Sales
         public string Notes { get; set; }
     }
 
-    public class VwDeliveryPlanHeader : BaseEntityWithMarkAndApproved
+    public class VwDeliveryPlanHeader : BaseEntityWithMarkApprovedAndViewed
     {
         public string Code { get; set; }
 
@@ -56,12 +56,16 @@ namespace ERP.Entity.Sales
 
         public string WarehouseCode { get; set; }
 
+        [Precision(19, 6)]
         public decimal TotalVolume { get; set; }
 
+        [Precision(19, 6)]
         public decimal TotalWeight { get; set; }
 
+        [Precision(18, 2)]
         public decimal TotalVehicleVolume { get; set; }
 
+        [Precision(18, 2)]
         public decimal TotalVehicleWeight { get; set; }
 
         public string Notes { get; set; }
@@ -111,6 +115,33 @@ namespace ERP.Entity.Sales
 
         [StringLength(256)]
         public string NotesFailShipment { get; set; }
+    }
+
+    [Table("DeliveryPlanDetailItem", Schema = Schema.Sales)]
+    [Index(nameof(TransDetailId))]
+    public class DeliveryPlanDetailItem
+    {
+        public long Id { get; set; }
+
+        [StringLength(17)]
+        public string Code { get; set; }
+
+        public long DlvPlanDetailId { get; set; }
+
+        public short LineNo { get; set; }
+
+        public long TransDetailId { get; set; }
+
+        public int ItemId { get; set; }
+
+        public int UomId { get; set; }
+
+        public int UnitId { get; set; }
+
+        [Precision(19, 6)]
+        public decimal Qty { get; set; }
+        
+        public int Type { get; set; }
     }
 
     [Table("DeliveryPlanUndeliveredItem", Schema = Schema.Sales)]

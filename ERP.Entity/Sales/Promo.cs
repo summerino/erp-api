@@ -7,7 +7,7 @@ using ERP.Entity.Core;
 namespace ERP.Entity.Sales
 {
     [Table("PromoHeader", Schema = Schema.Sales)]
-    public class PromoHeader : BaseEntityWithMarkAndApproved
+    public class PromoHeader : BaseEntityWithMarkApprovedAndViewed
     {
         [Key]
         [StringLength(17)]
@@ -32,7 +32,7 @@ namespace ERP.Entity.Sales
         public string Content { get; set; }
     }
 
-    public class VwPromoHeader : BaseEntityWithMarkAndApproved
+    public class VwPromoHeader : BaseEntityWithMarkApprovedAndViewed
     {
         public string Code { get; set; }
 

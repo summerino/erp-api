@@ -82,14 +82,17 @@ namespace ERP.Entity.MobileSales
 
         public bool? Visited { get; set; }
 
+        [Precision(9, 6)]
         public decimal? Lat { get; set; }
 
+        [Precision(9, 6)]
         public decimal? Lng { get; set; }
 
         public DateTime? StartTime { get; set; }
 
         public DateTime? EndTime { get; set; }
 
+        [Precision(18, 2)]
         public decimal? Total { get; set; }
 
         public int? UnscheduledVisitReasonId { get; set; }

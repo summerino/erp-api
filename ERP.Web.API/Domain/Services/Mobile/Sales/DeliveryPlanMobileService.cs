@@ -16,7 +16,7 @@ namespace ERP.Web.API.Domain.Services.Mobile.Sales
             _db = db;
         }
 
-        public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, string search, string date, int userId)
+        public IEnumerable<DeliveryPlanHeaderModel> GetData(DateTime? date, string search, int userId)
         {
             var mobileDelivery = (from mobileDP in _db.MobileDeliveryItemHeaders
                                   select mobileDP).ToList();
@@ -48,13 +48,14 @@ namespace ERP.Web.API.Domain.Services.Mobile.Sales
                 data = data.Where(x => x.Code.Contains(search));
             }
 
-            if (date != null && date != "")
+            if (date != null && date.HasValue)
             {
-                var date1 = DateTime.ParseExact(date, "yyyy-MM-dd", null);
-                data = data.Where(x => x.Date.Equals(date1));
+                data = data.Where(x => x.Date.Equals(date));
             }
 
-            return data.ToDataSourceResult(skip, take, filter, sort);
+            data = data.OrderByDescending(x => x.Date);
+
+            return data;
         }
 
         public IEnumerable<DeliveryPlanDetailModel> GetDetailData(string code)
@@ -74,7 +75,6 @@ namespace ERP.Web.API.Domain.Services.Mobile.Sales
                             {
                                 detail.Code,
                                 DOCode = (invoice_d.DoCode ?? "") == "" ? detail.TransCode : invoice_d.DoCode,
-                                //detail.LineNo,
                             };
 
             var cte_normal_src = (from cte in data_plan
@@ -84,7 +84,6 @@ namespace ERP.Web.API.Domain.Services.Mobile.Sales
                                   {
                                       Code = cte.Code,
                                       DOCode = cte.DOCode,
-                                      //LineNo = cte.LineNo,
                                       ItemId = dlv_d.ItemId,
                                       UnitId = dlv_d.UnitId,
                                       Qty = dlv_d.Qty,
@@ -98,7 +97,6 @@ namespace ERP.Web.API.Domain.Services.Mobile.Sales
                                 {
                                     Code = cte.Code,
                                     DOCode = cte.DOCode,
-                                    //LineNo = cte.LineNo,
                                     ItemId = dlv_d_fg.ItemId,
                                     UnitId = dlv_d_fg.UnitId,
                                     Qty = (decimal)0,
@@ -112,7 +110,6 @@ namespace ERP.Web.API.Domain.Services.Mobile.Sales
                                   select new
                                   {
                                       un.Key.Code,
-                                      //un.Key.LineNo,
                                       un.Key.ItemId,
                                       un.Key.UnitId,
                                       Qty = un.Sum(q => q.Qty),

@@ -69,6 +69,14 @@ namespace ERP.Entity.Core
         public DateTime? ApprovedDate { get; set; }
     }
 
+    public class BaseEntityWithMarkApprovedAndViewed : BaseEntityWithMarkAndApproved
+    {
+        public int? ViewedBy { get; set; }
+
+        [Column(TypeName = "datetime")]
+        public DateTime? ViewedDate { get; set; }
+    }
+
     public class BaseEntityWithMarkApprovedAndRejected
     {
         [StringLength(3)]

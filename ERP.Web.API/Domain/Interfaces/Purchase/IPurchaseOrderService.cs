@@ -26,7 +26,7 @@ namespace ERP.Web.API.Domain.Interfaces.Purchase
         SaveResult Close(string code, int userId);
 
         #region Mobile
-        DataSourceResult GetDataForMobile(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, string search, string date);
+        IEnumerable<PurchaseOrderHeaderModel> GetDataForMobile(DateTime? date, string search, int userId);
 
         IEnumerable<PurchaseOrderDetailModel> GetDetailDataForMobile(string code, int srcTrans);
 

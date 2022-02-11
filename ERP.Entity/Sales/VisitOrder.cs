@@ -1,12 +1,13 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 using ERP.Entity.Core;
 
 namespace ERP.Entity.Sales
 {
     [Table("VisitOrder", Schema = Schema.Sales)]
-    public class VisitOrder : BaseEntityWithMarkAndApproved
+    public class VisitOrder : BaseEntityWithMarkApprovedAndViewed
     {
         [Key]
         [StringLength(17)]
@@ -141,6 +142,7 @@ namespace ERP.Entity.Sales
 
         public string SalesName { get; set; }
 
+        [Precision(18, 2)]
         public decimal Total { get; set; }
     }
 }

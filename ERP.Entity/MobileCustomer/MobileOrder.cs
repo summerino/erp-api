@@ -58,16 +58,21 @@ namespace ERP.Entity.MobileCustomer
 
         public string CurrCode { get; set; }
 
+        [Precision(18, 2)]
         public decimal Rate { get; set; }
 
+        [Precision(18, 2)]
         public decimal SubTotal { get; set; }
 
         public bool IncludeTax { get; set; }
 
+        [Precision(18, 2)]
         public decimal TaxAmount { get; set; }
 
+        [Precision(18, 2)]
         public decimal Total { get; set; }
 
+        [Precision(18, 2)]
         public decimal Dpp { get; set; }
 
 
@@ -143,20 +148,27 @@ namespace ERP.Entity.MobileCustomer
 
         public int UnitId { get; set; }
 
+        [Precision(18, 2)]
         public decimal Qty { get; set; }
 
+        [Precision(19, 6)]
         public decimal UnitPrice { get; set; }
 
+        [Precision(19, 6)]
         public decimal Disc { get; set; }
 
         public int? TaxId { get; set; }
 
+        [Precision(18, 2)]
         public decimal TaxAmount { get; set; }
 
+        [Precision(19, 6)]
         public decimal NettPrice { get; set; }
 
+        [Precision(19, 6)]
         public decimal Total { get; set; }
 
+        [Precision(19, 6)]
         public decimal Dpp { get; set; }
 
 
@@ -168,6 +180,7 @@ namespace ERP.Entity.MobileCustomer
 
         public string ItemUomSellName { get; set; }
 
+        [Precision(18, 2)]
         public decimal? ItemSellPrice { get; set; }
 
         public string UomInitial { get; set; }

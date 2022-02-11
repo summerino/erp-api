@@ -7,7 +7,7 @@ using ERP.Entity.Core;
 namespace ERP.Entity.Purchase
 {
     [Table("PurchaseInvoiceHeader", Schema = Schema.Purchasing)]
-    public class PurchaseInvoiceHeader : BaseEntityWithMarkAndApproved
+    public class PurchaseInvoiceHeader : BaseEntityWithMarkApprovedAndViewed
     {
         [Key]
         [StringLength(17)]
@@ -52,7 +52,7 @@ namespace ERP.Entity.Purchase
         public string Notes { get; set; }
     }
 
-    public class VwPurchaseInvoiceHeader : BaseEntityWithMarkAndApproved
+    public class VwPurchaseInvoiceHeader : BaseEntityWithMarkApprovedAndViewed
     {
         public string Code { get; set; }
 
@@ -70,10 +70,13 @@ namespace ERP.Entity.Purchase
 
         public string CurrCode { get; set; }
 
+        [Precision(19, 6)]
         public decimal PaidAmount { get; set; }
 
+        [Precision(18, 2)]
         public decimal Total { get; set; }
 
+        [Precision(23, 6)]
         public decimal Remaining { get; set; }
 
         public string TaxInvoiceNo { get; set; }

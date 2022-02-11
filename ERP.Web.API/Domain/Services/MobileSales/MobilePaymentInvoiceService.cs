@@ -70,9 +70,20 @@ namespace ERP.Web.API.Domain.Services.MobileSales
                                 result.Message = $"Data pesanan mobile {item.TransCode} tidak ada.";
                                 return result;
                             }
+
+                            switch (voiData.Mark)
+                            {
+                                case "A":
+                                    result.Message = $"Data pesanan mobile {item.TransCode} status masih aktif (belum disetujui).";
+                                    return result;
+
+                                case "REJ":
+                                    result.Message = $"Data pesanan mobile {item.TransCode} status ditolak.";
+                                    return result;
+                            }
                         }
 
-                        var newCode = GetNewCode("CB_NUM_FMT", DateTime.Now);
+                        var newCode = GetNewCode("CB_NUM_FMT", item.Date);
 
                         var headCBData = new GeneralCashBankHeader
                         {
@@ -95,13 +106,14 @@ namespace ERP.Web.API.Domain.Services.MobileSales
                         Db.GeneralCashBankHeaders.Add(headCBData);
 
                         var cusData = Db.Customers.FirstOrDefault(x => x.Code == item.CustCode);
+                        var ordData = Db.MobileOrderHeaders.FirstOrDefault(x => x.Code == item.TransCode);
 
                         var detailCBData = new GeneralCashBankDetail
                         {
                             Code = newCode,
                             LineNo = 1,
                             Type = "AR",
-                            TransCode = item.TransCode,
+                            TransCode = item.SrcTrans == "ORD" ? ordData?.SalesOrderCode ?? "" : item.TransCode,
                             CoaCode = item.CoaCode,
                             CurrCode = "IDR",
                             Rate = 1,
@@ -119,7 +131,27 @@ namespace ERP.Web.API.Domain.Services.MobileSales
 
                         Db.SaveChanges();
 
-                        string query = $"update General.Customer set CreditUsed= (CreditUsed - {item.Amount}) where code = '{item.CustCode}'";
+                        var queries = new List<string>
+                        {
+                            $"update General.Customer set CreditUsed= (CreditUsed - {item.Amount}) where code = '{item.CustCode}'"
+                        };
+
+                        var header = Db.SalesInvoiceHeaders.SingleOrDefault(x => x.Code == (item.SrcTrans == "ORD" ? ordData.SalesOrderCode ?? "" : item.TransCode));
+                        if (header == null) continue;
+                        var mark = header.Total == (header.PaidAmount + item.Amount) ? "CMP" : "PP";
+
+                        queries.Add(
+                            $"UPDATE Sales.SalesInvoiceHeader SET PaidAmount= PaidAmount + '{item.Amount}', Mark='{mark}' WHERE Code='{(item.SrcTrans == "ORD" ? ordData.SalesOrderCode ?? "" : item.TransCode)}';");
+
+                        var detail = Db.SalesInvoiceDetails.Where(x => x.Code == (item.SrcTrans == "ORD" ? ordData.SalesOrderCode ?? "" : item.TransCode));
+                        foreach (var item2 in detail)
+                        {
+                            var proRateValue = (header.PaidAmount + item.Amount) * item2.Total / header.Total;
+                            queries.Add(
+                                $"UPDATE Sales.SalesDeliveryHeader SET PaidAmount= PaidAmount + '{proRateValue}' WHERE Code='{item2.DoCode}';");
+                        }
+
+                        var query = string.Join("", queries);
                         Db.Database.ExecuteSqlRaw(query);
                     }
                     else

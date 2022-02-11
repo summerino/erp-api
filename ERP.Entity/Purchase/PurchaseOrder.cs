@@ -7,7 +7,7 @@ using ERP.Entity.Core;
 namespace ERP.Entity.Purchase
 {
     [Table("PurchaseOrderHeader", Schema = Schema.Purchasing)]
-    public class PurchaseOrderHeader : BaseEntityWithMarkAndApproved
+    public class PurchaseOrderHeader : BaseEntityWithMarkApprovedAndViewed
     {
         [Key]
         [StringLength(17)]
@@ -62,48 +62,49 @@ namespace ERP.Entity.Purchase
         public string Notes { get; set; }
     }
 
-    public class VwPurchaseOrderHeader : BaseEntityWithMarkAndApproved
+    public class VwPurchaseOrderHeader : BaseEntityWithMarkApprovedAndViewed
     {
-        [StringLength(17)]
         public string Code { get; set; }
 
-        [Column(TypeName = "date")]
         public DateTime Date { get; set; }
 
-        [Required]
-        [StringLength(8)]
         public string SupCode { get; set; }
 
         public long RequestBy { get; set; }
 
-        [StringLength(8)]
         public string WarehouseCode { get; set; }
 
-        [Required]
-        [StringLength(3)]
         public string CurrCode { get; set; }
 
+        [Precision(18, 2)]
         public decimal Rate { get; set; }
 
+        [Precision(18, 2)]
         public decimal ShipmentFee { get; set; }
 
+        [Precision(18, 2)]
         public decimal HandlingFee { get; set; }
 
+        [Precision(18, 2)]
         public decimal SubTotal { get; set; }
 
+        [Precision(5, 2)]
         public decimal FinalDiscPercent { get; set; }
 
+        [Precision(18, 2)]
         public decimal FinalDisc { get; set; }
 
         public bool IncludeTax { get; set; }
 
+        [Precision(18, 2)]
         public decimal TaxAmount { get; set; }
 
+        [Precision(18, 2)]
         public decimal Total { get; set; }
 
+        [Precision(18, 2)]
         public decimal Dpp { get; set; }
 
-        [StringLength(256)]
         public string Notes { get; set; }
 
 
@@ -220,56 +221,61 @@ namespace ERP.Entity.Purchase
 
         public int UnitId { get; set; }
 
+        [Precision(18, 2)]
         public decimal Qty { get; set; }
 
+        [Precision(18, 2)]
         public decimal? Length { get; set; }
 
+        [Precision(18, 2)]
         public decimal? Width { get; set; }
 
+        [Precision(18, 2)]
         public decimal? Height { get; set; }
 
+        [Precision(18, 3)]
         public decimal? Weight { get; set; }
 
-        [StringLength(10)]
         public string DimensionMeasurement { get; set; }
 
-        [StringLength(10)]
         public string WeightMeasurement { get; set; }
 
+        [Precision(18, 2)]
         public decimal? QtyRcv { get; set; }
 
+        [Precision(19, 6)]
         public decimal UnitPrice { get; set; }
 
+        [Precision(19, 6)]
         public decimal Disc { get; set; }
 
+        [Precision(19, 6)]
         public decimal FinalDiscHeader { get; set; }
 
         public int? TaxId { get; set; }
 
+        [Precision(19, 6)]
         public decimal TaxAmount { get; set; }
 
+        [Precision(19, 6)]
         public decimal NettPrice { get; set; }
 
+        [Precision(19, 6)]
         public decimal Total { get; set; }
 
+        [Precision(19, 6)]
         public decimal Dpp { get; set; }
 
-        [StringLength(256)]
         public string Notes { get; set; }
 
-        [StringLength(6)]
         public string CoaInventory { get; set; }
 
-        [StringLength(6)]
         public string CoaCogs { get; set; }
 
-        [StringLength(6)]
         public string CoaPurc { get; set; }
 
-        [StringLength(6)]
         public string CoaPurcDisc { get; set; }
 
-        [StringLength(6)]
         public string CoaPurcReturn { get; set; }
 
         public int Type { get; set; }
@@ -281,6 +287,7 @@ namespace ERP.Entity.Purchase
 
         public string ItemUomBuyName { get; set; }
 
+        [Precision(18, 2)]
         public decimal? ItemBuyPrice { get; set; }
 
         public string UomInitial { get; set; }

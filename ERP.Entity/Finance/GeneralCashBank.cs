@@ -8,7 +8,7 @@ namespace ERP.Entity.Finance
 {
     [Table("GeneralCashBankHeader", Schema = Schema.Finance)]
     [Index(nameof(CoaCode))]
-    public class GeneralCashBankHeader : BaseEntityWithMarkAndApproved
+    public class GeneralCashBankHeader : BaseEntityWithMarkApprovedAndViewed
     {
         [Key]
         [StringLength(17)]
@@ -50,7 +50,7 @@ namespace ERP.Entity.Finance
         public bool IsInterCashBank { get; set; }
     }
 
-    public class VwGeneralCashBankHeader : BaseEntityWithMarkAndApproved
+    public class VwGeneralCashBankHeader : BaseEntityWithMarkApprovedAndViewed
     {
         public string Code { get; set; }
 
@@ -64,8 +64,10 @@ namespace ERP.Entity.Finance
 
         public string CurrCode { get; set; }
 
+        [Precision(19, 6)]
         public decimal Rate { get; set; }
 
+        [Precision(18, 2)]
         public decimal Amount { get; set; }
 
         public string ChequeNo { get; set; }
@@ -155,12 +157,15 @@ namespace ERP.Entity.Finance
 
         public string CurrCode { get; set; }
 
+        [Precision(19, 6)]
         public decimal Rate { get; set; }
 
+        [Precision(18, 2)]
         public decimal Amount { get; set; }
 
         public string TypeAmount { get; set; }
 
+        [Precision(18, 2)]
         public decimal TransAmount { get; set; }
 
         public string Notes { get; set; }
@@ -185,8 +190,10 @@ namespace ERP.Entity.Finance
 
         public string CurrCode { get; set; }
 
+        [Precision(19, 6)]
         public decimal Rate { get; set; }
 
+        [Precision(18, 2)]
         public decimal Amount { get; set; }
 
         public string ChequeNo { get; set; }
@@ -204,14 +211,17 @@ namespace ERP.Entity.Finance
 
         public string CurrDetail { get; set; }
 
+        [Precision(19, 6)]
         public decimal RateDetail { get; set; }
 
+        [Precision(18, 2)]
         public decimal AmountDetail { get; set; }
 
         public string TypeDetail { get; set; }
 
         public string TypeAmount { get; set; }
 
+        [Precision(18, 2)]
         public decimal TransAmount { get; set; }
 
         public string NotesDetail { get; set; }
@@ -279,14 +289,18 @@ namespace ERP.Entity.Finance
         
         public string CurrCode { get; set; }
 
+        [Precision(19, 6)]
         public decimal Rate { get; set; }
 
         public DateTime Date { get; set; }
 
+        [Precision(18, 2)]
         public decimal Amount { get; set; }
 
+        [Precision(19, 6)]
         public decimal PaidAmount { get; set; }
 
+        [Precision(23, 6)]
         public decimal Remaining { get; set; }
 
         public string Notes { get; set; }
@@ -304,14 +318,18 @@ namespace ERP.Entity.Finance
 
         public string CurrCode { get; set; }
 
+        [Precision(19, 6)]
         public decimal Rate { get; set; }
 
         public DateTime Date { get; set; }
 
+        [Precision(18, 2)]
         public decimal Amount { get; set; }
 
+        [Precision(19, 6)]
         public decimal PaidAmount { get; set; }
 
+        [Precision(23, 6)]
         public decimal Remaining { get; set; }
 
         public string Notes { get; set; }
@@ -333,12 +351,16 @@ namespace ERP.Entity.Finance
 
         public string CurrCode { get; set; }
 
+        [Precision(19, 6)]
         public decimal Rate { get; set; }
 
+        [Precision(18, 2)]
         public decimal Amount { get; set; }
 
+        [Precision(18, 2)]
         public decimal Used { get; set; }
 
+        [Precision(19, 2)]
         public decimal Remaining { get; set; }
 
         public string Notes { get; set; }
@@ -360,12 +382,16 @@ namespace ERP.Entity.Finance
 
         public string CurrCode { get; set; }
 
+        [Precision(19, 6)]
         public decimal Rate { get; set; }
 
+        [Precision(18, 2)]
         public decimal Amount { get; set; }
 
+        [Precision(18, 2)]
         public decimal Used { get; set; }
 
+        [Precision(19, 2)]
         public decimal Remaining { get; set; }
 
         public string Notes { get; set; }
@@ -379,6 +405,7 @@ namespace ERP.Entity.Finance
 
         public string TransCode { get; set; }
 
+        [Precision(18, 2)]
         public decimal Amount { get; set; }
 
         public string TypeAmount { get; set; }

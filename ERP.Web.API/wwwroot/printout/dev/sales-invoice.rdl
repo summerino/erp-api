@@ -81,10 +81,6 @@ FROM SystemManagement.Company</CommandText>
           <DataField>CustCode</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="IssuedBy">
-          <DataField>IssuedBy</DataField>
-          <rd:TypeName>System.Int64</rd:TypeName>
-        </Field>
         <Field Name="CurrCode">
           <DataField>CurrCode</DataField>
           <rd:TypeName>System.String</rd:TypeName>

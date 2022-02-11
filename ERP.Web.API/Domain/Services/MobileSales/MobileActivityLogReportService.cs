@@ -20,7 +20,7 @@ namespace ERP.Web.API.Domain.Services.MobileSales
 
             if (!string.IsNullOrEmpty(startDate) && !string.IsNullOrEmpty(endDate))
             {
-                data = data.Where(x => x.Date >= Convert.ToDateTime(startDate) && x.Date <= Convert.ToDateTime(endDate)).ToList();
+                data = data.Where(x => x.Date >= Convert.ToDateTime(startDate) && x.Date <= Convert.ToDateTime(endDate).AddDays(1).AddSeconds(-1)).ToList();
             }
             else if (!string.IsNullOrEmpty(startDate))
             {
@@ -28,7 +28,7 @@ namespace ERP.Web.API.Domain.Services.MobileSales
             }
             else if (!string.IsNullOrEmpty(endDate))
             {
-                data = data.Where(x => x.Date <= Convert.ToDateTime(endDate)).ToList();
+                data = data.Where(x => x.Date <= Convert.ToDateTime(endDate).AddDays(1).AddSeconds(-1)).ToList();
             }
 
             if (!string.IsNullOrEmpty(username))

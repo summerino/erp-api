@@ -16,6 +16,8 @@ namespace ERP.Entity.Finance
 
         public string CoaName { get; set; }
 
+        public string CoaNameHeader { get; set; }
+
         public string ChequeNo { get; set; }
 
         public string TransCode { get; set; }

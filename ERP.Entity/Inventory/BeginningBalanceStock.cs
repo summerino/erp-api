@@ -81,8 +81,10 @@ namespace ERP.Entity.Inventory
         
         public int UnitId { get; set; }
         
+        [Precision(18, 2)]
         public decimal Qty { get; set; }
         
+        [Precision(18, 2)]
         public decimal UnitPrice { get; set; }
         
         public string Notes { get; set; }
@@ -96,6 +98,7 @@ namespace ERP.Entity.Inventory
         
         public string ItemUomBuyName { get; set; }
         
+        [Precision(18, 2)]
         public decimal? ItemBuyPrice { get; set; }
     }
 
@@ -118,6 +121,7 @@ namespace ERP.Entity.Inventory
 
         public short TypeId { get; set; }
 
+        [Precision(19, 6)]
         public decimal? CostOfGoodSold { get; set; }
 
         public short? ValuationMethod { get; set; }
@@ -128,10 +132,12 @@ namespace ERP.Entity.Inventory
 
         public int? UomSellId { get; set; }
 
+        [Precision(18, 2)]
         public decimal? SellPrice { get; set; }
 
         public int? UomBuyId { get; set; }
 
+        [Precision(18, 2)]
         public decimal? BuyPrice { get; set; }
 
         public int? SalesTaxId { get; set; }
@@ -218,14 +224,20 @@ namespace ERP.Entity.Inventory
 
         [StringLength(10)]
         public string WeightMeasurement { get; set; }
+
         public string TypeName { get; set; }
+
         public string CategoryName { get; set; }
+
         public string UomInitial { get; set; }
 
         public string UomSellName { get; set; }
 
         public string UomBuyName { get; set; }
+
+        [Precision(19, 6)]
         public decimal QtyOnHand { get; set; }
+
         public string WarehouseCode { get; set; }
     }
 }

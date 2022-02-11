@@ -20,7 +20,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                             CAST(do.SrcTrans AS int) AS SrcTrans, do.TransCode, wh.[Name] AS WarehouseName,
                             SUM(do_d.Qty * do_d.UnitPrice) AS GrossAmount, SUM(do_d.Qty * (do_d.UnitPrice - do_d.Disc - do_d.FinalDiscHeader)) AS SubTotal,
                             SUM(do_d.Qty * do_d.Disc) AS Disc, SUM(do_d.Qty * do_d.FinalDiscHeader) AS DiscHeader,
-                            do.DPP, do.TaxAmount, do.Total,
+                            SUM(do_d.DPP * do_d.Qty) AS DPP, SUM(do_d.TaxAmount * do_d.Qty) AS TaxAmount, SUM(do_d.NettPrice * do_d.Qty) AS Total,
                             CASE do.Mark
 	                            WHEN 'A' THEN 'Aktif'
 	                            WHEN 'V' THEN 'Void'
@@ -30,7 +30,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                             LEFT JOIN Inventory.Warehouse wh ON wh.Code = do.WarehouseCode
                             WHERE do.FromDirectInvoice = 0" +
                             (string.IsNullOrEmpty(status) ? "" : $" AND do.Mark = '{status.Replace("'", "''")}'") +
-                            " GROUP BY do.[Date], do.Code, do.CustCode, do.CustName, do.SrcTrans, do.TransCode, wh.[Name], do.DPP, do.TaxAmount, do.Total, do.Mark").ToList();
+                            " GROUP BY do.[Date], do.Code, do.CustCode, do.CustName, do.SrcTrans, do.TransCode, wh.[Name], do.Mark").ToList();
 
             var doDetailData = _db.ReportByDetailDOs.FromSqlRaw(@"SELECT do.[Date], do.Code, do.CustCode, do.CustName,
                             CAST(do.SrcTrans AS int) AS SrcTrans, do.TransCode, wh.[Name] AS WarehouseName,
@@ -51,8 +51,9 @@ namespace ERP.Web.API.Domain.Services.Sales
                             LEFT JOIN Sales.vwSalesDeliveryHeader do ON do.Code = do_d.Code
                             LEFT JOIN Inventory.Item im ON im.Id = do_d.ItemId
                             LEFT JOIN Inventory.ItemCategory ic ON ic.Id = im.CategoryId
-                            LEFT JOIN Inventory.Warehouse wh ON wh.Code = do.WarehouseCode" +
-                            (!itemId.HasValue || itemId <= 0 ? "" : $" WHERE do_d.ItemId = {itemId}")).ToList();
+                            LEFT JOIN Inventory.Warehouse wh ON wh.Code = do.WarehouseCode
+                            WHERE do.FromDirectInvoice = 0" +
+                            (!itemId.HasValue || itemId <= 0 ? "" : $" AND do_d.ItemId = {itemId}")).ToList();
 
             var itemData = _db.ReportByItemSales.FromSqlRaw(@"SELECT im.Initial, im.[Name], 
                             ic.Id AS CategoryId, ic.Initial AS CategoryInitial,
@@ -62,9 +63,10 @@ namespace ERP.Web.API.Domain.Services.Sales
                             CAST (0 AS decimal) AS TaxAmount, CAST (0 AS decimal) AS Total, CAST (0 AS decimal) AS GrossAmount
                             FROM Inventory.Item im
                             LEFT JOIN Sales.SalesDeliveryDetail do_d ON do_d.ItemId = im.Id
+                            LEFT JOIN Sales.SalesDeliveryHeader do ON do.Code = do_d.Code
                             LEFT JOIN Inventory.ItemCategory ic ON ic.Id = im.CategoryId
                             LEFT JOIN Inventory.UoMConversion uc ON uc.Id = do_d.UnitId
-                            WHERE uc.Id IS NOT NULL
+                            WHERE uc.Id IS NOT NULL AND do.FromDirectInvoice = 0
                             GROUP BY im.Initial, im.[Name], ic.Id, ic.Initial, uc.Id, uc.UnitEquivalent").ToList();
 
             var custData = _db.ReportByCustomerSales.FromSqlRaw(@"SELECT cs.Code, cs.[Name], CAST (0 AS int) AS TotalTrans,
@@ -83,8 +85,9 @@ namespace ERP.Web.API.Domain.Services.Sales
                             FROM Inventory.ItemCategory ic
                             LEFT JOIN Inventory.Item im ON im.CategoryId = ic.Id 
                             LEFT JOIN Sales.SalesDeliveryDetail do_d ON do_d.ItemId = im.Id
+                            LEFT JOIN Sales.SalesDeliveryHeader do ON do.Code = do_d.Code
                             LEFT JOIN Inventory.UoMConversion uc ON uc.Id = do_d.UnitId
-                            WHERE uc.Id IS NOT NULL" +
+                            WHERE uc.Id IS NOT NULL AND do.FromDirectInvoice = 0" +
                             (!categoryId.HasValue || categoryId <= 0 ? "" : $" AND ic.Id = {categoryId}") +
                             " GROUP BY ic.Id, ic.Initial, ic.[Name], uc.Id, uc.UnitEquivalent").ToList();
 
@@ -176,7 +179,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                         itemCust.SubTotal = doDetailData.Where(x => x.CustCode == itemCust.Code).Sum(x => x.TotalAfterDisc);
                         itemCust.Dpp = doDetailData.Where(x => x.CustCode == itemCust.Code).Sum(x => x.TotalDpp);
                         itemCust.TaxAmount = doDetailData.Where(x => x.CustCode == itemCust.Code).Sum(x => x.TotalTaxAmount);
-                        itemCust.Total = doDetailData.Where(x => x.CustCode == itemCust.Code).Sum(x => x.Total);
+                        itemCust.Total = doDetailData.Where(x => x.CustCode == itemCust.Code).Sum(x => x.TotalNettPrice);
                     }
 
                     custData = custData.Where(x => x.TotalTrans > 0).OrderBy(x => x.Code).ToList();
@@ -223,7 +226,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                         item.SubTotal = doDetailData.Where(x => x.ItemInitial == item.Initial && x.UnitId == item.UnitId).Sum(x => x.TotalAfterDisc);
                         item.Dpp = doDetailData.Where(x => x.ItemInitial == item.Initial && x.UnitId == item.UnitId).Sum(x => x.TotalDpp);
                         item.TaxAmount = doDetailData.Where(x => x.ItemInitial == item.Initial && x.UnitId == item.UnitId).Sum(x => x.TotalTaxAmount);
-                        item.Total = doDetailData.Where(x => x.ItemInitial == item.Initial && x.UnitId == item.UnitId).Sum(x => x.Total);
+                        item.Total = doDetailData.Where(x => x.ItemInitial == item.Initial && x.UnitId == item.UnitId).Sum(x => x.TotalNettPrice);
                     }
 
                     itemData = itemData.Where(x => x.TotalTrans > 0).OrderBy(x => x.Initial).ToList();
@@ -266,7 +269,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                         item.SubTotal = doDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).Sum(x => x.TotalAfterDisc);
                         item.Dpp = doDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).Sum(x => x.TotalDpp);
                         item.TaxAmount = doDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).Sum(x => x.TotalTaxAmount);
-                        item.Total = doDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).Sum(x => x.Total);
+                        item.Total = doDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).Sum(x => x.TotalNettPrice);
                     }
 
                     itemCategoryData = itemCategoryData.Where(x => x.TotalTrans > 0).OrderBy(x => x.Initial).ToList();

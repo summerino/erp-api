@@ -40,6 +40,7 @@ namespace ERP.Entity.General
 
         public short TypeId { get; set; }
 
+        [Precision(5, 2)]
         public decimal Rate { get; set; }
 
         public string CoaCode { get; set; }

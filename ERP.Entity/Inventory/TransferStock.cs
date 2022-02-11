@@ -7,7 +7,7 @@ using ERP.Entity.Core;
 namespace ERP.Entity.Inventory
 {
     [Table("TransferStockHeader", Schema = Schema.Inventory)]
-    public class TransferStockHeader : BaseEntityWithMarkAndApproved
+    public class TransferStockHeader : BaseEntityWithMarkApprovedAndViewed
     {
         [Key]
         [StringLength(17)]
@@ -35,7 +35,7 @@ namespace ERP.Entity.Inventory
         public bool IsConsignee { get; set; }
     }
 
-    public class VwTransferStockHeader : BaseEntityWithMarkAndApproved
+    public class VwTransferStockHeader : BaseEntityWithMarkApprovedAndViewed
     {
         public string Code { get; set; }
 
@@ -106,6 +106,7 @@ namespace ERP.Entity.Inventory
 
         public int UnitId { get; set; }
 
+        [Precision(19, 6)]
         public decimal Qty { get; set; }
 
         public string Notes { get; set; }

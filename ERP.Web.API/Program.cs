@@ -194,6 +194,7 @@ builder.Services.AddScoped<ICBReportService, CBReportService>();
 builder.Services.AddScoped<IOutstandingChequeReportService, OutstandingChequeReportService>();
 
 // General services
+builder.Services.AddScoped<IActiveTransactionService, ActiveTransactionService>();
 builder.Services.AddScoped<IApprovalService, ApprovalService>();
 builder.Services.AddScoped<ICurrencyService, CurrencyService>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();

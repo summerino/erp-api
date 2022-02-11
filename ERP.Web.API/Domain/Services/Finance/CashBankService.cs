@@ -411,6 +411,9 @@ namespace ERP.Web.API.Domain.Services.Finance
                 // restore cash bank transaction
                 Db.Database.ExecuteSqlRaw($"sp_restore_cash_bank_transaction '{code}';");
 
+                // restore credit used customer
+                RestoreCreditUsed(code);
+
                 // Update header data
                 data.Mark = "V";
                 data.UpdatedBy = userId;
@@ -685,7 +688,7 @@ namespace ERP.Web.API.Domain.Services.Finance
             var listTransactions = (from cd in Db.GeneralCashBankDetails
                                     join si in Db.SalesInvoiceHeaders on cd.TransCode equals si.Code
                                     join so in Db.SalesOrderHeaders on si.SoCode equals so.Code
-                                    where cd.Type == "AR"
+                                    where cd.Code == cashBankCode
                                     select new { so.CustCode , cd.TransAmount }).ToList();
             var listQuery = new List<string>();
             foreach (var item in listTransactions)

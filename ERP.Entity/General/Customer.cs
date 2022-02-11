@@ -100,8 +100,10 @@ namespace ERP.Entity.General
 
         public int PaymentTermId { get; set; }
 
+        [Precision(18, 2)]
         public decimal CreditLimit { get; set; }
 
+        [Precision(18, 2)]
         public decimal CreditUsed { get; set; }
 
         public string RefNo { get; set; }
@@ -157,8 +159,10 @@ namespace ERP.Entity.General
 
         public string Fax { get; set; }
 
+        [Precision(9, 6)]
         public decimal? Lat { get; set; }
 
+        [Precision(9, 6)]
         public decimal? Lng { get; set; }
 
         public string AreaName1 { get; set; }

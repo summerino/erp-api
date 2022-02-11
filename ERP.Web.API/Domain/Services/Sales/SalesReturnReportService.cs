@@ -17,7 +17,7 @@ namespace ERP.Web.API.Domain.Services.Sales
         {
             var srData = _db.ReportBySRs.FromSqlRaw(@"SELECT sr.[Date], sr.Code, sr.CustCode, sr.CustName,
                             SUM(sr_d.Qty * (sr_d.UnitPrice - sr_d.Disc)) AS SubTotal, SUM(sr_d.Qty * sr_d.DPP) AS DPP,
-                            SUM(sr_d.Qty * sr_d.TaxAmount) AS TaxAmount, sr.Total,
+                            SUM(sr_d.Qty * sr_d.TaxAmount) AS TaxAmount, SUM(sr_d.Qty * sr_d.NettPrice) AS Total,
                             CASE sr.[Type]
 	                            WHEN '1' THEN 'Tukar Memo'
 	                            WHEN '2' THEN 'Tukar Barang Sama'
@@ -25,13 +25,13 @@ namespace ERP.Web.API.Domain.Services.Sales
                             CASE sr.Mark
 	                            WHEN 'A' THEN 'Aktif'
 	                            WHEN 'V' THEN 'Void'
-	                            WHEN 'PS' THEN 'Aktif'
-	                            WHEN 'CMP' THEN 'Aktif'
-	                            WHEN 'CLS' THEN 'Aktif' END AS [Status]
+	                            WHEN 'PS' THEN 'Dikirim Sebagian'
+	                            WHEN 'CMP' THEN 'Dikirim Seluruhnya'
+                                WHEN 'CLS' THEN 'Ditutup' END AS [Status]
                             FROM Sales.vwSalesReturnHeader sr
                             LEFT JOIN Sales.vwSalesReturnDetail sr_d ON sr_d.Code = sr.Code" +
-                            (string.IsNullOrEmpty(status) ? "" : status == "A" ? $" WHERE sr.Mark IN('A', 'PS', 'CMP', 'CLS')" : $" WHERE sr.Mark = '{status.Replace("'", "''")}'") +
-                            " GROUP BY sr.[Date], sr.Code, sr.CustCode, sr.CustName, sr.DPP, sr.TaxAmount, sr.Total, sr.Mark, sr.[Type]").ToList();
+                            (string.IsNullOrEmpty(status) ? "" : $" WHERE sr.Mark = '{status.Replace("'", "''")}'") +
+                            " GROUP BY sr.[Date], sr.Code, sr.CustCode, sr.CustName, sr.Mark, sr.[Type]").ToList();
 
             var srDetailData = _db.ReportByDetailSRs.FromSqlRaw(@"SELECT sr.[Date], sr.Code, sr.CustCode,sr.CustName,
                             im.Initial AS ItemInitial, im.[Name] AS ItemName, sr_d.Qty,
@@ -42,9 +42,9 @@ namespace ERP.Web.API.Domain.Services.Sales
                             CASE sr.Mark
                                 WHEN 'A' THEN 'Aktif'
                                 WHEN 'V' THEN 'Void'
-                                WHEN 'PS' THEN 'Aktif'
-                                WHEN 'CMP' THEN 'Aktif'
-                                WHEN 'CLS' THEN 'Aktif' END AS [Status],
+                                WHEN 'PS' THEN 'Dikirim Sebagian'
+                                WHEN 'CMP' THEN 'Dikirim Seluruhnya'
+                                WHEN 'CLS' THEN 'Ditutup' END AS [Status],
                             ic.Id AS CategoryId, ic.Initial AS CategoryInitial,
                             CASE sr.[Type]
 	                            WHEN '1' THEN 'Tukar Memo'
