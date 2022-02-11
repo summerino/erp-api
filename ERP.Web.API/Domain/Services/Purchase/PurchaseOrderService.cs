@@ -430,7 +430,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                     result.Message = "Data order pembelian tidak bisa diubah karena sudah ditandai sebagai void.";
                     return result;
                 }
-
+                
                 var (isDuplicate, message) = CheckDuplicateDetail(data.ItemDetails);
                 if (isDuplicate)
                 {
@@ -445,6 +445,8 @@ namespace ERP.Web.API.Domain.Services.Purchase
 
                 data.ApprovedBy = null;
                 data.ApprovedDate = null;
+                data.ViewedBy = null;
+                data.ViewedDate = null;
 
                 // Get detail data that exists in order before
                 var delDetails = Db.PurchaseOrderDetails
@@ -844,16 +846,18 @@ namespace ERP.Web.API.Domain.Services.Purchase
             if (data != null)
             {
                 // Checking mark header data
-                if (data.Mark == "V")
+                if (data.Mark != "A")
                 {
-                    result.Message = "Data order pembelian tidak bisa ditandai sebagai void karena sudah ditandai sebagai void.";
+                    result.Message = "Data order pembelian tidak bisa ditandai sebagai void karena status bukan \"A\".";
                     return result;
                 }
-
+                
                 // Update header data
                 data.Mark = "V";
                 data.UpdatedBy = userId;
                 data.UpdatedDate = DateTime.Now;
+                data.ViewedBy = null;
+                data.ViewedDate = null;
 
                 Db.SaveChanges();
 
@@ -876,12 +880,11 @@ namespace ERP.Web.API.Domain.Services.Purchase
             if (data != null)
             {
                 // Checking mark header data
-                if (data.Mark == "CLS")
-                {
-                    result.Message = "Data order pembelian tidak bisa ditutup karena sudah ditutup.";
+                if (data.Mark != "A" && data.Mark != "PR") {
+                    result.Message = "Data order pembelian tidak bisa ditutup karena status bukan \"A\" & \"PR\".";
                     return result;
                 }
-
+                
                 // Update header data
                 data.Mark = "CLS";
                 data.UpdatedBy = userId;
