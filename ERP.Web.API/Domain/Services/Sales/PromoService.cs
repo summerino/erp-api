@@ -292,7 +292,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                             }
                             else
                             {
-                                var trItem = Db.PromoDetailTiers.FirstOrDefault(x => x.PromoDetailId == idDetail);
+                                var trItem = Db.PromoDetailTiers.FirstOrDefault(x => x.Id == tItem.Id);
                                 trItem.FromQty = tItem.FromQty;
                                 trItem.ToQty = tItem.ToQty;
                                 trItem.IsPercentage = tItem.IsPercentage;

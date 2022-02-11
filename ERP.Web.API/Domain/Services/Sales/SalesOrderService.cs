@@ -59,7 +59,7 @@ namespace ERP.Web.API.Domain.Services.Sales
 
         public IEnumerable<VwSalesOrderHeader> GetInCompleteInvoiceData(string searchBy, string search, string invCode)
         {
-            var data = Db.VwSalesOrderHeaders.Where(x => new[] { "PR", "CMP" }.Contains(x.Mark));
+            var data = Db.VwSalesOrderHeaders.Where(x => new[] { "A", "PS" }.Contains(x.Mark));
 
             if (!string.IsNullOrEmpty(search))
             {
@@ -74,10 +74,10 @@ namespace ERP.Web.API.Domain.Services.Sales
 
             data = string.IsNullOrWhiteSpace(invCode)
                 ? data.Where(x => Db.SalesDeliveryHeaders
-                    .Where(r => r.Mark == "A" && r.SrcTrans == 1)
+                    .Where(r => !r.FromDirectInvoice && r.SrcTrans == 1)
                     .Select(r => r.TransCode).Contains(x.Code))
                 : data.Where(x => Db.SalesDeliveryHeaders
-                                      .Where(r => r.Mark == "A" && r.SrcTrans == 1)
+                                      .Where(r => !r.FromDirectInvoice && r.SrcTrans == 1)
                                       .Select(r => r.TransCode).Contains(x.Code) ||
                                   Db.SalesInvoiceHeaders
                                       .Where(i => i.Code == invCode)
