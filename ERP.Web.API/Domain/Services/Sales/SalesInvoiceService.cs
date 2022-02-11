@@ -408,17 +408,14 @@ public class SalesInvoiceService : GeneralService<SalesInvoiceHeader>, ISalesInv
                 // Restore Credit Memo
                 RestoreCreditMemo(code);
 
-                // Decrease CreditUsed
-                UpdateCreditUsed(data.CustCode, data.Total);
-
-                    transaction.Commit();
-                }
-                catch (Exception ex)
-                {
-                    result.Message = ex.InnerException?.Message ?? ex.Message;
-                    return result;
-                }
+                transaction.Commit();
             }
+            catch (Exception ex)
+            {
+                result.Message = ex.InnerException?.Message ?? ex.Message;
+                return result;
+            }
+        }
 
         result.Success = true;
         result.Message = "Data faktur penjualan berhasil ditandai sebagai void.";
