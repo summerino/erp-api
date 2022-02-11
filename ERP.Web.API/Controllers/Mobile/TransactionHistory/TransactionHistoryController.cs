@@ -232,13 +232,13 @@ namespace ERP.Web.API.Controllers.Mobile.TransactionHistory
         }
 
         [HttpGet("by-subgroup-summary")]
-        public IActionResult GetDataByGroupSummary(string filters, string sorts, int skip, int take, DateTime date)
+        public IActionResult GetDataByGroupSummary(string filters, string sorts, int skip, int take, DateTime date, int? groupId, int? subGroupId)
         {
             var data =
                 _transactionHistory.GetDataBySubGroupSummary(skip, take,
                     JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
-                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),date
-                     );
+                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"), date, 
+                    groupId, subGroupId);
 
             var result = ((List<TransactionHistoryBySubGroupSummary>)data.Data).ToList<dynamic>();
 
@@ -247,6 +247,70 @@ namespace ERP.Web.API.Controllers.Mobile.TransactionHistory
                 Count = data.Total,
                 Data = result
             });
+        }
+
+        [HttpGet("detail-subgroup-summary")]
+        public IActionResult GetDataDetailByGroupSummary(string filters, string sorts, int skip, int take, DateTime date, int groupId, int subGroupId)
+        {
+            var data =
+                _transactionHistory.GetDataDetailBySubGroupSummary(skip, take,
+                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"), date,
+                    groupId, subGroupId);
+
+            var result = ((List<TransactionHistoryDetailBySubGroupSummary>)data.Data).ToList<dynamic>();
+
+            return Ok(new MobileApiResponse
+            {
+                Count = data.Total,
+                Data = result
+            });
+        }
+
+        [HttpGet("item-subgroup-summary")]
+        public IActionResult GetDataItemByGroupSummary(string filters, string sorts, int skip, int take, DateTime date, string detailSubGroup)
+        {
+            var data =
+                _transactionHistory.GetDataItemBySubGroupSummary(skip, take,
+                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"), date,
+                    detailSubGroup);
+
+            var result = ((List<TransactionHistoryItemBySubGroupSummary>)data.Data).ToList<dynamic>();
+
+            return Ok(new MobileApiResponse
+            {
+                Count = data.Total,
+                Data = result
+            });
+        }
+
+        [HttpGet("master-item-group")]
+        public IActionResult GetDataItemGroup()
+        {
+            var temp =
+               _transactionHistory.GetItemGroup();
+            var result = temp.Select(x => new
+            {
+                x.Id,
+                x.Initial,
+                x.Name,
+            }).ToList<dynamic>();
+            return Ok(result);
+        }
+
+        [HttpGet("master-item-sub-group")]
+        public IActionResult GetDataItemSubGroup(int groupId)
+        {
+            var temp =
+               _transactionHistory.GetItemSubGroup(groupId);
+
+            var result = temp.Select(x => new
+            {
+                x.Id,
+                x.Name,
+            }).ToList<dynamic>();
+            return Ok(result);
         }
     }
 }

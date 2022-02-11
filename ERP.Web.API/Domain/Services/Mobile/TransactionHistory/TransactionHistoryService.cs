@@ -1,6 +1,7 @@
 ﻿using ERP.Common.Extensions;
 using ERP.Common.Models;
 using ERP.Entity;
+using ERP.Entity.Inventory;
 using ERP.Web.API.Domain.Interfaces.Mobile.TransactionHistory;
 using ERP.Web.API.Domain.Models.Mobile.TransactionHistory;
 using System.Linq;
@@ -518,14 +519,15 @@ namespace ERP.Web.API.Domain.Services.Mobile.TransactionHistory
             return data.ToDataSourceResult(skip, take, filter, sort);
         }
 
-        public DataSourceResult GetDataBySubGroupSummary(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, DateTime date)
+        public DataSourceResult GetDataBySubGroupSummary(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, DateTime? date, int? groupId, int? subGroupId)
         {
 
-            var subGroups = (from G in Db.ItemGroups
-                             join S in Db.ItemGroupSubGroups on G.Id equals S.ItemGroupId
+            var subGroups = (from G in groupId == null ? Db.ItemGroups : Db.ItemGroups.Where(x => x.Id.Equals(groupId))
+                             join S in subGroupId == null ? Db.ItemGroupSubGroups : Db.ItemGroupSubGroups.Where(y => y.Id.Equals(subGroupId)) on G.Id equals S.ItemGroupId
                              where G.IsActive == true && S.ShowInMobile == true
                              select new ItemSubGroupModel
                              {
+                                 Id = S.Id,
                                  GroupId = G.Id,
                                  GroupInitial = G.Initial,
                                  GroupName = G.Name,
@@ -538,6 +540,7 @@ namespace ERP.Web.API.Domain.Services.Mobile.TransactionHistory
                             from string value in values
                             select new ItemSubGroupModel
                             {
+                                Id = sub.Id,
                                 GroupId = sub.GroupId,
                                 GroupName = sub.GroupName,
                                 GroupInitial = sub.GroupInitial,
@@ -545,88 +548,142 @@ namespace ERP.Web.API.Domain.Services.Mobile.TransactionHistory
                                 Value = value
                             }).ToList();
 
-            var dataMobile1 = (from so in Db.MobileOrderHeaders.Where(x => x.SalesOrderCode.Equals(null))
-                               join sod in Db.MobileOrderDetails on so.Code equals sod.Code
-                               join it in Db.Items.Where(x => x.SubGroup1 != "") on sod.ItemId equals it.Id
-                               join sg in subGroup on it.SubGroup1 equals sg.Value
-                               group new { so, sod, it, sg } by new { so.SalesBy, it.SubGroup1 } into g
-                               select new TransactionHistoryBySubGroupSummary
-                               {
-                                   SalesId = g.Key.SalesBy,
-                                   //GroupName = g.Key.Name,
-                                   //GroupInitial = g.Key.GroupInitial,
-                                   SubGroup = g.Key.SubGroup1,
-                                   Total = g.Sum(tl => tl.sod.Total)
-                               }).AsQueryable();
+            List<TransactionHistoryBySubGroupSummary> data = new List<TransactionHistoryBySubGroupSummary>();
+            var groupName = "";
+            var subGroupName = "";
 
-            //var dataMobile2 = (from so in Db.MobileOrderHeaders.Where(x => x.SalesOrderCode.Equals(null))
-            //                   join sod in Db.MobileOrderDetails on so.Code equals sod.Code
-            //                   join i in Db.Items.Where(x => x.SubGroup2 != "") on sod.ItemId equals i.Id
-            //                   join sg in subGroup on i.SubGroup2 equals sg.Value
-            //                   group new { so, sod, i, sg } by new { so.SalesBy, i.SubGroup2, sg.GroupInitial, sg.Name } into g
-            //                   select new TransactionHistoryBySubGroupSummary
-            //                   {
-            //                       SalesId = g.Key.SalesBy,
-            //                       GroupName = g.Key.Name,
-            //                       GroupInitial = g.Key.GroupInitial,
-            //                       SubGroup = g.Key.SubGroup2,
-            //                       Total = g.Sum(tl => tl.sod.Total)
-            //                   }).AsQueryable();
+            foreach (var sub in subGroup)
+            {
 
-            //var dataMobile3 = (from so in Db.MobileOrderHeaders.Where(x => x.SalesOrderCode.Equals(null))
-            //                   join sod in Db.MobileOrderDetails on so.Code equals sod.Code
-            //                   join i in Db.Items.Where(x => x.SubGroup3 != "") on sod.ItemId equals i.Id
-            //                   join sg in subGroup on i.SubGroup3 equals sg.Value
-            //                   group new { so, sod, i, sg } by new { so.SalesBy, i.SubGroup3, sg.GroupInitial, sg.Name } into g
-            //                   select new TransactionHistoryBySubGroupSummary
-            //                   {
-            //                       SalesId = g.Key.SalesBy,
-            //                       GroupName = g.Key.Name,
-            //                       GroupInitial = g.Key.GroupInitial,
-            //                       SubGroup = g.Key.SubGroup3,
-            //                       Total = g.Sum(tl => tl.sod.Total)
-            //                   }).AsQueryable();
+                var dataMobile = (from so in Db.MobileOrderHeaders.Where(x => x.SalesOrderCode.Equals(null) && x.Date.Equals(date !=  DateTime.MinValue ? date : x.Date))
+                                  join sod in Db.MobileOrderDetails on so.Code equals sod.Code
+                                  join it in Db.Items.Where(x => x.SubGroup1.Contains(sub.Value) || x.SubGroup2.Contains(sub.Value) ||
+                                  x.SubGroup3.Contains(sub.Value) || x.SubGroup4.Contains(sub.Value) ||
+                                  x.SubGroup5.Contains(sub.Value)) on sod.ItemId equals it.Id
+                                  group new { so, sod, it } by new { so.SalesBy } into g
+                                  select new TransactionHistoryBySubGroupSummary
+                                  {
+                                      SalesId = g.Key.SalesBy,
+                                      GroupId = sub.GroupId,
+                                      GroupName = sub.GroupName,
+                                      GroupInitial = sub.GroupInitial,
+                                      SubGroupId = sub.Id,
+                                      SubGroup = sub.Name,
+                                      Total = g.Sum(tl => tl.sod.Total)
+                                  }).ToList();
 
-            //var dataMobile4 = (from so in Db.MobileOrderHeaders.Where(x => x.SalesOrderCode.Equals(null))
-            //                   join sod in Db.MobileOrderDetails on so.Code equals sod.Code
-            //                   join i in Db.Items.Where(x => x.SubGroup4 != "") on sod.ItemId equals i.Id
-            //                   join sg in subGroup on i.SubGroup4 equals sg.Value
-            //                   group new { so, sod, i, sg } by new { so.SalesBy, i.SubGroup4, sg.GroupInitial, sg.Name } into g
-            //                   select new TransactionHistoryBySubGroupSummary
-            //                   {
-            //                       SalesId = g.Key.SalesBy,
-            //                       GroupName = g.Key.Name,
-            //                       GroupInitial = g.Key.GroupInitial,
-            //                       SubGroup = g.Key.SubGroup4,
-            //                       Total = g.Sum(tl => tl.sod.Total)
-            //                   }).AsQueryable();
+                foreach (var item in dataMobile)
+                {
+                    if (groupName != item.GroupName || subGroupName != item.SubGroup)
+                    {
+                        groupName = item.GroupName;
+                        subGroupName = item.SubGroup;
+                        data.Add(item);
+                    }
+                    else
+                    {
+                        data[data.Count - 1].Total += item.Total;
+                    }
 
-            //var dataMobile5 = (from so in Db.MobileOrderHeaders.Where(x => x.SalesOrderCode.Equals(null))
-            //                   join sod in Db.MobileOrderDetails on so.Code equals sod.Code
-            //                   join i in Db.Items.Where(x => x.SubGroup5 != "") on sod.ItemId equals i.Id
-            //                   join sg in subGroup on i.SubGroup5 equals sg.Value
-            //                   group new { so, sod, i, sg } by new { so.SalesBy, i.SubGroup5, sg.GroupInitial, sg.Name } into g
-            //                   select new TransactionHistoryBySubGroupSummary
-            //                   {
-            //                       SalesId = g.Key.SalesBy,
-            //                       GroupName = g.Key.Name,
-            //                       GroupInitial = g.Key.GroupInitial,
-            //                       SubGroup = g.Key.SubGroup5,
-            //                       Total = g.Sum(tl => tl.sod.Total)
-            //                   }).AsQueryable();
+                }
 
-            //var dataMobile = (from m1 in dataMobile1.Union(dataMobile2) //.Union(dataMobile3).Union(dataMobile4).Union(dataMobile5)
-            //            group m1 by new { m1.SalesId, m1.SubGroup,m1.GroupName,m1.GroupInitial } into g
-            //            select new TransactionHistoryBySubGroupSummary
-            //            {
-            //                SalesId = g.Key.SalesId,
-            //                GroupName = g.Key.GroupName,
-            //                GroupInitial = g.Key.GroupInitial,
-            //                SubGroup = g.Key.SubGroup,
-            //                Total = g.Sum(tl => tl.Total)
-            //            }).AsQueryable();
+            }
 
-            return dataMobile1.ToDataSourceResult(skip, take, filter, sort);
+            return data.AsQueryable().ToDataSourceResult(skip, take, filter, sort);
+        }
+
+        public DataSourceResult GetDataDetailBySubGroupSummary(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, DateTime? date, int groupId, int subGroupId)
+        {
+            var subGroups = (from G in Db.ItemGroups.Where(x => x.Id.Equals(groupId))
+                             join S in Db.ItemGroupSubGroups.Where(y => y.Id.Equals(subGroupId)) on G.Id equals S.ItemGroupId
+                             where G.IsActive == true && S.ShowInMobile == true
+                             select new ItemSubGroupModel
+                             {
+                                 Id = S.Id,
+                                 GroupId = G.Id,
+                                 GroupInitial = G.Initial,
+                                 GroupName = G.Name,
+                                 Name = S.Name,
+                                 Value = S.Value
+                             }).AsEnumerable();
+
+            var subGroup = (from ItemSubGroupModel sub in subGroups
+                            let values = sub.Value.Split(";")
+                            from string value in values
+                            select new ItemSubGroupModel
+                            {
+                                Id= sub.Id,
+                                GroupId = sub.GroupId,
+                                GroupName = sub.GroupName,
+                                GroupInitial = sub.GroupInitial,
+                                Name = sub.Name,
+                                Value = value
+                            }).ToList();
+
+            List<TransactionHistoryDetailBySubGroupSummary> data = new List<TransactionHistoryDetailBySubGroupSummary>();
+
+            foreach (var sub in subGroup)
+            {
+
+                var dataMobile = (from so in Db.MobileOrderHeaders.Where(x => x.SalesOrderCode.Equals(null) && x.Date.Equals(date != DateTime.MinValue ? date : x.Date))
+                                  join sod in Db.MobileOrderDetails on so.Code equals sod.Code
+                                  join it in Db.Items.Where(x => x.SubGroup1.Contains(sub.Value) || x.SubGroup2.Contains(sub.Value) || x.SubGroup3.Contains(sub.Value) || x.SubGroup4.Contains(sub.Value) || x.SubGroup5.Contains(sub.Value)) on sod.ItemId equals it.Id
+                                  group new { so, sod, it } by new { so.SalesBy } into g
+                                  select new TransactionHistoryDetailBySubGroupSummary
+                                  {
+                                      SalesId = g.Key.SalesBy,
+                                      DetailSubGroup = sub.Value,
+                                      Total = g.Sum(tl => tl.sod.Total)
+                                  }).ToList();
+
+
+                foreach (var item in dataMobile)
+                {
+                    data.Add(item);
+                }
+
+            }
+
+            return data.AsQueryable().ToDataSourceResult(skip, take, filter, sort);
+        }
+
+        public DataSourceResult GetDataItemBySubGroupSummary(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, DateTime? date, string detailSubGroup)
+        {
+
+            var data = (from so in Db.MobileOrderHeaders.Where(x => x.SalesOrderCode.Equals(null) && x.Date.Equals(date != DateTime.MinValue ? date : x.Date))
+                        join sod in Db.MobileOrderDetails on so.Code equals sod.Code
+                        join it in Db.Items.Where(x => x.SubGroup1.Contains(detailSubGroup) || x.SubGroup2.Contains(detailSubGroup) || x.SubGroup3.Contains(detailSubGroup) || x.SubGroup4.Contains(detailSubGroup) || x.SubGroup5.Contains(detailSubGroup)) on sod.ItemId equals it.Id
+                        join un in Db.UoMConversions on sod.UnitId equals un.Id
+                        where so.Date == date
+                        group new { so, sod, it, un } by new { so.SalesBy, sod.ItemId, it.Name, sod.UnitId, un.UnitEquivalent } into g
+                        select new TransactionHistoryItemBySubGroupSummary
+                        {
+                            SalesId = g.Key.SalesBy,
+                            ItemId = g.Key.ItemId,
+                            ItemName = g.Key.Name,
+                            Unit = g.Key.UnitEquivalent,
+                            Quantity = g.Sum(tl => tl.sod.Qty),
+                            Total = g.Sum(tl => tl.sod.Total)
+                        });
+
+            return data.ToDataSourceResult(skip, take, filter, sort);
+        }
+
+        public IEnumerable<ItemGroup> GetItemGroup()
+        {
+
+            var data = Db.ItemGroups.Where(x=>x.IsActive).ToList();
+           
+
+            return data;
+        }
+
+        public IEnumerable<ItemGroupSubGroup> GetItemSubGroup(int groupId)
+        {
+            var data = Db.ItemGroupSubGroups.Where(x => x.ItemGroupId.Equals(groupId) && x.ShowInMobile).ToList();
+
+
+            return data;
         }
     }
 }

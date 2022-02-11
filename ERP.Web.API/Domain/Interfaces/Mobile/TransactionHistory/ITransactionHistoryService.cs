@@ -1,4 +1,5 @@
 ﻿using ERP.Common.Models;
+using ERP.Entity.Inventory;
 using ERP.Web.API.Domain.Models.Mobile.TransactionHistory;
 
 namespace ERP.Web.API.Domain.Interfaces.Mobile.TransactionHistory
@@ -13,9 +14,13 @@ namespace ERP.Web.API.Domain.Interfaces.Mobile.TransactionHistory
         DataSourceResult GetDataCumulative(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, int year,string custCode,int userId);
         DataSourceResult GetDataByLog(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, string custCode,int userId);
         IEnumerable<ItemSubGroupModel> GetSubGroup();
+        IEnumerable<ItemGroup> GetItemGroup();
+        IEnumerable<ItemGroupSubGroup> GetItemSubGroup(int groupId);
         DataSourceResult GetDataBySubGroup(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, int groupId, string subGroup);
         DataSourceResult GetItemBySubGroup(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,DateTime date, int groupId, string subGroup);
-        DataSourceResult GetDataBySubGroupSummary(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, DateTime date);
+        DataSourceResult GetDataBySubGroupSummary(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, DateTime? date, int? groupId, int? subGroupId);
+        DataSourceResult GetDataDetailBySubGroupSummary(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, DateTime? date, int groupId, int subGroupId);
+        DataSourceResult GetDataItemBySubGroupSummary(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, DateTime? date, string detailSubGroup);
 
     }
 }
