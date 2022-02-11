@@ -321,8 +321,8 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                             else if (applyTo == 4)
                             {
                                 var multiItem = detailMultiPromo.Select(y => y.ItemId);
-                                var isApplicable = data.ItemDetails.Select(x => x.ItemId).Intersect(multiItem);
-                                if (multiItem.Count() == isApplicable.Count())
+                                var isApplicable = multiItem.Intersect(data.ItemDetails.Select(x => x.ItemId));
+                                if (isApplicable.Any())
                                 {
                                     switch (detailPromo.PromoType)
                                     {
@@ -334,15 +334,14 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                                             {
                                                 var valueDisc = detailPromo.IsPercentage ?
                                                     item.UnitPrice * (tierData.Value / 100) : tierData.Value;
-                                                var prorateDisc = (valueDisc / data.ItemDetails.Sum(x => x.UnitPrice * x.Qty)) * (item.Qty * item.UnitPrice);
-                                                prorateDisc /= item.Qty;
+                                                var prorateDisc = valueDisc / multiItem.Count();
                                                 discPromo.Add(new SalesOrderDetailDiscount
                                                 {
                                                     PromoCode = dataPromo.Code,
                                                     PromoDetailId = detailPromo.Id,
                                                     Name = dataPromo.Name,
                                                     //promoMethod: 1,
-                                                    Value = tierData.Value,
+                                                    Value = detailPromo.IsPercentage ? tierData.Value : prorateDisc,
                                                     //nettPrice: 0,
                                                     CoaCode = dataPromo.CoaCost,
                                                     Amount = prorateDisc,
@@ -1060,8 +1059,8 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                             else if (applyTo == 4)
                             {
                                 var multiItem = detailMultiPromo.Select(y => y.ItemId);
-                                var isApplicable = data.ItemDetails.Select(x => x.ItemId).Intersect(multiItem);
-                                if (multiItem.Count() == isApplicable.Count())
+                                var isApplicable = multiItem.Intersect(data.ItemDetails.Select(x => x.ItemId));
+                                if (isApplicable.Any())
                                 {
                                     switch (detailPromo.PromoType)
                                     {
@@ -1073,15 +1072,14 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                                             {
                                                 var valueDisc = detailPromo.IsPercentage ?
                                                     item.UnitPrice * (tierData.Value / 100) : tierData.Value;
-                                                var prorateDisc = (valueDisc / data.ItemDetails.Sum(x => x.UnitPrice * x.Qty)) * (item.Qty * item.UnitPrice);
-                                                prorateDisc /= item.Qty;
+                                                var prorateDisc = valueDisc / multiItem.Count();
                                                 discPromo.Add(new SalesOrderDetailDiscount
                                                 {
                                                     PromoCode = dataPromo.Code,
                                                     PromoDetailId = detailPromo.Id,
                                                     Name = dataPromo.Name,
                                                     //promoMethod: 1,
-                                                    Value = tierData.Value,
+                                                    Value = detailPromo.IsPercentage ? tierData.Value : prorateDisc,
                                                     //nettPrice: 0,
                                                     CoaCode = dataPromo.CoaCost,
                                                     Amount = prorateDisc,
