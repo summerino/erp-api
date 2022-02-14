@@ -16,6 +16,6 @@ namespace ERP.Web.API.Model.Sales
 
     public class DeliveryPlanUndeliveredItemRequest : DeliveryPlanUndeliveredItem
     {
-        public int DetailId { get; set; }
+        public int? DetailId { get; set; }
     }
 }
