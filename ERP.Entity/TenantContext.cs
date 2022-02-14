@@ -113,6 +113,7 @@ namespace ERP.Entity
         public DbSet<VwVehicle> VwVehicles { get; set; }
         public DbSet<VehicleType> VehicleTypes { get; set; }
         public DbSet<VwVehicleType> VwVehicleTypes { get; set; }
+        public DbSet<ActiveTransactionGetDataRequest> ActiveTransactionGetDataRequests { get; set; }
 
         // Human Resource entities
         public DbSet<Attendance> Attendances { get; set; }
@@ -866,6 +867,10 @@ namespace ERP.Entity
             modelBuilder.Entity<VwVehicleType>()
                 .HasNoKey()
                 .ToView("vwVehicleType", Schema.General);
+
+            modelBuilder.Entity<ActiveTransactionGetDataRequest>()
+                .HasNoKey()
+                .ToTable("ActiveTransactionGetDataRequest", t => t.ExcludeFromMigrations());
 
             // Human Resource entities
             modelBuilder.Entity<Attendance>(entity =>
