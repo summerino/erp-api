@@ -1748,9 +1748,7 @@ namespace ERP.Web.API.Domain.Services.Sales
         }
         private void RestoreCreditUsedFromCloseAction(string transCode, string custCode)
         {
-            var amount = (from x in Db.SalesInvoiceHeaders
-                          where x.SoCode == transCode
-                          select x.Total - x.PaidAmount).FirstOrDefault();
+            var amount = Db.SalesOrderDetails.Where(x => x.Code == transCode).Sum(x => (x.Qty - x.QtyDlv) * x.NettPrice);
             string query = $"update General.Customer set CreditUsed= (CreditUsed - {amount}) where code = '{custCode}'";
             Db.Database.ExecuteSqlRaw(query);
         }
