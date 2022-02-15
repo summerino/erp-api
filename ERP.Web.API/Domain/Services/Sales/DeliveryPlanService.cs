@@ -280,6 +280,11 @@ namespace ERP.Web.API.Domain.Services.Sales
 
                 Db.DeliveryPlanUndeliveredItems.RemoveRange(delUnDetails);
 
+                var delDetailItem = Db.DeliveryPlanDetailItems
+                    .Where(x => delDetails.Select(d => d.Id).Contains(x.DlvPlanDetailId));
+
+                Db.DeliveryPlanDetailItems.RemoveRange(delDetailItem);
+
                 short i = 0;
                 foreach (var item in data.ItemDetails)
                 {
