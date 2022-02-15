@@ -10,6 +10,7 @@ using ERP.Web.API.Domain.Interfaces.SystemManagement;
 using ERP.Web.API.Model;
 using ERP.Web.API.Model.AssetManagement;
 using Newtonsoft.Json;
+using ERP.Web.API.Domain.Interfaces.General;
 
 namespace ERP.Web.API.Controllers.AssetManagement
 {
@@ -22,17 +23,18 @@ namespace ERP.Web.API.Controllers.AssetManagement
         private readonly ISystemParameterService _sysPar;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
-
+        private readonly IActiveTransactionService _activeTrans;
         private const int MenuId = (int)Menu.FixedAsset;
 
         public FixedAssetController(IFixedAssetService fixedAsset, IClosingMonthService closingMonth,
-            ISystemParameterService sysPar, IClaimService claim, IAuthService auth)
+            ISystemParameterService sysPar, IClaimService claim, IAuthService auth, IActiveTransactionService activeTrans)
         {
             _fixedAsset = fixedAsset;
             _closingMonth = closingMonth;
             _sysPar = sysPar;
             _claim = claim;
             _auth = auth;
+            _activeTrans = activeTrans;
         }
 
         [HttpGet]
@@ -76,7 +78,7 @@ namespace ERP.Web.API.Controllers.AssetManagement
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
             // Validate process
-            var (isValid, message) = Validate(data);
+            var (isValid, message) = Validate(data, false);
             if (!isValid)
                 return Ok(new SaveResult(false, message));
 
@@ -128,7 +130,7 @@ namespace ERP.Web.API.Controllers.AssetManagement
             return Ok(result);
         }
 
-        private (bool, string) Validate(FixedAssetRequest data)
+        private (bool, string) Validate(FixedAssetRequest data, bool checkSeenByOther = true)
         {
             var periods = new List<string> { data.PurchaseDate.ToString("yyyyMM"), data.StartDepreciateOn.ToString("yyyyMM") };
             if (data.OriginalPurchaseDate.HasValue)
@@ -142,6 +144,12 @@ namespace ERP.Web.API.Controllers.AssetManagement
             // Checking data start date validity
             if (!_sysPar.IsStartDateValid(data.PurchaseDate))
                 return (false, "Tanggal Perolehan tidak boleh lebih kecil dari tanggal mulai data.");
+
+            // Checking is data seen by others
+            if (checkSeenByOther && !_activeTrans.SeenByOthers("FA", data.Code, _claim.UserId))
+            {
+                return (false, "data sedang digunakan oleh pengguna lain.");
+            }
 
             // Checking data start date validity
             return !_sysPar.IsStartDateValid(data.StartDepreciateOn)
