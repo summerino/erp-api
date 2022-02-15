@@ -21,8 +21,10 @@ namespace ERP.Web.API.Domain.Services.Mobile.Warehouse
                             UserId = user.Id,
                             WarehouseEmployeeName = empl.FirstName + " " + empl.LastName,
                             WarehouseEmployeeId = empl.Id,
-                            WarehouseEmployeeInitial = empl.Initial
+                            WarehouseEmployeeInitial = empl.Initial,
+                            WarehouseCode = empl.WarehouseCode
                         }).SingleOrDefault(x => x.UserId.Equals(id));
+
             return data;
         }
     }
