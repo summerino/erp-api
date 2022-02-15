@@ -10,6 +10,7 @@ using ERP.Web.API.Model;
 using ERP.Web.API.Model.Sales;
 using Newtonsoft.Json;
 using ERP.Web.API.Domain.Interfaces.Accounting;
+using ERP.Web.API.Domain.Interfaces.General;
 
 namespace ERP.Web.API.Controllers.Sales
 {
@@ -22,16 +23,18 @@ namespace ERP.Web.API.Controllers.Sales
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
         private readonly IClosingMonthService _closingMonth;
+        private readonly IActiveTransactionService _activeTrans;
         private const int MenuId = (int)Menu.DeliveryPlan;
 
         public DeliveryPlanController(IDeliveryPlanService deliveryPlan, ISystemParameterService sysPar, 
-            IClaimService claim, IAuthService auth, IClosingMonthService closingMonthService)
+            IClaimService claim, IAuthService auth, IClosingMonthService closingMonthService, IActiveTransactionService activeTrans)
         {
             _dp = deliveryPlan;
             _sysPar = sysPar;
             _claim = claim;
             _auth = auth;
             _closingMonth = closingMonthService;
+            _activeTrans = activeTrans;
         }
 
         [HttpGet]
@@ -112,7 +115,7 @@ namespace ERP.Web.API.Controllers.Sales
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
             // Validate process
-            var (isValid, message) = Validate(data);
+            var (isValid, message) = Validate(data, checkSeenByOther: false);
             if (!isValid)
                 return Ok(new SaveResult(false, message));
 
@@ -165,7 +168,7 @@ namespace ERP.Web.API.Controllers.Sales
             return Ok(result);
         }
 
-        private (bool, string) Validate(DeliveryPlanRequest data, bool onDelete = false)
+        private (bool, string) Validate(DeliveryPlanRequest data, bool onDelete = false, bool checkSeenByOther = true)
         {
             var periods = new List<string> { data.Date.ToString("yyyyMM") };
             if (data.OriginalDate.HasValue)
@@ -185,6 +188,12 @@ namespace ERP.Web.API.Controllers.Sales
 
                 if (data.ItemDetails.GroupBy(x => new { x.Code, x.TransCode }).Any(x => x.Count() > 1))
                     return(false, "Terdapat transaksi yang sama pada bagian detail.");
+            }
+
+            // Checking is data seen by others
+            if (checkSeenByOther && !_activeTrans.SeenByOthers("DP", data.Code, _claim.UserId))
+            {
+                return (false, "data sedang digunakan oleh pengguna lain.");
             }
 
             return (true, "");

@@ -10,6 +10,7 @@ using ERP.Web.API.Model;
 using ERP.Web.API.Model.Sales;
 using Newtonsoft.Json;
 using ERP.Web.API.Domain.Interfaces.Accounting;
+using ERP.Web.API.Domain.Interfaces.General;
 
 namespace ERP.Web.API.Controllers.Sales
 {
@@ -22,15 +23,17 @@ namespace ERP.Web.API.Controllers.Sales
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
         private readonly IClosingMonthService _closingMonth;
+        private readonly IActiveTransactionService _activeTrans;
         private const int MenuId = (int)Menu.Promo;
 
-        public PromoController(IPromoService promo, ISystemParameterService sysPar, IClaimService claim, IAuthService auth, IClosingMonthService closingMonthService)
+        public PromoController(IPromoService promo, ISystemParameterService sysPar, IClaimService claim, IAuthService auth, IClosingMonthService closingMonthService, IActiveTransactionService activeTrans)
         {
             _promo = promo;
             _sysPar = sysPar;
             _claim = claim;
             _auth = auth;
             _closingMonth = closingMonthService;
+            _activeTrans = activeTrans;
         }
 
         [HttpGet]
@@ -100,7 +103,7 @@ namespace ERP.Web.API.Controllers.Sales
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
             // Validate process
-            var (isValid, message) = Validate(data);
+            var (isValid, message) = Validate(data, checkSeenByOther: false);
             if (!isValid)
                 return Ok(new SaveResult(false, message));
 
@@ -166,7 +169,7 @@ namespace ERP.Web.API.Controllers.Sales
             });
         }
 
-        private (bool, string) Validate(PromoRequest data, bool onDelete = false)
+        private (bool, string) Validate(PromoRequest data, bool onDelete = false, bool checkSeenByOther = true)
         {
             var periods = new List<string> { data.StartDate.ToString("yyyyMM"), data.EndDate.ToString("yyyyMM") };
             if (data.OriginalStartDate.HasValue)
@@ -192,6 +195,12 @@ namespace ERP.Web.API.Controllers.Sales
 
                 if (data.ItemDetails.Where(x => x.ApplyTo != 2).GroupBy(x => new { x.Code, x.ItemId, x.PromoType }).Any(x => x.Count() > 1))
                     return(false, "Terdapat data detail yang sama.");
+            }
+
+            // Checking is data seen by others
+            if (checkSeenByOther && !_activeTrans.SeenByOthers("PROMO", data.Code, _claim.UserId))
+            {
+                return (false, "data sedang digunakan oleh pengguna lain.");
             }
 
             return (true, "");

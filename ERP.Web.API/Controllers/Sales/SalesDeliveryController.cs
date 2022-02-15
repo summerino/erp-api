@@ -10,6 +10,7 @@ using ERP.Web.API.Domain.Interfaces.SystemManagement;
 using ERP.Web.API.Model;
 using ERP.Web.API.Model.Sales;
 using Newtonsoft.Json;
+using ERP.Web.API.Domain.Interfaces.General;
 
 namespace ERP.Web.API.Controllers.Sales
 {
@@ -22,17 +23,18 @@ namespace ERP.Web.API.Controllers.Sales
         private readonly ISystemParameterService _sysPar;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
-
+        private readonly IActiveTransactionService _activeTrans;
         private const int MenuId = (int)Menu.SalesDelivery;
 
         public SalesDeliveryController(ISalesDeliveryService dlv, IClosingMonthService closingMonth,
-            ISystemParameterService sysPar, IClaimService claim, IAuthService auth)
+            ISystemParameterService sysPar, IClaimService claim, IAuthService auth, IActiveTransactionService activeTrans)
         {
             _dlv = dlv;
             _closingMonth = closingMonth;
             _sysPar = sysPar;
             _claim = claim;
             _auth = auth;
+            _activeTrans = activeTrans;
         }
 
         [HttpGet]
@@ -124,7 +126,7 @@ namespace ERP.Web.API.Controllers.Sales
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
             // Validate process
-            var (isValid, message) = Validate(data);
+            var (isValid, message) = Validate(data, checkSeenByOther: false);
             if (!isValid)
                 return Ok(new SaveResult(false, message));
 
@@ -178,7 +180,7 @@ namespace ERP.Web.API.Controllers.Sales
             return Ok(result);
         }
 
-        private (bool, string) Validate(SalesDeliveryRequest data, bool onDelete = false)
+        private (bool, string) Validate(SalesDeliveryRequest data, bool onDelete = false, bool checkSeenByOther = true)
         {
             var periods = new List<string> { data.Date.ToString("yyyyMM") };
             if (data.OriginalDate.HasValue)
@@ -201,6 +203,12 @@ namespace ERP.Web.API.Controllers.Sales
 
                 if (data.ItemDetails.Sum(x => x.Qty) <= 0)
                     return (false, "Jumlah qty barang yang dikirim tidak boleh nol.");
+            }
+
+            // Checking is data seen by others
+            if (checkSeenByOther && !_activeTrans.SeenByOthers("DO", data.Code, _claim.UserId))
+            {
+                return (false, "data sedang digunakan oleh pengguna lain.");
             }
 
             return (true, "");

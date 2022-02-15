@@ -10,6 +10,7 @@ using ERP.Web.API.Domain.Interfaces.SystemManagement;
 using ERP.Web.API.Model;
 using ERP.Web.API.Model.Purchase;
 using Newtonsoft.Json;
+using ERP.Web.API.Domain.Interfaces.General;
 
 namespace ERP.Web.API.Controllers.Purchase
 {
@@ -22,17 +23,18 @@ namespace ERP.Web.API.Controllers.Purchase
         private readonly ISystemParameterService _sysPar;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
-
+        private readonly IActiveTransactionService _activeTrans;
         private const int MenuId = (int)Menu.PurchaseReceive;
 
         public PurchaseReceiveController(IPurchaseReceiveService rcv, IClosingMonthService closingMonth,
-            ISystemParameterService sysPar, IClaimService claim, IAuthService auth)
+            ISystemParameterService sysPar, IClaimService claim, IAuthService auth, IActiveTransactionService activeTrans)
         {
             _rcv = rcv;
             _closingMonth = closingMonth;
             _sysPar = sysPar;
             _claim = claim;
             _auth = auth;
+            _activeTrans = activeTrans;
         }
 
         [HttpGet]
@@ -114,7 +116,7 @@ namespace ERP.Web.API.Controllers.Purchase
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
             // Validate process
-            var (isValid, message) = Validate(data);
+            var (isValid, message) = Validate(data, checkSeenByOther: false);
             if (!isValid)
                 return Ok(new SaveResult(false, message));
 
@@ -168,7 +170,7 @@ namespace ERP.Web.API.Controllers.Purchase
             return Ok(result);
         }
 
-        private (bool, string) Validate(PurchaseReceiveRequest data, bool onDelete = false)
+        private (bool, string) Validate(PurchaseReceiveRequest data, bool onDelete = false, bool checkSeenByOther = true)
         {
             var periods = new List<string> { data.Date.ToString("yyyyMM") };
             if (data.OriginalDate.HasValue)
@@ -191,6 +193,12 @@ namespace ERP.Web.API.Controllers.Purchase
 
                 if (data.ItemDetails.Where(x => x.Type == 0).Sum(x => x.Qty) <= 0)
                     return (false, "Jumlah qty barang yang diterima tidak boleh nol.");
+            }
+
+            // Checking is data seen by others
+            if (checkSeenByOther && !_activeTrans.SeenByOthers("RCV", data.Code, _claim.UserId))
+            {
+                return (false, "data sedang digunakan oleh pengguna lain.");
             }
 
             return (true, "");
