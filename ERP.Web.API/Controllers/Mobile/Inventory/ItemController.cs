@@ -69,6 +69,7 @@ public class ItemController : ControllerBase
             x.IsActive,
             x.UpdatedDate
         }).ToList<dynamic>();
+
         return Ok(new MobileApiResponse
         {
             Count = data.Total,
@@ -80,7 +81,7 @@ public class ItemController : ControllerBase
     public IActionResult GetUomConversion(int? uomId)
     {
         var data = _uom.GetDataConversion(uomId);
-            
+
         return Ok(data);
     }
 
@@ -103,11 +104,11 @@ public class ItemController : ControllerBase
 
         return Ok(data);
     }
-        
+
     [HttpGet("info")]
     public IActionResult GetItemInformation(int itemId, string custCode)
     {
-        var data = _item.GetItemInformation(itemId,custCode);
+        var data = _item.GetItemInformation(itemId, custCode);
 
         return Ok(data);
     }

@@ -6,5 +6,6 @@
         public String WarehouseEmployeeName { get; set; }
         public long WarehouseEmployeeId { get; set; }
         public String WarehouseEmployeeInitial { get; set; }
+        public String WarehouseCode { get; set; }
     }
 }

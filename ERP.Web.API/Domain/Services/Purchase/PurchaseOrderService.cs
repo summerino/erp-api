@@ -1055,7 +1055,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                              };
 
             var data_return = from rcvHeader in Db.MobileReceiveItemHeaders
-                              join pr in Db.PurchaseReturnHeaders on rcvHeader.TransCode equals pr.Code
+                              join pr in Db.VwPurchaseReturnHeaders on rcvHeader.TransCode equals pr.Code
                               join sup in Db.VwSuppliers on rcvHeader.SupCode equals sup.Code
                               select new ReceiveItemHeaderModel
                               {
