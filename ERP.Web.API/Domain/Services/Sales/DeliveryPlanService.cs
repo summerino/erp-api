@@ -283,6 +283,27 @@ namespace ERP.Web.API.Domain.Services.Sales
                 var delDetailItem = Db.DeliveryPlanDetailItems
                     .Where(x => delDetails.Select(d => d.Id).Contains(x.DlvPlanDetailId));
 
+                if (delDetailItem.Any() && delDetailItem != null)
+                {
+                    foreach (var deletedItem in delDetailItem)
+                    {
+                        var transCode = delDetails.FirstOrDefault(x => x.Id == deletedItem.DlvPlanDetailId)?.TransCode;
+                        if (deletedItem.Type == 0)
+                        {
+                            var sdDetail = Db.SalesDeliveryDetails.FirstOrDefault(x => x.Code == transCode && x.ItemId == deletedItem.ItemId && x.UnitId == deletedItem.UnitId);
+                            sdDetail.Qty = deletedItem.Qty;
+                            sdDetail.Total = (sdDetail.NettPrice * deletedItem.Qty);
+                            Db.SalesDeliveryDetails.Update(sdDetail);
+                        }
+                        else
+                        {
+                            var sdDetail = Db.SalesDeliveryDetailFreeGoods.FirstOrDefault(x => x.Code == transCode && x.ItemId == deletedItem.ItemId && x.UnitId == deletedItem.UnitId);
+                            sdDetail.Qty = deletedItem.Qty;
+                            Db.SalesDeliveryDetailFreeGoods.Update(sdDetail);
+                        }
+                    }
+                }
+                
                 Db.DeliveryPlanDetailItems.RemoveRange(delDetailItem);
 
                 short i = 0;
@@ -529,7 +550,8 @@ namespace ERP.Web.API.Domain.Services.Sales
                                     }
                                     else
                                     {
-                                        var sdDetail = Db.SalesDeliveryDetailFreeGoods.FirstOrDefault(x => x.Id == uItem.DetailId);
+                                        var sdDetail = uItem?.DetailId == null ? Db.SalesDeliveryDetailFreeGoods.FirstOrDefault(x => x.Code == item.TransCode && x.ItemId == uItem.ItemId && x.UnitId == uItem.UnitId)
+                                            : Db.SalesDeliveryDetailFreeGoods.FirstOrDefault(x => x.Id == uItem.DetailId);
                                         var dpDetailItem = Db.DeliveryPlanDetailItems.FirstOrDefault(x => x.DlvPlanDetailId == item.Id && x.ItemId == uItem.ItemId && x.UnitId == uItem.UnitId);
 
                                         if (dpDetailItem != null)
@@ -573,7 +595,8 @@ namespace ERP.Web.API.Domain.Services.Sales
 
                                     if (uItem.Type == 0)
                                     {
-                                        var sdDetail = Db.SalesDeliveryDetails.FirstOrDefault(x => x.Id == uItem.DetailId);
+                                        var sdDetail = uItem?.DetailId == null ? Db.SalesDeliveryDetails.FirstOrDefault(x => x.Code == item.TransCode && x.ItemId == uItem.ItemId && x.UnitId == uItem.UnitId)
+                                            : Db.SalesDeliveryDetails.FirstOrDefault(x => x.Id == uItem.DetailId);
                                         var sdHeader = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.Code == sdDetail.Code);
                                         Db.DeliveryPlanDetailItems.Add(new DeliveryPlanDetailItem
                                         {
@@ -638,7 +661,8 @@ namespace ERP.Web.API.Domain.Services.Sales
                                     }
                                     else
                                     {
-                                        var sdDetail = Db.SalesDeliveryDetailFreeGoods.FirstOrDefault(x => x.Id == uItem.DetailId);
+                                        var sdDetail = uItem?.DetailId == null ? Db.SalesDeliveryDetailFreeGoods.FirstOrDefault(x => x.Code == item.TransCode && x.ItemId == uItem.ItemId && x.UnitId == uItem.UnitId)
+                                            : Db.SalesDeliveryDetailFreeGoods.FirstOrDefault(x => x.Id == uItem.DetailId);
                                         Db.DeliveryPlanDetailItems.Add(new DeliveryPlanDetailItem
                                         {
                                             Code = data.Code,
