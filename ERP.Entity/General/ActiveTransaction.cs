@@ -14,5 +14,8 @@ namespace ERP.Entity.General
 
         public string Src { get; set; }
 
+        public string UserName { get; set; }
+
+        public DateTime ViewedDate { get; set; }
     }
 }
