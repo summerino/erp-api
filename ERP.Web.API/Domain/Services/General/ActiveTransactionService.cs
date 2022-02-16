@@ -175,11 +175,12 @@ public class ActiveTransactionService : IActiveTransactionService
             }
 
             var query = @$"
-                SELECT Code, '{srcName}' AS SrcName, '{item.Src}' AS Src
-                FROM {item.TableName}
-                WHERE ViewedBy IS NOT NULL
-                AND ViewedDate IS NOT NULL
-                AND DATEDIFF(MINUTE, ViewedDate, GETDATE()) < {timeout}";
+                SELECT t.Code, '{srcName}' AS SrcName, '{item.Src}' AS Src, u.[Name] AS Username, t.ViewedDate
+                FROM {item.TableName} t
+                LEFT JOIN SystemManagement.[User] u ON u.Id = t.ViewedBy
+                WHERE t.ViewedBy IS NOT NULL
+                AND t.ViewedDate IS NOT NULL
+                AND DATEDIFF(MINUTE, t.ViewedDate, GETDATE()) < {timeout}";
 
             listQuery.Add(query);
         }
