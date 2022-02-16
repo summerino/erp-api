@@ -332,8 +332,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                                             var tierData = detailTierPromo.FirstOrDefault(x => miData2.Sum(x => x.Qty) >= x.FromQty && miData2.Sum(x => x.Qty) <= x.ToQty);
                                             if (tierData != null)
                                             {
-                                                var valueDisc = detailPromo.IsPercentage ?
-                                                    item.UnitPrice * (tierData.Value / 100) : tierData.Value;
+                                                var valueDisc = tierData.Value;
                                                 var prorateDisc = valueDisc / multiItem.Count();
                                                 discPromo.Add(new SalesOrderDetailDiscount
                                                 {
@@ -344,7 +343,8 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                                                     Value = detailPromo.IsPercentage ? tierData.Value : prorateDisc,
                                                     //nettPrice: 0,
                                                     CoaCode = dataPromo.CoaCost,
-                                                    Amount = prorateDisc,
+                                                    Amount = detailPromo.IsPercentage ?
+                                                            item.UnitPrice * (tierData.Value / 100) : prorateDisc,
                                                     //fromPromo: true,
                                                     IsPercentage = detailPromo.IsPercentage
                                                 });
@@ -1070,8 +1070,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                                             var tierData = detailTierPromo.FirstOrDefault(x => miData2.Sum(x => x.Qty) >= x.FromQty && miData2.Sum(x => x.Qty) <= x.ToQty);
                                             if (tierData != null)
                                             {
-                                                var valueDisc = detailPromo.IsPercentage ?
-                                                    item.UnitPrice * (tierData.Value / 100) : tierData.Value;
+                                                var valueDisc = tierData.Value;
                                                 var prorateDisc = valueDisc / multiItem.Count();
                                                 discPromo.Add(new SalesOrderDetailDiscount
                                                 {
@@ -1082,7 +1081,8 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                                                     Value = detailPromo.IsPercentage ? tierData.Value : prorateDisc,
                                                     //nettPrice: 0,
                                                     CoaCode = dataPromo.CoaCost,
-                                                    Amount = prorateDisc,
+                                                    Amount = detailPromo.IsPercentage ?
+                                                            item.UnitPrice * (tierData.Value / 100) : prorateDisc,
                                                     //fromPromo: true,
                                                     IsPercentage = detailPromo.IsPercentage
                                                 });
