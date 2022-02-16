@@ -107,6 +107,7 @@ public class ActiveTransactionService : IActiveTransactionService
         foreach (var item in map)
         {
             string srcName = "";
+            string extraFilter = "";
             switch (item.Src)
             {
                 case "PO":
@@ -139,6 +140,12 @@ public class ActiveTransactionService : IActiveTransactionService
 
                 case "SI":
                     srcName = "Faktur Penjualan";
+                    extraFilter = "AND t.FromDirectInvoice = 0";
+                    break;
+
+                case "DI":
+                    srcName = "Penjualan Langsung";
+                    extraFilter = "AND t.FromDirectInvoice = 1";
                     break;
 
                 case "SR":
@@ -172,6 +179,20 @@ public class ActiveTransactionService : IActiveTransactionService
                 case "FA":
                     srcName = "Aktiva Tetap";
                     break;
+
+                case "TS":
+                    srcName = "Transfer Persediaan";
+                    extraFilter = "AND t.IsConsignee = 0";
+                    break;
+
+                case "CNEE":
+                    srcName = "Konsinyasi";
+                    extraFilter = "AND t.IsConsignee = 1";
+                    break;
+
+                case "ADJ":
+                    srcName = "Penyesuaian";
+                    break;
             }
 
             var query = @$"
@@ -180,7 +201,7 @@ public class ActiveTransactionService : IActiveTransactionService
                 LEFT JOIN SystemManagement.[User] u ON u.Id = t.ViewedBy
                 WHERE t.ViewedBy IS NOT NULL
                 AND t.ViewedDate IS NOT NULL
-                AND DATEDIFF(MINUTE, t.ViewedDate, GETDATE()) < {timeout}";
+                AND DATEDIFF(MINUTE, t.ViewedDate, GETDATE()) < {timeout}" + extraFilter;
 
             listQuery.Add(query);
         }
