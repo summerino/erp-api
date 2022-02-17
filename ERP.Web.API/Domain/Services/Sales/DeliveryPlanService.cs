@@ -276,12 +276,14 @@ namespace ERP.Web.API.Domain.Services.Sales
                 Db.DeliveryPlanDetails.RemoveRange(delDetails);
 
                 var delUnDetails = Db.DeliveryPlanUndeliveredItems
-                    .Where(x => delDetails.Select(d => d.Id).Contains(x.DlvPlanDetailId));
+                    .Where(x => delDetails.Select(d => d.Id).Contains(x.DlvPlanDetailId))
+                    .ToList();
 
                 Db.DeliveryPlanUndeliveredItems.RemoveRange(delUnDetails);
 
                 var delDetailItem = Db.DeliveryPlanDetailItems
-                    .Where(x => delDetails.Select(d => d.Id).Contains(x.DlvPlanDetailId));
+                    .Where(x => delDetails.Select(d => d.Id).Contains(x.DlvPlanDetailId))
+                    .ToList();
 
                 if (delDetailItem.Any() && delDetailItem != null)
                 {
@@ -456,6 +458,35 @@ namespace ERP.Web.API.Domain.Services.Sales
                         Db.DeliveryPlanDetails.Update(item);
                         Db.Entry(item).Property(e => e.Code).IsModified = false;
 
+                        var undelivItem = Db.DeliveryPlanUndeliveredItems
+                            .Where(x => x.Code == data.Code && !item.UndeliveredItems.Select(y => y.Id).Contains(x.Id)).ToList();
+
+                        Db.DeliveryPlanUndeliveredItems.RemoveRange(undelivItem);
+
+                        if (undelivItem.Any() && undelivItem != null)
+                        {
+                            foreach (var deletedItem in undelivItem)
+                            {
+                                if (deletedItem.Type == 0)
+                                {
+                                    var dpdItem = Db.DeliveryPlanDetailItems.FirstOrDefault(x => x.Code == deletedItem.Code && x.ItemId == deletedItem.ItemId && x.UnitId == deletedItem.UnitId && x.Type == deletedItem.Type);
+                                    var sdDetail = Db.SalesDeliveryDetails.FirstOrDefault(x => x.Code == item.TransCode && x.ItemId == deletedItem.ItemId && x.UnitId == deletedItem.UnitId);
+                                    sdDetail.Qty = dpdItem.Qty;
+                                    sdDetail.Total = (sdDetail.NettPrice * dpdItem.Qty);
+                                    Db.SalesDeliveryDetails.Update(sdDetail);
+                                    Db.DeliveryPlanDetailItems.Remove(dpdItem);
+                                }
+                                else
+                                {
+                                    var dpdItem = Db.DeliveryPlanDetailItems.FirstOrDefault(x => x.Code == deletedItem.Code && x.ItemId == deletedItem.ItemId && x.UnitId == deletedItem.UnitId && x.Type == deletedItem.Type);
+                                    var sdDetail = Db.SalesDeliveryDetailFreeGoods.FirstOrDefault(x => x.Code == item.TransCode && x.ItemId == deletedItem.ItemId && x.UnitId == deletedItem.UnitId);
+                                    sdDetail.Qty = dpdItem.Qty;
+                                    Db.SalesDeliveryDetailFreeGoods.Update(sdDetail);
+                                    Db.DeliveryPlanDetailItems.Remove(dpdItem);
+                                }
+                            }
+                        }
+
                         if (item.UndeliveredItems.Any() && item.IsFailShipment)
                         {
                             short j = 0;
@@ -463,7 +494,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                             {
                                 uItem.LineNo = ++j;
 
-                                var unItem = Db.DeliveryPlanUndeliveredItems.FirstOrDefault(x => x.DlvPlanDetailId == item.Id);
+                                var unItem = Db.DeliveryPlanUndeliveredItems.FirstOrDefault(x => x.DlvPlanDetailId == item.Id && x.ItemId == uItem.ItemId && x.UnitId == uItem.UnitId);
                                 if (unItem != null)
                                 {
                                     var lastQty = unItem.Qty;
@@ -509,6 +540,8 @@ namespace ERP.Web.API.Domain.Services.Sales
                                         sdHeader.Total += (sdDetail.NettPrice * lastQty) - (sdDetail.NettPrice * uItem.Qty);
                                         sdHeader.Dpp += (sdDetail.Dpp * lastQty) - (sdDetail.Dpp * uItem.Qty);
                                         Db.SalesDeliveryHeaders.Update(sdHeader);
+
+                                        Db.SaveChanges();
 
                                         Db.Database.ExecuteSqlRaw(
                                                "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
@@ -620,6 +653,8 @@ namespace ERP.Web.API.Domain.Services.Sales
                                         sdHeader.Total -= (sdDetail.NettPrice * uItem.Qty);
                                         sdHeader.Dpp -= (sdDetail.Dpp * uItem.Qty);
                                         Db.SalesDeliveryHeaders.Update(sdHeader);
+
+                                        Db.SaveChanges();
 
                                         Db.Database.ExecuteSqlRaw(
                                                "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
