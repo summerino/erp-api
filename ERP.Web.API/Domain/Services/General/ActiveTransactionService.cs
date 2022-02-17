@@ -166,10 +166,12 @@ public class ActiveTransactionService : IActiveTransactionService
 
                 case "CB":
                     srcName = "Kas Bank Umum";
+                    extraFilter = "AND t.IsInterCashBank = 0";
                     break;
 
                 case "ICB":
                     srcName = "Kas Bank Pemindahan Dana";
+                    extraFilter = "AND t.IsInterCashBank = 1";
                     break;
 
                 case "GEN-JR":
