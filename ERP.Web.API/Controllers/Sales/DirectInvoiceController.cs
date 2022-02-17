@@ -156,7 +156,7 @@ public class DirectInvoiceController : ControllerBase
         }
 
         // Checking is data seen by others
-        if (checkSeenByOther && !_activeTrans.SeenByOthers("SI", data.Code, _claim.UserId))
+        if (checkSeenByOther && !_activeTrans.SeenByOthers("DI", data.Code, _claim.UserId))
         {
             return (false, "data sedang digunakan oleh pengguna lain.");
         }
