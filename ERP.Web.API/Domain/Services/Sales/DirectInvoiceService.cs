@@ -322,7 +322,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                             {
                                 var multiItem = detailMultiPromo.Select(y => y.ItemId);
                                 var isApplicable = multiItem.Intersect(data.ItemDetails.Select(x => x.ItemId));
-                                if (isApplicable.Any())
+                                if (isApplicable.Any() && isApplicable.Contains(item.ItemId))
                                 {
                                     switch (detailPromo.PromoType)
                                     {
@@ -1061,7 +1061,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                             {
                                 var multiItem = detailMultiPromo.Select(y => y.ItemId);
                                 var isApplicable = multiItem.Intersect(data.ItemDetails.Select(x => x.ItemId));
-                                if (isApplicable.Any())
+                                if (isApplicable.Any() && isApplicable.Contains(item.ItemId))
                                 {
                                     switch (detailPromo.PromoType)
                                     {
