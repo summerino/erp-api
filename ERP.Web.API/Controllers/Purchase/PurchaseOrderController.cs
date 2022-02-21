@@ -85,6 +85,7 @@ public class PurchaseOrderController : ControllerBase
                 OldUnitPrice = x.ItemBuyPrice,
                 TotTax = x.Qty * x.TaxAmount,
                 TotDPP = x.Qty * x.Dpp,
+                TotFDH = x.Qty * x.FinalDiscHeader,
                 State = ""
             })
             .ToList<dynamic>();
