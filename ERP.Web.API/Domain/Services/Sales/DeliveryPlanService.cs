@@ -459,7 +459,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                         Db.Entry(item).Property(e => e.Code).IsModified = false;
 
                         var undelivItem = Db.DeliveryPlanUndeliveredItems
-                            .Where(x => x.Code == data.Code && !item.UndeliveredItems.Select(y => y.Id).Contains(x.Id)).ToList();
+                            .Where(x => x.DlvPlanDetailId == item.Id && !item.UndeliveredItems.Select(y => y.Id).Contains(x.Id)).ToList();
 
                         Db.DeliveryPlanUndeliveredItems.RemoveRange(undelivItem);
 
