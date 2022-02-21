@@ -87,6 +87,7 @@ namespace ERP.Web.API.Controllers.Sales
                     OldUnitPrice = x.ItemSellPrice,
                     TotTax = x.Qty * x.TaxAmount,
                     TotDPP = x.Qty * x.Dpp,
+                    TotFDH = x.Qty * x.FinalDiscHeader,
                     State = "",
                     discPromo = discData.Where(d => d.OrderDetailId == x.Id).OrderBy(d => d.LineNo)
                 })
