@@ -813,8 +813,9 @@ namespace ERP.Web.API.Domain.Services.Sales
                 data.ApprovedBy = null;
                 data.ApprovedDate = null;
 
+                var originData = Db.SalesOrderHeaders.AsNoTracking().FirstOrDefault(x => x.Code == data.Code);
                 // Restore Credit Used
-                RestoreCreditUsed(data.Code, data.CustCode);
+                RestoreCreditUsed(data.Code, originData.CustCode);
 
                 // Get detail data that exists in order before
                 var delDetails = Db.SalesOrderDetails

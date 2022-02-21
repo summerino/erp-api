@@ -852,8 +852,9 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
             data.ApprovedBy = null;
             data.ApprovedDate = null;
 
+            var originData = Db.SalesOrderHeaders.AsNoTracking().FirstOrDefault(x => x.Code == data.Code);
             // Restore Credit Used
-            RestoreCreditUsed(data.Code, data.CustCode);
+            RestoreCreditUsed(data.Code, originData.CustCode);
 
             var orderData = Db.SalesOrderHeaders.FirstOrDefault(x => x.Code == data.SoCode);
             var invDetail = Db.SalesInvoiceDetails.FirstOrDefault(x => x.Code == data.Code);
