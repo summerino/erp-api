@@ -333,7 +333,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                                 {
                                     var multiItem = detailMultiPromo.Select(y => y.ItemId);
                                     var isApplicable = multiItem.Intersect(data.ItemDetails.Select(x => x.ItemId));
-                                    if (isApplicable.Any())
+                                    if (isApplicable.Any() && isApplicable.Contains(item.ItemId))
                                     {
                                         switch (detailPromo.PromoType)
                                         {
@@ -1016,7 +1016,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                                 {
                                     var multiItem = detailMultiPromo.Select(y => y.ItemId);
                                     var isApplicable = multiItem.Intersect(data.ItemDetails.Select(x => x.ItemId));
-                                    if (isApplicable.Any())
+                                    if (isApplicable.Any() && isApplicable.Contains(item.ItemId))
                                     {
                                         switch (detailPromo.PromoType)
                                         {
