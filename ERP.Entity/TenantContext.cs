@@ -293,6 +293,10 @@ namespace ERP.Entity
         public DbSet<VwSalesReturnDetail> VwSalesReturnDetails { get; set; }
         public DbSet<SalesReturnDetailExchDiffItem> SalesReturnDetailExchDiffItems { get; set; }
         public DbSet<VwSalesReturnDetailExchDiffItem> VwSalesReturnDetailExchDiffItems { get; set; }
+        public DbSet<SalesTargetHeader> SalesTargetHeaders { get; set; }
+        public DbSet<VwSalesTargetHeader> VwSalesTargetHeaders { get; set; }
+        public DbSet<SalesTargetSubject> SalesTargetSubjects { get; set; }
+        public DbSet<SalesTargetDetail> SalesTargetDetails { get; set; }
         public DbSet<VisitOrder> VisitOrders { get; set; }
         public DbSet<VisitOrderCustomer> VisitOrderCustomers { get; set; }
         public DbSet<VisitOrderInvoice> VisitOrderInvoices { get; set; }
@@ -2449,6 +2453,53 @@ namespace ERP.Entity
             modelBuilder.Entity<VwSalesReturnDetailExchDiffItem>()
                 .HasNoKey()
                 .ToView("vwSalesReturnDetailExchDiffItem", Schema.Sales);
+
+            // Sales Target model
+            modelBuilder.Entity<SalesTargetHeader>(entity =>
+                entity.Property(e => e.Mark)
+                    .IsRequired()
+            );
+
+            modelBuilder.Entity<VwSalesTargetHeader>()
+                .HasNoKey()
+                .ToView("vwSalesTargetHeader", Schema.Sales);
+
+            modelBuilder.Entity<SalesTargetSubject>(entity =>
+            {
+                entity.Property(e => e.Code)
+                    .IsRequired();
+
+                entity.HasOne<SalesTargetHeader>()
+                    .WithMany()
+                    .HasForeignKey(d => d.Code)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<Employee>()
+                    .WithMany()
+                    .HasForeignKey(d => d.SalesmanId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            modelBuilder.Entity<SalesTargetDetail>(entity =>
+            {
+                entity.Property(e => e.Code)
+                    .IsRequired();
+
+                entity.HasOne<SalesTargetHeader>()
+                    .WithMany()
+                    .HasForeignKey(d => d.Code)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<ItemGroup>()
+                    .WithMany()
+                    .HasForeignKey(d => d.ItemGroupId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne<ItemGroupSubGroup>()
+                    .WithMany()
+                    .HasForeignKey(d => d.ItemSubGroupId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
 
             // Visit Order model
             modelBuilder.Entity<VisitOrder>(entity =>
