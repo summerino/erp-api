@@ -1668,7 +1668,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                 RestoreCreditMemo(code);
 
                 // Decrease CreditUsed
-                RestoreCreditUsed(data.CustCode, data.CustCode);
+                RestoreCreditUsed(data.SoCode, data.CustCode);
 
                 transaction.Commit();
             }
