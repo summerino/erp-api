@@ -145,7 +145,8 @@ namespace ERP.Web.API.Domain.Services.Sales
 
                             if (uItem.Type == 0)
                             {
-                                var sdDetail = Db.SalesDeliveryDetails.FirstOrDefault(x => x.Id == uItem.DetailId);
+                                var sdDetail = uItem?.DetailId == null ? Db.SalesDeliveryDetails.FirstOrDefault(x => x.Code == item.TransCode && x.ItemId == uItem.ItemId && x.UnitId == uItem.UnitId)
+                                            : Db.SalesDeliveryDetails.FirstOrDefault(x => x.Id == uItem.DetailId);
                                 var sdHeader = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.Code == sdDetail.Code);
                                 Db.DeliveryPlanDetailItems.Add(new DeliveryPlanDetailItem
                                 {
