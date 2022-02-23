@@ -54,7 +54,9 @@ public enum Actions
     OverLimit = 42,
     Approve = 43,
     Reject = 44,
-    ShowInventoryValue = 45
+    ShowInventoryValue = 45,
+    Unlock = 46,
+    Clone = 47
 }
 
 public enum Menu 
@@ -103,6 +105,7 @@ public enum Menu
     // Sales
     Area = 42,
     SalesmanGroup = 58,
+    SalesmanTarget = 151,
     Promo = 56,
     SalesOrder = 44,
     SalesDelivery = 45,
