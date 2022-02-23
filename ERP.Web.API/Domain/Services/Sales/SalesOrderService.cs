@@ -415,7 +415,13 @@ namespace ERP.Web.API.Domain.Services.Sales
 
                     var taxData = taxes.FirstOrDefault(x => x.Id == item.TaxId);
                     var discHeaderProrate = 0m;
-                    if (data.FinalDisc > 0)
+                    if (data.FinalDiscPercent > 0)
+                    {
+                        var amountPercent = (data.IncludeTax ? data.SubTotal : data.Dpp) * (data.FinalDiscPercent / 100);
+                        discHeaderProrate = (amountPercent / data.ItemDetails.Sum(x => (x.UnitPrice - x.Disc) * x.Qty)) * (item.Qty * (item.UnitPrice - item.Disc));
+                        discHeaderProrate /= item.Qty;
+                    }
+                    else if (data.FinalDisc > 0)
                     {
                         discHeaderProrate = (data.FinalDisc / data.ItemDetails.Sum(x => (x.UnitPrice - x.Disc) * x.Qty)) * (item.Qty * (item.UnitPrice - item.Disc));
                         discHeaderProrate /= item.Qty;
@@ -1102,7 +1108,13 @@ namespace ERP.Web.API.Domain.Services.Sales
 
                     var taxData = taxes.FirstOrDefault(x => x.Id == item.TaxId);
                     var discHeaderProrate = 0m;
-                    if (data.FinalDisc > 0)
+                    if (data.FinalDiscPercent > 0)
+                    {
+                        var amountPercent = (data.IncludeTax ? data.SubTotal : data.Dpp) * (data.FinalDiscPercent / 100);
+                        discHeaderProrate = (amountPercent / data.ItemDetails.Sum(x => (x.UnitPrice - x.Disc) * x.Qty)) * (item.Qty * (item.UnitPrice - item.Disc));
+                        discHeaderProrate /= item.Qty;
+                    }
+                    else if (data.FinalDisc > 0)
                     {
                         discHeaderProrate = (data.FinalDisc / data.ItemDetails.Sum(x => (x.UnitPrice - x.Disc) * x.Qty)) * (item.Qty * (item.UnitPrice - item.Disc));
                         discHeaderProrate /= item.Qty;
