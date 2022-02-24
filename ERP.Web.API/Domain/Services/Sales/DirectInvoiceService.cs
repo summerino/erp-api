@@ -401,8 +401,8 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                                         if (tierData != null)
                                         {
                                             var prorateValue = tierData.IsPercentage ?
-                                                (item.UnitPrice / data.ItemDetails.Sum(x => x.UnitPrice)) * tierData.Value / item.Qty :
-                                                (item.UnitPrice / data.ItemDetails.Sum(x => x.UnitPrice)) * (item.UnitPrice * (tierData.Value / 100)) / item.Qty;
+                                                (item.UnitPrice / data.ItemDetails.Sum(x => x.UnitPrice)) * (item.UnitPrice * (tierData.Value / 100)) / item.Qty :
+                                                (item.UnitPrice / data.ItemDetails.Sum(x => x.UnitPrice)) * tierData.Value / item.Qty;
                                             discPromo.Add(new SalesOrderDetailDiscount
                                             {
                                                 PromoCode = dataPromo.Code,
@@ -424,8 +424,8 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                                         if (tierData5 != null)
                                         {
                                             var prorateValue = tierData5.IsPercentage ?
-                                                (item.UnitPrice / data.ItemDetails.Sum(x => x.UnitPrice)) * tierData5.Value / item.Qty :
-                                                (item.UnitPrice / data.ItemDetails.Sum(x => x.UnitPrice)) * (item.UnitPrice * (tierData5.Value / 100)) / item.Qty;
+                                                (item.UnitPrice / data.ItemDetails.Sum(x => x.UnitPrice)) * (item.UnitPrice * (tierData5.Value / 100)) / item.Qty :
+                                                (item.UnitPrice / data.ItemDetails.Sum(x => x.UnitPrice)) * tierData5.Value / item.Qty;
                                             discPromo.Add(new SalesOrderDetailDiscount
                                             {
                                                 PromoCode = dataPromo.Code,
@@ -1147,8 +1147,8 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                                         if (tierData != null)
                                         {
                                             var prorateValue = tierData.IsPercentage ?
-                                                (item.UnitPrice / data.ItemDetails.Sum(x => x.UnitPrice)) * tierData.Value / item.Qty :
-                                                (item.UnitPrice / data.ItemDetails.Sum(x => x.UnitPrice)) * (item.UnitPrice * (tierData.Value / 100)) / item.Qty;
+                                                (item.UnitPrice / data.ItemDetails.Sum(x => x.UnitPrice)) * (item.UnitPrice * (tierData.Value / 100)) / item.Qty :
+                                                (item.UnitPrice / data.ItemDetails.Sum(x => x.UnitPrice)) * tierData.Value / item.Qty;
                                             discPromo.Add(new SalesOrderDetailDiscount
                                             {
                                                 PromoCode = dataPromo.Code,
@@ -1170,8 +1170,8 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                                         if (tierData5 != null)
                                         {
                                             var prorateValue = tierData5.IsPercentage ?
-                                                (item.UnitPrice / data.ItemDetails.Sum(x => x.UnitPrice)) * tierData5.Value / item.Qty :
-                                                (item.UnitPrice / data.ItemDetails.Sum(x => x.UnitPrice)) * (item.UnitPrice * (tierData5.Value / 100)) / item.Qty;
+                                                (item.UnitPrice / data.ItemDetails.Sum(x => x.UnitPrice)) * (item.UnitPrice * (tierData5.Value / 100)) / item.Qty :
+                                                (item.UnitPrice / data.ItemDetails.Sum(x => x.UnitPrice)) * tierData5.Value / item.Qty;
                                             discPromo.Add(new SalesOrderDetailDiscount
                                             {
                                                 PromoCode = dataPromo.Code,
