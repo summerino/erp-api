@@ -193,6 +193,18 @@ namespace ERP.Web.API.Domain.Services.Sales
                     .Where(d => d.Code == data.Code && !data.ItemDetails.Select(x => x.Id).Contains(d.Id))
                     .ToList();
 
+                var delTierDetails = Db.PromoDetailTiers
+                        .Where(d => delDetails.Select(x => x.Id).Contains(d.PromoDetailId))
+                        .ToList();
+
+                Db.PromoDetailTiers.RemoveRange(delTierDetails);
+
+                var delMultiItem = Db.PromoDetailMultipleItems
+                         .Where(d => delDetails.Select(x => x.Id).Contains(d.PromoDetailId))
+                         .ToList();
+
+                Db.PromoDetailMultipleItems.RemoveRange(delMultiItem);
+
                 Db.PromoDetails.RemoveRange(delDetails);
 
                 var delSubject = Db.PromoSubjects
@@ -212,12 +224,11 @@ namespace ERP.Web.API.Domain.Services.Sales
                         return result;
                     }
 
-                    var delTierDetails = Db.PromoDetailTiers
-                                            .Where(d => d.PromoDetailId == item.Id && !item.PromoTierList.Select(x => x.Id).Contains(d.Id))
-                                            .ToList();
+                    var delTierDetailsData = Db.PromoDetailTiers
+                            .Where(d => d.PromoDetailId == item.Id && !item.PromoTierList.Select(x => x.Id).Contains(d.Id))
+                            .ToList();
 
-                    Db.PromoDetailTiers.RemoveRange(delTierDetails);
-
+                    Db.PromoDetailTiers.RemoveRange(delTierDetailsData);
                     long idDetail = 0;
                     if (item.Id < 0)
                     {
@@ -252,11 +263,11 @@ namespace ERP.Web.API.Domain.Services.Sales
                         idDetail = item.Id;
                     }
 
-                    var delMultiItem = Db.PromoDetailMultipleItems
-                                            .Where(d => d.PromoDetailId == idDetail)
-                                            .ToList();
+                    var delMultiItemData = Db.PromoDetailMultipleItems
+                            .Where(d => d.PromoDetailId == item.Id && !item.MultipleItem.Select(x => x.Id).Contains(d.Id))
+                            .ToList();
 
-                    Db.PromoDetailMultipleItems.RemoveRange(delMultiItem);
+                    Db.PromoDetailMultipleItems.RemoveRange(delMultiItemData);
                     if (item.MultipleItem.Count() > 1)
                     {
                         foreach (var mItem in item.MultipleItem)
