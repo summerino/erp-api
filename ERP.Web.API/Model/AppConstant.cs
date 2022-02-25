@@ -120,6 +120,7 @@ public enum Menu
     SalesDeliveryReport = 146,
     SalesInvoiceReport = 147,
     SalesReturnReport = 148,
+    SalesTargetReport = 153,
     AccountReceivableReport = 93,
     AccountReceivableMutationReport = 132,
     AccountReceivableAgingReport = 134,
