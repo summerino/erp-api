@@ -30,7 +30,7 @@ namespace ERP.Entity
 
         // Core entities
         public DbSet<BaseNewCodeEntity> NewCodes { get; set; }
-
+        
         // Accounting entities
         public DbSet<BeginningBalanceAP> BeginningBalanceAPs { get; set; }
         public DbSet<VwBeginningBalanceAP> VwBeginningBalanceAPs { get; set; }
@@ -327,6 +327,8 @@ namespace ERP.Entity
         public DbSet<ReportByDetailSI> ReportByDetailSIs { get; set; }
         public DbSet<ReportBySR> ReportBySRs { get; set; }
         public DbSet<ReportByDetailSR> ReportByDetailSRs { get; set; }
+        public DbSet<ReportByST> ReportBySTs { get; set; }
+        public DbSet<ReportByDetailST> ReportByDetailSTs { get; set; }
 
         // System Management entities
         public DbSet<SystemManagement.Action> Actions { get; set; }
@@ -2500,6 +2502,14 @@ namespace ERP.Entity
                     .HasForeignKey(d => d.ItemSubGroupId)
                     .OnDelete(DeleteBehavior.NoAction);
             });
+
+            modelBuilder.Entity<ReportByST>()
+               .HasNoKey()
+               .ToTable("ReportByST", t => t.ExcludeFromMigrations());
+
+            modelBuilder.Entity<ReportByDetailST>()
+               .HasNoKey()
+               .ToTable("ReportByDetailST", t => t.ExcludeFromMigrations());
 
             // Visit Order model
             modelBuilder.Entity<VisitOrder>(entity =>
