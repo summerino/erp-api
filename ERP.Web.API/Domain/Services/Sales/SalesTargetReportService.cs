@@ -99,7 +99,9 @@ namespace ERP.Web.API.Domain.Services.Sales
                         x.ItemSubGroupId == item.ItemSubGroupId &&
                         (x.SubGroup1 == item.ItemSubGroup2 || x.SubGroup2 == item.ItemSubGroup2 ||
                         x.SubGroup3 == item.ItemSubGroup2 || x.SubGroup4 == item.ItemSubGroup2 ||
-                        x.SubGroup5 == item.ItemSubGroup2)).ToList();
+                        x.SubGroup5 == item.ItemSubGroup2) &&
+                        x.Date >= Convert.ToDateTime(startDate) &&
+                        x.Date <= Convert.ToDateTime(endDate)).ToList();
 
                     item.TotalCustomers = itemDetailData.DistinctBy(x => x.CustCode).Count();
                     item.RealAmount = itemDetailData.Sum(x => x.TotalNettPrice);

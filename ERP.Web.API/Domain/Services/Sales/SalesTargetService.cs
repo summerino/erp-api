@@ -323,8 +323,8 @@ namespace ERP.Web.API.Domain.Services.Sales
             var result = true;
             var stData = Db.SalesTargetHeaders
                 .Where(x => x.Code != data.Code && x.Mark == "A" &&
-                data.StartDate >= x.StartDate && data.StartDate <= x.EndDate && 
-                data.EndDate >= x.StartDate && data.EndDate <= x.EndDate)
+                (data.StartDate >= x.StartDate && data.StartDate <= x.EndDate || 
+                data.EndDate >= x.StartDate && data.EndDate <= x.EndDate))
                 .ToList();
             if (stData.Any())
             {
