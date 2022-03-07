@@ -654,7 +654,6 @@ namespace ERP.Web.API.Domain.Services.Mobile.TransactionHistory
                         join sod in Db.MobileOrderDetails on so.Code equals sod.Code
                         join it in Db.Items.Where(x => x.SubGroup1.Contains(detailSubGroup) || x.SubGroup2.Contains(detailSubGroup) || x.SubGroup3.Contains(detailSubGroup) || x.SubGroup4.Contains(detailSubGroup) || x.SubGroup5.Contains(detailSubGroup)) on sod.ItemId equals it.Id
                         join un in Db.UoMConversions on sod.UnitId equals un.Id
-                        where so.Date == date
                         group new { so, sod, it, un } by new { so.SalesBy, sod.ItemId, it.Name, sod.UnitId, un.UnitEquivalent } into g
                         select new TransactionHistoryItemBySubGroupSummary
                         {

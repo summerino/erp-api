@@ -253,5 +253,13 @@ namespace ERP.Web.API.Domain.Services.Mobile.HumanResource
                         }).SingleOrDefault();
             return data;
         }
+
+        public DateTime? GetLastAttendance(int userId)
+        {
+            var employeeId = Db.Users.Where(x => x.Id.Equals(userId)).Select(x => x.EmployeeId).FirstOrDefault();
+            var data = Db.Attendances.Where(z=>z.EmployeeId.Equals(employeeId)).Select(y=>y.Date).OrderByDescending(i => i.Date).FirstOrDefault();
+
+            return data;
+        }
     }
 }
