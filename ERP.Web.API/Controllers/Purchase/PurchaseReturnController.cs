@@ -11,6 +11,7 @@ using ERP.Web.API.Model;
 using ERP.Web.API.Model.Purchase;
 using Newtonsoft.Json;
 using ERP.Web.API.Domain.Interfaces.Accounting;
+using ERP.Web.API.Domain.Interfaces.General;
 
 namespace ERP.Web.API.Controllers.Purchase
 {
@@ -24,10 +25,11 @@ namespace ERP.Web.API.Controllers.Purchase
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
         private readonly IClosingMonthService _closingMonth;
+        private readonly IActiveTransactionService _activeTrans;
         private const int MenuId = (int)Menu.PurchaseReturn;
 
         public PurchaseReturnController(IPurchaseReturnService rtn, IUnitOfMeasurementService uom,
-            ISystemParameterService sysPar, IClaimService claim, IAuthService auth, IClosingMonthService closingMonthService)
+            ISystemParameterService sysPar, IClaimService claim, IAuthService auth, IClosingMonthService closingMonthService, IActiveTransactionService activeTrans)
         {
             _rtn = rtn;
             _uom = uom;
@@ -35,6 +37,7 @@ namespace ERP.Web.API.Controllers.Purchase
             _claim = claim;
             _auth = auth;
             _closingMonth = closingMonthService;
+            _activeTrans = activeTrans;
         }
 
         [HttpGet]
@@ -192,7 +195,7 @@ namespace ERP.Web.API.Controllers.Purchase
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
             // Validate process
-            var (isValid, message) = Validate(data);
+            var (isValid, message) = Validate(data, checkSeenByOther: false);
             if (!isValid)
                 return Ok(new SaveResult(false, message));
 
@@ -246,7 +249,7 @@ namespace ERP.Web.API.Controllers.Purchase
             return Ok(result);
         }
 
-        private (bool, string) Validate(PurchaseReturnRequest data, bool onDelete = false)
+        private (bool, string) Validate(PurchaseReturnRequest data, bool onDelete = false, bool checkSeenByOther = true)
         {
             var periods = new List<string> { data.Date.ToString("yyyyMM") };
             if (data.OriginalDate.HasValue)
@@ -272,6 +275,12 @@ namespace ERP.Web.API.Controllers.Purchase
 
                 if (data.ItemDetails.Sum(x => x.Qty) <= 0)
                     return(false, "Jumlah qty barang tidak boleh nol.");
+            }
+
+            // Checking is data seen by others
+            if (checkSeenByOther && !_activeTrans.SeenByOthers("PR", data.Code, _claim.UserId))
+            {
+                return (false, "data sedang digunakan oleh pengguna lain.");
             }
 
             return (true, "");

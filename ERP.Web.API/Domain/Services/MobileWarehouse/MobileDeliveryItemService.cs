@@ -246,6 +246,8 @@ namespace ERP.Web.API.Domain.Services.MobileWarehouse
                                     itemDoData.Dpp -= (doDetailData.Dpp * qtyFailedtoSend);
                                     Db.SalesDeliveryHeaders.Update(itemDoData);
 
+                                    Db.SaveChanges();
+
                                     Db.Database.ExecuteSqlRaw(
                                        "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
                                        itemDoData.Code, itemDoData.Date, itemDoData.TransCode);

@@ -1,46 +1,41 @@
-﻿using System.Linq.Dynamic.Core;
-using Microsoft.AspNetCore.Mvc;
-using ERP.Common;
+﻿using ERP.Common;
 using ERP.Common.Models;
 using ERP.Entity;
-using ERP.Web.API.Domain.Interfaces.Accounting;
 using ERP.Web.API.Domain.Interfaces.Auth;
+using ERP.Web.API.Domain.Interfaces.Sales;
 using ERP.Web.API.Domain.Interfaces.SystemManagement;
 using ERP.Web.API.Model;
-using ERP.Web.API.Model.Accounting;
+using ERP.Web.API.Model.Sales;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using ERP.Web.API.Domain.Interfaces.General;
+using System.Linq.Dynamic.Core;
 
-namespace ERP.Web.API.Controllers.Accounting
+namespace ERP.Web.API.Controllers.Sales
 {
-    [Route("general-journal")]
+    [Route("salesman-target")]
     [ApiController]
-    public class GeneralJournalController : ControllerBase
+    public class SalesTargetController : ControllerBase
     {
-        private readonly IGeneralJournalService _gj;
+        private readonly ISalesTargetService _salesTarget;
         private readonly ISystemParameterService _sysPar;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
-        private readonly IClosingMonthService _closingMonth;
-        private readonly IActiveTransactionService _activeTrans;
-        private const int MenuId = (int)Menu.GeneralJournal;
+        private const int MenuId = (int)Menu.SalesmanTarget;
 
-        public GeneralJournalController(IGeneralJournalService gj, ISystemParameterService sysPar,
-            IClaimService claim, IAuthService auth, IClosingMonthService closingMonthService, IActiveTransactionService activeTrans)
+        public SalesTargetController(ISalesTargetService salesTarget, ISystemParameterService sysPar, IClaimService claim, IAuthService auth)
         {
-            _gj = gj;
+            _salesTarget = salesTarget;
             _sysPar = sysPar;
             _claim = claim;
             _auth = auth;
-            _closingMonth = closingMonthService;
-            _activeTrans = activeTrans;
         }
 
         [HttpGet]
         public IActionResult GetData(string search, string filters, string sorts, int skip, int take)
         {
             var data =
-                _gj.GetData(
+                _salesTarget.GetData(
                     skip, take,
                     JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
                     JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
@@ -56,18 +51,19 @@ namespace ERP.Web.API.Controllers.Accounting
         [HttpGet("detail")]
         public IActionResult GetDetailData(string code)
         {
-            var data = _gj.GetDetailData(code)
-                .Select(x => new
-                {
-                    x.Id,
-                    x.Code,
-                    x.LineNo,
-                    x.CoaCode,
-                    x.Notes,
-                    x.Type,
-                    x.Amount
-                })
-                .ToList<dynamic>();
+            var data = _salesTarget.GetDetailData(code).ToList<dynamic>();
+
+            return Ok(new ApiResponse
+            {
+                RowCount = data.Count,
+                TableData = data
+            });
+        }
+
+        [HttpGet("subject")]
+        public IActionResult GetSubjectData(string code)
+        {
+            var data = _salesTarget.GetSubjectData(code).ToList<dynamic>();
 
             return Ok(new ApiResponse
             {
@@ -77,14 +73,14 @@ namespace ERP.Web.API.Controllers.Accounting
         }
 
         [HttpPost]
-        public IActionResult OnPost(GeneralJournalRequest data)
+        public IActionResult OnPost(SalesTargetRequest data)
         {
             // Checking role authorization
             if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Insert }).Any())
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
             // Validate process
-            var (isValid, message) = Validate(data, checkSeenByOther: false);
+            var (isValid, message) = Validate(data);
             if (!isValid)
                 return Ok(new SaveResult(false, message));
 
@@ -95,13 +91,13 @@ namespace ERP.Web.API.Controllers.Accounting
             data.UpdatedBy = data.CreatedBy;
             data.UpdatedDate = data.CreatedDate;
 
-            var result = _gj.Insert(data);
+            var result = _salesTarget.Insert(data);
 
             return Ok(result);
         }
 
         [HttpPut("{code}")]
-        public IActionResult OnPut(string code, GeneralJournalRequest data)
+        public IActionResult OnPut(SalesTargetRequest data)
         {
             // Checking role authorization
             if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
@@ -116,13 +112,13 @@ namespace ERP.Web.API.Controllers.Accounting
             data.UpdatedBy = _claim.UserId;
             data.UpdatedDate = DateTime.Now;
 
-            var result = _gj.Update(data);
+            var result = _salesTarget.Update(data);
 
             return Ok(result);
         }
 
         [HttpDelete("{code}")]
-        public IActionResult OnDelete(string code, GeneralJournalRequest data)
+        public IActionResult OnDelete(string code, SalesTargetRequest data)
         {
             // Checking role authorization
             if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Void }).Any())
@@ -133,33 +129,49 @@ namespace ERP.Web.API.Controllers.Accounting
             if (!isValid)
                 return Ok(new SaveResult(false, message));
 
-            var result = _gj.Delete(data.Code, _claim.UserId);
+            var result = _salesTarget.Delete(data.Code, _claim.UserId);
 
             return Ok(result);
         }
 
-        private (bool, string) Validate(GeneralJournalRequest data, bool onDelete = false, bool checkSeenByOther = true)
+        [HttpPost("clone")]
+        public IActionResult OnClone(SalesTargetRequest data)
         {
-            var periods = new List<string> { data.Date.ToString("yyyyMM") };
-            if (data.OriginalDate.HasValue)
-                periods.Add(data.OriginalDate.Value.ToString("yyyyMM"));
+            // Checking role authorization
+            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Clone }).Any())
+                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
-            if (_closingMonth.IsMonthClosed(periods))
-                return (false, "Periode sudah ditutup. Silakan hubungi departemen akuntansi.");
+            var result = _salesTarget.Clone(data.Code, data.Name, data.StartDate, data.EndDate, _claim.UserId);
+
+            return Ok(result);
+        }
+
+        private (bool, string) Validate(SalesTargetRequest data, bool onDelete = false)
+        {
+            // Checking data start date validity
+            if (!_sysPar.IsStartDateValid(data.StartDate))
+                return (false, "Tanggal Mulai tidak boleh lebih kecil dari tanggal mulai data.");
 
             // Checking data start date validity
-            if (!_sysPar.IsStartDateValid(data.Date))
-                return (false, "Tanggal tidak boleh lebih kecil dari tanggal mulai data.");
+            if (!_sysPar.IsStartDateValid(data.EndDate))
+                return (false, "Tanggal Akhir tidak boleh lebih kecil dari tanggal mulai data.");
 
-            // Checking is data seen by others
-            if (checkSeenByOther && !_activeTrans.SeenByOthers("GEN-JR", data.Code, _claim.UserId))
+            if (!onDelete)
             {
-                return (false, "data sedang digunakan oleh pengguna lain.");
+                if (!data.ItemDetails.Any())
+                    return (false, "Detail tidak boleh kosong.");
+
+                if (!data.ItemSubjects.Any())
+                    return (false, "Subyek tidak boleh kosong.");
+
+                if (data.ItemDetails.GroupBy(x => new { x.Code, x.ItemGroupId, x.ItemSubGroupId, x.SubGroup }).Any(x => x.Count() > 1))
+                    return (false, "Terdapat data detail yang sama.");
+
+                if (data.ItemSubjects.GroupBy(x => new { x.Code, x.SalesmanId }).Any(x => x.Count() > 1))
+                    return (false, "Terdapat data subyek yang sama.");
             }
 
-            return !onDelete && !data.Details.Any()
-                ? (false, "Detail tidak boleh kosong.")
-                : (true, "");
+            return (true, "");
         }
     }
 }

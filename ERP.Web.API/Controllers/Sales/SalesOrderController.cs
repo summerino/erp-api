@@ -11,6 +11,7 @@ using ERP.Web.API.Domain.Interfaces.SystemManagement;
 using ERP.Web.API.Model;
 using ERP.Web.API.Model.Sales;
 using Newtonsoft.Json;
+using ERP.Web.API.Domain.Interfaces.General;
 
 namespace ERP.Web.API.Controllers.Sales
 {
@@ -24,12 +25,12 @@ namespace ERP.Web.API.Controllers.Sales
         private readonly ISystemParameterService _sysPar;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
-
+        private readonly IActiveTransactionService _activeTrans;
         private const int MenuId = (int)Menu.SalesOrder;
 
         public SalesOrderController(ISalesOrderService so, IUnitOfMeasurementService uom,
             IClosingMonthService closingMonth, ISystemParameterService sysPar,
-            IClaimService claim, IAuthService auth)
+            IClaimService claim, IAuthService auth, IActiveTransactionService activeTrans)
         {
             _so = so;
             _uom = uom;
@@ -37,6 +38,7 @@ namespace ERP.Web.API.Controllers.Sales
             _sysPar = sysPar;
             _auth = auth;
             _claim = claim;
+            _activeTrans = activeTrans;
         }
 
         [HttpGet]
@@ -85,6 +87,7 @@ namespace ERP.Web.API.Controllers.Sales
                     OldUnitPrice = x.ItemSellPrice,
                     TotTax = x.Qty * x.TaxAmount,
                     TotDPP = x.Qty * x.Dpp,
+                    TotFDH = x.Qty * x.FinalDiscHeader,
                     State = "",
                     discPromo = discData.Where(d => d.OrderDetailId == x.Id).OrderBy(d => d.LineNo)
                 })
@@ -143,7 +146,7 @@ namespace ERP.Web.API.Controllers.Sales
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
             // Validate process
-            var (isValid, message) = Validate(data);
+            var (isValid, message) = Validate(data, checkSeenByOther: false);
             if (!isValid)
                 return Ok(new SaveResult(false, message));
 
@@ -215,7 +218,7 @@ namespace ERP.Web.API.Controllers.Sales
             return Ok(result);
         }
 
-        private (bool, string) Validate(SalesOrderRequest data, bool onDelete = false)
+        private (bool, string) Validate(SalesOrderRequest data, bool onDelete = false, bool checkSeenByOther = true)
         {
             var periods = new List<string> { data.Date.ToString("yyyyMM") };
             if (data.OriginalDate.HasValue)
@@ -241,6 +244,12 @@ namespace ERP.Web.API.Controllers.Sales
 
                 //if (data.Total <= 0)
                 //    return (false, "Nilai total tidak boleh minus.");
+            }
+
+            // Checking is data seen by others
+            if (checkSeenByOther && !_activeTrans.SeenByOthers("SO", data.Code, _claim.UserId))
+            {
+                return (false, "data sedang digunakan oleh pengguna lain.");
             }
 
             return (true, "");

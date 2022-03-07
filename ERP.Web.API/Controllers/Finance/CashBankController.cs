@@ -11,6 +11,7 @@ using ERP.Web.API.Domain.Models.Finance;
 using ERP.Web.API.Model;
 using ERP.Web.API.Model.Finance;
 using Newtonsoft.Json;
+using ERP.Web.API.Domain.Interfaces.General;
 
 namespace ERP.Web.API.Controllers.Finance
 {
@@ -23,17 +24,18 @@ namespace ERP.Web.API.Controllers.Finance
         private readonly ISystemParameterService _sysPar;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
-
+        private readonly IActiveTransactionService _activeTrans;
         private const int MenuId = (int)Menu.CashBank;
 
         public CashBankController(ICashBankService cb, IClosingMonthService closingMonth,
-            ISystemParameterService sysPar, IClaimService claim, IAuthService auth)
+            ISystemParameterService sysPar, IClaimService claim, IAuthService auth, IActiveTransactionService activeTrans)
         {
             _cb = cb;
             _closingMonth = closingMonth;
             _sysPar = sysPar;
             _claim = claim;
             _auth = auth;
+            _activeTrans = activeTrans;
         }
 
         [HttpGet]
@@ -196,7 +198,7 @@ namespace ERP.Web.API.Controllers.Finance
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
             // Validate process
-            var (isValid, message) = Validate(data);
+            var (isValid, message) = Validate(data, checkSeenByOther: false);
             if (!isValid)
                 return Ok(new SaveResult(false, message));
 
@@ -250,7 +252,7 @@ namespace ERP.Web.API.Controllers.Finance
             return Ok(result);
         }
 
-        private (bool, string) Validate(CashBankRequest data, bool onDelete = false)
+        private (bool, string) Validate(CashBankRequest data, bool onDelete = false, bool checkSeenByOther = true)
         {
             var periods = new List<string> { data.Date.ToString("yyyyMM") };
             if (data.OriginalDate.HasValue)
@@ -285,6 +287,12 @@ namespace ERP.Web.API.Controllers.Finance
 
                 if (_auth.GetActions(MenuId, _claim.RoleId, actionIdLists).Count() != actionIdLists.Count)
                     return (false, AppConstant.UnAuthMessage);
+            }
+
+            // Checking is data seen by others
+            if (checkSeenByOther && !_activeTrans.SeenByOthers("CB", data.Code, _claim.UserId))
+            {
+                return (false, "data sedang digunakan oleh pengguna lain.");
             }
 
             return (true, "");

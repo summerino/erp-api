@@ -159,8 +159,9 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                             var detailTierPromo = Db.PromoDetailTiers.Where(x => x.PromoDetailId == detailPromo.Id).ToList();
                             var detailMultiPromo = Db.PromoDetailMultipleItems.Where(x => x.PromoDetailId == detailPromo.Id).ToList();
                             var applyTo = detailPromo.ApplyTo;
+                            var itemCategoryData = FindItemCategoryHierarchy(ctItem.CategoryId);
                             if ((applyTo == 1 && detailPromo.ItemId == item.ItemId)
-                                || (applyTo == 3 && ctItem.CategoryId == detailPromo.ItemId))
+                                || (applyTo == 3 && itemCategoryData.Select(x => x.Id).Contains(detailPromo.ItemId)))
                             {
                                 switch (detailPromo.PromoType)
                                 {
@@ -235,7 +236,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                                                     });
                                                 }
                                             }
-                                            else if (item.UnitId == tierData.SaleUnit)
+                                            else if ((applyTo == 1 && item.UnitId == tierData.SaleUnit) || applyTo == 3)
                                             {
                                                 discPromo.Add(new SalesOrderDetailDiscount
                                                 {
@@ -322,7 +323,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                             {
                                 var multiItem = detailMultiPromo.Select(y => y.ItemId);
                                 var isApplicable = multiItem.Intersect(data.ItemDetails.Select(x => x.ItemId));
-                                if (isApplicable.Any())
+                                if (isApplicable.Any() && isApplicable.Contains(item.ItemId))
                                 {
                                     switch (detailPromo.PromoType)
                                     {
@@ -332,8 +333,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                                             var tierData = detailTierPromo.FirstOrDefault(x => miData2.Sum(x => x.Qty) >= x.FromQty && miData2.Sum(x => x.Qty) <= x.ToQty);
                                             if (tierData != null)
                                             {
-                                                var valueDisc = detailPromo.IsPercentage ?
-                                                    item.UnitPrice * (tierData.Value / 100) : tierData.Value;
+                                                var valueDisc = tierData.Value;
                                                 var prorateDisc = valueDisc / multiItem.Count();
                                                 discPromo.Add(new SalesOrderDetailDiscount
                                                 {
@@ -344,7 +344,8 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                                                     Value = detailPromo.IsPercentage ? tierData.Value : prorateDisc,
                                                     //nettPrice: 0,
                                                     CoaCode = dataPromo.CoaCost,
-                                                    Amount = prorateDisc,
+                                                    Amount = detailPromo.IsPercentage ?
+                                                            item.UnitPrice * (tierData.Value / 100) : prorateDisc,
                                                     //fromPromo: true,
                                                     IsPercentage = detailPromo.IsPercentage
                                                 });
@@ -401,8 +402,8 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                                         if (tierData != null)
                                         {
                                             var prorateValue = tierData.IsPercentage ?
-                                                (item.UnitPrice / data.ItemDetails.Sum(x => x.UnitPrice)) * tierData.Value / item.Qty :
-                                                (item.UnitPrice / data.ItemDetails.Sum(x => x.UnitPrice)) * (item.UnitPrice * (tierData.Value / 100)) / item.Qty;
+                                                (item.UnitPrice / data.ItemDetails.Sum(x => x.UnitPrice)) * (item.UnitPrice * (tierData.Value / 100)) / item.Qty :
+                                                (item.UnitPrice / data.ItemDetails.Sum(x => x.UnitPrice)) * tierData.Value / item.Qty;
                                             discPromo.Add(new SalesOrderDetailDiscount
                                             {
                                                 PromoCode = dataPromo.Code,
@@ -424,8 +425,8 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                                         if (tierData5 != null)
                                         {
                                             var prorateValue = tierData5.IsPercentage ?
-                                                (item.UnitPrice / data.ItemDetails.Sum(x => x.UnitPrice)) * tierData5.Value / item.Qty :
-                                                (item.UnitPrice / data.ItemDetails.Sum(x => x.UnitPrice)) * (item.UnitPrice * (tierData5.Value / 100)) / item.Qty;
+                                                (item.UnitPrice / data.ItemDetails.Sum(x => x.UnitPrice)) * (item.UnitPrice * (tierData5.Value / 100)) / item.Qty :
+                                                (item.UnitPrice / data.ItemDetails.Sum(x => x.UnitPrice)) * tierData5.Value / item.Qty;
                                             discPromo.Add(new SalesOrderDetailDiscount
                                             {
                                                 PromoCode = dataPromo.Code,
@@ -456,9 +457,16 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
 
                 var taxData = taxes.FirstOrDefault(x => x.Id == item.TaxId);
                 var discHeaderProrate = 0m;
-                if (data.FinalDisc > 0)
+                var sumDetail = data.ItemDetails.Sum(x => (x.UnitPrice - x.Disc) * x.Qty);
+                if (data.FinalDiscPercent > 0)
                 {
-                    discHeaderProrate = (data.FinalDisc / data.ItemDetails.Sum(x => (x.UnitPrice - x.Disc) * x.Qty)) * (item.Qty * (item.UnitPrice - item.Disc));
+                    var amountPercent = sumDetail * (data.FinalDiscPercent / 100);
+                    discHeaderProrate = amountPercent / sumDetail * (item.Qty * (item.UnitPrice - item.Disc));
+                    discHeaderProrate /= item.Qty;
+                }
+                else if (data.FinalDisc > 0)
+                {
+                    discHeaderProrate = data.FinalDisc / sumDetail * (item.Qty * (item.UnitPrice - item.Disc));
                     discHeaderProrate /= item.Qty;
                 }
 
@@ -577,6 +585,8 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                 }
             }
 
+            if (data.FinalDiscPercent > 0)
+                data.FinalDisc = data.ItemDetails.Sum(x => x.FinalDiscHeader * x.Qty);
             data.SubTotal = totalDetail.Sum();
             data.TaxAmount = totalTax.Sum();
             data.Dpp = totalDpp.Sum();
@@ -852,8 +862,9 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
             data.ApprovedBy = null;
             data.ApprovedDate = null;
 
+            var originData = Db.SalesOrderHeaders.AsNoTracking().FirstOrDefault(x => x.Code == data.Code);
             // Restore Credit Used
-            RestoreCreditUsed(data.Code, data.CustCode);
+            RestoreCreditUsed(data.Code, originData.CustCode);
 
             var orderData = Db.SalesOrderHeaders.FirstOrDefault(x => x.Code == data.SoCode);
             var invDetail = Db.SalesInvoiceDetails.FirstOrDefault(x => x.Code == data.Code);
@@ -897,8 +908,9 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                             var detailTierPromo = Db.PromoDetailTiers.Where(x => x.PromoDetailId == detailPromo.Id).ToList();
                             var detailMultiPromo = Db.PromoDetailMultipleItems.Where(x => x.PromoDetailId == detailPromo.Id).ToList();
                             var applyTo = detailPromo.ApplyTo;
+                            var itemCategoryData = FindItemCategoryHierarchy(ctItem.CategoryId);
                             if ((applyTo == 1 && detailPromo.ItemId == item.ItemId)
-                                || (applyTo == 3 && ctItem.CategoryId == detailPromo.ItemId))
+                                || (applyTo == 3 && itemCategoryData.Select(x => x.Id).Contains(detailPromo.ItemId)))
                             {
                                 switch (detailPromo.PromoType)
                                 {
@@ -973,7 +985,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                                                     });
                                                 }
                                             }
-                                            else if (item.UnitId == tierData.SaleUnit)
+                                            else if ((applyTo == 1 && item.UnitId == tierData.SaleUnit) || applyTo == 3)
                                             {
                                                 discPromo.Add(new SalesOrderDetailDiscount
                                                 {
@@ -1060,7 +1072,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                             {
                                 var multiItem = detailMultiPromo.Select(y => y.ItemId);
                                 var isApplicable = multiItem.Intersect(data.ItemDetails.Select(x => x.ItemId));
-                                if (isApplicable.Any())
+                                if (isApplicable.Any() && isApplicable.Contains(item.ItemId))
                                 {
                                     switch (detailPromo.PromoType)
                                     {
@@ -1070,8 +1082,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                                             var tierData = detailTierPromo.FirstOrDefault(x => miData2.Sum(x => x.Qty) >= x.FromQty && miData2.Sum(x => x.Qty) <= x.ToQty);
                                             if (tierData != null)
                                             {
-                                                var valueDisc = detailPromo.IsPercentage ?
-                                                    item.UnitPrice * (tierData.Value / 100) : tierData.Value;
+                                                var valueDisc = tierData.Value;
                                                 var prorateDisc = valueDisc / multiItem.Count();
                                                 discPromo.Add(new SalesOrderDetailDiscount
                                                 {
@@ -1082,7 +1093,8 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                                                     Value = detailPromo.IsPercentage ? tierData.Value : prorateDisc,
                                                     //nettPrice: 0,
                                                     CoaCode = dataPromo.CoaCost,
-                                                    Amount = prorateDisc,
+                                                    Amount = detailPromo.IsPercentage ?
+                                                            item.UnitPrice * (tierData.Value / 100) : prorateDisc,
                                                     //fromPromo: true,
                                                     IsPercentage = detailPromo.IsPercentage
                                                 });
@@ -1138,19 +1150,44 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                                         var tierData = detailTierPromo.FirstOrDefault(x => x.PaymentTermId == data.PaymentTermId);
                                         if (tierData != null)
                                         {
-                                            var prorateValue = tierData.IsPercentage ?
-                                                (item.UnitPrice / data.ItemDetails.Sum(x => x.UnitPrice)) * tierData.Value / item.Qty :
-                                                (item.UnitPrice / data.ItemDetails.Sum(x => x.UnitPrice)) * (item.UnitPrice * (tierData.Value / 100)) / item.Qty;
+                                            var curUom = uomConversions.FirstOrDefault(x => x.Id == item.UnitId);
+                                            var itemUom = uomConversions.FirstOrDefault(x => x.Id == ctItem.UomSellId);
+                                            var discAmount = 0m;
+                                            if (curUom.Seq > itemUom.Seq)
+                                            {
+                                                var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= curUom.Seq && x.Seq > itemUom.Seq).Select(x => x.Conversion).ToList();
+                                                var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
+                                                discAmount = tierData.IsPercentage ?
+                                                        item.UnitPrice * (tierData.Value / 100) :
+                                                        tierData.Value * multipliedQty;
+                                            }
+                                            else if (curUom.Seq < itemUom.Seq)
+                                            {
+                                                var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq > curUom.Seq && x.Seq <= itemUom.Seq).Select(x => x.Conversion).ToList();
+                                                var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
+                                                discAmount = tierData.IsPercentage ?
+                                                        item.UnitPrice * (tierData.Value / 100) :
+                                                        tierData.Value / multipliedQty;
+                                            }
+                                            else
+                                            {
+                                                discAmount = tierData.IsPercentage ?
+                                                        item.UnitPrice * (tierData.Value / 100) :
+                                                        tierData.Value;
+                                            }
+
                                             discPromo.Add(new SalesOrderDetailDiscount
                                             {
                                                 PromoCode = dataPromo.Code,
                                                 PromoDetailId = detailPromo.Id,
                                                 Name = dataPromo.Name,
                                                 //promoMethod: 1,
-                                                Value = tierData.Value,
+                                                Value = tierData.IsPercentage ?
+                                                tierData.Value :
+                                                discAmount,
                                                 //nettPrice: 0,
                                                 CoaCode = dataPromo.CoaCost,
-                                                Amount = prorateValue,
+                                                Amount = discAmount,
                                                 //fromPromo: true,
                                                 IsPercentage = detailPromo.IsPercentage
                                             });
@@ -1161,19 +1198,43 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                                         var tierData5 = detailTierPromo.FirstOrDefault(x => data.SubTotal >= x.FromQty && data.SubTotal <= x.ToQty);
                                         if (tierData5 != null)
                                         {
-                                            var prorateValue = tierData5.IsPercentage ?
-                                                (item.UnitPrice / data.ItemDetails.Sum(x => x.UnitPrice)) * tierData5.Value / item.Qty :
-                                                (item.UnitPrice / data.ItemDetails.Sum(x => x.UnitPrice)) * (item.UnitPrice * (tierData5.Value / 100)) / item.Qty;
+                                            var curUom = uomConversions.FirstOrDefault(x => x.Id == item.UnitId);
+                                            var itemUom = uomConversions.FirstOrDefault(x => x.Id == ctItem.UomSellId);
+                                            var discAmount = 0m;
+                                            if (curUom.Seq > itemUom.Seq)
+                                            {
+                                                var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= curUom.Seq && x.Seq > itemUom.Seq).Select(x => x.Conversion).ToList();
+                                                var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
+                                                discAmount = tierData5.IsPercentage ?
+                                                        item.UnitPrice * (tierData5.Value / 100) :
+                                                        tierData5.Value * multipliedQty;
+                                            }
+                                            else if (curUom.Seq < itemUom.Seq)
+                                            {
+                                                var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq > curUom.Seq && x.Seq <= itemUom.Seq).Select(x => x.Conversion).ToList();
+                                                var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
+                                                discAmount = tierData5.IsPercentage ?
+                                                        item.UnitPrice * (tierData5.Value / 100) :
+                                                        tierData5.Value / multipliedQty;
+                                            }
+                                            else
+                                            {
+                                                discAmount = tierData5.IsPercentage ?
+                                                        item.UnitPrice * (tierData5.Value / 100) :
+                                                        tierData5.Value;
+                                            }
                                             discPromo.Add(new SalesOrderDetailDiscount
                                             {
                                                 PromoCode = dataPromo.Code,
                                                 PromoDetailId = detailPromo.Id,
                                                 Name = dataPromo.Name,
                                                 //promoMethod: 1,
-                                                Value = tierData5.Value,
+                                                Value = tierData5.IsPercentage ?
+                                                tierData5.Value :
+                                                discAmount,
                                                 //nettPrice: 0,
                                                 CoaCode = dataPromo.CoaCost,
-                                                Amount = prorateValue,
+                                                Amount = discAmount,
                                                 //fromPromo: true,
                                                 IsPercentage = detailPromo.IsPercentage
                                             });
@@ -1198,9 +1259,16 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
 
                 var taxData = taxes.FirstOrDefault(x => x.Id == item.TaxId);
                 var discHeaderProrate = 0m;
-                if (data.FinalDisc > 0)
+                var sumDetail = data.ItemDetails.Sum(x => (x.UnitPrice - x.Disc) * x.Qty);
+                if (data.FinalDiscPercent > 0)
                 {
-                    discHeaderProrate = (data.FinalDisc / data.ItemDetails.Sum(x => (x.UnitPrice - x.Disc) * x.Qty)) * (item.Qty * (item.UnitPrice - item.Disc));
+                    var amountPercent = sumDetail * (data.FinalDiscPercent / 100);
+                    discHeaderProrate = amountPercent / sumDetail * (item.Qty * (item.UnitPrice - item.Disc));
+                    discHeaderProrate /= item.Qty;
+                }
+                else if (data.FinalDisc > 0)
+                {
+                    discHeaderProrate = data.FinalDisc / sumDetail * (item.Qty * (item.UnitPrice - item.Disc));
                     discHeaderProrate /= item.Qty;
                 }
 
@@ -1430,15 +1498,16 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                 listDeliveryIdDetail.Add(deliveryDetail.Id);
 
                 var delFreeDetails = Db.SalesDeliveryDetailFreeGoods
-                    .Where(d => d.Code == data.Code && d.DlvOrderDetailId == item.Id && !item.FreeItemDetails.Select(x => x.Id).Contains(d.Id))
+                    .Where(d => d.Code == data.Code)
                     .ToList();
 
                 Db.SalesDeliveryDetailFreeGoods.RemoveRange(delFreeDetails);
 
-                if (item.FreeItemDetails.Any())
+                var orderFree = Db.SalesOrderDetailFreeGoods.Where(x => x.Code == data.Code).ToList();
+                if (orderFree.Any())
                 {
                     short f = 0;
-                    foreach (var freeItem in item.FreeItemDetails)
+                    foreach (var freeItem in orderFree)
                     {
                         Db.SalesDeliveryDetailFreeGoods.Add(new SalesDeliveryDetailFreeGood
                         {
@@ -1454,14 +1523,15 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                             CoaCode = freeItem.CoaCode
                         });
 
-                        var orderFreeDetail = Db.SalesOrderDetailFreeGoods.FirstOrDefault(x => x.Id == freeItem.Id);
-                        orderFreeDetail.QtyClosed += freeItem.Qty;
-                        Db.SalesOrderDetailFreeGoods.Update(orderFreeDetail);
+                        freeItem.QtyClosed = freeItem.Qty;
+                        Db.SalesOrderDetailFreeGoods.Update(freeItem);
                     }
                     Db.SaveChanges();
                 }
             }
 
+            if (data.FinalDiscPercent > 0)
+                data.FinalDisc = data.ItemDetails.Sum(x => x.FinalDiscHeader * x.Qty);
             data.SubTotal = totalDetail.Sum();
             data.TaxAmount = totalTax.Sum();
             data.Dpp = totalDpp.Sum();
@@ -1667,7 +1737,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                 RestoreCreditMemo(code);
 
                 // Decrease CreditUsed
-                UpdateCreditUsed(data.CustCode, data.Total);
+                RestoreCreditUsed(data.SoCode, data.CustCode);
 
                 transaction.Commit();
             }
@@ -1757,6 +1827,29 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
         }
 
         return (errorList != "", errorList);
+    }
+
+    private List<dynamic> FindItemCategoryHierarchy(int? categoryId)
+    {
+        var result = new List<dynamic>();
+        if (categoryId.HasValue)
+        {
+            var query = @$"DECLARE @id INT
+                            SET @id = {categoryId.Value};
+                            WITH hierarchy AS (
+	                            SELECT t.*
+	                            FROM Inventory.ItemCategory t
+	                            WHERE t.Id = @id
+	                            UNION ALL
+	                            SELECT x.*
+	                            FROM Inventory.ItemCategory x
+	                            JOIN hierarchy h ON h.ParentId = x.Id)
+                            SELECT *
+                            FROM hierarchy h";
+            result = Db.ItemCategories.FromSqlRaw(query).ToDynamicList();
+        }
+
+        return result;
     }
 
     #region Credit Used - Limit

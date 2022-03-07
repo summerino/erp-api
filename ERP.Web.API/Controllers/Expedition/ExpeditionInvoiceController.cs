@@ -10,6 +10,7 @@ using ERP.Web.API.Domain.Interfaces.SystemManagement;
 using ERP.Web.API.Model;
 using ERP.Web.API.Model.Expedition;
 using Newtonsoft.Json;
+using ERP.Web.API.Domain.Interfaces.General;
 
 namespace ERP.Web.API.Controllers.Expedition
 {
@@ -21,18 +22,20 @@ namespace ERP.Web.API.Controllers.Expedition
         private readonly IClosingMonthService _closingMonth;
         private readonly ISystemParameterService _sysPar;
         private readonly IClaimService _claim;
+        private readonly IActiveTransactionService _activeTrans;
         private readonly IAuthService _auth;
 
         private const int MenuId = (int)Menu.ExpeditionInvoice;
 
         public ExpeditionInvoiceController(IExpeditionInvoiceService inv, IClosingMonthService closingMonth,
-            ISystemParameterService sysPar, IClaimService claim, IAuthService auth)
+            ISystemParameterService sysPar, IClaimService claim, IAuthService auth, IActiveTransactionService activeTrans)
         {
             _inv = inv;
             _closingMonth = closingMonth;
             _sysPar = sysPar;
             _claim = claim;
             _auth = auth;
+            _activeTrans = activeTrans;
         }
 
         [HttpGet]
@@ -99,7 +102,7 @@ namespace ERP.Web.API.Controllers.Expedition
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
             // Validate process
-            var (isValid, message) = Validate(data);
+            var (isValid, message) = Validate(data, checkSeenByOther: false);
             if (!isValid)
                 return Ok(new SaveResult(false, message));
 
@@ -153,7 +156,7 @@ namespace ERP.Web.API.Controllers.Expedition
             return Ok(result);
         }
 
-        private (bool, string) Validate(ExpeditionInvoiceRequest data, bool onDelete = false)
+        private (bool, string) Validate(ExpeditionInvoiceRequest data, bool onDelete = false, bool checkSeenByOther = true)
         {
             var periods = new List<string> { data.Date.ToString("yyyyMM") };
             if (data.OriginalDate.HasValue)
@@ -173,6 +176,12 @@ namespace ERP.Web.API.Controllers.Expedition
 
                 if (data.Details.GroupBy(x => new { x.TransCode }).Any(x => x.Count() > 1))
                     return (false, "Terdapat kode transaksi yang sama pada bagian detail.");
+            }
+
+            // Checking is data seen by others
+            if (checkSeenByOther && !_activeTrans.SeenByOthers("EI", data.Code, _claim.UserId))
+            {
+                return (false, "data sedang digunakan oleh pengguna lain.");
             }
 
             return (true, "");

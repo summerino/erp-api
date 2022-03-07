@@ -408,6 +408,10 @@ public class SalesInvoiceService : GeneralService<SalesInvoiceHeader>, ISalesInv
                 // Restore Credit Memo
                 RestoreCreditMemo(code);
 
+                if (data.FromDirectInvoice)
+                // Decrease CreditUsed
+                    UpdateCreditUsed(data.CustCode, data.Total);
+
                 transaction.Commit();
             }
             catch (Exception ex)

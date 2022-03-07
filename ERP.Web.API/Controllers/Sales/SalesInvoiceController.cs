@@ -10,6 +10,7 @@ using ERP.Web.API.Domain.Interfaces.SystemManagement;
 using ERP.Web.API.Model;
 using ERP.Web.API.Model.Sales;
 using Newtonsoft.Json;
+using ERP.Web.API.Domain.Interfaces.General;
 
 namespace ERP.Web.API.Controllers.Sales;
 
@@ -22,17 +23,18 @@ public class SalesInvoiceController : ControllerBase
     private readonly ISystemParameterService _sysPar;
     private readonly IClaimService _claim;
     private readonly IAuthService _auth;
-
+    private readonly IActiveTransactionService _activeTrans;
     private const int MenuId = (int)Menu.SalesInvoice;
 
     public SalesInvoiceController(ISalesInvoiceService inv, IClosingMonthService closingMonth,
-        ISystemParameterService sysPar, IClaimService claim, IAuthService auth)
+        ISystemParameterService sysPar, IClaimService claim, IAuthService auth, IActiveTransactionService activeTrans)
     {
         _inv = inv;
         _closingMonth = closingMonth;
         _sysPar = sysPar;
         _claim = claim;
         _auth = auth;
+        _activeTrans = activeTrans;
     }
 
     [HttpGet]
@@ -118,7 +120,7 @@ public class SalesInvoiceController : ControllerBase
             return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
         // Validate process
-        var (isValid, message) = Validate(data);
+        var (isValid, message) = Validate(data, checkSeenByOther: false);
         if (!isValid)
             return Ok(new SaveResult(false, message));
 
@@ -172,7 +174,7 @@ public class SalesInvoiceController : ControllerBase
         return Ok(result);
     }
 
-    private (bool, string) Validate(SalesInvoiceRequest data, bool onDelete = false)
+    private (bool, string) Validate(SalesInvoiceRequest data, bool onDelete = false, bool checkSeenByOther = true)
     {
         var periods = new List<string> { data.Date.ToString("yyyyMM"), data.DueDate.ToString("yyyyMM") };
         if (data.OriginalDate.HasValue)
@@ -205,6 +207,12 @@ public class SalesInvoiceController : ControllerBase
                 if (paidAmount > data.Total)
                     return (false, "Nilai pembayaran lebih besar dari pada nilai transaksi.");
             }
+        }
+
+        // Checking is data seen by others
+        if (checkSeenByOther && !_activeTrans.SeenByOthers("SI", data.Code, _claim.UserId))
+        {
+            return (false, "data sedang digunakan oleh pengguna lain.");
         }
 
         return (true, "");

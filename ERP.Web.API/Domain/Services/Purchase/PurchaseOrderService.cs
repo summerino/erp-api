@@ -123,9 +123,16 @@ namespace ERP.Web.API.Domain.Services.Purchase
                 {
                     var taxData = taxes.FirstOrDefault(x => x.Id == item.TaxId);
                     var discHeaderProrate = 0m;
-                    if (data.FinalDisc > 0)
+                    var sumDetail = data.ItemDetails.Sum(x => (x.UnitPrice - x.Disc) * x.Qty);
+                    if (data.FinalDiscPercent > 0)
                     {
-                        discHeaderProrate = (data.FinalDisc / data.ItemDetails.Sum(x => (x.UnitPrice - x.Disc) * x.Qty)) * (item.Qty * (item.UnitPrice - item.Disc));
+                        var amountPercent = sumDetail * (data.FinalDiscPercent / 100);
+                        discHeaderProrate = amountPercent / sumDetail * (item.Qty * (item.UnitPrice - item.Disc));
+                        discHeaderProrate /= item.Qty;
+                    }
+                    else if (data.FinalDisc > 0)
+                    {
+                        discHeaderProrate = data.FinalDisc / sumDetail * (item.Qty * (item.UnitPrice - item.Disc));
                         discHeaderProrate /= item.Qty;
                     }
 
@@ -462,9 +469,16 @@ namespace ERP.Web.API.Domain.Services.Purchase
                 {
                     var taxData = taxes.FirstOrDefault(x => x.Id == item.TaxId);
                     var discHeaderProrate = 0m;
-                    if (data.FinalDisc > 0)
+                    var sumDetail = data.ItemDetails.Sum(x => (x.UnitPrice - x.Disc) * x.Qty);
+                    if (data.FinalDiscPercent > 0)
                     {
-                        discHeaderProrate = (data.FinalDisc / data.ItemDetails.Sum(x => (x.UnitPrice - x.Disc) * x.Qty)) * (item.Qty * (item.UnitPrice - item.Disc));
+                        var amountPercent = sumDetail * (data.FinalDiscPercent / 100);
+                        discHeaderProrate = amountPercent / sumDetail * (item.Qty * (item.UnitPrice - item.Disc));
+                        discHeaderProrate /= item.Qty;
+                    }
+                    else if (data.FinalDisc > 0)
+                    {
+                        discHeaderProrate = data.FinalDisc / sumDetail * (item.Qty * (item.UnitPrice - item.Disc));
                         discHeaderProrate /= item.Qty;
                     }
 
@@ -1055,7 +1069,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                              };
 
             var data_return = from rcvHeader in Db.MobileReceiveItemHeaders
-                              join pr in Db.PurchaseReturnHeaders on rcvHeader.TransCode equals pr.Code
+                              join pr in Db.VwPurchaseReturnHeaders on rcvHeader.TransCode equals pr.Code
                               join sup in Db.VwSuppliers on rcvHeader.SupCode equals sup.Code
                               select new ReceiveItemHeaderModel
                               {
@@ -1091,98 +1105,97 @@ namespace ERP.Web.API.Domain.Services.Purchase
         {
             if (srcTrans == 1)
             {
-                var data = from detail in Db.MobileReceiveItemDetails
-                           join item in Db.Items on detail.ItemId equals item.Id
-                           join uom in Db.UoMConversions on detail.UnitId equals uom.Id
-                           join header in Db.MobileReceiveItemHeaders on detail.Code equals header.Code
-                           join orderHeader in Db.PurchaseOrderHeaders on header.TransCode equals orderHeader.Code
-                           join orderDetail in Db.PurchaseOrderDetails on orderHeader.Code equals orderDetail.Code
-                           group orderDetail by new
-                           {
-                               detail.Code,
-                               detail.Id,
-                               detail.ItemId,
-                               detail.LineNo,
-                               detail.Qty,
-                               detail.TransDetailId,
-                               detail.Type,
-                               detail.UnitId,
-                               detail.UomId,
-                               uom.UnitEquivalent,
-                               detail.WarehouseCode,
-                               ItemInitial = item.Initial,
-                               ItemName = item.Name,
-                               QtyOrder = orderDetail.Qty,
-                               QtyRemain = orderDetail.Qty - detail.Qty
-                           } into oD
+                var data = from detail in Db.VwMobileReceiveItemDetails
+                           join header in Db.VwMobileReceiveItemHeaders on detail.Code equals header.Code
+                           join poDetail in Db.VwPurchaseOrderDetails on header.TransCode equals poDetail.Code
+                           into poDs
+                           from d in poDs.DefaultIfEmpty()
+                           group d by new {
+                               Code = detail.Code,
+                               Id = detail.Id,
+                               ItemId = detail.ItemId,
+                               LineNo = detail.LineNo,
+                               Qty = detail.Qty,
+                               TransDetailId = detail.TransDetailId,
+                               Type = detail.Type,
+                               UnitId = detail.UnitId,
+                               UomId = detail.UomId,
+                               UnitEquivalent = detail.UnitName,
+                               WarehouseCode = detail.WarehouseCode,
+                               ItemInitial = detail.ItemInitial,
+                               ItemName = detail.ItemName,
+                               QtyOrder = detail.Type == 1 ? 0 : d.Qty,
+                               QtyRemain = detail.Type == 1 ? 0 : (d.Qty - detail.Qty)
+                           } into poD
                            select new ReceiveItemDetailModel
                            {
-                               Code = oD.Key.Code,
-                               Id = oD.Key.Id,
-                               ItemId = oD.Key.ItemId,
-                               LineNo = oD.Key.LineNo,
-                               Qty = oD.Key.Qty,
-                               TransDetailId = oD.Key.TransDetailId ?? 0,
-                               Type = oD.Key.Type,
-                               UnitId = oD.Key.UnitId,
-                               UomId = oD.Key.UomId,
-                               UnitEquivalent = oD.Key.UnitEquivalent,
-                               WarehouseCode = oD.Key.WarehouseCode,
-                               ItemInitial = oD.Key.ItemInitial,
-                               ItemName = oD.Key.ItemName,
-                               QtyOrder = oD.Key.Type == 1 ? 0 : oD.Key.QtyOrder,
-                               QtyRemain = oD.Key.Type == 1 ? 0 : (oD.Key.QtyOrder - oD.Key.Qty)
+                               Code = poD.Key.Code,
+                               Id = poD.Key.Id,
+                               ItemId = poD.Key.ItemId,
+                               LineNo = poD.Key.LineNo,
+                               Qty = poD.Key.Qty,
+                               TransDetailId = poD.Key.TransDetailId ?? 0,
+                               Type = poD.Key.Type,
+                               UnitId = poD.Key.UnitId,
+                               UomId = poD.Key.UomId,
+                               UnitEquivalent = poD.Key.UnitEquivalent,
+                               WarehouseCode = poD.Key.WarehouseCode,
+                               ItemInitial = poD.Key.ItemInitial,
+                               ItemName = poD.Key.ItemName,
+                               QtyOrder = poD.Key.Type == 1 ? 0 : poD.Key.Qty,
+                               QtyRemain = poD.Key.Type == 1 ? 0 : (poD.Key.Qty - poD.Key.Qty)
                            };
 
                 data = data.Where(x => x.Code.Equals(code)).OrderBy(x => x.LineNo);
+
                 return data;
             }
             else
             {
-                var data = from detail in Db.MobileReceiveItemDetails
-                           join item in Db.Items on detail.ItemId equals item.Id
-                           join uom in Db.UoMConversions on detail.UnitId equals uom.Id
-                           join header in Db.MobileReceiveItemHeaders on detail.Code equals header.Code
-                           join returnHeader in Db.PurchaseReturnHeaders on header.TransCode equals returnHeader.Code
-                           join returnDetail in Db.PurchaseReturnDetails on returnHeader.Code equals returnDetail.Code
-                           group returnDetail by new
+                var data = from detail in Db.VwMobileReceiveItemDetails
+                           join header in Db.VwMobileReceiveItemHeaders on detail.Code equals header.Code
+                           join poDetail in Db.VwPurchaseOrderDetails on header.TransCode equals poDetail.Code
+                           into prD
+                           from d in prD.DefaultIfEmpty()
+                           group d by new
                            {
-                               detail.Code,
-                               detail.Id,
-                               detail.ItemId,
-                               detail.LineNo,
-                               detail.Qty,
-                               detail.TransDetailId,
-                               detail.Type,
-                               detail.UnitId,
-                               detail.UomId,
-                               uom.UnitEquivalent,
-                               detail.WarehouseCode,
-                               ItemInitial = item.Initial,
-                               ItemName = item.Name,
-                               QtyOrder = returnDetail.Qty,
-                               QtyRemain = returnDetail.Qty - detail.Qty
-                           } into rD
+                               Code = detail.Code,
+                               Id = detail.Id,
+                               ItemId = detail.ItemId,
+                               LineNo = detail.LineNo,
+                               Qty = detail.Qty,
+                               TransDetailId = detail.TransDetailId,
+                               Type = detail.Type,
+                               UnitId = detail.UnitId,
+                               UomId = detail.UomId,
+                               UnitEquivalent = detail.UnitName,
+                               WarehouseCode = detail.WarehouseCode,
+                               ItemInitial = detail.ItemInitial,
+                               ItemName = detail.ItemName,
+                               QtyOrder = detail.Type == 1 ? 0 : d.Qty,
+                               QtyRemain = detail.Type == 1 ? 0 : (d.Qty - detail.Qty)
+                           } into poD
                            select new ReceiveItemDetailModel
                            {
-                               Code = rD.Key.Code,
-                               Id = rD.Key.Id,
-                               ItemId = rD.Key.ItemId,
-                               LineNo = rD.Key.LineNo,
-                               Qty = rD.Key.Qty,
-                               TransDetailId = rD.Key.TransDetailId ?? 0,
-                               Type = rD.Key.Type,
-                               UnitId = rD.Key.UnitId,
-                               UomId = rD.Key.UomId,
-                               UnitEquivalent = rD.Key.UnitEquivalent,
-                               WarehouseCode = rD.Key.WarehouseCode,
-                               ItemInitial = rD.Key.ItemInitial,
-                               ItemName = rD.Key.ItemName,
-                               QtyOrder = rD.Key.Type == 1 ? 0 : rD.Key.QtyOrder,
-                               QtyRemain = rD.Key.Type == 1 ? 0 : (rD.Key.QtyOrder - rD.Key.Qty)
+                               Code = poD.Key.Code,
+                               Id = poD.Key.Id,
+                               ItemId = poD.Key.ItemId,
+                               LineNo = poD.Key.LineNo,
+                               Qty = poD.Key.Qty,
+                               TransDetailId = poD.Key.TransDetailId ?? 0,
+                               Type = poD.Key.Type,
+                               UnitId = poD.Key.UnitId,
+                               UomId = poD.Key.UomId,
+                               UnitEquivalent = poD.Key.UnitEquivalent,
+                               WarehouseCode = poD.Key.WarehouseCode,
+                               ItemInitial = poD.Key.ItemInitial,
+                               ItemName = poD.Key.ItemName,
+                               QtyOrder = poD.Key.Type == 1 ? 0 : poD.Key.Qty,
+                               QtyRemain = poD.Key.Type == 1 ? 0 : (poD.Key.Qty - poD.Key.Qty)
                            };
 
                 data = data.Where(x => x.Code.Equals(code)).OrderBy(x => x.LineNo);
+
                 return data;
             }
         }

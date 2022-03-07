@@ -34,6 +34,7 @@ namespace ERP.Web.API.Domain.Models.General
             Approvals.Add(new Approval { TableName = $"{Schema.Sales}.SalesOrderHeader", ActionId = (int) Actions.ApproveSalesOrder, Src = "SO" });
             Approvals.Add(new Approval { TableName = $"{Schema.Sales}.SalesDeliveryHeader", ActionId = (int) Actions.ApproveDeliveryOrder, Src = "DO" });
             Approvals.Add(new Approval { TableName = $"{Schema.Sales}.SalesInvoiceHeader", ActionId = (int) Actions.ApproveSalesInvoice, Src = "SI" });
+            Approvals.Add(new Approval { TableName = $"{Schema.Sales}.SalesInvoiceHeader", ActionId = (int)Actions.ApproveSalesInvoice, Src = "DI" });
             Approvals.Add(new Approval { TableName = $"{Schema.Sales}.SalesReturnHeader", ActionId = (int) Actions.ApproveSalesReturn, Src = "SR" });
             Approvals.Add(new Approval { TableName = $"{Schema.Sales}.DeliveryPlanHeader", ActionId = (int) Actions.ApproveDeliveryPlan, Src = "DP" });
             //Approvals.Add(new Approval { TableName = $"{Schema.Sales}.VisitPlanHeader", ActionId = (int) Actions.ApproveVisitPlan, Src = "VP" });

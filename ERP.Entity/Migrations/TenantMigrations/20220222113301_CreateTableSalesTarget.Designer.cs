@@ -4,6 +4,7 @@ using ERP.Entity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ERP.Entity.Migrations.TenantMigrations
 {
     [DbContext(typeof(TenantContext))]
-    partial class TenantContextModelSnapshot : ModelSnapshot
+    [Migration("20220222113301_CreateTableSalesTarget")]
+    partial class CreateTableSalesTarget
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -5897,9 +5899,9 @@ namespace ERP.Entity.Migrations.TenantMigrations
 
                     b.Property<string>("Initial")
                         .IsRequired()
-                        .HasMaxLength(50)
+                        .HasMaxLength(20)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(50)");
+                        .HasColumnType("varchar(20)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");

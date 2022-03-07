@@ -10,7 +10,7 @@ namespace ERP.Entity.Inventory
         public int Id { get; set; }
 
         [Required]
-        [StringLength(20)]
+        [StringLength(50)]
         public string Initial { get; set; }
 
         [StringLength(100)]

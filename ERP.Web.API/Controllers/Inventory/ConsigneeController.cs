@@ -3,6 +3,7 @@ using ERP.Common.Models;
 using ERP.Entity;
 using ERP.Web.API.Domain.Interfaces.Accounting;
 using ERP.Web.API.Domain.Interfaces.Auth;
+using ERP.Web.API.Domain.Interfaces.General;
 using ERP.Web.API.Domain.Interfaces.Inventory;
 using ERP.Web.API.Domain.Interfaces.SystemManagement;
 using ERP.Web.API.Model;
@@ -23,12 +24,13 @@ namespace ERP.Web.API.Controllers.Inventory
         private readonly ISystemParameterService _sysPar;
         private readonly IClaimService _claim;
         private readonly IAuthService _auth;
+        private readonly IActiveTransactionService _activeTrans;
         private const int MenuId = (int)Menu.Consignee;
 
 
         public ConsigneeController(IConsigneeService consignee, IUnitOfMeasurementService uom,
             IClosingMonthService closingMonth, ISystemParameterService sysPar,
-            IClaimService claim, IAuthService auth)
+            IClaimService claim, IAuthService auth, IActiveTransactionService activeTrans)
         {
             _cs = consignee;
             _uom = uom;
@@ -36,6 +38,7 @@ namespace ERP.Web.API.Controllers.Inventory
             _sysPar = sysPar;
             _claim = claim;
             _auth = auth;
+            _activeTrans = activeTrans;
         }
 
         [HttpGet]
@@ -104,7 +107,7 @@ namespace ERP.Web.API.Controllers.Inventory
                 return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
             // Validate process
-            var (isValid, message) = Validate(data);
+            var (isValid, message) = Validate(data, checkSeenByOther: false);
             if (!isValid)
                 return Ok(new SaveResult(false, message));
 
@@ -159,7 +162,7 @@ namespace ERP.Web.API.Controllers.Inventory
             return Ok(result);
         }
 
-        private (bool, string) Validate(TransferStockRequest data, bool onDelete = false)
+        private (bool, string) Validate(TransferStockRequest data, bool onDelete = false, bool checkSeenByOther = true)
         {
             var periods = new List<string> { data.Date.ToString("yyyyMM") };
             if (data.OriginalDate.HasValue)
@@ -179,6 +182,12 @@ namespace ERP.Web.API.Controllers.Inventory
 
                 if (data.ItemDetails.GroupBy(x => new { x.ItemId, x.UnitId }).Any(x => x.Count() > 1))
                     return (false, "Terdapat barang dengan satuan yang sama pada bagian detail.");
+            }
+
+            // Checking is data seen by others
+            if (checkSeenByOther && !_activeTrans.SeenByOthers("CNEE", data.Code, _claim.UserId))
+            {
+                return (false, "data sedang digunakan oleh pengguna lain.");
             }
 
             return (true, "");
