@@ -43,11 +43,12 @@ namespace ERP.Web.API.Domain.Services.Sales
                 };
 
 
-                var valid = SubjectValidation(dataRequest);
+                var (valid, validData) = SubjectValidation(dataRequest);
                 if (!valid)
                 {
-                    result.Message = $@"Data target penjual tidak bisa diubah karena terdapat subjek penjual
-                                    yang terdaftar pada periode {dataRequest.StartDate:dd-MMM-yyyy} - {dataRequest.EndDate:dd-MMM-yyyy}.";
+                    result.Message = $@"Data target penjual tidak bisa diklon karena terdapat subjek penjual
+                                    yang terdaftar pada periode {validData.StartDate:dd-MMM-yyyy} - {validData.EndDate:dd-MMM-yyyy}
+                                    dengan kode transaksi {validData.Code}.";
                     return result;
                 }
 
@@ -159,11 +160,12 @@ namespace ERP.Web.API.Domain.Services.Sales
             using var transaction = Db.Database.BeginTransaction();
             try
             {
-                var valid = SubjectValidation(data);
+                var (valid, validData) = SubjectValidation(data);
                 if (!valid)
                 {
-                    result.Message = $@"Data target penjual tidak bisa diubah karena terdapat subjek penjual
-                                    yang terdaftar pada periode {data.StartDate:dd-MMM-yyyy} - {data.EndDate:dd-MMM-yyyy}.";
+                    result.Message = $@"Data target penjual tidak bisa disimpan karena terdapat subjek penjual
+                                    yang terdaftar pada periode {validData.StartDate:dd-MMM-yyyy} - {validData.EndDate:dd-MMM-yyyy}
+                                    dengan kode transaksi {validData.Code}.";
                     return result;
                 }
 
@@ -230,11 +232,12 @@ namespace ERP.Web.API.Domain.Services.Sales
                     return result;
                 }
 
-                var valid = SubjectValidation(data);
+                var (valid, validData) = SubjectValidation(data);
                 if (!valid)
                 {
                     result.Message = $@"Data target penjual tidak bisa diubah karena terdapat subjek penjual
-                                    yang terdaftar pada periode {data.StartDate:dd-MMM-yyyy} - {data.EndDate:dd-MMM-yyyy}.";
+                                    yang terdaftar pada periode {validData.StartDate:dd-MMM-yyyy} - {validData.EndDate:dd-MMM-yyyy}
+                                    dengan kode transaksi {validData.Code}.";
                     return result;
                 }
 
@@ -318,9 +321,10 @@ namespace ERP.Web.API.Domain.Services.Sales
             return result;
         }
 
-        private bool SubjectValidation(SalesTargetRequest data)
+        private (bool, SalesTargetHeader) SubjectValidation(SalesTargetRequest data)
         {
             var result = true;
+            var resultData = new SalesTargetHeader();
             var stData = Db.SalesTargetHeaders
                 .Where(x => x.Code != data.Code && x.Mark == "A" &&
                 (data.StartDate >= x.StartDate && data.StartDate <= x.EndDate || 
@@ -333,9 +337,10 @@ namespace ERP.Web.API.Domain.Services.Sales
                 if (foundData.Any())
                 {
                     result = false;
+                    resultData = stData.FirstOrDefault(x => x.Code == foundData.FirstOrDefault().Code);
                 }
             }
-            return result;
+            return (result, resultData);
         }
     }
 }

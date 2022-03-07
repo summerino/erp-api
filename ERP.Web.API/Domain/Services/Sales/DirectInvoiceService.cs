@@ -1498,15 +1498,16 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                 listDeliveryIdDetail.Add(deliveryDetail.Id);
 
                 var delFreeDetails = Db.SalesDeliveryDetailFreeGoods
-                    .Where(d => d.Code == data.Code && d.DlvOrderDetailId == item.Id && !item.FreeItemDetails.Select(x => x.Id).Contains(d.Id))
+                    .Where(d => d.Code == data.Code)
                     .ToList();
 
                 Db.SalesDeliveryDetailFreeGoods.RemoveRange(delFreeDetails);
 
-                if (item.FreeItemDetails.Any())
+                var orderFree = Db.SalesOrderDetailFreeGoods.Where(x => x.Code == data.Code).ToList();
+                if (orderFree.Any())
                 {
                     short f = 0;
-                    foreach (var freeItem in item.FreeItemDetails)
+                    foreach (var freeItem in orderFree)
                     {
                         Db.SalesDeliveryDetailFreeGoods.Add(new SalesDeliveryDetailFreeGood
                         {
@@ -1522,9 +1523,8 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                             CoaCode = freeItem.CoaCode
                         });
 
-                        var orderFreeDetail = Db.SalesOrderDetailFreeGoods.FirstOrDefault(x => x.Id == freeItem.Id);
-                        orderFreeDetail.QtyClosed += freeItem.Qty;
-                        Db.SalesOrderDetailFreeGoods.Update(orderFreeDetail);
+                        freeItem.QtyClosed = freeItem.Qty;
+                        Db.SalesOrderDetailFreeGoods.Update(freeItem);
                     }
                     Db.SaveChanges();
                 }
