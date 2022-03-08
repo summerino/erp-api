@@ -334,7 +334,8 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                                             if (tierData != null)
                                             {
                                                 var valueDisc = tierData.Value;
-                                                var prorateDisc = valueDisc / multiItem.Count();
+                                                var sumMulti = data.ItemDetails.Where(x => isApplicable.Contains(x.ItemId)).Sum(x => x.UnitPrice * x.Qty);
+                                                var prorateDisc = valueDisc / sumMulti * (item.Qty * item.UnitPrice);
                                                 discPromo.Add(new SalesOrderDetailDiscount
                                                 {
                                                     PromoCode = dataPromo.Code,
@@ -1083,7 +1084,8 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                                             if (tierData != null)
                                             {
                                                 var valueDisc = tierData.Value;
-                                                var prorateDisc = valueDisc / multiItem.Count();
+                                                var sumMulti = data.ItemDetails.Where(x => isApplicable.Contains(x.ItemId)).Sum(x => x.UnitPrice * x.Qty);
+                                                var prorateDisc = valueDisc / sumMulti * (item.Qty * item.UnitPrice);
                                                 discPromo.Add(new SalesOrderDetailDiscount
                                                 {
                                                     PromoCode = dataPromo.Code,
