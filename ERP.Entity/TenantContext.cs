@@ -99,6 +99,7 @@ namespace ERP.Entity
         public DbSet<CustomerAddress> CustomerAddress { get; set; }
         public DbSet<CustomerType> CustomerTypes { get; set; }
         public DbSet<VwCustomerType> VwCustomerTypes { get; set; }
+        public DbSet<DynamicReportTemplate> DynamicReportTemplates { get; set; }
         public DbSet<Employee> Employees { get; set; }
         public DbSet<VwEmployee> VwEmployees { get; set; }
         public DbSet<PaymentTerm> PaymentTerms { get; set; }

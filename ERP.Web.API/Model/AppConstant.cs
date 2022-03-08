@@ -72,6 +72,7 @@ public enum Menu
     Tax = 26,
     Currency = 8,
     PaymentTerm = 57,
+    DynamicReportTemplate = 154,
     Approval = 72,
     ActiveTransaction = 150,
 
