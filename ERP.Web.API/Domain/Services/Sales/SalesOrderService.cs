@@ -170,8 +170,9 @@ namespace ERP.Web.API.Domain.Services.Sales
                                 var detailTierPromo = Db.PromoDetailTiers.Where(x => x.PromoDetailId == detailPromo.Id).ToList();
                                 var detailMultiPromo = Db.PromoDetailMultipleItems.Where(x => x.PromoDetailId == detailPromo.Id).ToList();
                                 var applyTo = detailPromo.ApplyTo;
+                                var itemCategoryData = FindItemCategoryHierarchy(ctItem.CategoryId);
                                 if ((applyTo == 1 && detailPromo.ItemId == item.ItemId)
-                                    || (applyTo == 3 && ctItem.CategoryId == detailPromo.ItemId))
+                                    || (applyTo == 3 && itemCategoryData.Select(x => x.Id).Contains(detailPromo.ItemId)))
                                 {
                                     switch (detailPromo.PromoType)
                                     {
@@ -246,7 +247,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                                                         });
                                                     }
                                                 }
-                                                else if (item.UnitId == tierData.SaleUnit)
+                                                else if ((applyTo == 1 && item.UnitId == tierData.SaleUnit) || applyTo == 3)
                                                 {
                                                     discPromo.Add(new SalesOrderDetailDiscount
                                                     {
@@ -344,7 +345,8 @@ namespace ERP.Web.API.Domain.Services.Sales
                                                 if (tierData != null)
                                                 {
                                                     var valueDisc = tierData.Value;
-                                                    var prorateDisc = valueDisc / multiItem.Count();
+                                                    var sumMulti = data.ItemDetails.Where(x => isApplicable.Contains(x.ItemId)).Sum(x => x.UnitPrice * x.Qty);
+                                                    var prorateDisc = valueDisc / sumMulti * (item.Qty * item.UnitPrice);
                                                     discPromo.Add(new SalesOrderDetailDiscount
                                                     {
                                                         PromoCode = dataPromo.Code,
@@ -540,6 +542,8 @@ namespace ERP.Web.API.Domain.Services.Sales
                     }
                 }
 
+                if (data.FinalDiscPercent > 0)
+                    data.FinalDisc = data.ItemDetails.Sum(x => x.FinalDiscHeader * x.Qty);
                 data.SubTotal = totalDetail.Sum();
                 data.TaxAmount = totalTax.Sum();
                 data.Dpp = totalDpp.Sum();
@@ -860,8 +864,9 @@ namespace ERP.Web.API.Domain.Services.Sales
                                 var detailTierPromo = Db.PromoDetailTiers.Where(x => x.PromoDetailId == detailPromo.Id).ToList();
                                 var detailMultiPromo = Db.PromoDetailMultipleItems.Where(x => x.PromoDetailId == detailPromo.Id).ToList();
                                 var applyTo = detailPromo.ApplyTo;
+                                var itemCategoryData = FindItemCategoryHierarchy(ctItem.CategoryId);
                                 if ((applyTo == 1 && detailPromo.ItemId == item.ItemId)
-                                    || (applyTo == 3 && ctItem.CategoryId == detailPromo.ItemId))
+                                    || (applyTo == 3 && itemCategoryData.Select(x => x.Id).Contains(detailPromo.ItemId)))
                                 {
                                     switch (detailPromo.PromoType)
                                     {
@@ -936,7 +941,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                                                         });
                                                     }
                                                 }
-                                                else if (item.UnitId == tierData.SaleUnit)
+                                                else if ((applyTo == 1 && item.UnitId == tierData.SaleUnit) || applyTo == 3)
                                                 {
                                                     discPromo.Add(new SalesOrderDetailDiscount
                                                     {
@@ -1034,7 +1039,8 @@ namespace ERP.Web.API.Domain.Services.Sales
                                                 if (tierData != null)
                                                 {
                                                     var valueDisc = tierData.Value;
-                                                    var prorateDisc = valueDisc / multiItem.Count();
+                                                    var sumMulti = data.ItemDetails.Where(x => isApplicable.Contains(x.ItemId)).Sum(x => x.UnitPrice * x.Qty);
+                                                    var prorateDisc = valueDisc / sumMulti * (item.Qty * item.UnitPrice);
                                                     discPromo.Add(new SalesOrderDetailDiscount
                                                     {
                                                         PromoCode = dataPromo.Code,
@@ -1286,6 +1292,8 @@ namespace ERP.Web.API.Domain.Services.Sales
                     }
                 }
 
+                if (data.FinalDiscPercent > 0)
+                    data.FinalDisc = data.ItemDetails.Sum(x => x.FinalDiscHeader * x.Qty);
                 data.SubTotal = totalDetail.Sum();
                 data.TaxAmount = totalTax.Sum();
                 data.Dpp = totalDpp.Sum();
@@ -1753,8 +1761,31 @@ namespace ERP.Web.API.Domain.Services.Sales
             return (errorList != "", errorList);
         }
 
+        private List<dynamic> FindItemCategoryHierarchy(int? categoryId)
+        {
+            var result = new List<dynamic>();
+            if (categoryId.HasValue)
+            {
+                var query = @$"DECLARE @id INT
+                            SET @id = {categoryId.Value};
+                            WITH hierarchy AS (
+	                            SELECT t.*
+	                            FROM Inventory.ItemCategory t
+	                            WHERE t.Id = @id
+	                            UNION ALL
+	                            SELECT x.*
+	                            FROM Inventory.ItemCategory x
+	                            JOIN hierarchy h ON h.ParentId = x.Id)
+                            SELECT *
+                            FROM hierarchy h";
+                result = Db.ItemCategories.FromSqlRaw(query).ToDynamicList();
+            }
+
+            return result;
+        }
+
         #region Credit Used - Limit
-        private bool CheckCreditLimit(string custCode, decimal total) => Db.Customers.Any(c => c.Code.Equals(custCode) && (c.CreditLimit > 0 ? (c.CreditLimit - c.CreditUsed) >= total : true));
+        private bool CheckCreditLimit(string custCode, decimal total) => Db.Customers.Any(c => c.Code.Equals(custCode) && (c.CreditLimit <= 0 || (c.CreditLimit - c.CreditUsed) >= total));
         private void RestoreCreditUsed(string transCode, string custCode)
         {
             var prevAmount = Db.SalesOrderHeaders.AsNoTracking().FirstOrDefault(x => x.Code.Equals(transCode))?.Total;

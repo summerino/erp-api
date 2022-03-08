@@ -14,5 +14,6 @@ namespace ERP.Web.API.Domain.Interfaces.Mobile.HumanResource
         Attendance GetCurrentAttendance(long userId);
 
         Attendance GetDetail(long attendanceId);
+        DateTime? GetLastAttendance(int userId);
     }
 }

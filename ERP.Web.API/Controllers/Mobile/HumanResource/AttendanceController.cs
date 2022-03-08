@@ -65,5 +65,13 @@ namespace ERP.Web.API.Controllers.Mobile.HumanResource
 
             return Ok(result);
         }
+
+        [HttpGet("last-attendance")]
+        public IActionResult GetLastAttendance()
+        {
+            var result = _attendance.GetLastAttendance(_claim.UserId);
+
+            return Ok(result);
+        }
     }
 }

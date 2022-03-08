@@ -411,6 +411,13 @@ namespace ERP.Web.API.Domain.Services.Purchase
                     return result;
                 }
 
+                var isPaid = Db.VwDebitMemos.Where(x => x.TransCode == code && (x.Mark == "FU" || x.Mark == "PU")).Any();
+                if (isPaid)
+                {
+                    result.Message = "Data pengembalian pembelian tidak bisa ditandai sebagai void karena terdapat debit memo yang sudah dibayarkan.";
+                    return result;
+                }
+
                 using var transaction = Db.Database.BeginTransaction();
                 try
                 {
@@ -418,6 +425,17 @@ namespace ERP.Web.API.Domain.Services.Purchase
                     data.Mark = "V";
                     data.UpdatedBy = userId;
                     data.UpdatedDate = DateTime.Now;
+
+                    if (data.Type == 1)
+                    {
+                        var dmData = Db.DebitMemos.FirstOrDefault(x => x.TransCode == code);
+
+                        dmData.Mark = "V";
+                        dmData.UpdatedBy = userId;
+                        dmData.UpdatedDate = DateTime.Now;
+
+                        Db.DebitMemos.Update(dmData);
+                    }
 
                     Db.Database.ExecuteSqlRaw(
                     "EXEC sp_update_stock_mutation_from_pr {0}, {1}, {2}",
