@@ -70,9 +70,9 @@ public enum Menu
     Vehicle = 24,
     VehicleType = 25,
     Tax = 26,
-    Currency = 8,
     PaymentTerm = 57,
     DynamicReportTemplate = 154,
+    Currency = 8,
     Approval = 72,
     ActiveTransaction = 150,
 
