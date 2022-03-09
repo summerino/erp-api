@@ -37,28 +37,7 @@ namespace ERP.Web.API.Domain.Services.Inventory
             var data = Db.VwBeginningBalanceStockDetails.Where(x => x.Code == code);
             return data.OrderBy(x => x.LineNo);
         }
-
-        public DataSourceResult GetBeginningBalanceStockItem(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
-          List<int> category, string search)
-        {
-            var data = Db.VwBeginningBalanceItems.AsQueryable();
-
-            if (category?.Any() ?? false)
-            {
-                data = data.Where(x => category.Contains(x.CategoryId));
-            }
-
-            if (!string.IsNullOrEmpty(search))
-            {
-                data = data.Where(x =>
-                            x.Initial.Contains(search) || x.Name.Contains(search) ||
-                            x.UomInitial.Contains(search) || x.UomSellName.Contains(search) ||
-                            x.UomBuyName.Contains(search) || x.CategoryName.Contains(search));
-            }
-
-            return data.ToDataSourceResult(skip, take, filter, sort);
-        }
-
+        
         public SaveResult Insert(BeginningBalanceRequest data)
         {
             var result = new SaveResult(false);

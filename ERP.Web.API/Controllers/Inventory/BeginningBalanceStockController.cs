@@ -91,25 +91,7 @@ namespace ERP.Web.API.Controllers.Inventory
                 TableData = data
             });
         }
-
-        [HttpGet("item-list")]
-        public IActionResult GetBeginningBalanceStockItem(string search, string category, string filters, string sorts, int skip, int take) 
-        {
-            var data =
-                _bb.GetBeginningBalanceStockItem(
-                    skip, take,
-                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
-                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
-                    JsonConvert.DeserializeObject<List<int>>(!string.IsNullOrWhiteSpace(category) ? category : "[]"),
-                    search);
-
-            return Ok(new ApiResponse
-            {
-                RowCount = data.Total,
-                TableData = data.Data.ToDynamicList()
-            });
-        }
-
+        
         [HttpPost]
         public IActionResult OnPost(BeginningBalanceRequest data)
         {

@@ -131,7 +131,6 @@ namespace ERP.Entity
         public DbSet<VwBeginningBalanceStockHeader> VwBeginningBalanceStockHeaders { get; set; }
         public DbSet<BeginningBalanceStockDetail> BeginningBalanceStockDetails { get; set; }
         public DbSet<VwBeginningBalanceStockDetail> VwBeginningBalanceStockDetails { get; set; }
-        public DbSet<VwBeginningBalanceItem> VwBeginningBalanceItems { get; set; }
         public DbSet<Item> Items { get; set; }
         public DbSet<VwItem> VwItems { get; set; }
         public DbSet<ItemCategory> ItemCategories { get; set; }
@@ -962,16 +961,12 @@ namespace ERP.Entity
 
             modelBuilder.Entity<VwBeginningBalanceStockHeader>()
                 .HasNoKey()
-                .ToView("VwBeginningBalanceStockHeader", Schema.Inventory);
+                .ToView("vwBeginningBalanceStockHeader", Schema.Inventory);
 
             modelBuilder.Entity<VwBeginningBalanceStockDetail>()
                 .HasNoKey()
-                .ToView("VwBeginningBalanceStockDetail", Schema.Inventory);
-
-            modelBuilder.Entity<VwBeginningBalanceItem>()
-                .HasNoKey()
-                .ToView("VwBeginningBalanceItem", Schema.Inventory);
-
+                .ToView("vwBeginningBalanceStockDetail", Schema.Inventory);
+            
             modelBuilder.Entity<BeginningBalanceStockDetail>(entity =>
             {
                 entity.Property(e => e.Code)
