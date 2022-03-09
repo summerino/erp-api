@@ -206,6 +206,7 @@ builder.Services.AddScoped<ISupplierTypeService, SupplierTypeService>();
 builder.Services.AddScoped<ITaxService, TaxService>();
 builder.Services.AddScoped<IVehicleService, VehicleService>();
 builder.Services.AddScoped<IVehicleTypeService, VehicleTypeService>();
+builder.Services.AddScoped<IDynamicReportTemplateService, DynamicReportTemplateService>();
 
 // Human Resource Services
 builder.Services.AddScoped<IAttendanceReportService, AttendanceReportService>();
