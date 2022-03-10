@@ -61,7 +61,7 @@ namespace ERP.Entity.Inventory
         [Precision(18, 2)]
         public decimal Qty { get; set; }
         
-        [Precision(18, 2)]
+        [Precision(19, 6)]
         public decimal UnitPrice { get; set; }
 
         [StringLength(256)]
@@ -85,7 +85,7 @@ namespace ERP.Entity.Inventory
         [Precision(18, 2)]
         public decimal Qty { get; set; }
         
-        [Precision(18, 2)]
+        [Precision(19, 6)]
         public decimal UnitPrice { get; set; }
         
         public string Notes { get; set; }
