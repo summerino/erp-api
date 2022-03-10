@@ -1108,9 +1108,8 @@ namespace ERP.Web.API.Domain.Services.Purchase
                 var data = from detail in Db.VwMobileReceiveItemDetails
                            join header in Db.VwMobileReceiveItemHeaders on detail.Code equals header.Code
                            join poDetail in Db.VwPurchaseOrderDetails on header.TransCode equals poDetail.Code
-                           into poDs
-                           from d in poDs.DefaultIfEmpty()
-                           group d by new {
+                           where poDetail.ItemId == detail.ItemId || detail.Type.Equals(1)
+                           group new { detail, header, poDetail } by new {
                                Code = detail.Code,
                                Id = detail.Id,
                                ItemId = detail.ItemId,
@@ -1124,8 +1123,8 @@ namespace ERP.Web.API.Domain.Services.Purchase
                                WarehouseCode = detail.WarehouseCode,
                                ItemInitial = detail.ItemInitial,
                                ItemName = detail.ItemName,
-                               QtyOrder = detail.Type == 1 ? 0 : d.Qty,
-                               QtyRemain = detail.Type == 1 ? 0 : (d.Qty - detail.Qty)
+                               QtyOrder = detail.Type == 1 ? 0 : poDetail.Qty,
+                               QtyRemain = detail.Type == 1 ? 0 : (poDetail.Qty - detail.Qty)
                            } into poD
                            select new ReceiveItemDetailModel
                            {
@@ -1142,22 +1141,21 @@ namespace ERP.Web.API.Domain.Services.Purchase
                                WarehouseCode = poD.Key.WarehouseCode,
                                ItemInitial = poD.Key.ItemInitial,
                                ItemName = poD.Key.ItemName,
-                               QtyOrder = poD.Key.Type == 1 ? 0 : poD.Key.Qty,
-                               QtyRemain = poD.Key.Type == 1 ? 0 : (poD.Key.Qty - poD.Key.Qty)
+                               QtyOrder = poD.Key.QtyOrder,
+                               QtyRemain = poD.Key.QtyRemain
                            };
-
+                
                 data = data.Where(x => x.Code.Equals(code)).OrderBy(x => x.LineNo);
 
-                return data;
+                return data.AsQueryable();
             }
             else
             {
                 var data = from detail in Db.VwMobileReceiveItemDetails
                            join header in Db.VwMobileReceiveItemHeaders on detail.Code equals header.Code
-                           join poDetail in Db.VwPurchaseOrderDetails on header.TransCode equals poDetail.Code
-                           into prD
-                           from d in prD.DefaultIfEmpty()
-                           group d by new
+                           join prDetail in Db.VwPurchaseReturnDetails on header.TransCode equals prDetail.Code
+                           where prDetail.ItemId == detail.ItemId || detail.Type.Equals(1)
+                           group new { detail, header, prDetail } by new
                            {
                                Code = detail.Code,
                                Id = detail.Id,
@@ -1172,8 +1170,8 @@ namespace ERP.Web.API.Domain.Services.Purchase
                                WarehouseCode = detail.WarehouseCode,
                                ItemInitial = detail.ItemInitial,
                                ItemName = detail.ItemName,
-                               QtyOrder = detail.Type == 1 ? 0 : d.Qty,
-                               QtyRemain = detail.Type == 1 ? 0 : (d.Qty - detail.Qty)
+                               QtyOrder = detail.Type == 1 ? 0 : prDetail.Qty,
+                               QtyRemain = detail.Type == 1 ? 0 : (prDetail.Qty - detail.Qty)
                            } into poD
                            select new ReceiveItemDetailModel
                            {
@@ -1190,8 +1188,8 @@ namespace ERP.Web.API.Domain.Services.Purchase
                                WarehouseCode = poD.Key.WarehouseCode,
                                ItemInitial = poD.Key.ItemInitial,
                                ItemName = poD.Key.ItemName,
-                               QtyOrder = poD.Key.Type == 1 ? 0 : poD.Key.Qty,
-                               QtyRemain = poD.Key.Type == 1 ? 0 : (poD.Key.Qty - poD.Key.Qty)
+                               QtyOrder = poD.Key.QtyOrder,
+                               QtyRemain = poD.Key.QtyRemain
                            };
 
                 data = data.Where(x => x.Code.Equals(code)).OrderBy(x => x.LineNo);
