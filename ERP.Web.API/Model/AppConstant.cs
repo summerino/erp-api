@@ -75,6 +75,7 @@ public enum Menu
     Currency = 8,
     Approval = 72,
     ActiveTransaction = 150,
+    CustomDynamicReport = 156,
 
     // Inventory
     Item = 28,
