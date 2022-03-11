@@ -93,6 +93,12 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
         using var transaction = Db.Database.BeginTransaction();
         try
         {
+            if (!CheckCreditLimit(data.CustCode, data.Total))
+            {
+                result.Message = "Nilai transaksi lebih besar dari nilai batas kredit.";
+                return result;
+            }
+
             // Checking deliver qty is excess or not
             if (IsQtyExcess(data.WarehouseCode, data.ItemDetails, null))
             {
@@ -279,7 +285,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                                                     });
                                                 }
                                             }
-                                            else if (item.UnitId == tierData3.SaleUnit)
+                                            else if ((applyTo == 1 && item.UnitId == tierData3.SaleUnit) || applyTo == 3)
                                             {
                                                 bonusPromo.Add(new SalesOrderDetailFreeGood
                                                 {
@@ -1029,7 +1035,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                                                     });
                                                 }
                                             }
-                                            else if (item.UnitId == tierData3.SaleUnit)
+                                            else if ((applyTo == 1 && item.UnitId == tierData3.SaleUnit) || applyTo == 3)
                                             {
                                                 bonusPromo.Add(new SalesOrderDetailFreeGood
                                                 {
