@@ -71,6 +71,12 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 result.Message = "Kode sudah terdaftar. Tolong gunakan kode lain.";
                 return result;
             }
+
+            if (data.PaidAmount > data.Amount)
+            {
+                result.Message = "Nilai tidak boleh lebih kecil dari Nilai yang terbayarkan.";
+                return result;
+            }
             
             // Update data
             Db.BeginningBalanceAPs.Update(data);
