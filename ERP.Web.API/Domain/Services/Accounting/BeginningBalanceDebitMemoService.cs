@@ -72,7 +72,13 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 result.Message = "Kode sudah terdaftar. Tolong gunakan kode lain.";
                 return result;
             }
-            
+
+            if (data.Used > data.Amount)
+            {
+                result.Message = "Nilai tidak boleh lebih kecil dari Nilai yang digunakan.";
+                return result;
+            }
+
             // Update data
             Db.BeginningBalanceDebitMemos.Update(data);
             Db.Entry(data).Property(e => e.Id).IsModified = false;
