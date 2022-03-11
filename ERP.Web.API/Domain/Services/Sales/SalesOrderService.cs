@@ -290,7 +290,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                                                         });
                                                     }
                                                 }
-                                                else if (item.UnitId == tierData3.SaleUnit)
+                                                else if ((applyTo == 1 && item.UnitId == tierData3.SaleUnit) || applyTo == 3)
                                                 {
                                                     bonusPromo.Add(new SalesOrderDetailFreeGood
                                                     {
@@ -984,7 +984,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                                                         });
                                                     }
                                                 }
-                                                else if (item.UnitId == tierData3.SaleUnit)
+                                                else if ((applyTo == 1 && item.UnitId == tierData3.SaleUnit) || applyTo == 3)
                                                 {
                                                     bonusPromo.Add(new SalesOrderDetailFreeGood
                                                     {

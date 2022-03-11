@@ -279,7 +279,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                                                     });
                                                 }
                                             }
-                                            else if (item.UnitId == tierData3.SaleUnit)
+                                            else if ((applyTo == 1 && item.UnitId == tierData3.SaleUnit) || applyTo == 3)
                                             {
                                                 bonusPromo.Add(new SalesOrderDetailFreeGood
                                                 {
@@ -1029,7 +1029,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                                                     });
                                                 }
                                             }
-                                            else if (item.UnitId == tierData3.SaleUnit)
+                                            else if ((applyTo == 1 && item.UnitId == tierData3.SaleUnit) || applyTo == 3)
                                             {
                                                 bonusPromo.Add(new SalesOrderDetailFreeGood
                                                 {
