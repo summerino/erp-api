@@ -115,4 +115,17 @@ namespace ERP.Entity.Sales
         public int? ItemSubGroupId { get; set; }
 
     }
+
+    public class ReportByTarget
+    {
+        public long? SalesId { get; set; }
+
+        public int? ItemGroupId { get; set; }
+
+        public int? ItemSubGroupId { get; set; }
+
+        public string ItemSubGroup2 { get; set; }
+
+        public decimal? TargetAmount { get; set; }
+    }
 }
