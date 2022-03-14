@@ -190,6 +190,11 @@ namespace ERP.Web.API.Domain.Services.Mobile.Sales
                            Notes = dlvPlanHeader.Notes
                        };
 
+            if (!string.IsNullOrEmpty(search))
+            {
+                data = data.Where(x => x.DriverName.Contains(search) || x.Code.Contains(search) || x.DlvPlanCode.Contains(search));
+            }
+
             if (date != null && date != "")
             {
                 var date1 = DateTime.ParseExact(date, "yyyy-MM-dd", null);
