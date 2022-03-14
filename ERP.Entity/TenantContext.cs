@@ -329,6 +329,7 @@ namespace ERP.Entity
         public DbSet<ReportByDetailSR> ReportByDetailSRs { get; set; }
         public DbSet<ReportByST> ReportBySTs { get; set; }
         public DbSet<ReportByDetailST> ReportByDetailSTs { get; set; }
+        public DbSet<ReportByTarget> ReportByTargets { get; set; }
 
         // System Management entities
         public DbSet<SystemManagement.Action> Actions { get; set; }
@@ -2506,6 +2507,10 @@ namespace ERP.Entity
             modelBuilder.Entity<ReportByDetailST>()
                .HasNoKey()
                .ToTable("ReportByDetailST", t => t.ExcludeFromMigrations());
+
+            modelBuilder.Entity<ReportByTarget>()
+               .HasNoKey()
+               .ToTable("ReportByTarget", t => t.ExcludeFromMigrations());
 
             // Visit Order model
             modelBuilder.Entity<VisitOrder>(entity =>
