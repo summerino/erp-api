@@ -292,6 +292,107 @@ namespace ERP.Web.API.Domain.Services.Inventory
             }
             return (true, "");
         }
+
+        public IEnumerable<UploadBBStockDetailRequest> VerifyUpload(IEnumerable<UploadBBStockDetailRequest> data)
+        {
+            foreach (var item in data)
+            {
+                var checkDupe = data.Where(x => x.Inisialbarang == item.Inisialbarang && x.Satuanbarang == item.Satuanbarang).Count() > 1;
+                if (item.Qtybarang > 0 && item.Hargabarang > 0 && !checkDupe)
+                {
+                    var itemData = Db.Items.FirstOrDefault(x => x.Initial == item.Inisialbarang);
+                    if (itemData != null)
+                    {
+                        var uomData = Db.UoMConversions.Where(x => x.UomId == itemData.UomId).ToList();
+                        if (!uomData.Select(x => x.UnitEquivalent).Contains(item.Satuanbarang))
+                        {
+                            item.Mark = true;
+                        }
+                    }
+                    else
+                    {
+                        item.Mark = true;
+                    }
+                }
+                else
+                {
+                    item.Mark = true;
+                }
+            }
+
+            return data;
+        }
+
+        public SaveResult Posting(UploadBBStockHeaderRequest data, int userId)
+        {
+            var result = new SaveResult(false);
+
+            using var transaction = Db.Database.BeginTransaction();
+            try
+            {
+                // Get new code
+                var newCode = GetNewCode("BB_INVT_NUM_FMT", data.Date);
+
+                var headData = new BeginningBalanceStockHeader
+                {
+                    Code = newCode,
+                    Date = data.Date,
+                    WarehouseCode = data.WarehouseCode,
+                    Notes = data.Notes,
+                    IsActive = true,
+                    CreatedBy = userId,
+                    CreatedDate = DateTime.Now,
+                    UpdatedBy = userId,
+                    UpdatedDate = DateTime.Now
+                };
+                Db.BeginningBalanceStockHeaders.Add(headData);
+
+                // Insert detail data
+                short i = 0;
+                var details = new List<BeginningBalanceStockDetail>();
+                foreach (var item in data.ItemDetails)
+                {
+                    var itemData = Db.Items.FirstOrDefault(x => x.Initial == item.Inisialbarang);
+                    var uomData = Db.UoMConversions.FirstOrDefault(x => x.UomId == itemData.UomId &&
+                                    x.UnitEquivalent == item.Satuanbarang);
+                    var beginningBalanceDetail = new BeginningBalanceStockDetail
+                    {
+                        LineNo = ++i,
+                        Code = newCode,
+                        ItemId = itemData.Id,
+                        Notes = item.Catatan,
+                        Qty = item.Qtybarang,
+                        UnitPrice = item.Qtybarang,
+                        UnitId = uomData.Id,
+                        UomId = uomData.UomId
+                    };
+                    details.Add(beginningBalanceDetail);
+                }
+                if (details.Any())
+                {
+                    Db.BeginningBalanceStockDetails.AddRange(details);
+                    Db.SaveChanges();
+                }
+
+                Db.SaveChanges();
+
+                // Execute sp_update_stock_mutation_from_bb
+                Db.Database.ExecuteSqlRaw(
+                    "EXEC sp_update_stock_mutation_from_bb {0}, {1}",
+                    newCode, data.Date);
+
+                transaction.Commit();
+            }
+            catch (Exception ex)
+            {
+                result.Message = ex.InnerException?.Message ?? ex.Message;
+                return result;
+            }
+
+            result.Success = true;
+            result.Message = "Import data saldo awal stock berhasil disimpan.";
+            return result;
+        }
     }
 
 }
