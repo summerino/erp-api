@@ -153,6 +153,28 @@ namespace ERP.Web.API.Controllers.Inventory
             return Ok(result);
         }
 
+        [HttpPost("upload")]
+        public IActionResult OnUpload(IEnumerable<UploadBBStockDetailRequest> data)
+        {
+
+            var result = _bb.VerifyUpload(data);
+
+            return Ok(new ApiResponse
+            {
+                RowCount = result.Count(),
+                TableData = result.ToDynamicList()
+            });
+        }
+
+        [HttpPost("posting")]
+        public IActionResult OnPosting(UploadBBStockHeaderRequest data)
+        {
+
+            var result = _bb.Posting(data, _claim.UserId);
+
+            return Ok(result);
+        }
+
         private (bool, string) Validate(BeginningBalanceRequest data, bool onDelete = false)
         {
             var periods = new List<string> { data.Date.ToString("yyyyMM") };

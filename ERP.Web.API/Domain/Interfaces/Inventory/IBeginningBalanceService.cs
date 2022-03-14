@@ -17,5 +17,9 @@ namespace ERP.Web.API.Domain.Interfaces.Inventory
         SaveResult Update(BeginningBalanceRequest data);
         
         SaveResult Delete(string code, int userId);
+
+        IEnumerable<UploadBBStockDetailRequest> VerifyUpload(IEnumerable<UploadBBStockDetailRequest> data);
+
+        SaveResult Posting(UploadBBStockHeaderRequest data, int userId);
     }
 }
