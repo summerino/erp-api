@@ -37,6 +37,28 @@ namespace ERP.Web.API.Controllers.MobileSales
                     JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
                     search);
 
+            data.Data = data.Data.ToDynamicList()
+                .Select(x => new
+                {
+                    x.Code, x.Date,
+                    x.VisitOrderCode, x.SalesmanId,
+                    x.CustCode, x.Scheduled,
+                    x.Visited, x.Lat, x.Lng,
+                    x.StartTime, x.EndTime,
+                    x.Total, x.UnscheduledVisitReasonId,
+                    x.NoVisitReasonId, x.NoOrderReasonId,
+                    x.Image, x.Mark,
+                    x.CreatedBy, x.CreatedDate,
+                    x.UpdatedBy, x.UpdatedDate,
+                    x.ApprovedBy, x.ApprovedDate,
+                    x.RejectedBy, x.RejectedDate,
+                    x.SalesmanInitial, x.SalesmanName,
+                    x.CustomerInitial, x.CustomerName,
+                    x.CreatedInitial, x.UpdatedInitial,
+                    x.ApprovedInitial, x.RejectedInitial,
+                    x.Status, Radius = _vl.GetRadius(x.CustCode, x.Lat, x.Lng)
+                });
+
             return Ok(new ApiResponse
             {
                 RowCount = data.Total,
