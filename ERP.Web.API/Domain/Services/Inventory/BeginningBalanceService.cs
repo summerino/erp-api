@@ -362,7 +362,7 @@ namespace ERP.Web.API.Domain.Services.Inventory
                         ItemId = itemData.Id,
                         Notes = item.Catatan,
                         Qty = item.Qtybarang,
-                        UnitPrice = item.Qtybarang,
+                        UnitPrice = item.Hargabarang,
                         UnitId = uomData.Id,
                         UomId = uomData.UomId
                     };
