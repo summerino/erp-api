@@ -12,5 +12,7 @@ namespace ERP.Web.API.Domain.Interfaces.MobileSales
         SaveResult Approve(List<MobileVisitLog> data, int userId);
 
         SaveResult Reject(List<MobileVisitLog> data, int userId);
+
+        dynamic GetRadius(string custCode, decimal? lat, decimal? lng);
     }
 }

@@ -5,6 +5,7 @@ using ERP.Entity;
 using ERP.Entity.MobileSales;
 using ERP.Entity.Sales;
 using ERP.Web.API.Domain.Interfaces.MobileSales;
+using Geolocation;
 
 namespace ERP.Web.API.Domain.Services.MobileSales
 {
@@ -156,6 +157,41 @@ namespace ERP.Web.API.Domain.Services.MobileSales
             }
 
             return data.ToDataSourceResult(skip, take, filters, sorts);
+        }
+
+        public dynamic GetRadius(string custCode, decimal? lat, decimal? lng)
+        {
+            var result = new
+            {
+                Distance = 0.00,
+                Lat = 0m,
+                Lng = 0m,
+                Radius = 0.00,
+                RadiusColor = "red"
+            };
+
+            if (lat.HasValue && lng.HasValue)
+            {
+                var custAddData = Db.CustomerAddress.FirstOrDefault(x => x.Code == custCode && x.IsDefault);
+                if (custAddData != null)
+                {
+                    if (!custAddData.Lat.HasValue || !custAddData.Lng.HasValue)
+                        return result;
+
+                    var radius = Convert.ToDouble(Db.SystemParameters.FirstOrDefault(x => x.Code == "MOB_VST_RANGE_RADIUS").Value);
+                    var distance = GeoCalculator.GetDistance((double)custAddData.Lat, (double)custAddData.Lng, (double)lat, (double)lng, distanceUnit: DistanceUnit.Meters);
+                    result = new
+                    {
+                        Distance = distance,
+                        Lat = (decimal)custAddData.Lat,
+                        Lng = (decimal)custAddData.Lng,
+                        Radius = radius,
+                        RadiusColor = distance <= radius ? "green" : "red"
+                    };
+                }
+            }
+
+            return result;
         }
 
         public SaveResult Reject(List<MobileVisitLog> data, int userId)
