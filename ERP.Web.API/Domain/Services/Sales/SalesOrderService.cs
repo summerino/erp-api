@@ -272,23 +272,20 @@ namespace ERP.Web.API.Domain.Services.Sales
                                             if (tierData3 != null)
                                             {
                                                 var freeItem = items.FirstOrDefault(x => x.Id == tierData3.FreeGoodItemId);
-                                                if (tierData3.IsMultiple)
+                                                if (tierData3.IsMultiple && ((applyTo == 1 && item.UnitId == tierData3.SaleUnit) || applyTo == 3))
                                                 {
-                                                    if (item.UnitId == tierData3.SaleUnit)
+                                                    var multipleValue = Math.Floor(item.Qty / tierData3.FromQty);
+                                                    bonusPromo.Add(new SalesOrderDetailFreeGood
                                                     {
-                                                        var multipleValue = Math.Floor(item.Qty / tierData3.FromQty);
-                                                        bonusPromo.Add(new SalesOrderDetailFreeGood
-                                                        {
-                                                            PromoCode = dataPromo.Code,
-                                                            ItemId = freeItem.Id,
-                                                            UomId = (int)freeItem.UomId,
-                                                            UnitId = Convert.ToInt32(tierData3.UnitFreeGood),
-                                                            Qty = multipleValue * tierData3.Value,
-                                                            QtyClosed = 0m,
-                                                            UnitPrice = (decimal)freeItem.SellPrice,
-                                                            CoaCode = dataPromo.CoaCost
-                                                        });
-                                                    }
+                                                        PromoCode = dataPromo.Code,
+                                                        ItemId = freeItem.Id,
+                                                        UomId = (int)freeItem.UomId,
+                                                        UnitId = Convert.ToInt32(tierData3.UnitFreeGood),
+                                                        Qty = multipleValue * tierData3.Value,
+                                                        QtyClosed = 0m,
+                                                        UnitPrice = (decimal)freeItem.SellPrice,
+                                                        CoaCode = dataPromo.CoaCost
+                                                    });
                                                 }
                                                 else if ((applyTo == 1 && item.UnitId == tierData3.SaleUnit) || applyTo == 3)
                                                 {
@@ -966,23 +963,20 @@ namespace ERP.Web.API.Domain.Services.Sales
                                             if (tierData3 != null)
                                             {
                                                 var freeItem = items.FirstOrDefault(x => x.Id == tierData3.FreeGoodItemId);
-                                                if (tierData3.IsMultiple)
+                                                if (tierData3.IsMultiple && ((applyTo == 1 && item.UnitId == tierData3.SaleUnit) || applyTo == 3))
                                                 {
-                                                    if (item.UnitId == tierData3.SaleUnit)
+                                                    var multipleValue = Math.Floor(item.Qty / tierData3.FromQty);
+                                                    bonusPromo.Add(new SalesOrderDetailFreeGood
                                                     {
-                                                        var multipleValue = Math.Floor(item.Qty / tierData3.FromQty);
-                                                        bonusPromo.Add(new SalesOrderDetailFreeGood
-                                                        {
-                                                            PromoCode = dataPromo.Code,
-                                                            ItemId = freeItem.Id,
-                                                            UomId = (int)freeItem.UomId,
-                                                            UnitId = Convert.ToInt32(tierData3.UnitFreeGood),
-                                                            Qty = multipleValue * tierData3.Value,
-                                                            QtyClosed = 0m,
-                                                            UnitPrice = (decimal)freeItem.SellPrice,
-                                                            CoaCode = dataPromo.CoaCost
-                                                        });
-                                                    }
+                                                        PromoCode = dataPromo.Code,
+                                                        ItemId = freeItem.Id,
+                                                        UomId = (int)freeItem.UomId,
+                                                        UnitId = Convert.ToInt32(tierData3.UnitFreeGood),
+                                                        Qty = multipleValue * tierData3.Value,
+                                                        QtyClosed = 0m,
+                                                        UnitPrice = (decimal)freeItem.SellPrice,
+                                                        CoaCode = dataPromo.CoaCost
+                                                    });
                                                 }
                                                 else if ((applyTo == 1 && item.UnitId == tierData3.SaleUnit) || applyTo == 3)
                                                 {
