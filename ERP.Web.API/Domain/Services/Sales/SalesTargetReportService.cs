@@ -95,26 +95,33 @@ namespace ERP.Web.API.Domain.Services.Sales
                     @"GROUP BY st_s.SalesmanId, st_d.ItemGroupId,
                     st_d.ItemSubGroupId, st_d.SubGroup");
 
-                var tsData = _db.ReportBySTs.FromSqlRaw(@"SELECT st_s.SalesmanId AS SalesId, emp.FirstName AS SalesName,
-                    st_d.ItemGroupId, ig.[Name] AS ItemGroup,
-                    st_d.ItemSubGroupId, st_d.SubGroup AS ItemSubGroup2,
-                    igs.[Name] + ' - ' + st_d.SubGroup AS ItemSubGroup, 
+                var tsData = _db.ReportBySTs.FromSqlRaw(@"DECLARE @Delimiter CHAR = ';';
+                    WITH cte_splitted AS (
+                    SELECT ItemGroupId,LTRIM(RTRIM(Split.a.value('.', 'VARCHAR(100)'))) 'Value' 
+                    FROM  
+                    (     
+                         SELECT ItemGroupId,CAST ('<M>' + REPLACE(VALUE, @Delimiter, '</M><M>') + '</M>' AS XML) AS Data            
+                         FROM Inventory.ItemGroupSubGroup
+                    ) AS A 
+                    CROSS APPLY Data.nodes ('/M') AS Split(a))
+                    SELECT emp.Id AS SalesId, emp.FirstName AS SalesName,
+                    ig.Id As ItemGroupId, ig.[Name] AS ItemGroup,
+                    igs.Id AS ItemSubGroupId, csd.[Value] AS ItemSubGroup2,
+                    igs.[Name] + ' - ' + csd.[Value] AS ItemSubGroup, 
                     CAST(0 AS decimal) AS TargetAmount,
                     CAST(0 AS int) AS TotalCustomers,
                     CAST(0 AS decimal) AS RealAmount,
                     CAST(0 AS decimal) AS TargetPercent
                     FROM General.Employee emp
-                    LEFT JOIN Sales.SalesTargetSubject st_s ON st_s.SalesmanId = emp.Id
-                    LEFT JOIN Sales.SalesTargetHeader st_h ON st_h.Code = st_s.Code
-                    LEFT JOIN Sales.SalesTargetDetail st_d ON st_d.Code = st_h.Code
-                    LEFT JOIN Inventory.ItemGroup ig ON ig.Id = st_d.ItemGroupId
-                    LEFT JOIN Inventory.ItemGroupSubGroup igs ON igs.Id = st_d.ItemSubGroupId
-                    WHERE st_h.Mark != 'V'" +
-                    (!groupId.HasValue || groupId <= 0 ? "" : $" AND st_d.ItemGroupId = {groupId}") +
-                    (!groupSubGroupId.HasValue || groupSubGroupId <= 0 ? "" : $" AND st_d.ItemSubGroupId = {groupSubGroupId}") +
-                    (string.IsNullOrEmpty(groupSubGroup) ? "" : @$" AND st_d.SubGroup = '{groupSubGroup}'") +
-                    @" GROUP BY st_s.SalesmanId, emp.FirstName, st_d.ItemGroupId, ig.[Name],
-                    st_d.ItemSubGroupId, igs.[Name], st_d.SubGroup").ToList();
+                    CROSS JOIN Inventory.ItemGroup ig 
+                    LEFT JOIN Inventory.ItemGroupSubGroup igs ON igs.ItemGroupId = ig.Id
+                    LEFT JOIN cte_splitted csd ON csd.ItemGroupId = ig.Id
+                    WHERE emp.IsActive = 1" +
+                    (!groupId.HasValue || groupId <= 0 ? "" : $" AND ig.Id = {groupId}") +
+                    (!groupSubGroupId.HasValue || groupSubGroupId <= 0 ? "" : $" AND igs.Id = {groupSubGroupId}") +
+                    (string.IsNullOrEmpty(groupSubGroup) ? "" : @$" AND csd.[Value] = '{groupSubGroup}'") +
+                    @" GROUP BY emp.Id, emp.FirstName, ig.Id, ig.[Name],
+                    igs.Id, igs.[Name], csd.[Value]").ToList();
 
                 if (salesId.HasValue || salesId > 0)
                 {
@@ -132,8 +139,8 @@ namespace ERP.Web.API.Domain.Services.Sales
                         x.SubGroup5 == item.ItemSubGroup2)).ToList();
 
                     item.TargetAmount = targetData.Where(x => x.ItemGroupId == item.ItemGroupId &&
-                                        x.ItemSubGroupId == item.ItemSubGroupId && x.ItemSubGroup2 == item.ItemSubGroup2)
-                                        .Sum(x => x.TargetAmount);
+                                        x.ItemSubGroupId == item.ItemSubGroupId && x.ItemSubGroup2 == item.ItemSubGroup2 &&
+                                        x.SalesId == item.SalesId).Sum(x => x.TargetAmount);
                     item.TotalCustomers = itemDetailData.DistinctBy(x => x.CustCode).Count();
                     item.RealAmount = itemDetailData.Sum(x => x.TotalNettPrice);
                     item.TargetPercent = item.RealAmount > 0 && item.TargetAmount > 0 ? item.RealAmount / item.TargetAmount * 100 : 0m;
