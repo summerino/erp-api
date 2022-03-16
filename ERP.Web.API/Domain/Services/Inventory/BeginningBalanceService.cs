@@ -345,34 +345,59 @@ namespace ERP.Web.API.Domain.Services.Inventory
                     UpdatedBy = userId,
                     UpdatedDate = DateTime.Now
                 };
-                Db.BeginningBalanceStockHeaders.Add(headData);
+                
 
                 // Insert detail data
                 short i = 0;
                 var details = new List<BeginningBalanceStockDetail>();
                 foreach (var item in data.ItemDetails)
                 {
-                    var itemData = Db.Items.FirstOrDefault(x => x.Initial == item.Inisialbarang);
-                    var uomData = Db.UoMConversions.FirstOrDefault(x => x.UomId == itemData.UomId &&
-                                    x.UnitEquivalent == item.Satuanbarang);
-                    var beginningBalanceDetail = new BeginningBalanceStockDetail
+                    if (!item.Mark)
                     {
-                        LineNo = ++i,
-                        Code = newCode,
-                        ItemId = itemData.Id,
-                        Notes = item.Catatan,
-                        Qty = item.Qtybarang,
-                        UnitPrice = item.Hargabarang,
-                        UnitId = uomData.Id,
-                        UomId = uomData.UomId
-                    };
-                    details.Add(beginningBalanceDetail);
+                        var itemData = Db.Items.FirstOrDefault(x => x.Initial == item.Inisialbarang);
+                        var uomData = Db.UoMConversions.FirstOrDefault(x => x.UomId == itemData.UomId &&
+                                        x.UnitEquivalent == item.Satuanbarang);
+                        var beginningBalanceDetail = new BeginningBalanceStockDetail
+                        {
+                            LineNo = ++i,
+                            Code = newCode,
+                            ItemId = itemData.Id,
+                            Notes = item.Catatan,
+                            Qty = item.Qtybarang,
+                            UnitPrice = item.Hargabarang,
+                            UnitId = uomData.Id,
+                            UomId = uomData.UomId
+                        };
+                        details.Add(beginningBalanceDetail);
+                    }
                 }
-                if (details.Any())
+
+                if (!details.Any())
+                    return new SaveResult(false, "Tidak ada data saldo awal persediaan yang diproses.");
+
+                var requestData = new BeginningBalanceRequest
                 {
-                    Db.BeginningBalanceStockDetails.AddRange(details);
-                    Db.SaveChanges();
+                    Code = headData.Code,
+                    Date = headData.Date,
+                    WarehouseCode = headData.WarehouseCode,
+                    Notes = headData.Notes,
+                    IsActive = headData.IsActive,
+                    CreatedBy = headData.CreatedBy,
+                    CreatedDate = headData.CreatedDate,
+                    UpdatedBy = headData.UpdatedBy,
+                    UpdatedDate = headData.UpdatedDate,
+                    ItemDetails = details
+                };
+
+                var validationResult = Validate(requestData);
+                if (!validationResult.Item1)
+                {
+                    result.Message = validationResult.Item2;
+                    return result;
                 }
+
+                Db.BeginningBalanceStockHeaders.Add(headData);
+                Db.BeginningBalanceStockDetails.AddRange(details);
 
                 Db.SaveChanges();
 
