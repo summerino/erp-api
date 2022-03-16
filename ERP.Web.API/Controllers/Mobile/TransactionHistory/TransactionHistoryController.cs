@@ -74,6 +74,34 @@ namespace ERP.Web.API.Controllers.Mobile.TransactionHistory
             });
         }
 
+        //[HttpGet("by-unit-product")]
+        //public IActionResult GetDataByUnitProduct(string search, string filters, string sorts, int skip, int take, int filterUnit)
+        //{
+        //    //var data =
+        //    //    _transactionHistory.GetDataByUnitProduct(skip, take,
+        //    //        JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+        //    //        JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
+        //    //        search, filterUnit);
+
+        //    var data = _transactionHistory.GetDataByUnitProduct(search, filterUnit);
+
+        //    var result = (List<TransactionHistoryByUnitProduct>)data.Data;
+
+        //    return Ok(new MobileApiResponse
+        //    {
+        //        Count = data.Total,
+        //        Data = result.ToList<dynamic>()
+        //    });
+        //}
+
+        [HttpGet("by-unit-product")]
+        public IActionResult GetData(int filterUnit, DateTime? date)
+        {
+            var result = _transactionHistory.GetDataByUnitProduct(filterUnit, date, _claim.UserId);
+
+            return Ok(result);
+        }
+
         [HttpGet("by-date")]
         public IActionResult GetDataByDate(string filters, string sorts, int skip, int take)
         {

@@ -1194,7 +1194,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
 
                 data = data.Where(x => x.Code.Equals(code)).OrderBy(x => x.LineNo);
 
-                return data;
+                return data.AsQueryable();
             }
         }
 

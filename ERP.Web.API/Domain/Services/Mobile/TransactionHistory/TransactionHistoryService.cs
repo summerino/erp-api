@@ -4,6 +4,7 @@ using ERP.Entity;
 using ERP.Entity.Inventory;
 using ERP.Web.API.Domain.Interfaces.Mobile.TransactionHistory;
 using ERP.Web.API.Domain.Models.Mobile.TransactionHistory;
+using Microsoft.EntityFrameworkCore;
 using System.Linq;
 
 namespace ERP.Web.API.Domain.Services.Mobile.TransactionHistory
@@ -19,7 +20,6 @@ namespace ERP.Web.API.Domain.Services.Mobile.TransactionHistory
 
         public DataSourceResult GetDataByCustomer(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, string search)
         {
-
             var dataMobile = (from so in Db.MobileOrderHeaders.Where(x => x.SalesOrderCode.Equals(null))
                               join cust in Db.Customers on so.CustCode equals cust.Code
                               group new { so, cust } by new { so.CustCode, cust.Name, so.SalesBy, so.Date } into g
@@ -82,6 +82,7 @@ namespace ERP.Web.API.Domain.Services.Mobile.TransactionHistory
                                   ItemId = g.Key.ItemId,
                                   ItemName = g.Key.Name,
                                   Quantity = g.Sum(qt => qt.sod.Qty),
+                                  //UomId = g.Key.UomId,
                                   Unit = g.Key.UnitEquivalent,
                                   Price = g.Key.UnitPrice,
                                   Discount = g.Sum(dc => dc.sod.Disc),
@@ -102,6 +103,7 @@ namespace ERP.Web.API.Domain.Services.Mobile.TransactionHistory
                                  ItemId = g.Key.ItemId,
                                  ItemName = g.Key.Name,
                                  Quantity = g.Sum(qt => qt.sod.Qty),
+                                 //UomId = g.Key.UomId,
                                  Unit = g.Key.UnitEquivalent,
                                  Price = g.Key.UnitPrice,
                                  Discount = g.Sum(dc => dc.sod.Disc),
@@ -109,7 +111,7 @@ namespace ERP.Web.API.Domain.Services.Mobile.TransactionHistory
                              }).AsQueryable();
 
             var data = (from so in dataOrder.Union(dataMobile)
-                        group so by new { so.Date, so.SalesId, so.CustomerId, so.ItemId, so.ItemName, so.Price, so.Unit } into g
+                        group so by new { so.SalesId, so.Date, so.CustomerId, so.ItemId, so.ItemName, so.Unit, so.Price } into g
                         select new TransactionItemDetail
                         {
                             SalesId = g.Key.SalesId,
@@ -118,6 +120,7 @@ namespace ERP.Web.API.Domain.Services.Mobile.TransactionHistory
                             ItemId = g.Key.ItemId,
                             ItemName = g.Key.ItemName,
                             Quantity = g.Sum(qt => qt.Quantity),
+                            //UomId = g.Key.UomId,
                             Unit = g.Key.Unit,
                             Price = g.Key.Price,
                             Discount = g.Sum(dc => dc.Discount),
@@ -126,8 +129,7 @@ namespace ERP.Web.API.Domain.Services.Mobile.TransactionHistory
 
             if (!string.IsNullOrEmpty(search))
             {
-                data = data.Where(x =>
-                             x.ItemName.Contains(search));
+                data = data.Where(x => x.ItemName.Contains(search));
             }
 
             return data.ToDataSourceResult(skip, take, filter, sort);
@@ -188,8 +190,7 @@ namespace ERP.Web.API.Domain.Services.Mobile.TransactionHistory
 
             if (!string.IsNullOrEmpty(search))
             {
-                data = data.Where(x =>
-                             x.ItemName.Contains(search));
+                data = data.Where(x => x.ItemName.Contains(search));
             }
 
             return data.ToDataSourceResult(skip, take, filter, sort);
@@ -276,16 +277,713 @@ namespace ERP.Web.API.Domain.Services.Mobile.TransactionHistory
 
             if (!string.IsNullOrEmpty(search))
             {
-                data = data.Where(x =>
-                             x.ItemName.Contains(search));
+                data = data.Where(x => x.ItemName.Contains(search));
             }
 
             return data.ToDataSourceResult(skip, take, filter, sort);
         }
 
+        public IEnumerable<TransactionHistoryByUnitProduct> GetDataByUnitProduct(int filterUnit, DateTime? date, int userId)
+        {
+            if (filterUnit == 1) // 1 = unit terkecil isBaseUnit is true
+            {
+                //var qsetUnit = $"DECLARE @Unit int; SET @Unit = '{filterUnit.ToString().Replace("'", "''")}'; ";
+
+                var itemData = Db.Items.FromSqlRaw(@"SELECT * FROM Inventory.Item").AsQueryable();
+
+                var uomData = Db.UoMConversions.FromSqlRaw(@"SELECT * FROM Inventory.UoMConversion").AsQueryable();
+
+                var uomBase = Db.UoMConversions.FromSqlRaw(@"SELECT * FROM Inventory.UoMConversion where IsBaseUnit = 1").AsQueryable();
+
+                var mobileData = (from so in Db.MobileOrderHeaders.Where(x => x.SalesOrderCode.Equals(null))
+                                  join sod in Db.MobileOrderDetails on so.Code equals sod.Code
+                                  join i in itemData on sod.ItemId equals i.Id
+                                  join uom in uomData on sod.UnitId equals uom.Id
+                                  join u in uomBase on uom.UomId equals u.UomId
+                                  group new { so, sod, i, uom } by new { so.SalesBy, so.Date, sod.ItemId, i.Name, sod.UomId, sod.UnitId, uom.UnitEquivalent, uom.Id, uom.Seq, BaseSeq = u.Seq, uom.Conversion } into g
+                                  select new TransactionHistoryByUnitProduct
+                                  {
+                                      SalesId = g.Key.SalesBy,
+                                      Date = g.Key.Date,
+                                      ItemId = g.Key.ItemId,
+                                      ItemName = g.Key.Name,
+                                      Quantity = g.Sum(qt => qt.sod.Qty),
+                                      UomId = g.Key.UomId,
+                                      UomToConvertId = g.Key.Id,
+                                      UnitId = g.Key.UnitId,
+                                      Unit = g.Key.UnitEquivalent,
+                                      CurrentSeq = g.Key.Seq,
+                                      BaseSeq = g.Key.BaseSeq,
+                                      Conversion = g.Key.Conversion,
+                                      Total = g.Sum(tl => tl.sod.Total)
+                                  });
+
+                var orderData = (from so in Db.SalesOrderHeaders
+                                 join sod in Db.SalesOrderDetails on so.Code equals sod.Code
+                                 join i in itemData on sod.ItemId equals i.Id
+                                 join uom in uomData on sod.UnitId equals uom.Id
+                                 join u in uomBase on uom.UomId equals u.UomId
+                                 group new { so, sod, i, uom } by new { so.SalesBy, so.Date, sod.ItemId, i.Name, sod.UomId, sod.UnitId, uom.UnitEquivalent, uom.Id, uom.Seq, BaseSeq = u.Seq, uom.Conversion } into g
+                                 select new TransactionHistoryByUnitProduct
+                                 {
+                                     SalesId = g.Key.SalesBy,
+                                     Date = g.Key.Date,
+                                     ItemId = g.Key.ItemId,
+                                     ItemName = g.Key.Name,
+                                     Quantity = g.Sum(qt => qt.sod.Qty),
+                                     UomId = g.Key.UomId,
+                                     UomToConvertId = g.Key.Id,
+                                     UnitId = g.Key.UnitId,
+                                     Unit = g.Key.UnitEquivalent,
+                                     CurrentSeq = g.Key.Seq,
+                                     BaseSeq = g.Key.BaseSeq,
+                                     Conversion = g.Key.Conversion,
+                                     Total = g.Sum(tl => tl.sod.Total)
+                                 });
+
+                if (date != null && date.HasValue)
+                {
+                    var resultData = (from so in orderData.Union(mobileData)
+                                      group so by new { so.SalesId, so.Date, so.ItemId, so.ItemName, so.UomId, so.UomToConvertId, so.UnitId, so.Unit, so.CurrentSeq, so.BaseSeq, so.Conversion } into g
+                                      where g.Key.Date.Equals(date)
+                                      select new TransactionHistoryByUnitProduct
+                                      {
+                                          SalesId = g.Key.SalesId,
+                                          Date = g.Key.Date,
+                                          ItemId = g.Key.ItemId,
+                                          ItemName = g.Key.ItemName,
+                                          Quantity = g.Sum(qt => qt.Quantity),
+                                          UomId = g.Key.UomId,
+                                          UomToConvertId = g.Key.UomToConvertId,
+                                          UnitId = g.Key.UnitId,
+                                          Unit = g.Key.Unit,
+                                          CurrentSeq = g.Key.CurrentSeq,
+                                          BaseSeq = g.Key.BaseSeq,
+                                          Conversion = g.Key.Conversion,
+                                          Total = g.Sum(tl => tl.Total)
+                                      }).ToList();
+
+                    foreach (var rslt in resultData)
+                    {
+                        decimal count = 1;
+
+                        if (rslt.CurrentSeq > rslt.BaseSeq)
+                        {
+                            List<UoMConversion> conversions = Db.UoMConversions.Where(x => x.UomId.Equals(rslt.UomId)).OrderBy(x => x.Seq).ToList();
+
+                            foreach (var convert in conversions)
+                            {
+                                if (convert.Seq >= (rslt.BaseSeq + 1) && convert.Seq <= rslt.CurrentSeq)
+                                {
+                                    count *= convert.Conversion;
+                                    rslt.Total *= count;
+                                }
+                            }
+
+                            rslt.UnitId = (from uom in Db.UoMConversions.Where(x => x.UomId == rslt.UomId && x.IsBaseUnit) select uom.Id).Single();
+                            rslt.Unit = (from uom in Db.UoMConversions.Where(x => x.UomId == rslt.UomId && x.IsBaseUnit) select uom.UnitEquivalent).Single();
+                            //rslt.Quantity *= count;
+                        }
+                    }
+
+                    var resultSum = resultData.GroupBy(so => new { so.SalesId, so.Date, so.ItemId, so.ItemName, so.UomId, so.UomToConvertId, so.UnitId, so.Unit, so.CurrentSeq, so.BaseSeq, so.Conversion })
+                                    .Select(y => new TransactionHistoryByUnitProduct
+                                    {
+                                        SalesId = y.Key.SalesId,
+                                        Date = y.Key.Date,
+                                        ItemId = y.Key.ItemId,
+                                        ItemName = y.Key.ItemName,
+                                        Quantity = y.Sum(qt => qt.Quantity),
+                                        UomId = y.Key.UomId,
+                                        UomToConvertId = y.Key.UomToConvertId,
+                                        UnitId = y.Key.UnitId,
+                                        Unit = y.Key.Unit,
+                                        CurrentSeq = y.Key.CurrentSeq,
+                                        BaseSeq = y.Key.BaseSeq,
+                                        Conversion = y.Key.Conversion,
+                                        Total = y.Sum(tl => tl.Total)
+                                    }).ToList();
+
+                    foreach (var rslt in resultSum)
+                    {
+                        decimal count = 1;
+
+                        List<UoMConversion> conversions = Db.UoMConversions.Where(x => x.UomId.Equals(rslt.UomId)).OrderBy(x => x.Seq).ToList();
+
+                        foreach (var convert in conversions)
+                        {
+                            count *= convert.Conversion;
+                            rslt.Total /= count;
+                        }
+
+                        var maxSeq = Db.UoMConversions.Where(x => x.UomId == rslt.UomId).Max(x => x.Seq);
+
+                        rslt.UnitId = (from uom in Db.UoMConversions.Where(x => x.UomId == rslt.UomId && x.Seq == maxSeq) select uom.Id).Single();
+                        rslt.Unit = (from uom in Db.UoMConversions.Where(x => x.UomId == rslt.UomId && x.Seq == maxSeq) select uom.UnitEquivalent).Single();
+                        //rslt.Quantity /= count;
+                    }
+
+                    var result = resultSum.Where(x => x.SalesId.Equals(userId)).OrderByDescending(x => x.Date);
+
+                    return result;
+                }
+                else
+                {
+                    var resultData = (from so in orderData.Union(mobileData)
+                                      group so by so into g
+                                      select new TransactionHistoryByUnitProduct
+                                      {
+                                          SalesId = g.Key.SalesId,
+                                          Date = g.Key.Date,
+                                          ItemId = g.Key.ItemId,
+                                          ItemName = g.Key.ItemName,
+                                          Quantity = g.Sum(qt => qt.Quantity),
+                                          UomId = g.Key.UomId,
+                                          UomToConvertId = g.Key.UomToConvertId,
+                                          UnitId = g.Key.UnitId,
+                                          Unit = g.Key.Unit,
+                                          CurrentSeq = g.Key.CurrentSeq,
+                                          BaseSeq = g.Key.BaseSeq,
+                                          Conversion = g.Key.Conversion,
+                                          Total = g.Sum(tl => tl.Total)
+                                      }).ToList();
+
+                    foreach (var rslt in resultData)
+                    {
+                        decimal count = 1;
+
+                        if (rslt.CurrentSeq > rslt.BaseSeq)
+                        {
+                            List<UoMConversion> conversions = Db.UoMConversions.Where(x => x.UomId.Equals(rslt.UomId)).OrderBy(x => x.Seq).ToList();
+
+                            foreach (var convert in conversions)
+                            {
+                                if (convert.Seq >= (rslt.BaseSeq + 1) && convert.Seq <= rslt.CurrentSeq)
+                                {
+                                    count *= convert.Conversion;
+                                    //rslt.Quantity *= count;
+                                    rslt.Total *= count;
+                                }
+                            }
+
+                            rslt.UnitId = (from uom in Db.UoMConversions.Where(x => x.UomId == rslt.UomId && x.IsBaseUnit) select uom.Id).Single();
+                            rslt.Unit = (from uom in Db.UoMConversions.Where(x => x.UomId == rslt.UomId && x.IsBaseUnit) select uom.UnitEquivalent).Single();
+                        }
+                    }
+
+                    var resultSum = (from so in resultData
+                                     group so by so into y
+                                     select new TransactionHistoryByUnitProduct
+                                     {
+                                         SalesId = y.Key.SalesId,
+                                         Date = y.Key.Date,
+                                         ItemId = y.Key.ItemId,
+                                         ItemName = y.Key.ItemName,
+                                         Quantity = y.Sum(qt => qt.Quantity),
+                                         UomId = y.Key.UomId,
+                                         UomToConvertId = y.Key.UomToConvertId,
+                                         UnitId = y.Key.UnitId,
+                                         Unit = y.Key.Unit,
+                                         CurrentSeq = y.Key.CurrentSeq,
+                                         BaseSeq = y.Key.BaseSeq,
+                                         Conversion = y.Key.Conversion,
+                                         Total = y.Sum(tl => tl.Total)
+                                     }).ToList();
+
+                    foreach (var rslt in resultSum)
+                    {
+                        decimal count = 1;
+
+                        List<UoMConversion> conversions = Db.UoMConversions.Where(x => x.UomId.Equals(rslt.UomId)).OrderBy(x => x.Seq).ToList();
+
+                        foreach (var convert in conversions)
+                        {
+                            count *= convert.Conversion;
+                            //rslt.Quantity /= count;
+                            rslt.Total /= count;
+                        }
+
+                        var maxSeq = Db.UoMConversions.Where(x => x.UomId == rslt.UomId).Max(x => x.Seq);
+
+                        rslt.UnitId = (from uom in Db.UoMConversions.Where(x => x.UomId == rslt.UomId && x.Seq == maxSeq) select uom.Id).Single();
+                        rslt.Unit = (from uom in Db.UoMConversions.Where(x => x.UomId == rslt.UomId && x.Seq == maxSeq) select uom.UnitEquivalent).Single();
+                    }
+
+                    var result = resultSum.Where(x => x.SalesId.Equals(userId)).OrderByDescending(x => x.Date);
+
+                    return result;
+                }
+            }
+            if (filterUnit == 2) // unit uomBuyId
+            {
+                var itemData = Db.Items.FromSqlRaw(@"SELECT * FROM Inventory.Item").AsQueryable();
+
+                var uomData = Db.UoMConversions.FromSqlRaw(@"SELECT * FROM Inventory.UoMConversion").AsQueryable();
+
+                //var uomBase = Db.UoMConversions.FromSqlRaw(@"SELECT * FROM Inventory.UoMConversion where IsBaseUnit = 1").AsQueryable();
+                var uomBuy = from uom in Db.UoMConversions
+                             join item in Db.Items on uom.UomId equals item.UomId
+                             where item.UomBuyId.Equals(uom.Id)
+                             select uom;
+
+                var mobileData = (from so in Db.MobileOrderHeaders.Where(x => x.SalesOrderCode.Equals(null))
+                                  join sod in Db.MobileOrderDetails on so.Code equals sod.Code
+                                  join i in itemData on sod.ItemId equals i.Id
+                                  join uom in uomData on sod.UnitId equals uom.Id
+                                  join u in uomBuy on uom.UomId equals u.UomId
+                                  group new { so, sod, i, uom } by new { so.SalesBy, so.Date, sod.ItemId, i.Name, sod.UomId, sod.UnitId, uom.UnitEquivalent, uom.Id, uom.Seq, BaseSeq = u.Seq, uom.Conversion } into g
+                                  select new TransactionHistoryByUnitProduct
+                                  {
+                                      SalesId = g.Key.SalesBy,
+                                      Date = g.Key.Date,
+                                      ItemId = g.Key.ItemId,
+                                      ItemName = g.Key.Name,
+                                      Quantity = g.Sum(qt => qt.sod.Qty),
+                                      UomId = g.Key.UomId,
+                                      UomToConvertId = g.Key.Id,
+                                      UnitId = g.Key.UnitId,
+                                      Unit = g.Key.UnitEquivalent,
+                                      CurrentSeq = g.Key.Seq,
+                                      BaseSeq = g.Key.BaseSeq,
+                                      Conversion = g.Key.Conversion,
+                                      Total = g.Sum(tl => tl.sod.Total)
+                                  });
+
+                var orderData = (from so in Db.SalesOrderHeaders
+                                 join sod in Db.SalesOrderDetails on so.Code equals sod.Code
+                                 join i in itemData on sod.ItemId equals i.Id
+                                 join uom in uomData on sod.UnitId equals uom.Id
+                                 join u in uomBuy on uom.UomId equals u.UomId
+                                 group new { so, sod, i, uom } by new { so.SalesBy, so.Date, sod.ItemId, i.Name, sod.UomId, sod.UnitId, uom.UnitEquivalent, uom.Id, uom.Seq, BaseSeq = u.Seq, uom.Conversion } into g
+                                 select new TransactionHistoryByUnitProduct
+                                 {
+                                     SalesId = g.Key.SalesBy,
+                                     Date = g.Key.Date,
+                                     ItemId = g.Key.ItemId,
+                                     ItemName = g.Key.Name,
+                                     Quantity = g.Sum(qt => qt.sod.Qty),
+                                     UomId = g.Key.UomId,
+                                     UomToConvertId = g.Key.Id,
+                                     UnitId = g.Key.UnitId,
+                                     Unit = g.Key.UnitEquivalent,
+                                     CurrentSeq = g.Key.Seq,
+                                     BaseSeq = g.Key.BaseSeq,
+                                     Conversion = g.Key.Conversion,
+                                     Total = g.Sum(tl => tl.sod.Total)
+                                 });
+
+                if (date != null && date.HasValue)
+                {
+                    var resultData = (from so in orderData.Union(mobileData)
+                                      group so by new { so.SalesId, so.Date, so.ItemId, so.ItemName, so.UomId, so.UomToConvertId, so.UnitId, so.Unit, so.CurrentSeq, so.BaseSeq, so.Conversion } into g
+                                      where g.Key.Date.Equals(date)
+                                      select new TransactionHistoryByUnitProduct
+                                      {
+                                          SalesId = g.Key.SalesId,
+                                          Date = g.Key.Date,
+                                          ItemId = g.Key.ItemId,
+                                          ItemName = g.Key.ItemName,
+                                          Quantity = g.Sum(qt => qt.Quantity),
+                                          UomId = g.Key.UomId,
+                                          UomToConvertId = g.Key.UomToConvertId,
+                                          UnitId = g.Key.UnitId,
+                                          Unit = g.Key.Unit,
+                                          CurrentSeq = g.Key.CurrentSeq,
+                                          BaseSeq = g.Key.BaseSeq,
+                                          Conversion = g.Key.Conversion,
+                                          Total = g.Sum(tl => tl.Total)
+                                      }).ToList();
+
+                    foreach (var rslt in resultData)
+                    {
+                        decimal count = 1;
+
+                        if (rslt.CurrentSeq > rslt.BaseSeq)
+                        {
+                            List<UoMConversion> conversions = Db.UoMConversions.Where(x => x.UomId.Equals(rslt.UomId)).OrderBy(x => x.Seq).ToList();
+
+                            foreach (var convert in conversions)
+                            {
+                                if (convert.Seq >= (rslt.BaseSeq + 1) && convert.Seq <= rslt.CurrentSeq)
+                                {
+                                    count *= convert.Conversion;
+                                    rslt.Total /= count;
+                                }
+                            }
+
+                            rslt.UnitId = (from uom in Db.UoMConversions.Where(x => x.UomId == rslt.UomId && x.Id.Equals(Db.Items.Where(y => y.UomBuyId.Equals(x.Id)).Select(x => x.UomBuyId).Single())) select uom.Id).Single();
+                            rslt.Unit = (from uom in Db.UoMConversions.Where(x => x.UomId == rslt.UomId && x.Id.Equals(Db.Items.Where(y => y.UomBuyId.Equals(x.Id)).Select(x => x.UomBuyId).Single())) select uom.UnitEquivalent).Single();
+                            //rslt.Quantity *= count;
+                        }
+                        else if (rslt.CurrentSeq < rslt.BaseSeq)
+                        {
+                            List<UoMConversion> conversions = Db.UoMConversions.Where(x => x.UomId.Equals(rslt.UomId)).OrderBy(x => x.Seq).ToList();
+
+                            foreach (var convert in conversions)
+                            {
+                                if (convert.Seq >= (rslt.CurrentSeq) && convert.Seq <= rslt.BaseSeq + 1)
+                                {
+                                    count *= convert.Conversion;
+                                    rslt.Total /= count;
+                                }
+                            }
+
+                            rslt.UnitId = (from uom in Db.UoMConversions.Where(x => x.UomId == rslt.UomId && x.Id.Equals(Db.Items.Where(y => y.UomBuyId.Equals(x.Id)).Select(x => x.UomBuyId).Single())) select uom.Id).Single();
+                            rslt.Unit = (from uom in Db.UoMConversions.Where(x => x.UomId == rslt.UomId && x.Id.Equals(Db.Items.Where(y => y.UomBuyId.Equals(x.Id)).Select(x => x.UomBuyId).Single())) select uom.UnitEquivalent).Single();
+                            //rslt.Quantity /= count;
+                        }
+                        else
+                        {
+                            rslt.UnitId = (from uom in Db.UoMConversions.Where(x => x.UomId == rslt.UomId && x.Id.Equals(Db.Items.Where(y => y.UomBuyId.Equals(x.Id)).Select(x => x.UomBuyId).Single())) select uom.Id).Single();
+                            rslt.Unit = (from uom in Db.UoMConversions.Where(x => x.UomId == rslt.UomId && x.Id.Equals(Db.Items.Where(y => y.UomBuyId.Equals(x.Id)).Select(x => x.UomBuyId).Single())) select uom.UnitEquivalent).Single();
+                            rslt.Total *= count;
+                        }
+                    }
+
+                    var resultSum = resultData.GroupBy(so => new { so.SalesId, so.Date, so.ItemId, so.ItemName, so.UomId, so.UomToConvertId, so.UnitId, so.Unit, so.CurrentSeq, so.BaseSeq, so.Conversion })
+                                    .Select(y => new TransactionHistoryByUnitProduct
+                                    {
+                                        SalesId = y.Key.SalesId,
+                                        Date = y.Key.Date,
+                                        ItemId = y.Key.ItemId,
+                                        ItemName = y.Key.ItemName,
+                                        Quantity = y.Sum(qt => qt.Quantity),
+                                        UomId = y.Key.UomId,
+                                        UomToConvertId = y.Key.UomToConvertId,
+                                        UnitId = y.Key.UnitId,
+                                        Unit = y.Key.Unit,
+                                        CurrentSeq = y.Key.CurrentSeq,
+                                        BaseSeq = y.Key.BaseSeq,
+                                        Conversion = y.Key.Conversion,
+                                        Total = y.Sum(tl => tl.Total)
+                                    }).ToList();
+
+                    var result = resultSum.Where(x => x.SalesId.Equals(userId)).OrderByDescending(x => x.Date);
+
+                    return result;
+                }
+                else
+                {
+                    var resultData = (from so in orderData.Union(mobileData)
+                                      group so by new { so.SalesId, so.Date, so.ItemId, so.ItemName, so.UomId, so.UomToConvertId, so.UnitId, so.Unit, so.CurrentSeq, so.BaseSeq, so.Conversion } into g
+                                      select new TransactionHistoryByUnitProduct
+                                      {
+                                          SalesId = g.Key.SalesId,
+                                          Date = g.Key.Date,
+                                          ItemId = g.Key.ItemId,
+                                          ItemName = g.Key.ItemName,
+                                          Quantity = g.Sum(qt => qt.Quantity),
+                                          UomId = g.Key.UomId,
+                                          UomToConvertId = g.Key.UomToConvertId,
+                                          UnitId = g.Key.UnitId,
+                                          Unit = g.Key.Unit,
+                                          CurrentSeq = g.Key.CurrentSeq,
+                                          BaseSeq = g.Key.BaseSeq,
+                                          Conversion = g.Key.Conversion,
+                                          Total = g.Sum(tl => tl.Total)
+                                      }).ToList();
+
+                    foreach (var rslt in resultData)
+                    {
+                        decimal count = 1;
+
+                        if (rslt.CurrentSeq > rslt.BaseSeq)
+                        {
+                            List<UoMConversion> conversions = Db.UoMConversions.Where(x => x.UomId.Equals(rslt.UomId)).OrderBy(x => x.Seq).ToList();
+
+                            foreach (var convert in conversions)
+                            {
+                                if (convert.Seq >= (rslt.BaseSeq + 1) && convert.Seq <= rslt.CurrentSeq)
+                                {
+                                    count *= convert.Conversion;
+                                    rslt.Total /= count;
+                                }
+                            }
+
+                            rslt.UnitId = (from uom in Db.UoMConversions.Where(x => x.UomId == rslt.UomId && x.Id.Equals(Db.Items.Where(y => y.UomBuyId.Equals(x.Id)).Select(x => x.UomBuyId).Single())) select uom.Id).Single();
+                            rslt.Unit = (from uom in Db.UoMConversions.Where(x => x.UomId == rslt.UomId && x.Id.Equals(Db.Items.Where(y => y.UomBuyId.Equals(x.Id)).Select(x => x.UomBuyId).Single())) select uom.UnitEquivalent).Single();
+                            rslt.Quantity /= count;
+                        }
+                        else if (rslt.CurrentSeq < rslt.BaseSeq)
+                        {
+                            List<UoMConversion> conversions = Db.UoMConversions.Where(x => x.UomId.Equals(rslt.UomId)).OrderBy(x => x.Seq).ToList();
+
+                            foreach (var convert in conversions)
+                            {
+                                if (convert.Seq >= (rslt.CurrentSeq) && convert.Seq <= rslt.BaseSeq + 1)
+                                {
+                                    count *= convert.Conversion;
+                                    rslt.Total *= count;
+                                }
+                            }
+
+                            rslt.UnitId = (from uom in Db.UoMConversions.Where(x => x.UomId == rslt.UomId && x.Id.Equals(Db.Items.Where(y => y.UomBuyId.Equals(x.Id)).Select(x => x.UomBuyId).Single())) select uom.Id).Single();
+                            rslt.Unit = (from uom in Db.UoMConversions.Where(x => x.UomId == rslt.UomId && x.Id.Equals(Db.Items.Where(y => y.UomBuyId.Equals(x.Id)).Select(x => x.UomBuyId).Single())) select uom.UnitEquivalent).Single();
+                            rslt.Quantity /= count;
+                        }
+                        else
+                        {
+                            rslt.UnitId = (from uom in Db.UoMConversions.Where(x => x.UomId == rslt.UomId && x.Id.Equals(Db.Items.Where(y => y.UomBuyId.Equals(x.Id)).Select(x => x.UomBuyId).Single())) select uom.Id).Single();
+                            rslt.Unit = (from uom in Db.UoMConversions.Where(x => x.UomId == rslt.UomId && x.Id.Equals(Db.Items.Where(y => y.UomBuyId.Equals(x.Id)).Select(x => x.UomBuyId).Single())) select uom.UnitEquivalent).Single();
+                            rslt.Total *= count;
+                        }
+                    }
+
+                    var resultSum = resultData.GroupBy(so => new { so.SalesId, so.Date, so.ItemId, so.ItemName, so.UomId, so.UomToConvertId, so.UnitId, so.Unit, so.CurrentSeq, so.BaseSeq, so.Conversion })
+                                    .Select(y => new TransactionHistoryByUnitProduct
+                                    {
+                                        SalesId = y.Key.SalesId,
+                                        Date = y.Key.Date,
+                                        ItemId = y.Key.ItemId,
+                                        ItemName = y.Key.ItemName,
+                                        Quantity = y.Sum(qt => qt.Quantity),
+                                        UomId = y.Key.UomId,
+                                        UomToConvertId = y.Key.UomToConvertId,
+                                        UnitId = y.Key.UnitId,
+                                        Unit = y.Key.Unit,
+                                        CurrentSeq = y.Key.CurrentSeq,
+                                        BaseSeq = y.Key.BaseSeq,
+                                        Conversion = y.Key.Conversion,
+                                        Total = y.Sum(tl => tl.Total)
+                                    }).ToList();
+
+                    var result = resultSum.Where(x => x.SalesId.Equals(userId)).OrderByDescending(x => x.Date);
+
+                    return result;
+                }
+            }
+            else // unit uomSellId,
+            {
+                var itemData = Db.Items.FromSqlRaw(@"SELECT * FROM Inventory.Item").AsQueryable();
+
+                var uomData = Db.UoMConversions.FromSqlRaw(@"SELECT * FROM Inventory.UoMConversion").AsQueryable();
+
+                //var uomBase = Db.UoMConversions.FromSqlRaw(@"SELECT * FROM Inventory.UoMConversion where IsBaseUnit = 1").AsQueryable();
+                var uomBuy = from uom in Db.UoMConversions
+                             join item in Db.Items on uom.UomId equals item.UomId
+                             where item.UomSellId.Equals(uom.Id)
+                             select uom;
+
+                var mobileData = (from so in Db.MobileOrderHeaders.Where(x => x.SalesOrderCode.Equals(null))
+                                  join sod in Db.MobileOrderDetails on so.Code equals sod.Code
+                                  join i in itemData on sod.ItemId equals i.Id
+                                  join uom in uomData on sod.UnitId equals uom.Id
+                                  join u in uomBuy on uom.UomId equals u.UomId
+                                  group new { so, sod, i, uom } by new { so.SalesBy, so.Date, sod.ItemId, i.Name, sod.UomId, sod.UnitId, uom.UnitEquivalent, uom.Id, uom.Seq, BaseSeq = u.Seq, uom.Conversion } into g
+                                  select new TransactionHistoryByUnitProduct
+                                  {
+                                      SalesId = g.Key.SalesBy,
+                                      Date = g.Key.Date,
+                                      ItemId = g.Key.ItemId,
+                                      ItemName = g.Key.Name,
+                                      Quantity = g.Sum(qt => qt.sod.Qty),
+                                      UomId = g.Key.UomId,
+                                      UomToConvertId = g.Key.Id,
+                                      UnitId = g.Key.UnitId,
+                                      Unit = g.Key.UnitEquivalent,
+                                      CurrentSeq = g.Key.Seq,
+                                      BaseSeq = g.Key.BaseSeq,
+                                      Conversion = g.Key.Conversion,
+                                      Total = g.Sum(tl => tl.sod.Total)
+                                  });
+
+                var orderData = (from so in Db.SalesOrderHeaders
+                                 join sod in Db.SalesOrderDetails on so.Code equals sod.Code
+                                 join i in itemData on sod.ItemId equals i.Id
+                                 join uom in uomData on sod.UnitId equals uom.Id
+                                 join u in uomBuy on uom.UomId equals u.UomId
+                                 group new { so, sod, i, uom } by new { so.SalesBy, so.Date, sod.ItemId, i.Name, sod.UomId, sod.UnitId, uom.UnitEquivalent, uom.Id, uom.Seq, BaseSeq = u.Seq, uom.Conversion } into g
+                                 select new TransactionHistoryByUnitProduct
+                                 {
+                                     SalesId = g.Key.SalesBy,
+                                     Date = g.Key.Date,
+                                     ItemId = g.Key.ItemId,
+                                     ItemName = g.Key.Name,
+                                     Quantity = g.Sum(qt => qt.sod.Qty),
+                                     UomId = g.Key.UomId,
+                                     UomToConvertId = g.Key.Id,
+                                     UnitId = g.Key.UnitId,
+                                     Unit = g.Key.UnitEquivalent,
+                                     CurrentSeq = g.Key.Seq,
+                                     BaseSeq = g.Key.BaseSeq,
+                                     Conversion = g.Key.Conversion,
+                                     Total = g.Sum(tl => tl.sod.Total)
+                                 });
+
+                if (date != null && date.HasValue)
+                {
+                    var resultData = (from so in orderData.Union(mobileData)
+                                      group so by new { so.SalesId, so.Date, so.ItemId, so.ItemName, so.UomId, so.UomToConvertId, so.UnitId, so.Unit, so.CurrentSeq, so.BaseSeq, so.Conversion } into g
+                                      where g.Key.Date.Equals(date)
+                                      select new TransactionHistoryByUnitProduct
+                                      {
+                                          SalesId = g.Key.SalesId,
+                                          Date = g.Key.Date,
+                                          ItemId = g.Key.ItemId,
+                                          ItemName = g.Key.ItemName,
+                                          Quantity = g.Sum(qt => qt.Quantity),
+                                          UomId = g.Key.UomId,
+                                          UomToConvertId = g.Key.UomToConvertId,
+                                          UnitId = g.Key.UnitId,
+                                          Unit = g.Key.Unit,
+                                          CurrentSeq = g.Key.CurrentSeq,
+                                          BaseSeq = g.Key.BaseSeq,
+                                          Conversion = g.Key.Conversion,
+                                          Total = g.Sum(tl => tl.Total)
+                                      }).ToList();
+
+                    foreach (var rslt in resultData)
+                    {
+                        decimal count = 1;
+
+                        if (rslt.CurrentSeq > rslt.BaseSeq)
+                        {
+                            List<UoMConversion> conversions = Db.UoMConversions.Where(x => x.UomId.Equals(rslt.UomId)).OrderBy(x => x.Seq).ToList();
+
+                            foreach (var convert in conversions)
+                            {
+                                if (convert.Seq >= (rslt.BaseSeq + 1) && convert.Seq <= rslt.CurrentSeq)
+                                {
+                                    count *= convert.Conversion;
+                                    rslt.Total /= count;
+                                }
+                            }
+
+                            rslt.UnitId = (from uom in Db.UoMConversions.Where(x => x.UomId == rslt.UomId && x.IsBaseUnit) select uom.Id).Single();
+                            rslt.Unit = (from uom in Db.UoMConversions.Where(x => x.UomId == rslt.UomId && x.IsBaseUnit) select uom.UnitEquivalent).Single();
+                            //rslt.Quantity *= count;
+                        }
+                        else
+                        {
+                            List<UoMConversion> conversions = Db.UoMConversions.Where(x => x.UomId.Equals(rslt.UomId)).OrderBy(x => x.Seq).ToList();
+
+                            foreach (var convert in conversions)
+                            {
+                                if (convert.Seq >= (rslt.CurrentSeq) && convert.Seq <= rslt.BaseSeq + 1)
+                                {
+                                    count *= convert.Conversion;
+                                    rslt.Total /= count;
+                                }
+                            }
+
+                            rslt.UnitId = (from uom in Db.UoMConversions.Where(x => x.UomId == rslt.UomId && x.IsBaseUnit) select uom.Id).Single();
+                            rslt.Unit = (from uom in Db.UoMConversions.Where(x => x.UomId == rslt.UomId && x.IsBaseUnit) select uom.UnitEquivalent).Single();
+                            //rslt.Quantity /= count;
+                        }
+                    }
+
+                    var resultSum = resultData.GroupBy(so => new { so.SalesId, so.Date, so.ItemId, so.ItemName, so.UomId, so.UomToConvertId, so.UnitId, so.Unit, so.CurrentSeq, so.BaseSeq, so.Conversion })
+                                    .Select(y => new TransactionHistoryByUnitProduct
+                                    {
+                                        SalesId = y.Key.SalesId,
+                                        Date = y.Key.Date,
+                                        ItemId = y.Key.ItemId,
+                                        ItemName = y.Key.ItemName,
+                                        Quantity = y.Sum(qt => qt.Quantity),
+                                        UomId = y.Key.UomId,
+                                        UomToConvertId = y.Key.UomToConvertId,
+                                        UnitId = y.Key.UnitId,
+                                        Unit = y.Key.Unit,
+                                        CurrentSeq = y.Key.CurrentSeq,
+                                        BaseSeq = y.Key.BaseSeq,
+                                        Conversion = y.Key.Conversion,
+                                        Total = y.Sum(tl => tl.Total)
+                                    }).ToList();
+
+                    var result = resultSum.Where(x => x.SalesId.Equals(userId)).OrderByDescending(x => x.Date);
+
+                    return result;
+                }
+                else
+                {
+                    var resultData = (from so in orderData.Union(mobileData)
+                                      group so by new { so.SalesId, so.Date, so.ItemId, so.ItemName, so.UomId, so.UomToConvertId, so.UnitId, so.Unit, so.CurrentSeq, so.BaseSeq, so.Conversion } into g
+                                      select new TransactionHistoryByUnitProduct
+                                      {
+                                          SalesId = g.Key.SalesId,
+                                          Date = g.Key.Date,
+                                          ItemId = g.Key.ItemId,
+                                          ItemName = g.Key.ItemName,
+                                          Quantity = g.Sum(qt => qt.Quantity),
+                                          UomId = g.Key.UomId,
+                                          UomToConvertId = g.Key.UomToConvertId,
+                                          UnitId = g.Key.UnitId,
+                                          Unit = g.Key.Unit,
+                                          CurrentSeq = g.Key.CurrentSeq,
+                                          BaseSeq = g.Key.BaseSeq,
+                                          Conversion = g.Key.Conversion,
+                                          Total = g.Sum(tl => tl.Total)
+                                      }).ToList();
+
+                    foreach (var rslt in resultData)
+                    {
+                        decimal count = 1;
+
+                        if (rslt.CurrentSeq > rslt.BaseSeq)
+                        {
+                            List<UoMConversion> conversions = Db.UoMConversions.Where(x => x.UomId.Equals(rslt.UomId)).OrderBy(x => x.Seq).ToList();
+
+                            foreach (var convert in conversions)
+                            {
+                                if (convert.Seq >= (rslt.BaseSeq + 1) && convert.Seq <= rslt.CurrentSeq)
+                                {
+                                    count *= convert.Conversion;
+                                    rslt.Total /= count;
+                                }
+                            }
+
+                            rslt.UnitId = (from uom in Db.UoMConversions.Where(x => x.UomId == rslt.UomId && x.IsBaseUnit) select uom.Id).Single();
+                            rslt.Unit = (from uom in Db.UoMConversions.Where(x => x.UomId == rslt.UomId && x.IsBaseUnit) select uom.UnitEquivalent).Single();
+                            //rslt.Quantity *= count;
+                        }
+                        else
+                        {
+                            List<UoMConversion> conversions = Db.UoMConversions.Where(x => x.UomId.Equals(rslt.UomId)).OrderBy(x => x.Seq).ToList();
+
+                            foreach (var convert in conversions)
+                            {
+                                if (convert.Seq >= (rslt.CurrentSeq) && convert.Seq <= rslt.BaseSeq + 1)
+                                {
+                                    count *= convert.Conversion;
+                                    rslt.Total /= count;
+                                }
+                            }
+
+                            rslt.UnitId = (from uom in Db.UoMConversions.Where(x => x.UomId == rslt.UomId && x.IsBaseUnit) select uom.Id).Single();
+                            rslt.Unit = (from uom in Db.UoMConversions.Where(x => x.UomId == rslt.UomId && x.IsBaseUnit) select uom.UnitEquivalent).Single();
+                            //rslt.Quantity /= count;
+                        }
+                    }
+
+                    var resultSum = resultData.GroupBy(so => new { so.SalesId, so.Date, so.ItemId, so.ItemName, so.UomId, so.UomToConvertId, so.UnitId, so.Unit, so.CurrentSeq, so.BaseSeq, so.Conversion })
+                                    .Select(y => new TransactionHistoryByUnitProduct
+                                    {
+                                        SalesId = y.Key.SalesId,
+                                        Date = y.Key.Date,
+                                        ItemId = y.Key.ItemId,
+                                        ItemName = y.Key.ItemName,
+                                        Quantity = y.Sum(qt => qt.Quantity),
+                                        UomId = y.Key.UomId,
+                                        UomToConvertId = y.Key.UomToConvertId,
+                                        UnitId = y.Key.UnitId,
+                                        Unit = y.Key.Unit,
+                                        CurrentSeq = y.Key.CurrentSeq,
+                                        BaseSeq = y.Key.BaseSeq,
+                                        Conversion = y.Key.Conversion,
+                                        Total = y.Sum(tl => tl.Total)
+                                    }).ToList();
+
+                    var result = resultSum.Where(x => x.SalesId.Equals(userId)).OrderByDescending(x => x.Date);
+
+                    return result;
+                }
+            }
+        }
+
         public DataSourceResult GetDataCumulative(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, int year, string custCode, int userId)
         {
             var salesId = Db.Users.Where(x => x.Id.Equals(userId)).Select(x => x.EmployeeId).FirstOrDefault();
+
             var dataOrder = (from so in Db.SalesOrderHeaders.Where(x => x.Date.Year.Equals(year) && x.CustCode.Equals(custCode) &&
                              x.SalesBy.Equals(salesId)).AsEnumerable()
                              group so by new { so.Date.Year, so.Date.Month } into g
@@ -521,7 +1219,6 @@ namespace ERP.Web.API.Domain.Services.Mobile.TransactionHistory
 
         public DataSourceResult GetDataBySubGroupSummary(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, DateTime? date, int? groupId, int? subGroupId)
         {
-
             var subGroups = (from G in groupId == null ? Db.ItemGroups : Db.ItemGroups.Where(x => x.Id.Equals(groupId))
                              join S in subGroupId == null ? Db.ItemGroupSubGroups : Db.ItemGroupSubGroups.Where(y => y.Id.Equals(subGroupId)) on G.Id equals S.ItemGroupId
                              where G.IsActive == true && S.ShowInMobile == true
@@ -554,8 +1251,7 @@ namespace ERP.Web.API.Domain.Services.Mobile.TransactionHistory
 
             foreach (var sub in subGroup)
             {
-
-                var dataMobile = (from so in Db.MobileOrderHeaders.Where(x => x.SalesOrderCode.Equals(null) && x.Date.Equals(date !=  DateTime.MinValue ? date : x.Date))
+                var dataMobile = (from so in Db.MobileOrderHeaders.Where(x => x.SalesOrderCode.Equals(null) && x.Date.Equals(date != DateTime.MinValue ? date : x.Date))
                                   join sod in Db.MobileOrderDetails on so.Code equals sod.Code
                                   join it in Db.Items.Where(x => x.SubGroup1.Contains(sub.Value) || x.SubGroup2.Contains(sub.Value) ||
                                   x.SubGroup3.Contains(sub.Value) || x.SubGroup4.Contains(sub.Value) ||
@@ -584,9 +1280,7 @@ namespace ERP.Web.API.Domain.Services.Mobile.TransactionHistory
                     {
                         data[data.Count - 1].Total += item.Total;
                     }
-
                 }
-
             }
 
             return data.AsQueryable().ToDataSourceResult(skip, take, filter, sort);
@@ -612,7 +1306,7 @@ namespace ERP.Web.API.Domain.Services.Mobile.TransactionHistory
                             from string value in values
                             select new ItemSubGroupModel
                             {
-                                Id= sub.Id,
+                                Id = sub.Id,
                                 GroupId = sub.GroupId,
                                 GroupName = sub.GroupName,
                                 GroupInitial = sub.GroupInitial,
@@ -624,7 +1318,6 @@ namespace ERP.Web.API.Domain.Services.Mobile.TransactionHistory
 
             foreach (var sub in subGroup)
             {
-
                 var dataMobile = (from so in Db.MobileOrderHeaders.Where(x => x.SalesOrderCode.Equals(null) && x.Date.Equals(date != DateTime.MinValue ? date : x.Date))
                                   join sod in Db.MobileOrderDetails on so.Code equals sod.Code
                                   join it in Db.Items.Where(x => x.SubGroup1.Contains(sub.Value) || x.SubGroup2.Contains(sub.Value) || x.SubGroup3.Contains(sub.Value) || x.SubGroup4.Contains(sub.Value) || x.SubGroup5.Contains(sub.Value)) on sod.ItemId equals it.Id
@@ -635,7 +1328,6 @@ namespace ERP.Web.API.Domain.Services.Mobile.TransactionHistory
                                       DetailSubGroup = sub.Value,
                                       Total = g.Sum(tl => tl.sod.Total)
                                   }).ToList();
-
 
                 foreach (var item in dataMobile)
                 {
@@ -670,9 +1362,7 @@ namespace ERP.Web.API.Domain.Services.Mobile.TransactionHistory
 
         public IEnumerable<ItemGroup> GetItemGroup()
         {
-
-            var data = Db.ItemGroups.Where(x=>x.IsActive).ToList();
-           
+            var data = Db.ItemGroups.Where(x => x.IsActive).ToList();
 
             return data;
         }
@@ -680,7 +1370,6 @@ namespace ERP.Web.API.Domain.Services.Mobile.TransactionHistory
         public IEnumerable<ItemGroupSubGroup> GetItemSubGroup(int groupId)
         {
             var data = Db.ItemGroupSubGroups.Where(x => x.ItemGroupId.Equals(groupId) && x.ShowInMobile).ToList();
-
 
             return data;
         }
