@@ -260,7 +260,7 @@ namespace ERP.Web.API.Domain.Services.Inventory
                              ItemID = d.ItemId,
                              ItemInitial = i.Initial,
                              UnitID = d.UnitId,
-                             UnitName = u.UnitToConvert
+                             UnitName = u.UnitEquivalent
                          }).AsQueryable();
             if (data.Code == null)
             {
