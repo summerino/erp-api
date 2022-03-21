@@ -97,31 +97,30 @@ namespace ERP.Web.API.Domain.Services.Sales
 
                 var tsData = _db.ReportBySTs.FromSqlRaw(@"DECLARE @Delimiter CHAR = ';';
                     WITH cte_splitted AS (
-                    SELECT ItemGroupId,LTRIM(RTRIM(Split.a.value('.', 'VARCHAR(100)'))) 'Value' 
+                    SELECT Id,ItemGroupId,[Name],Split.a.value('.', 'VARCHAR(100)') 'Value' 
                     FROM  
                     (     
-                         SELECT ItemGroupId,CAST ('<M>' + REPLACE(VALUE, @Delimiter, '</M><M>') + '</M>' AS XML) AS Data            
-                         FROM Inventory.ItemGroupSubGroup
+                            SELECT Id,ItemGroupId,[Name],CAST ('<M>' + REPLACE(VALUE, @Delimiter, '</M><M>') + '</M>' AS XML) AS Data            
+                            FROM Inventory.ItemGroupSubGroup
                     ) AS A 
                     CROSS APPLY Data.nodes ('/M') AS Split(a))
                     SELECT emp.Id AS SalesId, emp.FirstName AS SalesName,
                     ig.Id As ItemGroupId, ig.[Name] AS ItemGroup,
-                    igs.Id AS ItemSubGroupId, csd.[Value] AS ItemSubGroup2,
-                    igs.[Name] + ' - ' + csd.[Value] AS ItemSubGroup, 
+                    csd.Id AS ItemSubGroupId, csd.[Name] AS ItemSubGroup, 
+                    csd.[Value] AS ItemSubGroup2,
                     CAST(0 AS decimal) AS TargetAmount,
                     CAST(0 AS int) AS TotalCustomers,
                     CAST(0 AS decimal) AS RealAmount,
                     CAST(0 AS decimal) AS TargetPercent
                     FROM General.Employee emp
                     CROSS JOIN Inventory.ItemGroup ig 
-                    LEFT JOIN Inventory.ItemGroupSubGroup igs ON igs.ItemGroupId = ig.Id
                     LEFT JOIN cte_splitted csd ON csd.ItemGroupId = ig.Id
-                    WHERE emp.IsActive = 1" +
+                    WHERE emp.IsActive = 1 AND emp.[Type] = 2" +
                     (!groupId.HasValue || groupId <= 0 ? "" : $" AND ig.Id = {groupId}") +
-                    (!groupSubGroupId.HasValue || groupSubGroupId <= 0 ? "" : $" AND igs.Id = {groupSubGroupId}") +
+                    (!groupSubGroupId.HasValue || groupSubGroupId <= 0 ? "" : $" AND csd.Id = {groupSubGroupId}") +
                     (string.IsNullOrEmpty(groupSubGroup) ? "" : @$" AND csd.[Value] = '{groupSubGroup}'") +
                     @" GROUP BY emp.Id, emp.FirstName, ig.Id, ig.[Name],
-                    igs.Id, igs.[Name], csd.[Value]").ToList();
+                    csd.Id, csd.[Name], csd.[Value]").ToList();
 
                 if (salesId.HasValue || salesId > 0)
                 {
