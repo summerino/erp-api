@@ -104,7 +104,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                             FROM Inventory.ItemGroupSubGroup
                     ) AS A 
                     CROSS APPLY Data.nodes ('/M') AS Split(a))
-                    SELECT emp.Id AS SalesId, emp.FirstName AS SalesName,
+                    SELECT emp.Id AS SalesId, emp.FirstName + ' ' + emp.LastName AS SalesName,
                     ig.Id As ItemGroupId, ig.[Name] AS ItemGroup,
                     csd.Id AS ItemSubGroupId, csd.[Name] AS ItemSubGroup, 
                     csd.[Value] AS ItemSubGroup2,
@@ -119,8 +119,10 @@ namespace ERP.Web.API.Domain.Services.Sales
                     (!groupId.HasValue || groupId <= 0 ? "" : $" AND ig.Id = {groupId}") +
                     (!groupSubGroupId.HasValue || groupSubGroupId <= 0 ? "" : $" AND csd.Id = {groupSubGroupId}") +
                     (string.IsNullOrEmpty(groupSubGroup) ? "" : @$" AND csd.[Value] = '{groupSubGroup}'") +
-                    @" GROUP BY emp.Id, emp.FirstName, ig.Id, ig.[Name],
-                    csd.Id, csd.[Name], csd.[Value]").ToList();
+                    @" GROUP BY emp.Id, emp.FirstName, emp.LastName, ig.Id, ig.[Name],
+                    csd.Id, csd.[Name], csd.[Value]" +
+                    @" ORDER BY emp.FirstName, emp.LastName, 
+                    ig.[Name], csd.[Name], csd.[Value]").ToList();
 
                 if (salesId.HasValue || salesId > 0)
                 {
