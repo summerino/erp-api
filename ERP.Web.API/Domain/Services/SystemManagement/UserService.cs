@@ -79,7 +79,7 @@ namespace ERP.Web.API.Domain.Services.SystemManagement
 
                 _catalogCtx.Add(newCatalogUser);
                 _catalogCtx.SaveChanges();
-                 
+
                 var newTenantUser = new UserTenant()
                 {
                     CatalogUserId = newCatalogUser.Id,
@@ -88,6 +88,7 @@ namespace ERP.Web.API.Domain.Services.SystemManagement
                     Name = data.Username,
                     RoleId = data.RoleId,
                     EmployeeId = data.EmployeeId,
+                    MobileSignIn = data.MobileSignIn,
                     IsActive = data.IsActive,
                     CreatedBy = data.CreatedBy,
                     CreatedDate = data.CreatedDate,
