@@ -212,7 +212,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
             var validateData = Db.IncomeStatementFormatSubtotals
                 .FirstOrDefault(x => x.Code == code && x.SubCode == subCode);
             
-            if(validateData == null)
+            if(validateData != null)
                 return new SaveResult(false, "Data tidak bisa diproses");
 
             Db.IncomeStatementFormatSubtotals.Add(new IncomeStatementFormatSubtotal { 
