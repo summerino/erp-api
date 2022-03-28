@@ -1,0 +1,69 @@
+﻿[{
+  "Id": 1,
+  "Initial": "CB",
+  "Name": "Kas dan Bank"
+}, {
+  "Id": 2,
+  "Initial": "AR",
+  "Name": "Piutang Usaha"
+}, {
+  "Id": 3,
+  "Initial": "INVT",
+  "Name": "Persediaan"
+}, {
+  "Id": 4,
+  "Initial": "CA",
+  "Name": "Aset Lancar"
+}, {
+  "Id": 5,
+  "Initial": "OCA",
+  "Name": "Aset Lancar Lainnya"
+}, {
+  "Id": 6,
+  "Initial": "FA",
+  "Name": "Aset Tetap"
+}, {
+  "Id": 7,
+  "Initial": "AD",
+  "Name": "Akumulasi Penyusutan"
+}, {
+  "Id": 8,
+  "Initial": "OA",
+  "Name": "Aset Lainnya"
+}, {
+  "Id": 9,
+  "Initial": "AP",
+  "Name": "Hutang Usaha"
+}, {
+  "Id": 10,
+  "Initial": "OCL",
+  "Name": "Kewajiban Jangka Pendek"
+}, {
+  "Id": 11,
+  "Initial": "LTL",
+  "Name": "Kewajiban Jangka Panjang"
+}, {
+  "Id": 12,
+  "Initial": "EQ",
+  "Name": "Modal"
+}, {
+  "Id": 13,
+  "Initial": "INC",
+  "Name": "Pendapatan"
+}, {
+  "Id": 14,
+  "Initial": "COGS",
+  "Name": "Beban Pokok Penjualan"
+}, {
+  "Id": 15,
+  "Initial": "EXP",
+  "Name": "Beban"
+}, {
+  "Id": 16,
+  "Initial": "OE",
+  "Name": "Beban Lainnya"
+}, {
+  "Id": 17,
+  "Initial": "OI",
+  "Name": "Pendapatan Lainnya"
+}]

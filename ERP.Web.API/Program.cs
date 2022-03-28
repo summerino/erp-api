@@ -154,6 +154,7 @@ builder.Services.AddScoped<IAuthorizationHandler, UserSessionHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, MobileUserSessionHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, MobileCustomerSessionHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, MobileAllSessionHandler>();
+builder.Services.AddScoped<ICatalogMigrationService, CatalogMigrationService>();
 builder.Services.AddScoped<ITenantService, TenantService>();
 builder.Services.AddScoped<IShardingService, ShardingService>();
 builder.Services.AddScoped<IClaimService, ClaimService>();
@@ -358,12 +359,12 @@ app.MapControllers();
 using (var scope = app.Services.CreateScope())
 {
     // Catalog db migrations
-    var catalogCtx = scope.ServiceProvider.GetRequiredService<CatalogContext>();
-    catalogCtx.Database.Migrate();
+    var catalogService = scope.ServiceProvider.GetRequiredService<ICatalogMigrationService>();
+    await catalogService.ApplyMigrationAsync();
 
     // Tenant db migrations in sharding service
     var shardingService = scope.ServiceProvider.GetRequiredService<IShardingService>();
-    shardingService.ApplyMigrationAsync().GetAwaiter().GetResult();
+    await shardingService.ApplyMigrationAsync();
 }
 
 // Initialize configuration for swift

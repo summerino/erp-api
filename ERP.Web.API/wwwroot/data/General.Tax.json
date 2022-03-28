@@ -1,0 +1,4 @@
+﻿[{"Id":1,"Initial":"IN-0","Name":"PPN IN 0","TypeId":1,"Rate":0.00,"CoaCode":null,"Seq":1},
+{"Id":2,"Initial":"IN-10","Name":"PPN IN 10","TypeId":1,"Rate":10.00,"CoaCode":"114004","Seq":2},
+{"Id":3,"Initial":"OUT-0","Name":"PPN OUT 0","TypeId":2,"Rate":0.00,"CoaCode":null,"Seq":1},
+{"Id":4,"Initial":"OUT-10","Name":"PPN OUT 10","TypeId":2,"Rate":10.00,"CoaCode":"213006","Seq":2}]
