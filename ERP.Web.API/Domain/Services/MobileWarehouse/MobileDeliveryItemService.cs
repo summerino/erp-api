@@ -72,7 +72,7 @@ namespace ERP.Web.API.Domain.Services.MobileWarehouse
                                             isFailedtoSend = (multipliedQty * qty) < doDetailData.Qty;
                                             if (isFailedtoSend)
                                             {
-                                                qtyFailedtoSend = (multipliedQty * qty);
+                                                qtyFailedtoSend = doDetailData.Qty - (multipliedQty * qty);
                                                 uomFailedtoSend = doDetailData.UomId;
                                                 unitFailedtoSend = doDetailData.UnitId;
                                                 //qty = qtyFailedtoSend;
@@ -89,7 +89,7 @@ namespace ERP.Web.API.Domain.Services.MobileWarehouse
                                             isFailedtoSend = (qty / dividedQty) < doDetailData.Qty;
                                             if (isFailedtoSend)
                                             {
-                                                qtyFailedtoSend = (qty / dividedQty);
+                                                qtyFailedtoSend = doDetailData.Qty - (qty / dividedQty);
                                                 uomFailedtoSend = doDetailData.UomId;
                                                 unitFailedtoSend = doDetailData.UnitId;
                                                 //qty = qtyFailedtoSend;
@@ -105,7 +105,7 @@ namespace ERP.Web.API.Domain.Services.MobileWarehouse
                                         isFailedtoSend = qty < doDetailData.Qty;
                                         if (isFailedtoSend)
                                         {
-                                            qtyFailedtoSend = qty;
+                                            qtyFailedtoSend = doDetailData.Qty - qty;
                                             uomFailedtoSend = doDetailData.UomId;
                                             unitFailedtoSend = doDetailData.UnitId;
                                             //qty = qtyFailedtoSend;
@@ -136,7 +136,7 @@ namespace ERP.Web.API.Domain.Services.MobileWarehouse
                                                 isFailedtoSend = (multipliedQty * qty) < doFreeData.Qty;
                                                 if (isFailedtoSend)
                                                 {
-                                                    qtyFailedtoSend = (multipliedQty * qty);
+                                                    qtyFailedtoSend = doFreeData.Qty - (multipliedQty * qty);
                                                     uomFailedtoSend = doFreeData.UomId;
                                                     unitFailedtoSend = doFreeData.UnitId;
                                                     //qty = qtyFailedtoSend;
@@ -154,7 +154,7 @@ namespace ERP.Web.API.Domain.Services.MobileWarehouse
                                                 isFailedtoSend = (qty / dividedQty) < doFreeData.Qty;
                                                 if (isFailedtoSend)
                                                 {
-                                                    qtyFailedtoSend = (qty / dividedQty);
+                                                    qtyFailedtoSend = doFreeData.Qty - (qty / dividedQty);
                                                     uomFailedtoSend = doFreeData.UomId;
                                                     unitFailedtoSend = doFreeData.UnitId;
                                                     //qty = qtyFailedtoSend;
@@ -171,7 +171,7 @@ namespace ERP.Web.API.Domain.Services.MobileWarehouse
                                             isFailedtoSend = qty < doFreeData.Qty;
                                             if (isFailedtoSend)
                                             {
-                                                qtyFailedtoSend = qty;
+                                                qtyFailedtoSend = doFreeData.Qty - qty;
                                                 uomFailedtoSend = doFreeData.UomId;
                                                 unitFailedtoSend = doFreeData.UnitId;
                                                 //qty = qtyFailedtoSend;
@@ -212,6 +212,40 @@ namespace ERP.Web.API.Domain.Services.MobileWarehouse
                                         WarehouseCode = itemDoData.WarehouseCode,
                                         Type = isBonus ? 1 : 0
                                     });
+
+                                    if (isBonus)
+                                    {
+                                        var sdDetail = Db.SalesDeliveryDetailFreeGoods.FirstOrDefault(x => x.Code == itemDoData.Code && x.ItemId == itemDetail.ItemId && x.UnitId == unitFailedtoSend);
+                                        Db.DeliveryPlanDetailItems.Add(new DeliveryPlanDetailItem
+                                        {
+                                            Code = dplDetailData.Code,
+                                            DlvPlanDetailId = dplDetailData.Id,
+                                            LineNo = 1,
+                                            TransDetailId = sdDetail.Id,
+                                            ItemId = sdDetail.ItemId,
+                                            UomId = sdDetail.UomId,
+                                            UnitId = sdDetail.UnitId,
+                                            Qty = sdDetail.Qty,
+                                            Type = 1
+                                        });
+                                    }
+                                    else
+                                    {
+                                        var sdDetail = Db.SalesDeliveryDetails.FirstOrDefault(x => x.Code == itemDoData.Code && x.ItemId == itemDetail.ItemId && x.UnitId == unitFailedtoSend);
+                                        var sdHeader = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.Code == sdDetail.Code);
+                                        Db.DeliveryPlanDetailItems.Add(new DeliveryPlanDetailItem
+                                        {
+                                            Code = dplDetailData.Code,
+                                            DlvPlanDetailId = dplDetailData.Id,
+                                            LineNo = 1,
+                                            TransDetailId = sdDetail.Id,
+                                            ItemId = sdDetail.ItemId,
+                                            UomId = sdDetail.UomId,
+                                            UnitId = sdDetail.UnitId,
+                                            Qty = sdDetail.Qty,
+                                            Type = 0
+                                        });
+                                    }
                                 }
 
                                 dplDetailData.IsFailShipment = true;
