@@ -297,7 +297,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                             CurrCode = itemData.RcvHeader.CurrCode,
                             Period = itemData.RcvHeader.Date.ToString("yyyyMMdd"),
                             Type = "D",
-                            Amount = ivnValue,
+                            Amount = itemDetail.RcvDetail.Type == 1 ? ivnValue : 0m,
                             SrcTrans = "RCV"
                         });
                     }
@@ -369,7 +369,7 @@ namespace ERP.Web.API.Domain.Services.Accounting
                             CurrCode = itemData.RcvHeader.CurrCode,
                             Period = itemData.RcvHeader.Date.ToString("yyyyMMdd"),
                             Type = "D",
-                            Amount = ivnValue,
+                            Amount = itemDetail.RcvDetail.Type == 1 ? ivnValue : 0m,
                             SrcTrans = "RCV"
                         });
                     }
