@@ -2,6 +2,7 @@
 {
     public class VisitInformationModel
     {
-        public decimal Total;
+        public int Date { get; set; }
+        public decimal Total { get; set; }
     }
 }
