@@ -1202,6 +1202,8 @@ namespace ERP.Web.API.Domain.Services.Purchase
         {
             var result = new SaveResult(false);
 
+            var empId = Db.Users.Where(x => x.Id.Equals(userId)).Select(y => y.EmployeeId).Single();
+
             var existed_transfer_stock_code = Db.MobileReceiveItemHeaders.Any(x => x.TransCode == data.TransCode); // check code existed submission
             if (!existed_transfer_stock_code)
             {
@@ -1220,7 +1222,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
                         TransCode = data.TransCode,
                         SrcTrans = data.SrcTrans,
                         SupCode = data.SupCode,
-                        ReceiveBy = userId,
+                        ReceiveBy = empId ?? 0,
                         SignatureImage = data.SignatureImage,
                         Mark = "A",
                         CreatedBy = userId,
