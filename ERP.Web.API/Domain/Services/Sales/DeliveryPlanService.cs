@@ -146,6 +146,44 @@ namespace ERP.Web.API.Domain.Services.Sales
 
                     var idNewItem = newItem.Id;
 
+                    var dlvHeader = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.Code == item.TransCode);
+                    var dlvDetail = Db.SalesDeliveryDetails.Where(x => x.Code == dlvHeader.Code).ToList();
+                    var dlvDetailFree = Db.SalesDeliveryDetailFreeGoods.Where(x => x.Code == dlvHeader.Code).ToList();
+
+                    short dtl = 0;
+                    short dtlf = 0;
+                    foreach (var itemDlvDetail in dlvDetail)
+                    {
+                        Db.DeliveryPlanDetailItems.Add(new DeliveryPlanDetailItem
+                        {
+                            Code = newCode,
+                            DlvPlanDetailId = idNewItem,
+                            LineNo = ++dtl,
+                            TransDetailId = itemDlvDetail.Id,
+                            ItemId = itemDlvDetail.ItemId,
+                            UomId = itemDlvDetail.UomId,
+                            UnitId = itemDlvDetail.UnitId,
+                            Qty = itemDlvDetail.Qty,
+                            Type = 0
+                        });
+                    }
+
+                    foreach (var itemDlvDetail in dlvDetailFree)
+                    {
+                        Db.DeliveryPlanDetailItems.Add(new DeliveryPlanDetailItem
+                        {
+                            Code = newCode,
+                            DlvPlanDetailId = idNewItem,
+                            LineNo = ++dtlf,
+                            TransDetailId = itemDlvDetail.Id,
+                            ItemId = itemDlvDetail.ItemId,
+                            UomId = itemDlvDetail.UomId,
+                            UnitId = itemDlvDetail.UnitId,
+                            Qty = itemDlvDetail.Qty,
+                            Type = 1
+                        });
+                    }
+
                     short j = 0;
                     if(item.UndeliveredItems.Any() && item.IsFailShipment)
                     {
@@ -166,50 +204,36 @@ namespace ERP.Web.API.Domain.Services.Sales
 
                             if (uItem.Type == 0)
                             {
-                                var sdDetail = uItem?.DetailId == null ? Db.SalesDeliveryDetails.FirstOrDefault(x => x.Code == item.TransCode && x.ItemId == uItem.ItemId && x.UnitId == uItem.UnitId)
-                                            : Db.SalesDeliveryDetails.FirstOrDefault(x => x.Id == uItem.DetailId);
-                                var sdHeader = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.Code == sdDetail.Code);
-                                Db.DeliveryPlanDetailItems.Add(new DeliveryPlanDetailItem
-                                {
-                                    Code = newCode,
-                                    DlvPlanDetailId = idNewItem,
-                                    LineNo = j,
-                                    TransDetailId = sdDetail.Id,
-                                    ItemId = sdDetail.ItemId,
-                                    UomId = sdDetail.UomId,
-                                    UnitId = sdDetail.UnitId,
-                                    Qty = sdDetail.Qty,
-                                    Type = uItem.Type
-                                });
+                                var sdDetail = dlvDetail.FirstOrDefault(x => x.Code == item.TransCode && x.ItemId == uItem.ItemId && x.UnitId == uItem.UnitId);
 
                                 sdDetail.Qty -= uItem.Qty;
                                 sdDetail.Total -= (sdDetail.NettPrice * uItem.Qty);
                                 Db.SalesDeliveryDetails.Update(sdDetail);
 
-                                sdHeader.SubTotal -= (sdDetail.NettPrice * uItem.Qty);
-                                sdHeader.TaxAmount -= (sdDetail.TaxAmount * uItem.Qty);
-                                sdHeader.Total -= (sdDetail.NettPrice * uItem.Qty);
-                                sdHeader.Dpp -= (sdDetail.Dpp * uItem.Qty);
-                                Db.SalesDeliveryHeaders.Update(sdHeader);
+                                dlvHeader.SubTotal -= (sdDetail.NettPrice * uItem.Qty);
+                                dlvHeader.TaxAmount -= (sdDetail.TaxAmount * uItem.Qty);
+                                dlvHeader.Total -= (sdDetail.NettPrice * uItem.Qty);
+                                dlvHeader.Dpp -= (sdDetail.Dpp * uItem.Qty);
+                                Db.SalesDeliveryHeaders.Update(dlvHeader);
 
                                 Db.Database.ExecuteSqlRaw(
                                        "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
-                                       sdHeader.Code, sdHeader.Date, sdHeader.TransCode);
+                                       dlvHeader.Code, dlvHeader.Date, dlvHeader.TransCode);
 
-                                if (sdHeader.SrcTrans == 1)
+                                if (dlvHeader.SrcTrans == 1)
                                 {
                                     // Execute sp_update_so_dlv_qty
-                                    Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", sdHeader.TransCode);
+                                    Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", dlvHeader.TransCode);
                                 }
                                 else
                                 {
                                     // Execute sp_update_sr_dlv_qty
-                                    Db.Database.ExecuteSqlRaw("EXEC sp_update_sr_dlv_qty {0}", sdHeader.TransCode);
+                                    Db.Database.ExecuteSqlRaw("EXEC sp_update_sr_dlv_qty {0}", dlvHeader.TransCode);
                                 }
 
-                                if (sdHeader.Mark == "INV")
+                                if (dlvHeader.Mark == "INV")
                                 {
-                                    var siDetailData = Db.SalesInvoiceDetails.FirstOrDefault(x => x.DoCode == sdHeader.Code);
+                                    var siDetailData = Db.SalesInvoiceDetails.FirstOrDefault(x => x.DoCode == dlvHeader.Code);
                                     var siHeadData = Db.SalesInvoiceHeaders.FirstOrDefault(x => x.Code == siDetailData.Code);
 
                                     if (siHeadData.Total > 0)
@@ -232,19 +256,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                             }
                             else
                             {
-                                var sdDetail = Db.SalesDeliveryDetailFreeGoods.FirstOrDefault(x => x.Id == uItem.DetailId);
-                                Db.DeliveryPlanDetailItems.Add(new DeliveryPlanDetailItem
-                                {
-                                    Code = newCode,
-                                    DlvPlanDetailId = idNewItem,
-                                    LineNo = j,
-                                    TransDetailId = sdDetail.Id,
-                                    ItemId = sdDetail.ItemId,
-                                    UomId = sdDetail.UomId,
-                                    UnitId = sdDetail.UnitId,
-                                    Qty = sdDetail.Qty,
-                                    Type = uItem.Type
-                                });
+                                var sdDetail = dlvDetailFree.FirstOrDefault(x => x.Code == item.TransCode && x.ItemId == uItem.ItemId && x.UnitId == uItem.UnitId);
 
                                 sdDetail.Qty -= uItem.Qty;
                                 Db.SalesDeliveryDetailFreeGoods.Update(sdDetail);
@@ -368,6 +380,44 @@ namespace ERP.Web.API.Domain.Services.Sales
 
                         var idNewItem = newItem.Id;
 
+                        var dlvHeader = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.Code == item.TransCode);
+                        var dlvDetail = Db.SalesDeliveryDetails.Where(x => x.Code == dlvHeader.Code).ToList();
+                        var dlvDetailFree = Db.SalesDeliveryDetailFreeGoods.Where(x => x.Code == dlvHeader.Code).ToList();
+
+                        short dtl = 0;
+                        short dtlf = 0;
+                        foreach (var itemDlvDetail in dlvDetail)
+                        {
+                            Db.DeliveryPlanDetailItems.Add(new DeliveryPlanDetailItem
+                            {
+                                Code = data.Code,
+                                DlvPlanDetailId = idNewItem,
+                                LineNo = ++dtl,
+                                TransDetailId = itemDlvDetail.Id,
+                                ItemId = itemDlvDetail.ItemId,
+                                UomId = itemDlvDetail.UomId,
+                                UnitId = itemDlvDetail.UnitId,
+                                Qty = itemDlvDetail.Qty,
+                                Type = 0
+                            });
+                        }
+
+                        foreach (var itemDlvDetail in dlvDetailFree)
+                        {
+                            Db.DeliveryPlanDetailItems.Add(new DeliveryPlanDetailItem
+                            {
+                                Code = data.Code,
+                                DlvPlanDetailId = idNewItem,
+                                LineNo = ++dtlf,
+                                TransDetailId = itemDlvDetail.Id,
+                                ItemId = itemDlvDetail.ItemId,
+                                UomId = itemDlvDetail.UomId,
+                                UnitId = itemDlvDetail.UnitId,
+                                Qty = itemDlvDetail.Qty,
+                                Type = 1
+                            });
+                        }
+
                         if (item.UndeliveredItems.Any() && item.IsFailShipment)
                         {
                             short j = 0;
@@ -390,18 +440,6 @@ namespace ERP.Web.API.Domain.Services.Sales
                                 {
                                     var sdDetail = Db.SalesDeliveryDetails.FirstOrDefault(x => x.Id == uItem.DetailId);
                                     var sdHeader = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.Code == sdDetail.Code);
-                                    Db.DeliveryPlanDetailItems.Add(new DeliveryPlanDetailItem
-                                    {
-                                        Code = data.Code,
-                                        DlvPlanDetailId = idNewItem,
-                                        LineNo = j,
-                                        TransDetailId = sdDetail.Id,
-                                        ItemId = sdDetail.ItemId,
-                                        UomId = sdDetail.UomId,
-                                        UnitId = sdDetail.UnitId,
-                                        Qty = sdDetail.Qty,
-                                        Type = uItem.Type
-                                    });
 
                                     sdDetail.Qty -= uItem.Qty;
                                     sdDetail.Total -= (sdDetail.NettPrice * uItem.Qty);
@@ -454,18 +492,6 @@ namespace ERP.Web.API.Domain.Services.Sales
                                 else
                                 {
                                     var sdDetail = Db.SalesDeliveryDetailFreeGoods.FirstOrDefault(x => x.Id == uItem.DetailId);
-                                    Db.DeliveryPlanDetailItems.Add(new DeliveryPlanDetailItem
-                                    {
-                                        Code = data.Code,
-                                        DlvPlanDetailId = idNewItem,
-                                        LineNo = j,
-                                        TransDetailId = sdDetail.Id,
-                                        ItemId = sdDetail.ItemId,
-                                        UomId = sdDetail.UomId,
-                                        UnitId = sdDetail.UnitId,
-                                        Qty = sdDetail.Qty,
-                                        Type = uItem.Type
-                                    });
 
                                     sdDetail.Qty -= uItem.Qty;
                                     Db.SalesDeliveryDetailFreeGoods.Update(sdDetail);

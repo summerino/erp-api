@@ -212,40 +212,6 @@ namespace ERP.Web.API.Domain.Services.MobileWarehouse
                                         WarehouseCode = itemDoData.WarehouseCode,
                                         Type = isBonus ? 1 : 0
                                     });
-
-                                    if (isBonus)
-                                    {
-                                        var sdDetail = Db.SalesDeliveryDetailFreeGoods.FirstOrDefault(x => x.Code == itemDoData.Code && x.ItemId == itemDetail.ItemId && x.UnitId == unitFailedtoSend);
-                                        Db.DeliveryPlanDetailItems.Add(new DeliveryPlanDetailItem
-                                        {
-                                            Code = dplDetailData.Code,
-                                            DlvPlanDetailId = dplDetailData.Id,
-                                            LineNo = 1,
-                                            TransDetailId = sdDetail.Id,
-                                            ItemId = sdDetail.ItemId,
-                                            UomId = sdDetail.UomId,
-                                            UnitId = sdDetail.UnitId,
-                                            Qty = sdDetail.Qty,
-                                            Type = 1
-                                        });
-                                    }
-                                    else
-                                    {
-                                        var sdDetail = Db.SalesDeliveryDetails.FirstOrDefault(x => x.Code == itemDoData.Code && x.ItemId == itemDetail.ItemId && x.UnitId == unitFailedtoSend);
-                                        var sdHeader = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.Code == sdDetail.Code);
-                                        Db.DeliveryPlanDetailItems.Add(new DeliveryPlanDetailItem
-                                        {
-                                            Code = dplDetailData.Code,
-                                            DlvPlanDetailId = dplDetailData.Id,
-                                            LineNo = 1,
-                                            TransDetailId = sdDetail.Id,
-                                            ItemId = sdDetail.ItemId,
-                                            UomId = sdDetail.UomId,
-                                            UnitId = sdDetail.UnitId,
-                                            Qty = sdDetail.Qty,
-                                            Type = 0
-                                        });
-                                    }
                                 }
 
                                 dplDetailData.IsFailShipment = true;
