@@ -1,12 +1,28 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
+#nullable disable
+
 namespace ERP.Entity.Migrations.CatalogMigrations
 {
     public partial class InitialCreate : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "CustomerUser",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    TenantId = table.Column<int>(type: "int", nullable: false),
+                    Username = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Password = table.Column<string>(type: "varchar(max)", unicode: false, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CustomerUser", x => x.Id);
+                });
+
             migrationBuilder.CreateTable(
                 name: "Tenant",
                 columns: table => new
@@ -40,6 +56,12 @@ namespace ERP.Entity.Migrations.CatalogMigrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_CustomerUser_Username",
+                table: "CustomerUser",
+                column: "Username",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_User_Username",
                 table: "User",
                 column: "Username",
@@ -48,6 +70,9 @@ namespace ERP.Entity.Migrations.CatalogMigrations
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "CustomerUser");
+
             migrationBuilder.DropTable(
                 name: "Tenant");
 
