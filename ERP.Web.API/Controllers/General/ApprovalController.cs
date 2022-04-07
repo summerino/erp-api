@@ -9,54 +9,53 @@ using ERP.Web.API.Model;
 using ERP.Web.API.Model.General;
 using Newtonsoft.Json;
 
-namespace ERP.Web.API.Controllers.General
+namespace ERP.Web.API.Controllers.General;
+
+[Route("[controller]")]
+[ApiController]
+public class ApprovalController : ControllerBase
 {
-    [Route("[controller]")]
-    [ApiController]
-    public class ApprovalController : ControllerBase
+    private readonly IApprovalService _approval;
+    private readonly IClaimService _claim;
+    private readonly IAuthService _auth;
+
+    private const int MenuId = (int)Menu.Approval;
+
+    public ApprovalController(IApprovalService approval, IClaimService claim, IAuthService auth)
     {
-        private readonly IApprovalService _approval;
-        private readonly IClaimService _claim;
-        private readonly IAuthService _auth;
+        _approval = approval;
+        _claim = claim;
+        _auth = auth;
+    }
 
-        private const int MenuId = (int)Menu.Approval;
+    [HttpGet]
+    public IActionResult GetData(string search, string filters, string sorts, int skip, int take)
+    {
+        var data =
+            _approval.GetData(
+                skip, take,
+                JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
+                _auth.GetActions(MenuId, _claim.RoleId, new List<int>()).ToList(),
+                search);
 
-        public ApprovalController(IApprovalService approval, IClaimService claim, IAuthService auth)
+        return Ok(new ApiResponse
         {
-            _approval = approval;
-            _claim = claim;
-            _auth = auth;
-        }
+            RowCount = data.Total,
+            TableData = data.Data.ToDynamicList()
+        });
+    }
 
-        [HttpGet]
-        public IActionResult GetData(string search, string filters, string sorts, int skip, int take)
-        {
-            var data =
-                _approval.GetData(
-                    skip, take,
-                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
-                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
-                    _auth.GetActions(MenuId, _claim.RoleId, new List<int>()).ToList(),
-                    search);
+    [HttpPost]
+    public IActionResult OnPost(List<ApprovalRequest> data)
+    {
+        var actionIdLists = data.GroupBy(x => x.ActionId).Select(x => x.Key).ToList();
 
-            return Ok(new ApiResponse
-            {
-                RowCount = data.Total,
-                TableData = data.Data.ToDynamicList()
-            });
-        }
+        if (_auth.GetActions(MenuId, _claim.RoleId, actionIdLists).Count() != actionIdLists.Count)
+            return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
-        [HttpPost]
-        public IActionResult OnPost(List<ApprovalRequest> data)
-        {
-            var actionIdLists = data.GroupBy(x => x.ActionId).Select(x => x.Key).ToList();
+        var result = _approval.SaveChanges(data, _claim.UserId);
 
-            if (_auth.GetActions(MenuId, _claim.RoleId, actionIdLists).Count() != actionIdLists.Count)
-                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-
-            var result = _approval.SaveChanges(data, _claim.UserId);
-
-            return Ok(result);
-        }
+        return Ok(result);
     }
 }

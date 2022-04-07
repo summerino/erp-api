@@ -5,60 +5,59 @@ using ERP.Entity;
 using ERP.Entity.SystemManagement;
 using ERP.Web.API.Domain.Interfaces.SystemManagement;
 
-namespace ERP.Web.API.Domain.Services.SystemManagement
+namespace ERP.Web.API.Domain.Services.SystemManagement;
+
+public class CompanyProfileService : ICompanyProfileService
 {
-    public class CompanyProfileService : ICompanyProfileService
+    private readonly TenantContext _tenantCtx;
+
+    public CompanyProfileService(TenantContext tenantContext)
     {
-        private readonly TenantContext _tenantCtx;
+        _tenantCtx = tenantContext;
+    }
 
-        public CompanyProfileService(TenantContext tenantContext)
+    public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
+        string search)
+    {
+        var data = _tenantCtx.VwCompanies.AsQueryable();
+
+        if (!string.IsNullOrEmpty(search))
         {
-            _tenantCtx = tenantContext;
+            data = data.Where(x =>
+                x.Name.Contains(search) || x.Address1.Contains(search) || x.Address2.Contains(search)
+                || x.City.Contains(search) || x.Zip.Contains(search) || x.Phone.Contains(search)
+                || x.Fax.Contains(search) || x.Npwp.Contains(search));
         }
 
-        public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
-            string search)
+        return data.ToDataSourceResult(skip, take, filter, sort);
+    }
+
+    public SaveResult Update(Company data)
+    {
+        var result = new SaveResult(false);
+
+        using var transaction = _tenantCtx.Database.BeginTransaction();
+        try
         {
-            var data = _tenantCtx.VwCompanies.AsQueryable();
+            // Update data
+            _tenantCtx.Companies.Update(data);
+            _tenantCtx.Entry(data).Property(e => e.Id).IsModified = false;
+            _tenantCtx.Entry(data).Property(e => e.Name).IsModified = false;
+            _tenantCtx.Entry(data).Property(e => e.CatalogTenantId).IsModified = false;
 
-            if (!string.IsNullOrEmpty(search))
-            {
-                data = data.Where(x =>
-                         x.Name.Contains(search) || x.Address1.Contains(search) || x.Address2.Contains(search)
-                         || x.City.Contains(search) || x.Zip.Contains(search) || x.Phone.Contains(search)
-                         || x.Fax.Contains(search) || x.Npwp.Contains(search));
-            }
 
-            return data.ToDataSourceResult(skip, take, filter, sort);
+            _tenantCtx.SaveChanges();
+            transaction.Commit();
         }
-
-        public SaveResult Update(Company data)
+        catch (Exception ex)
         {
-            var result = new SaveResult(false);
-
-            using var transaction = _tenantCtx.Database.BeginTransaction();
-            try
-            {
-                // Update data
-                _tenantCtx.Companies.Update(data);
-                _tenantCtx.Entry(data).Property(e => e.Id).IsModified = false;
-                _tenantCtx.Entry(data).Property(e => e.Name).IsModified = false;
-                _tenantCtx.Entry(data).Property(e => e.CatalogTenantId).IsModified = false;
-
-
-                _tenantCtx.SaveChanges();
-                transaction.Commit();
-            }
-            catch (Exception ex)
-            {
-                result.Message = ex.InnerException?.Message ?? ex.Message;
-                return result;
-            }
-
-            result.Success = true;
-            result.Data = data.Name;
-            result.Message = "Data profil perusahaan diperbarui.";
+            result.Message = ex.InnerException?.Message ?? ex.Message;
             return result;
         }
+
+        result.Success = true;
+        result.Data = data.Name;
+        result.Message = "Data profil perusahaan diperbarui.";
+        return result;
     }
 }

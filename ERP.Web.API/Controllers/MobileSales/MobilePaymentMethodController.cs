@@ -9,88 +9,87 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Linq.Dynamic.Core;
 
-namespace ERP.Web.API.Controllers.MobileSales
+namespace ERP.Web.API.Controllers.MobileSales;
+
+[Route("mobile-payment-method")]
+[ApiController]
+public class MobilePaymentMethodController : ControllerBase
 {
-    [Route("mobile-payment-method")]
-    [ApiController]
-    public class MobilePaymentMethodController : ControllerBase
+    private readonly IMobilePaymentMethodService _mp;
+    private readonly IClaimService _claim;
+    private readonly IAuthService _auth;
+
+    private const int MenuId = (int)Menu.MobilePaymentMethod;
+
+    public MobilePaymentMethodController(IMobilePaymentMethodService mp, IClaimService claim, IAuthService auth)
     {
-        private readonly IMobilePaymentMethodService _mp;
-        private readonly IClaimService _claim;
-        private readonly IAuthService _auth;
+        _mp = mp;
+        _claim = claim;
+        _auth = auth;
+    }
 
-        private const int MenuId = (int)Menu.MobilePaymentMethod;
+    [HttpGet]
+    public IActionResult GetData(string search, string filters, string sorts, int skip, int take)
+    {
+        var data =
+            _mp.GetData(
+                skip, take,
+                JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
+                search);
 
-        public MobilePaymentMethodController(IMobilePaymentMethodService mp, IClaimService claim, IAuthService auth)
+        return Ok(new ApiResponse
         {
-            _mp = mp;
-            _claim = claim;
-            _auth = auth;
+            RowCount = data.Total,
+            TableData = data.Data.ToDynamicList()
+        });
+    }
+
+    [HttpPost]
+    public IActionResult OnPost(MobilePaymentMethod data)
+    {
+
+        if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Insert }).Any())
+        {
+            return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
         }
 
-        [HttpGet]
-        public IActionResult GetData(string search, string filters, string sorts, int skip, int take)
-        {
-            var data =
-                _mp.GetData(
-                    skip, take,
-                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
-                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
-                    search);
+        data.CreatedBy = _claim.UserId;
+        data.CreatedDate = DateTime.Now;
+        data.UpdatedBy = data.CreatedBy;
+        data.UpdatedDate = data.CreatedDate;
 
-            return Ok(new ApiResponse
-            {
-                RowCount = data.Total,
-                TableData = data.Data.ToDynamicList()
-            });
+        var result = _mp.Insert(data);
+
+        return Ok(result);
+    }
+
+    [HttpPut("{id}")]
+    public IActionResult OnPut(string id, MobilePaymentMethod data)
+    {
+
+        if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
+        {
+            return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
         }
 
-        [HttpPost]
-        public IActionResult OnPost(MobilePaymentMethod data)
+        data.UpdatedBy = _claim.UserId;
+        data.UpdatedDate = DateTime.Now;
+
+        var result = _mp.Update(data);
+
+        return Ok(result);
+    }
+
+    [HttpDelete("{id}")]
+    public IActionResult OnDelete(int id)
+    {
+        if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Delete }).Any())
         {
-
-            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Insert }).Any())
-            {
-                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
-
-            data.CreatedBy = _claim.UserId;
-            data.CreatedDate = DateTime.Now;
-            data.UpdatedBy = data.CreatedBy;
-            data.UpdatedDate = data.CreatedDate;
-
-            var result = _mp.Insert(data);
-
-            return Ok(result);
+            return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
         }
 
-        [HttpPut("{id}")]
-        public IActionResult OnPut(string id, MobilePaymentMethod data)
-        {
-
-            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
-            {
-                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
-
-            data.UpdatedBy = _claim.UserId;
-            data.UpdatedDate = DateTime.Now;
-
-            var result = _mp.Update(data);
-
-            return Ok(result);
-        }
-
-        [HttpDelete("{id}")]
-        public IActionResult OnDelete(int id)
-        {
-            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Delete }).Any())
-            {
-                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
-
-            var result = _mp.Delete(id, _claim.UserId);
-            return Ok(result);
-        }
+        var result = _mp.Delete(id, _claim.UserId);
+        return Ok(result);
     }
 }

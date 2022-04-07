@@ -2,27 +2,26 @@
 using ERP.Entity.Finance;
 using ERP.Web.API.Domain.Interfaces.Finance;
 
-namespace ERP.Web.API.Domain.Services.Finance
+namespace ERP.Web.API.Domain.Services.Finance;
+
+public class CashBankTypeService : ICashBankTypeService
 {
-    public class CashBankTypeService : ICashBankTypeService
+    private readonly TenantContext _tenantCtx;
+
+    public CashBankTypeService(TenantContext tenantCtx)
     {
-        private readonly TenantContext _tenantCtx;
+        _tenantCtx = tenantCtx;
+    }
 
-        public CashBankTypeService(TenantContext tenantCtx)
+    public IQueryable<VwCashBankType> GetLists(List<int> actionId)
+    {
+        var data = _tenantCtx.VwCashBankTypes.Where(x => x.IsActive);
+
+        if (actionId?.Any() ?? false)
         {
-            _tenantCtx = tenantCtx;
+            data = data.Where(x => actionId.Contains(x.ActionId));
         }
 
-        public IQueryable<VwCashBankType> GetLists(List<int> actionId)
-        {
-            var data = _tenantCtx.VwCashBankTypes.Where(x => x.IsActive);
-
-            if (actionId?.Any() ?? false)
-            {
-                data = data.Where(x => actionId.Contains(x.ActionId));
-            }
-
-            return data.OrderBy(x => x.Seq);
-        }
+        return data.OrderBy(x => x.Seq);
     }
 }

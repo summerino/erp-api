@@ -1,110 +1,105 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace ERP.Entity.Purchase
+namespace ERP.Entity.Purchase;
+
+public class ReportByRCV
 {
-    public class ReportByRCV
-    {
-        public DateTime? Date { get; set; }
+    public DateTime? Date { get; set; }
 
-        public string Code { get; set; }
+    public string Code { get; set; }
 
-        public int SrcTrans { get; set; }
+    public int SrcTrans { get; set; }
 
-        public string TransCode { get; set; }
+    public string TransCode { get; set; }
 
-        public string RefNo { get; set; }
+    public string RefNo { get; set; }
 
-        public string SupCode { get; set; }
+    public string SupCode { get; set; }
 
-        public string SupName { get; set; }
+    public string SupName { get; set; }
 
-        public decimal GrossAmount { get; set; }
+    public decimal GrossAmount { get; set; }
 
-        public decimal SubTotal { get; set; }
+    public decimal SubTotal { get; set; }
 
-        public decimal Disc { get; set; }
+    public decimal Disc { get; set; }
 
-        public decimal Dpp { get; set; }
+    public decimal Dpp { get; set; }
 
-        public decimal TaxAmount { get; set; }
+    public decimal TaxAmount { get; set; }
 
-        public decimal Total { get; set; }
+    public decimal Total { get; set; }
 
-        public string Status { get; set; }
+    public string Status { get; set; }
 
-        public string TaxInvoiceNo { get; set; }
+    public string TaxInvoiceNo { get; set; }
 
-        public DateTime? TaxInvoiceDate { get; set; }
-    }
+    public DateTime? TaxInvoiceDate { get; set; }
+}
 
-    public class ReportByDetailRCV
-    {
-        public DateTime? Date { get; set; }
+public class ReportByDetailRCV
+{
+    public DateTime? Date { get; set; }
 
-        public string Code { get; set; }
+    public string Code { get; set; }
 
-        public int SrcTrans { get; set; }
+    public int SrcTrans { get; set; }
 
-        public string TransCode { get; set; }
+    public string TransCode { get; set; }
 
-        public string RefNo { get; set; }
+    public string RefNo { get; set; }
 
-        public string SupCode { get; set; }
+    public string SupCode { get; set; }
 
-        public string SupName { get; set; }
+    public string SupName { get; set; }
 
-        public string ItemInitial { get; set; }
+    public string ItemInitial { get; set; }
 
-        public string ItemName { get; set; }
+    public string ItemName { get; set; }
 
-        public string WarehouseName { get; set; }
+    public string WarehouseName { get; set; }
 
-        public int CategoryId { get; set; }
+    public int CategoryId { get; set; }
 
-        public string CategoryInitial { get; set; }
+    public string CategoryInitial { get; set; }
 
-        public decimal Qty { get; set; }
+    public decimal Qty { get; set; }
 
-        public int UnitId { get; set; }
+    public int UnitId { get; set; }
 
-        public string UnitName { get; set; }
+    public string UnitName { get; set; }
 
-        public decimal? GrossAmount { get; set; }
+    public decimal? GrossAmount { get; set; }
 
-        public decimal? SubTotal { get; set; }
+    public decimal? SubTotal { get; set; }
 
-        public decimal? Disc { get; set; }
+    public decimal? Disc { get; set; }
 
-        public decimal? DiscHeader { get; set; }
+    public decimal? DiscHeader { get; set; }
 
-        public decimal? Dpp { get; set; }
+    public decimal? Dpp { get; set; }
 
-        public decimal? TaxAmount { get; set; }
+    public decimal? TaxAmount { get; set; }
 
-        public decimal? NettPrice { get; set; }
+    public decimal? NettPrice { get; set; }
 
-        public decimal TotalGrossAmount { get; set; }
+    public decimal TotalGrossAmount { get; set; }
 
-        public decimal TotalDisc { get; set; }
+    public decimal TotalDisc { get; set; }
 
-        public decimal TotalDiscHeader { get; set; }
+    public decimal TotalDiscHeader { get; set; }
 
-        public decimal TotalAfterDisc { get; set; }
+    public decimal TotalAfterDisc { get; set; }
 
-        public decimal TotalDpp { get; set; }
+    public decimal TotalDpp { get; set; }
 
-        public decimal TotalTaxAmount { get; set; }
+    public decimal TotalTaxAmount { get; set; }
 
-        public decimal TotalNettPrice { get; set; }
+    public decimal TotalNettPrice { get; set; }
 
-        public string Status { get; set; }
+    public string Status { get; set; }
 
-        public string TaxInvoiceNo { get; set; }
+    public string TaxInvoiceNo { get; set; }
 
-        public DateTime? TaxInvoiceDate { get; set; }
-    }
+    public DateTime? TaxInvoiceDate { get; set; }
 }

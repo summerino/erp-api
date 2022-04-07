@@ -2,36 +2,35 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using ERP.Entity.Core;
 
-namespace ERP.Entity.MobileSales
+namespace ERP.Entity.MobileSales;
+
+[Table("MobilePaymentMethod", Schema = Schema.MobileSales)]
+public class MobilePaymentMethod : BaseEntityWithActive
 {
-    [Table("MobilePaymentMethod", Schema = Schema.MobileSales)]
-    public class MobilePaymentMethod : BaseEntityWithActive
-    {
-        public int Id { get; set; }
+    public int Id { get; set; }
 
-        [Required]
-        [StringLength(50)]
-        public string Name { get; set; }
+    [Required]
+    [StringLength(50)]
+    public string Name { get; set; }
 
-        [Required]
-        [StringLength(6)]
-        public string CoaCode { get; set; }
+    [Required]
+    [StringLength(6)]
+    public string CoaCode { get; set; }
 
-        public short Seq { get; set; }
-    }
+    public short Seq { get; set; }
+}
 
-    public class VwMobilePaymentMethod : BaseEntityWithActive
-    {
-        public int Id { get; set; }
+public class VwMobilePaymentMethod : BaseEntityWithActive
+{
+    public int Id { get; set; }
 
-        public string Name { get; set; }
+    public string Name { get; set; }
 
-        public string CoaCode { get; set; }
+    public string CoaCode { get; set; }
 
-        public short Seq { get; set; }
+    public short Seq { get; set; }
 
-        public string UpdatedInitial { get; set; }
+    public string UpdatedInitial { get; set; }
 
-        public string CoaName { get; set; }
-    }
+    public string CoaName { get; set; }
 }

@@ -1,10 +1,9 @@
 ﻿using ERP.Entity.MobileSales;
 
-namespace ERP.Web.API.Model.MobileSales
+namespace ERP.Web.API.Model.MobileSales;
+
+public class MobileCostRequest : MobileCostHeader
 {
-    public class MobileCostRequest : MobileCostHeader
-    {
-        public IEnumerable<MobileCostDetail> ItemDetails { get; set; }
-        public IEnumerable<MobileCostImage> ImageDetails { get; set; }
-    }
+    public IEnumerable<MobileCostDetail> ItemDetails { get; set; }
+    public IEnumerable<MobileCostImage> ImageDetails { get; set; }
 }

@@ -10,99 +10,98 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Linq.Dynamic.Core;
 
-namespace ERP.Web.API.Controllers.General
+namespace ERP.Web.API.Controllers.General;
+
+[Route("dynamic-report-template")]
+[ApiController]
+public class DynamicReportTemplateController : ControllerBase
 {
-    [Route("dynamic-report-template")]
-    [ApiController]
-    public class DynamicReportTemplateController : ControllerBase
+    private readonly IDynamicReportTemplateService _service;
+    private readonly IClaimService _claim;
+    private readonly IAuthService _auth;
+    private const int MenuId = (int)Menu.DynamicReportTemplate;
+    public DynamicReportTemplateController(IDynamicReportTemplateService service, IClaimService claim, IAuthService auth)
     {
-        private readonly IDynamicReportTemplateService _service;
-        private readonly IClaimService _claim;
-        private readonly IAuthService _auth;
-        private const int MenuId = (int)Menu.DynamicReportTemplate;
-        public DynamicReportTemplateController(IDynamicReportTemplateService service, IClaimService claim, IAuthService auth)
-        {
-            _service = service;
-            _claim = claim;
-            _auth = auth;
-        }
+        _service = service;
+        _claim = claim;
+        _auth = auth;
+    }
 
-        [HttpGet]
-        public IActionResult GetData(string search, string filters, string sorts, int skip, int take)
-        {
-            var data =
-                _service.GetData(
-                    skip, take,
-                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
-                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
-                    search);
+    [HttpGet]
+    public IActionResult GetData(string search, string filters, string sorts, int skip, int take)
+    {
+        var data =
+            _service.GetData(
+                skip, take,
+                JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
+                search);
 
-            return Ok(new ApiResponse
-            {
-                RowCount = data.Total,
-                TableData = data.Data.ToDynamicList()
-            });
-        }
-
-        [HttpGet("lists")]
-        public IActionResult GetList(string sorts)
+        return Ok(new ApiResponse
         {
-            var data =
-                _service.GetLists(
+            RowCount = data.Total,
+            TableData = data.Data.ToDynamicList()
+        });
+    }
+
+    [HttpGet("lists")]
+    public IActionResult GetList(string sorts)
+    {
+        var data =
+            _service.GetLists(
                     null,
                     JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]")).Data
-                    .ToDynamicList();
+                .ToDynamicList();
 
-            return Ok(new ApiResponse
-            {
-                RowCount = data.Count,
-                TableData = data
-            });
-        }
-
-        [HttpPost]
-        public IActionResult OnPost(DynamicReportTemplate data)
+        return Ok(new ApiResponse
         {
-            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Insert }).Any())
-            {
-                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
+            RowCount = data.Count,
+            TableData = data
+        });
+    }
 
-            data.CreatedBy = _claim.UserId;
-            data.CreatedDate = DateTime.Now;
-            data.UpdatedBy = data.CreatedBy;
-            data.UpdatedDate = data.CreatedDate;
-
-            var result = _service.Insert(data);
-
-            return Ok(result);
-        }
-
-        [HttpPut("{code}")]
-        public IActionResult OnPut(string code, DynamicReportTemplate data)
+    [HttpPost]
+    public IActionResult OnPost(DynamicReportTemplate data)
+    {
+        if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Insert }).Any())
         {
-            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
-            {
-                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
-            data.UpdatedBy = _claim.UserId;
-            data.UpdatedDate = DateTime.Now;
-
-            var result = _service.Update(data);
-
-            return Ok(result);
+            return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
         }
 
-        [HttpDelete("{id}")]
-        public IActionResult OnDelete(int id)
+        data.CreatedBy = _claim.UserId;
+        data.CreatedDate = DateTime.Now;
+        data.UpdatedBy = data.CreatedBy;
+        data.UpdatedDate = data.CreatedDate;
+
+        var result = _service.Insert(data);
+
+        return Ok(result);
+    }
+
+    [HttpPut("{code}")]
+    public IActionResult OnPut(string code, DynamicReportTemplate data)
+    {
+        if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
         {
-            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Delete }).Any())
-            {
-                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
-            var result = _service.Delete(id, _claim.UserId);
-
-            return Ok(result);
+            return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
         }
+        data.UpdatedBy = _claim.UserId;
+        data.UpdatedDate = DateTime.Now;
+
+        var result = _service.Update(data);
+
+        return Ok(result);
+    }
+
+    [HttpDelete("{id}")]
+    public IActionResult OnDelete(int id)
+    {
+        if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Delete }).Any())
+        {
+            return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+        }
+        var result = _service.Delete(id, _claim.UserId);
+
+        return Ok(result);
     }
 }

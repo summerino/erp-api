@@ -6,75 +6,232 @@ using ERP.Common.Extensions;
 using ERP.Common.Models;
 using ERP.Entity;
 
-namespace ERP.Web.API.Domain.Services.Sales
+namespace ERP.Web.API.Domain.Services.Sales;
+
+public class PromoService : GeneralService<PromoHeader>, IPromoService
 {
-    public class PromoService : GeneralService<PromoHeader>, IPromoService
+    public PromoService(TenantContext db)
+        : base(db)
     {
-        public PromoService(TenantContext db)
-            : base(db)
-        {
 
+    }
+
+    public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, string search)
+    {
+        var data = Db.VwPromoHeaders.AsQueryable();
+
+        if (!string.IsNullOrEmpty(search))
+        {
+            data = DateTime.TryParse(search, out var searchDate)
+                ? data.Where(x => x.StartDate == searchDate || x.EndDate == searchDate)
+                : data.Where(x =>
+                    x.Code.Contains(search) || x.Name.Contains(search));
         }
 
-        public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, string search)
-        {
-            var data = Db.VwPromoHeaders.AsQueryable();
+        return data.ToDataSourceResult(skip, take, filter, sort);
+    }
 
-            if (!string.IsNullOrEmpty(search))
+    public IEnumerable<PromoDetail> GetDetailData(string code)
+    {
+        return Db.PromoDetails.Where(x => x.Code == code).OrderBy(x => x.LineNo);
+    }
+    public IEnumerable<PromoDetailMultipleItem> GetMultipleItemsData()
+    {
+        return Db.PromoDetailMultipleItems.ToList();
+    }
+
+    public IEnumerable<PromoDetailTier> GetDetailTierData()
+    {
+        return Db.PromoDetailTiers.ToList();
+    }
+
+    public IEnumerable<PromoSubject> GetSubjectData(string code)
+    {
+        return Db.PromoSubjects.Where(x => x.Code == code);
+    }
+
+    public SaveResult Insert(PromoRequest data)
+    {
+        var result = new SaveResult(false);
+
+        using var transaction = Db.Database.BeginTransaction();
+        try
+        {
+            // Insert header data
+            var newCode = GetNewCode("PROMO_NUM_FMT", DateTime.Now);
+
+            data.Code = newCode;
+            Db.PromoHeaders.Add(data);
+
+            // Insert detail data
+            short i = 0;
+            foreach (var item in data.ItemDetails)
             {
-                data = DateTime.TryParse(search, out var searchDate)
-                    ? data.Where(x => x.StartDate == searchDate || x.EndDate == searchDate)
-                    : data.Where(x =>
-                        x.Code.Contains(search) || x.Name.Contains(search));
-            }
-
-            return data.ToDataSourceResult(skip, take, filter, sort);
-        }
-
-        public IEnumerable<PromoDetail> GetDetailData(string code)
-        {
-            return Db.PromoDetails.Where(x => x.Code == code).OrderBy(x => x.LineNo);
-        }
-        public IEnumerable<PromoDetailMultipleItem> GetMultipleItemsData()
-        {
-            return Db.PromoDetailMultipleItems.ToList();
-        }
-
-        public IEnumerable<PromoDetailTier> GetDetailTierData()
-        {
-            return Db.PromoDetailTiers.ToList();
-        }
-
-        public IEnumerable<PromoSubject> GetSubjectData(string code)
-        {
-            return Db.PromoSubjects.Where(x => x.Code == code);
-        }
-
-        public SaveResult Insert(PromoRequest data)
-        {
-            var result = new SaveResult(false);
-
-            using var transaction = Db.Database.BeginTransaction();
-            try
-            {
-                // Insert header data
-                var newCode = GetNewCode("PROMO_NUM_FMT", DateTime.Now);
-
-                data.Code = newCode;
-                Db.PromoHeaders.Add(data);
-
-                // Insert detail data
-                short i = 0;
-                foreach (var item in data.ItemDetails)
+                if (item.ApplyTo == 4 && item.MultipleItem.Count() < 2)
                 {
-                    if (item.ApplyTo == 4 && item.MultipleItem.Count() < 2)
-                    {
-                        result.Message = @"Penambahan data gagal karena terdapat
+                    result.Message = @"Penambahan data gagal karena terdapat
                                         detail promo dengan tipe beberapa barang
                                         dengan barang kurang dari 2.";
-                        return result;
+                    return result;
+                }
+
+                var newItem = new PromoDetail
+                {
+                    Code = data.Code,
+                    LineNo = ++i,
+                    ApplyTo = item.ApplyTo,
+                    ItemId = item.ItemId,
+                    PromoType = item.PromoType,
+                    IsPercentage = item.IsPercentage,
+                    ValuePercentage = item.ValuePercentage,
+                    ValueAmount = item.ValueAmount,
+                    IsPromoWithBudget = item.IsPromoWithBudget,
+                    BudgetMaximumValue = item.BudgetMaximumValue,
+                    OverBudgetAction = item.OverBudgetAction
+                };
+
+                Db.PromoDetails.Add(newItem);
+
+                Db.SaveChanges();
+
+                var idNewItem = newItem.Id;
+
+                if (item.MultipleItem.Count() > 1)
+                {
+                    foreach (var mItem in item.MultipleItem)
+                    {
+                        Db.PromoDetailMultipleItems.Add(new PromoDetailMultipleItem
+                        {
+                            PromoDetailId = idNewItem,
+                            ItemId = mItem.ItemId
+                        });
+                    }
+                }
+
+                if (item.PromoTierList.Any())
+                {
+                    foreach (var tItem in item.PromoTierList)
+                    {
+                        Db.PromoDetailTiers.Add(new PromoDetailTier
+                        {
+                            PromoDetailId = idNewItem,
+                            FromQty = tItem.FromQty,
+                            ToQty = tItem.ToQty,
+                            IsPercentage = item.IsPercentage,
+                            Value = tItem.Value,
+                            SaleUnit = item.SaleUnit,
+                            ApplyToAllUnit = item.ApplyToAllUnit,
+                            FreeGoodItemId = item.FreeGoodItemId,
+                            UnitFreeGood = item.UnitFreeGood,
+                            IsMultiple = item.IsMultiple,
+                            PaymentTermId = tItem.PaymentTermId
+                        });
+                    }
+                }
+            }
+
+            if (data.ApplyTo != 1)
+            {
+                foreach (var item in data.SubjectDetails)
+                {
+                    PromoSubject newSubject = new();
+
+                    if (data.ApplyTo == 2)
+                    {
+                        newSubject.Code = newCode;
+                        newSubject.CustCode = item.Subject;
+                    }
+                    else
+                    {
+                        newSubject.Code = newCode;
+                        newSubject.CustTypeId = Convert.ToInt32(item.Subject);
                     }
 
+                    Db.PromoSubjects.Add(newSubject);
+                }
+            }
+
+            // Save changes
+            Db.SaveChanges();
+
+            transaction.Commit();
+        }
+        catch (Exception ex)
+        {
+            result.Message = ex.InnerException?.Message ?? ex.Message;
+            return result;
+        }
+
+        result.Success = true;
+        result.Data = data.Code;
+        result.Message = "Data promo berhasil disimpan.";
+        return result;
+    }
+
+    public SaveResult Update(PromoRequest data)
+    {
+        var result = new SaveResult(false);
+
+        using var transaction = Db.Database.BeginTransaction();
+        try
+        {
+            if (Db.PromoHeaders.Any(x => x.Code == data.Code && x.Mark == "V"))
+            {
+                result.Message = "Data promo tidak bisa diubah karena data sudah ditandai sebagai void.";
+                return result;
+            }
+
+            data.ApprovedBy = null;
+            data.ApprovedDate = null;
+
+            Db.PromoHeaders.Update(data);
+            Db.Entry(data).Property(e => e.Code).IsModified = false;
+            Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
+            Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
+
+            var delDetails = Db.PromoDetails
+                .Where(d => d.Code == data.Code && !data.ItemDetails.Select(x => x.Id).Contains(d.Id))
+                .ToList();
+
+            var delTierDetails = Db.PromoDetailTiers
+                .Where(d => delDetails.Select(x => x.Id).Contains(d.PromoDetailId))
+                .ToList();
+
+            Db.PromoDetailTiers.RemoveRange(delTierDetails);
+
+            var delMultiItem = Db.PromoDetailMultipleItems
+                .Where(d => delDetails.Select(x => x.Id).Contains(d.PromoDetailId))
+                .ToList();
+
+            Db.PromoDetailMultipleItems.RemoveRange(delMultiItem);
+
+            Db.PromoDetails.RemoveRange(delDetails);
+
+            var delSubject = Db.PromoSubjects
+                .Where(d => d.Code == data.Code && !data.SubjectDetails.Select(x => x.Id).Contains(d.Id))
+                .ToList();
+
+            Db.PromoSubjects.RemoveRange(delSubject);
+
+            short i = 0;
+            foreach (var item in data.ItemDetails)
+            {
+                if (item.ApplyTo == 4 && item.MultipleItem.Count() < 2)
+                {
+                    result.Message = @"Penambahan data gagal karena terdapat
+                                        detail promo dengan tipe beberapa barang
+                                        dengan barang kurang dari 2.";
+                    return result;
+                }
+
+                var delTierDetailsData = Db.PromoDetailTiers
+                    .Where(d => d.PromoDetailId == item.Id && !item.PromoTierList.Select(x => x.Id).Contains(d.Id))
+                    .ToList();
+
+                Db.PromoDetailTiers.RemoveRange(delTierDetailsData);
+                long idDetail = 0;
+                if (item.Id < 0)
+                {
                     var newItem = new PromoDetail
                     {
                         Code = data.Code,
@@ -94,27 +251,44 @@ namespace ERP.Web.API.Domain.Services.Sales
 
                     Db.SaveChanges();
 
-                    var idNewItem = newItem.Id;
+                    idDetail = newItem.Id;
+                }
+                else
+                {
+                    item.LineNo = ++i;
 
-                    if (item.MultipleItem.Count() > 1)
+                    Db.PromoDetails.Update(item);
+                    Db.Entry(item).Property(e => e.Code).IsModified = false;
+
+                    idDetail = item.Id;
+                }
+
+                var delMultiItemData = Db.PromoDetailMultipleItems
+                    .Where(d => d.PromoDetailId == item.Id && !item.MultipleItem.Select(x => x.Id).Contains(d.Id))
+                    .ToList();
+
+                Db.PromoDetailMultipleItems.RemoveRange(delMultiItemData);
+                if (item.MultipleItem.Count() > 1)
+                {
+                    foreach (var mItem in item.MultipleItem)
                     {
-                        foreach (var mItem in item.MultipleItem)
+                        Db.PromoDetailMultipleItems.Add(new PromoDetailMultipleItem
                         {
-                            Db.PromoDetailMultipleItems.Add(new PromoDetailMultipleItem
-                            {
-                                PromoDetailId = idNewItem,
-                                ItemId = mItem.ItemId
-                            });
-                        }
+                            PromoDetailId = idDetail,
+                            ItemId = mItem.ItemId
+                        });
                     }
+                }
 
-                    if (item.PromoTierList.Any())
+                if (item.PromoTierList.Any())
+                {
+                    foreach (var tItem in item.PromoTierList)
                     {
-                        foreach (var tItem in item.PromoTierList)
+                        if (tItem.Id < 0)
                         {
                             Db.PromoDetailTiers.Add(new PromoDetailTier
                             {
-                                PromoDetailId = idNewItem,
+                                PromoDetailId = idDetail,
                                 FromQty = tItem.FromQty,
                                 ToQty = tItem.ToQty,
                                 IsPercentage = item.IsPercentage,
@@ -127,352 +301,177 @@ namespace ERP.Web.API.Domain.Services.Sales
                                 PaymentTermId = tItem.PaymentTermId
                             });
                         }
+                        else
+                        {
+                            var trItem = Db.PromoDetailTiers.FirstOrDefault(x => x.Id == tItem.Id);
+                            trItem.FromQty = tItem.FromQty;
+                            trItem.ToQty = tItem.ToQty;
+                            trItem.IsPercentage = tItem.IsPercentage;
+                            trItem.Value = tItem.Value;
+                            trItem.SaleUnit = tItem.SaleUnit;
+                            trItem.ApplyToAllUnit = tItem.ApplyToAllUnit;
+                            trItem.FreeGoodItemId = tItem.FreeGoodItemId;
+                            trItem.UnitFreeGood = tItem.UnitFreeGood;
+                            trItem.IsMultiple = tItem.IsMultiple;
+                            trItem.PaymentTermId = tItem.PaymentTermId;
+
+                            Db.PromoDetailTiers.Update(trItem);
+                        }
                     }
                 }
+            }
 
-                if (data.ApplyTo != 1)
+            if (data.ApplyTo != 1)
+            {
+                foreach (var item in data.SubjectDetails)
                 {
-                    foreach (var item in data.SubjectDetails)
+                    if (data.ApplyTo == 2)
                     {
-                        PromoSubject newSubject = new();
-
-                        if (data.ApplyTo == 2)
+                        if (item.Id < 0)
                         {
-                            newSubject.Code = newCode;
-                            newSubject.CustCode = item.Subject;
+                            Db.PromoSubjects.Add(new PromoSubject
+                            {
+                                Code = data.Code,
+                                CustCode = item.Subject
+                            });
                         }
                         else
                         {
-                            newSubject.Code = newCode;
-                            newSubject.CustTypeId = Convert.ToInt32(item.Subject);
+                            item.CustCode = item.Subject;
+                            Db.PromoSubjects.Update(item);
                         }
-
-                        Db.PromoSubjects.Add(newSubject);
-                    }
-                }
-
-                // Save changes
-                Db.SaveChanges();
-
-                transaction.Commit();
-            }
-            catch (Exception ex)
-            {
-                result.Message = ex.InnerException?.Message ?? ex.Message;
-                return result;
-            }
-
-            result.Success = true;
-            result.Data = data.Code;
-            result.Message = "Data promo berhasil disimpan.";
-            return result;
-        }
-
-        public SaveResult Update(PromoRequest data)
-        {
-            var result = new SaveResult(false);
-
-            using var transaction = Db.Database.BeginTransaction();
-            try
-            {
-                if (Db.PromoHeaders.Any(x => x.Code == data.Code && x.Mark == "V"))
-                {
-                    result.Message = "Data promo tidak bisa diubah karena data sudah ditandai sebagai void.";
-                    return result;
-                }
-
-                data.ApprovedBy = null;
-                data.ApprovedDate = null;
-
-                Db.PromoHeaders.Update(data);
-                Db.Entry(data).Property(e => e.Code).IsModified = false;
-                Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
-                Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
-
-                var delDetails = Db.PromoDetails
-                    .Where(d => d.Code == data.Code && !data.ItemDetails.Select(x => x.Id).Contains(d.Id))
-                    .ToList();
-
-                var delTierDetails = Db.PromoDetailTiers
-                        .Where(d => delDetails.Select(x => x.Id).Contains(d.PromoDetailId))
-                        .ToList();
-
-                Db.PromoDetailTiers.RemoveRange(delTierDetails);
-
-                var delMultiItem = Db.PromoDetailMultipleItems
-                         .Where(d => delDetails.Select(x => x.Id).Contains(d.PromoDetailId))
-                         .ToList();
-
-                Db.PromoDetailMultipleItems.RemoveRange(delMultiItem);
-
-                Db.PromoDetails.RemoveRange(delDetails);
-
-                var delSubject = Db.PromoSubjects
-                    .Where(d => d.Code == data.Code && !data.SubjectDetails.Select(x => x.Id).Contains(d.Id))
-                    .ToList();
-
-                Db.PromoSubjects.RemoveRange(delSubject);
-
-                short i = 0;
-                foreach (var item in data.ItemDetails)
-                {
-                    if (item.ApplyTo == 4 && item.MultipleItem.Count() < 2)
-                    {
-                        result.Message = @"Penambahan data gagal karena terdapat
-                                        detail promo dengan tipe beberapa barang
-                                        dengan barang kurang dari 2.";
-                        return result;
-                    }
-
-                    var delTierDetailsData = Db.PromoDetailTiers
-                            .Where(d => d.PromoDetailId == item.Id && !item.PromoTierList.Select(x => x.Id).Contains(d.Id))
-                            .ToList();
-
-                    Db.PromoDetailTiers.RemoveRange(delTierDetailsData);
-                    long idDetail = 0;
-                    if (item.Id < 0)
-                    {
-                        var newItem = new PromoDetail
-                        {
-                            Code = data.Code,
-                            LineNo = ++i,
-                            ApplyTo = item.ApplyTo,
-                            ItemId = item.ItemId,
-                            PromoType = item.PromoType,
-                            IsPercentage = item.IsPercentage,
-                            ValuePercentage = item.ValuePercentage,
-                            ValueAmount = item.ValueAmount,
-                            IsPromoWithBudget = item.IsPromoWithBudget,
-                            BudgetMaximumValue = item.BudgetMaximumValue,
-                            OverBudgetAction = item.OverBudgetAction
-                        };
-
-                        Db.PromoDetails.Add(newItem);
-
-                        Db.SaveChanges();
-
-                        idDetail = newItem.Id;
                     }
                     else
                     {
-                        item.LineNo = ++i;
-
-                        Db.PromoDetails.Update(item);
-                        Db.Entry(item).Property(e => e.Code).IsModified = false;
-
-                        idDetail = item.Id;
-                    }
-
-                    var delMultiItemData = Db.PromoDetailMultipleItems
-                            .Where(d => d.PromoDetailId == item.Id && !item.MultipleItem.Select(x => x.Id).Contains(d.Id))
-                            .ToList();
-
-                    Db.PromoDetailMultipleItems.RemoveRange(delMultiItemData);
-                    if (item.MultipleItem.Count() > 1)
-                    {
-                        foreach (var mItem in item.MultipleItem)
+                        if (item.Id < 0)
                         {
-                            Db.PromoDetailMultipleItems.Add(new PromoDetailMultipleItem
+                            Db.PromoSubjects.Add(new PromoSubject
                             {
-                                PromoDetailId = idDetail,
-                                ItemId = mItem.ItemId
+                                Code = data.Code,
+                                CustTypeId = Convert.ToInt32(item.Subject)
                             });
-                        }
-                    }
-
-                    if (item.PromoTierList.Any())
-                    {
-                        foreach (var tItem in item.PromoTierList)
-                        {
-                            if (tItem.Id < 0)
-                            {
-                                Db.PromoDetailTiers.Add(new PromoDetailTier
-                                {
-                                    PromoDetailId = idDetail,
-                                    FromQty = tItem.FromQty,
-                                    ToQty = tItem.ToQty,
-                                    IsPercentage = item.IsPercentage,
-                                    Value = tItem.Value,
-                                    SaleUnit = item.SaleUnit,
-                                    ApplyToAllUnit = item.ApplyToAllUnit,
-                                    FreeGoodItemId = item.FreeGoodItemId,
-                                    UnitFreeGood = item.UnitFreeGood,
-                                    IsMultiple = item.IsMultiple,
-                                    PaymentTermId = tItem.PaymentTermId
-                                });
-                            }
-                            else
-                            {
-                                var trItem = Db.PromoDetailTiers.FirstOrDefault(x => x.Id == tItem.Id);
-                                trItem.FromQty = tItem.FromQty;
-                                trItem.ToQty = tItem.ToQty;
-                                trItem.IsPercentage = tItem.IsPercentage;
-                                trItem.Value = tItem.Value;
-                                trItem.SaleUnit = tItem.SaleUnit;
-                                trItem.ApplyToAllUnit = tItem.ApplyToAllUnit;
-                                trItem.FreeGoodItemId = tItem.FreeGoodItemId;
-                                trItem.UnitFreeGood = tItem.UnitFreeGood;
-                                trItem.IsMultiple = tItem.IsMultiple;
-                                trItem.PaymentTermId = tItem.PaymentTermId;
-
-                                Db.PromoDetailTiers.Update(trItem);
-                            }
-                        }
-                    }
-                }
-
-                if (data.ApplyTo != 1)
-                {
-                    foreach (var item in data.SubjectDetails)
-                    {
-                        if (data.ApplyTo == 2)
-                        {
-                            if (item.Id < 0)
-                            {
-                                Db.PromoSubjects.Add(new PromoSubject
-                                {
-                                    Code = data.Code,
-                                    CustCode = item.Subject
-                                });
-                            }
-                            else
-                            {
-                                item.CustCode = item.Subject;
-                                Db.PromoSubjects.Update(item);
-                            }
                         }
                         else
                         {
-                            if (item.Id < 0)
-                            {
-                                Db.PromoSubjects.Add(new PromoSubject
-                                {
-                                    Code = data.Code,
-                                    CustTypeId = Convert.ToInt32(item.Subject)
-                                });
-                            }
-                            else
-                            {
-                                item.CustTypeId = Convert.ToInt32(item.Subject);
-                                Db.PromoSubjects.Update(item);
-                            }
+                            item.CustTypeId = Convert.ToInt32(item.Subject);
+                            Db.PromoSubjects.Update(item);
                         }
                     }
                 }
-
-                // Save changes
-                Db.SaveChanges();
-
-                transaction.Commit();
-
             }
-            catch (Exception ex)
+
+            // Save changes
+            Db.SaveChanges();
+
+            transaction.Commit();
+
+        }
+        catch (Exception ex)
+        {
+            result.Message = ex.InnerException?.Message ?? ex.Message;
+            return result;
+        }
+
+        result.Success = true;
+        result.Data = data.Code;
+        result.Message = "Data promo berhasil diperbarui.";
+        return result;
+    }
+
+    public SaveResult Delete(string code, int userId)
+    {
+        var result = new SaveResult(false);
+
+        var data = Db.PromoHeaders.Find(code);
+        if (data != null)
+        {
+            // Checking mark header data
+            if (data.Mark == "V")
             {
-                result.Message = ex.InnerException?.Message ?? ex.Message;
+                result.Message = "Data promo tidak bisa ditandai sebagai void karena sudah ditandai sebagai void.";
                 return result;
             }
 
-            result.Success = true;
-            result.Data = data.Code;
-            result.Message = "Data promo berhasil diperbarui.";
-            return result;
+            // Update header data
+            data.Mark = "V";
+            data.UpdatedBy = userId;
+            data.UpdatedDate = DateTime.Now;
+
+            Db.SaveChanges();
         }
 
-        public SaveResult Delete(string code, int userId)
-        {
-            var result = new SaveResult(false);
+        result.Success = true;
+        result.Message = "Data promo berhasil ditandai sebagai void.";
+        return result;
+    }
 
-            var data = Db.PromoHeaders.Find(code);
-            if (data != null)
-            {
-                // Checking mark header data
-                if (data.Mark == "V")
-                {
-                    result.Message = "Data promo tidak bisa ditandai sebagai void karena sudah ditandai sebagai void.";
-                    return result;
-                }
+    public IEnumerable<object> GetListPromo(string code)
+    {
+        var result = new List<object>();
 
-                // Update header data
-                data.Mark = "V";
-                data.UpdatedBy = userId;
-                data.UpdatedDate = DateTime.Now;
-
-                Db.SaveChanges();
-            }
-
-            result.Success = true;
-            result.Message = "Data promo berhasil ditandai sebagai void.";
-            return result;
-        }
-
-        public IEnumerable<object> GetListPromo(string code)
-        {
-            var result = new List<object>();
-
-            var data = (from d in Db.SalesOrderDetailDiscounts
-                        where d.Code == code
-                        group d by new { d.Code, d.PromoCode } into dt
-                        select new { dt.Key.Code, dt.Key.PromoCode }).Union(
-                        from f in Db.SalesOrderDetailFreeGoods
-                        where f.Code == code
-                        group f by new { f.Code, f.PromoCode } into ft
-                        select new { ft.Key.Code, ft.Key.PromoCode })
-                        .Distinct()
-                        .ToList();
+        var data = (from d in Db.SalesOrderDetailDiscounts
+                where d.Code == code
+                group d by new { d.Code, d.PromoCode } into dt
+                select new { dt.Key.Code, dt.Key.PromoCode }).Union(
+                from f in Db.SalesOrderDetailFreeGoods
+                where f.Code == code
+                group f by new { f.Code, f.PromoCode } into ft
+                select new { ft.Key.Code, ft.Key.PromoCode })
+            .Distinct()
+            .ToList();
             
-            if (data.Any())
+        if (data.Any())
+        {
+            foreach (var item in data)
             {
-                foreach (var item in data)
+                var promoData = Db.PromoHeaders.FirstOrDefault(x => x.Code == item.PromoCode);
+                if (promoData != null)
                 {
-                    var promoData = Db.PromoHeaders.FirstOrDefault(x => x.Code == item.PromoCode);
-                    if (promoData != null)
-                    {
-                        var tierData = GetDetailTierData();
-                        var detailData = GetDetailData(promoData.Code)
-                            .Select(x => new
-                            {
-                                x.Id,
-                                x.ApplyTo,
-                                x.ItemId,
-                                x.PromoType,
-                                x.IsPercentage,
-                                x.ValuePercentage,
-                                x.ValueAmount,
-                                x.IsPromoWithBudget,
-                                x.BudgetMaximumValue,
-                                x.OverBudgetAction,
-                                PromoTierList = tierData.Where(y => y.PromoDetailId == x.Id)
-                            }).ToList<dynamic>();
-
-                        var subjectData = GetSubjectData(promoData.Code).ToList<dynamic>();
-
-                        var nObj = new
+                    var tierData = GetDetailTierData();
+                    var detailData = GetDetailData(promoData.Code)
+                        .Select(x => new
                         {
-                            promoData.ApplyTo,
-                            promoData.ApprovedBy,
-                            promoData.ApprovedDate,
-                            promoData.CoaCost,
-                            promoData.Code,
-                            promoData.Content,
-                            promoData.CreatedBy,
-                            promoData.CreatedDate,
-                            promoData.EndDate,
-                            promoData.Mark,
-                            promoData.Name,
-                            promoData.StartDate,
-                            promoData.UpdatedBy,
-                            promoData.UpdatedDate,
-                            itemDetails = detailData,
-                            subject = subjectData,
-                            usePromo = true
-                        };
+                            x.Id,
+                            x.ApplyTo,
+                            x.ItemId,
+                            x.PromoType,
+                            x.IsPercentage,
+                            x.ValuePercentage,
+                            x.ValueAmount,
+                            x.IsPromoWithBudget,
+                            x.BudgetMaximumValue,
+                            x.OverBudgetAction,
+                            PromoTierList = tierData.Where(y => y.PromoDetailId == x.Id)
+                        }).ToList<dynamic>();
 
-                        result.Add(nObj);
-                    }
+                    var subjectData = GetSubjectData(promoData.Code).ToList<dynamic>();
+
+                    var nObj = new
+                    {
+                        promoData.ApplyTo,
+                        promoData.ApprovedBy,
+                        promoData.ApprovedDate,
+                        promoData.CoaCost,
+                        promoData.Code,
+                        promoData.Content,
+                        promoData.CreatedBy,
+                        promoData.CreatedDate,
+                        promoData.EndDate,
+                        promoData.Mark,
+                        promoData.Name,
+                        promoData.StartDate,
+                        promoData.UpdatedBy,
+                        promoData.UpdatedDate,
+                        itemDetails = detailData,
+                        subject = subjectData,
+                        usePromo = true
+                    };
+
+                    result.Add(nObj);
                 }
             }
-
-            return result;
         }
+
+        return result;
     }
 }

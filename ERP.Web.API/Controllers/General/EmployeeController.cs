@@ -10,179 +10,178 @@ using ERP.Web.API.Model;
 using ERP.Web.API.Model.General;
 using Newtonsoft.Json;
 
-namespace ERP.Web.API.Controllers.General
+namespace ERP.Web.API.Controllers.General;
+
+[Route("[controller]")]
+[ApiController]
+public class EmployeeController : ControllerBase
 {
-    [Route("[controller]")]
-    [ApiController]
-    public class EmployeeController : ControllerBase
+    private readonly IEmployeeService _employee;
+    private readonly ISalesmanService _salesman;
+    private readonly IClaimService _claim;
+    private readonly IAuthService _auth;
+
+    private const int MenuId = (int)Menu.Employee;
+
+    public EmployeeController(IEmployeeService employee, ISalesmanService salesman,
+        IClaimService claim, IAuthService auth)
     {
-        private readonly IEmployeeService _employee;
-        private readonly ISalesmanService _salesman;
-        private readonly IClaimService _claim;
-        private readonly IAuthService _auth;
+        _employee = employee;
+        _salesman = salesman;
+        _claim = claim;
+        _auth = auth;
+    }
 
-        private const int MenuId = (int)Menu.Employee;
+    [HttpGet]
+    public IActionResult GetData(string search, string filters, string sorts, int skip, int take)
+    {
+        var data =
+            _employee.GetData(
+                skip, take,
+                JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
+                search);
 
-        public EmployeeController(IEmployeeService employee, ISalesmanService salesman,
-            IClaimService claim, IAuthService auth)
+        return Ok(new ApiResponse
         {
-            _employee = employee;
-            _salesman = salesman;
-            _claim = claim;
-            _auth = auth;
-        }
+            RowCount = data.Total,
+            TableData = data.Data.ToDynamicList()
+        });
+    }
 
-        [HttpGet]
-        public IActionResult GetData(string search, string filters, string sorts, int skip, int take)
-        {
-            var data =
-                _employee.GetData(
-                    skip, take,
-                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
-                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
-                    search);
-
-            return Ok(new ApiResponse
-            {
-                RowCount = data.Total,
-                TableData = data.Data.ToDynamicList()
-            });
-        }
-
-        [HttpGet("lists")]
-        public IActionResult GetList(string filters, string sorts) 
-        {
-            var data =
-                _employee.GetLists(
+    [HttpGet("lists")]
+    public IActionResult GetList(string filters, string sorts) 
+    {
+        var data =
+            _employee.GetLists(
                     JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
                     JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]")).Data
-                    .ToDynamicList()
-                    .Select(x => new
-                    {
-                        x.Id, x.Initial, x.FirstName, x.LastName, x.WarehouseCode
-                    })
-                    .ToList<dynamic>();
-
-            return Ok(new ApiResponse
-            {
-                RowCount = data.Count,
-                TableData = data
-            });
-        }
-
-        [HttpGet("un-lists")]
-        public IActionResult GetUnList(long? id)
-        {
-            var data = _employee.GetUnUsedList(id)
+                .ToDynamicList()
                 .Select(x => new
                 {
-                    x.Id,
-                    x.Initial,
-                    x.FirstName
+                    x.Id, x.Initial, x.FirstName, x.LastName, x.WarehouseCode
                 })
                 .ToList<dynamic>();
 
-            return Ok(new ApiResponse
+        return Ok(new ApiResponse
+        {
+            RowCount = data.Count,
+            TableData = data
+        });
+    }
+
+    [HttpGet("un-lists")]
+    public IActionResult GetUnList(long? id)
+    {
+        var data = _employee.GetUnUsedList(id)
+            .Select(x => new
             {
-                RowCount = data.Count,
-                TableData = data
-            });
-        }
+                x.Id,
+                x.Initial,
+                x.FirstName
+            })
+            .ToList<dynamic>();
 
-        [HttpGet("salesman-schedule")]
-        public IActionResult GetEmployeeSchedule(string groupId, string startDate, string recurrence, string visitDay)
+        return Ok(new ApiResponse
         {
-            var data =
-                _salesman.GetSalesmanSchedule(groupId, startDate, recurrence, visitDay).ToList<dynamic>();
+            RowCount = data.Count,
+            TableData = data
+        });
+    }
 
-            return Ok(new ApiResponse
-            {
-                RowCount = data.Count,
-                TableData = data
-            });
-        }
+    [HttpGet("salesman-schedule")]
+    public IActionResult GetEmployeeSchedule(string groupId, string startDate, string recurrence, string visitDay)
+    {
+        var data =
+            _salesman.GetSalesmanSchedule(groupId, startDate, recurrence, visitDay).ToList<dynamic>();
 
-        [HttpGet("salesman-schedule-by-id")]
-        public IActionResult GetEmployeeSchedule(long id)
+        return Ok(new ApiResponse
         {
-            var data =
-                _salesman.GetSalesmanSchedule(id).ToList<dynamic>();
+            RowCount = data.Count,
+            TableData = data
+        });
+    }
 
-            return Ok(new ApiResponse
-            {
-                RowCount = data.Count,
-                TableData = data
-            });
-        }
+    [HttpGet("salesman-schedule-by-id")]
+    public IActionResult GetEmployeeSchedule(long id)
+    {
+        var data =
+            _salesman.GetSalesmanSchedule(id).ToList<dynamic>();
 
-        [HttpGet("salesman-schedule-by-id-with-date")]
-        public IActionResult GetEmployeeScheduleWithDate(long id, string date)
+        return Ok(new ApiResponse
         {
-            var data =
-                _salesman.GetSalesmanScheduleWithDate(id, date).ToList<dynamic>();
+            RowCount = data.Count,
+            TableData = data
+        });
+    }
 
-            return Ok(new ApiResponse
-            {
-                RowCount = data.Count,
-                TableData = data
-            });
-        }
+    [HttpGet("salesman-schedule-by-id-with-date")]
+    public IActionResult GetEmployeeScheduleWithDate(long id, string date)
+    {
+        var data =
+            _salesman.GetSalesmanScheduleWithDate(id, date).ToList<dynamic>();
 
-        [HttpGet("salesman-schedule-customer")]
-        public IActionResult GetEmployeeScheduleDetailData(string ids)
+        return Ok(new ApiResponse
         {
-            var data = _salesman.GetSalesmanScheduleDetailData(JsonConvert.DeserializeObject<List<long>>(!string.IsNullOrWhiteSpace(ids) ? ids : "[]")).ToList<dynamic>();
+            RowCount = data.Count,
+            TableData = data
+        });
+    }
 
-            return Ok(new ApiResponse
-            {
-                RowCount = data.Count,
-                TableData = data
-            });
-        }
+    [HttpGet("salesman-schedule-customer")]
+    public IActionResult GetEmployeeScheduleDetailData(string ids)
+    {
+        var data = _salesman.GetSalesmanScheduleDetailData(JsonConvert.DeserializeObject<List<long>>(!string.IsNullOrWhiteSpace(ids) ? ids : "[]")).ToList<dynamic>();
 
-        [HttpPost]
-        public IActionResult OnPost(EmployeeRequest data)
+        return Ok(new ApiResponse
         {
-            // Checking role authorization
-            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Insert }).Any())
-                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            RowCount = data.Count,
+            TableData = data
+        });
+    }
 
-            data.IsActive = true;
-            data.CreatedBy = _claim.UserId;
-            data.CreatedDate = DateTime.Now;
-            data.UpdatedBy = data.CreatedBy;
-            data.UpdatedDate = data.CreatedDate;
+    [HttpPost]
+    public IActionResult OnPost(EmployeeRequest data)
+    {
+        // Checking role authorization
+        if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Insert }).Any())
+            return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
-            var result = _employee.Insert(data);
+        data.IsActive = true;
+        data.CreatedBy = _claim.UserId;
+        data.CreatedDate = DateTime.Now;
+        data.UpdatedBy = data.CreatedBy;
+        data.UpdatedDate = data.CreatedDate;
 
-            return Ok(result);
-        }
+        var result = _employee.Insert(data);
 
-        [HttpPut("{id}")]
-        public IActionResult OnPut(string id, EmployeeRequest data)
-        {
-            // Checking role authorization
-            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
-                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+        return Ok(result);
+    }
 
-            data.UpdatedBy = _claim.UserId;
-            data.UpdatedDate = DateTime.Now;
+    [HttpPut("{id}")]
+    public IActionResult OnPut(string id, EmployeeRequest data)
+    {
+        // Checking role authorization
+        if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
+            return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
-            var result = _employee.Update(data);
+        data.UpdatedBy = _claim.UserId;
+        data.UpdatedDate = DateTime.Now;
 
-            return Ok(result);
-        }
+        var result = _employee.Update(data);
 
-        [HttpDelete("{id}")]
-        public IActionResult OnDelete(long id)
-        {
-            // Checking role authorization
-            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Delete }).Any())
-                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+        return Ok(result);
+    }
 
-            var result = _employee.Delete(id, _claim.UserId);
+    [HttpDelete("{id}")]
+    public IActionResult OnDelete(long id)
+    {
+        // Checking role authorization
+        if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Delete }).Any())
+            return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
-            return Ok(result);
-        }
+        var result = _employee.Delete(id, _claim.UserId);
+
+        return Ok(result);
     }
 }

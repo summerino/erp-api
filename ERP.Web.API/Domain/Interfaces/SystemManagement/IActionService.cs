@@ -1,7 +1,6 @@
-﻿namespace ERP.Web.API.Domain.Interfaces.SystemManagement
+﻿namespace ERP.Web.API.Domain.Interfaces.SystemManagement;
+
+public interface IActionService
 {
-    public interface IActionService
-    {
-        IEnumerable<Entity.SystemManagement.Action> GetData();
-    }
+    IEnumerable<Entity.SystemManagement.Action> GetData();
 }

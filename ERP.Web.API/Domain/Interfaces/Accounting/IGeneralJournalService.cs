@@ -3,19 +3,18 @@ using ERP.Common;
 using ERP.Common.Models;
 using ERP.Entity.Accounting;
 
-namespace ERP.Web.API.Domain.Interfaces.Accounting
+namespace ERP.Web.API.Domain.Interfaces.Accounting;
+
+public interface IGeneralJournalService : IGeneralService<GeneralJournalHeader>
 {
-    public interface IGeneralJournalService : IGeneralService<GeneralJournalHeader>
-    {
-        DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
-           string search);
+    DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
+        string search);
 
-        IEnumerable<GeneralJournalDetail> GetDetailData(string code);
+    IEnumerable<GeneralJournalDetail> GetDetailData(string code);
 
-        SaveResult Insert(GeneralJournalRequest data);
+    SaveResult Insert(GeneralJournalRequest data);
 
-        SaveResult Update(GeneralJournalRequest data);
+    SaveResult Update(GeneralJournalRequest data);
 
-        SaveResult Delete(string code, int userId);
-    }
+    SaveResult Delete(string code, int userId);
 }

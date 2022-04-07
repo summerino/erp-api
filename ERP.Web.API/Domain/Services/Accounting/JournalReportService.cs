@@ -4,48 +4,48 @@ using ERP.Entity.SQLQuery;
 using ERP.Web.API.Domain.Interfaces.Accounting;
 using Microsoft.EntityFrameworkCore;
 
-namespace ERP.Web.API.Domain.Services.Accounting
+namespace ERP.Web.API.Domain.Services.Accounting;
+
+public class JournalReportService : IJournalReportService
 {
-    public class JournalReportService : IJournalReportService
+    private readonly TenantContext _db; 
+    public JournalReportService(TenantContext db)
     {
-        private readonly TenantContext _db; 
-        public JournalReportService(TenantContext db)
-        {
-            _db = db;
-        }
-        public IEnumerable<ReportJournalResult> GetLists(string rptBy, string dateFrom, string dateTo,
-            string vouFrom, string rptDet, string src, string coaCode, string sort)
-        {
-            string cteName = "cte_jur_src_final", detFilter = "";
+        _db = db;
+    }
+    public IEnumerable<ReportJournalResult> GetLists(string rptBy, string dateFrom, string dateTo,
+        string vouFrom, string rptDet, string src, string coaCode, string sort)
+    {
+        string cteName = "cte_jur_src_final", detFilter = "";
 
-            if (rptBy.ToUpper() == "N" || rptBy.ToUpper() == "DT")
+        if (rptBy.ToUpper() == "N" || rptBy.ToUpper() == "DT")
+        {
+            string wh = "";
+
+            if (rptBy.ToUpper() == "N")
+                dateFrom = dateTo = null;
+
+            //if (rptBy.ToUpper() == "DT")
+            //    vouFrom = null;
+
+            if (!string.IsNullOrEmpty(vouFrom))
             {
-                string wh = "";
-
-                if (rptBy.ToUpper() == "N")
-                    dateFrom = dateTo = null;
-
-                //if (rptBy.ToUpper() == "DT")
-                //    vouFrom = null;
-
-                if (!string.IsNullOrEmpty(vouFrom))
-                {
-                    wh += (rptBy.ToUpper() == "N")
+                wh += (rptBy.ToUpper() == "N")
                     ? $"WHERE Code LIKE '{vouFrom.Replace("'", "''")}%'"
                     : $"WHERE Code = '{vouFrom.Replace("'", "''")}'";
-                }
+            }
 
-                cteName = "cte_det_filter_c";
-                detFilter = $@"
+            cteName = "cte_det_filter_c";
+            detFilter = $@"
                     ,cte_det_filter_c AS (
                         SELECT *
                         FROM cte_jur_src_final {wh}
                     )";
 
-                if (rptDet.ToUpper() == "CR")
-                {
-                    cteName = "cte_det_filter_cr";
-                    detFilter += $@"
+            if (rptDet.ToUpper() == "CR")
+            {
+                cteName = "cte_det_filter_cr";
+                detFilter += $@"
                         ,cte_det_filter_cr AS (
                             SELECT *
                             FROM cte_det_filter_c
@@ -70,17 +70,16 @@ namespace ERP.Web.API.Domain.Services.Accounting
                                 WHERE TBB.Code = TBA.Code
                             )
                         )";
-                }
             }
+        }
 
-            string sortBy = sort?.ToUpper() == "N" ? "Code" : "[Date],Code";
+        string sortBy = sort?.ToUpper() == "N" ? "Code" : "[Date],Code";
 
-            string sql = $@"{SourceJournalQuery.BuildQuery(dateFrom, dateTo, coaCode, null, null, null, src, null)} {detFilter}
+        string sql = $@"{SourceJournalQuery.BuildQuery(dateFrom, dateTo, coaCode, null, null, null, src, null)} {detFilter}
                 SELECT *
                 FROM {cteName}
                 ORDER BY {sortBy},[Group],sort_dc,CoaCode";
 
-            return _db.ReportJournalResults.FromSqlRaw(sql).ToList();
-        }
+        return _db.ReportJournalResults.FromSqlRaw(sql).ToList();
     }
 }

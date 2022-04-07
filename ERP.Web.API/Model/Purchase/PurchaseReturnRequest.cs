@@ -1,13 +1,12 @@
 ﻿using ERP.Entity.Purchase;
 
-namespace ERP.Web.API.Model.Purchase
+namespace ERP.Web.API.Model.Purchase;
+
+public class PurchaseReturnRequest : PurchaseReturnHeader
 {
-    public class PurchaseReturnRequest : PurchaseReturnHeader
-    {
-        public IEnumerable<PurchaseReturnDetail> ItemDetails { get; set; }
+    public IEnumerable<PurchaseReturnDetail> ItemDetails { get; set; }
 
-        public IEnumerable<PurchaseReturnDetailExchDiffItem> DiffItemDetails { get; set; }
+    public IEnumerable<PurchaseReturnDetailExchDiffItem> DiffItemDetails { get; set; }
 
-        public DateTime? OriginalDate { get; set; }
-    }
+    public DateTime? OriginalDate { get; set; }
 }

@@ -3,25 +3,24 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ERP.Web.API.Model;
 
-namespace ERP.Web.API.Controllers
+namespace ERP.Web.API.Controllers;
+
+[AllowAnonymous]
+[Route("[controller]")]
+public class StatusController : Controller
 {
-    [AllowAnonymous]
-    [Route("[controller]")]
-    public class StatusController : Controller
+    public StatusController() { }
+
+    [HttpGet]
+    public async Task<ApiStatus> GetStatus()
     {
-        public StatusController() { }
-
-        [HttpGet]
-        public async Task<ApiStatus> GetStatus()
+        ApiStatus status = await Task.Run(() => new ApiStatus
         {
-            ApiStatus status = await Task.Run(() => new ApiStatus
-            {
-                Status = "Running",
-                Version = Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion,
-                UtcTime = DateTime.UtcNow
-            });
+            Status = "Running",
+            Version = Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion,
+            UtcTime = DateTime.UtcNow
+        });
 
-            return status;
-        } 
-    }
+        return status;
+    } 
 }

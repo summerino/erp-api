@@ -9,108 +9,107 @@ using ERP.Web.API.Domain.Interfaces.Inventory;
 using ERP.Web.API.Model;
 using Newtonsoft.Json;
 
-namespace ERP.Web.API.Controllers.Inventory
+namespace ERP.Web.API.Controllers.Inventory;
+
+[Route("[controller]")]
+[ApiController]
+public class WarehouseController : ControllerBase
 {
-    [Route("[controller]")]
-    [ApiController]
-    public class WarehouseController : ControllerBase
+    private readonly IWarehouseService _warehouse;
+    private readonly IClaimService _claim;
+    private readonly IAuthService _auth;
+
+    private const int MenuId = (int)Menu.Warehouse;
+
+    public WarehouseController(IWarehouseService warehouse, IClaimService claim, IAuthService auth)
     {
-        private readonly IWarehouseService _warehouse;
-        private readonly IClaimService _claim;
-        private readonly IAuthService _auth;
+        _warehouse = warehouse;
+        _claim = claim;
+        _auth = auth;
+    }
 
-        private const int MenuId = (int)Menu.Warehouse;
+    [HttpGet]
+    public IActionResult GetData(string search, string category, string filters, string sorts, int skip, int take)
+    {
+        var data =
+            _warehouse.GetData(
+                skip, take,
+                JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
+                JsonConvert.DeserializeObject<List<int>>(!string.IsNullOrWhiteSpace(category) ? category : "[]"),
+                search);
 
-        public WarehouseController(IWarehouseService warehouse, IClaimService claim, IAuthService auth)
+        return Ok(new ApiResponse
         {
-            _warehouse = warehouse;
-            _claim = claim;
-            _auth = auth;
-        }
+            RowCount = data.Total,
+            TableData = data.Data.ToDynamicList()
+        });
+    }
 
-        [HttpGet]
-        public IActionResult GetData(string search, string category, string filters, string sorts, int skip, int take)
-        {
-            var data =
-                _warehouse.GetData(
-                    skip, take,
-                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
-                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
-                    JsonConvert.DeserializeObject<List<int>>(!string.IsNullOrWhiteSpace(category) ? category : "[]"),
-                    search);
-
-            return Ok(new ApiResponse
-            {
-                RowCount = data.Total,
-                TableData = data.Data.ToDynamicList()
-            });
-        }
-
-        [HttpGet("lists")]
-        public IActionResult GetList(string filters, string sorts) 
-        {
-            var data =
-                _warehouse.GetLists(
+    [HttpGet("lists")]
+    public IActionResult GetList(string filters, string sorts) 
+    {
+        var data =
+            _warehouse.GetLists(
                     JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
                     JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]")).Data
-                    .ToDynamicList()
-                    .Select(x => new
-                    {
-                        x.Code, x.Initial, x.Name, x.IsDefault
-                    })
-                    .ToList<dynamic>();
+                .ToDynamicList()
+                .Select(x => new
+                {
+                    x.Code, x.Initial, x.Name, x.IsDefault
+                })
+                .ToList<dynamic>();
 
-            return Ok(new ApiResponse
-            {
-                RowCount = data.Count,
-                TableData = data
-            });
-        }
-
-        [HttpPost]
-        public IActionResult OnPost(Warehouse data)
+        return Ok(new ApiResponse
         {
-            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Insert }).Any())
-            {
-                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
-            data.IsActive = true;
-            data.CreatedBy = _claim.UserId;
-            data.CreatedDate = DateTime.Now;
-            data.UpdatedBy = data.CreatedBy;
-            data.UpdatedDate = data.CreatedDate;
+            RowCount = data.Count,
+            TableData = data
+        });
+    }
 
-            var result = _warehouse.Insert(data);
-            return Ok(result);
-        }
-
-        [HttpPut("{code}")]
-        public IActionResult OnPut(string code, Warehouse data)
+    [HttpPost]
+    public IActionResult OnPost(Warehouse data)
+    {
+        if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Insert }).Any())
         {
-            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
-            {
-                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
-
-            data.UpdatedBy = _claim.UserId;
-            data.UpdatedDate = DateTime.Now;
-
-            var result = _warehouse.Update(data);
-
-            return Ok(result);
+            return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
         }
+        data.IsActive = true;
+        data.CreatedBy = _claim.UserId;
+        data.CreatedDate = DateTime.Now;
+        data.UpdatedBy = data.CreatedBy;
+        data.UpdatedDate = data.CreatedDate;
 
-        [HttpDelete("{code}")]
-        public IActionResult OnDelete(string code)
+        var result = _warehouse.Insert(data);
+        return Ok(result);
+    }
+
+    [HttpPut("{code}")]
+    public IActionResult OnPut(string code, Warehouse data)
+    {
+        if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
         {
-
-            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Delete }).Any())
-            {
-                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
-
-            var result = _warehouse.Delete(code, _claim.UserId);
-            return Ok(result);
+            return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
         }
+
+        data.UpdatedBy = _claim.UserId;
+        data.UpdatedDate = DateTime.Now;
+
+        var result = _warehouse.Update(data);
+
+        return Ok(result);
+    }
+
+    [HttpDelete("{code}")]
+    public IActionResult OnDelete(string code)
+    {
+
+        if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Delete }).Any())
+        {
+            return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+        }
+
+        var result = _warehouse.Delete(code, _claim.UserId);
+        return Ok(result);
     }
 }

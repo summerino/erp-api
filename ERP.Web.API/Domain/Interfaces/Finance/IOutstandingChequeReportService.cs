@@ -1,9 +1,8 @@
 ﻿using ERP.Common.Models;
 
-namespace ERP.Web.API.Domain.Interfaces.Finance
+namespace ERP.Web.API.Domain.Interfaces.Finance;
+
+public interface IOutstandingChequeReportService
 {
-    public interface IOutstandingChequeReportService
-    {
-        DataSourceResult GetData(string date, string coaCode);
-    }
+    DataSourceResult GetData(string date, string coaCode);
 }

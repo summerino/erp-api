@@ -6,96 +6,95 @@ using ERP.Entity.MobileSales;
 using ERP.Web.API.Domain.Interfaces.MobileSales;
 using Microsoft.Data.SqlClient;
 
-namespace ERP.Web.API.Domain.Services.MobileSales
+namespace ERP.Web.API.Domain.Services.MobileSales;
+
+public class MobilePaymentMethodService : GeneralService<MobilePaymentMethod>, IMobilePaymentMethodService
 {
-    public class MobilePaymentMethodService : GeneralService<MobilePaymentMethod>, IMobilePaymentMethodService
+    public MobilePaymentMethodService(TenantContext db)
+        :base(db)
     {
-        public MobilePaymentMethodService(TenantContext db)
-            :base(db)
-        {
 
+    }
+
+    public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string search)
+    {
+        var data = Db.VwMobilePaymentMethods.AsQueryable();
+
+        if (!string.IsNullOrEmpty(search))
+        {
+            data = data.Where(x =>
+                x.Name.Contains(search) || x.CoaCode.Contains(search) || x.CoaName.Contains(search));
         }
 
-        public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string search)
+        return data.ToDataSourceResult(skip, take, filters, sorts);
+    }
+
+    public override SaveResult Insert(MobilePaymentMethod data)
+    {
+        var result = new SaveResult(false);
+
+        using var transaction = Db.Database.BeginTransaction();
+        try
         {
-            var data = Db.VwMobilePaymentMethods.AsQueryable();
-
-            if (!string.IsNullOrEmpty(search))
-            {
-                data = data.Where(x =>
-                        x.Name.Contains(search) || x.CoaCode.Contains(search) || x.CoaName.Contains(search));
-            }
-
-            return data.ToDataSourceResult(skip, take, filters, sorts);
-        }
-
-        public override SaveResult Insert(MobilePaymentMethod data)
-        {
-            var result = new SaveResult(false);
-
-            using var transaction = Db.Database.BeginTransaction();
-            try
-            {
-                Db.MobilePaymentMethods.Add(data);
-
-                Db.SaveChanges();
-                transaction.Commit();
-            }
-            catch (Exception ex)
-            {
-                result.Message = ex.InnerException?.Message ?? ex.Message;
-                return result;
-            }
-
-            result.Success = true;
-            result.Data = data.Id;
-            result.Message = "Data metode pembayaran berhasil disimpan.";
-            return result;
-        }
-
-        public override SaveResult Update(MobilePaymentMethod data)
-        {
-            var result = new SaveResult(false);
-
-            // Update data
-            Db.MobilePaymentMethods.Update(data);
-            Db.Entry(data).Property(e => e.Id).IsModified = false;
-            Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
-            Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
+            Db.MobilePaymentMethods.Add(data);
 
             Db.SaveChanges();
-
-            result.Success = true;
-            result.Data = data.Id;
-            result.Message = "Data metode pembayaran diperbarui.";
-            return result;
+            transaction.Commit();
         }
-
-        public SaveResult Delete(int id, int userId)
+        catch (Exception ex)
         {
-            var result = new SaveResult(false);
-
-            var data = Db.MobilePaymentMethods.Find(id);
-            if (data != null)
-            {
-                try
-                {
-                    Db.MobilePaymentMethods.Remove(data);
-                    Db.SaveChanges();
-                }
-                catch (Exception e)
-                {
-                    var ex = e?.InnerException as SqlException;
-                    if (ex?.Number != 547) throw;
-
-                    result.Message = "Data tidak bisa dihapus karena sedang digunakan oleh data lain.";
-                    return result;
-                }
-            }
-
-            result.Success = true;
-            result.Message = "Data metode pembayaran dihapus.";
+            result.Message = ex.InnerException?.Message ?? ex.Message;
             return result;
         }
+
+        result.Success = true;
+        result.Data = data.Id;
+        result.Message = "Data metode pembayaran berhasil disimpan.";
+        return result;
+    }
+
+    public override SaveResult Update(MobilePaymentMethod data)
+    {
+        var result = new SaveResult(false);
+
+        // Update data
+        Db.MobilePaymentMethods.Update(data);
+        Db.Entry(data).Property(e => e.Id).IsModified = false;
+        Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
+        Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
+
+        Db.SaveChanges();
+
+        result.Success = true;
+        result.Data = data.Id;
+        result.Message = "Data metode pembayaran diperbarui.";
+        return result;
+    }
+
+    public SaveResult Delete(int id, int userId)
+    {
+        var result = new SaveResult(false);
+
+        var data = Db.MobilePaymentMethods.Find(id);
+        if (data != null)
+        {
+            try
+            {
+                Db.MobilePaymentMethods.Remove(data);
+                Db.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                var ex = e?.InnerException as SqlException;
+                if (ex?.Number != 547) throw;
+
+                result.Message = "Data tidak bisa dihapus karena sedang digunakan oleh data lain.";
+                return result;
+            }
+        }
+
+        result.Success = true;
+        result.Message = "Data metode pembayaran dihapus.";
+        return result;
     }
 }

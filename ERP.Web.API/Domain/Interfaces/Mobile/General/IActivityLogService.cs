@@ -1,10 +1,9 @@
 ﻿using ERP.Common;
 using ERP.Web.API.Domain.Models.General;
 
-namespace ERP.Web.API.Domain.Interfaces.Mobile.General
+namespace ERP.Web.API.Domain.Interfaces.Mobile.General;
+
+public interface IActivityLogService
 {
-    public interface IActivityLogService
-    {
-        SaveResult Insert(IEnumerable<LogActivityRequestModel> data, int userId);
-    }
+    SaveResult Insert(IEnumerable<LogActivityRequestModel> data, int userId);
 }

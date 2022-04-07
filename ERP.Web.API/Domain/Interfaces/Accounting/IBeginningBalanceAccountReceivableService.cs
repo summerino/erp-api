@@ -3,17 +3,16 @@ using ERP.Common.Models;
 using ERP.Entity.Accounting;
 using ERP.Web.API.Model.Accounting;
 
-namespace ERP.Web.API.Domain.Interfaces.Accounting
+namespace ERP.Web.API.Domain.Interfaces.Accounting;
+
+public interface IBeginningBalanceAccountReceivableService : IGeneralService<BeginningBalanceAR>
 {
-    public interface IBeginningBalanceAccountReceivableService : IGeneralService<BeginningBalanceAR>
-    {
-        DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
-            string search);
+    DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
+        string search);
 
-        SaveResult Delete(long id, int userId);
+    SaveResult Delete(long id, int userId);
 
-        IEnumerable<UploadBBARRequest> VerifyUpload(IEnumerable<UploadBBARRequest> data);
+    IEnumerable<UploadBBARRequest> VerifyUpload(IEnumerable<UploadBBARRequest> data);
 
-        SaveResult Posting(IEnumerable<UploadBBARRequest> data, int userId);
-    }
+    SaveResult Posting(IEnumerable<UploadBBARRequest> data, int userId);
 }

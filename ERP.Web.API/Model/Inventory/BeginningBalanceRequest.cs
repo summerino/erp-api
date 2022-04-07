@@ -1,11 +1,10 @@
 ﻿using ERP.Entity.Inventory;
 
-namespace ERP.Web.API.Model.Inventory
-{
-    public class BeginningBalanceRequest : BeginningBalanceStockHeader
-    {
-        public IEnumerable<BeginningBalanceStockDetail> ItemDetails { get; set; }
+namespace ERP.Web.API.Model.Inventory;
 
-        public DateTime? OriginalDate { get; set; }
-    }
+public class BeginningBalanceRequest : BeginningBalanceStockHeader
+{
+    public IEnumerable<BeginningBalanceStockDetail> ItemDetails { get; set; }
+
+    public DateTime? OriginalDate { get; set; }
 }

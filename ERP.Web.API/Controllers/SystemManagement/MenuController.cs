@@ -6,87 +6,86 @@ using ERP.Web.API.Domain.Interfaces.SystemManagement;
 using ERP.Web.API.Model;
 using Newtonsoft.Json;
 
-namespace ERP.Web.API.Controllers.SystemManagement
+namespace ERP.Web.API.Controllers.SystemManagement;
+
+[Route("[controller]")]
+[ApiController]
+public class MenuController : ControllerBase
 {
-    [Route("[controller]")]
-    [ApiController]
-    public class MenuController : ControllerBase
+    private readonly IMenuService _menu;
+    private readonly IClaimService _claim;
+
+    public MenuController(IMenuService menu, IClaimService claim)
     {
-        private readonly IMenuService _menu;
-        private readonly IClaimService _claim;
+        _menu = menu;
+        _claim = claim;
+    }
 
-        public MenuController(IMenuService menu, IClaimService claim)
+    [HttpGet]
+    public IActionResult GetData(string search, string filters, string sorts, int skip, int take)
+    {
+        var data =
+            _menu.GetData(
+                skip, take,
+                JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
+                search);
+
+        return Ok(new ApiResponse
         {
-            _menu = menu;
-            _claim = claim;
-        }
+            RowCount = data.Total,
+            TableData = data.Data.ToDynamicList()
+        });
+    }
 
-        [HttpGet]
-        public IActionResult GetData(string search, string filters, string sorts, int skip, int take)
-        {
-            var data =
-                _menu.GetData(
-                    skip, take,
-                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
-                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
-                    search);
+    [HttpGet("navigation")]
+    public IActionResult GetNavigation()
+    {
+        return Ok(_menu.GetNavigation(_claim.RoleId));
+    }
 
-            return Ok(new ApiResponse
+    [HttpGet("hierarchy")]
+    public IActionResult GetHierarchy()
+    {
+        return Ok(_menu.GetHierarchy());
+    }
+
+    [HttpGet("lists")]
+    public IActionResult GetLists(int id)
+    {
+        var data = _menu.GetLists(id)
+            .Select(x => new
             {
-                RowCount = data.Total,
-                TableData = data.Data.ToDynamicList()
-            });
-        }
+                x.Id,
+                x.MenuId,
+                x.ActionId
+            })
+            .ToList<dynamic>();
 
-        [HttpGet("navigation")]
-        public IActionResult GetNavigation()
+        return Ok(new ApiResponse
         {
-            return Ok(_menu.GetNavigation(_claim.RoleId));
-        }
+            RowCount = data.Count,
+            TableData = data
+        });
+    }
 
-        [HttpGet("hierarchy")]
-        public IActionResult GetHierarchy()
-        {
-            return Ok(_menu.GetHierarchy());
-        }
-
-        [HttpGet("lists")]
-        public IActionResult GetLists(int id)
-        {
-            var data = _menu.GetLists(id)
-                .Select(x => new
-                {
-                    x.Id,
-                    x.MenuId,
-                    x.ActionId
-                })
-                .ToList<dynamic>();
-
-            return Ok(new ApiResponse
+    [HttpGet("menu/actions")]
+    public IActionResult GetActions()
+    {
+        var data = _menu.GetActions()
+            .Select(x => new
             {
-                RowCount = data.Count,
-                TableData = data
-            });
-        }
+                x.Id,
+                x.Name,
+                IsActive = false,
+                IsChecked = false
+            })
+            .ToList<dynamic>();
 
-        [HttpGet("menu/actions")]
-        public IActionResult GetActions()
+        return Ok(new ApiResponse
         {
-            var data = _menu.GetActions()
-                .Select(x => new
-                {
-                    x.Id,
-                    x.Name,
-                    IsActive = false,
-                    IsChecked = false
-                })
-                .ToList<dynamic>();
-
-            return Ok(new ApiResponse
-            {
-                RowCount = data.Count,
-                TableData = data
-            });
-        }
+            RowCount = data.Count,
+            TableData = data
+        });
     }
 }

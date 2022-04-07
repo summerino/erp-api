@@ -4,37 +4,36 @@ using ERP.Entity.Purchase;
 using ERP.Web.API.Domain.Models.Mobile.Purchase;
 using ERP.Web.API.Model.Purchase;
 
-namespace ERP.Web.API.Domain.Interfaces.Purchase
+namespace ERP.Web.API.Domain.Interfaces.Purchase;
+
+public interface IPurchaseOrderService : IGeneralService<PurchaseOrderHeader>
 {
-    public interface IPurchaseOrderService : IGeneralService<PurchaseOrderHeader>
-    {
-        DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
-            string search);
+    DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
+        string search);
 
-        IEnumerable<VwPurchaseOrderDetail> GetDetailData(string code, bool? fullReceived = null);
+    IEnumerable<VwPurchaseOrderDetail> GetDetailData(string code, bool? fullReceived = null);
 
-        List<dynamic> GetRelatedTransactions(string code);
+    List<dynamic> GetRelatedTransactions(string code);
 
-        IEnumerable<VwPurchaseOrderHeader> GetInCompleteInvoiceData(string searchBy, string search, string invCode);
+    IEnumerable<VwPurchaseOrderHeader> GetInCompleteInvoiceData(string searchBy, string search, string invCode);
 
-        SaveResult Insert(PurchaseOrderRequest data);
+    SaveResult Insert(PurchaseOrderRequest data);
 
-        SaveResult Update(PurchaseOrderRequest data);
+    SaveResult Update(PurchaseOrderRequest data);
 
-        SaveResult Delete(string code, int userId);
+    SaveResult Delete(string code, int userId);
 
-        SaveResult Close(string code, int userId);
+    SaveResult Close(string code, int userId);
 
-        #region Mobile
-        IEnumerable<PurchaseOrderHeaderModel> GetDataForMobile(DateTime? date, string search, int userId);
+    #region Mobile
+    IEnumerable<PurchaseOrderHeaderModel> GetDataForMobile(DateTime? date, string search, int userId);
 
-        IEnumerable<PurchaseOrderDetailModel> GetDetailDataForMobile(string code, int srcTrans);
+    IEnumerable<PurchaseOrderDetailModel> GetDetailDataForMobile(string code, int srcTrans);
 
-        DataSourceResult GetLogDataForMobile(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, string search, string date);
+    DataSourceResult GetLogDataForMobile(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, string search, string date);
 
-        IEnumerable<ReceiveItemDetailModel> GetLogDetailDataForMobile(string code, int srcTrans);
+    IEnumerable<ReceiveItemDetailModel> GetLogDetailDataForMobile(string code, int srcTrans);
 
-        SaveResult InsertForMobile(PurchaseOrderRequestModel data, int UserId);
-        #endregion
-    }
+    SaveResult InsertForMobile(PurchaseOrderRequestModel data, int UserId);
+    #endregion
 }

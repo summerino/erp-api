@@ -7,147 +7,186 @@ using ERP.Entity.Expedition;
 using ERP.Web.API.Domain.Interfaces.Expedition;
 using ERP.Web.API.Model.Expedition;
 
-namespace ERP.Web.API.Domain.Services.Expedition
-{
-    public class ExpeditionInvoiceService : GeneralService<ExpeditionInvoiceHeader>, IExpeditionInvoiceService
-    {
-        public ExpeditionInvoiceService(TenantContext db)
-            :base(db)
-        {
-        }
-       
-        public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
-            string search)
-        {
-            var data = Db.VwExpeditionInvoiceHeaders.AsQueryable();
+namespace ERP.Web.API.Domain.Services.Expedition;
 
-            if (!string.IsNullOrEmpty(search))
+public class ExpeditionInvoiceService : GeneralService<ExpeditionInvoiceHeader>, IExpeditionInvoiceService
+{
+    public ExpeditionInvoiceService(TenantContext db)
+        :base(db)
+    {
+    }
+       
+    public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
+        string search)
+    {
+        var data = Db.VwExpeditionInvoiceHeaders.AsQueryable();
+
+        if (!string.IsNullOrEmpty(search))
+        {
+            data = DateTime.TryParse(search, out var searchDate)
+                ? data.Where(x => x.Date == searchDate)
+                : data.Where(x =>
+                    x.Code.Contains(search) || x.RefNo.Contains(search) || x.SupInitial.Contains(search));
+        }
+
+        return data.ToDataSourceResult(skip, take, filter, sort);
+    }
+
+    public IEnumerable<ExpeditionInvoiceDetail> GetDetailData(string code)
+    {
+        return Db.ExpeditionInvoiceDetails.Where(x => x.Code == code).OrderBy(x => x.LineNo);
+    }
+
+    public List<dynamic> GetRelatedTransactions(string code)
+    {
+        var data = (from h in Db.GeneralCashBankHeaders
+            join d in Db.GeneralCashBankDetails on h.Code equals d.Code
+            where h.Mark == "A" && d.TransCode == code && d.Type == "EPAP"
+            select new
             {
-                data = DateTime.TryParse(search, out var searchDate)
-                    ? data.Where(x => x.Date == searchDate)
-                    : data.Where(x =>
-                        x.Code.Contains(search) || x.RefNo.Contains(search) || x.SupInitial.Contains(search));
+                h.Code,
+                h.Date,
+                h.Amount
+            });
+
+        return data.ToDynamicList();
+    }
+
+    public SaveResult Insert(ExpeditionInvoiceRequest data)
+    {
+        var result = new SaveResult(false);
+
+        using var transaction = Db.Database.BeginTransaction();
+        try
+        {
+            // Get new code
+            var newCode = GetNewCode("EI_NUM_FMT", data.Date);
+
+            // Insert header data
+            data.Code = newCode;
+            Db.ExpeditionInvoiceHeaders.Add(data);
+
+            // Insert detail data
+            short i = 0;
+            foreach (var item in data.Details)
+            {
+                Db.ExpeditionInvoiceDetails.Add(new ExpeditionInvoiceDetail
+                {
+                    Code = newCode,
+                    LineNo = ++i,
+                    TransCode = item.TransCode
+                });
             }
 
-            return data.ToDataSourceResult(skip, take, filter, sort);
+            // Save changes
+            Db.SaveChanges();
+
+            transaction.Commit();
+        }
+        catch (Exception ex)
+        {
+            result.Message = ex.InnerException?.Message ?? ex.Message;
+            return result;
         }
 
-        public IEnumerable<ExpeditionInvoiceDetail> GetDetailData(string code)
+        result.Success = true;
+        result.Data = data.Code;
+        result.Message = "Data faktur ekspedisi berhasil disimpan.";
+        return result;
+    }
+
+    public SaveResult Update(ExpeditionInvoiceRequest data)
+    {
+        var result = new SaveResult(false);
+
+        using var transaction = Db.Database.BeginTransaction();
+        try
         {
-            return Db.ExpeditionInvoiceDetails.Where(x => x.Code == code).OrderBy(x => x.LineNo);
-        }
-
-        public List<dynamic> GetRelatedTransactions(string code)
-        {
-            var data = (from h in Db.GeneralCashBankHeaders
-                join d in Db.GeneralCashBankDetails on h.Code equals d.Code
-                where h.Mark == "A" && d.TransCode == code && d.Type == "EPAP"
-                select new
-                {
-                    h.Code,
-                    h.Date,
-                    h.Amount
-                });
-
-            return data.ToDynamicList();
-        }
-
-        public SaveResult Insert(ExpeditionInvoiceRequest data)
-        {
-            var result = new SaveResult(false);
-
-            using var transaction = Db.Database.BeginTransaction();
-            try
+            // Checking mark header data
+            if (Db.ExpeditionInvoiceHeaders.Any(x => x.Code == data.Code && x.Mark == "V"))
             {
-                // Get new code
-                var newCode = GetNewCode("EI_NUM_FMT", data.Date);
+                result.Message = "Data faktur ekspedisi tidak bisa diubah karena data sudah ditandai sebagai void.";
+                return result;
+            }
 
-                // Insert header data
-                data.Code = newCode;
-                Db.ExpeditionInvoiceHeaders.Add(data);
+            data.ApprovedBy = null;
+            data.ApprovedDate = null;
 
-                // Insert detail data
-                short i = 0;
-                foreach (var item in data.Details)
+            // Update header data
+            Db.ExpeditionInvoiceHeaders.Update(data);
+            Db.Entry(data).Property(e => e.Code).IsModified = false;
+            Db.Entry(data).Property(e => e.PaidAmount).IsModified = false;
+            Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
+            Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
+
+            // Get detail data that exists in invoice before
+            var delDetails = Db.ExpeditionInvoiceDetails
+                .Where(d => d.Code == data.Code && !data.Details.Select(x => x.Id).Contains(d.Id))
+                .ToList();
+
+            // Get detail data that exists in invoice before
+            Db.ExpeditionInvoiceDetails.RemoveRange(delDetails);
+
+            // Update detail data
+            short i = 0;
+            foreach (var item in data.Details)
+            {
+                if (item.Id <= 0)
                 {
                     Db.ExpeditionInvoiceDetails.Add(new ExpeditionInvoiceDetail
                     {
-                        Code = newCode,
+                        Code = data.Code,
                         LineNo = ++i,
                         TransCode = item.TransCode
                     });
                 }
+                else
+                {
+                    item.LineNo = ++i;
 
-                // Save changes
-                Db.SaveChanges();
-
-                transaction.Commit();
-            }
-            catch (Exception ex)
-            {
-                result.Message = ex.InnerException?.Message ?? ex.Message;
-                return result;
+                    Db.ExpeditionInvoiceDetails.Update(item);
+                    Db.Entry(item).Property(e => e.Code).IsModified = false;
+                }
             }
 
-            result.Success = true;
-            result.Data = data.Code;
-            result.Message = "Data faktur ekspedisi berhasil disimpan.";
+            // Save changes
+            Db.SaveChanges();
+
+            transaction.Commit();
+        }
+        catch (Exception ex)
+        {
+            result.Message = ex.InnerException?.Message ?? ex.Message;
             return result;
         }
 
-        public SaveResult Update(ExpeditionInvoiceRequest data)
+        result.Success = true;
+        result.Data = data.Code;
+        result.Message = "Data faktur ekspedisi berhasil diperbarui.";
+        return result;
+    }
+
+    public SaveResult Delete(string code, int userId)
+    {
+        var result = new SaveResult(false);
+
+        var data = Db.ExpeditionInvoiceHeaders.Find(code);
+        if (data != null)
         {
-            var result = new SaveResult(false);
+            // Checking mark header data
+            if (data.Mark == "V")
+            {
+                result.Message = "Data faktur ekspedisi tidak bisa ditandai sebagai void karena sudah ditandai sebagai void.";
+                return result;
+            }
 
             using var transaction = Db.Database.BeginTransaction();
             try
             {
-                // Checking mark header data
-                if (Db.ExpeditionInvoiceHeaders.Any(x => x.Code == data.Code && x.Mark == "V"))
-                {
-                    result.Message = "Data faktur ekspedisi tidak bisa diubah karena data sudah ditandai sebagai void.";
-                    return result;
-                }
-
-                data.ApprovedBy = null;
-                data.ApprovedDate = null;
-
                 // Update header data
-                Db.ExpeditionInvoiceHeaders.Update(data);
-                Db.Entry(data).Property(e => e.Code).IsModified = false;
-                Db.Entry(data).Property(e => e.PaidAmount).IsModified = false;
-                Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
-                Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
-
-                // Get detail data that exists in invoice before
-                var delDetails = Db.ExpeditionInvoiceDetails
-                    .Where(d => d.Code == data.Code && !data.Details.Select(x => x.Id).Contains(d.Id))
-                    .ToList();
-
-                // Get detail data that exists in invoice before
-                Db.ExpeditionInvoiceDetails.RemoveRange(delDetails);
-
-                // Update detail data
-                short i = 0;
-                foreach (var item in data.Details)
-                {
-                    if (item.Id <= 0)
-                    {
-                        Db.ExpeditionInvoiceDetails.Add(new ExpeditionInvoiceDetail
-                        {
-                            Code = data.Code,
-                            LineNo = ++i,
-                            TransCode = item.TransCode
-                        });
-                    }
-                    else
-                    {
-                        item.LineNo = ++i;
-
-                        Db.ExpeditionInvoiceDetails.Update(item);
-                        Db.Entry(item).Property(e => e.Code).IsModified = false;
-                    }
-                }
+                data.Mark = "V";
+                data.UpdatedBy = userId;
+                data.UpdatedDate = DateTime.Now;
 
                 // Save changes
                 Db.SaveChanges();
@@ -159,50 +198,10 @@ namespace ERP.Web.API.Domain.Services.Expedition
                 result.Message = ex.InnerException?.Message ?? ex.Message;
                 return result;
             }
-
-            result.Success = true;
-            result.Data = data.Code;
-            result.Message = "Data faktur ekspedisi berhasil diperbarui.";
-            return result;
         }
 
-        public SaveResult Delete(string code, int userId)
-        {
-            var result = new SaveResult(false);
-
-            var data = Db.ExpeditionInvoiceHeaders.Find(code);
-            if (data != null)
-            {
-                // Checking mark header data
-                if (data.Mark == "V")
-                {
-                    result.Message = "Data faktur ekspedisi tidak bisa ditandai sebagai void karena sudah ditandai sebagai void.";
-                    return result;
-                }
-
-                using var transaction = Db.Database.BeginTransaction();
-                try
-                {
-                    // Update header data
-                    data.Mark = "V";
-                    data.UpdatedBy = userId;
-                    data.UpdatedDate = DateTime.Now;
-
-                    // Save changes
-                    Db.SaveChanges();
-
-                    transaction.Commit();
-                }
-                catch (Exception ex)
-                {
-                    result.Message = ex.InnerException?.Message ?? ex.Message;
-                    return result;
-                }
-            }
-
-            result.Success = true;
-            result.Message = "Data faktur ekspedisi berhasil ditandai sebagai void.";
-            return result;
-        }
+        result.Success = true;
+        result.Message = "Data faktur ekspedisi berhasil ditandai sebagai void.";
+        return result;
     }
 }

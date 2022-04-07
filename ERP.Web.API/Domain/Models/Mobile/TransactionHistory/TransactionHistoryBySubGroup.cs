@@ -1,9 +1,8 @@
-﻿namespace ERP.Web.API.Domain.Models.Mobile.TransactionHistory
+﻿namespace ERP.Web.API.Domain.Models.Mobile.TransactionHistory;
+
+public class TransactionHistoryBySubGroup
 {
-    public class TransactionHistoryBySubGroup
-    {
-        public long SalesId { get; set; }
-        public DateTime Date { get; set; }
-        public decimal Total { get; set; }
-    }
+    public long SalesId { get; set; }
+    public DateTime Date { get; set; }
+    public decimal Total { get; set; }
 }

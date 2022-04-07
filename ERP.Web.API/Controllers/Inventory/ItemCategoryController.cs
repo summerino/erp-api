@@ -9,116 +9,115 @@ using ERP.Web.API.Domain.Interfaces.Inventory;
 using ERP.Web.API.Model;
 using Newtonsoft.Json;
 
-namespace ERP.Web.API.Controllers.Inventory
+namespace ERP.Web.API.Controllers.Inventory;
+
+[Route("item-category")]
+//[Authorize]
+[ApiController]
+public class ItemCategoryController : ControllerBase
 {
-    [Route("item-category")]
-    //[Authorize]
-    [ApiController]
-    public class ItemCategoryController : ControllerBase
+    private readonly IItemCategoryService _category;
+    private readonly IClaimService _claim;
+    private readonly IAuthService _auth;
+    private const int MenuId = (int)Menu.ItemCategory;
+
+    public ItemCategoryController(IItemCategoryService category, IClaimService claim, IAuthService auth)
     {
-        private readonly IItemCategoryService _category;
-        private readonly IClaimService _claim;
-        private readonly IAuthService _auth;
-        private const int MenuId = (int)Menu.ItemCategory;
+        _category = category;
+        _auth = auth;
+        _claim = claim;
+    }
 
-        public ItemCategoryController(IItemCategoryService category, IClaimService claim, IAuthService auth)
+    [HttpGet]
+    public IActionResult GetData(string search, string filters, string sorts, int skip, int take)
+    {
+        var data =
+            _category.GetData(
+                skip, take,
+                JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
+                search);
+
+        return Ok(new ApiResponse
         {
-            _category = category;
-            _auth = auth;
-            _claim = claim;
-        }
+            RowCount = data.Total,
+            TableData = data.Data.ToDynamicList()
+        });
+    }
 
-        [HttpGet]
-        public IActionResult GetData(string search, string filters, string sorts, int skip, int take)
-        {
-            var data =
-                _category.GetData(
-                    skip, take,
-                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
-                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
-                    search);
+    [HttpGet("hierarchy")]
+    public IActionResult GetHierarchy()
+    {
+        return Ok(_category.GetHierarchy());
+    }
 
-            return Ok(new ApiResponse
+    [HttpGet("lists")]
+    public IActionResult GetLists()
+    {
+        var data = _category.GetLists()
+            .Select(x => new
             {
-                RowCount = data.Total,
-                TableData = data.Data.ToDynamicList()
-            });
-        }
+                x.Id,
+                x.Initial,
+                x.Name,
+                x.ParentId,
+                x.GroupId,
+                x.Seq,
+                x.Deep,
+                x.Lineage
+            })
+            .ToList<dynamic>();
 
-        [HttpGet("hierarchy")]
-        public IActionResult GetHierarchy()
+        return Ok(new ApiResponse
         {
-            return Ok(_category.GetHierarchy());
-        }
+            RowCount = data.Count,
+            TableData = data
+        });
+    }
 
-        [HttpGet("lists")]
-        public IActionResult GetLists()
+    [HttpPost]
+    public IActionResult OnPost(ItemCategory data)
+    {
+        if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Insert }).Any())
         {
-            var data = _category.GetLists()
-                .Select(x => new
-                {
-                    x.Id,
-                    x.Initial,
-                    x.Name,
-                    x.ParentId,
-                    x.GroupId,
-                    x.Seq,
-                    x.Deep,
-                    x.Lineage
-                })
-                .ToList<dynamic>();
-
-            return Ok(new ApiResponse
-            {
-                RowCount = data.Count,
-                TableData = data
-            });
+            return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
         }
+        data.IsActive = true;
+        data.CreatedBy = 1;
+        data.CreatedDate = DateTime.Now;
+        data.UpdatedBy = data.CreatedBy;
+        data.UpdatedDate = data.CreatedDate;
 
-        [HttpPost]
-        public IActionResult OnPost(ItemCategory data)
+        var result = _category.Insert(data);
+
+        return Ok(result);
+    }
+
+    [HttpPut("{id}")]
+    public IActionResult OnPut(int id, ItemCategory data)
+    {
+        if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
         {
-            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Insert }).Any())
-            {
-                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
-            data.IsActive = true;
-            data.CreatedBy = 1;
-            data.CreatedDate = DateTime.Now;
-            data.UpdatedBy = data.CreatedBy;
-            data.UpdatedDate = data.CreatedDate;
-
-            var result = _category.Insert(data);
-
-            return Ok(result);
+            return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
         }
 
-        [HttpPut("{id}")]
-        public IActionResult OnPut(int id, ItemCategory data)
+        data.UpdatedBy = 1;
+        data.UpdatedDate = DateTime.Now;
+
+        var result = _category.Update(data);
+
+        return Ok(result);
+    }
+
+    [HttpDelete("{id}")]
+    public IActionResult OnDelete(int id)
+    {
+        if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Delete }).Any())
         {
-            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
-            {
-                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
-
-            data.UpdatedBy = 1;
-            data.UpdatedDate = DateTime.Now;
-
-            var result = _category.Update(data);
-
-            return Ok(result);
+            return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
         }
 
-        [HttpDelete("{id}")]
-        public IActionResult OnDelete(int id)
-        {
-            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Delete }).Any())
-            {
-                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
-
-            var result = _category.Delete(id, 1);
-            return Ok(result);
-        }
+        var result = _category.Delete(id, 1);
+        return Ok(result);
     }
 }

@@ -11,155 +11,154 @@ using ERP.Web.API.Model.Accounting;
 using Newtonsoft.Json;
 using ERP.Web.API.Domain.Interfaces.General;
 
-namespace ERP.Web.API.Controllers.Accounting
+namespace ERP.Web.API.Controllers.Accounting;
+
+[Route("general-journal")]
+[ApiController]
+public class GeneralJournalController : ControllerBase
 {
-    [Route("general-journal")]
-    [ApiController]
-    public class GeneralJournalController : ControllerBase
+    private readonly IGeneralJournalService _gj;
+    private readonly ISystemParameterService _sysPar;
+    private readonly IClaimService _claim;
+    private readonly IAuthService _auth;
+    private readonly IClosingMonthService _closingMonth;
+    private readonly IActiveTransactionService _activeTrans;
+    private const int MenuId = (int)Menu.GeneralJournal;
+
+    public GeneralJournalController(IGeneralJournalService gj, ISystemParameterService sysPar,
+        IClaimService claim, IAuthService auth, IClosingMonthService closingMonthService, IActiveTransactionService activeTrans)
     {
-        private readonly IGeneralJournalService _gj;
-        private readonly ISystemParameterService _sysPar;
-        private readonly IClaimService _claim;
-        private readonly IAuthService _auth;
-        private readonly IClosingMonthService _closingMonth;
-        private readonly IActiveTransactionService _activeTrans;
-        private const int MenuId = (int)Menu.GeneralJournal;
+        _gj = gj;
+        _sysPar = sysPar;
+        _claim = claim;
+        _auth = auth;
+        _closingMonth = closingMonthService;
+        _activeTrans = activeTrans;
+    }
 
-        public GeneralJournalController(IGeneralJournalService gj, ISystemParameterService sysPar,
-            IClaimService claim, IAuthService auth, IClosingMonthService closingMonthService, IActiveTransactionService activeTrans)
+    [HttpGet]
+    public IActionResult GetData(string search, string filters, string sorts, int skip, int take)
+    {
+        var data =
+            _gj.GetData(
+                skip, take,
+                JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
+                search);
+
+        return Ok(new ApiResponse
         {
-            _gj = gj;
-            _sysPar = sysPar;
-            _claim = claim;
-            _auth = auth;
-            _closingMonth = closingMonthService;
-            _activeTrans = activeTrans;
-        }
+            RowCount = data.Total,
+            TableData = data.Data.ToDynamicList()
+        });
+    }
 
-        [HttpGet]
-        public IActionResult GetData(string search, string filters, string sorts, int skip, int take)
-        {
-            var data =
-                _gj.GetData(
-                    skip, take,
-                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
-                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
-                    search);
-
-            return Ok(new ApiResponse
+    [HttpGet("detail")]
+    public IActionResult GetDetailData(string code)
+    {
+        var data = _gj.GetDetailData(code)
+            .Select(x => new
             {
-                RowCount = data.Total,
-                TableData = data.Data.ToDynamicList()
-            });
-        }
+                x.Id,
+                x.Code,
+                x.LineNo,
+                x.CoaCode,
+                x.Notes,
+                x.Type,
+                x.Amount
+            })
+            .ToList<dynamic>();
 
-        [HttpGet("detail")]
-        public IActionResult GetDetailData(string code)
+        return Ok(new ApiResponse
         {
-            var data = _gj.GetDetailData(code)
-                .Select(x => new
-                {
-                    x.Id,
-                    x.Code,
-                    x.LineNo,
-                    x.CoaCode,
-                    x.Notes,
-                    x.Type,
-                    x.Amount
-                })
-                .ToList<dynamic>();
+            RowCount = data.Count,
+            TableData = data
+        });
+    }
 
-            return Ok(new ApiResponse
-            {
-                RowCount = data.Count,
-                TableData = data
-            });
-        }
+    [HttpPost]
+    public IActionResult OnPost(GeneralJournalRequest data)
+    {
+        // Checking role authorization
+        if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Insert }).Any())
+            return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
-        [HttpPost]
-        public IActionResult OnPost(GeneralJournalRequest data)
+        // Validate process
+        var (isValid, message) = Validate(data, checkSeenByOther: false);
+        if (!isValid)
+            return Ok(new SaveResult(false, message));
+
+        // Insert process
+        data.Mark = "A";
+        data.CreatedBy = _claim.UserId;
+        data.CreatedDate = DateTime.Now;
+        data.UpdatedBy = data.CreatedBy;
+        data.UpdatedDate = data.CreatedDate;
+
+        var result = _gj.Insert(data);
+
+        return Ok(result);
+    }
+
+    [HttpPut("{code}")]
+    public IActionResult OnPut(string code, GeneralJournalRequest data)
+    {
+        // Checking role authorization
+        if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
+            return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+
+        // Validate process
+        var (isValid, message) = Validate(data);
+        if (!isValid)
+            return Ok(new SaveResult(false, message));
+
+        // Update process
+        data.UpdatedBy = _claim.UserId;
+        data.UpdatedDate = DateTime.Now;
+
+        var result = _gj.Update(data);
+
+        return Ok(result);
+    }
+
+    [HttpDelete("{code}")]
+    public IActionResult OnDelete(string code, GeneralJournalRequest data)
+    {
+        // Checking role authorization
+        if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Void }).Any())
+            return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+
+        // Validate process
+        var (isValid, message) = Validate(data, true);
+        if (!isValid)
+            return Ok(new SaveResult(false, message));
+
+        var result = _gj.Delete(data.Code, _claim.UserId);
+
+        return Ok(result);
+    }
+
+    private (bool, string) Validate(GeneralJournalRequest data, bool onDelete = false, bool checkSeenByOther = true)
+    {
+        var periods = new List<string> { data.Date.ToString("yyyyMM") };
+        if (data.OriginalDate.HasValue)
+            periods.Add(data.OriginalDate.Value.ToString("yyyyMM"));
+
+        if (_closingMonth.IsMonthClosed(periods))
+            return (false, "Periode sudah ditutup. Silakan hubungi departemen akuntansi.");
+
+        // Checking data start date validity
+        if (!_sysPar.IsStartDateValid(data.Date))
+            return (false, "Tanggal tidak boleh lebih kecil dari tanggal mulai data.");
+
+        // Checking is data seen by others
+        if (checkSeenByOther && !_activeTrans.SeenByOthers("GEN-JR", data.Code, _claim.UserId))
         {
-            // Checking role authorization
-            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Insert }).Any())
-                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-
-            // Validate process
-            var (isValid, message) = Validate(data, checkSeenByOther: false);
-            if (!isValid)
-                return Ok(new SaveResult(false, message));
-
-            // Insert process
-            data.Mark = "A";
-            data.CreatedBy = _claim.UserId;
-            data.CreatedDate = DateTime.Now;
-            data.UpdatedBy = data.CreatedBy;
-            data.UpdatedDate = data.CreatedDate;
-
-            var result = _gj.Insert(data);
-
-            return Ok(result);
+            return (false, "data sedang digunakan oleh pengguna lain.");
         }
 
-        [HttpPut("{code}")]
-        public IActionResult OnPut(string code, GeneralJournalRequest data)
-        {
-            // Checking role authorization
-            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
-                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-
-            // Validate process
-            var (isValid, message) = Validate(data);
-            if (!isValid)
-                return Ok(new SaveResult(false, message));
-
-            // Update process
-            data.UpdatedBy = _claim.UserId;
-            data.UpdatedDate = DateTime.Now;
-
-            var result = _gj.Update(data);
-
-            return Ok(result);
-        }
-
-        [HttpDelete("{code}")]
-        public IActionResult OnDelete(string code, GeneralJournalRequest data)
-        {
-            // Checking role authorization
-            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Void }).Any())
-                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-
-            // Validate process
-            var (isValid, message) = Validate(data, true);
-            if (!isValid)
-                return Ok(new SaveResult(false, message));
-
-            var result = _gj.Delete(data.Code, _claim.UserId);
-
-            return Ok(result);
-        }
-
-        private (bool, string) Validate(GeneralJournalRequest data, bool onDelete = false, bool checkSeenByOther = true)
-        {
-            var periods = new List<string> { data.Date.ToString("yyyyMM") };
-            if (data.OriginalDate.HasValue)
-                periods.Add(data.OriginalDate.Value.ToString("yyyyMM"));
-
-            if (_closingMonth.IsMonthClosed(periods))
-                return (false, "Periode sudah ditutup. Silakan hubungi departemen akuntansi.");
-
-            // Checking data start date validity
-            if (!_sysPar.IsStartDateValid(data.Date))
-                return (false, "Tanggal tidak boleh lebih kecil dari tanggal mulai data.");
-
-            // Checking is data seen by others
-            if (checkSeenByOther && !_activeTrans.SeenByOthers("GEN-JR", data.Code, _claim.UserId))
-            {
-                return (false, "data sedang digunakan oleh pengguna lain.");
-            }
-
-            return !onDelete && !data.Details.Any()
-                ? (false, "Detail tidak boleh kosong.")
-                : (true, "");
-        }
+        return !onDelete && !data.Details.Any()
+            ? (false, "Detail tidak boleh kosong.")
+            : (true, "");
     }
 }

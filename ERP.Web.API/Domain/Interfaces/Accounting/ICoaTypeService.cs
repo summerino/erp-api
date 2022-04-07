@@ -2,13 +2,12 @@
 using ERP.Common.Models;
 using ERP.Entity.Accounting;
 
-namespace ERP.Web.API.Domain.Interfaces.Accounting
-{
-    public interface ICoaTypeService : IGeneralService<CoaType>
-    {
-        DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
-            string search);
+namespace ERP.Web.API.Domain.Interfaces.Accounting;
 
-        SaveResult Delete(int id, int userId);
-    }
+public interface ICoaTypeService : IGeneralService<CoaType>
+{
+    DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
+        string search);
+
+    SaveResult Delete(int id, int userId);
 }

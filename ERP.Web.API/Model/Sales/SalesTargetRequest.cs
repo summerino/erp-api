@@ -1,11 +1,10 @@
 ﻿using ERP.Entity.Sales;
 
-namespace ERP.Web.API.Model.Sales
-{
-    public class SalesTargetRequest : SalesTargetHeader
-    {
-        public IEnumerable<SalesTargetDetail> ItemDetails { get; set; }
+namespace ERP.Web.API.Model.Sales;
 
-        public IEnumerable<SalesTargetSubject> ItemSubjects { get; set; }
-    }
+public class SalesTargetRequest : SalesTargetHeader
+{
+    public IEnumerable<SalesTargetDetail> ItemDetails { get; set; }
+
+    public IEnumerable<SalesTargetSubject> ItemSubjects { get; set; }
 }

@@ -3,29 +3,28 @@ using ERP.Common.Models;
 using ERP.Entity.Sales;
 using ERP.Web.API.Model.Sales;
 
-namespace ERP.Web.API.Domain.Interfaces.Sales
+namespace ERP.Web.API.Domain.Interfaces.Sales;
+
+public interface ISalesOrderService : IGeneralService<SalesOrderHeader>
 {
-    public interface ISalesOrderService : IGeneralService<SalesOrderHeader>
-    {
-        DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
-            string search);
+    DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
+        string search);
 
-        IEnumerable<VwSalesOrderDetail> GetDetailData(string code, bool? fullReceived = null);
+    IEnumerable<VwSalesOrderDetail> GetDetailData(string code, bool? fullReceived = null);
 
-        List<dynamic> GetRelatedTransactions(string code);
+    List<dynamic> GetRelatedTransactions(string code);
 
-        IEnumerable<DetailFreeGoodData> GetFreeDetailData(string code, bool? fullDlv);
+    IEnumerable<DetailFreeGoodData> GetFreeDetailData(string code, bool? fullDlv);
 
-        IEnumerable<SalesOrderDetailDiscount> GetDiscDetailData(string code);
+    IEnumerable<SalesOrderDetailDiscount> GetDiscDetailData(string code);
 
-        IEnumerable<VwSalesOrderHeader> GetInCompleteInvoiceData(string searchBy, string search, string invCode);
+    IEnumerable<VwSalesOrderHeader> GetInCompleteInvoiceData(string searchBy, string search, string invCode);
 
-        SaveResult Insert(SalesOrderRequest data, bool isOverLimit);
+    SaveResult Insert(SalesOrderRequest data, bool isOverLimit);
 
-        SaveResult Update(SalesOrderRequest data);
+    SaveResult Update(SalesOrderRequest data);
 
-        SaveResult Delete(string code, int userId);
+    SaveResult Delete(string code, int userId);
 
-        SaveResult Close(string code, int userId);
-    }
+    SaveResult Close(string code, int userId);
 }

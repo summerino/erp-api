@@ -9,106 +9,105 @@ using ERP.Web.API.Domain.Interfaces.Auth;
 using ERP.Web.API.Model;
 using Newtonsoft.Json;
 
-namespace ERP.Web.API.Controllers.AssetManagement
+namespace ERP.Web.API.Controllers.AssetManagement;
+
+[Route("asset-type")]
+[ApiController]
+public class AssetTypeController : ControllerBase
 {
-    [Route("asset-type")]
-    [ApiController]
-    public class AssetTypeController : ControllerBase
+    private readonly IClaimService _claim;
+    private readonly IAssetTypeService _assetType;
+    private readonly IAuthService _auth;
+    private const int MenuId = (int)Menu.AssetType;
+
+    public AssetTypeController(IAssetTypeService assetType, IAuthService auth, IClaimService claim)
     {
-        private readonly IClaimService _claim;
-        private readonly IAssetTypeService _assetType;
-        private readonly IAuthService _auth;
-        private const int MenuId = (int)Menu.AssetType;
+        _auth = auth;
+        _claim = claim;
+        _assetType = assetType;
+    }
 
-        public AssetTypeController(IAssetTypeService assetType, IAuthService auth, IClaimService claim)
+    [HttpGet]
+    public IActionResult GetData(string search, string filters, string sorts, int skip, int take)
+    {
+        var data =
+            _assetType.GetData(
+                skip, take,
+                JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
+                search);
+
+        return Ok(new ApiResponse
         {
-            _auth = auth;
-            _claim = claim;
-            _assetType = assetType;
-        }
+            RowCount = data.Total,
+            TableData = data.Data.ToDynamicList()
+        });
+    }
 
-        [HttpGet]
-        public IActionResult GetData(string search, string filters, string sorts, int skip, int take)
-        {
-            var data =
-                _assetType.GetData(
-                    skip, take,
-                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
-                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
-                    search);
-
-            return Ok(new ApiResponse
-            {
-                RowCount = data.Total,
-                TableData = data.Data.ToDynamicList()
-            });
-        }
-
-        [HttpGet("lists")]
-        public IActionResult GetList(string filters, string sorts) 
-        {
-            var data =
-                _assetType.GetLists(
+    [HttpGet("lists")]
+    public IActionResult GetList(string filters, string sorts) 
+    {
+        var data =
+            _assetType.GetLists(
                     JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
                     JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]")).Data
-                    .ToDynamicList()
-                    .Select(x => new
-                    {
-                        x.Id, x.Initial, x.Name, x.CoaDeprecExpense, x.CoaAccumDeprec, x.CoaAsset, x.CoaExpense
-                    })
-                    .ToList<dynamic>();
+                .ToDynamicList()
+                .Select(x => new
+                {
+                    x.Id, x.Initial, x.Name, x.CoaDeprecExpense, x.CoaAccumDeprec, x.CoaAsset, x.CoaExpense
+                })
+                .ToList<dynamic>();
 
-            return Ok(new ApiResponse
-            {
-                RowCount = data.Count,
-                TableData = data
-            });
-        }
-
-        [HttpPost]
-        public IActionResult OnPost(AssetType data)
+        return Ok(new ApiResponse
         {
-            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Insert }).Any())
-            {
-                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
-            data.IsActive = true;
-            data.CreatedBy = _claim.UserId;
-            data.CreatedDate = DateTime.Now;
-            data.UpdatedBy = data.CreatedBy;
-            data.UpdatedDate = data.CreatedDate;
+            RowCount = data.Count,
+            TableData = data
+        });
+    }
 
-            var result = _assetType.Insert(data);
-            return Ok(result);
-        }
-
-        [HttpPut("{id}")]
-        public IActionResult OnPut(string id, AssetType data)
+    [HttpPost]
+    public IActionResult OnPost(AssetType data)
+    {
+        if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Insert }).Any())
         {
-            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
-            {
-                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
-
-            data.UpdatedBy = _claim.UserId;
-            data.UpdatedDate = DateTime.Now;
-
-            var result = _assetType.Update(data);
-
-            return Ok(result);
+            return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
         }
+        data.IsActive = true;
+        data.CreatedBy = _claim.UserId;
+        data.CreatedDate = DateTime.Now;
+        data.UpdatedBy = data.CreatedBy;
+        data.UpdatedDate = data.CreatedDate;
 
-        [HttpDelete("{id}")]
-        public IActionResult OnDelete(int id)
+        var result = _assetType.Insert(data);
+        return Ok(result);
+    }
+
+    [HttpPut("{id}")]
+    public IActionResult OnPut(string id, AssetType data)
+    {
+        if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
         {
-
-            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Delete }).Any())
-            {
-                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
-
-            var result = _assetType.Delete(id);
-            return Ok(result);
+            return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
         }
+
+        data.UpdatedBy = _claim.UserId;
+        data.UpdatedDate = DateTime.Now;
+
+        var result = _assetType.Update(data);
+
+        return Ok(result);
+    }
+
+    [HttpDelete("{id}")]
+    public IActionResult OnDelete(int id)
+    {
+
+        if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Delete }).Any())
+        {
+            return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+        }
+
+        var result = _assetType.Delete(id);
+        return Ok(result);
     }
 }

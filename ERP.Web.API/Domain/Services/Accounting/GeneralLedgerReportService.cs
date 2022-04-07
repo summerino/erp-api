@@ -4,62 +4,62 @@ using ERP.Entity.SQLQuery;
 using ERP.Web.API.Domain.Interfaces.Accounting;
 using Microsoft.EntityFrameworkCore;
 
-namespace ERP.Web.API.Domain.Services.Accounting
+namespace ERP.Web.API.Domain.Services.Accounting;
+
+public class GeneralLedgerReportService : IGeneralLedgerReportService
 {
-    public class GeneralLedgerReportService : IGeneralLedgerReportService
+    private readonly TenantContext _db;
+
+    public GeneralLedgerReportService(TenantContext db)
     {
-        private readonly TenantContext _db;
+        _db = db;
+    }
 
-        public GeneralLedgerReportService(TenantContext db)
+    public IEnumerable<GeneralLedgerResult> GetGeneralLedgerLists(string dateFrom, string dateTo, string coaFrom, string coaTo, string currCode, string sort, int? caller)
+    {
+        string sqlCoa = "";
+
+        if (!(string.IsNullOrEmpty(coaFrom) && string.IsNullOrEmpty(coaTo)))
         {
-            _db = db;
-        }
+            coaFrom = string.IsNullOrEmpty(coaFrom) ? coaTo : coaFrom;
+            coaTo = string.IsNullOrEmpty(coaTo) ? coaFrom : coaTo;
 
-        public IEnumerable<GeneralLedgerResult> GetGeneralLedgerLists(string dateFrom, string dateTo, string coaFrom, string coaTo, string currCode, string sort, int? caller)
-        {
-            string sqlCoa = "";
+            int acc1 = int.TryParse(coaFrom, out int tmp) ? tmp : 0;
+            int acc2 = int.TryParse(coaTo, out tmp) ? tmp : 0;
 
-            if (!(string.IsNullOrEmpty(coaFrom) && string.IsNullOrEmpty(coaTo)))
+            if (!(acc1 == 0 && acc2 == 0))
             {
-                coaFrom = string.IsNullOrEmpty(coaFrom) ? coaTo : coaFrom;
-                coaTo = string.IsNullOrEmpty(coaTo) ? coaFrom : coaTo;
-
-                int acc1 = int.TryParse(coaFrom, out int tmp) ? tmp : 0;
-                int acc2 = int.TryParse(coaTo, out tmp) ? tmp : 0;
-
-                if (!(acc1 == 0 && acc2 == 0))
+                if (acc1 > acc2)
                 {
-                    if (acc1 > acc2)
-                    {
-                        tmp = acc1;
-                        acc1 = acc2;
-                        acc2 = tmp;
-                    }
-                    coaFrom = acc1.ToString();
-                    coaTo = acc2.ToString();
+                    tmp = acc1;
+                    acc1 = acc2;
+                    acc2 = tmp;
                 }
+                coaFrom = acc1.ToString();
+                coaTo = acc2.ToString();
+            }
 
-                sqlCoa = $@"
+            sqlCoa = $@"
                         SELECT DISTINCT Code
                         FROM Accounting.COA
                         WHERE Code BETWEEN '{coaFrom.Replace("'", "''")}' AND '{coaTo.Replace("'", "''")}'";
-            }
+        }
 
-            string whEndYear = "";
+        string whEndYear = "";
 
-            if (DateTime.TryParse(dateTo, out var dateTemp))
-            {
-                if (dateTemp.Month == 12 && dateTemp.Day == 31)
-                    whEndYear = $"AND Code <> 'ENDYEAR-{dateTemp.Year}'";
-            }
+        if (DateTime.TryParse(dateTo, out var dateTemp))
+        {
+            if (dateTemp.Month == 12 && dateTemp.Day == 31)
+                whEndYear = $"AND Code <> 'ENDYEAR-{dateTemp.Year}'";
+        }
 
-            if (!string.IsNullOrEmpty(dateFrom))
-                dateFrom = dateFrom.Replace("'", "''");
+        if (!string.IsNullOrEmpty(dateFrom))
+            dateFrom = dateFrom.Replace("'", "''");
 
-            string cteSource = "cte_jur_src_final";
-            string orderBy = (sort == "2" ? "Code,[Date],RefCode1" : "[Date],Code,RefCode1");
+        string cteSource = "cte_jur_src_final";
+        string orderBy = (sort == "2" ? "Code,[Date],RefCode1" : "[Date],Code,RefCode1");
 
-            string sql = $@"
+        string sql = $@"
                 {SourceJournalQuery.BuildQuery(null, dateTo, null, sqlCoa, currCode, null, null, null)}
 	            ,cte_begin_src AS (
 		            SELECT '' AS Code,null AS [Date],'Saldo Awal' AS Notes
@@ -117,7 +117,6 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 FROM cte_union_src
                 ORDER BY CoaCode,sort,{orderBy}";
 
-            return _db.GeneralLedgerResults.FromSqlRaw(sql).ToList();
-        }
+        return _db.GeneralLedgerResults.FromSqlRaw(sql).ToList();
     }
 }

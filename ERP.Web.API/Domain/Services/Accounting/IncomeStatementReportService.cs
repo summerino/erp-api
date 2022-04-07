@@ -4,50 +4,50 @@ using ERP.Entity.Accounting;
 using ERP.Entity.SQLQuery;
 using ERP.Web.API.Domain.Interfaces.Accounting;
 
-namespace ERP.Web.API.Domain.Services.Accounting
-{
-    public class IncomeStatementReportService : IIncomeStatementReportService
-    {
-        private readonly TenantContext _db;
+namespace ERP.Web.API.Domain.Services.Accounting;
 
-        public IncomeStatementReportService(TenantContext db)
+public class IncomeStatementReportService : IIncomeStatementReportService
+{
+    private readonly TenantContext _db;
+
+    public IncomeStatementReportService(TenantContext db)
+    {
+        _db = db;
+    }
+
+    public IEnumerable<IncomeStatementResult> GetIncomeStatementLists(string periodType, string rptBy,
+        string rptDet, string dateTo)
+    {
+        string parDateTo = "", nowPeriod = "", prevPeriod = "";
+        string whEndYear = "";
+
+        string tmpTableName = DateTime.Now.ToString("yyyyMMdd_hhmmss_fff");
+
+        string fmtType = rptBy.Substring(1, 1);
+        rptBy = rptBy[..1];
+
+        if (!string.IsNullOrEmpty(dateTo))
         {
-            _db = db;
+            var date = DateTime.Parse(dateTo);
+            date = new DateTime(date.Year, date.Month, DateTime.DaysInMonth(date.Year, date.Month));
+
+            parDateTo = date.ToString("yyyy-MM-dd");
+            nowPeriod = date.ToString("yyyyMM");
+            prevPeriod = date.AddMonths(-1).ToString("yyyyMM");
+            if (periodType is "Y" or "A")
+                prevPeriod = date.AddYears(-1).ToString("yyyyMM");
+
+            whEndYear = $"WHERE Code <> 'ENDYEAR-{nowPeriod[..4]}'";
         }
 
-        public IEnumerable<IncomeStatementResult> GetIncomeStatementLists(string periodType, string rptBy,
-            string rptDet, string dateTo)
-        {
-            string parDateTo = "", nowPeriod = "", prevPeriod = "";
-            string whEndYear = "";
-
-            string tmpTableName = DateTime.Now.ToString("yyyyMMdd_hhmmss_fff");
-
-            string fmtType = rptBy.Substring(1, 1);
-            rptBy = rptBy[..1];
-
-            if (!string.IsNullOrEmpty(dateTo))
-            {
-                var date = DateTime.Parse(dateTo);
-                date = new DateTime(date.Year, date.Month, DateTime.DaysInMonth(date.Year, date.Month));
-
-                parDateTo = date.ToString("yyyy-MM-dd");
-                nowPeriod = date.ToString("yyyyMM");
-                prevPeriod = date.AddMonths(-1).ToString("yyyyMM");
-                if (periodType is "Y" or "A")
-                    prevPeriod = date.AddYears(-1).ToString("yyyyMM");
-
-                whEndYear = $"WHERE Code <> 'ENDYEAR-{nowPeriod[..4]}'";
-            }
-
-            string sqlAmount = $@"
+        string sqlAmount = $@"
                 ,SUM(CASE WHEN isPeriod = '{nowPeriod}' THEN (isPm * isAmountIdr) ELSE 0 END) AS isNowAmountIdr
                 ,SUM(CASE WHEN isPeriod = '{prevPeriod}' THEN (isPm * isAmountIdr) ELSE 0 END) AS isPrevAmountIdr
                 ,CONVERT(decimal, 0) AS isNowYearAmountIdr,CONVERT(decimal, 0) AS isPrevYearAmountIdr";
 
-            if (periodType == "Y")
-            {
-                sqlAmount = $@"
+        if (periodType == "Y")
+        {
+            sqlAmount = $@"
                 ,SUM(CASE WHEN isPercent = 1
                         THEN CASE WHEN isPeriod <> '{nowPeriod[..4]}99'
                                 THEN 0 ELSE (isPm * isAmountIdr) END
@@ -61,10 +61,10 @@ namespace ERP.Web.API.Domain.Services.Accounting
                                 THEN (isPm * isAmountIdr) ELSE 0 END
                 END) AS isPrevAmountIdr
                 ,CONVERT(decimal, 0) AS isNowYearAmountIdr,CONVERT(decimal, 0) AS isPrevYearAmountIdr";
-            }
-            else if (periodType == "A")
-            {
-                sqlAmount = $@"
+        }
+        else if (periodType == "A")
+        {
+            sqlAmount = $@"
                 ,SUM(CASE WHEN isPeriod = '{nowPeriod}' THEN (isPm * isAmountIdr) ELSE 0 END) AS isNowAmountIdr
                 ,SUM(CASE WHEN isPeriod = '{prevPeriod}' AND isSource <> 'END_YEAR' THEN (isPm * isAmountIdr) ELSE 0 END) AS isPrevAmountIdr
                 ,SUM(CASE WHEN isPercent = 1
@@ -79,15 +79,15 @@ namespace ERP.Web.API.Domain.Services.Accounting
                         ELSE CASE WHEN LEFT(isPeriod,4) = '{prevPeriod[..4]}' AND isPeriod <= '{prevPeriod}' AND isSource <> 'END_YEAR'
                                 THEN (isPm * isAmountIdr) ELSE 0 END
                 END) AS isPrevYearAmountIdr";
-            }
+        }
 
-            var maxDeep = _db.IncomeStatementFormats.Where(x => x.Category == fmtType)
-                            .Max(x => x.Deep);
+        var maxDeep = _db.IncomeStatementFormats.Where(x => x.Category == fmtType)
+            .Max(x => x.Deep);
 
-            string sqlDeep = "";
-            for (int i = 1; i <= maxDeep; i++)
-            {
-                sqlDeep += $@"
+        string sqlDeep = "";
+        for (int i = 1; i <= maxDeep; i++)
+        {
+            sqlDeep += $@"
                 ,cte_is_deep_src_{i} AS (
                     SELECT * FROM cte_is_deep_src_{i - 1}
                     UNION ALL
@@ -117,15 +117,15 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     ,TBA.Hidden,TBA.Bold,TBB.isShowed,TBA.isPercent
                     ,TBB.isPeriod,TBB.isSource
                 )";
-            }
+        }
 
-            var maxSubTot = _db.IncomeStatementFormats.Where(x => x.Category == fmtType)
-                            .Max(x => x.SubtotalSort);
+        var maxSubTot = _db.IncomeStatementFormats.Where(x => x.Category == fmtType)
+            .Max(x => x.SubtotalSort);
 
-            string sqlSubTot = "";
-            for (int i = 1; i <= maxSubTot; i++)
-            {
-                sqlSubTot += $@"
+        string sqlSubTot = "";
+        for (int i = 1; i <= maxSubTot; i++)
+        {
+            sqlSubTot += $@"
                 ,{(i == maxSubTot ? "cte_is_format_src_1" : "cte_is_subtot_src_" + i)} AS (
                     SELECT * FROM cte_is_subtot_src_{i - 1}
                     UNION ALL
@@ -153,12 +153,12 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     ,TBA.Position,TBA.Deep,TBA.Sort,TBA.SubTotalSort,TBA.Detail,TBA.Hidden,TBA.Bold
                     ,TBC.isPeriod,TBC.isSource
                 )";
-            }
+        }
 
-            string sqlSort = "";
-            for (int i = 2; i <= maxDeep + 2; i++)
-            {
-                sqlSort += $@"
+        string sqlSort = "";
+        for (int i = 2; i <= maxDeep + 2; i++)
+        {
+            sqlSort += $@"
                 UPDATE TBA SET
                 isRptSort = ISNULL(TBB.isRptSort,'') + RIGHT('0000000' + CONVERT(VARCHAR,TBA.isSort), 7)
                 FROM (
@@ -169,11 +169,11 @@ namespace ERP.Web.API.Domain.Services.Accounting
                     WHERE isDeep = {i - 1}
                 ) TBB
                 WHERE TBA.isParent = TBB.isCode";
-            }
+        }
 
-            string cteSource = "cte_jur_src_final";
+        string cteSource = "cte_jur_src_final";
 
-            string sql = $@"
+        string sql = $@"
                 {SourceJournalQuery.BuildQuery(null, parDateTo, null, null, null, null, null, null)}
 		        SELECT CoaCode,coaName,FORMAT([Date],'yyyyMM') AS period
                 ,CASE WHEN SrcTrans = 'END_YEAR' THEN SrcTrans ELSE '' END AS src
@@ -442,51 +442,51 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 DROP TABLE #tmpIsFormat_{tmpTableName}
                 DROP TABLE #tmpJourSrc_{tmpTableName}";
 
-            return _db.IncomeStatementResults.FromSqlRaw(sql);
+        return _db.IncomeStatementResults.FromSqlRaw(sql);
+    }
+
+    public IEnumerable<BsIsDetailResult> GetBsIsDetailLists(string typeFormat, string code, string plusMinus,
+        string dateFrom, string dateTo, string jourSrc)
+    {
+        string parDateTo = "";
+        string whEndYear = "", whJourSrc = "";
+
+        if (!string.IsNullOrEmpty(dateTo))
+        {
+            var date = DateTime.Parse(dateTo);
+            date = new DateTime(date.Year, date.Month, DateTime.DaysInMonth(date.Year, date.Month));
+            parDateTo = date.ToString("yyyy-MM-dd");
+            var nowPeriod = date.ToString("yyyyMM");
+
+            whEndYear = $"AND Code <> 'ENDYEAR-{nowPeriod[..4]}'";
         }
 
-        public IEnumerable<BsIsDetailResult> GetBsIsDetailLists(string typeFormat, string code, string plusMinus,
-            string dateFrom, string dateTo, string jourSrc)
+        if (!string.IsNullOrEmpty(jourSrc))
         {
-            string parDateTo = "";
-            string whEndYear = "", whJourSrc = "";
+            jourSrc = jourSrc.Replace("'", "''");
+            jourSrc = jourSrc.Replace(",", "','");
+            whJourSrc = $"AND src IN ('{jourSrc}')";
+        }
 
-            if (!string.IsNullOrEmpty(dateTo))
-            {
-                var date = DateTime.Parse(dateTo);
-                date = new DateTime(date.Year, date.Month, DateTime.DaysInMonth(date.Year, date.Month));
-                parDateTo = date.ToString("yyyy-MM-dd");
-                var nowPeriod = date.ToString("yyyyMM");
+        typeFormat = typeFormat.Replace("'", "''");
+        code = code.Replace("'", "''");
 
-                whEndYear = $"AND Code <> 'ENDYEAR-{nowPeriod[..4]}'";
-            }
+        var dataCoa = _db.NewCodes.FromSqlInterpolated($"exec sp_get_bsisdt_coa {typeFormat}, {code.Replace("Z", "")}").ToList();
+        if (!dataCoa.Any())
+            return Enumerable.Empty<BsIsDetailResult>();
 
-            if (!string.IsNullOrEmpty(jourSrc))
-            {
-                jourSrc = jourSrc.Replace("'", "''");
-                jourSrc = jourSrc.Replace(",", "','");
-                whJourSrc = $"AND src IN ('{jourSrc}')";
-            }
+        var sqlCoa = "";
 
-            typeFormat = typeFormat.Replace("'", "''");
-            code = code.Replace("'", "''");
-
-            var dataCoa = _db.NewCodes.FromSqlInterpolated($"exec sp_get_bsisdt_coa {typeFormat}, {code.Replace("Z", "")}").ToList();
-            if (!dataCoa.Any())
-                return Enumerable.Empty<BsIsDetailResult>();
-
-            var sqlCoa = "";
-
-            foreach (var item in dataCoa)
-            {
-                sqlCoa +=
-                    $@"{(sqlCoa == "" ? "" : " UNION ")} 
+        foreach (var item in dataCoa)
+        {
+            sqlCoa +=
+                $@"{(sqlCoa == "" ? "" : " UNION ")} 
                     SELECT '{item.Value}' AS Code";
-            }
+        }
 
-            string cteSource = "cte_jur_src_final";
+        string cteSource = "cte_jur_src_final";
 
-            string sql = $@"
+        string sql = $@"
                 {SourceJournalQuery.BuildQuery(dateFrom, parDateTo, null, sqlCoa, null, null, null, null)}
 	            ,cte_jour_src AS (
 		            SELECT CoaCode,coaName,FORMAT([Date],'yyyyMM') AS period
@@ -505,7 +505,6 @@ namespace ERP.Web.API.Domain.Services.Accounting
                 GROUP BY CoaCode,coaName
                 ORDER BY CoaCode";
 
-            return _db.BsIsDetailResults.FromSqlRaw(sql);
-        }
+        return _db.BsIsDetailResults.FromSqlRaw(sql);
     }
 }

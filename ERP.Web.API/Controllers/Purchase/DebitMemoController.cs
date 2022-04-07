@@ -11,153 +11,152 @@ using ERP.Web.API.Model;
 using ERP.Web.API.Model.Purchase;
 using Newtonsoft.Json;
 
-namespace ERP.Web.API.Controllers.Purchase
+namespace ERP.Web.API.Controllers.Purchase;
+
+[Route("debit-memo")]
+[ApiController]
+public class DebitMemoController : ControllerBase
 {
-    [Route("debit-memo")]
-    [ApiController]
-    public class DebitMemoController : ControllerBase
+    private readonly IDebitMemoService _memo;
+    private readonly IClosingMonthService _closingMonth;
+    private readonly ISystemParameterService _sysPar;
+    private readonly IClaimService _claim;
+    private readonly IAuthService _auth;
+
+    private const int MenuId = (int)Menu.DebitMemo;
+
+    public DebitMemoController(IDebitMemoService memo, IClosingMonthService closingMonth,
+        ISystemParameterService sysPar, IClaimService claim, IAuthService auth)
     {
-        private readonly IDebitMemoService _memo;
-        private readonly IClosingMonthService _closingMonth;
-        private readonly ISystemParameterService _sysPar;
-        private readonly IClaimService _claim;
-        private readonly IAuthService _auth;
+        _memo = memo;
+        _closingMonth = closingMonth;
+        _sysPar = sysPar;
+        _claim = claim;
+        _auth= auth;
+    }
 
-        private const int MenuId = (int)Menu.DebitMemo;
+    [HttpGet]
+    public IActionResult GetData(string search, string filters, string sorts, int skip, int take)
+    {
+        var data =
+            _memo.GetData(
+                skip, take,
+                JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
+                search);
 
-        public DebitMemoController(IDebitMemoService memo, IClosingMonthService closingMonth,
-            ISystemParameterService sysPar, IClaimService claim, IAuthService auth)
+        return Ok(new ApiResponse
         {
-            _memo = memo;
-            _closingMonth = closingMonth;
-            _sysPar = sysPar;
-            _claim = claim;
-            _auth= auth;
-        }
+            RowCount = data.Total,
+            TableData = data.Data.ToDynamicList()
+        });
+    }
 
-        [HttpGet]
-        public IActionResult GetData(string search, string filters, string sorts, int skip, int take)
+    [HttpGet]
+    [Route("outstanding")]
+    public IActionResult GetDataOutstandingDebitMemo(string search, string filters, string sorts, int skip, int take)
+    {
+        var data =
+            _memo.GetDataOutstandingDebitMemo(
+                skip, take,
+                JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
+                search);
+
+        return Ok(new ApiResponse
         {
-            var data =
-                _memo.GetData(
-                    skip, take,
-                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
-                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
-                    search);
+            RowCount = data.Total,
+            TableData = data.Data.ToDynamicList()
+        });
+    }
 
-            return Ok(new ApiResponse
-            {
-                RowCount = data.Total,
-                TableData = data.Data.ToDynamicList()
-            });
-        }
+    [HttpGet("related-trans")]
+    public IActionResult GetRelatedTransactions(string code)
+    {
+        var data = _memo.GetRelatedTransactions(code);
 
-        [HttpGet]
-        [Route("outstanding")]
-        public IActionResult GetDataOutstandingDebitMemo(string search, string filters, string sorts, int skip, int take)
+        return Ok(new ApiResponse
         {
-            var data =
-                _memo.GetDataOutstandingDebitMemo(
-                    skip, take,
-                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
-                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
-                    search);
+            RowCount = data.Count,
+            TableData = data
+        });
+    }
 
-            return Ok(new ApiResponse
-            {
-                RowCount = data.Total,
-                TableData = data.Data.ToDynamicList()
-            });
-        }
+    [HttpPost]
+    public IActionResult OnPost(DebitMemoRequest data)
+    {
+        // Checking role authorization
+        if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Insert }).Any())
+            return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
-        [HttpGet("related-trans")]
-        public IActionResult GetRelatedTransactions(string code)
-        {
-            var data = _memo.GetRelatedTransactions(code);
+        // Validate process
+        var (isValid, message) = Validate(data);
+        if (!isValid)
+            return Ok(new SaveResult(false, message));
 
-            return Ok(new ApiResponse
-            {
-                RowCount = data.Count,
-                TableData = data
-            });
-        }
+        data.Mark = "PP"; // Pending Payment
+        data.CreatedBy = _claim.UserId;
+        data.CreatedDate = DateTime.Now;
+        data.UpdatedBy = data.CreatedBy;
+        data.UpdatedDate = data.CreatedDate;
 
-        [HttpPost]
-        public IActionResult OnPost(DebitMemoRequest data)
-        {
-            // Checking role authorization
-            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Insert }).Any())
-                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+        var result = _memo.Insert(data);
 
-            // Validate process
-            var (isValid, message) = Validate(data);
-            if (!isValid)
-                return Ok(new SaveResult(false, message));
+        return Ok(result);
+    }
 
-            data.Mark = "PP"; // Pending Payment
-            data.CreatedBy = _claim.UserId;
-            data.CreatedDate = DateTime.Now;
-            data.UpdatedBy = data.CreatedBy;
-            data.UpdatedDate = data.CreatedDate;
+    [HttpPut("{code}")]
+    public IActionResult OnPut(string code, DebitMemoRequest data)
+    {
+        // Checking role authorization
+        if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
+            return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
-            var result = _memo.Insert(data);
+        // Validate process
+        var (isValid, message) = Validate(data);
+        if (!isValid)
+            return Ok(new SaveResult(false, message));
 
-            return Ok(result);
-        }
+        data.UpdatedBy = _claim.UserId;
+        data.UpdatedDate = DateTime.Now;
 
-        [HttpPut("{code}")]
-        public IActionResult OnPut(string code, DebitMemoRequest data)
-        {
-            // Checking role authorization
-            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
-                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+        var result = _memo.Update(data);
 
-            // Validate process
-            var (isValid, message) = Validate(data);
-            if (!isValid)
-                return Ok(new SaveResult(false, message));
+        return Ok(result);
+    }
 
-            data.UpdatedBy = _claim.UserId;
-            data.UpdatedDate = DateTime.Now;
+    [HttpDelete("{code}")]
+    public IActionResult OnDelete(string code, DebitMemoRequest data)
+    {
+        // Checking role authorization
+        if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Void }).Any())
+            return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
-            var result = _memo.Update(data);
+        // Validate process
+        var (isValid, message) = Validate(data);
+        if (!isValid)
+            return Ok(new SaveResult(false, message));
 
-            return Ok(result);
-        }
+        var result = _memo.Delete(data.Code, _claim.UserId);
 
-        [HttpDelete("{code}")]
-        public IActionResult OnDelete(string code, DebitMemoRequest data)
-        {
-            // Checking role authorization
-            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Void }).Any())
-                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+        return Ok(result);
+    }
 
-            // Validate process
-            var (isValid, message) = Validate(data);
-            if (!isValid)
-                return Ok(new SaveResult(false, message));
+    private (bool, string) Validate(DebitMemoRequest data)
+    {
+        var periods = new List<string> { data.Date.ToString("yyyyMM") };
+        if (data.OriginalDate.HasValue)
+            periods.Add(data.OriginalDate.Value.ToString("yyyyMM"));
 
-            var result = _memo.Delete(data.Code, _claim.UserId);
+        if (_closingMonth.IsMonthClosed(periods))
+            return (false, "Periode sudah ditutup. Silakan hubungi departemen akuntansi.");
 
-            return Ok(result);
-        }
+        if (data.SrcTrans == 2)
+            return (false, "data tidak dapat disimpan karena sumber transaksi adalah retur.");
 
-        private (bool, string) Validate(DebitMemoRequest data)
-        {
-            var periods = new List<string> { data.Date.ToString("yyyyMM") };
-            if (data.OriginalDate.HasValue)
-                periods.Add(data.OriginalDate.Value.ToString("yyyyMM"));
-
-            if (_closingMonth.IsMonthClosed(periods))
-                return (false, "Periode sudah ditutup. Silakan hubungi departemen akuntansi.");
-
-            if (data.SrcTrans == 2)
-                return (false, "data tidak dapat disimpan karena sumber transaksi adalah retur.");
-
-            // Checking data start date validity
-            return (!_sysPar.IsStartDateValid(data.Date))
-                ? (false, "Tanggal tidak boleh lebih kecil dari tanggal mulai data.")
-                : (true, "");
-        }
+        // Checking data start date validity
+        return (!_sysPar.IsStartDateValid(data.Date))
+            ? (false, "Tanggal tidak boleh lebih kecil dari tanggal mulai data.")
+            : (true, "");
     }
 }

@@ -1,9 +1,8 @@
 ﻿using ERP.Entity.Inventory;
 
-namespace ERP.Web.API.Model.Inventory
+namespace ERP.Web.API.Model.Inventory;
+
+public class ItemGroupRequest : ItemGroup
 {
-    public class ItemGroupRequest : ItemGroup
-    {
-        public IEnumerable<ItemGroupSubGroup> ItemDetails { get; set; }
-    }
+    public IEnumerable<ItemGroupSubGroup> ItemDetails { get; set; }
 }

@@ -12,185 +12,184 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Linq.Dynamic.Core;
 
-namespace ERP.Web.API.Controllers.Inventory
+namespace ERP.Web.API.Controllers.Inventory;
+
+[Route("consignee")]
+[ApiController]
+public class ConsigneeController : ControllerBase
 {
-    [Route("consignee")]
-    [ApiController]
-    public class ConsigneeController : ControllerBase
+    private readonly IConsigneeService _cs;
+    private readonly IUnitOfMeasurementService _uom;
+    private readonly IClosingMonthService _closingMonth;
+    private readonly ISystemParameterService _sysPar;
+    private readonly IClaimService _claim;
+    private readonly IAuthService _auth;
+    private readonly IActiveTransactionService _activeTrans;
+    private const int MenuId = (int)Menu.Consignee;
+
+
+    public ConsigneeController(IConsigneeService consignee, IUnitOfMeasurementService uom,
+        IClosingMonthService closingMonth, ISystemParameterService sysPar,
+        IClaimService claim, IAuthService auth, IActiveTransactionService activeTrans)
     {
-        private readonly IConsigneeService _cs;
-        private readonly IUnitOfMeasurementService _uom;
-        private readonly IClosingMonthService _closingMonth;
-        private readonly ISystemParameterService _sysPar;
-        private readonly IClaimService _claim;
-        private readonly IAuthService _auth;
-        private readonly IActiveTransactionService _activeTrans;
-        private const int MenuId = (int)Menu.Consignee;
+        _cs = consignee;
+        _uom = uom;
+        _closingMonth = closingMonth;
+        _sysPar = sysPar;
+        _claim = claim;
+        _auth = auth;
+        _activeTrans = activeTrans;
+    }
 
+    [HttpGet]
+    public IActionResult GetData(string search, string filters, string sorts, int skip, int take)
+    {
+        var data =
+            _cs.GetData(
+                skip, take,
+                JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
+                search);
 
-        public ConsigneeController(IConsigneeService consignee, IUnitOfMeasurementService uom,
-            IClosingMonthService closingMonth, ISystemParameterService sysPar,
-            IClaimService claim, IAuthService auth, IActiveTransactionService activeTrans)
+        return Ok(new ApiResponse
         {
-            _cs = consignee;
-            _uom = uom;
-            _closingMonth = closingMonth;
-            _sysPar = sysPar;
-            _claim = claim;
-            _auth = auth;
-            _activeTrans = activeTrans;
-        }
+            RowCount = data.Total,
+            TableData = data.Data.ToDynamicList()
+        });
+    }
 
-        [HttpGet]
-        public IActionResult GetData(string search, string filters, string sorts, int skip, int take)
-        {
-            var data =
-                _cs.GetData(
-                    skip, take,
-                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
-                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
-                    search);
+    [HttpGet("item")]
+    public IActionResult GetDetailData(string code)
+    {
+        var uomC = _uom.GetDataConversion().ToList();
 
-            return Ok(new ApiResponse
+        var data = _cs.GetDetailData(code)
+            .Select(x => new
             {
-                RowCount = data.Total,
-                TableData = data.Data.ToDynamicList()
-            });
-        }
+                x.Id,
+                x.Code,
+                x.LineNo,
+                x.ItemId,
+                x.ItemName,
+                x.UomId,
+                x.UnitId,
+                x.Qty,
+                Units = uomC.Where(u => u.UomId == x.UomId)
+                    .Select(u => new
+                    {
+                        u.Id,
+                        u.UomId,
+                        u.UnitToConvert,
+                        u.UnitEquivalent,
+                        u.Conversion,
+                        u.IsBaseUnit,
+                        u.Seq
+                    })
+                    .OrderBy(u => u.Seq)
+                    .ToList(),
+                x.Notes,
+                x.UnitName
+            })
+            .ToList<dynamic>();
 
-        [HttpGet("item")]
-        public IActionResult GetDetailData(string code)
+        return Ok(new ApiResponse
         {
-            var uomC = _uom.GetDataConversion().ToList();
+            RowCount = data.Count,
+            TableData = data
+        });
+    }
 
-            var data = _cs.GetDetailData(code)
-                .Select(x => new
-                {
-                    x.Id,
-                    x.Code,
-                    x.LineNo,
-                    x.ItemId,
-                    x.ItemName,
-                    x.UomId,
-                    x.UnitId,
-                    x.Qty,
-                    Units = uomC.Where(u => u.UomId == x.UomId)
-                        .Select(u => new
-                        {
-                            u.Id,
-                            u.UomId,
-                            u.UnitToConvert,
-                            u.UnitEquivalent,
-                            u.Conversion,
-                            u.IsBaseUnit,
-                            u.Seq
-                        })
-                        .OrderBy(u => u.Seq)
-                        .ToList(),
-                    x.Notes,
-                    x.UnitName
-                })
-                .ToList<dynamic>();
+    [HttpPost]
+    public IActionResult OnPost(TransferStockRequest data)
+    {
+        // Checking role authorization
+        if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Insert }).Any())
+            return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
-            return Ok(new ApiResponse
-            {
-                RowCount = data.Count,
-                TableData = data
-            });
-        }
+        // Validate process
+        var (isValid, message) = Validate(data, checkSeenByOther: false);
+        if (!isValid)
+            return Ok(new SaveResult(false, message));
 
-        [HttpPost]
-        public IActionResult OnPost(TransferStockRequest data)
+        // Insert process
+        data.Type = data.Type.ToUpper();
+        data.Mark = "A";
+        data.CreatedBy = _claim.UserId;
+        data.CreatedDate = DateTime.Now;
+        data.UpdatedBy = data.CreatedBy;
+        data.UpdatedDate = data.CreatedDate;
+
+        var result = _cs.Insert(data);
+
+        return Ok(result);
+    }
+
+    [HttpPut("{code}")]
+    public IActionResult OnPut(string code, TransferStockRequest data)
+    {
+        // Checking role authorization
+        if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
+            return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+
+        // Validate process
+        var (isValid, message) = Validate(data);
+        if (!isValid)
+            return Ok(new SaveResult(false, message));
+
+        // Update process
+        data.Type = data.Type.ToUpper();
+        data.UpdatedBy = _claim.UserId;
+        data.UpdatedDate = DateTime.Now;
+
+        var result = _cs.Update(data);
+
+        return Ok(result);
+    }
+
+    [HttpDelete("{code}")]
+    public IActionResult OnDelete(string code, TransferStockRequest data)
+    {
+        // Checking role authorization
+        if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Void }).Any())
+            return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+
+        // Validate process
+        var (isValid, message) = Validate(data, true);
+        if (!isValid)
+            return Ok(new SaveResult(false, message));
+
+        var result = _cs.Delete(data.Code, _claim.UserId);
+        return Ok(result);
+    }
+
+    private (bool, string) Validate(TransferStockRequest data, bool onDelete = false, bool checkSeenByOther = true)
+    {
+        var periods = new List<string> { data.Date.ToString("yyyyMM") };
+        if (data.OriginalDate.HasValue)
+            periods.Add(data.OriginalDate.Value.ToString("yyyyMM"));
+
+        if (_closingMonth.IsMonthClosed(periods))
+            return (false, "Periode sudah ditutup. Silakan hubungi departemen akuntansi.");
+
+        // Checking data start date validity
+        if (!_sysPar.IsStartDateValid(data.Date))
+            return (false, "Tanggal tidak boleh lebih kecil dari tanggal mulai data.");
+
+        if (!onDelete)
         {
-            // Checking role authorization
-            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Insert }).Any())
-                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            if (!data.ItemDetails.Any())
+                return (false, "Detail tidak boleh kosong.");
 
-            // Validate process
-            var (isValid, message) = Validate(data, checkSeenByOther: false);
-            if (!isValid)
-                return Ok(new SaveResult(false, message));
-
-            // Insert process
-            data.Type = data.Type.ToUpper();
-            data.Mark = "A";
-            data.CreatedBy = _claim.UserId;
-            data.CreatedDate = DateTime.Now;
-            data.UpdatedBy = data.CreatedBy;
-            data.UpdatedDate = data.CreatedDate;
-
-            var result = _cs.Insert(data);
-
-            return Ok(result);
+            if (data.ItemDetails.GroupBy(x => new { x.ItemId, x.UnitId }).Any(x => x.Count() > 1))
+                return (false, "Terdapat barang dengan satuan yang sama pada bagian detail.");
         }
 
-        [HttpPut("{code}")]
-        public IActionResult OnPut(string code, TransferStockRequest data)
+        // Checking is data seen by others
+        if (checkSeenByOther && !_activeTrans.SeenByOthers("CNEE", data.Code, _claim.UserId))
         {
-            // Checking role authorization
-            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
-                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-
-            // Validate process
-            var (isValid, message) = Validate(data);
-            if (!isValid)
-                return Ok(new SaveResult(false, message));
-
-            // Update process
-            data.Type = data.Type.ToUpper();
-            data.UpdatedBy = _claim.UserId;
-            data.UpdatedDate = DateTime.Now;
-
-            var result = _cs.Update(data);
-
-            return Ok(result);
+            return (false, "data sedang digunakan oleh pengguna lain.");
         }
 
-        [HttpDelete("{code}")]
-        public IActionResult OnDelete(string code, TransferStockRequest data)
-        {
-            // Checking role authorization
-            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Void }).Any())
-                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-
-            // Validate process
-            var (isValid, message) = Validate(data, true);
-            if (!isValid)
-                return Ok(new SaveResult(false, message));
-
-            var result = _cs.Delete(data.Code, _claim.UserId);
-            return Ok(result);
-        }
-
-        private (bool, string) Validate(TransferStockRequest data, bool onDelete = false, bool checkSeenByOther = true)
-        {
-            var periods = new List<string> { data.Date.ToString("yyyyMM") };
-            if (data.OriginalDate.HasValue)
-                periods.Add(data.OriginalDate.Value.ToString("yyyyMM"));
-
-            if (_closingMonth.IsMonthClosed(periods))
-                return (false, "Periode sudah ditutup. Silakan hubungi departemen akuntansi.");
-
-            // Checking data start date validity
-            if (!_sysPar.IsStartDateValid(data.Date))
-                return (false, "Tanggal tidak boleh lebih kecil dari tanggal mulai data.");
-
-            if (!onDelete)
-            {
-                if (!data.ItemDetails.Any())
-                    return (false, "Detail tidak boleh kosong.");
-
-                if (data.ItemDetails.GroupBy(x => new { x.ItemId, x.UnitId }).Any(x => x.Count() > 1))
-                    return (false, "Terdapat barang dengan satuan yang sama pada bagian detail.");
-            }
-
-            // Checking is data seen by others
-            if (checkSeenByOther && !_activeTrans.SeenByOthers("CNEE", data.Code, _claim.UserId))
-            {
-                return (false, "data sedang digunakan oleh pengguna lain.");
-            }
-
-            return (true, "");
-        }
+        return (true, "");
     }
 }

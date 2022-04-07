@@ -7,72 +7,71 @@ using ERP.Web.API.Domain.Interfaces.Accounting;
 using ERP.Web.API.Model.Accounting;
 using Microsoft.EntityFrameworkCore;
 
-namespace ERP.Web.API.Domain.Services.Accounting
+namespace ERP.Web.API.Domain.Services.Accounting;
+
+public class CurrencyRateService : GeneralService<CurrencyRate>, ICurrencyRateService
 {
-    public class CurrencyRateService : GeneralService<CurrencyRate>, ICurrencyRateService
+    public CurrencyRateService(TenantContext db)
+        : base(db)
     {
-        public CurrencyRateService(TenantContext db)
-            : base(db)
-        {
-        }
+    }
 
-        public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
-            string search)
-        {
-            var data = Db.CurrencyRates.AsQueryable();
+    public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
+        string search)
+    {
+        var data = Db.CurrencyRates.AsQueryable();
 
-            if (!string.IsNullOrEmpty(search))
-            {
-                data = DateTime.TryParse(search, out var searchDate) 
-                    ? data.Where(x => x.Date == searchDate) : 
-                    data.Where(x => x.CurrCode.Contains(search) || x.Amount.ToString().Contains(search));
-            }
-            return data.ToDataSourceResult(skip, take, filter, sort);
-        }
-
-        public DataSourceResult GetLists(IEnumerable<Filter> filters, IEnumerable<Sort> sorts)
+        if (!string.IsNullOrEmpty(search))
         {
-            var data = Db.CurrencyRates;
-            return data.ToDataSourceResult(0, -1, filters, sorts);
+            data = DateTime.TryParse(search, out var searchDate) 
+                ? data.Where(x => x.Date == searchDate) : 
+                data.Where(x => x.CurrCode.Contains(search) || x.Amount.ToString().Contains(search));
         }
+        return data.ToDataSourceResult(skip, take, filter, sort);
+    }
+
+    public DataSourceResult GetLists(IEnumerable<Filter> filters, IEnumerable<Sort> sorts)
+    {
+        var data = Db.CurrencyRates;
+        return data.ToDataSourceResult(0, -1, filters, sorts);
+    }
         
-        public override SaveResult Update(CurrencyRate data)
+    public override SaveResult Update(CurrencyRate data)
+    {
+        var result = new SaveResult(false);
+
+        // Update data
+        Db.CurrencyRates.Update(data);
+        Db.Entry(data).Property(e => e.Id).IsModified = false;
+        Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
+        Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
+
+        Db.SaveChanges();
+
+        result.Success = true;
+        result.Data = data.Id;
+        result.Message = "Data nilai tukar mata uang berhasil diperbarui.";
+        return result;
+    }
+
+    public SaveResult Insert(CurrencyRateRequest data)
+    {
+        var result = new SaveResult(false);
+
+        try
         {
-            var result = new SaveResult(false);
-
-            // Update data
-            Db.CurrencyRates.Update(data);
-            Db.Entry(data).Property(e => e.Id).IsModified = false;
-            Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
-            Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
-
+            // Insert data
+            Db.Database.ExecuteSqlInterpolated($"EXEC sp_insert_curr_rate {data.StartDate},{data.EndDate},{data.CurrCode},{data.Amount},{data.CreatedBy}");
             Db.SaveChanges();
-
-            result.Success = true;
-            result.Data = data.Id;
-            result.Message = "Data nilai tukar mata uang berhasil diperbarui.";
-            return result;
         }
-
-        public SaveResult Insert(CurrencyRateRequest data)
+        catch (Exception ex)
         {
-            var result = new SaveResult(false);
-
-            try
-            {
-                // Insert data
-                Db.Database.ExecuteSqlInterpolated($"EXEC sp_insert_curr_rate {data.StartDate},{data.EndDate},{data.CurrCode},{data.Amount},{data.CreatedBy}");
-                Db.SaveChanges();
-            }
-            catch (Exception ex)
-            {
-                result.Message = ex.InnerException?.Message ?? ex.Message;
-                return result;
-            }
-
-            result.Success = true;
-            result.Message = "Data nilai tukar mata uang berhasil disimpan.";
+            result.Message = ex.InnerException?.Message ?? ex.Message;
             return result;
         }
+
+        result.Success = true;
+        result.Message = "Data nilai tukar mata uang berhasil disimpan.";
+        return result;
     }
 }

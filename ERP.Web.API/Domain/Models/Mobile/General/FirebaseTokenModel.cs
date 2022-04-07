@@ -1,7 +1,6 @@
-﻿namespace ERP.Web.API.Domain.Models.Mobile.General
+﻿namespace ERP.Web.API.Domain.Models.Mobile.General;
+
+public class FirebaseTokenModel
 {
-    public class FirebaseTokenModel
-    {
-        public string FirebaseTokenId { get; set; }
-    }
+    public string FirebaseTokenId { get; set; }
 }

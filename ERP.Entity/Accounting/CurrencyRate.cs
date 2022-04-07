@@ -4,22 +4,21 @@ using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 using ERP.Entity.Core;
 
-namespace ERP.Entity.Accounting
+namespace ERP.Entity.Accounting;
+
+[Table("CurrencyRate", Schema = Schema.Accounting)]
+[Index(nameof(Date), nameof(CurrCode), IsUnique = true)]
+public class CurrencyRate : BaseEntity
 {
-    [Table("CurrencyRate", Schema = Schema.Accounting)]
-    [Index(nameof(Date), nameof(CurrCode), IsUnique = true)]
-    public class CurrencyRate : BaseEntity
-    {
-        public long Id { get; set; }
+    public long Id { get; set; }
 
-        [Column(TypeName = "date")]
-        public DateTime Date { get; set; }
+    [Column(TypeName = "date")]
+    public DateTime Date { get; set; }
 
-        [Required]
-        [StringLength(3)]
-        public string CurrCode { get; set; }
+    [Required]
+    [StringLength(3)]
+    public string CurrCode { get; set; }
 
-        [Precision(19, 6)]
-        public decimal Amount { get; set; }
-    }
+    [Precision(19, 6)]
+    public decimal Amount { get; set; }
 }

@@ -1,11 +1,10 @@
 ﻿using ERP.Common.Models;
 
-namespace ERP.Web.API.Domain.Interfaces.Sales
+namespace ERP.Web.API.Domain.Interfaces.Sales;
+
+public interface ISalesTargetReportService
 {
-    public interface ISalesTargetReportService
-    {
-        DataSourceResult GetData(string startDate, string endDate,
-                    int? salesId, int? groupId, int? groupSubGroupId,
-                    string groupSubGroup, bool isDetail);
-    }
+    DataSourceResult GetData(string startDate, string endDate,
+        int? salesId, int? groupId, int? groupSubGroupId,
+        string groupSubGroup, bool isDetail);
 }

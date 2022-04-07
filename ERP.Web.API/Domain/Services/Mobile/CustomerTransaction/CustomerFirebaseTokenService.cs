@@ -4,67 +4,66 @@ using ERP.Web.API.Domain.Interfaces.Mobile.CustomerTransaction;
 using ERP.Web.API.Domain.Models.Mobile.General;
 using Microsoft.EntityFrameworkCore;
 
-namespace ERP.Web.API.Domain.Services.Mobile.CustomerTransaction
+namespace ERP.Web.API.Domain.Services.Mobile.CustomerTransaction;
+
+public class CustomerFirebaseTokenService : ICustomerFirebaseTokenService
 {
-    public class CustomerFirebaseTokenService : ICustomerFirebaseTokenService
+    //private readonly CatalogContext _catalogCtx;
+    //private readonly IClaimService _claim;
+    protected TenantContext Db;
+
+    public CustomerFirebaseTokenService(
+        //CatalogContext catalogCtx,
+        //IClaimService claim,
+        TenantContext db
+    )
     {
-        //private readonly CatalogContext _catalogCtx;
-        //private readonly IClaimService _claim;
-        protected TenantContext Db;
+        //_catalogCtx = catalogCtx;
+        //_claim = claim;
+        Db = db;
+    }
 
-        public CustomerFirebaseTokenService(
-            //CatalogContext catalogCtx,
-            //IClaimService claim,
-            TenantContext db
-            )
+    public SaveResult AddCustomerFirebaseToken(FirebaseTokenModel data, string userCode)
+    {
+        //var username = Db.Customers.Where(x => x.Code.Equals(userCode)).Select(y => y.MobileUsername).SingleOrDefault()!;
+        var result = new SaveResult(false);
+
+        using var transaction = Db.Database.BeginTransaction();
+        try
         {
-            //_catalogCtx = catalogCtx;
-            //_claim = claim;
-            Db = db;
+            //var catalogUser = _catalogCtx.CustomerUsers.FirstOrDefault(x => x.Username == username);
+            //var tenant = _catalogCtx.Tenants.FirstOrDefault(x => x.Id == catalogUser.TenantId);
+
+            //// Configure tenant context db
+            //var contextOptions = new DbContextOptionsBuilder<TenantContext>()
+            //    .UseSqlServer($"Server={tenant.ServerName};Database={tenant.DatabaseName};User Id={tenant.ServerUserId};Password={tenant.ServerPassword}")
+            //    .Options;
+            //var tenantCtx = new TenantContext(contextOptions, _catalogCtx, _claim);
+            //var tenantCustomer = tenantCtx.Customers.FirstOrDefault(x => x.CatalogUserId == catalogUser.Id && x.MobileSignIn && x.IsActive);
+
+            // direct tenant
+            var tenantCustomer = Db.Customers.FirstOrDefault(x => x.Code == userCode && x.MobileSignIn && x.IsActive);
+            if (tenantCustomer == null)
+            {
+                result.Success = false;
+            }
+
+            //post token
+            tenantCustomer.FirebaseTokenId = data.FirebaseTokenId;
+
+            Db.SaveChanges();
+
+            transaction.Commit();
         }
-
-        public SaveResult AddCustomerFirebaseToken(FirebaseTokenModel data, string userCode)
+        catch (Exception ex)
         {
-            //var username = Db.Customers.Where(x => x.Code.Equals(userCode)).Select(y => y.MobileUsername).SingleOrDefault()!;
-            var result = new SaveResult(false);
-
-            using var transaction = Db.Database.BeginTransaction();
-            try
-            {
-                //var catalogUser = _catalogCtx.CustomerUsers.FirstOrDefault(x => x.Username == username);
-                //var tenant = _catalogCtx.Tenants.FirstOrDefault(x => x.Id == catalogUser.TenantId);
-
-                //// Configure tenant context db
-                //var contextOptions = new DbContextOptionsBuilder<TenantContext>()
-                //    .UseSqlServer($"Server={tenant.ServerName};Database={tenant.DatabaseName};User Id={tenant.ServerUserId};Password={tenant.ServerPassword}")
-                //    .Options;
-                //var tenantCtx = new TenantContext(contextOptions, _catalogCtx, _claim);
-                //var tenantCustomer = tenantCtx.Customers.FirstOrDefault(x => x.CatalogUserId == catalogUser.Id && x.MobileSignIn && x.IsActive);
-
-                // direct tenant
-                var tenantCustomer = Db.Customers.FirstOrDefault(x => x.Code == userCode && x.MobileSignIn && x.IsActive);
-                if (tenantCustomer == null)
-                {
-                    result.Success = false;
-                }
-
-                //post token
-                tenantCustomer.FirebaseTokenId = data.FirebaseTokenId;
-
-                Db.SaveChanges();
-
-                transaction.Commit();
-            }
-            catch (Exception ex)
-            {
-                result.Message = ex.InnerException?.Message ?? ex.Message;
-                return result;
-            }
-
-            result.Success = true;
-            result.Data = data.FirebaseTokenId;
-            result.Message = "Token berhasil disimpan.";
+            result.Message = ex.InnerException?.Message ?? ex.Message;
             return result;
         }
+
+        result.Success = true;
+        result.Data = data.FirebaseTokenId;
+        result.Message = "Token berhasil disimpan.";
+        return result;
     }
 }

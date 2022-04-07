@@ -3,29 +3,28 @@ using ERP.Web.API.Model;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq.Dynamic.Core;
 
-namespace ERP.Web.API.Controllers.Purchase
+namespace ERP.Web.API.Controllers.Purchase;
+
+[Route("ap-mutation-report")]
+[ApiController]
+public class APMutationReportController : ControllerBase
 {
-    [Route("ap-mutation-report")]
-    [ApiController]
-    public class APMutationReportController : ControllerBase
+    private readonly IAPMutationReportService _apm;
+    public APMutationReportController(IAPMutationReportService apm)
     {
-        private readonly IAPMutationReportService _apm;
-        public APMutationReportController(IAPMutationReportService apm)
-        {
-            _apm = apm;
-        }
+        _apm = apm;
+    }
 
-        [HttpGet]
-        public IActionResult GetData(int type, string startDate, string endDate, string supCode, string status)
-        {
-            var result =
-                _apm.GetData(type, startDate, endDate, supCode, status);
+    [HttpGet]
+    public IActionResult GetData(int type, string startDate, string endDate, string supCode, string status)
+    {
+        var result =
+            _apm.GetData(type, startDate, endDate, supCode, status);
 
-            return Ok(new ApiResponse
-            {
-                RowCount = result.Total,
-                TableData = result.Data.ToDynamicList()
-            });
-        }
+        return Ok(new ApiResponse
+        {
+            RowCount = result.Total,
+            TableData = result.Data.ToDynamicList()
+        });
     }
 }

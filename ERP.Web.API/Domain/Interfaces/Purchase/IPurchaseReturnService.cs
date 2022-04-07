@@ -3,23 +3,22 @@ using ERP.Common.Models;
 using ERP.Entity.Purchase;
 using ERP.Web.API.Model.Purchase;
 
-namespace ERP.Web.API.Domain.Interfaces.Purchase
+namespace ERP.Web.API.Domain.Interfaces.Purchase;
+
+public interface IPurchaseReturnService : IGeneralService<PurchaseReturnHeader>
 {
-    public interface IPurchaseReturnService : IGeneralService<PurchaseReturnHeader>
-    {
-        DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
-            string search);
+    DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
+        string search);
 
-        IEnumerable<VwPurchaseReturnDetail> GetDetailData(string code, bool? fullReceived = null);
+    IEnumerable<VwPurchaseReturnDetail> GetDetailData(string code, bool? fullReceived = null);
 
-        IEnumerable<VwPurchaseReturnDetailExchDiffItem> GetDetailExchangeData(string code, bool? fullReceived = null);
+    IEnumerable<VwPurchaseReturnDetailExchDiffItem> GetDetailExchangeData(string code, bool? fullReceived = null);
 
-        List<dynamic> GetRelatedTransactions(string code);
+    List<dynamic> GetRelatedTransactions(string code);
 
-        SaveResult Insert(PurchaseReturnRequest data);
+    SaveResult Insert(PurchaseReturnRequest data);
 
-        SaveResult Update(PurchaseReturnRequest data);
+    SaveResult Update(PurchaseReturnRequest data);
 
-        SaveResult Delete(string code, int userId);
-    }
+    SaveResult Delete(string code, int userId);
 }

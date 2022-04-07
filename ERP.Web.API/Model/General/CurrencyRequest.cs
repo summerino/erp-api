@@ -1,9 +1,8 @@
 ﻿using ERP.Entity.General;
 
-namespace ERP.Web.API.Model.General
+namespace ERP.Web.API.Model.General;
+
+public class CurrencyRequest : Currency
 {
-    public class CurrencyRequest : Currency
-    {
-        public int SortValue { get; set; }
-    }
+    public int SortValue { get; set; }
 }

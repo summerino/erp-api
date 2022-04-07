@@ -1,9 +1,8 @@
 ﻿using ERP.Entity.Finance;
 
-namespace ERP.Web.API.Domain.Interfaces.Finance
+namespace ERP.Web.API.Domain.Interfaces.Finance;
+
+public interface ICashBankTypeService
 {
-    public interface ICashBankTypeService
-    {
-        IQueryable<VwCashBankType> GetLists(List<int> actionId);
-    }
+    IQueryable<VwCashBankType> GetLists(List<int> actionId);
 }

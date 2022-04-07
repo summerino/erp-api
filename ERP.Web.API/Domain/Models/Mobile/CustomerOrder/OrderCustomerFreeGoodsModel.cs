@@ -1,13 +1,12 @@
-﻿namespace ERP.Web.API.Domain.Models.Mobile.CustomerOrder
+﻿namespace ERP.Web.API.Domain.Models.Mobile.CustomerOrder;
+
+public class OrderCustomerFreeGoodsModel
 {
-    public class OrderCustomerFreeGoodsModel
-    {
-        public string PromoCode { get; set; }
-        public int ItemId { get; set; }
-        public string ItemName { get; set; }
-        public int UomId { get; set; }
-        public int UnitId { get; set; }
-        public decimal Qty { get; set; }
-        public decimal UnitPrice { get; set; }
-    }
+    public string PromoCode { get; set; }
+    public int ItemId { get; set; }
+    public string ItemName { get; set; }
+    public int UomId { get; set; }
+    public int UnitId { get; set; }
+    public decimal Qty { get; set; }
+    public decimal UnitPrice { get; set; }
 }

@@ -3,36 +3,35 @@ using System.Reflection;
 using ERP.Entity;
 using ERP.Entity.Core;
 
-namespace ERP.Web.API.Database
+namespace ERP.Web.API.Database;
+
+public class DbInitializer
 {
-    public class DbInitializer
+    public void EnsureSeeded(TenantContext dbContext)
     {
-        public void EnsureSeeded(TenantContext dbContext)
+        //var resourceString = "ERP.Web.API.Data.{0}.json";
+
+        //SeedEntity<Supplier>(string.Format(resourceString, "Supplier"), dbContext);
+    }
+
+    public void SeedEntity<T>(string resource, TenantContext dbContext, bool overrideValues = true) where T : BaseEntity
+    {
+        var assembly = Assembly.GetExecutingAssembly();
+
+        using (Stream stream = assembly.GetManifestResourceStream(resource))
+        using (StreamReader reader = new StreamReader(stream))
         {
-            //var resourceString = "ERP.Web.API.Data.{0}.json";
+            string result = reader.ReadToEnd();
 
-            //SeedEntity<Supplier>(string.Format(resourceString, "Supplier"), dbContext);
-        }
-
-        public void SeedEntity<T>(string resource, TenantContext dbContext, bool overrideValues = true) where T : BaseEntity
-        {
-            var assembly = Assembly.GetExecutingAssembly();
-
-            using (Stream stream = assembly.GetManifestResourceStream(resource))
-            using (StreamReader reader = new StreamReader(stream))
+            var jsonSettings = new JsonSerializerSettings
             {
-                string result = reader.ReadToEnd();
+                NullValueHandling = NullValueHandling.Include,
+            };
 
-                var jsonSettings = new JsonSerializerSettings
-                {
-                    NullValueHandling = NullValueHandling.Include,
-                };
+            var types = JsonConvert.DeserializeObject<List<T>>(result, jsonSettings);
 
-                var types = JsonConvert.DeserializeObject<List<T>>(result, jsonSettings);
-
-                //dbContext.Set<T>().AddOrUpdateRange(types, dbContext.Shardingkey, overrideValues);
-                //dbContext.SaveChanges();
-            }
+            //dbContext.Set<T>().AddOrUpdateRange(types, dbContext.Shardingkey, overrideValues);
+            //dbContext.SaveChanges();
         }
     }
 }

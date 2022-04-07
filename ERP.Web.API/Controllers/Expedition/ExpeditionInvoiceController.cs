@@ -12,179 +12,178 @@ using ERP.Web.API.Model.Expedition;
 using Newtonsoft.Json;
 using ERP.Web.API.Domain.Interfaces.General;
 
-namespace ERP.Web.API.Controllers.Expedition
+namespace ERP.Web.API.Controllers.Expedition;
+
+[Route("expedition-invoice")]
+[ApiController]
+public class ExpeditionInvoiceController : ControllerBase
 {
-    [Route("expedition-invoice")]
-    [ApiController]
-    public class ExpeditionInvoiceController : ControllerBase
+    private readonly IExpeditionInvoiceService _inv;
+    private readonly IClosingMonthService _closingMonth;
+    private readonly ISystemParameterService _sysPar;
+    private readonly IClaimService _claim;
+    private readonly IActiveTransactionService _activeTrans;
+    private readonly IAuthService _auth;
+
+    private const int MenuId = (int)Menu.ExpeditionInvoice;
+
+    public ExpeditionInvoiceController(IExpeditionInvoiceService inv, IClosingMonthService closingMonth,
+        ISystemParameterService sysPar, IClaimService claim, IAuthService auth, IActiveTransactionService activeTrans)
     {
-        private readonly IExpeditionInvoiceService _inv;
-        private readonly IClosingMonthService _closingMonth;
-        private readonly ISystemParameterService _sysPar;
-        private readonly IClaimService _claim;
-        private readonly IActiveTransactionService _activeTrans;
-        private readonly IAuthService _auth;
+        _inv = inv;
+        _closingMonth = closingMonth;
+        _sysPar = sysPar;
+        _claim = claim;
+        _auth = auth;
+        _activeTrans = activeTrans;
+    }
 
-        private const int MenuId = (int)Menu.ExpeditionInvoice;
+    [HttpGet]
+    public IActionResult GetData(string search, string filters, string sorts, int skip, int take)
+    {
+        var data =
+            _inv.GetData(
+                skip, take,
+                JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
+                search);
 
-        public ExpeditionInvoiceController(IExpeditionInvoiceService inv, IClosingMonthService closingMonth,
-            ISystemParameterService sysPar, IClaimService claim, IAuthService auth, IActiveTransactionService activeTrans)
+        return Ok(new ApiResponse
         {
-            _inv = inv;
-            _closingMonth = closingMonth;
-            _sysPar = sysPar;
-            _claim = claim;
-            _auth = auth;
-            _activeTrans = activeTrans;
-        }
+            RowCount = data.Total,
+            TableData = data.Data.ToDynamicList()
+        });
+    }
 
-        [HttpGet]
-        public IActionResult GetData(string search, string filters, string sorts, int skip, int take)
-        {
-            var data =
-                _inv.GetData(
-                    skip, take,
-                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
-                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
-                    search);
-
-            return Ok(new ApiResponse
+    [HttpGet("detail")]
+    public IActionResult GetDetailData(string code)
+    {
+        var data = _inv.GetDetailData(code)
+            .Select(x => new
             {
-                RowCount = data.Total,
-                TableData = data.Data.ToDynamicList()
-            });
-        }
+                x.Id,
+                x.Code,
+                x.LineNo,
+                x.TransCode
+            })
+            .ToList<dynamic>();
 
-        [HttpGet("detail")]
-        public IActionResult GetDetailData(string code)
+        return Ok(new ApiResponse
         {
-            var data = _inv.GetDetailData(code)
-                .Select(x => new
-                {
-                    x.Id,
-                    x.Code,
-                    x.LineNo,
-                    x.TransCode
-                })
-                .ToList<dynamic>();
+            RowCount = data.Count,
+            TableData = data
+        });
+    }
 
-            return Ok(new ApiResponse
+    [HttpGet("related-trans")]
+    public IActionResult GetRelatedTransactions(string code)
+    {
+        var data = _inv.GetRelatedTransactions(code)
+            .Select(x => new
             {
-                RowCount = data.Count,
-                TableData = data
-            });
-        }
+                x.Code,
+                x.Date,
+                Total = x.Amount,
+                Type = "Kas Bank"
+            }).ToList<dynamic>();
 
-        [HttpGet("related-trans")]
-        public IActionResult GetRelatedTransactions(string code)
+        return Ok(new ApiResponse
         {
-            var data = _inv.GetRelatedTransactions(code)
-                .Select(x => new
-                {
-                    x.Code,
-                    x.Date,
-                    Total = x.Amount,
-                    Type = "Kas Bank"
-                }).ToList<dynamic>();
+            RowCount = data.Count,
+            TableData = data
+        });
+    }
 
-            return Ok(new ApiResponse
-            {
-                RowCount = data.Count,
-                TableData = data
-            });
-        }
+    [HttpPost]
+    public IActionResult OnPost(ExpeditionInvoiceRequest data)
+    {
+        // Checking role authorization
+        if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Insert }).Any())
+            return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
-        [HttpPost]
-        public IActionResult OnPost(ExpeditionInvoiceRequest data)
-        {
-            // Checking role authorization
-            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Insert }).Any())
-                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+        // Validate process
+        var (isValid, message) = Validate(data, checkSeenByOther: false);
+        if (!isValid)
+            return Ok(new SaveResult(false, message));
 
-            // Validate process
-            var (isValid, message) = Validate(data, checkSeenByOther: false);
-            if (!isValid)
-                return Ok(new SaveResult(false, message));
+        // Insert process
+        data.Mark = "A";
+        data.CreatedBy = _claim.UserId;
+        data.CreatedDate = DateTime.Now;
+        data.UpdatedBy = data.CreatedBy;
+        data.UpdatedDate = data.CreatedDate;
 
-            // Insert process
-            data.Mark = "A";
-            data.CreatedBy = _claim.UserId;
-            data.CreatedDate = DateTime.Now;
-            data.UpdatedBy = data.CreatedBy;
-            data.UpdatedDate = data.CreatedDate;
+        var result = _inv.Insert(data);
 
-            var result = _inv.Insert(data);
+        return Ok(result);
+    }
 
-            return Ok(result);
-        }
-
-        [HttpPut("{code}")]
-        public IActionResult OnPut(string code, ExpeditionInvoiceRequest data)
-        {
-            // Checking role authorization
-            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
-                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+    [HttpPut("{code}")]
+    public IActionResult OnPut(string code, ExpeditionInvoiceRequest data)
+    {
+        // Checking role authorization
+        if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
+            return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
             
-            // Validate process
-            var (isValid, message) = Validate(data);
-            if (!isValid)
-                return Ok(new SaveResult(false, message));
+        // Validate process
+        var (isValid, message) = Validate(data);
+        if (!isValid)
+            return Ok(new SaveResult(false, message));
 
-            // Update process
-            data.UpdatedBy = _claim.UserId;
-            data.UpdatedDate = DateTime.Now;
+        // Update process
+        data.UpdatedBy = _claim.UserId;
+        data.UpdatedDate = DateTime.Now;
 
-            var result = _inv.Update(data);
+        var result = _inv.Update(data);
 
-            return Ok(result);
-        }
+        return Ok(result);
+    }
 
-        [HttpDelete("{code}")]
-        public IActionResult OnDelete(string code, ExpeditionInvoiceRequest data)
+    [HttpDelete("{code}")]
+    public IActionResult OnDelete(string code, ExpeditionInvoiceRequest data)
+    {
+        // Checking role authorization
+        if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Void }).Any())
+            return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+
+        // Validate process
+        var (isValid, message) = Validate(data, true);
+        if (!isValid)
+            return Ok(new SaveResult(false, message));
+
+        var result = _inv.Delete(data.Code, _claim.UserId);
+
+        return Ok(result);
+    }
+
+    private (bool, string) Validate(ExpeditionInvoiceRequest data, bool onDelete = false, bool checkSeenByOther = true)
+    {
+        var periods = new List<string> { data.Date.ToString("yyyyMM") };
+        if (data.OriginalDate.HasValue)
+            periods.Add(data.OriginalDate.Value.ToString("yyyyMM"));
+
+        if (_closingMonth.IsMonthClosed(periods))
+            return (false, "Periode sudah ditutup. Silakan hubungi departemen akuntansi.");
+
+        // Checking data start date validity
+        if (!_sysPar.IsStartDateValid(data.Date))
+            return (false, "Tanggal tidak boleh lebih kecil dari tanggal mulai data.");
+
+        if (!onDelete)
         {
-            // Checking role authorization
-            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Void }).Any())
-                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+            if (!data.Details.Any())
+                return (false, "Detail tidak boleh kosong.");
 
-            // Validate process
-            var (isValid, message) = Validate(data, true);
-            if (!isValid)
-                return Ok(new SaveResult(false, message));
-
-            var result = _inv.Delete(data.Code, _claim.UserId);
-
-            return Ok(result);
+            if (data.Details.GroupBy(x => new { x.TransCode }).Any(x => x.Count() > 1))
+                return (false, "Terdapat kode transaksi yang sama pada bagian detail.");
         }
 
-        private (bool, string) Validate(ExpeditionInvoiceRequest data, bool onDelete = false, bool checkSeenByOther = true)
+        // Checking is data seen by others
+        if (checkSeenByOther && !_activeTrans.SeenByOthers("EI", data.Code, _claim.UserId))
         {
-            var periods = new List<string> { data.Date.ToString("yyyyMM") };
-            if (data.OriginalDate.HasValue)
-                periods.Add(data.OriginalDate.Value.ToString("yyyyMM"));
-
-            if (_closingMonth.IsMonthClosed(periods))
-                return (false, "Periode sudah ditutup. Silakan hubungi departemen akuntansi.");
-
-            // Checking data start date validity
-            if (!_sysPar.IsStartDateValid(data.Date))
-                return (false, "Tanggal tidak boleh lebih kecil dari tanggal mulai data.");
-
-            if (!onDelete)
-            {
-                if (!data.Details.Any())
-                    return (false, "Detail tidak boleh kosong.");
-
-                if (data.Details.GroupBy(x => new { x.TransCode }).Any(x => x.Count() > 1))
-                    return (false, "Terdapat kode transaksi yang sama pada bagian detail.");
-            }
-
-            // Checking is data seen by others
-            if (checkSeenByOther && !_activeTrans.SeenByOthers("EI", data.Code, _claim.UserId))
-            {
-                return (false, "data sedang digunakan oleh pengguna lain.");
-            }
-
-            return (true, "");
+            return (false, "data sedang digunakan oleh pengguna lain.");
         }
+
+        return (true, "");
     }
 }

@@ -1,9 +1,8 @@
 ﻿using ERP.Entity.Inventory;
 
-namespace ERP.Web.API.Domain.Interfaces.Inventory
+namespace ERP.Web.API.Domain.Interfaces.Inventory;
+
+public interface IUoMConversionService
 {
-    public interface IUoMConversionService
-    {
-        IEnumerable<UoMConversion> GetData(int? uomId = null);
-    }
+    IEnumerable<UoMConversion> GetData(int? uomId = null);
 }

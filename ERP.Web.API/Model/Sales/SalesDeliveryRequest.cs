@@ -1,31 +1,30 @@
 ﻿using ERP.Entity.Sales;
 
-namespace ERP.Web.API.Model.Sales
+namespace ERP.Web.API.Model.Sales;
+
+public class SalesDeliveryRequest : SalesDeliveryHeader
 {
-    public class SalesDeliveryRequest : SalesDeliveryHeader
-    {
-        public IEnumerable<SalesDeliveryDetailRequest> ItemDetails { get; set; }
+    public IEnumerable<SalesDeliveryDetailRequest> ItemDetails { get; set; }
 
-        public DateTime InvDate { get; set; }
+    public DateTime InvDate { get; set; }
 
-        public DateTime InvDueDate { get; set; }
+    public DateTime InvDueDate { get; set; }
 
-        public bool IsSoInv { get; set; }
+    public bool IsSoInv { get; set; }
 
-        public DateTime? OriginalDate { get; set; }
-    }
+    public DateTime? OriginalDate { get; set; }
+}
 
-    public class SalesDeliveryDetailRequest : SalesDeliveryDetail
-    {
-        public IEnumerable<SalesDeliveryDetailFreeGood> FreeItemDetails { get; set; }
-    }
+public class SalesDeliveryDetailRequest : SalesDeliveryDetail
+{
+    public IEnumerable<SalesDeliveryDetailFreeGood> FreeItemDetails { get; set; }
+}
 
-    public class SalesDeliveryDetailFreeGoodData : SalesDeliveryDetailFreeGood
-    {
-        public string Initial { get; set; }
+public class SalesDeliveryDetailFreeGoodData : SalesDeliveryDetailFreeGood
+{
+    public string Initial { get; set; }
 
-        public string Name { get; set; }
+    public string Name { get; set; }
 
-        public string UnitName { get; set; }
-    }
+    public string UnitName { get; set; }
 }

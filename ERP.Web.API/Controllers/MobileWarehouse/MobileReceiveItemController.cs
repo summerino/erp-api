@@ -10,113 +10,112 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Linq.Dynamic.Core;
 
-namespace ERP.Web.API.Controllers.MobileWarehouse
+namespace ERP.Web.API.Controllers.MobileWarehouse;
+
+[Route("mobile-receive-item")]
+[ApiController]
+public class MobileReceiveItemController : ControllerBase
 {
-    [Route("mobile-receive-item")]
-    [ApiController]
-    public class MobileReceiveItemController : ControllerBase
+    private readonly IMobileReceiveItemService _mr;
+    private readonly IClaimService _claim;
+    private readonly IAuthService _auth;
+    private const int MenuId = (int)Menu.MobileReceiveItem;
+
+    public MobileReceiveItemController(IMobileReceiveItemService mr, IClaimService claim, IAuthService auth)
     {
-        private readonly IMobileReceiveItemService _mr;
-        private readonly IClaimService _claim;
-        private readonly IAuthService _auth;
-        private const int MenuId = (int)Menu.MobileReceiveItem;
+        _mr = mr;
+        _claim = claim;
+        _auth = auth;
+    }
 
-        public MobileReceiveItemController(IMobileReceiveItemService mr, IClaimService claim, IAuthService auth)
+    [HttpGet]
+    public IActionResult GetData(string search, string filters, string sorts, int skip, int take)
+    {
+        var data =
+            _mr.GetData(
+                skip, take,
+                JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
+                search);
+
+        return Ok(new ApiResponse
         {
-            _mr = mr;
-            _claim = claim;
-            _auth = auth;
-        }
+            RowCount = data.Total,
+            TableData = data.Data.ToDynamicList()
+        });
+    }
 
-        [HttpGet]
-        public IActionResult GetData(string search, string filters, string sorts, int skip, int take)
-        {
-            var data =
-                _mr.GetData(
-                    skip, take,
-                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
-                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
-                    search);
-
-            return Ok(new ApiResponse
+    [HttpGet("item")]
+    public IActionResult GetDetailData(string code)
+    {
+        var data = _mr.GetDetailData(code)
+            .Select(x => new
             {
-                RowCount = data.Total,
-                TableData = data.Data.ToDynamicList()
-            });
-        }
+                x.Id,
+                x.Code,
+                x.LineNo,
+                PoDetailId = x.TransDetailId,
+                x.ItemId,
+                x.ItemInitial,
+                x.ItemName,
+                x.Qty,
+                x.UomId,
+                x.UnitId,
+                x.UnitName,
+                x.WarehouseCode,
+                x.Type,
+                OldUnitId = x.ItemUomBuyId,
+                OldUnitName = x.ItemUomBuyName,
+                OldUnitPrice = x.ItemBuyPrice,
+                TypeName = x.Type == 0 ? "Normal" : "Bonus",
+                State = ""
+            })
+            .ToList<dynamic>();
 
-        [HttpGet("item")]
-        public IActionResult GetDetailData(string code)
+        return Ok(new ApiResponse
         {
-            var data = _mr.GetDetailData(code)
-                .Select(x => new
-                {
-                    x.Id,
-                    x.Code,
-                    x.LineNo,
-                    PoDetailId = x.TransDetailId,
-                    x.ItemId,
-                    x.ItemInitial,
-                    x.ItemName,
-                    x.Qty,
-                    x.UomId,
-                    x.UnitId,
-                    x.UnitName,
-                    x.WarehouseCode,
-                    x.Type,
-                    OldUnitId = x.ItemUomBuyId,
-                    OldUnitName = x.ItemUomBuyName,
-                    OldUnitPrice = x.ItemBuyPrice,
-                    TypeName = x.Type == 0 ? "Normal" : "Bonus",
-                    State = ""
-                })
-                .ToList<dynamic>();
+            RowCount = data.Count,
+            TableData = data
+        });
+    }
 
-            return Ok(new ApiResponse
-            {
-                RowCount = data.Count,
-                TableData = data
-            });
-        }
+    [HttpPut("{code}")]
+    public IActionResult OnPut(string code, MobileReceiveItemRequest data)
+    {
+        // Checking role authorization
+        if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
+            return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
-        [HttpPut("{code}")]
-        public IActionResult OnPut(string code, MobileReceiveItemRequest data)
+        // Update process
+        data.UpdatedBy = _claim.UserId;
+        data.UpdatedDate = DateTime.Now;
+
+        var result = _mr.Update(data);
+
+        return Ok(result);
+    }
+
+    [HttpPut("approve")]
+    public IActionResult Approve(List<MobileReceiveItemHeader> data)
+    {
+        if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Approve }).Any())
         {
-            // Checking role authorization
-            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
-                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-
-            // Update process
-            data.UpdatedBy = _claim.UserId;
-            data.UpdatedDate = DateTime.Now;
-
-            var result = _mr.Update(data);
-
-            return Ok(result);
+            return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
         }
+        var result = _mr.Approve(data, _claim.UserId);
 
-        [HttpPut("approve")]
-        public IActionResult Approve(List<MobileReceiveItemHeader> data)
+        return Ok(result);
+    }
+
+    [HttpPut("reject")]
+    public IActionResult Reject(List<MobileReceiveItemHeader> data)
+    {
+        if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Reject }).Any())
         {
-            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Approve }).Any())
-            {
-                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
-            var result = _mr.Approve(data, _claim.UserId);
-
-            return Ok(result);
+            return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
         }
+        var result = _mr.Reject(data, _claim.UserId);
 
-        [HttpPut("reject")]
-        public IActionResult Reject(List<MobileReceiveItemHeader> data)
-        {
-            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Reject }).Any())
-            {
-                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
-            var result = _mr.Reject(data, _claim.UserId);
-
-            return Ok(result);
-        }
+        return Ok(result);
     }
 }

@@ -2,17 +2,16 @@
 using ERP.Common.Models;
 using ERP.Entity.Inventory;
 
-namespace ERP.Web.API.Domain.Interfaces.Inventory
+namespace ERP.Web.API.Domain.Interfaces.Inventory;
+
+public interface IItemCategoryService : IGeneralService<ItemCategory>
 {
-    public interface IItemCategoryService : IGeneralService<ItemCategory>
-    {
-        DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
-            string search);
+    DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
+        string search);
 
-        IEnumerable<VwItemCategory> GetLists();
+    IEnumerable<VwItemCategory> GetLists();
 
-        object GetHierarchy();
+    object GetHierarchy();
 
-        SaveResult Delete(int id, int userId);
-    }
+    SaveResult Delete(int id, int userId);
 }

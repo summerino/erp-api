@@ -4,19 +4,19 @@ using ERP.Entity;
 using ERP.Web.API.Domain.Interfaces.Finance;
 using Microsoft.EntityFrameworkCore;
 
-namespace ERP.Web.API.Domain.Services.Finance
-{
-    public class OutstandingChequeReportService : IOutstandingChequeReportService
-    {
-        private readonly TenantContext _db;
-        public OutstandingChequeReportService(TenantContext db)
-        {
-            _db = db;
-        }
+namespace ERP.Web.API.Domain.Services.Finance;
 
-		public DataSourceResult GetData(string date, string coaCode)
-		{
-			var ocData = _db.OutstandingChequeReports.FromSqlRaw(@"SELECT cb.[Date], cb.ChequeDate, cb.Code, cb_d.CoaName, cb.ChequeNo, cb_d.TransCode,
+public class OutstandingChequeReportService : IOutstandingChequeReportService
+{
+    private readonly TenantContext _db;
+    public OutstandingChequeReportService(TenantContext db)
+    {
+        _db = db;
+    }
+
+    public DataSourceResult GetData(string date, string coaCode)
+    {
+        var ocData = _db.OutstandingChequeReports.FromSqlRaw(@"SELECT cb.[Date], cb.ChequeDate, cb.Code, cb_d.CoaName, cb.ChequeNo, cb_d.TransCode,
 						CASE cb_d.[Type]
 							WHEN 'AP' THEN pi_h.SupName
 							WHEN 'AR' THEN si_h.CustName
@@ -44,22 +44,21 @@ namespace ERP.Web.API.Domain.Services.Finance
 						LEFT JOIN Sales.vwCreditMemo cm ON cm.Code = cb_d.TransCode
 						LEFT JOIN Finance.vwGeneralCashBankHeader cb ON cb.Code = cb_d.Code
 						WHERE cb.ChequeDate IS NOT NULL" +
-						(string.IsNullOrEmpty(coaCode) ? "" : $" AND cb_d.CoaCode = '{coaCode.Replace("'", "''")}'") +
-						" ORDER BY cb.ChequeDate ASC, cb_d.CoaName ASC, BalanceIn DESC, BalanceOut DESC").ToList();
+                                                             (string.IsNullOrEmpty(coaCode) ? "" : $" AND cb_d.CoaCode = '{coaCode.Replace("'", "''")}'") +
+                                                             " ORDER BY cb.ChequeDate ASC, cb_d.CoaName ASC, BalanceIn DESC, BalanceOut DESC").ToList();
 
-			if (!string.IsNullOrEmpty(date))
-				ocData = ocData.Where(x => x.ChequeDate >= Convert.ToDateTime(date)).ToList();
+        if (!string.IsNullOrEmpty(date))
+            ocData = ocData.Where(x => x.ChequeDate >= Convert.ToDateTime(date)).ToList();
 
-			if (ocData.Any())
+        if (ocData.Any())
+        {
+            ocData.Add(new Entity.Finance.OutstandingChequeReport
             {
-				ocData.Add(new Entity.Finance.OutstandingChequeReport
-				{
-					Code = "Total",
-					BalanceIn = ocData.Sum(x => x.BalanceIn),
-					BalanceOut = ocData.Sum(x => x.BalanceOut)
-				});
-            }
-			return ocData.AsQueryable().ToDataSourceResult(0, ocData.Count, null, null);
+                Code = "Total",
+                BalanceIn = ocData.Sum(x => x.BalanceIn),
+                BalanceOut = ocData.Sum(x => x.BalanceOut)
+            });
         }
+        return ocData.AsQueryable().ToDataSourceResult(0, ocData.Count, null, null);
     }
 }

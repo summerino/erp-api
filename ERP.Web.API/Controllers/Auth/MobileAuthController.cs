@@ -4,84 +4,83 @@ using ERP.Web.API.Domain.Interfaces.Auth;
 using ERP.Web.API.Model;
 using ERP.Web.API.Model.Auth;
 
-namespace ERP.Web.API.Controllers.Auth
+namespace ERP.Web.API.Controllers.Auth;
+
+[Authorize(AppConstant.ValidateMobileTokenPolicy)]
+[Route("mobile-auth")]
+[ApiController]
+public class MobileAuthController : ControllerBase
 {
-    [Authorize(AppConstant.ValidateMobileTokenPolicy)]
-    [Route("mobile-auth")]
-    [ApiController]
-    public class MobileAuthController : ControllerBase
+    private readonly IMobileAuthService _auth;
+
+    public MobileAuthController(IMobileAuthService auth)
     {
-        private readonly IMobileAuthService _auth;
+        _auth = auth;
+    }
 
-        public MobileAuthController(IMobileAuthService auth)
+    [HttpPost("[action]")]
+    [AllowAnonymous]
+    public IActionResult Login(MobileLoginRequest data)
+    {
+        if (ModelState.IsValid)
         {
-            _auth = auth;
+            var result = _auth.Login(data);
+            return Ok(result) ;
         }
 
-        [HttpPost("[action]")]
-        [AllowAnonymous]
-        public IActionResult Login(MobileLoginRequest data)
+        return BadRequest(new MobileAuthResult
         {
-            if (ModelState.IsValid)
-            {
-                var result = _auth.Login(data);
-                return Ok(result) ;
-            }
+            Message = "Invalid request.",
+            Success = false
+        });
+    }
 
-            return BadRequest(new MobileAuthResult
-            {
-                Message = "Invalid request.",
-                Success = false
-            });
+    [HttpPost("login-warehouse")]
+    [AllowAnonymous]
+    public IActionResult LoginWarehouse(MobileLoginRequest data)
+    {
+        if (ModelState.IsValid)
+        {
+            var result = _auth.LoginWarehouse(data);
+            return Ok(result);
         }
 
-        [HttpPost("login-warehouse")]
-        [AllowAnonymous]
-        public IActionResult LoginWarehouse(MobileLoginRequest data)
+        return BadRequest(new MobileAuthResult
         {
-            if (ModelState.IsValid)
-            {
-                var result = _auth.LoginWarehouse(data);
-                return Ok(result);
-            }
-
-            return BadRequest(new MobileAuthResult
-            {
-                Message = "Invalid request.",
-                Success = false
-            });
-        }
+            Message = "Invalid request.",
+            Success = false
+        });
+    }
         
-        [HttpPost("change-password")]
-        public IActionResult ChangePassword(MobileChangePasswordRequest data)
+    [HttpPost("change-password")]
+    public IActionResult ChangePassword(MobileChangePasswordRequest data)
+    {
+        if (ModelState.IsValid)
         {
-            if (ModelState.IsValid)
-            {
-                var result = _auth.ChangePassword(data);
-                return Ok(result);
-            }
-
-            return BadRequest(new MobileAuthResult
-            {
-                Message = "Invalid request.",
-                Success = false
-            });
+            var result = _auth.ChangePassword(data);
+            return Ok(result);
         }
 
-        [HttpPost("Logout")]
-        public IActionResult Logout()
+        return BadRequest(new MobileAuthResult
         {
-            if (ModelState.IsValid)
-            {
-                var result = _auth.Logout();
-                return Ok(result);
-            }
+            Message = "Invalid request.",
+            Success = false
+        });
+    }
 
-            return BadRequest(new MobileAuthResult
-            {
-                Message = "Invalid request.",
-                Success = false
-            });
+    [HttpPost("Logout")]
+    public IActionResult Logout()
+    {
+        if (ModelState.IsValid)
+        {
+            var result = _auth.Logout();
+            return Ok(result);
         }
+
+        return BadRequest(new MobileAuthResult
+        {
+            Message = "Invalid request.",
+            Success = false
+        });
     }
 }

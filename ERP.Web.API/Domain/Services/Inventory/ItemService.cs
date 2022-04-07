@@ -124,7 +124,6 @@ public class ItemService : GeneralService<Item>, IItemService
                 PurchaseTaxId = x.PurchaseTaxId,
                 SalesTaxId = x.SalesTaxId,
                 SellPrice = x.SellPrice,
-                StockType = x.StockType,
                 SubGroup1 = x.SubGroup1,
                 SubGroup2 = x.SubGroup2,
                 SubGroup3 = x.SubGroup3,

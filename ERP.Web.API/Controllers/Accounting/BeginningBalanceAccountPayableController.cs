@@ -10,143 +10,142 @@ using ERP.Web.API.Model;
 using ERP.Web.API.Model.Accounting;
 using Newtonsoft.Json;
 
-namespace ERP.Web.API.Controllers.Accounting
+namespace ERP.Web.API.Controllers.Accounting;
+
+[Route("bb-ap")]
+[ApiController]
+public class BeginningBalanceAccountPayableController : ControllerBase
 {
-    [Route("bb-ap")]
-    [ApiController]
-    public class BeginningBalanceAccountPayableController : ControllerBase
+    private readonly IBeginningBalanceAccountPayableService _bbAp;
+    private readonly IClosingMonthService _closingMonth;
+    private readonly ISystemParameterService _sysPar;
+    private readonly IClaimService _claim;
+    private readonly IAuthService _auth;
+
+    private const int MenuId = (int)Menu.BeginningBalanceAccountPayable;
+
+    public BeginningBalanceAccountPayableController(IBeginningBalanceAccountPayableService bbAp,
+        IClosingMonthService closingMonth, ISystemParameterService sysPar,
+        IClaimService claim, IAuthService auth)
     {
-        private readonly IBeginningBalanceAccountPayableService _bbAp;
-        private readonly IClosingMonthService _closingMonth;
-        private readonly ISystemParameterService _sysPar;
-        private readonly IClaimService _claim;
-        private readonly IAuthService _auth;
+        _bbAp = bbAp;
+        _closingMonth = closingMonth;
+        _sysPar = sysPar;
+        _claim = claim;
+        _auth = auth;
+    }
 
-        private const int MenuId = (int)Menu.BeginningBalanceAccountPayable;
+    [HttpGet]
+    public IActionResult GetData(string search, string filters, string sorts, int skip, int take)
+    {
+        var data =
+            _bbAp.GetData(
+                skip, take,
+                JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
+                search);
 
-        public BeginningBalanceAccountPayableController(IBeginningBalanceAccountPayableService bbAp,
-            IClosingMonthService closingMonth, ISystemParameterService sysPar,
-            IClaimService claim, IAuthService auth)
+        return Ok(new ApiResponse
         {
-            _bbAp = bbAp;
-            _closingMonth = closingMonth;
-            _sysPar = sysPar;
-            _claim = claim;
-            _auth = auth;
-        }
+            RowCount = data.Total,
+            TableData = data.Data.ToDynamicList()
+        });
+    }
 
-        [HttpGet]
-        public IActionResult GetData(string search, string filters, string sorts, int skip, int take)
+    [HttpPost]
+    public IActionResult OnPost(BeginningBalanceAPRequest data)
+    {
+        // Checking role authorization
+        if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Insert }).Any())
+            return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+
+        // Validate process
+        var (isValid, message) = Validate(data);
+        if (!isValid)
+            return Ok(new SaveResult(false, message));
+
+        data.IsActive = true;
+        data.CreatedBy = _claim.UserId;
+        data.CreatedDate = DateTime.Now;
+        data.UpdatedBy = data.CreatedBy;
+        data.UpdatedDate = data.CreatedDate;
+
+        var result = _bbAp.Insert(data);
+
+        return Ok(result);
+    }
+
+    [HttpPut("{id}")]
+    public IActionResult OnPut(string id, BeginningBalanceAPRequest data)
+    {
+        // Checking role authorization
+        if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
+            return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+
+        // Validate process
+        var (isValid, message) = Validate(data);
+        if (!isValid)
+            return Ok(new SaveResult(false, message));
+
+        data.UpdatedBy = _claim.UserId;
+        data.UpdatedDate = DateTime.Now;
+
+        var result = _bbAp.Update(data);
+
+        return Ok(result);
+    }
+
+    [HttpDelete("{id}")]
+    public IActionResult OnDelete(int id, BeginningBalanceAPRequest data)
+    {
+        // Checking role authorization
+        if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Delete }).Any())
+            return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+
+        // Validate process
+        var (isValid, message) = Validate(data);
+        if (!isValid)
+            return Ok(new SaveResult(false, message));
+
+        var result = _bbAp.Delete(data.Id, _claim.UserId);
+
+        return Ok(result);
+    }
+
+    [HttpPost("upload")]
+    public IActionResult OnUpload(IEnumerable<UploadBBAPRequest> data)
+    {
+
+        var result = _bbAp.VerifyUpload(data);
+
+        return Ok(new ApiResponse
         {
-            var data =
-                _bbAp.GetData(
-                    skip, take,
-                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
-                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
-                    search);
+            RowCount = result.Count(),
+            TableData = result.ToDynamicList()
+        });
+    }
 
-            return Ok(new ApiResponse
-            {
-                RowCount = data.Total,
-                TableData = data.Data.ToDynamicList()
-            });
-        }
+    [HttpPost("posting")]
+    public IActionResult OnPosting(IEnumerable<UploadBBAPRequest> data)
+    {
 
-        [HttpPost]
-        public IActionResult OnPost(BeginningBalanceAPRequest data)
-        {
-            // Checking role authorization
-            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Insert }).Any())
-                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+        var result = _bbAp.Posting(data, _claim.UserId);
 
-            // Validate process
-            var (isValid, message) = Validate(data);
-            if (!isValid)
-                return Ok(new SaveResult(false, message));
+        return Ok(result);
+    }
 
-            data.IsActive = true;
-            data.CreatedBy = _claim.UserId;
-            data.CreatedDate = DateTime.Now;
-            data.UpdatedBy = data.CreatedBy;
-            data.UpdatedDate = data.CreatedDate;
+    private (bool, string) Validate(BeginningBalanceAPRequest data)
+    {
+        var periods = new List<string> { data.Date.ToString("yyyyMM") };
+        if (data.OriginalDate.HasValue)
+            periods.Add(data.OriginalDate.Value.ToString("yyyyMM"));
 
-            var result = _bbAp.Insert(data);
+        if (_closingMonth.IsMonthClosed(periods))
+            return(false, "Periode sudah ditutup. Silakan hubungi departemen akuntansi.");
 
-            return Ok(result);
-        }
-
-        [HttpPut("{id}")]
-        public IActionResult OnPut(string id, BeginningBalanceAPRequest data)
-        {
-            // Checking role authorization
-            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
-                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-
-            // Validate process
-            var (isValid, message) = Validate(data);
-            if (!isValid)
-                return Ok(new SaveResult(false, message));
-
-            data.UpdatedBy = _claim.UserId;
-            data.UpdatedDate = DateTime.Now;
-
-            var result = _bbAp.Update(data);
-
-            return Ok(result);
-        }
-
-        [HttpDelete("{id}")]
-        public IActionResult OnDelete(int id, BeginningBalanceAPRequest data)
-        {
-            // Checking role authorization
-            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Delete }).Any())
-                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-
-            // Validate process
-            var (isValid, message) = Validate(data);
-            if (!isValid)
-                return Ok(new SaveResult(false, message));
-
-            var result = _bbAp.Delete(data.Id, _claim.UserId);
-
-            return Ok(result);
-        }
-
-        [HttpPost("upload")]
-        public IActionResult OnUpload(IEnumerable<UploadBBAPRequest> data)
-        {
-
-            var result = _bbAp.VerifyUpload(data);
-
-            return Ok(new ApiResponse
-            {
-                RowCount = result.Count(),
-                TableData = result.ToDynamicList()
-            });
-        }
-
-        [HttpPost("posting")]
-        public IActionResult OnPosting(IEnumerable<UploadBBAPRequest> data)
-        {
-
-            var result = _bbAp.Posting(data, _claim.UserId);
-
-            return Ok(result);
-        }
-
-        private (bool, string) Validate(BeginningBalanceAPRequest data)
-        {
-            var periods = new List<string> { data.Date.ToString("yyyyMM") };
-            if (data.OriginalDate.HasValue)
-                periods.Add(data.OriginalDate.Value.ToString("yyyyMM"));
-
-            if (_closingMonth.IsMonthClosed(periods))
-                return(false, "Periode sudah ditutup. Silakan hubungi departemen akuntansi.");
-
-            // Checking data start date validity
-            return _sysPar.IsStartDateValid(data.Date)
-                ? (false, "Tanggal tidak boleh lebih besar dari tanggal mulai data.")
-                : (true, "");
-        }
+        // Checking data start date validity
+        return _sysPar.IsStartDateValid(data.Date)
+            ? (false, "Tanggal tidak boleh lebih besar dari tanggal mulai data.")
+            : (true, "");
     }
 }

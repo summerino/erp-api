@@ -1,9 +1,8 @@
-﻿namespace ERP.Web.API.Domain.Models.General
+﻿namespace ERP.Web.API.Domain.Models.General;
+
+public class LogActivityRequestModel
 {
-    public class LogActivityRequestModel
-    {
-        public DateTime Date { get; set; }
-        public string TypeCode { get; set; }
-        public string Notes { get; set; }
-    }
+    public DateTime Date { get; set; }
+    public string TypeCode { get; set; }
+    public string Notes { get; set; }
 }

@@ -1,9 +1,8 @@
 ﻿using ERP.Common.Models;
 
-namespace ERP.Web.API.Domain.Interfaces.Purchase
+namespace ERP.Web.API.Domain.Interfaces.Purchase;
+
+public interface IAPMutationReportService
 {
-    public interface IAPMutationReportService
-    {
-        DataSourceResult GetData(int type, string startDate, string EndDate, string supCode, string status);
-    }
+    DataSourceResult GetData(int type, string startDate, string EndDate, string supCode, string status);
 }

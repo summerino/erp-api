@@ -6,31 +6,30 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Linq.Dynamic.Core;
 
-namespace ERP.Web.API.Controllers.Sales
+namespace ERP.Web.API.Controllers.Sales;
+
+[Route("credit-memo-report")]
+[ApiController]
+public class CreditMemoReportController : ControllerBase
 {
-    [Route("credit-memo-report")]
-    [ApiController]
-    public class CreditMemoReportController : ControllerBase
+    private readonly ICreditMemoReportService _cmr;
+    public CreditMemoReportController(ICreditMemoReportService cmr)
     {
-        private readonly ICreditMemoReportService _cmr;
-        public CreditMemoReportController(ICreditMemoReportService cmr)
-        {
-            _cmr = cmr;
-        }
+        _cmr = cmr;
+    }
 
-        [HttpGet]
-        public IActionResult GetData(int type, string custCode, string date, string status, string sorts)
-        {
-            var result =
-                _cmr.GetData(
-                    type, date, custCode, status,
-                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"));
+    [HttpGet]
+    public IActionResult GetData(int type, string custCode, string date, string status, string sorts)
+    {
+        var result =
+            _cmr.GetData(
+                type, date, custCode, status,
+                JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"));
 
-            return Ok(new ApiResponse
-            {
-                RowCount = result.Total,
-                TableData = result.Data.ToDynamicList()
-            });
-        }
+        return Ok(new ApiResponse
+        {
+            RowCount = result.Total,
+            TableData = result.Data.ToDynamicList()
+        });
     }
 }

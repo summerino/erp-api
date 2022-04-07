@@ -1,16 +1,15 @@
 ﻿using ERP.Entity.Accounting;
 using ERP.Web.API.Model.Accounting;
 
-namespace ERP.Web.API.Domain.Interfaces.Accounting
+namespace ERP.Web.API.Domain.Interfaces.Accounting;
+
+public interface IJournalService
 {
-    public interface IJournalService
-    {
-        void PostingJournal(JournalRequest data, int userId, int tenantId);
+    void PostingJournal(JournalRequest data, int userId, int tenantId);
 
-        IEnumerable<PostingLog> GetPostingHistory(JournalRequest data);
+    IEnumerable<PostingLog> GetPostingHistory(JournalRequest data);
 
-        PostingState GetPostingState(int userId);
+    PostingState GetPostingState(int userId);
 
-        bool CheckPrevPeriod(DateTime postDate);
-    }
+    bool CheckPrevPeriod(DateTime postDate);
 }

@@ -9,153 +9,152 @@ using ERP.Web.API.Domain.Interfaces.Accounting;
 using ERP.Web.API.Model;
 using Newtonsoft.Json;
 
-namespace ERP.Web.API.Controllers.Accounting
+namespace ERP.Web.API.Controllers.Accounting;
+
+[Route("[controller]")]
+[ApiController]
+public class CoaController : ControllerBase
 {
-    [Route("[controller]")]
-    [ApiController]
-    public class CoaController : ControllerBase
+    private readonly ICoaService _coa;
+    private readonly IClaimService _claim;
+    private readonly IAuthService _auth;
+
+    private const int MenuId = (int)Menu.COA;
+
+    public CoaController(ICoaService coa, IClaimService claim, IAuthService auth)
     {
-        private readonly ICoaService _coa;
-        private readonly IClaimService _claim;
-        private readonly IAuthService _auth;
+        _coa = coa;
+        _claim = claim;
+        _auth = auth;
+    }
 
-        private const int MenuId = (int)Menu.COA;
+    [HttpGet]
+    public IActionResult GetData(string search, string filters, string sorts, int skip, int take)
+    {
+        var data =
+            _coa.GetData(
+                skip, take,
+                JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
+                search);
 
-        public CoaController(ICoaService coa, IClaimService claim, IAuthService auth)
+        return Ok(new ApiResponse
         {
-            _coa = coa;
-            _claim = claim;
-            _auth = auth;
-        }
+            RowCount = data.Total,
+            TableData = data.Data.ToDynamicList()
+        });
+    }
 
-        [HttpGet]
-        public IActionResult GetData(string search, string filters, string sorts, int skip, int take)
-        {
-            var data =
-                _coa.GetData(
-                    skip, take,
-                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
-                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
-                    search);
-
-            return Ok(new ApiResponse
-            {
-                RowCount = data.Total,
-                TableData = data.Data.ToDynamicList()
-            });
-        }
-
-        [HttpGet("lists")]
-        public IActionResult GetList(string filters, string sorts) 
-        {
-            var data =
-                _coa.GetLists(
+    [HttpGet("lists")]
+    public IActionResult GetList(string filters, string sorts) 
+    {
+        var data =
+            _coa.GetLists(
                     JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
                     JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]")).Data
-                    .ToDynamicList()
-                    .Select(x => new
-                    {
-                        x.Id, x.Code, x.Name, x.ParentId, x.CurrCode, x.CbType, x.VouCode
-                    })
-                    .ToList<dynamic>();
+                .ToDynamicList()
+                .Select(x => new
+                {
+                    x.Id, x.Code, x.Name, x.ParentId, x.CurrCode, x.CbType, x.VouCode
+                })
+                .ToList<dynamic>();
 
-            return Ok(new ApiResponse
-            {
-                RowCount = data.Count,
-                TableData = data
-            });
-        }
-
-        [HttpGet("lists-non-syspar")]
-        public IActionResult GetListNonSysPar(string filters, string sorts) 
+        return Ok(new ApiResponse
         {
-            var data =
-                _coa.GetListsNonSysPar(
+            RowCount = data.Count,
+            TableData = data
+        });
+    }
+
+    [HttpGet("lists-non-syspar")]
+    public IActionResult GetListNonSysPar(string filters, string sorts) 
+    {
+        var data =
+            _coa.GetListsNonSysPar(
                     JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
                     JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]")).Data
-                    .ToDynamicList()
-                    .Select(x => new
-                    {
-                        x.Id, x.Code, x.Name, x.ParentId, x.CurrCode, x.VouCode
-                    })
-                    .ToList<dynamic>();
+                .ToDynamicList()
+                .Select(x => new
+                {
+                    x.Id, x.Code, x.Name, x.ParentId, x.CurrCode, x.VouCode
+                })
+                .ToList<dynamic>();
 
-            return Ok(new ApiResponse
-            {
-                RowCount = data.Count,
-                TableData = data
-            });
-        }
-
-        [HttpGet("parents")]
-        public IActionResult GetListParents(string filters, string sorts)
+        return Ok(new ApiResponse
         {
-            var data =
-                _coa.GetListParents(
+            RowCount = data.Count,
+            TableData = data
+        });
+    }
+
+    [HttpGet("parents")]
+    public IActionResult GetListParents(string filters, string sorts)
+    {
+        var data =
+            _coa.GetListParents(
                     JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
                     JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]")).Data
-                    .ToDynamicList()
-                    .Select(x => new
-                    {
-                        x.Id,
-                        x.Code,
-                        x.Name
-                    })
-                    .ToList<dynamic>();
+                .ToDynamicList()
+                .Select(x => new
+                {
+                    x.Id,
+                    x.Code,
+                    x.Name
+                })
+                .ToList<dynamic>();
 
-            return Ok(new ApiResponse
-            {
-                RowCount = data.Count,
-                TableData = data
-            });
-        }
-
-        [HttpPost]
-        public IActionResult OnPost(Coa data)
+        return Ok(new ApiResponse
         {
-            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Insert }).Any())
-            {
-                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
+            RowCount = data.Count,
+            TableData = data
+        });
+    }
 
-            data.IsActive = true;
-            data.CreatedBy = _claim.UserId;
-            data.CreatedDate = DateTime.Now;
-            data.UpdatedBy = data.CreatedBy;
-            data.UpdatedDate = data.CreatedDate;
-
-            var result = _coa.Insert(data);
-
-            return Ok(result);
-        }
-
-        [HttpPut("{id}")]
-        public IActionResult OnPut(string id, Coa data)
+    [HttpPost]
+    public IActionResult OnPost(Coa data)
+    {
+        if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Insert }).Any())
         {
-            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
-            {
-                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
-
-            data.UpdatedBy = _claim.UserId;
-            data.UpdatedDate = DateTime.Now;
-
-            var result = _coa.Update(data);
-
-            return Ok(result);
+            return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
         }
 
-        [HttpDelete("{id}")]
-        public IActionResult OnDelete(int id)
+        data.IsActive = true;
+        data.CreatedBy = _claim.UserId;
+        data.CreatedDate = DateTime.Now;
+        data.UpdatedBy = data.CreatedBy;
+        data.UpdatedDate = data.CreatedDate;
+
+        var result = _coa.Insert(data);
+
+        return Ok(result);
+    }
+
+    [HttpPut("{id}")]
+    public IActionResult OnPut(string id, Coa data)
+    {
+        if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
         {
-            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Delete }).Any())
-            {
-                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
-
-            var result = _coa.Delete(id, _claim.UserId);
-
-            return Ok(result);
+            return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
         }
+
+        data.UpdatedBy = _claim.UserId;
+        data.UpdatedDate = DateTime.Now;
+
+        var result = _coa.Update(data);
+
+        return Ok(result);
+    }
+
+    [HttpDelete("{id}")]
+    public IActionResult OnDelete(int id)
+    {
+        if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Delete }).Any())
+        {
+            return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+        }
+
+        var result = _coa.Delete(id, _claim.UserId);
+
+        return Ok(result);
     }
 }

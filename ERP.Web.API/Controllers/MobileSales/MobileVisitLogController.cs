@@ -9,85 +9,84 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Linq.Dynamic.Core;
 
-namespace ERP.Web.API.Controllers.MobileSales
+namespace ERP.Web.API.Controllers.MobileSales;
+
+[Route("mobile-visit-log")]
+[ApiController]
+public class MobileVisitLogController : ControllerBase
 {
-    [Route("mobile-visit-log")]
-    [ApiController]
-    public class MobileVisitLogController : ControllerBase
+    private readonly IMobileVisitLogService _vl;
+    private readonly IClaimService _claim;
+    private readonly IAuthService _auth;
+    private const int MenuId = (int)Menu.MobileVisitLog;
+
+    public MobileVisitLogController(IMobileVisitLogService vl, IClaimService claim, IAuthService auth)
     {
-        private readonly IMobileVisitLogService _vl;
-        private readonly IClaimService _claim;
-        private readonly IAuthService _auth;
-        private const int MenuId = (int)Menu.MobileVisitLog;
+        _vl = vl;
+        _claim = claim;
+        _auth = auth;
+    }
 
-        public MobileVisitLogController(IMobileVisitLogService vl, IClaimService claim, IAuthService auth)
-        {
-            _vl = vl;
-            _claim = claim;
-            _auth = auth;
-        }
+    [HttpGet]
+    public IActionResult GetData(string search, string filters, string sorts, int skip, int take)
+    {
+        var data =
+            _vl.GetData(
+                skip, take,
+                JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
+                search);
 
-        [HttpGet]
-        public IActionResult GetData(string search, string filters, string sorts, int skip, int take)
-        {
-            var data =
-                _vl.GetData(
-                    skip, take,
-                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
-                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
-                    search);
-
-            data.Data = data.Data.ToDynamicList()
-                .Select(x => new
-                {
-                    x.Code, x.Date,
-                    x.VisitOrderCode, x.SalesmanId,
-                    x.CustCode, x.Scheduled,
-                    x.Visited, x.Lat, x.Lng,
-                    x.StartTime, x.EndTime,
-                    x.Total, x.UnscheduledVisitReasonId,
-                    x.NoVisitReasonId, x.NoOrderReasonId,
-                    x.Image, x.Mark,
-                    x.CreatedBy, x.CreatedDate,
-                    x.UpdatedBy, x.UpdatedDate,
-                    x.ApprovedBy, x.ApprovedDate,
-                    x.RejectedBy, x.RejectedDate,
-                    x.SalesmanInitial, x.SalesmanName,
-                    x.CustomerInitial, x.CustomerName,
-                    x.CreatedInitial, x.UpdatedInitial,
-                    x.ApprovedInitial, x.RejectedInitial,
-                    x.Status, Radius = _vl.GetRadius(x.CustCode, x.Lat, x.Lng)
-                });
-
-            return Ok(new ApiResponse
+        data.Data = data.Data.ToDynamicList()
+            .Select(x => new
             {
-                RowCount = data.Total,
-                TableData = data.Data.ToDynamicList()
+                x.Code, x.Date,
+                x.VisitOrderCode, x.SalesmanId,
+                x.CustCode, x.Scheduled,
+                x.Visited, x.Lat, x.Lng,
+                x.StartTime, x.EndTime,
+                x.Total, x.UnscheduledVisitReasonId,
+                x.NoVisitReasonId, x.NoOrderReasonId,
+                x.Image, x.Mark,
+                x.CreatedBy, x.CreatedDate,
+                x.UpdatedBy, x.UpdatedDate,
+                x.ApprovedBy, x.ApprovedDate,
+                x.RejectedBy, x.RejectedDate,
+                x.SalesmanInitial, x.SalesmanName,
+                x.CustomerInitial, x.CustomerName,
+                x.CreatedInitial, x.UpdatedInitial,
+                x.ApprovedInitial, x.RejectedInitial,
+                x.Status, Radius = _vl.GetRadius(x.CustCode, x.Lat, x.Lng)
             });
-        }
 
-        [HttpPut("approve")]
-        public IActionResult Approve(List<MobileVisitLog> data)
+        return Ok(new ApiResponse
         {
-            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Approve }).Any())
-            {
-                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
-            var result = _vl.Approve(data, _claim.UserId);
+            RowCount = data.Total,
+            TableData = data.Data.ToDynamicList()
+        });
+    }
 
-            return Ok(result);
-        }
-
-        [HttpPut("reject")]
-        public IActionResult Reject(List<MobileVisitLog> data)
+    [HttpPut("approve")]
+    public IActionResult Approve(List<MobileVisitLog> data)
+    {
+        if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Approve }).Any())
         {
-            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Reject }).Any())
-            {
-                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
-            var result = _vl.Reject(data, _claim.UserId);
-
-            return Ok(result);
+            return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
         }
+        var result = _vl.Approve(data, _claim.UserId);
+
+        return Ok(result);
+    }
+
+    [HttpPut("reject")]
+    public IActionResult Reject(List<MobileVisitLog> data)
+    {
+        if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Reject }).Any())
+        {
+            return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+        }
+        var result = _vl.Reject(data, _claim.UserId);
+
+        return Ok(result);
     }
 }

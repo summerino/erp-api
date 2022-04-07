@@ -4,106 +4,105 @@ using Microsoft.EntityFrameworkCore;
 using ERP.Entity.Core;
 using System;
 
-namespace ERP.Entity.MobileWarehouse
+namespace ERP.Entity.MobileWarehouse;
+
+[Table("MobileDeliveryItemHeader", Schema = Schema.MobileWarehouse)]
+public class MobileDeliveryItemHeader : BaseEntityWithMarkApprovedAndRejected
 {
-    [Table("MobileDeliveryItemHeader", Schema = Schema.MobileWarehouse)]
-    public class MobileDeliveryItemHeader : BaseEntityWithMarkApprovedAndRejected
-    {
-        [Key]
-        [StringLength(17)]
-        public string Code { get; set; }
+    [Key]
+    [StringLength(17)]
+    public string Code { get; set; }
 
-        [Required]
-        [StringLength(17)]
-        public string DlvPlanCode { get; set; }
+    [Required]
+    [StringLength(17)]
+    public string DlvPlanCode { get; set; }
 
-        [Required]
-        public string SignatureImage { get; set; }
-    }
+    [Required]
+    public string SignatureImage { get; set; }
+}
 
-    public class VwMobileDeliveryItemHeader : BaseEntityWithMarkApprovedAndRejected
-    {
-        public string Code { get; set; }
+public class VwMobileDeliveryItemHeader : BaseEntityWithMarkApprovedAndRejected
+{
+    public string Code { get; set; }
 
-        public string DlvPlanCode { get; set; }
+    public string DlvPlanCode { get; set; }
         
-        public string SignatureImage { get; set; }
+    public string SignatureImage { get; set; }
 
 
-        public string CreatedInitial { get; set; }
+    public string CreatedInitial { get; set; }
 
-        public string UpdatedInitial { get; set; }
+    public string UpdatedInitial { get; set; }
 
-        public string ApprovedInitial { get; set; }
+    public string ApprovedInitial { get; set; }
 
-        public string RejectedInitial { get; set; }
+    public string RejectedInitial { get; set; }
 
-        public string Status { get; set; }
+    public string Status { get; set; }
 
-        public DateTime Date { get; set; }
+    public DateTime Date { get; set; }
 
-        public string WarehouseCode { get; set; }
+    public string WarehouseCode { get; set; }
 
-        public string WarehouseInitial { get; set; }
-    }
+    public string WarehouseInitial { get; set; }
+}
 
-    [Table("MobileDeliveryItemDetail", Schema = Schema.MobileWarehouse)]
-    public class MobileDeliveryItemDetail
-    {
-        public long Id { get; set; }
+[Table("MobileDeliveryItemDetail", Schema = Schema.MobileWarehouse)]
+public class MobileDeliveryItemDetail
+{
+    public long Id { get; set; }
 
-        [StringLength(17)]
-        public string Code { get; set; }
+    [StringLength(17)]
+    public string Code { get; set; }
 
-        public short LineNo { get; set; }
+    public short LineNo { get; set; }
 
-        public int ItemId { get; set; }
+    public int ItemId { get; set; }
 
-        [Precision(18, 2)]
-        public decimal OriginalQty { get; set; }
+    [Precision(18, 2)]
+    public decimal OriginalQty { get; set; }
 
-        [Precision(18, 2)]
-        public decimal RealizeQty { get; set; }
+    [Precision(18, 2)]
+    public decimal RealizeQty { get; set; }
 
-        public int UomId { get; set; }
+    public int UomId { get; set; }
 
-        public int UnitId { get; set; }
-    }
+    public int UnitId { get; set; }
+}
 
-    public class VwMobileDeliveryItemDetail
-    {
-        public long Id { get; set; }
+public class VwMobileDeliveryItemDetail
+{
+    public long Id { get; set; }
 
-        public string Code { get; set; }
+    public string Code { get; set; }
 
-        public short LineNo { get; set; }
+    public short LineNo { get; set; }
 
-        public int ItemId { get; set; }
+    public int ItemId { get; set; }
 
-        [Precision(18, 2)]
-        public decimal OriginalQty { get; set; }
+    [Precision(18, 2)]
+    public decimal OriginalQty { get; set; }
 
-        [Precision(18, 2)]
-        public decimal RealizeQty { get; set; }
+    [Precision(18, 2)]
+    public decimal RealizeQty { get; set; }
 
-        public int UomId { get; set; }
+    public int UomId { get; set; }
 
-        public int UnitId { get; set; }
+    public int UnitId { get; set; }
 
 
-        public string ItemInitial { get; set; }
+    public string ItemInitial { get; set; }
 
-        public string ItemName { get; set; }
+    public string ItemName { get; set; }
 
-        public int? ItemUomSellId { get; set; }
+    public int? ItemUomSellId { get; set; }
 
-        public string ItemUomSellName { get; set; }
+    public string ItemUomSellName { get; set; }
 
-        [Precision(18, 2)]
-        public decimal? ItemSellPrice { get; set; }
+    [Precision(18, 2)]
+    public decimal? ItemSellPrice { get; set; }
 
-        public string UomInitial { get; set; }
+    public string UomInitial { get; set; }
 
-        public string UnitName { get; set; }
-    }
+    public string UnitName { get; set; }
 }

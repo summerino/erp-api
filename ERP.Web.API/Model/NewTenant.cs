@@ -1,7 +1,6 @@
-﻿namespace ERP.Web.API.Model
+﻿namespace ERP.Web.API.Model;
+
+public class NewTenant
 {
-    public class NewTenant
-    {
-        public string TenantName { get; set; }
-    }
+    public string TenantName { get; set; }
 }

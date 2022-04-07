@@ -8,62 +8,61 @@ using ERP.Web.API.Domain.Models.Mobile.ItemRequest;
 using ERP.Web.API.Model;
 using Newtonsoft.Json;
 
-namespace ERP.Web.API.Controllers.Mobile.ItemRequest
+namespace ERP.Web.API.Controllers.Mobile.ItemRequest;
+
+[Authorize(AppConstant.ValidateMobileTokenPolicy)]
+[Route("mobile/[controller]")]
+[ApiController]
+public class ItemRequestController : ControllerBase
 {
-    [Authorize(AppConstant.ValidateMobileTokenPolicy)]
-    [Route("mobile/[controller]")]
-    [ApiController]
-    public class ItemRequestController : ControllerBase
+    private readonly IItemRequestService _itemRequest;
+    private readonly IClaimService _claim;
+
+    public ItemRequestController(IItemRequestService itemRequest, IClaimService claim)
     {
-        private readonly IItemRequestService _itemRequest;
-        private readonly IClaimService _claim;
+        _itemRequest = itemRequest;
+        _claim = claim;
+    }
 
-        public ItemRequestController(IItemRequestService itemRequest, IClaimService claim)
+    [HttpGet]
+    public IActionResult GetData(string filters, string sorts, int skip, int take, int? areaId)
+    {
+        var data =
+            _itemRequest.GetData(skip, take,
+                JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"), _claim.UserId,areaId);
+
+        var result = data.Data.ToDynamicList();
+
+        return Ok(new MobileApiResponse
         {
-            _itemRequest = itemRequest;
-            _claim = claim;
-        }
+            Count = data.Total,
+            Data = result
+        });
+    }
 
-        [HttpGet]
-        public IActionResult GetData(string filters, string sorts, int skip, int take, int? areaId)
-        {
-            var data =
-                _itemRequest.GetData(skip, take,
-                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
-                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"), _claim.UserId,areaId);
+    [HttpGet("detail")]
+    public IActionResult GetDetail(string code)
+    {
+        var data = _itemRequest.GetDetail(code);
 
-            var result = data.Data.ToDynamicList();
+        var result = data.ToDynamicList();
 
-            return Ok(new MobileApiResponse
-            {
-                Count = data.Total,
-                Data = result
-            });
-        }
+        return Ok(result);
+    }
 
-        [HttpGet("detail")]
-        public IActionResult GetDetail(string code)
-        {
-            var data = _itemRequest.GetDetail(code);
+    [HttpPost]
+    public IActionResult OnPost(ItemRequestModel data)
+    {
+        // Insert process
+        data.Mark = "A";
+        data.CreatedBy = _claim.UserId;
+        data.CreatedDate = DateTime.Now;
+        data.UpdatedBy = data.CreatedBy;
+        data.UpdatedDate = data.CreatedDate;
 
-            var result = data.ToDynamicList();
+        var result = _itemRequest.Insert(data);
 
-            return Ok(result);
-        }
-
-        [HttpPost]
-        public IActionResult OnPost(ItemRequestModel data)
-        {
-            // Insert process
-            data.Mark = "A";
-            data.CreatedBy = _claim.UserId;
-            data.CreatedDate = DateTime.Now;
-            data.UpdatedBy = data.CreatedBy;
-            data.UpdatedDate = data.CreatedDate;
-
-            var result = _itemRequest.Insert(data);
-
-            return Ok(result);
-        }
+        return Ok(result);
     }
 }

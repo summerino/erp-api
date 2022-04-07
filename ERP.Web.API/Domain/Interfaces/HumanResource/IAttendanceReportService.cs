@@ -1,10 +1,9 @@
 ﻿using ERP.Common.Models;
 
-namespace ERP.Web.API.Domain.Interfaces.HumanResource
+namespace ERP.Web.API.Domain.Interfaces.HumanResource;
+
+public interface IAttendanceReportService
 {
-    public interface IAttendanceReportService
-    {
-        DataSourceResult GetData(string startDate, string endDate, short employeeType, int salesGroupId,
-            string employee, IEnumerable<Sort> sorts);
-    }
+    DataSourceResult GetData(string startDate, string endDate, short employeeType, int salesGroupId,
+        string employee, IEnumerable<Sort> sorts);
 }

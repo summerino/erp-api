@@ -4,35 +4,34 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq.Dynamic.Core;
 
-namespace ERP.Web.API.Controllers.Sales
+namespace ERP.Web.API.Controllers.Sales;
+
+[Route("sales-return-report")]
+[ApiController]
+public class SalesReturnReportController : ControllerBase
 {
-    [Route("sales-return-report")]
-    [ApiController]
-    public class SalesReturnReportController : ControllerBase
+    private readonly ISalesReturnReportService _srr;
+    public SalesReturnReportController(ISalesReturnReportService srr)
     {
-        private readonly ISalesReturnReportService _srr;
-        public SalesReturnReportController(ISalesReturnReportService srr)
-        {
-            _srr = srr;
-        }
+        _srr = srr;
+    }
 
-        [HttpGet]
-        public IActionResult GetData(int type, string startDate, string endDate,
-            string custCode, string status, int? itemId,
-            string code, bool isDetail, int? unitId,
-            int? categoryId)
-        {
-            var result =
-                _srr.GetData(type, startDate, endDate,
-                    custCode, status, itemId,
-                    code, isDetail, unitId,
-                    categoryId);
+    [HttpGet]
+    public IActionResult GetData(int type, string startDate, string endDate,
+        string custCode, string status, int? itemId,
+        string code, bool isDetail, int? unitId,
+        int? categoryId)
+    {
+        var result =
+            _srr.GetData(type, startDate, endDate,
+                custCode, status, itemId,
+                code, isDetail, unitId,
+                categoryId);
 
-            return Ok(new ApiResponse
-            {
-                RowCount = result.Total,
-                TableData = result.Data.ToDynamicList()
-            });
-        }
+        return Ok(new ApiResponse
+        {
+            RowCount = result.Total,
+            TableData = result.Data.ToDynamicList()
+        });
     }
 }

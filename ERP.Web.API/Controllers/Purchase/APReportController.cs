@@ -5,32 +5,31 @@ using ERP.Web.API.Domain.Interfaces.Purchase;
 using ERP.Web.API.Model;
 using Newtonsoft.Json;
 
-namespace ERP.Web.API.Controllers.Purchase
+namespace ERP.Web.API.Controllers.Purchase;
+
+[Route("ap-report")]
+[ApiController]
+public class ApReportController : ControllerBase
 {
-    [Route("ap-report")]
-    [ApiController]
-    public class ApReportController : ControllerBase
+    private readonly IAPReportService _ap;
+
+    public ApReportController(IAPReportService ap)
     {
-        private readonly IAPReportService _ap;
+        _ap = ap;
+    }
 
-        public ApReportController(IAPReportService ap)
+    [HttpGet]
+    public IActionResult GetData(int type, string supCode, string date, string sorts)
+    {
+        var result =
+            _ap.GetData(
+                type, date, supCode,
+                JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"));
+
+        return Ok(new ApiResponse
         {
-            _ap = ap;
-        }
-
-        [HttpGet]
-        public IActionResult GetData(int type, string supCode, string date, string sorts)
-        {
-            var result =
-                _ap.GetData(
-                    type, date, supCode,
-                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"));
-
-            return Ok(new ApiResponse
-            {
-                RowCount = result.Total,
-                TableData = result.Data.ToDynamicList()
-            });
-        }
+            RowCount = result.Total,
+            TableData = result.Data.ToDynamicList()
+        });
     }
 }

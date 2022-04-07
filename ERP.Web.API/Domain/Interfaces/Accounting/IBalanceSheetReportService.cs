@@ -1,9 +1,8 @@
 ﻿using ERP.Entity.Accounting;
 
-namespace ERP.Web.API.Domain.Interfaces.Accounting
+namespace ERP.Web.API.Domain.Interfaces.Accounting;
+
+public interface IBalanceSheetReportService
 {
-    public interface IBalanceSheetReportService
-    {
-        IEnumerable<BalanceSheetResult> GetBalanceSheetLists(IEnumerable<GeneralLedgerResult> data);
-    }
+    IEnumerable<BalanceSheetResult> GetBalanceSheetLists(IEnumerable<GeneralLedgerResult> data);
 }

@@ -3,23 +3,22 @@ using ERP.Common.Models;
 using ERP.Entity.Inventory;
 using ERP.Web.API.Model.Inventory;
 
-namespace ERP.Web.API.Domain.Interfaces.Inventory
+namespace ERP.Web.API.Domain.Interfaces.Inventory;
+
+public interface IItemGroupService : IGeneralService<ItemGroup>
 {
-    public interface IItemGroupService : IGeneralService<ItemGroup>
-    {
-        DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
-            List<int> category, string search);
+    DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
+        List<int> category, string search);
 
-        IEnumerable<ItemGroupSubGroup> GetDetailData(int id);
+    IEnumerable<ItemGroupSubGroup> GetDetailData(int id);
 
-        IEnumerable<ItemGroupSubGroup> GetDetailById(int id);
+    IEnumerable<ItemGroupSubGroup> GetDetailById(int id);
 
-        IEnumerable<ItemGroup> GetLists();
+    IEnumerable<ItemGroup> GetLists();
 
-        SaveResult Insert(ItemGroupRequest data);
+    SaveResult Insert(ItemGroupRequest data);
 
-        SaveResult Update(ItemGroupRequest data);
+    SaveResult Update(ItemGroupRequest data);
 
-        SaveResult Delete(int id, int userId);
-    }
+    SaveResult Delete(int id, int userId);
 }

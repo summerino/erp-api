@@ -2,46 +2,45 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using ERP.Entity.Core;
 
-namespace ERP.Entity.Sales
+namespace ERP.Entity.Sales;
+
+[Table("Area", Schema = Schema.Sales)]
+public class Area : BaseEntityWithActive
 {
-    [Table("Area", Schema = Schema.Sales)]
-    public class Area : BaseEntityWithActive
-    {
-        public int Id { get; set; }
+    public int Id { get; set; }
 
-        [Required]
-        [StringLength(50)]
-        public string Initial { get; set; }
+    [Required]
+    [StringLength(50)]
+    public string Initial { get; set; }
 
-        [Required]
-        [StringLength(100)]
-        public string Name { get; set; }
+    [Required]
+    [StringLength(100)]
+    public string Name { get; set; }
 
-        public int? ParentId { get; set; }
+    public int? ParentId { get; set; }
 
-        public int? Deep { get; set; }
+    public int? Deep { get; set; }
 
-        public string Lineage { get; set; }
-    }
+    public string Lineage { get; set; }
+}
 
-    public class VwArea : BaseEntityWithActive
-    {
-        public int Id { get; set; }
+public class VwArea : BaseEntityWithActive
+{
+    public int Id { get; set; }
 
-        [StringLength(50)]
-        public string Initial { get; set; }
+    [StringLength(50)]
+    public string Initial { get; set; }
 
-        [StringLength(100)]
-        public string Name { get; set; }
+    [StringLength(100)]
+    public string Name { get; set; }
 
-        public int? ParentId { get; set; }
+    public int? ParentId { get; set; }
 
-        public int? Deep { get; set; }
+    public int? Deep { get; set; }
 
-        public string Lineage { get; set; }
+    public string Lineage { get; set; }
 
-        public string CreatedInitial { get; set; }
+    public string CreatedInitial { get; set; }
 
-        public string UpdatedInitial { get; set; }
-    }
+    public string UpdatedInitial { get; set; }
 }

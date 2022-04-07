@@ -8,113 +8,273 @@ using ERP.Entity.Purchase;
 using ERP.Web.API.Domain.Interfaces.Purchase;
 using ERP.Web.API.Model.Purchase;
 
-namespace ERP.Web.API.Domain.Services.Purchase
+namespace ERP.Web.API.Domain.Services.Purchase;
+
+public class PurchaseReturnService : GeneralService<PurchaseReturnHeader>, IPurchaseReturnService
 {
-    public class PurchaseReturnService : GeneralService<PurchaseReturnHeader>, IPurchaseReturnService
+    public PurchaseReturnService(TenantContext db)
+        : base(db)
     {
-        public PurchaseReturnService(TenantContext db)
-            : base(db)
+    }
+
+    public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
+        string search)
+    {
+        var data = Db.VwPurchaseReturnHeaders.AsQueryable();
+
+        if (!string.IsNullOrEmpty(search))
         {
+            data = DateTime.TryParse(search, out var searchDate)
+                ? data.Where(x => x.Date == searchDate)
+                : data.Where(x =>
+                    x.Code.Contains(search) || x.SupName.Contains(search) || x.RcvCode == search ||
+                    x.ShippedInitial.Contains(search) || x.RefNo.StartsWith(search));
         }
 
-        public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
-            string search)
+        return data.ToDataSourceResult(skip, take, filter, sort);
+    }
+
+    public IEnumerable<VwPurchaseReturnDetail> GetDetailData(string code, bool? fullReceived)
+    {
+        var data = Db.VwPurchaseReturnDetails.Where(x => x.Code == code);
+
+        if (fullReceived.HasValue)
         {
-            var data = Db.VwPurchaseReturnHeaders.AsQueryable();
-
-            if (!string.IsNullOrEmpty(search))
-            {
-                data = DateTime.TryParse(search, out var searchDate)
-                    ? data.Where(x => x.Date == searchDate)
-                    : data.Where(x =>
-                        x.Code.Contains(search) || x.SupName.Contains(search) || x.RcvCode == search ||
-                        x.ShippedInitial.Contains(search) || x.RefNo.StartsWith(search));
-            }
-
-            return data.ToDataSourceResult(skip, take, filter, sort);
+            data = (bool)fullReceived
+                ? data.Where(x => x.Qty <= x.QtyRcv)
+                : data.Where(x => x.Qty > x.QtyRcv);
         }
 
-        public IEnumerable<VwPurchaseReturnDetail> GetDetailData(string code, bool? fullReceived)
+        return data.OrderBy(x => x.LineNo);
+    }
+
+    public IEnumerable<VwPurchaseReturnDetailExchDiffItem> GetDetailExchangeData(string code, bool? fullReceived)
+    {
+        var data = Db.VwPurchaseReturnDetailExchDiffItems.Where(x => x.Code == code);
+
+        if (fullReceived.HasValue)
         {
-            var data = Db.VwPurchaseReturnDetails.Where(x => x.Code == code);
-
-            if (fullReceived.HasValue)
-            {
-                data = (bool)fullReceived
-                    ? data.Where(x => x.Qty <= x.QtyRcv)
-                    : data.Where(x => x.Qty > x.QtyRcv);
-            }
-
-            return data.OrderBy(x => x.LineNo);
+            data = (bool)fullReceived
+                ? data.Where(x => x.Qty <= x.QtyRcv)
+                : data.Where(x => x.Qty > x.QtyRcv);
         }
 
-        public IEnumerable<VwPurchaseReturnDetailExchDiffItem> GetDetailExchangeData(string code, bool? fullReceived)
-        {
-            var data = Db.VwPurchaseReturnDetailExchDiffItems.Where(x => x.Code == code);
+        return data.OrderBy(x => x.LineNo);
+    }
 
-            if (fullReceived.HasValue)
-            {
-                data = (bool)fullReceived
-                    ? data.Where(x => x.Qty <= x.QtyRcv)
-                    : data.Where(x => x.Qty > x.QtyRcv);
-            }
+    public List<dynamic> GetRelatedTransactions(string code)
+    {
+        var data = (
+            new[] { new { Code = "", Date = new DateTime(), Mark = "", Type = "" } }
+        ).Union(from dt in Db.VwDebitMemos
+            where dt.TransCode == code && dt.Mark != "V"
+            select new { dt.Code, dt.Date, dt.Mark, Type = "Nota Debit" }
+        ).Union(
+            from dt in Db.PurchaseReceiveHeaders
+            where dt.TransCode == code && dt.Mark != "V"
+            select new { dt.Code, dt.Date, dt.Mark, Type = "Penerimaan Pembelian" }
+        ).Skip(1);
 
-            return data.OrderBy(x => x.LineNo);
-        }
-
-        public List<dynamic> GetRelatedTransactions(string code)
-        {
-            var data = (
-                        new[] { new { Code = "", Date = new DateTime(), Mark = "", Type = "" } }
-                        ).Union(from dt in Db.VwDebitMemos
-                        where dt.TransCode == code && dt.Mark != "V"
-                        select new { dt.Code, dt.Date, dt.Mark, Type = "Nota Debit" }
-                        ).Union(
-                        from dt in Db.PurchaseReceiveHeaders
-                        where dt.TransCode == code && dt.Mark != "V"
-                        select new { dt.Code, dt.Date, dt.Mark, Type = "Penerimaan Pembelian" }
-                        ).Skip(1);
-
-            return data.ToDynamicList();
-        }
+        return data.ToDynamicList();
+    }
         
-        public SaveResult Insert(PurchaseReturnRequest data)
+    public SaveResult Insert(PurchaseReturnRequest data)
+    {
+        var result = new SaveResult(false);
+        var dbtMemo = new DebitMemo();
+        var listItemDetails = new List<PurchaseReturnDetail>();
+
+        using var transaction = Db.Database.BeginTransaction();
+        try
         {
-            var result = new SaveResult(false);
-            var dbtMemo = new DebitMemo();
-            var listItemDetails = new List<PurchaseReturnDetail>();
-
-            using var transaction = Db.Database.BeginTransaction();
-            try
+            // Checking purchase receive mark
+            if (IsPurchaseReceiveInvalid(data.RcvCode))
             {
-                // Checking purchase receive mark
-                if (IsPurchaseReceiveInvalid(data.RcvCode))
+                result.Message = "Data pengembalian pembelian tidak bisa disimpan karena data penerimaan pembelian sudah ditandai sebagai void atau tutup.";
+                return result;
+            }
+
+            // Checking receive qty is excess or not
+            if (IsQtyExcess(data.ItemDetails, null))
+            {
+                result.Message = "Data pengembalian pembelian tidak bisa disimpan karena qty yg dikembalikan lebih besar dari qty yang tersedia atau barang tidak tersedia pada gudang yang dipilih.";
+                return result;
+            }
+
+            // Get new code
+            var newCode = GetNewCode("PR_NUM_FMT", data.Date);
+
+            // Insert header data
+            data.Code = newCode;
+            Db.PurchaseReturnHeaders.Add(data);
+
+            // Insert detail data
+            short i = 0;
+            foreach (var item in data.ItemDetails)
+            {
+                var prd = new PurchaseReturnDetail
                 {
-                    result.Message = "Data pengembalian pembelian tidak bisa disimpan karena data penerimaan pembelian sudah ditandai sebagai void atau tutup.";
-                    return result;
+                    Code = newCode,
+                    LineNo = ++i,
+                    RcvDetailId = item.RcvDetailId,
+                    ItemId = item.ItemId,
+                    Qty = item.Qty,
+                    UomId = item.UomId,
+                    UnitId = item.UnitId,
+                    Length = item.Length,
+                    Width = item.Width,
+                    Height = item.Height,
+                    Weight = item.Weight,
+                    DimensionMeasurement = item.DimensionMeasurement,
+                    WeightMeasurement = item.WeightMeasurement,
+                    UnitPrice = item.UnitPrice,
+                    Disc = item.Disc,
+                    TaxId = item.TaxId,
+                    TaxAmount = item.TaxAmount,
+                    NettPrice = item.NettPrice,
+                    Total = item.Total,
+                    Dpp = item.Dpp,
+                    WarehouseCode = item.WarehouseCode,
+                    QtyRcv = item.QtyRcv,
+                    WarehouseCodeIn = item.WarehouseCodeIn
+                };
+                Db.PurchaseReturnDetails.Add(prd);
+
+                Db.SaveChanges();
+                listItemDetails.Add(prd);
+            }
+
+            if (data.Type == 1)
+            {
+                var dbtCode = GetNewCode("DM_NUM_FMT", data.Date);
+
+                dbtMemo = new DebitMemo
+                {
+                    Code = dbtCode,
+                    Date = data.Date,
+                    SrcTrans = (short)(data.Type == 1 ? 2 : 3),
+                    SupCode = data.SupCode,
+                    TransCode = data.Code,
+                    CurrCode = data.CurrCode,
+                    Rate = data.Rate,
+                    Amount = data.Total,
+                    Used = 0,
+                    Notes = data.RcvCode != null ? "Automatically created by Purchase Return " + newCode : "Automatically created by Purchase Return W/O Doc. " + newCode,
+                    Mark = "A",
+                    CreatedBy = data.CreatedBy,
+                    CreatedDate = data.CreatedDate,
+                    UpdatedBy = data.UpdatedBy,
+                    UpdatedDate = data.UpdatedDate
+                };
+
+                Db.DebitMemos.Add(dbtMemo);
+            }
+
+            Db.SaveChanges();
+
+            if (data.Type == 3)
+            {
+                var exchangeDetail = data.DiffItemDetails;
+                short j = 0;
+                foreach (var item in exchangeDetail)
+                {
+                    Db.PurchaseReturnDetailExchDiffItems.Add(new PurchaseReturnDetailExchDiffItem
+                    {
+                        Code = newCode,
+                        LineNo = ++j,
+                        ReturnDetailId = listItemDetails.Count > 1 ?  listItemDetails[j-1].Id : listItemDetails[0].Id,
+                        ItemId = item.ItemId,
+                        UomId = item.UomId,
+                        UnitId = item.UnitId,
+                        Qty = item.Qty,
+                        QtyRcv = item.QtyRcv,
+                        WarehouseCode = listItemDetails.Count > 1 ? listItemDetails[j-1].WarehouseCode : listItemDetails[0].WarehouseCode,
+                        UnitPrice = item.UnitPrice,
+                        TaxId = item.TaxId,
+                        TaxAmount = item.TaxAmount,
+                        NettPrice = item.NettPrice,
+                        Total = item.Total,
+                        Dpp = item.Dpp
+                    });
                 }
 
-                // Checking receive qty is excess or not
-                if (IsQtyExcess(data.ItemDetails, null))
-                {
-                    result.Message = "Data pengembalian pembelian tidak bisa disimpan karena qty yg dikembalikan lebih besar dari qty yang tersedia atau barang tidak tersedia pada gudang yang dipilih.";
-                    return result;
-                }
+                Db.SaveChanges();
+            }
 
-                // Get new code
-                var newCode = GetNewCode("PR_NUM_FMT", data.Date);
+            Db.Database.ExecuteSqlRaw(
+                "EXEC sp_update_stock_mutation_from_pr {0}, {1}, {2}",
+                data.Code, data.Date, data.RcvCode);
 
-                // Insert header data
-                data.Code = newCode;
-                Db.PurchaseReturnHeaders.Add(data);
+            transaction.Commit();
+        }
+        catch (Exception ex)
+        {
+            result.Message = ex.InnerException?.Message ?? ex.Message;
+            return result;
+        }
 
-                // Insert detail data
-                short i = 0;
-                foreach (var item in data.ItemDetails)
+        result.Success = true;
+        result.Data = data.Code;
+        result.Message = "Data pengembalian pembelian berhasil disimpan.";
+        return result;
+    }
+
+    public SaveResult Update(PurchaseReturnRequest data)
+    {
+        var result = new SaveResult(false);
+        var dbtMemo = new DebitMemo();
+        var listItemDetails = new List<PurchaseReturnDetail>();
+
+        using var transaction = Db.Database.BeginTransaction();
+        try
+        {
+            // Checking mark header data
+            if (Db.PurchaseReturnHeaders.Any(x => x.Code == data.Code && x.Mark == "V"))
+            {
+                result.Message = "Data pengembalian pembelian tidak bisa diubah karena data sudah ditandai sebagai void.";
+                return result;
+            }
+
+            // Checking purchase order mark
+            if (IsPurchaseReceiveInvalid(data.RcvCode))
+            {
+                result.Message = "Data pengembalian pembelian tidak bisa diubah karena data penerimaan pembelian sudah ditandai sebagai void atau tutup.";
+                return result;
+            }
+
+            // Checking receive qty is excess or not
+            if (IsQtyExcess(data.ItemDetails, data.Code))
+            {
+                result.Message = "Data pengembalian pembelian tidak bisa diubah karena qty yg dikembalikan lebih besar dari qty yang tersedia.";
+                return result;
+            }
+
+            data.ApprovedBy = null;
+            data.ApprovedDate = null;
+
+            // Update header data
+            Db.PurchaseReturnHeaders.Update(data);
+            Db.Entry(data).Property(e => e.Code).IsModified = false;
+            Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
+            Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
+
+            // Get detail data that exists in return before
+            var delDetails = Db.PurchaseReturnDetails
+                .Where(d => d.Code == data.Code && !data.ItemDetails.Select(x => x.Id).Contains(d.Id))
+                .ToList();
+
+            // Get detail data that exists in return before
+            Db.PurchaseReturnDetails.RemoveRange(delDetails);
+
+            // Update detail data
+            short i = 0;
+            foreach (var item in data.ItemDetails)
+            {
+                if (item.Id <= 0)
                 {
                     var prd = new PurchaseReturnDetail
                     {
-                        Code = newCode,
+                        Code = data.Code,
                         LineNo = ++i,
                         RcvDetailId = item.RcvDetailId,
                         ItemId = item.ItemId,
@@ -143,52 +303,62 @@ namespace ERP.Web.API.Domain.Services.Purchase
                     Db.SaveChanges();
                     listItemDetails.Add(prd);
                 }
-
-                if (data.Type == 1)
+                else
                 {
-                    var dbtCode = GetNewCode("DM_NUM_FMT", data.Date);
+                    item.LineNo = ++i;
 
-                    dbtMemo = new DebitMemo
-                    {
-                        Code = dbtCode,
-                        Date = data.Date,
-                        SrcTrans = (short)(data.Type == 1 ? 2 : 3),
-                        SupCode = data.SupCode,
-                        TransCode = data.Code,
-                        CurrCode = data.CurrCode,
-                        Rate = data.Rate,
-                        Amount = data.Total,
-                        Used = 0,
-                        Notes = data.RcvCode != null ? "Automatically created by Purchase Return " + newCode : "Automatically created by Purchase Return W/O Doc. " + newCode,
-                        Mark = "A",
-                        CreatedBy = data.CreatedBy,
-                        CreatedDate = data.CreatedDate,
-                        UpdatedBy = data.UpdatedBy,
-                        UpdatedDate = data.UpdatedDate
-                    };
+                    Db.PurchaseReturnDetails.Update(item);
+                    Db.Entry(item).Property(e => e.Code).IsModified = false;
 
-                    Db.DebitMemos.Add(dbtMemo);
+                    listItemDetails.Add(item);
                 }
+            }
 
-                Db.SaveChanges();
+            if (data.Type == 1)
+            {
+                dbtMemo = Db.DebitMemos.FirstOrDefault(x => x.TransCode == data.Code);
+                dbtMemo.SrcTrans = (short)(data.Type == 1 ? 2 : 3);
+                dbtMemo.SupCode = data.SupCode;
+                dbtMemo.CurrCode = data.CurrCode;
+                dbtMemo.Rate = data.Rate;
+                dbtMemo.Amount = data.Total;
+                dbtMemo.UpdatedBy = data.UpdatedBy;
+                dbtMemo.UpdatedDate = data.UpdatedDate;
+                Db.DebitMemos.Update(dbtMemo);
+                Db.Entry(dbtMemo).Property(e => e.Code).IsModified = false;
+                Db.Entry(dbtMemo).Property(e => e.TransCode).IsModified = false;
+                Db.Entry(dbtMemo).Property(e => e.Notes).IsModified = false;
+                Db.Entry(dbtMemo).Property(e => e.CreatedBy).IsModified = false;
+                Db.Entry(dbtMemo).Property(e => e.CreatedDate).IsModified = false;
+            }
 
-                if (data.Type == 3)
+            // Save changes
+            Db.SaveChanges();
+
+            if (data.Type == 3)
+            {
+                var delExchange = Db.PurchaseReturnDetailExchDiffItems.Where(d => d.Code == data.Code && !data.DiffItemDetails.Select(x => x.Id).Contains(d.Id))
+                    .ToList();
+
+                Db.PurchaseReturnDetailExchDiffItems.RemoveRange(delExchange);
+
+                var exchangeDetail = data.DiffItemDetails;
+                short j = 0;
+                foreach (var item in exchangeDetail)
                 {
-                    var exchangeDetail = data.DiffItemDetails;
-                    short j = 0;
-                    foreach (var item in exchangeDetail)
+                    if (item.Id <= 0)
                     {
                         Db.PurchaseReturnDetailExchDiffItems.Add(new PurchaseReturnDetailExchDiffItem
                         {
-                            Code = newCode,
+                            Code = data.Code,
                             LineNo = ++j,
-                            ReturnDetailId = listItemDetails.Count > 1 ?  listItemDetails[j-1].Id : listItemDetails[0].Id,
+                            ReturnDetailId = listItemDetails.Count > 1 ? listItemDetails[j - 1].Id : listItemDetails[0].Id,
                             ItemId = item.ItemId,
                             UomId = item.UomId,
                             UnitId = item.UnitId,
                             Qty = item.Qty,
                             QtyRcv = item.QtyRcv,
-                            WarehouseCode = listItemDetails.Count > 1 ? listItemDetails[j-1].WarehouseCode : listItemDetails[0].WarehouseCode,
+                            WarehouseCode = listItemDetails.Count > 1 ? listItemDetails[j - 1].WarehouseCode : listItemDetails[0].WarehouseCode,
                             UnitPrice = item.UnitPrice,
                             TaxId = item.TaxId,
                             TaxAmount = item.TaxAmount,
@@ -197,192 +367,89 @@ namespace ERP.Web.API.Domain.Services.Purchase
                             Dpp = item.Dpp
                         });
                     }
+                    else
+                    {
+                        item.LineNo = ++j;
+                        item.WarehouseCode = listItemDetails.Count > 1 ? listItemDetails[j - 1].WarehouseCode : listItemDetails[0].WarehouseCode;
+                        Db.PurchaseReturnDetailExchDiffItems.Update(item);
+                        Db.Entry(item).Property(e => e.Code).IsModified = false;
+                    }
+                }
 
-                    Db.SaveChanges();
+                Db.SaveChanges();
+            }
+
+            Db.Database.ExecuteSqlRaw(
+                "EXEC sp_update_stock_mutation_from_pr {0}, {1}, {2}",
+                data.Code, data.Date, data.RcvCode);
+
+            transaction.Commit();
+        }
+        catch (Exception ex)
+        {
+            result.Message = ex.InnerException?.Message ?? ex.Message;
+            return result;
+        }
+
+        result.Success = true;
+        result.Data = data.Code;
+        result.Message = "Data pengembalian pembelian berhasil diperbarui.";
+        return result;
+    }
+
+    public SaveResult Delete(string code, int userId)
+    {
+        var result = new SaveResult(false);
+
+        var data = Db.PurchaseReturnHeaders.Find(code);
+        if (data != null)
+        {
+            // Checking mark header data
+            if (data.Mark == "V")
+            {
+                result.Message = "Data pengembalian pembelian tidak bisa ditandai sebagai void karena sudah ditandai sebagai void.";
+                return result;
+            }
+
+            var isPaid = Db.VwDebitMemos.Where(x => x.TransCode == code && (x.Mark == "FU" || x.Mark == "PU")).Any();
+            if (isPaid)
+            {
+                result.Message = "Data pengembalian pembelian tidak bisa ditandai sebagai void karena terdapat debit memo yang sudah dibayarkan.";
+                return result;
+            }
+
+            using var transaction = Db.Database.BeginTransaction();
+            try
+            {
+                // Update header data
+                data.Mark = "V";
+                data.UpdatedBy = userId;
+                data.UpdatedDate = DateTime.Now;
+
+                if (data.Type == 1)
+                {
+                    var dmData = Db.DebitMemos.FirstOrDefault(x => x.TransCode == code);
+
+                    dmData.Mark = "V";
+                    dmData.UpdatedBy = userId;
+                    dmData.UpdatedDate = DateTime.Now;
+
+                    Db.DebitMemos.Update(dmData);
                 }
 
                 Db.Database.ExecuteSqlRaw(
                     "EXEC sp_update_stock_mutation_from_pr {0}, {1}, {2}",
                     data.Code, data.Date, data.RcvCode);
 
-                transaction.Commit();
-            }
-            catch (Exception ex)
-            {
-                result.Message = ex.InnerException?.Message ?? ex.Message;
-                return result;
-            }
-
-            result.Success = true;
-            result.Data = data.Code;
-            result.Message = "Data pengembalian pembelian berhasil disimpan.";
-            return result;
-        }
-
-        public SaveResult Update(PurchaseReturnRequest data)
-        {
-            var result = new SaveResult(false);
-            var dbtMemo = new DebitMemo();
-            var listItemDetails = new List<PurchaseReturnDetail>();
-
-            using var transaction = Db.Database.BeginTransaction();
-            try
-            {
-                // Checking mark header data
-                if (Db.PurchaseReturnHeaders.Any(x => x.Code == data.Code && x.Mark == "V"))
+                var stockPR = Db.StockMutations.Where(x => x.RefCode1 == data.Code);
+                if (stockPR != null)
                 {
-                    result.Message = "Data pengembalian pembelian tidak bisa diubah karena data sudah ditandai sebagai void.";
-                    return result;
-                }
-
-                // Checking purchase order mark
-                if (IsPurchaseReceiveInvalid(data.RcvCode))
-                {
-                    result.Message = "Data pengembalian pembelian tidak bisa diubah karena data penerimaan pembelian sudah ditandai sebagai void atau tutup.";
-                    return result;
-                }
-
-                // Checking receive qty is excess or not
-                if (IsQtyExcess(data.ItemDetails, data.Code))
-                {
-                    result.Message = "Data pengembalian pembelian tidak bisa diubah karena qty yg dikembalikan lebih besar dari qty yang tersedia.";
-                    return result;
-                }
-
-                data.ApprovedBy = null;
-                data.ApprovedDate = null;
-
-                // Update header data
-                Db.PurchaseReturnHeaders.Update(data);
-                Db.Entry(data).Property(e => e.Code).IsModified = false;
-                Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
-                Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
-
-                // Get detail data that exists in return before
-                var delDetails = Db.PurchaseReturnDetails
-                    .Where(d => d.Code == data.Code && !data.ItemDetails.Select(x => x.Id).Contains(d.Id))
-                    .ToList();
-
-                // Get detail data that exists in return before
-                Db.PurchaseReturnDetails.RemoveRange(delDetails);
-
-                // Update detail data
-                short i = 0;
-                foreach (var item in data.ItemDetails)
-                {
-                    if (item.Id <= 0)
-                    {
-                        var prd = new PurchaseReturnDetail
-                        {
-                            Code = data.Code,
-                            LineNo = ++i,
-                            RcvDetailId = item.RcvDetailId,
-                            ItemId = item.ItemId,
-                            Qty = item.Qty,
-                            UomId = item.UomId,
-                            UnitId = item.UnitId,
-                            Length = item.Length,
-                            Width = item.Width,
-                            Height = item.Height,
-                            Weight = item.Weight,
-                            DimensionMeasurement = item.DimensionMeasurement,
-                            WeightMeasurement = item.WeightMeasurement,
-                            UnitPrice = item.UnitPrice,
-                            Disc = item.Disc,
-                            TaxId = item.TaxId,
-                            TaxAmount = item.TaxAmount,
-                            NettPrice = item.NettPrice,
-                            Total = item.Total,
-                            Dpp = item.Dpp,
-                            WarehouseCode = item.WarehouseCode,
-                            QtyRcv = item.QtyRcv,
-                            WarehouseCodeIn = item.WarehouseCodeIn
-                        };
-                        Db.PurchaseReturnDetails.Add(prd);
-
-                        Db.SaveChanges();
-                        listItemDetails.Add(prd);
-                    }
-                    else
-                    {
-                        item.LineNo = ++i;
-
-                        Db.PurchaseReturnDetails.Update(item);
-                        Db.Entry(item).Property(e => e.Code).IsModified = false;
-
-                        listItemDetails.Add(item);
-                    }
-                }
-
-                if (data.Type == 1)
-                {
-                    dbtMemo = Db.DebitMemos.FirstOrDefault(x => x.TransCode == data.Code);
-                    dbtMemo.SrcTrans = (short)(data.Type == 1 ? 2 : 3);
-                    dbtMemo.SupCode = data.SupCode;
-                    dbtMemo.CurrCode = data.CurrCode;
-                    dbtMemo.Rate = data.Rate;
-                    dbtMemo.Amount = data.Total;
-                    dbtMemo.UpdatedBy = data.UpdatedBy;
-                    dbtMemo.UpdatedDate = data.UpdatedDate;
-                    Db.DebitMemos.Update(dbtMemo);
-                    Db.Entry(dbtMemo).Property(e => e.Code).IsModified = false;
-                    Db.Entry(dbtMemo).Property(e => e.TransCode).IsModified = false;
-                    Db.Entry(dbtMemo).Property(e => e.Notes).IsModified = false;
-                    Db.Entry(dbtMemo).Property(e => e.CreatedBy).IsModified = false;
-                    Db.Entry(dbtMemo).Property(e => e.CreatedDate).IsModified = false;
+                    Db.StockMutations.RemoveRange(stockPR);
                 }
 
                 // Save changes
                 Db.SaveChanges();
 
-                if (data.Type == 3)
-                {
-                    var delExchange = Db.PurchaseReturnDetailExchDiffItems.Where(d => d.Code == data.Code && !data.DiffItemDetails.Select(x => x.Id).Contains(d.Id))
-                    .ToList();
-
-                    Db.PurchaseReturnDetailExchDiffItems.RemoveRange(delExchange);
-
-                    var exchangeDetail = data.DiffItemDetails;
-                    short j = 0;
-                    foreach (var item in exchangeDetail)
-                    {
-                        if (item.Id <= 0)
-                        {
-                            Db.PurchaseReturnDetailExchDiffItems.Add(new PurchaseReturnDetailExchDiffItem
-                            {
-                                Code = data.Code,
-                                LineNo = ++j,
-                                ReturnDetailId = listItemDetails.Count > 1 ? listItemDetails[j - 1].Id : listItemDetails[0].Id,
-                                ItemId = item.ItemId,
-                                UomId = item.UomId,
-                                UnitId = item.UnitId,
-                                Qty = item.Qty,
-                                QtyRcv = item.QtyRcv,
-                                WarehouseCode = listItemDetails.Count > 1 ? listItemDetails[j - 1].WarehouseCode : listItemDetails[0].WarehouseCode,
-                                UnitPrice = item.UnitPrice,
-                                TaxId = item.TaxId,
-                                TaxAmount = item.TaxAmount,
-                                NettPrice = item.NettPrice,
-                                Total = item.Total,
-                                Dpp = item.Dpp
-                            });
-                        }
-                        else
-                        {
-                            item.LineNo = ++j;
-                            item.WarehouseCode = listItemDetails.Count > 1 ? listItemDetails[j - 1].WarehouseCode : listItemDetails[0].WarehouseCode;
-                            Db.PurchaseReturnDetailExchDiffItems.Update(item);
-                            Db.Entry(item).Property(e => e.Code).IsModified = false;
-                        }
-                    }
-
-                    Db.SaveChanges();
-                }
-
-                Db.Database.ExecuteSqlRaw(
-                   "EXEC sp_update_stock_mutation_from_pr {0}, {1}, {2}",
-                   data.Code, data.Date, data.RcvCode);
-
                 transaction.Commit();
             }
             catch (Exception ex)
@@ -390,99 +457,55 @@ namespace ERP.Web.API.Domain.Services.Purchase
                 result.Message = ex.InnerException?.Message ?? ex.Message;
                 return result;
             }
-
-            result.Success = true;
-            result.Data = data.Code;
-            result.Message = "Data pengembalian pembelian berhasil diperbarui.";
-            return result;
         }
 
-        public SaveResult Delete(string code, int userId)
-        {
-            var result = new SaveResult(false);
+        result.Success = true;
+        result.Message = "Data pengembalian pembelian berhasil ditandai sebagai void.";
+        return result;
+    }
 
-            var data = Db.PurchaseReturnHeaders.Find(code);
-            if (data != null)
+    private bool IsPurchaseReceiveInvalid(string rcvCode)
+    {
+        return Db.PurchaseReceiveHeaders.Any(x => x.Code == rcvCode && new[] { "V", "CLS" }.Contains(x.Mark));
+    }
+
+    private bool IsQtyExcess(IEnumerable<PurchaseReturnDetail> items, string code)
+    {
+        var result = false;
+        foreach (var item in items)
+        {
+            var uom = Db.UoMConversions.FirstOrDefault(x => x.Id == item.UnitId);
+            var stock = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == item.WarehouseCode && x.ItemId == item.ItemId);
+            if (stock != null)
             {
-                // Checking mark header data
-                if (data.Mark == "V")
+                if (code == null)
                 {
-                    result.Message = "Data pengembalian pembelian tidak bisa ditandai sebagai void karena sudah ditandai sebagai void.";
-                    return result;
-                }
-
-                var isPaid = Db.VwDebitMemos.Where(x => x.TransCode == code && (x.Mark == "FU" || x.Mark == "PU")).Any();
-                if (isPaid)
-                {
-                    result.Message = "Data pengembalian pembelian tidak bisa ditandai sebagai void karena terdapat debit memo yang sudah dibayarkan.";
-                    return result;
-                }
-
-                using var transaction = Db.Database.BeginTransaction();
-                try
-                {
-                    // Update header data
-                    data.Mark = "V";
-                    data.UpdatedBy = userId;
-                    data.UpdatedDate = DateTime.Now;
-
-                    if (data.Type == 1)
+                    if (uom.IsBaseUnit)
                     {
-                        var dmData = Db.DebitMemos.FirstOrDefault(x => x.TransCode == code);
-
-                        dmData.Mark = "V";
-                        dmData.UpdatedBy = userId;
-                        dmData.UpdatedDate = DateTime.Now;
-
-                        Db.DebitMemos.Update(dmData);
+                        if (item.Qty > stock.QtyOnHand)
+                        {
+                            result = true;
+                        }
                     }
-
-                    Db.Database.ExecuteSqlRaw(
-                    "EXEC sp_update_stock_mutation_from_pr {0}, {1}, {2}",
-                    data.Code, data.Date, data.RcvCode);
-
-                    var stockPR = Db.StockMutations.Where(x => x.RefCode1 == data.Code);
-                    if (stockPR != null)
+                    else
                     {
-                        Db.StockMutations.RemoveRange(stockPR);
+                        var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= uom.Seq).Select(x => x.Conversion).ToList();
+                        var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
+                        var baseQty = item.Qty * multipliedQty;
+                        if (baseQty > stock.QtyOnHand)
+                        {
+                            result = true;
+                        }
                     }
-
-                    // Save changes
-                    Db.SaveChanges();
-
-                    transaction.Commit();
                 }
-                catch (Exception ex)
+                else
                 {
-                    result.Message = ex.InnerException?.Message ?? ex.Message;
-                    return result;
-                }
-            }
-
-            result.Success = true;
-            result.Message = "Data pengembalian pembelian berhasil ditandai sebagai void.";
-            return result;
-        }
-
-        private bool IsPurchaseReceiveInvalid(string rcvCode)
-        {
-            return Db.PurchaseReceiveHeaders.Any(x => x.Code == rcvCode && new[] { "V", "CLS" }.Contains(x.Mark));
-        }
-
-        private bool IsQtyExcess(IEnumerable<PurchaseReturnDetail> items, string code)
-        {
-            var result = false;
-            foreach (var item in items)
-            {
-                var uom = Db.UoMConversions.FirstOrDefault(x => x.Id == item.UnitId);
-                var stock = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == item.WarehouseCode && x.ItemId == item.ItemId);
-                if (stock != null)
-                {
-                    if (code == null)
+                    var oldStock = Db.StockMutations.FirstOrDefault(x => x.ItemId == item.ItemId && x.RefCode1 == code);
+                    if(oldStock != null)
                     {
                         if (uom.IsBaseUnit)
                         {
-                            if (item.Qty > stock.QtyOnHand)
+                            if (item.Qty > (stock.QtyOnHand + oldStock.BaseQty))
                             {
                                 result = true;
                             }
@@ -492,43 +515,19 @@ namespace ERP.Web.API.Domain.Services.Purchase
                             var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= uom.Seq).Select(x => x.Conversion).ToList();
                             var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
                             var baseQty = item.Qty * multipliedQty;
-                            if (baseQty > stock.QtyOnHand)
+                            if (baseQty > (stock.QtyOnHand + oldStock.BaseQty))
                             {
                                 result = true;
                             }
                         }
                     }
-                    else
-                    {
-                        var oldStock = Db.StockMutations.FirstOrDefault(x => x.ItemId == item.ItemId && x.RefCode1 == code);
-                        if(oldStock != null)
-                        {
-                            if (uom.IsBaseUnit)
-                            {
-                                if (item.Qty > (stock.QtyOnHand + oldStock.BaseQty))
-                                {
-                                    result = true;
-                                }
-                            }
-                            else
-                            {
-                                var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= uom.Seq).Select(x => x.Conversion).ToList();
-                                var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
-                                var baseQty = item.Qty * multipliedQty;
-                                if (baseQty > (stock.QtyOnHand + oldStock.BaseQty))
-                                {
-                                    result = true;
-                                }
-                            }
-                        }
-                    }
                 }
-                else
-                    result = true;
             }
-            return result;
+            else
+                result = true;
         }
+        return result;
+    }
 
         
-    }
 }

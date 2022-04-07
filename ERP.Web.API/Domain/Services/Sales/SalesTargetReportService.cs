@@ -4,18 +4,18 @@ using ERP.Entity;
 using ERP.Web.API.Domain.Interfaces.Sales;
 using Microsoft.EntityFrameworkCore;
 
-namespace ERP.Web.API.Domain.Services.Sales
+namespace ERP.Web.API.Domain.Services.Sales;
+
+public class SalesTargetReportService : ISalesTargetReportService
 {
-    public class SalesTargetReportService : ISalesTargetReportService
+    private readonly TenantContext _db;
+    public SalesTargetReportService(TenantContext db)
     {
-        private readonly TenantContext _db;
-        public SalesTargetReportService(TenantContext db)
-        {
-            _db = db;
-        }
-        public DataSourceResult GetData(string startDate, string endDate, int? salesId, int? groupId, int? groupSubGroupId, string groupSubGroup, bool isDetail)
-        {
-            var detailQuery = @"SELECT inv.[Date], inv.DueDate, inv.Code, inv.CustCode, inv.CustName,
+        _db = db;
+    }
+    public DataSourceResult GetData(string startDate, string endDate, int? salesId, int? groupId, int? groupSubGroupId, string groupSubGroup, bool isDetail)
+    {
+        var detailQuery = @"SELECT inv.[Date], inv.DueDate, inv.Code, inv.CustCode, inv.CustName,
                             im.Initial AS ItemInitial, im.[Name] AS ItemName, dlv_d.Qty,
                             dlv_d.UnitId, dlv_d.UnitName, dlv_d.UnitPrice AS GrossAmount,
                             dlv_d.Disc AS Disc, dlv_d.FinalDiscHeader AS DiscHeader,
@@ -42,60 +42,60 @@ namespace ERP.Web.API.Domain.Services.Sales
                             LEFT JOIN Inventory.ItemGroup ig ON ig.Id = ic.GroupId
                             LEFT JOIN Inventory.ItemGroupSubGroup igs ON igs.ItemGroupId = ig.Id
                             WHERE inv.Mark != 'V'" +
-                            (!salesId.HasValue || salesId <= 0 ? "" : $" AND so.SalesBy = {salesId}") +
-                            (!groupId.HasValue || groupId <= 0 ? "" : $" AND ig.Id = {groupId}") +
-                            (!groupSubGroupId.HasValue || groupSubGroupId <= 0 ? "" : $" AND igs.Id = {groupSubGroupId}") +
-                            (string.IsNullOrEmpty(groupSubGroup) ? "" : @$" AND (im.SubGroup1 = '{groupSubGroup}'
+                          (!salesId.HasValue || salesId <= 0 ? "" : $" AND so.SalesBy = {salesId}") +
+                          (!groupId.HasValue || groupId <= 0 ? "" : $" AND ig.Id = {groupId}") +
+                          (!groupSubGroupId.HasValue || groupSubGroupId <= 0 ? "" : $" AND igs.Id = {groupSubGroupId}") +
+                          (string.IsNullOrEmpty(groupSubGroup) ? "" : @$" AND (im.SubGroup1 = '{groupSubGroup}'
                             OR im.SubGroup2 = '{groupSubGroup}' OR im.SubGroup3 = '{groupSubGroup}' OR im.SubGroup4 = '{groupSubGroup}'
                             OR im.SubGroup5 = '{groupSubGroup}')");
 
-            var tsDetailData = _db.ReportByDetailSTs.FromSqlRaw(detailQuery).ToList();
+        var tsDetailData = _db.ReportByDetailSTs.FromSqlRaw(detailQuery).ToList();
 
-            if (!string.IsNullOrEmpty(startDate) && !string.IsNullOrEmpty(endDate))
-            {
-                tsDetailData = tsDetailData.Where(x => x.Date >= Convert.ToDateTime(startDate) && x.Date <= Convert.ToDateTime(endDate)).ToList();
-            }
-            else if (!string.IsNullOrEmpty(startDate))
-            {
-                tsDetailData = tsDetailData.Where(x => x.Date >= Convert.ToDateTime(startDate)).ToList();
-            }
-            else if (!string.IsNullOrEmpty(endDate))
-            {
-                tsDetailData = tsDetailData.Where(x => x.Date <= Convert.ToDateTime(endDate)).ToList();
-            }
+        if (!string.IsNullOrEmpty(startDate) && !string.IsNullOrEmpty(endDate))
+        {
+            tsDetailData = tsDetailData.Where(x => x.Date >= Convert.ToDateTime(startDate) && x.Date <= Convert.ToDateTime(endDate)).ToList();
+        }
+        else if (!string.IsNullOrEmpty(startDate))
+        {
+            tsDetailData = tsDetailData.Where(x => x.Date >= Convert.ToDateTime(startDate)).ToList();
+        }
+        else if (!string.IsNullOrEmpty(endDate))
+        {
+            tsDetailData = tsDetailData.Where(x => x.Date <= Convert.ToDateTime(endDate)).ToList();
+        }
 
-            if (isDetail)
+        if (isDetail)
+        {
+            tsDetailData.Add(new Entity.Sales.ReportByDetailST
             {
-                tsDetailData.Add(new Entity.Sales.ReportByDetailST
-                {
-                    Code = "Total",
-                    Qty = tsDetailData.Sum(x => x.Qty),
-                    TotalGrossAmount = tsDetailData.Sum(x => x.TotalGrossAmount),
-                    TotalDisc = tsDetailData.Sum(x => x.TotalDisc),
-                    TotalDiscHeader = tsDetailData.Sum(x => x.TotalDiscHeader),
-                    TotalAfterDisc = tsDetailData.Sum(x => x.TotalAfterDisc),
-                    TotalDpp = tsDetailData.Sum(x => x.TotalDpp),
-                    TotalTaxAmount = tsDetailData.Sum(x => x.TotalTaxAmount),
-                    TotalNettPrice = tsDetailData.Sum(x => x.TotalNettPrice)
-                });
+                Code = "Total",
+                Qty = tsDetailData.Sum(x => x.Qty),
+                TotalGrossAmount = tsDetailData.Sum(x => x.TotalGrossAmount),
+                TotalDisc = tsDetailData.Sum(x => x.TotalDisc),
+                TotalDiscHeader = tsDetailData.Sum(x => x.TotalDiscHeader),
+                TotalAfterDisc = tsDetailData.Sum(x => x.TotalAfterDisc),
+                TotalDpp = tsDetailData.Sum(x => x.TotalDpp),
+                TotalTaxAmount = tsDetailData.Sum(x => x.TotalTaxAmount),
+                TotalNettPrice = tsDetailData.Sum(x => x.TotalNettPrice)
+            });
 
-                return tsDetailData.AsQueryable().ToDataSourceResult(0, tsDetailData.Count, null, null);
-            }
-            else
-            {
-                var targetData = _db.ReportByTargets.FromSqlRaw(@"SELECT st_s.SalesmanId AS SalesId, st_d.ItemGroupId,
+            return tsDetailData.AsQueryable().ToDataSourceResult(0, tsDetailData.Count, null, null);
+        }
+        else
+        {
+            var targetData = _db.ReportByTargets.FromSqlRaw(@"SELECT st_s.SalesmanId AS SalesId, st_d.ItemGroupId,
                     st_d.ItemSubGroupId, st_d.SubGroup AS ItemSubGroup2,
                     SUM(st_d.Amount) AS TargetAmount
                     FROM Sales.SalesTargetHeader st_h
                     LEFT JOIN Sales.SalesTargetSubject st_s ON st_s.Code = st_h.Code
                     LEFT JOIN Sales.SalesTargetDetail st_d ON st_d.Code = st_h.Code
                     WHERE st_h.Mark != 'V'" +
-                    (string.IsNullOrEmpty(startDate) ? "" : $" AND st_h.StartDate >= '{startDate}'") +
-                    (string.IsNullOrEmpty(endDate) ? "" : $" AND st_h.EndDate <= '{endDate}'") +
-                    @"GROUP BY st_s.SalesmanId, st_d.ItemGroupId,
+                                                            (string.IsNullOrEmpty(startDate) ? "" : $" AND st_h.StartDate >= '{startDate}'") +
+                                                            (string.IsNullOrEmpty(endDate) ? "" : $" AND st_h.EndDate <= '{endDate}'") +
+                                                            @"GROUP BY st_s.SalesmanId, st_d.ItemGroupId,
                     st_d.ItemSubGroupId, st_d.SubGroup");
 
-                var tsData = _db.ReportBySTs.FromSqlRaw(@"DECLARE @Delimiter CHAR = ';';
+            var tsData = _db.ReportBySTs.FromSqlRaw(@"DECLARE @Delimiter CHAR = ';';
                     WITH cte_splitted AS (
                     SELECT Id,ItemGroupId,[Name],Split.a.value('.', 'VARCHAR(100)') 'Value' 
                     FROM  
@@ -116,47 +116,46 @@ namespace ERP.Web.API.Domain.Services.Sales
                     CROSS JOIN Inventory.ItemGroup ig 
                     LEFT JOIN cte_splitted csd ON csd.ItemGroupId = ig.Id
                     WHERE emp.IsActive = 1 AND emp.[Type] = 2" +
-                    (!groupId.HasValue || groupId <= 0 ? "" : $" AND ig.Id = {groupId}") +
-                    (!groupSubGroupId.HasValue || groupSubGroupId <= 0 ? "" : $" AND csd.Id = {groupSubGroupId}") +
-                    (string.IsNullOrEmpty(groupSubGroup) ? "" : @$" AND csd.[Value] = '{groupSubGroup}'") +
-                    @" GROUP BY emp.Id, emp.FirstName, emp.LastName, ig.Id, ig.[Name],
+                                                    (!groupId.HasValue || groupId <= 0 ? "" : $" AND ig.Id = {groupId}") +
+                                                    (!groupSubGroupId.HasValue || groupSubGroupId <= 0 ? "" : $" AND csd.Id = {groupSubGroupId}") +
+                                                    (string.IsNullOrEmpty(groupSubGroup) ? "" : @$" AND csd.[Value] = '{groupSubGroup}'") +
+                                                    @" GROUP BY emp.Id, emp.FirstName, emp.LastName, ig.Id, ig.[Name],
                     csd.Id, csd.[Name], csd.[Value]" +
-                    @" ORDER BY emp.FirstName, emp.LastName, 
+                                                    @" ORDER BY emp.FirstName, emp.LastName, 
                     ig.[Name], csd.[Name], csd.[Value]").ToList();
 
-                if (salesId.HasValue || salesId > 0)
-                {
-                    tsData = tsData.Where(x => x.SalesId == salesId).ToList();
-                }
-
-                foreach (var item in tsData)
-                {
-                    var itemDetailData = tsDetailData
-                        .Where(x => x.SalesId == item.SalesId &&
-                        x.ItemGroupId == item.ItemGroupId &&
-                        x.ItemSubGroupId == item.ItemSubGroupId &&
-                        (x.SubGroup1 == item.ItemSubGroup2 || x.SubGroup2 == item.ItemSubGroup2 ||
-                        x.SubGroup3 == item.ItemSubGroup2 || x.SubGroup4 == item.ItemSubGroup2 ||
-                        x.SubGroup5 == item.ItemSubGroup2)).ToList();
-
-                    item.TargetAmount = targetData.Where(x => x.ItemGroupId == item.ItemGroupId &&
-                                        x.ItemSubGroupId == item.ItemSubGroupId && x.ItemSubGroup2 == item.ItemSubGroup2 &&
-                                        x.SalesId == item.SalesId).Sum(x => x.TargetAmount);
-                    item.TotalCustomers = itemDetailData.DistinctBy(x => x.CustCode).Count();
-                    item.RealAmount = itemDetailData.Sum(x => x.TotalNettPrice);
-                    item.TargetPercent = item.RealAmount > 0 && item.TargetAmount > 0 ? item.RealAmount / item.TargetAmount * 100 : 0m;
-                }
-
-                tsData.Add(new Entity.Sales.ReportByST
-                {
-                    ItemGroup = "Total",
-                    TargetAmount = tsData.Sum(x => x.TargetAmount),
-                    RealAmount = tsData.Sum(x => x.RealAmount),
-                    TargetPercent = tsData.Sum(x => x.TargetAmount) > 0 && tsData.Sum(x => x.RealAmount) > 0 ? tsData.Sum(x => x.RealAmount) / tsData.Sum(x => x.TargetAmount) * 100 : 0
-                });
-
-                return tsData.AsQueryable().ToDataSourceResult(0, tsData.Count, null, null);
+            if (salesId.HasValue || salesId > 0)
+            {
+                tsData = tsData.Where(x => x.SalesId == salesId).ToList();
             }
+
+            foreach (var item in tsData)
+            {
+                var itemDetailData = tsDetailData
+                    .Where(x => x.SalesId == item.SalesId &&
+                                x.ItemGroupId == item.ItemGroupId &&
+                                x.ItemSubGroupId == item.ItemSubGroupId &&
+                                (x.SubGroup1 == item.ItemSubGroup2 || x.SubGroup2 == item.ItemSubGroup2 ||
+                                 x.SubGroup3 == item.ItemSubGroup2 || x.SubGroup4 == item.ItemSubGroup2 ||
+                                 x.SubGroup5 == item.ItemSubGroup2)).ToList();
+
+                item.TargetAmount = targetData.Where(x => x.ItemGroupId == item.ItemGroupId &&
+                                                          x.ItemSubGroupId == item.ItemSubGroupId && x.ItemSubGroup2 == item.ItemSubGroup2 &&
+                                                          x.SalesId == item.SalesId).Sum(x => x.TargetAmount);
+                item.TotalCustomers = itemDetailData.DistinctBy(x => x.CustCode).Count();
+                item.RealAmount = itemDetailData.Sum(x => x.TotalNettPrice);
+                item.TargetPercent = item.RealAmount > 0 && item.TargetAmount > 0 ? item.RealAmount / item.TargetAmount * 100 : 0m;
+            }
+
+            tsData.Add(new Entity.Sales.ReportByST
+            {
+                ItemGroup = "Total",
+                TargetAmount = tsData.Sum(x => x.TargetAmount),
+                RealAmount = tsData.Sum(x => x.RealAmount),
+                TargetPercent = tsData.Sum(x => x.TargetAmount) > 0 && tsData.Sum(x => x.RealAmount) > 0 ? tsData.Sum(x => x.RealAmount) / tsData.Sum(x => x.TargetAmount) * 100 : 0
+            });
+
+            return tsData.AsQueryable().ToDataSourceResult(0, tsData.Count, null, null);
         }
     }
 }

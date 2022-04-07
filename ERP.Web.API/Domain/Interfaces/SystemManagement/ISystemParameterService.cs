@@ -3,16 +3,15 @@ using ERP.Common.Models;
 using ERP.Entity.SystemManagement;
 using ERP.Web.API.Model.SystemManagement;
 
-namespace ERP.Web.API.Domain.Interfaces.SystemManagement
+namespace ERP.Web.API.Domain.Interfaces.SystemManagement;
+
+public interface ISystemParameterService : IGeneralService<SystemParameter>
 {
-    public interface ISystemParameterService : IGeneralService<SystemParameter>
-    {
-        DataSourceResult GetLists(IEnumerable<Filter> filters, IEnumerable<Sort> sorts, IEnumerable<string> codes);
+    DataSourceResult GetLists(IEnumerable<Filter> filters, IEnumerable<Sort> sorts, IEnumerable<string> codes);
 
-        List<SystemParameterRequest> GetHierarchy();
+    List<SystemParameterRequest> GetHierarchy();
 
-        SaveResult Save(List<SystemParameterRequest> data);
+    SaveResult Save(List<SystemParameterRequest> data);
 
-        bool IsStartDateValid(DateTime transDate);
-    }
+    bool IsStartDateValid(DateTime transDate);
 }

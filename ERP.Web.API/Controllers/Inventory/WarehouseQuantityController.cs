@@ -6,37 +6,36 @@ using ERP.Web.API.Domain.Interfaces.Inventory;
 using ERP.Web.API.Model;
 using Newtonsoft.Json;
 
-namespace ERP.Web.API.Controllers.Inventory
+namespace ERP.Web.API.Controllers.Inventory;
+
+[Route("warehouse-quantity")]
+[ApiController]
+public class WarehouseQuantityController : ControllerBase
 {
-    [Route("warehouse-quantity")]
-    [ApiController]
-    public class WarehouseQuantityController : ControllerBase
+    private readonly IWarehouseQuantityService _warehouseQuantity;
+    private readonly IClaimService _claim;
+
+    public WarehouseQuantityController(IWarehouseQuantityService warehouseQuantity, IClaimService claim)
     {
-        private readonly IWarehouseQuantityService _warehouseQuantity;
-        private readonly IClaimService _claim;
+        _warehouseQuantity = warehouseQuantity;
+        _claim = claim;
+    }
 
-        public WarehouseQuantityController(IWarehouseQuantityService warehouseQuantity, IClaimService claim)
+    [HttpGet]
+    public IActionResult GetData(string search, string category, string filters, string sorts, int skip, int take)
+    {
+        var data =
+            _warehouseQuantity.GetData(
+                skip, take,
+                JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
+                JsonConvert.DeserializeObject<List<int>>(!string.IsNullOrWhiteSpace(category) ? category : "[]"),
+                search);
+
+        return Ok(new ApiResponse
         {
-            _warehouseQuantity = warehouseQuantity;
-            _claim = claim;
-        }
-
-        [HttpGet]
-        public IActionResult GetData(string search, string category, string filters, string sorts, int skip, int take)
-        {
-            var data =
-                _warehouseQuantity.GetData(
-                    skip, take,
-                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
-                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
-                    JsonConvert.DeserializeObject<List<int>>(!string.IsNullOrWhiteSpace(category) ? category : "[]"),
-                    search);
-
-            return Ok(new ApiResponse
-            {
-                RowCount = data.Total,
-                TableData = data.Data.ToDynamicList()
-            });
-        }
+            RowCount = data.Total,
+            TableData = data.Data.ToDynamicList()
+        });
     }
 }

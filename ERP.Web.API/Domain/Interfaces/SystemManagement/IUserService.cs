@@ -2,19 +2,18 @@
 using ERP.Common.Models;
 using ERP.Web.API.Model.SystemManagement;
 
-namespace ERP.Web.API.Domain.Interfaces.SystemManagement
+namespace ERP.Web.API.Domain.Interfaces.SystemManagement;
+
+public interface IUserService
 {
-    public interface IUserService
-    {
-        DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
-           string search);
+    DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
+        string search);
 
-        SaveResult Insert(UserRequest data);
+    SaveResult Insert(UserRequest data);
 
-        SaveResult Update(UserRequest data);
+    SaveResult Update(UserRequest data);
 
-        SaveResult Delete(int id);
+    SaveResult Delete(int id);
 
-        SaveResult ChangePassword(UserRequest data);
-    }
+    SaveResult ChangePassword(UserRequest data);
 }

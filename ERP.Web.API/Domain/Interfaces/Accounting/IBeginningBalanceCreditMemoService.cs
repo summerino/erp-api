@@ -3,17 +3,16 @@ using ERP.Common.Models;
 using ERP.Entity.Accounting;
 using ERP.Web.API.Model.Accounting;
 
-namespace ERP.Web.API.Domain.Interfaces.Accounting
+namespace ERP.Web.API.Domain.Interfaces.Accounting;
+
+public interface IBeginningBalanceCreditMemoService : IGeneralService<BeginningBalanceCreditMemo>
 {
-    public interface IBeginningBalanceCreditMemoService : IGeneralService<BeginningBalanceCreditMemo>
-    {
-        DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
-            string search);
+    DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
+        string search);
 
-        SaveResult Delete(long id, int userId);
+    SaveResult Delete(long id, int userId);
 
-        IEnumerable<UploadBBCMRequest> VerifyUpload(IEnumerable<UploadBBCMRequest> data);
+    IEnumerable<UploadBBCMRequest> VerifyUpload(IEnumerable<UploadBBCMRequest> data);
 
-        SaveResult Posting(IEnumerable<UploadBBCMRequest> data, int userId);
-    }
+    SaveResult Posting(IEnumerable<UploadBBCMRequest> data, int userId);
 }

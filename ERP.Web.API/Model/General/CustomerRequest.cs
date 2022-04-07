@@ -1,10 +1,9 @@
 ﻿using ERP.Entity.General;
 
-namespace ERP.Web.API.Model.General
+namespace ERP.Web.API.Model.General;
+
+public class CustomerRequest : Customer
 {
-    public class CustomerRequest : Customer
-    {
-        public string MobilePassword { get; set; }
-        public IEnumerable<CustomerAddress> ItemDetails { get; set; }
-    }
+    public string MobilePassword { get; set; }
+    public IEnumerable<CustomerAddress> ItemDetails { get; set; }
 }

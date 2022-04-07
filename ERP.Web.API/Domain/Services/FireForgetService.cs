@@ -1,32 +1,31 @@
 ﻿using ERP.Web.API.Domain.Interfaces;
 using ERP.Web.API.Domain.Interfaces.Accounting;
 
-namespace ERP.Web.API.Domain.Services
+namespace ERP.Web.API.Domain.Services;
+
+public class FireForgetService : IFireForgetService
 {
-    public class FireForgetService : IFireForgetService
+    private readonly IServiceScopeFactory _ssf;
+
+    public FireForgetService(IServiceScopeFactory ssf)
     {
-        private readonly IServiceScopeFactory _ssf;
+        _ssf = ssf;
+    }
 
-        public FireForgetService(IServiceScopeFactory ssf)
+    public void Execute(Func<IJournalService, Task> DoWork)
+    {
+        Task.Run(() =>
         {
-            _ssf = ssf;
-        }
-
-        public void Execute(Func<IJournalService, Task> DoWork)
-        {
-            Task.Run(() =>
+            try
             {
-                try
-                {
-                    using var scope = _ssf.CreateScope();
-                    var repo = scope.ServiceProvider.GetRequiredService<IJournalService>();
-                    DoWork(repo);
-                }
-                catch (Exception)
-                {
-                    throw;
-                }
-            });
-        }
+                using var scope = _ssf.CreateScope();
+                var repo = scope.ServiceProvider.GetRequiredService<IJournalService>();
+                DoWork(repo);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        });
     }
 }

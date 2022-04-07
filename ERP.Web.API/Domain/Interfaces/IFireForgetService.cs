@@ -1,9 +1,8 @@
 ﻿using ERP.Web.API.Domain.Interfaces.Accounting;
 
-namespace ERP.Web.API.Domain.Interfaces
+namespace ERP.Web.API.Domain.Interfaces;
+
+public interface IFireForgetService
 {
-    public interface IFireForgetService
-    {
-        void Execute(Func<IJournalService, Task> DoWork);
-    }
+    void Execute(Func<IJournalService, Task> DoWork);
 }

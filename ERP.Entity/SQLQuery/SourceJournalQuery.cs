@@ -1,54 +1,48 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace ERP.Entity.SQLQuery;
 
-namespace ERP.Entity.SQLQuery
+public class SourceJournalQuery
 {
-    public class SourceJournalQuery
+    public static string BuildQuery(string dateFrom = null, string dateTo = null,
+        string coaCode = null, string inCoaCode = null, string currCode = null,
+        string rptType = null, string src = null, string inTypeCode = null)
     {
-        public static string BuildQuery(string dateFrom = null, string dateTo = null,
-            string coaCode = null, string inCoaCode = null, string currCode = null,
-            string rptType = null, string src = null, string inTypeCode = null)
+        string wh = "";
+
+        if (!string.IsNullOrEmpty(dateFrom))
+            wh += $" AND DATEDIFF(DAY, [Date], '{dateFrom.Replace("'", "''")}') <= 0";
+
+        if (!string.IsNullOrEmpty(dateTo))
+            wh += $" AND DATEDIFF(DAY, [Date], '{dateTo.Replace("'", "''")}') >= 0";
+
+        if (!string.IsNullOrEmpty(currCode))
+            wh += $" AND CurrCode = '{currCode.Replace("'", "''")}'";
+
+        if (!string.IsNullOrEmpty(coaCode))
+            wh += $" AND CoaCode = '{coaCode.Replace("'", "''")}'";
+
+        if (!string.IsNullOrEmpty(inCoaCode))
+            wh += $" AND CoaCode IN ({inCoaCode})";
+
+        if (!string.IsNullOrEmpty(inTypeCode))
+            wh += $" AND TypeCode IN ({inTypeCode})";
+
+        if (!string.IsNullOrEmpty(src))
         {
-            string wh = "";
-
-            if (!string.IsNullOrEmpty(dateFrom))
-                wh += $" AND DATEDIFF(DAY, [Date], '{dateFrom.Replace("'", "''")}') <= 0";
-
-            if (!string.IsNullOrEmpty(dateTo))
-                wh += $" AND DATEDIFF(DAY, [Date], '{dateTo.Replace("'", "''")}') >= 0";
-
-            if (!string.IsNullOrEmpty(currCode))
-                wh += $" AND CurrCode = '{currCode.Replace("'", "''")}'";
-
-            if (!string.IsNullOrEmpty(coaCode))
-                wh += $" AND CoaCode = '{coaCode.Replace("'", "''")}'";
-
-            if (!string.IsNullOrEmpty(inCoaCode))
-                wh += $" AND CoaCode IN ({inCoaCode})";
-
-            if (!string.IsNullOrEmpty(inTypeCode))
-                wh += $" AND TypeCode IN ({inTypeCode})";
-
-            if (!string.IsNullOrEmpty(src))
+            switch (src.ToUpper())
             {
-                switch (src.ToUpper())
-                {
-                    case "CB":
-                        wh += " AND SrcTrans IN ('CB', 'ADJ_UNREAL')";
-                        break;
-                    default:
-                        wh += $" AND SrcTrans = '{src.Replace("'", "''")}'";
-                        break;
-                }
+                case "CB":
+                    wh += " AND SrcTrans IN ('CB', 'ADJ_UNREAL')";
+                    break;
+                default:
+                    wh += $" AND SrcTrans = '{src.Replace("'", "''")}'";
+                    break;
             }
+        }
 
-            if (!string.IsNullOrEmpty(rptType))
-                rptType = rptType.Replace("'", "''");
+        if (!string.IsNullOrEmpty(rptType))
+            rptType = rptType.Replace("'", "''");
 
-            string sql = $@"
+        string sql = $@"
                 ;WITH cte_jur_src AS (
                     SELECT Code,[Date]
                     ,CASE WHEN '{rptType}' = '' THEN null ELSE [Type] END AS [Type]
@@ -103,7 +97,6 @@ namespace ERP.Entity.SQLQuery
                     WHERE amount > 0
                 )";
 
-            return sql;
-        }
+        return sql;
     }
 }

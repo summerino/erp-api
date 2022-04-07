@@ -1,7 +1,6 @@
-﻿namespace ERP.Web.API.Domain.Models.Mobile.Operational
+﻿namespace ERP.Web.API.Domain.Models.Mobile.Operational;
+
+public class CostTodayTransactionModel
 {
-    public class CostTodayTransactionModel
-    {
-        public bool Exist { get; set; }
-    }
+    public bool Exist { get; set; }
 }

@@ -18,7 +18,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
 #pragma warning disable 612, 618
             modelBuilder
                 .UseCollation("SQL_Latin1_General_CP1_CI_AS")
-                .HasAnnotation("ProductVersion", "6.0.2")
+                .HasAnnotation("ProductVersion", "6.0.3")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
@@ -3296,71 +3296,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.ToTable("ActiveTransactionGetDataRequest", null, t => t.ExcludeFromMigrations());
                 });
 
-            modelBuilder.Entity("ERP.Entity.General.Attendance", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
-
-                    b.Property<DateTime?>("CheckIn")
-                        .HasColumnType("datetime");
-
-                    b.Property<string>("CheckInImage")
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
-
-                    b.Property<decimal?>("CheckInLat")
-                        .HasPrecision(9, 6)
-                        .HasColumnType("decimal(9,6)");
-
-                    b.Property<decimal?>("CheckInLng")
-                        .HasPrecision(9, 6)
-                        .HasColumnType("decimal(9,6)");
-
-                    b.Property<string>("CheckInNotes")
-                        .HasMaxLength(256)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(256)");
-
-                    b.Property<DateTime?>("CheckOut")
-                        .HasColumnType("datetime");
-
-                    b.Property<string>("CheckOutImage")
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
-
-                    b.Property<decimal?>("CheckOutLat")
-                        .HasPrecision(9, 6)
-                        .HasColumnType("decimal(9,6)");
-
-                    b.Property<decimal?>("CheckOutLng")
-                        .HasPrecision(9, 6)
-                        .HasColumnType("decimal(9,6)");
-
-                    b.Property<string>("CheckOutNotes")
-                        .HasMaxLength(256)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(256)");
-
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("date");
-
-                    b.Property<long>("EmployeeId")
-                        .HasColumnType("bigint");
-
-                    b.Property<decimal?>("TotalHours")
-                        .HasPrecision(19, 6)
-                        .HasColumnType("decimal(19,6)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EmployeeId");
-
-                    b.ToTable("Attendance", "HumanResource");
-                });
-
             modelBuilder.Entity("ERP.Entity.General.Currency", b =>
                 {
                     b.Property<string>("Code")
@@ -4233,88 +4168,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.ToView("vwApproval", "General");
                 });
 
-            modelBuilder.Entity("ERP.Entity.General.VwAttendanceReport", b =>
-                {
-                    b.Property<DateTime?>("CheckIn")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CheckInImage")
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
-
-                    b.Property<decimal?>("CheckInLat")
-                        .HasPrecision(9, 6)
-                        .HasColumnType("decimal(9,6)");
-
-                    b.Property<decimal?>("CheckInLng")
-                        .HasPrecision(9, 6)
-                        .HasColumnType("decimal(9,6)");
-
-                    b.Property<string>("CheckInNotes")
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
-
-                    b.Property<DateTime?>("CheckOut")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CheckOutImage")
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
-
-                    b.Property<decimal?>("CheckOutLat")
-                        .HasPrecision(9, 6)
-                        .HasColumnType("decimal(9,6)");
-
-                    b.Property<decimal?>("CheckOutLng")
-                        .HasPrecision(9, 6)
-                        .HasColumnType("decimal(9,6)");
-
-                    b.Property<string>("CheckOutNotes")
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
-
-                    b.Property<string>("CoordinatIn")
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
-
-                    b.Property<string>("CoordinatOut")
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
-
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("datetime2");
-
-                    b.Property<long>("EmployeeId")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("Id")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("Initial")
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
-
-                    b.Property<string>("Name")
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
-
-                    b.Property<int?>("SalesGroupId")
-                        .HasColumnType("int");
-
-                    b.Property<decimal?>("TotalHours")
-                        .HasPrecision(19, 6)
-                        .HasColumnType("decimal(19,6)");
-
-                    b.Property<short>("Type")
-                        .HasColumnType("smallint");
-
-                    b.Property<string>("TypeName")
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
-
-                    b.ToView("VwAttendanceReport", "HumanResource");
-                });
-
             modelBuilder.Entity("ERP.Entity.General.VwCustomer", b =>
                 {
                     b.Property<string>("Address1")
@@ -4916,6 +4769,153 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.ToView("vwVehicleType", "General");
                 });
 
+            modelBuilder.Entity("ERP.Entity.HumanResource.Attendance", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
+
+                    b.Property<DateTime?>("CheckIn")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("CheckInImage")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<decimal?>("CheckInLat")
+                        .HasPrecision(9, 6)
+                        .HasColumnType("decimal(9,6)");
+
+                    b.Property<decimal?>("CheckInLng")
+                        .HasPrecision(9, 6)
+                        .HasColumnType("decimal(9,6)");
+
+                    b.Property<string>("CheckInNotes")
+                        .HasMaxLength(256)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(256)");
+
+                    b.Property<DateTime?>("CheckOut")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("CheckOutImage")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<decimal?>("CheckOutLat")
+                        .HasPrecision(9, 6)
+                        .HasColumnType("decimal(9,6)");
+
+                    b.Property<decimal?>("CheckOutLng")
+                        .HasPrecision(9, 6)
+                        .HasColumnType("decimal(9,6)");
+
+                    b.Property<string>("CheckOutNotes")
+                        .HasMaxLength(256)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(256)");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<long>("EmployeeId")
+                        .HasColumnType("bigint");
+
+                    b.Property<decimal?>("TotalHours")
+                        .HasPrecision(19, 6)
+                        .HasColumnType("decimal(19,6)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.ToTable("Attendance", "HumanResource");
+                });
+
+            modelBuilder.Entity("ERP.Entity.HumanResource.VwAttendanceReport", b =>
+                {
+                    b.Property<DateTime?>("CheckIn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CheckInImage")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<decimal?>("CheckInLat")
+                        .HasPrecision(9, 6)
+                        .HasColumnType("decimal(9,6)");
+
+                    b.Property<decimal?>("CheckInLng")
+                        .HasPrecision(9, 6)
+                        .HasColumnType("decimal(9,6)");
+
+                    b.Property<string>("CheckInNotes")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<DateTime?>("CheckOut")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CheckOutImage")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<decimal?>("CheckOutLat")
+                        .HasPrecision(9, 6)
+                        .HasColumnType("decimal(9,6)");
+
+                    b.Property<decimal?>("CheckOutLng")
+                        .HasPrecision(9, 6)
+                        .HasColumnType("decimal(9,6)");
+
+                    b.Property<string>("CheckOutNotes")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<string>("CoordinatIn")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<string>("CoordinatOut")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("EmployeeId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("Id")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Initial")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<int?>("SalesGroupId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("TotalHours")
+                        .HasPrecision(19, 6)
+                        .HasColumnType("decimal(19,6)");
+
+                    b.Property<short>("Type")
+                        .HasColumnType("smallint");
+
+                    b.Property<string>("TypeName")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.ToView("VwAttendanceReport", "HumanResource");
+                });
+
             modelBuilder.Entity("ERP.Entity.Inventory.AdjustmentDetail", b =>
                 {
                     b.Property<long>("Id")
@@ -5290,9 +5290,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.Property<decimal?>("SellPrice")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
-
-                    b.Property<short?>("StockType")
-                        .HasColumnType("smallint");
 
                     b.Property<string>("SubGroup1")
                         .HasMaxLength(50)
@@ -6706,9 +6703,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
 
                     b.Property<int?>("SellSeq")
                         .HasColumnType("int");
-
-                    b.Property<short?>("StockType")
-                        .HasColumnType("smallint");
 
                     b.Property<string>("SubGroup1")
                         .IsUnicode(false)
@@ -15490,6 +15484,27 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.ToTable("ReportByST", null, t => t.ExcludeFromMigrations());
                 });
 
+            modelBuilder.Entity("ERP.Entity.Sales.ReportByTarget", b =>
+                {
+                    b.Property<int?>("ItemGroupId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ItemSubGroup2")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<int?>("ItemSubGroupId")
+                        .HasColumnType("int");
+
+                    b.Property<long?>("SalesId")
+                        .HasColumnType("bigint");
+
+                    b.Property<decimal?>("TargetAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.ToTable("ReportByTarget", null, t => t.ExcludeFromMigrations());
+                });
+
             modelBuilder.Entity("ERP.Entity.Sales.SalesDeliveryDetail", b =>
                 {
                     b.Property<long>("Id")
@@ -19982,15 +19997,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ERP.Entity.General.Attendance", b =>
-                {
-                    b.HasOne("ERP.Entity.General.Employee", null)
-                        .WithMany()
-                        .HasForeignKey("EmployeeId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("ERP.Entity.General.Customer", b =>
                 {
                     b.HasOne("ERP.Entity.Sales.Area", null)
@@ -20083,6 +20089,15 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.HasOne("ERP.Entity.General.VehicleType", null)
                         .WithMany()
                         .HasForeignKey("TypeId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ERP.Entity.HumanResource.Attendance", b =>
+                {
+                    b.HasOne("ERP.Entity.General.Employee", null)
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
                 });

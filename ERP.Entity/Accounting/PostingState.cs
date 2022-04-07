@@ -2,25 +2,24 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using ERP.Entity.Core;
 
-namespace ERP.Entity.Accounting
+namespace ERP.Entity.Accounting;
+
+[Table("PostingState", Schema = Schema.Accounting)]
+public class PostingState
 {
-    [Table("PostingState", Schema = Schema.Accounting)]
-    public class PostingState
-    {
-        public int Id { get; set; }
+    public int Id { get; set; }
 
-        [Column(TypeName = "datetime")]
-        public DateTime Date { get; set; }
+    [Column(TypeName = "datetime")]
+    public DateTime Date { get; set; }
 
-        [Column(TypeName = "date")]
-        public DateTime ProcessDate { get; set; }
+    [Column(TypeName = "date")]
+    public DateTime ProcessDate { get; set; }
 
-        public int UserId { get; set; }
+    public int UserId { get; set; }
 
-        public int Step { get; set; }
+    public int Step { get; set; }
 
-        public string Status { get; set; }
+    public string Status { get; set; }
 
-        public string Notes { get; set; }
-    }
+    public string Notes { get; set; }
 }

@@ -1,10 +1,9 @@
 ﻿using ERP.Entity.Accounting;
 
-namespace ERP.Web.API.Domain.Interfaces.Accounting
+namespace ERP.Web.API.Domain.Interfaces.Accounting;
+
+public interface IGeneralLedgerReportService
 {
-    public interface IGeneralLedgerReportService
-    {
-        IEnumerable<GeneralLedgerResult> GetGeneralLedgerLists(string dateFrom, string dateTo,
-            string coaFrom, string coaTo, string currCode, string sort, int? caller);
-    }
+    IEnumerable<GeneralLedgerResult> GetGeneralLedgerLists(string dateFrom, string dateTo,
+        string coaFrom, string coaTo, string currCode, string sort, int? caller);
 }

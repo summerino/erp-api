@@ -6,31 +6,30 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Linq.Dynamic.Core;
 
-namespace ERP.Web.API.Controllers.Purchase
+namespace ERP.Web.API.Controllers.Purchase;
+
+[Route("debit-memo-report")]
+[ApiController]
+public class DebitMemoReportController : ControllerBase
 {
-    [Route("debit-memo-report")]
-    [ApiController]
-    public class DebitMemoReportController : ControllerBase
+    private readonly IDebitMemoReportService _dm;
+    public DebitMemoReportController(IDebitMemoReportService dm)
     {
-        private readonly IDebitMemoReportService _dm;
-        public DebitMemoReportController(IDebitMemoReportService dm)
-        {
-            _dm = dm;   
-        }
+        _dm = dm;   
+    }
 
-        [HttpGet]
-        public IActionResult GetData(int type, string supCode, string date, string status, string sorts)
-        {
-            var result =
-                _dm.GetData(
-                    type, date, supCode, status,
-                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"));
+    [HttpGet]
+    public IActionResult GetData(int type, string supCode, string date, string status, string sorts)
+    {
+        var result =
+            _dm.GetData(
+                type, date, supCode, status,
+                JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"));
 
-            return Ok(new ApiResponse
-            {
-                RowCount = result.Total,
-                TableData = result.Data.ToDynamicList()
-            });
-        }
+        return Ok(new ApiResponse
+        {
+            RowCount = result.Total,
+            TableData = result.Data.ToDynamicList()
+        });
     }
 }

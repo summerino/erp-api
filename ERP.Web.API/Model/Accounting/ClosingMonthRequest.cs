@@ -1,10 +1,9 @@
 ﻿using ERP.Entity.Accounting;
 
-namespace ERP.Web.API.Model.Accounting
+namespace ERP.Web.API.Model.Accounting;
+
+public class ClosingMonthRequest : ClosingMonth
 {
-    public class ClosingMonthRequest : ClosingMonth
-    {
-        public DateTime? StartDate { get; set; }
-        public DateTime? EndDate { get; set; }
-    }
+    public DateTime? StartDate { get; set; }
+    public DateTime? EndDate { get; set; }
 }

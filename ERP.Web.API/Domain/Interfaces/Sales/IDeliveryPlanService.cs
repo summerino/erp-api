@@ -3,26 +3,25 @@ using ERP.Web.API.Model.Sales;
 using ERP.Common;
 using ERP.Common.Models;
 
-namespace ERP.Web.API.Domain.Interfaces.Sales
+namespace ERP.Web.API.Domain.Interfaces.Sales;
+
+public interface IDeliveryPlanService : IGeneralService<DeliveryPlanHeader>
 {
-    public interface IDeliveryPlanService : IGeneralService<DeliveryPlanHeader>
-    {
-        DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
-            string search);
+    DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
+        string search);
 
-        IEnumerable<DeliveryPlanDetail> GetDetailData(string code);
+    IEnumerable<DeliveryPlanDetail> GetDetailData(string code);
 
-        IEnumerable<DeliveryPlanUndeliveredItem> GetUndeliveredData();
+    IEnumerable<DeliveryPlanUndeliveredItem> GetUndeliveredData();
 
-        List<dynamic> GetRelatedTransactions(string code);
+    List<dynamic> GetRelatedTransactions(string code);
 
-        DataSourceResult GetAllTransaction(string warehouseCode, IEnumerable<Filter> filter);
+    DataSourceResult GetAllTransaction(string warehouseCode, IEnumerable<Filter> filter);
 
 
-        SaveResult Insert(DeliveryPlanRequest data);
+    SaveResult Insert(DeliveryPlanRequest data);
 
-        SaveResult Update(DeliveryPlanRequest data);
+    SaveResult Update(DeliveryPlanRequest data);
 
-        SaveResult Delete(string code, int userId);
-    }
+    SaveResult Delete(string code, int userId);
 }

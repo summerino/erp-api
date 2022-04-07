@@ -10,115 +10,114 @@ using ERP.Web.API.Model;
 using ERP.Web.API.Model.Accounting;
 using Newtonsoft.Json;
 
-namespace ERP.Web.API.Controllers.Accounting
+namespace ERP.Web.API.Controllers.Accounting;
+
+[Route("closing-month")]
+[ApiController]
+public class ClosingMonthController : ControllerBase
 {
-    [Route("closing-month")]
-    [ApiController]
-    public class ClosingMonthController : ControllerBase
+    private readonly IClosingMonthService _cm;
+    private readonly IApprovalService _apv;
+    private readonly IClaimService _claim;
+    private readonly IAuthService _auth;
+
+    private const int MenuId = (int)Menu.ClosingMonth;
+
+    public ClosingMonthController(IClosingMonthService cm, IApprovalService apv, IClaimService claim,
+        IAuthService auth)
     {
-        private readonly IClosingMonthService _cm;
-        private readonly IApprovalService _apv;
-        private readonly IClaimService _claim;
-        private readonly IAuthService _auth;
+        _cm = cm;
+        _claim = claim;
+        _auth = auth;
+        _apv = apv;
+    }
 
-        private const int MenuId = (int)Menu.ClosingMonth;
+    [HttpGet]
+    public IActionResult GetData(string search, string filters, string sorts, int skip, int take)
+    {
+        var data =
+            _cm.GetData(
+                skip, take,
+                JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
+                search);
 
-        public ClosingMonthController(IClosingMonthService cm, IApprovalService apv, IClaimService claim,
-            IAuthService auth)
+        return Ok(new ApiResponse
         {
-            _cm = cm;
-            _claim = claim;
-            _auth = auth;
-            _apv = apv;
+            RowCount = data.Total,
+            TableData = data.Data.ToDynamicList()
+        });
+    }
+
+    [HttpPost]
+    public IActionResult OnPost(ClosingMonthRequest data)
+    {
+
+        if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Insert }).Any())
+        {
+            return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
         }
 
-        [HttpGet]
-        public IActionResult GetData(string search, string filters, string sorts, int skip, int take)
-        {
-            var data =
-                _cm.GetData(
-                    skip, take,
-                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
-                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
-                    search);
+        // Validate process
+        var (isValid, message) = Validate(data);
+        if (!isValid)
+            return Ok(new SaveResult(false, message));
 
-            return Ok(new ApiResponse
-            {
-                RowCount = data.Total,
-                TableData = data.Data.ToDynamicList()
-            });
+        data.CreatedBy = _claim.UserId;
+        data.CreatedDate = DateTime.Now;
+        data.UpdatedBy = data.CreatedBy;
+        data.UpdatedDate = data.CreatedDate;
+
+        var result = _cm.Insert(data);
+
+        return Ok(result);
+    }
+
+    [HttpPut]
+    public IActionResult OnPut(ClosingMonthRequest data)
+    {
+        if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
+        {
+            return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
         }
 
-        [HttpPost]
-        public IActionResult OnPost(ClosingMonthRequest data)
+        // Validate process
+        var (isValid, message) = Validate(data);
+        if (!isValid)
+            return Ok(new SaveResult(false, message));
+
+        data.UpdatedBy = _claim.UserId;
+        data.UpdatedDate = DateTime.Now;
+        var result = _cm.Update(data);
+        return Ok(result);
+    }
+
+    private (bool, string) Validate(ClosingMonthRequest data)
+    {
+        string filters;
+        if (data.StartDate == null && data.EndDate == null)
         {
-
-            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Insert }).Any())
-            {
-                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
-
-            // Validate process
-            var (isValid, message) = Validate(data);
-            if (!isValid)
-                return Ok(new SaveResult(false, message));
-
-            data.CreatedBy = _claim.UserId;
-            data.CreatedDate = DateTime.Now;
-            data.UpdatedBy = data.CreatedBy;
-            data.UpdatedDate = data.CreatedDate;
-
-            var result = _cm.Insert(data);
-
-            return Ok(result);
+            var year = Convert.ToInt32(data.Period[..4]);
+            var month = Convert.ToInt32(data.Period[^2..]);
+            var lastDay = DateTime.DaysInMonth(year, month);
+            filters = "[{\"field\":\"date\",\"operator\":\"lte\",\"keyword\":\"" + year + "-" + month + "-" + lastDay + "\"},{\"field\":\"date\",\"operator\":\"gte\",\"keyword\":\"" + year + "-" + month + "-01\"}]";
+        } 
+        else
+        {
+            var lastDay = DateTime.DaysInMonth(Convert.ToInt32(data.EndDate?.Year), Convert.ToInt32(data.EndDate?.Month));
+            filters = "[{\"field\":\"date\",\"operator\":\"lte\",\"keyword\":\"" + data.EndDate?.Year + "-" + data.EndDate?.Month + "-" + lastDay + "\"},{\"field\":\"date\",\"operator\":\"gte\",\"keyword\":\"" + data.StartDate?.Year + "-" + data.StartDate?.Month + "-01\"}]";
         }
 
-        [HttpPut]
-        public IActionResult OnPut(ClosingMonthRequest data)
-        {
-            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
-            {
-                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
+        var approvalData =
+            _apv.GetData(
+                0, 1,
+                JsonConvert.DeserializeObject<List<Filter>>(filters),
+                JsonConvert.DeserializeObject<List<Sort>>("[]"),
+                null,
+                null);
+        if (approvalData.Data.ToDynamicList().Count > 0 && data.IsClose)
+            return (false, "Tidak bisa tutup bulan karena terdapat transaksi yang belum disetujui.");
 
-            // Validate process
-            var (isValid, message) = Validate(data);
-            if (!isValid)
-                return Ok(new SaveResult(false, message));
-
-            data.UpdatedBy = _claim.UserId;
-            data.UpdatedDate = DateTime.Now;
-            var result = _cm.Update(data);
-            return Ok(result);
-        }
-
-        private (bool, string) Validate(ClosingMonthRequest data)
-        {
-            string filters;
-            if (data.StartDate == null && data.EndDate == null)
-            {
-                var year = Convert.ToInt32(data.Period[..4]);
-                var month = Convert.ToInt32(data.Period[^2..]);
-                var lastDay = DateTime.DaysInMonth(year, month);
-                filters = "[{\"field\":\"date\",\"operator\":\"lte\",\"keyword\":\"" + year + "-" + month + "-" + lastDay + "\"},{\"field\":\"date\",\"operator\":\"gte\",\"keyword\":\"" + year + "-" + month + "-01\"}]";
-            } 
-            else
-            {
-                var lastDay = DateTime.DaysInMonth(Convert.ToInt32(data.EndDate?.Year), Convert.ToInt32(data.EndDate?.Month));
-                filters = "[{\"field\":\"date\",\"operator\":\"lte\",\"keyword\":\"" + data.EndDate?.Year + "-" + data.EndDate?.Month + "-" + lastDay + "\"},{\"field\":\"date\",\"operator\":\"gte\",\"keyword\":\"" + data.StartDate?.Year + "-" + data.StartDate?.Month + "-01\"}]";
-            }
-
-            var approvalData =
-                _apv.GetData(
-                    0, 1,
-                    JsonConvert.DeserializeObject<List<Filter>>(filters),
-                    JsonConvert.DeserializeObject<List<Sort>>("[]"),
-                    null,
-                    null);
-            if (approvalData.Data.ToDynamicList().Count > 0 && data.IsClose)
-                return (false, "Tidak bisa tutup bulan karena terdapat transaksi yang belum disetujui.");
-
-            return (true, "");
-        }
+        return (true, "");
     }
 }

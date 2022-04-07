@@ -6,98 +6,97 @@ using BoldReports.Web.ReportViewer;
 using ERP.Web.API.Domain.Interfaces.Catalog;
 using ERP.Entity;
 
-namespace ERP.Web.API.Controllers
+namespace ERP.Web.API.Controllers;
+
+[Route("report-viewer/[action]")]
+[ApiController]
+public class ReportViewerController : ControllerBase, IReportController
 {
-    [Route("report-viewer/[action]")]
-    [ApiController]
-    public class ReportViewerController : ControllerBase, IReportController
+    private readonly ITenantService _tenant;
+    private readonly IClaimService _claim;
+    private readonly IMemoryCache _cache;
+    private readonly IWebHostEnvironment _env;
+    private Dictionary<string, object> _jsonArray;
+
+    public ReportViewerController(ITenantService tenant, IClaimService claim,
+        IMemoryCache cache, IWebHostEnvironment env)
     {
-        private readonly ITenantService _tenant;
-        private readonly IClaimService _claim;
-        private readonly IMemoryCache _cache;
-        private readonly IWebHostEnvironment _env;
-        private Dictionary<string, object> _jsonArray;
+        _tenant = tenant;
+        _claim = claim;
+        _cache = cache;
+        _env = env;
+    }
 
-        public ReportViewerController(ITenantService tenant, IClaimService claim,
-            IMemoryCache cache, IWebHostEnvironment env)
+    // Post action to process the report from server based json parameters and send the result back to the client.
+    [HttpPost]
+    public object PostReportAction([FromBody] Dictionary<string, object> jsonArray)
+    {
+        if (jsonArray != null && jsonArray.Keys.Count > 0)
         {
-            _tenant = tenant;
-            _claim = claim;
-            _cache = cache;
-            _env = env;
+            _jsonArray = jsonArray;
         }
+        return ReportHelper.ProcessReport(jsonArray, this, _cache);
+    }
 
-        // Post action to process the report from server based json parameters and send the result back to the client.
-        [HttpPost]
-        public object PostReportAction([FromBody] Dictionary<string, object> jsonArray)
+    // Method will be called to initialize the report information to load the report with ReportHelper for processing.
+    public void OnInitReportOptions(ReportViewerOptions reportOption)
+    {
+        reportOption.ReportModel.EmbedImageData = true;
+
+        var reportStream =
+            new FileStream(
+                $@"{_env.WebRootPath}\printout\{_claim.TenantInitial.ToLower()}\{reportOption.ReportModel.ReportPath}",
+                FileMode.Open, FileAccess.Read);
+
+        reportOption.ReportModel.Stream = reportStream;
+    }
+
+    // Method will be called when reported is loaded with internally to start to layout process with ReportHelper.
+    public void OnReportLoaded(ReportViewerOptions reportOption)
+    {
+        if (_jsonArray != null && _jsonArray.Keys.Count > 0)
         {
-            if (jsonArray != null && jsonArray.Keys.Count > 0)
+            // Get tenant server information
+            var tenant = _tenant.FindById(_claim.TenantId);
+
+            if (tenant != null)
             {
-                _jsonArray = jsonArray;
-            }
-            return ReportHelper.ProcessReport(jsonArray, this, _cache);
-        }
-
-        // Method will be called to initialize the report information to load the report with ReportHelper for processing.
-        public void OnInitReportOptions(ReportViewerOptions reportOption)
-        {
-            reportOption.ReportModel.EmbedImageData = true;
-
-            var reportStream =
-                new FileStream(
-                    $@"{_env.WebRootPath}\printout\{_claim.TenantInitial.ToLower()}\{reportOption.ReportModel.ReportPath}",
-                    FileMode.Open, FileAccess.Read);
-
-            reportOption.ReportModel.Stream = reportStream;
-        }
-
-        // Method will be called when reported is loaded with internally to start to layout process with ReportHelper.
-        public void OnReportLoaded(ReportViewerOptions reportOption)
-        {
-            if (_jsonArray != null && _jsonArray.Keys.Count > 0)
-            {
-                // Get tenant server information
-                var tenant = _tenant.FindById(_claim.TenantId);
-
-                if (tenant != null)
+                // Re-define data source connection string
+                var datasources = ReportHelper.GetDataSources(_jsonArray, this, _cache, true);
+                foreach (DataSourceInfo item in datasources)
                 {
-                    // Re-define data source connection string
-                    var datasources = ReportHelper.GetDataSources(_jsonArray, this, _cache, true);
-                    foreach (DataSourceInfo item in datasources)
+                    var DataSourceCredentials = new DataSourceCredentials
                     {
-                        var DataSourceCredentials = new DataSourceCredentials
-                        {
-                            Name = item.DataSourceName,
-                            UserId = tenant.ServerUserId,
-                            Password = tenant.ServerPassword,
-                            ConnectionString = $"Data Source={tenant.ServerName};Initial Catalog={tenant.DatabaseName}",
-                            IntegratedSecurity = false
-                        };
+                        Name = item.DataSourceName,
+                        UserId = tenant.ServerUserId,
+                        Password = tenant.ServerPassword,
+                        ConnectionString = $"Data Source={tenant.ServerName};Initial Catalog={tenant.DatabaseName}",
+                        IntegratedSecurity = false
+                    };
 
-                        reportOption.ReportModel.DataSourceCredentials = new List<DataSourceCredentials>
-                        {
-                            DataSourceCredentials
-                        };
-                    }
+                    reportOption.ReportModel.DataSourceCredentials = new List<DataSourceCredentials>
+                    {
+                        DataSourceCredentials
+                    };
                 }
             }
         }
+    }
 
-        //Get action for getting resources from the report
-        [ActionName("GetResource")]
-        [AcceptVerbs("GET")]
-        [AllowAnonymous]
-        // Method will be called from Report Viewer client to get the image src for Image report item.
-        public object GetResource(ReportResource resource)
-        {
-            return ReportHelper.GetResource(resource, this, _cache);
-        }
+    //Get action for getting resources from the report
+    [ActionName("GetResource")]
+    [AcceptVerbs("GET")]
+    [AllowAnonymous]
+    // Method will be called from Report Viewer client to get the image src for Image report item.
+    public object GetResource(ReportResource resource)
+    {
+        return ReportHelper.GetResource(resource, this, _cache);
+    }
 
-        [HttpPost]
-        [AllowAnonymous]
-        public object PostFormReportAction()
-        {
-            return ReportHelper.ProcessReport(null, this, _cache);
-        }
+    [HttpPost]
+    [AllowAnonymous]
+    public object PostFormReportAction()
+    {
+        return ReportHelper.ProcessReport(null, this, _cache);
     }
 }

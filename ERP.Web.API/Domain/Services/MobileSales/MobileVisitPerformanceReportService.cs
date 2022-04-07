@@ -3,30 +3,30 @@ using ERP.Entity;
 using ERP.Entity.MobileSales;
 using ERP.Web.API.Domain.Interfaces.MobileSales;
 
-namespace ERP.Web.API.Domain.Services.MobileSales
+namespace ERP.Web.API.Domain.Services.MobileSales;
+
+public class MobileVisitPerformanceReportService : IMobileVisitPerformanceReportService
 {
-    public class MobileVisitPerformanceReportService : IMobileVisitPerformanceReportService
+    private readonly TenantContext _db;
+
+    public MobileVisitPerformanceReportService(TenantContext db)
     {
-        private readonly TenantContext _db;
+        _db = db;
+    }
+    public IEnumerable<MobileVisitPerformanceReport> GetData(string startDate, string endDate, int? salesId)
+    {
+        string wh = "";
 
-        public MobileVisitPerformanceReportService(TenantContext db)
-        {
-            _db = db;
-        }
-        public IEnumerable<MobileVisitPerformanceReport> GetData(string startDate, string endDate, int? salesId)
-        {
-            string wh = "";
+        if (!string.IsNullOrEmpty(startDate))
+            wh += $" AND DATEDIFF(DAY, [Date], '{startDate.Replace("'", "''")}') <= 0";
 
-            if (!string.IsNullOrEmpty(startDate))
-                wh += $" AND DATEDIFF(DAY, [Date], '{startDate.Replace("'", "''")}') <= 0";
+        if (!string.IsNullOrEmpty(endDate))
+            wh += $" AND DATEDIFF(DAY, [Date], '{endDate.Replace("'", "''")}') >= 0";
 
-            if (!string.IsNullOrEmpty(endDate))
-                wh += $" AND DATEDIFF(DAY, [Date], '{endDate.Replace("'", "''")}') >= 0";
+        if (salesId.HasValue)
+            wh += $" AND SalesmanId = {salesId}";
 
-            if (salesId.HasValue)
-                wh += $" AND SalesmanId = {salesId}";
-
-			string sql = @$"
+        string sql = @$"
                 WITH cte_vo_src AS (
 					SELECT vo.Code, vo.[Date], vo.SalesmanId, vo_c.CustCode, ISNULL(vo_c.Visited, 0) AS Visited
 					FROM Sales.VisitOrder vo
@@ -86,7 +86,6 @@ namespace ERP.Web.API.Domain.Services.MobileSales
 				FROM cte_final_src
 				GROUP BY [Date], SalesmanId, SalesmanName";
 
-			return _db.MobileVisitPerformanceReports.FromSqlRaw(sql);
-		}
+        return _db.MobileVisitPerformanceReports.FromSqlRaw(sql);
     }
 }

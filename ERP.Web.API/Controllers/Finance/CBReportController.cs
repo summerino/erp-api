@@ -5,32 +5,31 @@ using ERP.Web.API.Domain.Interfaces.Finance;
 using ERP.Web.API.Model;
 using Newtonsoft.Json;
 
-namespace ERP.Web.API.Controllers.Finance
+namespace ERP.Web.API.Controllers.Finance;
+
+[Route("cb-report")]
+[ApiController]
+public class CBReportController : ControllerBase
 {
-    [Route("cb-report")]
-    [ApiController]
-    public class CBReportController : ControllerBase
+    private readonly ICBReportService _cb;
+
+    public CBReportController(ICBReportService cb)
     {
-        private readonly ICBReportService _cb;
+        _cb = cb;
+    }
 
-        public CBReportController(ICBReportService cb)
+    [HttpGet]
+    public IActionResult GetData(int? type, string startDate, string endDate, string coaCode, string sorts)
+    {
+        var result =
+            _cb.GetData(
+                type, startDate, endDate, coaCode,
+                JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"));
+
+        return Ok(new ApiResponse
         {
-            _cb = cb;
-        }
-
-        [HttpGet]
-        public IActionResult GetData(int? type, string startDate, string endDate, string coaCode, string sorts)
-        {
-            var result =
-                _cb.GetData(
-                    type, startDate, endDate, coaCode,
-                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"));
-
-            return Ok(new ApiResponse
-            {
-                RowCount = result.Total,
-                TableData = result.Data.ToDynamicList()
-            });
-        }
+            RowCount = result.Total,
+            TableData = result.Data.ToDynamicList()
+        });
     }
 }

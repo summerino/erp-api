@@ -5,26 +5,25 @@ using ERP.Web.API.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace ERP.Web.API.Controllers.Mobile.Warehouse
+namespace ERP.Web.API.Controllers.Mobile.Warehouse;
+
+[Authorize(AppConstant.ValidateMobileTokenPolicy)]
+[Route("mobile/[controller]")]
+[ApiController]
+public class WarehouseProfileController : ControllerBase
 {
-    [Authorize(AppConstant.ValidateMobileTokenPolicy)]
-    [Route("mobile/[controller]")]
-    [ApiController]
-    public class WarehouseProfileController : ControllerBase
+    private readonly IWarehouseProfileService _warehouseProfile;
+    private readonly IClaimService _claim;
+
+    public WarehouseProfileController(IWarehouseProfileService warehouseProfile, IClaimService claim)
     {
-        private readonly IWarehouseProfileService _warehouseProfile;
-        private readonly IClaimService _claim;
+        _warehouseProfile = warehouseProfile;
+        _claim = claim;
+    }
 
-        public WarehouseProfileController(IWarehouseProfileService warehouseProfile, IClaimService claim)
-        {
-            _warehouseProfile = warehouseProfile;
-            _claim = claim;
-        }
-
-        [HttpGet("profile")]
-        public IActionResult GetSalesProfile()
-        {
-            return Ok(_warehouseProfile.GetWarehouseProfileForMobile(_claim.UserId));
-        }
+    [HttpGet("profile")]
+    public IActionResult GetSalesProfile()
+    {
+        return Ok(_warehouseProfile.GetWarehouseProfileForMobile(_claim.UserId));
     }
 }

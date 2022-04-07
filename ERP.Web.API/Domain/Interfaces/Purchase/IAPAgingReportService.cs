@@ -1,9 +1,8 @@
 ﻿using ERP.Common.Models;
 
-namespace ERP.Web.API.Domain.Interfaces.Purchase
+namespace ERP.Web.API.Domain.Interfaces.Purchase;
+
+public interface IAPAgingReportService
 {
-    public interface IAPAgingReportService
-    {
-        DataSourceResult GetData(int type, string date, string supCode, string duration);
-    }
+    DataSourceResult GetData(int type, string date, string supCode, string duration);
 }

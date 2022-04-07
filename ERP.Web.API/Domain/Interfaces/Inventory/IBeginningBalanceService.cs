@@ -3,23 +3,22 @@ using ERP.Common.Models;
 using ERP.Entity.Inventory;
 using ERP.Web.API.Model.Inventory;
 
-namespace ERP.Web.API.Domain.Interfaces.Inventory
+namespace ERP.Web.API.Domain.Interfaces.Inventory;
+
+public interface IBeginningBalanceStockService : IGeneralService<BeginningBalanceStockHeader>
 {
-    public interface IBeginningBalanceStockService : IGeneralService<BeginningBalanceStockHeader>
-    {
-        DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
-            string search);
+    DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
+        string search);
         
-        IEnumerable<VwBeginningBalanceStockDetail> GetDetailData(string code);
+    IEnumerable<VwBeginningBalanceStockDetail> GetDetailData(string code);
         
-        SaveResult Insert(BeginningBalanceRequest data);
+    SaveResult Insert(BeginningBalanceRequest data);
         
-        SaveResult Update(BeginningBalanceRequest data);
+    SaveResult Update(BeginningBalanceRequest data);
         
-        SaveResult Delete(string code, int userId);
+    SaveResult Delete(string code, int userId);
 
-        IEnumerable<UploadBBStockDetailRequest> VerifyUpload(IEnumerable<UploadBBStockDetailRequest> data);
+    IEnumerable<UploadBBStockDetailRequest> VerifyUpload(IEnumerable<UploadBBStockDetailRequest> data);
 
-        SaveResult Posting(UploadBBStockHeaderRequest data, int userId);
-    }
+    SaveResult Posting(UploadBBStockHeaderRequest data, int userId);
 }

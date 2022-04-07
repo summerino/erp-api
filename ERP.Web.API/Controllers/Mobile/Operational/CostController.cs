@@ -10,90 +10,88 @@ using ERP.Web.API.Model;
 using Newtonsoft.Json;
 using ERP.Web.API.Domain.Models.Mobile.Operational;
 
-namespace ERP.Web.API.Controllers.Mobile.Operational
+namespace ERP.Web.API.Controllers.Mobile.Operational;
+
+[Authorize(AppConstant.ValidateMobileTokenPolicy)]
+[Route("mobile/[controller]")]
+[ApiController]
+public class CostController : ControllerBase
 {
-    [Authorize(AppConstant.ValidateMobileTokenPolicy)]
-    [Route("mobile/[controller]")]
-    [ApiController]
-    public class CostController : ControllerBase
+    private readonly IMobileCostService _mobCost;
+    private readonly ICoaService _coa;
+    private readonly IClaimService _claim;
+
+    public CostController(IMobileCostService mobCost, ICoaService coa, IClaimService claim)
     {
-        private readonly IMobileCostService _mobCost;
-        private readonly ICoaService _coa;
-        private readonly IClaimService _claim;
+        _mobCost = mobCost;
+        _coa = coa;
+        _claim = claim;
+    }
 
-        public CostController(IMobileCostService mobCost, ICoaService coa, IClaimService claim)
+    [HttpGet]
+    public IActionResult GetData(string filters, string sorts, int skip, int take, string date)
+    {
+        var data =
+            _mobCost.GetDataForMobile(skip, take,
+                JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"), _claim.UserId, date);
+
+        var result = ((List<MobileCostHeader>)data.Data).ToList<dynamic>();
+
+        return Ok(new MobileApiResponse
         {
-            _mobCost = mobCost;
-            _coa = coa;
-            _claim = claim;
-        }
+            Count = data.Total,
+            Data = result
+        }); ;
+    }
 
-        [HttpGet]
-        public IActionResult GetData(string filters, string sorts, int skip, int take, string date)
-        {
-            var data =
-                _mobCost.GetDataForMobile(skip, take,
-                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
-                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"), _claim.UserId, date);
+    [HttpPost]
+    public IActionResult AddCost(CostRequestModel data)
+    {
+        // Insert process
+        data.Mark = "A";
+        data.Rate = 1;
+        data.CreatedBy = _claim.UserId;
+        data.CreatedDate = DateTime.Now;
+        data.UpdatedBy = data.CreatedBy;
+        data.UpdatedDate = data.CreatedDate;
 
-            var result = ((List<MobileCostHeader>)data.Data).ToList<dynamic>();
+        var result = _mobCost.InsertForMobile(data, _claim.UserId);
+        return Ok(result);
+    }
 
-            return Ok(new MobileApiResponse
+    [HttpGet("detail")]
+    public IActionResult GetDetail(string code)
+    {
+        return Ok(_mobCost.GetDetailForMobile(code));
+
+    }
+
+    [HttpGet("coa")]
+    public IActionResult GetMobileCoa(string lastUpdate)
+    {
+        var data =
+            _mobCost.GetMobileCoaForMobile(lastUpdate).Select(x => new
             {
-                Count = data.Total,
-                Data = result
-            }); ;
-        }
+                x.Id,
+                x.Code,
+                x.Name,
+                x.IsActive,
+                x.UpdatedDate
+            });
 
-        [HttpPost]
-        public IActionResult AddCost(CostRequestModel data)
-        {
-            // Insert process
-            data.Mark = "A";
-            data.Rate = 1;
-            data.CreatedBy = _claim.UserId;
-            data.CreatedDate = DateTime.Now;
-            data.UpdatedBy = data.CreatedBy;
-            data.UpdatedDate = data.CreatedDate;
+        return Ok(data);
+    }
 
-            var result = _mobCost.InsertForMobile(data, _claim.UserId);
-            return Ok(result);
-        }
+    [HttpGet("image")]
+    public IActionResult GetImage(string code)
+    {
+        return Ok(_mobCost.GetImageForMobile(code));
+    }
 
-        [HttpGet("detail")]
-        public IActionResult GetDetail(string code)
-        {
-            return Ok(_mobCost.GetDetailForMobile(code));
-
-        }
-
-        [HttpGet("coa")]
-        public IActionResult GetMobileCoa(string lastUpdate)
-        {
-            var data =
-               _mobCost.GetMobileCoaForMobile(lastUpdate).Select(x => new
-               {
-                   x.Id,
-                   x.Code,
-                   x.Name,
-                   x.IsActive,
-                   x.UpdatedDate
-               });
-
-            return Ok(data);
-        }
-
-        [HttpGet("image")]
-        public IActionResult GetImage(string code)
-        {
-            return Ok(_mobCost.GetImageForMobile(code));
-        }
-
-        [HttpGet("today")]
-        public IActionResult GetTodayTransaction(string date)
-        {
-            return Ok(_mobCost.GetTodayTransactionForMobile(date, _claim.UserId));
-        }
+    [HttpGet("today")]
+    public IActionResult GetTodayTransaction(string date)
+    {
+        return Ok(_mobCost.GetTodayTransactionForMobile(date, _claim.UserId));
     }
 }
-

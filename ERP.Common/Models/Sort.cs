@@ -1,13 +1,12 @@
-﻿namespace ERP.Common.Models
-{
-    public class Sort
-    {
-        public string Field { get; set; }
-        public string Direction { get; set; }
+﻿namespace ERP.Common.Models;
 
-        public string ToExpression()
-        {
-            return Field + " " + Direction;
-        }
+public class Sort
+{
+    public string Field { get; set; }
+    public string Direction { get; set; }
+
+    public string ToExpression()
+    {
+        return Field + " " + Direction;
     }
 }

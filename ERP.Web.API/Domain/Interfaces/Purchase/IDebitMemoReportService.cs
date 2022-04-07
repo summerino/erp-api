@@ -1,9 +1,8 @@
 ﻿using ERP.Common.Models;
 
-namespace ERP.Web.API.Domain.Interfaces.Purchase
+namespace ERP.Web.API.Domain.Interfaces.Purchase;
+
+public interface IDebitMemoReportService
 {
-    public interface IDebitMemoReportService
-    {
-        DataSourceResult GetData(int type, string date, string supCode, string status, IEnumerable<Sort> sorts);
-    }
+    DataSourceResult GetData(int type, string date, string supCode, string status, IEnumerable<Sort> sorts);
 }

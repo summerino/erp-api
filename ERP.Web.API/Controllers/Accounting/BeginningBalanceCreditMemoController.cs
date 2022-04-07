@@ -10,138 +10,137 @@ using ERP.Web.API.Model;
 using ERP.Web.API.Model.Accounting;
 using Newtonsoft.Json;
 
-namespace ERP.Web.API.Controllers.Accounting
+namespace ERP.Web.API.Controllers.Accounting;
+
+[Route("bb-credit-memo")]
+[ApiController]
+public class BeginningBalanceCreditMemoController : ControllerBase
 {
-    [Route("bb-credit-memo")]
-    [ApiController]
-    public class BeginningBalanceCreditMemoController : ControllerBase
+    private readonly IBeginningBalanceCreditMemoService _bbCm;
+    private readonly IClosingMonthService _closingMonth;
+    private readonly ISystemParameterService _sysPar;
+    private readonly IClaimService _claim;
+    private readonly IAuthService _auth;
+
+    private const int MenuId = (int)Menu.BeginningBalanceCreditMemo;
+
+    public BeginningBalanceCreditMemoController(IBeginningBalanceCreditMemoService bbCm,
+        IClosingMonthService closingMonth, ISystemParameterService sysPar,
+        IClaimService claim, IAuthService auth)
     {
-        private readonly IBeginningBalanceCreditMemoService _bbCm;
-        private readonly IClosingMonthService _closingMonth;
-        private readonly ISystemParameterService _sysPar;
-        private readonly IClaimService _claim;
-        private readonly IAuthService _auth;
+        _bbCm = bbCm;
+        _closingMonth = closingMonth;
+        _sysPar = sysPar;
+        _claim = claim;
+        _auth = auth;
+    }
 
-        private const int MenuId = (int)Menu.BeginningBalanceCreditMemo;
+    [HttpGet]
+    public IActionResult GetData(string search, string filters, string sorts, int skip, int take)
+    {
+        var data =
+            _bbCm.GetData(
+                skip, take,
+                JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
+                search);
 
-        public BeginningBalanceCreditMemoController(IBeginningBalanceCreditMemoService bbCm,
-            IClosingMonthService closingMonth, ISystemParameterService sysPar,
-            IClaimService claim, IAuthService auth)
+        return Ok(new ApiResponse
         {
-            _bbCm = bbCm;
-            _closingMonth = closingMonth;
-            _sysPar = sysPar;
-            _claim = claim;
-            _auth = auth;
-        }
+            RowCount = data.Total,
+            TableData = data.Data.ToDynamicList()
+        });
+    }
 
-        [HttpGet]
-        public IActionResult GetData(string search, string filters, string sorts, int skip, int take)
+    [HttpPost]
+    public IActionResult OnPost(BeginningBalanceCreditMemoRequest data)
+    {
+        // Checking role authorization
+        if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Insert }).Any())
+            return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+
+        // Validate process
+        var (isValid, message) = Validate(data);
+        if (!isValid)
+            return Ok(new SaveResult(false, message));
+
+        data.IsActive = true;
+        data.CreatedBy = _claim.UserId;
+        data.CreatedDate = DateTime.Now;
+        data.UpdatedBy = data.CreatedBy;
+        data.UpdatedDate = data.CreatedDate;
+
+        var result = _bbCm.Insert(data);
+
+        return Ok(result);
+    }
+
+    [HttpPut("{id}")]
+    public IActionResult OnPut(string id, BeginningBalanceCreditMemoRequest data)
+    {
+        // Checking role authorization
+        if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
+            return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+
+        // Validate process
+        var (isValid, message) = Validate(data);
+        if (!isValid)
+            return Ok(new SaveResult(false, message));
+
+        data.UpdatedBy = _claim.UserId;
+        data.UpdatedDate = DateTime.Now;
+
+        var result = _bbCm.Update(data);
+
+        return Ok(result);
+    }
+
+    [HttpDelete("{id}")]
+    public IActionResult OnDelete(int id, BeginningBalanceCreditMemoRequest data)
+    {
+        // Checking role authorization
+        if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Delete }).Any())
+            return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+
+        // Validate process
+        var (isValid, message) = Validate(data);
+        if (!isValid)
+            return Ok(new SaveResult(false, message));
+
+        var result = _bbCm.Delete(data.Id, _claim.UserId);
+
+        return Ok(result);
+    }
+
+    [HttpPost("upload")]
+    public IActionResult OnUpload(IEnumerable<UploadBBCMRequest> data)
+    {
+        var result = _bbCm.VerifyUpload(data);
+        return Ok(new ApiResponse
         {
-            var data =
-                _bbCm.GetData(
-                    skip, take,
-                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
-                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
-                    search);
+            RowCount = result.Count(),
+            TableData = result.ToDynamicList()
+        });
+    }
+    [HttpPost("posting")]
+    public IActionResult OnPosting(IEnumerable<UploadBBCMRequest> data)
+    {
+        var result = _bbCm.Posting(data, _claim.UserId);
+        return Ok(result);
+    }
 
-            return Ok(new ApiResponse
-            {
-                RowCount = data.Total,
-                TableData = data.Data.ToDynamicList()
-            });
-        }
+    private (bool, string) Validate(BeginningBalanceCreditMemoRequest data)
+    {
+        var periods = new List<string> { data.Date.ToString("yyyyMM") };
+        if (data.OriginalDate.HasValue)
+            periods.Add(data.OriginalDate.Value.ToString("yyyyMM"));
 
-        [HttpPost]
-        public IActionResult OnPost(BeginningBalanceCreditMemoRequest data)
-        {
-            // Checking role authorization
-            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Insert }).Any())
-                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+        if (_closingMonth.IsMonthClosed(periods))
+            return (false, "Periode sudah ditutup. Silakan hubungi departemen akuntansi.");
 
-            // Validate process
-            var (isValid, message) = Validate(data);
-            if (!isValid)
-                return Ok(new SaveResult(false, message));
-
-            data.IsActive = true;
-            data.CreatedBy = _claim.UserId;
-            data.CreatedDate = DateTime.Now;
-            data.UpdatedBy = data.CreatedBy;
-            data.UpdatedDate = data.CreatedDate;
-
-            var result = _bbCm.Insert(data);
-
-            return Ok(result);
-        }
-
-        [HttpPut("{id}")]
-        public IActionResult OnPut(string id, BeginningBalanceCreditMemoRequest data)
-        {
-            // Checking role authorization
-            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
-                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-
-            // Validate process
-            var (isValid, message) = Validate(data);
-            if (!isValid)
-                return Ok(new SaveResult(false, message));
-
-            data.UpdatedBy = _claim.UserId;
-            data.UpdatedDate = DateTime.Now;
-
-            var result = _bbCm.Update(data);
-
-            return Ok(result);
-        }
-
-        [HttpDelete("{id}")]
-        public IActionResult OnDelete(int id, BeginningBalanceCreditMemoRequest data)
-        {
-            // Checking role authorization
-            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Delete }).Any())
-                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-
-            // Validate process
-            var (isValid, message) = Validate(data);
-            if (!isValid)
-                return Ok(new SaveResult(false, message));
-
-            var result = _bbCm.Delete(data.Id, _claim.UserId);
-
-            return Ok(result);
-        }
-
-        [HttpPost("upload")]
-        public IActionResult OnUpload(IEnumerable<UploadBBCMRequest> data)
-        {
-            var result = _bbCm.VerifyUpload(data);
-            return Ok(new ApiResponse
-            {
-                RowCount = result.Count(),
-                TableData = result.ToDynamicList()
-            });
-        }
-        [HttpPost("posting")]
-        public IActionResult OnPosting(IEnumerable<UploadBBCMRequest> data)
-        {
-            var result = _bbCm.Posting(data, _claim.UserId);
-            return Ok(result);
-        }
-
-        private (bool, string) Validate(BeginningBalanceCreditMemoRequest data)
-        {
-            var periods = new List<string> { data.Date.ToString("yyyyMM") };
-            if (data.OriginalDate.HasValue)
-                periods.Add(data.OriginalDate.Value.ToString("yyyyMM"));
-
-            if (_closingMonth.IsMonthClosed(periods))
-                return (false, "Periode sudah ditutup. Silakan hubungi departemen akuntansi.");
-
-            // Checking data start date validity
-            return _sysPar.IsStartDateValid(data.Date)
-                ? (false, "Tanggal tidak boleh lebih besar dari tanggal mulai data.")
-                : (true, "");
-        }
+        // Checking data start date validity
+        return _sysPar.IsStartDateValid(data.Date)
+            ? (false, "Tanggal tidak boleh lebih besar dari tanggal mulai data.")
+            : (true, "");
     }
 }

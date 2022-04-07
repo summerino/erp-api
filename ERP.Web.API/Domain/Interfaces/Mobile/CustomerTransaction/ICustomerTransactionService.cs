@@ -2,14 +2,13 @@
 using ERP.Web.API.Domain.Models.Mobile.General;
 using ERP.Web.API.Domain.Models.Mobile.TransactionHistory;
 
-namespace ERP.Web.API.Domain.Interfaces.Mobile.CustomerTransaction
+namespace ERP.Web.API.Domain.Interfaces.Mobile.CustomerTransaction;
+
+public interface ICustomerTransactionService
 {
-    public interface ICustomerTransactionService
-    {
-        DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,DateTime? date,string custCode);
-        IEnumerable<TransactionItemDetail> GetTransactionItem(string transNo);
-        CreditLimitModel GetCreditLimit(string custCode);
-        CustomerProfileModel GetCustomerProfile(string custCode);
+    DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,DateTime? date,string custCode);
+    IEnumerable<TransactionItemDetail> GetTransactionItem(string transNo);
+    CreditLimitModel GetCreditLimit(string custCode);
+    CustomerProfileModel GetCustomerProfile(string custCode);
        
-    }
 }

@@ -1,9 +1,8 @@
 ﻿using ERP.Entity.Inventory;
 
-namespace ERP.Web.API.Model.Inventory
+namespace ERP.Web.API.Model.Inventory;
+
+public class UnitOfMeasurementRequest : UoM
 {
-    public class UnitOfMeasurementRequest : UoM
-    {
-        public IEnumerable<UoMConversion> Details { get; set; }
-    }
+    public IEnumerable<UoMConversion> Details { get; set; }
 }

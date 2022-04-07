@@ -3,19 +3,18 @@ using ERP.Common.Models;
 using ERP.Entity.MobileWarehouse;
 using ERP.Web.API.Model.MobileWarehouse;
 
-namespace ERP.Web.API.Domain.Interfaces.MobileWarehouse
+namespace ERP.Web.API.Domain.Interfaces.MobileWarehouse;
+
+public interface IMobileDeliveryItemService : IGeneralService<MobileDeliveryItemHeader>
 {
-    public interface IMobileDeliveryItemService : IGeneralService<MobileDeliveryItemHeader>
-    {
-        DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
-            string search);
+    DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
+        string search);
 
-        IEnumerable<VwMobileDeliveryItemDetail> GetDetailData(string code);
+    IEnumerable<VwMobileDeliveryItemDetail> GetDetailData(string code);
 
-        SaveResult Approve(List<MobileDeliveryItemHeader> data, int userId);
+    SaveResult Approve(List<MobileDeliveryItemHeader> data, int userId);
 
-        SaveResult Reject(List<MobileDeliveryItemHeader> data, int userId);
+    SaveResult Reject(List<MobileDeliveryItemHeader> data, int userId);
 
-        SaveResult Update(MobileDeliveryItemRequest data);
-    }
+    SaveResult Update(MobileDeliveryItemRequest data);
 }

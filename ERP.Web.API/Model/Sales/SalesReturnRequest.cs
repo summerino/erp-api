@@ -1,14 +1,13 @@
 ﻿using ERP.Entity.Sales;
 
-namespace ERP.Web.API.Model.Sales
+namespace ERP.Web.API.Model.Sales;
+
+public class SalesReturnRequest : SalesReturnHeader
 {
-    public class SalesReturnRequest : SalesReturnHeader
-    {
-        public IEnumerable<SalesReturnDetail> ItemDetails { get; set; }
+    public IEnumerable<SalesReturnDetail> ItemDetails { get; set; }
 
-        public IEnumerable<SalesReturnDetailExchDiffItem> DiffItemDetails { get; set; }
+    public IEnumerable<SalesReturnDetailExchDiffItem> DiffItemDetails { get; set; }
 
-        public DateTime? OriginalDate { get; set; }
+    public DateTime? OriginalDate { get; set; }
 
-    }
 }

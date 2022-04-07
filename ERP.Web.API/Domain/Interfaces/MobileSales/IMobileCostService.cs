@@ -5,39 +5,38 @@ using ERP.Entity.MobileSales;
 using ERP.Web.API.Domain.Models.Mobile.Operational;
 using ERP.Web.API.Model.MobileSales;
 
-namespace ERP.Web.API.Domain.Interfaces.MobileSales
+namespace ERP.Web.API.Domain.Interfaces.MobileSales;
+
+public interface IMobileCostService : IGeneralService<MobileCostHeader>
 {
-    public interface IMobileCostService : IGeneralService<MobileCostHeader>
-    {
-        DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
-            string search);
+    DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
+        string search);
 
-        IEnumerable<VwMobileCostDetail> GetDetailData(string code);
+    IEnumerable<VwMobileCostDetail> GetDetailData(string code);
 
-        IEnumerable<MobileCostImage> GetImageData(string code);
+    IEnumerable<MobileCostImage> GetImageData(string code);
 
-        bool IsCostExists(string date, int userId);
+    bool IsCostExists(string date, int userId);
 
-        SaveResult Insert(MobileCostRequest data);
+    SaveResult Insert(MobileCostRequest data);
 
-        SaveResult Update(MobileCostRequest data);
+    SaveResult Update(MobileCostRequest data);
 
-        SaveResult Approve(List<MobileCostRequest> data, int userId, string date, string coa, string notes);
+    SaveResult Approve(List<MobileCostRequest> data, int userId, string date, string coa, string notes);
 
-        SaveResult Reject(List<MobileCostRequest> data, int userId);
+    SaveResult Reject(List<MobileCostRequest> data, int userId);
 
-        #region Mobile
-        DataSourceResult GetDataForMobile(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, int userId, string date);
+    #region Mobile
+    DataSourceResult GetDataForMobile(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, int userId, string date);
 
-        IEnumerable<CostDetailModel> GetDetailForMobile(string Code);
+    IEnumerable<CostDetailModel> GetDetailForMobile(string Code);
 
-        SaveResult InsertForMobile(CostRequestModel data, int UserId);
+    SaveResult InsertForMobile(CostRequestModel data, int UserId);
 
-        IEnumerable<Coa> GetMobileCoaForMobile(string lastUpdate);
+    IEnumerable<Coa> GetMobileCoaForMobile(string lastUpdate);
 
-        IEnumerable<CostImageModel> GetImageForMobile(string Code);
+    IEnumerable<CostImageModel> GetImageForMobile(string Code);
 
-        CostTodayTransactionModel GetTodayTransactionForMobile(string date, int userId);
-        #endregion
-    }
+    CostTodayTransactionModel GetTodayTransactionForMobile(string date, int userId);
+    #endregion
 }

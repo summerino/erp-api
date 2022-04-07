@@ -1,9 +1,8 @@
 ﻿using ERP.Entity.MobileWarehouse;
 
-namespace ERP.Web.API.Domain.Models.Mobile.Sales
+namespace ERP.Web.API.Domain.Models.Mobile.Sales;
+
+public class DeliveryPlanRequestModel : MobileDeliveryItemHeader
 {
-    public class DeliveryPlanRequestModel : MobileDeliveryItemHeader
-    {
-        public IEnumerable<MobileDeliveryItemDetail> DPDetails { get; set; }
-    }
+    public IEnumerable<MobileDeliveryItemDetail> DPDetails { get; set; }
 }

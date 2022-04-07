@@ -9,98 +9,97 @@ using ERP.Web.API.Model;
 using ERP.Web.API.Model.SystemManagement;
 using Newtonsoft.Json;
 
-namespace ERP.Web.API.Controllers.SystemManagement
+namespace ERP.Web.API.Controllers.SystemManagement;
+
+[Route("[controller]")]
+[ApiController]
+public class UserController : ControllerBase
 {
-    [Route("[controller]")]
-    [ApiController]
-    public class UserController : ControllerBase
+    private readonly IUserService _user;
+    private readonly IClaimService _claim;
+    private readonly IAuthService _auth;
+
+    private const int MenuId = (int)Model.Menu.User;
+
+    public UserController(IUserService user, IClaimService claim, IAuthService auth)
     {
-        private readonly IUserService _user;
-        private readonly IClaimService _claim;
-        private readonly IAuthService _auth;
+        _user = user;
+        _claim = claim;
+        _auth = auth;
+    }
 
-        private const int MenuId = (int)Model.Menu.User;
+    [HttpGet]
+    public IActionResult GetData(string search, string filters, string sorts, int skip, int take)
+    {
+        var data =
+            _user.GetData(
+                skip, take,
+                JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
+                search);
 
-        public UserController(IUserService user, IClaimService claim, IAuthService auth)
+        return Ok(new ApiResponse
         {
-            _user = user;
-            _claim = claim;
-            _auth = auth;
+            RowCount = data.Total,
+            TableData = data.Data.ToDynamicList()
+        });
+    }
+
+    [HttpPost]
+    public IActionResult OnPost(UserRequest data)
+    {
+
+        if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Insert }).Any())
+        {
+            return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
         }
 
-        [HttpGet]
-        public IActionResult GetData(string search, string filters, string sorts, int skip, int take)
-        {
-            var data =
-                _user.GetData(
-                    skip, take,
-                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
-                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
-                    search);
+        data.IsActive = true;
+        data.CreatedBy = _claim.UserId;
+        data.CreatedDate = DateTime.Now;
+        data.UpdatedBy = data.CreatedBy;
+        data.UpdatedDate = data.CreatedDate;
 
-            return Ok(new ApiResponse
-            {
-                RowCount = data.Total,
-                TableData = data.Data.ToDynamicList()
-            });
+        var result = _user.Insert(data);
+
+        return Ok(result);
+    }
+
+    [HttpPut("{id}")]
+    public IActionResult OnPut(UserRequest data)
+    {
+
+        if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
+        {
+            return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
         }
 
-        [HttpPost]
-        public IActionResult OnPost(UserRequest data)
+        data.UpdatedBy = _claim.UserId;
+        data.UpdatedDate = DateTime.Now;
+        var result = _user.Update(data);
+
+        return Ok(result);
+    }
+
+    [HttpDelete("{id}")]
+    public IActionResult OnDelete(int id)
+    {
+
+        if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Delete }).Any())
         {
-
-            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Insert }).Any())
-            {
-                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
-
-            data.IsActive = true;
-            data.CreatedBy = _claim.UserId;
-            data.CreatedDate = DateTime.Now;
-            data.UpdatedBy = data.CreatedBy;
-            data.UpdatedDate = data.CreatedDate;
-
-            var result = _user.Insert(data);
-
-            return Ok(result);
+            return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
         }
 
-        [HttpPut("{id}")]
-        public IActionResult OnPut(UserRequest data)
-        {
+        var result = _user.Delete(id);
 
-            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
-            {
-                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
+        return Ok(result);
+    }
 
-            data.UpdatedBy = _claim.UserId;
-            data.UpdatedDate = DateTime.Now;
-            var result = _user.Update(data);
+    [HttpPut("change-password/{id}")]
+    public IActionResult OnChangePassword(UserRequest data)
+    {
+        var result = _user.ChangePassword(data);
 
-            return Ok(result);
-        }
-
-        [HttpDelete("{id}")]
-        public IActionResult OnDelete(int id)
-        {
-
-            if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Delete }).Any())
-            {
-                return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-            }
-
-            var result = _user.Delete(id);
-
-            return Ok(result);
-        }
-
-        [HttpPut("change-password/{id}")]
-        public IActionResult OnChangePassword(UserRequest data)
-        {
-            var result = _user.ChangePassword(data);
-
-            return Ok(result);
-        }
+        return Ok(result);
     }
 }

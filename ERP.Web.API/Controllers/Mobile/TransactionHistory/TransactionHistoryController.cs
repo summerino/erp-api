@@ -7,318 +7,317 @@ using ERP.Web.API.Domain.Models.Mobile.TransactionHistory;
 using ERP.Web.API.Model;
 using Newtonsoft.Json;
 
-namespace ERP.Web.API.Controllers.Mobile.TransactionHistory
+namespace ERP.Web.API.Controllers.Mobile.TransactionHistory;
+
+[Authorize(AppConstant.ValidateMobileTokenPolicy)]
+[Route("mobile/[controller]")]
+[ApiController]
+public class TransactionHistoryController : ControllerBase
 {
-    [Authorize(AppConstant.ValidateMobileTokenPolicy)]
-    [Route("mobile/[controller]")]
-    [ApiController]
-    public class TransactionHistoryController : ControllerBase
+    private readonly ITransactionHistoryService _transactionHistory;
+    private readonly IClaimService _claim;
+
+    public TransactionHistoryController(ITransactionHistoryService transactionHistory, IClaimService claim)
     {
-        private readonly ITransactionHistoryService _transactionHistory;
-        private readonly IClaimService _claim;
+        _transactionHistory = transactionHistory;
+        _claim = claim;
+    }
 
-        public TransactionHistoryController(ITransactionHistoryService transactionHistory, IClaimService claim)
+    [HttpGet("by-customer")]
+    public IActionResult GetDataByCustomer(string search, string filters, string sorts, int skip, int take)
+    {
+        var data =
+            _transactionHistory.GetDataByCustomer(skip, take,
+                JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
+                search);
+
+        var temp = ((List<TransactionHistoryByCustomer>)data.Data);
+
+        var result = temp.Select(x => new
         {
-            _transactionHistory = transactionHistory;
-            _claim = claim;
-        }
-
-        [HttpGet("by-customer")]
-        public IActionResult GetDataByCustomer(string search, string filters, string sorts, int skip, int take)
+            x.Date,
+            x.CustomerId,
+            x.CustomerName,
+            x.Total
+        }).ToList<dynamic>();
+        return Ok(new MobileApiResponse
         {
-            var data =
-                _transactionHistory.GetDataByCustomer(skip, take,
-                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
-                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
-                    search);
+            Count = data.Total,
+            Data = result
+        });
+    }
 
-            var temp = ((List<TransactionHistoryByCustomer>)data.Data);
+    [HttpGet("by-product")]
+    public IActionResult GetDataByProduct(string search, string filters, string sorts, int skip, int take)
+    {
+        var data =
+            _transactionHistory.GetDataByProduct(skip, take,
+                JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
+                search);
 
-            var result = temp.Select(x => new
-            {
-                x.Date,
-                x.CustomerId,
-                x.CustomerName,
-                x.Total
-            }).ToList<dynamic>();
-            return Ok(new MobileApiResponse
-            {
-                Count = data.Total,
-                Data = result
-            });
-        }
-
-        [HttpGet("by-product")]
-        public IActionResult GetDataByProduct(string search, string filters, string sorts, int skip, int take)
+        var temp = ((List<TransactionHistoryByProduct>)data.Data);
+        var result = temp.Select(x => new
         {
-            var data =
-                _transactionHistory.GetDataByProduct(skip, take,
-                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
-                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
-                    search);
-
-            var temp = ((List<TransactionHistoryByProduct>)data.Data);
-            var result = temp.Select(x => new
-            {
-                x.Date,
-                x.ItemId,
-                x.ItemName,
-                x.Quantity,
-                x.Unit,
-                x.Total
-            }).ToList<dynamic>();
-            return Ok(new MobileApiResponse
-            {
-                Count = data.Total,
-                Data = result
-            });
-        }
-
-        [HttpGet("by-unit-product")]
-        public IActionResult GetData(int filterUnit, DateTime? date)
+            x.Date,
+            x.ItemId,
+            x.ItemName,
+            x.Quantity,
+            x.Unit,
+            x.Total
+        }).ToList<dynamic>();
+        return Ok(new MobileApiResponse
         {
-            var result = _transactionHistory.GetDataByUnitProduct(filterUnit, date, _claim.UserId);
+            Count = data.Total,
+            Data = result
+        });
+    }
 
-            return Ok(result);
-        }
+    [HttpGet("by-unit-product")]
+    public IActionResult GetData(int filterUnit, DateTime? date)
+    {
+        var result = _transactionHistory.GetDataByUnitProduct(filterUnit, date, _claim.UserId);
 
-        [HttpGet("by-date")]
-        public IActionResult GetDataByDate(string filters, string sorts, int skip, int take)
+        return Ok(result);
+    }
+
+    [HttpGet("by-date")]
+    public IActionResult GetDataByDate(string filters, string sorts, int skip, int take)
+    {
+        var data =
+            _transactionHistory.GetDataByDate(skip, take,
+                JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"));
+
+        var temp = ((List<TransactionHistoryByDate>)data.Data);
+        var result = temp.Select(x => new
         {
-            var data =
-                _transactionHistory.GetDataByDate(skip, take,
-                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
-                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"));
-
-            var temp = ((List<TransactionHistoryByDate>)data.Data);
-            var result = temp.Select(x => new
-            {
-                x.Date,
-                x.Total
-            }).ToList<dynamic>();
-            return Ok(new MobileApiResponse
-            {
-                Count = data.Total,
-                Data = result
-            });
-        }
-
-        [HttpGet("detail-item")]
-        public IActionResult GetDetailItem(string search, string filters, string sorts, int skip, int take)
+            x.Date,
+            x.Total
+        }).ToList<dynamic>();
+        return Ok(new MobileApiResponse
         {
-            var data =
-                _transactionHistory.GetItemDetail(skip, take,
-                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
-                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"), search);
+            Count = data.Total,
+            Data = result
+        });
+    }
 
-            var temp = ((List<TransactionItemDetail>)data.Data);
-            var result = temp.Select(x => new
-            {
-                x.CustomerId,
-                x.ItemId,
-                x.ItemName,
-                x.Quantity,
-                x.Unit,
-                x.Price,
-                x.Discount,
-                x.Total
-            }).ToList<dynamic>();
-            return Ok(new MobileApiResponse
-            {
-                Count = data.Total,
-                Data = result
-            });
-        }
+    [HttpGet("detail-item")]
+    public IActionResult GetDetailItem(string search, string filters, string sorts, int skip, int take)
+    {
+        var data =
+            _transactionHistory.GetItemDetail(skip, take,
+                JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"), search);
 
-        [HttpGet("detail-customer")]
-        public IActionResult GetDetailCustomer(string search, string filters, string sorts, int skip, int take)
+        var temp = ((List<TransactionItemDetail>)data.Data);
+        var result = temp.Select(x => new
         {
-            var data =
-                _transactionHistory.GetCustomerDetail(skip, take,
-                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
-                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"), search);
-
-            var temp = ((List<TransactionCustomerDetail>)data.Data);
-            var result = temp.Select(x => new
-            {
-                x.CustomerId,
-                x.CustomerName,
-                x.Quantity,
-                x.Unit,
-                x.Total
-            }).ToList<dynamic>();
-            return Ok(new MobileApiResponse
-            {
-                Count = data.Total,
-                Data = result
-            });
-        }
-
-        [HttpGet("cumulative")]
-        public IActionResult GetDataCumulative(int year, string custCode, string filters, string sorts, int skip, int take)
+            x.CustomerId,
+            x.ItemId,
+            x.ItemName,
+            x.Quantity,
+            x.Unit,
+            x.Price,
+            x.Discount,
+            x.Total
+        }).ToList<dynamic>();
+        return Ok(new MobileApiResponse
         {
-            var data =
-                _transactionHistory.GetDataCumulative(skip, take,
-                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
-                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
-                    year, custCode, _claim.UserId);
+            Count = data.Total,
+            Data = result
+        });
+    }
 
-            var temp = ((List<TransactionCumulative>)data.Data);
-            var result = temp.Select(x => new
-            {
-                x.Month,
-                x.Total
-            }).ToList<dynamic>();
-            return Ok(new MobileApiResponse
-            {
-                Count = data.Total,
-                Data = result
-            });
-        }
+    [HttpGet("detail-customer")]
+    public IActionResult GetDetailCustomer(string search, string filters, string sorts, int skip, int take)
+    {
+        var data =
+            _transactionHistory.GetCustomerDetail(skip, take,
+                JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"), search);
 
-        [HttpGet("individual")]
-        public IActionResult GetDataIndividual(string custCode, string filters, string sorts, int skip, int take)
+        var temp = ((List<TransactionCustomerDetail>)data.Data);
+        var result = temp.Select(x => new
         {
-            var data =
-                _transactionHistory.GetDataByLog(skip, take,
-                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
-                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
-                     custCode, _claim.UserId);
-
-            var result = ((List<TransactionIndividual>)data.Data).ToList<dynamic>();
-
-            return Ok(new MobileApiResponse
-            {
-                Count = data.Total,
-                Data = result
-            });
-        }
-
-        [HttpGet("sub-group")]
-        public IActionResult GetSubGroup()
+            x.CustomerId,
+            x.CustomerName,
+            x.Quantity,
+            x.Unit,
+            x.Total
+        }).ToList<dynamic>();
+        return Ok(new MobileApiResponse
         {
-            var data =
-                _transactionHistory.GetSubGroup();
+            Count = data.Total,
+            Data = result
+        });
+    }
 
-            return Ok(data);
-        }
+    [HttpGet("cumulative")]
+    public IActionResult GetDataCumulative(int year, string custCode, string filters, string sorts, int skip, int take)
+    {
+        var data =
+            _transactionHistory.GetDataCumulative(skip, take,
+                JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
+                year, custCode, _claim.UserId);
 
-        [HttpGet("by-subgroup")]
-        public IActionResult GetDataByGroup(string filters, string sorts, int skip, int take, int groupId, string subGroup)
+        var temp = ((List<TransactionCumulative>)data.Data);
+        var result = temp.Select(x => new
         {
-            var data =
-                _transactionHistory.GetDataBySubGroup(skip, take,
-                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
-                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"), 
-                     groupId, subGroup);
-
-            var result = ((List<TransactionHistoryBySubGroup>)data.Data).ToList<dynamic>();
-
-            return Ok(new MobileApiResponse
-            {
-                Count = data.Total,
-                Data = result
-            });
-        }
-
-        [HttpGet("item-subgroup")]
-        public IActionResult GetItemByGroup(string filters, string sorts, int skip, int take, DateTime date,int groupId, string subGroup)
+            x.Month,
+            x.Total
+        }).ToList<dynamic>();
+        return Ok(new MobileApiResponse
         {
-            var data =
-                _transactionHistory.GetItemBySubGroup(skip, take,
-                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
-                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
-                     date,groupId, subGroup);
+            Count = data.Total,
+            Data = result
+        });
+    }
 
-            var result = ((List<TransactionHistoryItemBySubGroup>)data.Data).ToList<dynamic>();
+    [HttpGet("individual")]
+    public IActionResult GetDataIndividual(string custCode, string filters, string sorts, int skip, int take)
+    {
+        var data =
+            _transactionHistory.GetDataByLog(skip, take,
+                JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
+                custCode, _claim.UserId);
 
-            return Ok(new MobileApiResponse
-            {
-                Count = data.Total,
-                Data = result
-            });
-        }
+        var result = ((List<TransactionIndividual>)data.Data).ToList<dynamic>();
 
-        [HttpGet("by-subgroup-summary")]
-        public IActionResult GetDataByGroupSummary(string filters, string sorts, int skip, int take, DateTime date, int? groupId, int? subGroupId)
+        return Ok(new MobileApiResponse
         {
-            var data =
-                _transactionHistory.GetDataBySubGroupSummary(skip, take,
-                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
-                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"), date, 
-                    groupId, subGroupId);
+            Count = data.Total,
+            Data = result
+        });
+    }
 
-            var result = ((List<TransactionHistoryBySubGroupSummary>)data.Data).ToList<dynamic>();
+    [HttpGet("sub-group")]
+    public IActionResult GetSubGroup()
+    {
+        var data =
+            _transactionHistory.GetSubGroup();
 
-            return Ok(new MobileApiResponse
-            {
-                Count = data.Total,
-                Data = result
-            });
-        }
+        return Ok(data);
+    }
 
-        [HttpGet("detail-subgroup-summary")]
-        public IActionResult GetDataDetailByGroupSummary(string filters, string sorts, int skip, int take, DateTime date, int groupId, int subGroupId)
+    [HttpGet("by-subgroup")]
+    public IActionResult GetDataByGroup(string filters, string sorts, int skip, int take, int groupId, string subGroup)
+    {
+        var data =
+            _transactionHistory.GetDataBySubGroup(skip, take,
+                JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"), 
+                groupId, subGroup);
+
+        var result = ((List<TransactionHistoryBySubGroup>)data.Data).ToList<dynamic>();
+
+        return Ok(new MobileApiResponse
         {
-            var data =
-                _transactionHistory.GetDataDetailBySubGroupSummary(skip, take,
-                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
-                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"), date,
-                    groupId, subGroupId);
+            Count = data.Total,
+            Data = result
+        });
+    }
 
-            var result = ((List<TransactionHistoryDetailBySubGroupSummary>)data.Data).ToList<dynamic>();
+    [HttpGet("item-subgroup")]
+    public IActionResult GetItemByGroup(string filters, string sorts, int skip, int take, DateTime date,int groupId, string subGroup)
+    {
+        var data =
+            _transactionHistory.GetItemBySubGroup(skip, take,
+                JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
+                date,groupId, subGroup);
 
-            return Ok(new MobileApiResponse
-            {
-                Count = data.Total,
-                Data = result
-            });
-        }
+        var result = ((List<TransactionHistoryItemBySubGroup>)data.Data).ToList<dynamic>();
 
-        [HttpGet("item-subgroup-summary")]
-        public IActionResult GetDataItemByGroupSummary(string filters, string sorts, int skip, int take, DateTime date, string detailSubGroup)
+        return Ok(new MobileApiResponse
         {
-            var data =
-                _transactionHistory.GetDataItemBySubGroupSummary(skip, take,
-                    JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
-                    JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"), date,
-                    detailSubGroup);
+            Count = data.Total,
+            Data = result
+        });
+    }
 
-            var result = ((List<TransactionHistoryItemBySubGroupSummary>)data.Data).ToList<dynamic>();
+    [HttpGet("by-subgroup-summary")]
+    public IActionResult GetDataByGroupSummary(string filters, string sorts, int skip, int take, DateTime date, int? groupId, int? subGroupId)
+    {
+        var data =
+            _transactionHistory.GetDataBySubGroupSummary(skip, take,
+                JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"), date, 
+                groupId, subGroupId);
 
-            return Ok(new MobileApiResponse
-            {
-                Count = data.Total,
-                Data = result
-            });
-        }
+        var result = ((List<TransactionHistoryBySubGroupSummary>)data.Data).ToList<dynamic>();
 
-        [HttpGet("master-item-group")]
-        public IActionResult GetDataItemGroup()
+        return Ok(new MobileApiResponse
         {
-            var temp =
-               _transactionHistory.GetItemGroup();
-            var result = temp.Select(x => new
-            {
-                x.Id,
-                x.Initial,
-                x.Name,
-            }).ToList<dynamic>();
-            return Ok(result);
-        }
+            Count = data.Total,
+            Data = result
+        });
+    }
 
-        [HttpGet("master-item-sub-group")]
-        public IActionResult GetDataItemSubGroup(int groupId)
+    [HttpGet("detail-subgroup-summary")]
+    public IActionResult GetDataDetailByGroupSummary(string filters, string sorts, int skip, int take, DateTime date, int groupId, int subGroupId)
+    {
+        var data =
+            _transactionHistory.GetDataDetailBySubGroupSummary(skip, take,
+                JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"), date,
+                groupId, subGroupId);
+
+        var result = ((List<TransactionHistoryDetailBySubGroupSummary>)data.Data).ToList<dynamic>();
+
+        return Ok(new MobileApiResponse
         {
-            var temp =
-               _transactionHistory.GetItemSubGroup(groupId);
+            Count = data.Total,
+            Data = result
+        });
+    }
 
-            var result = temp.Select(x => new
-            {
-                x.Id,
-                x.Name,
-            }).ToList<dynamic>();
-            return Ok(result);
-        }
+    [HttpGet("item-subgroup-summary")]
+    public IActionResult GetDataItemByGroupSummary(string filters, string sorts, int skip, int take, DateTime date, string detailSubGroup)
+    {
+        var data =
+            _transactionHistory.GetDataItemBySubGroupSummary(skip, take,
+                JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"), date,
+                detailSubGroup);
+
+        var result = ((List<TransactionHistoryItemBySubGroupSummary>)data.Data).ToList<dynamic>();
+
+        return Ok(new MobileApiResponse
+        {
+            Count = data.Total,
+            Data = result
+        });
+    }
+
+    [HttpGet("master-item-group")]
+    public IActionResult GetDataItemGroup()
+    {
+        var temp =
+            _transactionHistory.GetItemGroup();
+        var result = temp.Select(x => new
+        {
+            x.Id,
+            x.Initial,
+            x.Name,
+        }).ToList<dynamic>();
+        return Ok(result);
+    }
+
+    [HttpGet("master-item-sub-group")]
+    public IActionResult GetDataItemSubGroup(int groupId)
+    {
+        var temp =
+            _transactionHistory.GetItemSubGroup(groupId);
+
+        var result = temp.Select(x => new
+        {
+            x.Id,
+            x.Name,
+        }).ToList<dynamic>();
+        return Ok(result);
     }
 }

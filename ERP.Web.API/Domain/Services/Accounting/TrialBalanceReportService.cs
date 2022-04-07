@@ -4,39 +4,39 @@ using ERP.Entity.SQLQuery;
 using ERP.Web.API.Domain.Interfaces.Accounting;
 using Microsoft.EntityFrameworkCore;
 
-namespace ERP.Web.API.Domain.Services.Accounting
+namespace ERP.Web.API.Domain.Services.Accounting;
+
+public class TrialBalanceReportService : ITrialBalanceReportService
 {
-    public class TrialBalanceReportService : ITrialBalanceReportService
+    private readonly TenantContext _db;
+
+    public TrialBalanceReportService(TenantContext db)
     {
-        private readonly TenantContext _db;
+        _db = db;
+    }
+    public IEnumerable<TrialBalanceResult> GetTrialBalanceLists(string rptBy, string dateFrom, string dateTo, string currCode)
+    {
+        string parRptBy = "", parCurrCode = null;
+        string whEndYear = "";
 
-        public TrialBalanceReportService(TenantContext db)
+        if (!string.IsNullOrEmpty(rptBy))
+            parRptBy = (rptBy == "1" ? null : rptBy);
+
+        if (!string.IsNullOrEmpty(currCode))
         {
-            _db = db;
+            parCurrCode = (currCode == "-1" ? null : currCode);
+            currCode = currCode.Replace("'", "''");
         }
-        public IEnumerable<TrialBalanceResult> GetTrialBalanceLists(string rptBy, string dateFrom, string dateTo, string currCode)
-        {
-			string parRptBy = "", parCurrCode = null;
-			string whEndYear = "";
 
-			if (!string.IsNullOrEmpty(rptBy))
-				parRptBy = (rptBy == "1" ? null : rptBy);
+        if (!string.IsNullOrEmpty(dateTo))
+            whEndYear = $"WHERE Code <> 'ENDYEAR-' + CAST(YEAR('{dateTo.Replace("'", "''")}') AS VARCHAR)";
 
-			if (!string.IsNullOrEmpty(currCode))
-			{
-				parCurrCode = (currCode == "-1" ? null : currCode);
-				currCode = currCode.Replace("'", "''");
-			}
+        if (!string.IsNullOrEmpty(dateFrom))
+            dateFrom = dateFrom.Replace("'", "''");
 
-			if (!string.IsNullOrEmpty(dateTo))
-				whEndYear = $"WHERE Code <> 'ENDYEAR-' + CAST(YEAR('{dateTo.Replace("'", "''")}') AS VARCHAR)";
+        string cteSource = "cte_jur_src_final";
 
-			if (!string.IsNullOrEmpty(dateFrom))
-				dateFrom = dateFrom.Replace("'", "''");
-
-			string cteSource = "cte_jur_src_final";
-
-			string sql = $@"
+        string sql = $@"
                 {SourceJournalQuery.BuildQuery(dateTo: dateTo, currCode: parCurrCode, rptType: parRptBy)}
 	            ,cte_src_1 AS (
 		            SELECT CoaCode,coaName,
@@ -101,7 +101,6 @@ namespace ERP.Web.API.Domain.Services.Accounting
 	            ) A
 	            ORDER BY sort,CoaCode,CurrCode";
 
-			return _db.TrialBalanceResults.FromSqlRaw(sql).ToList();
-		}
+        return _db.TrialBalanceResults.FromSqlRaw(sql).ToList();
     }
 }

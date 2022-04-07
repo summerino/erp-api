@@ -1,9 +1,8 @@
 ﻿using ERP.Entity.Purchase;
 
-namespace ERP.Web.API.Model.Purchase
+namespace ERP.Web.API.Model.Purchase;
+
+public class DebitMemoRequest : DebitMemo
 {
-    public class DebitMemoRequest : DebitMemo
-    {
-        public DateTime? OriginalDate { get; set; }
-    }
+    public DateTime? OriginalDate { get; set; }
 }

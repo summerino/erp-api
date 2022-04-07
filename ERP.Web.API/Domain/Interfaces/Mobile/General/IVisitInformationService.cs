@@ -1,9 +1,8 @@
 ﻿using ERP.Web.API.Domain.Models.Mobile.General;
 
-namespace ERP.Web.API.Domain.Interfaces.Mobile.General
+namespace ERP.Web.API.Domain.Interfaces.Mobile.General;
+
+public interface IVisitInformationService
 {
-    public interface IVisitInformationService
-    {
-        VisitInformationModel GetVisitInformation(int year, int month, int userId);
-    }
+    VisitInformationModel GetVisitInformation(int year, int month, int userId);
 }
