@@ -3534,6 +3534,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("decimal(9,6)");
 
                     b.Property<string>("Phone")
+                        .IsRequired()
                         .HasMaxLength(30)
                         .IsUnicode(false)
                         .HasColumnType("varchar(30)");
@@ -4913,7 +4914,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
 
-                    b.ToView("VwAttendanceReport", "HumanResource");
+                    b.ToView("vwAttendanceReport", "HumanResource");
                 });
 
             modelBuilder.Entity("ERP.Entity.Inventory.AdjustmentDetail", b =>

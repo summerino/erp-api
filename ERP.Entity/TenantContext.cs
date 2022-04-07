@@ -827,7 +827,7 @@ public class TenantContext : DbContext
         // Human Resources
         modelBuilder.Entity<VwAttendanceReport>()
             .HasNoKey()
-            .ToView("VwAttendanceReport", Schema.HumanResource);
+            .ToView("vwAttendanceReport", Schema.HumanResource);
 
         // Payment Term model
         modelBuilder.Entity<VwPaymentTerm>()

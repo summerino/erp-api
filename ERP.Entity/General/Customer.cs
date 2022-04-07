@@ -226,6 +226,7 @@ public class CustomerAddress
     [StringLength(50)]
     public string ContactPerson { get; set; }
 
+    [Required]
     [StringLength(30)]
     public string Phone { get; set; }
 
