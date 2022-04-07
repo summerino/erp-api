@@ -216,21 +216,6 @@ public class DeliveryPlanService : GeneralService<DeliveryPlanHeader>, IDelivery
                             dlvHeader.Dpp -= (sdDetail.Dpp * uItem.Qty);
                             Db.SalesDeliveryHeaders.Update(dlvHeader);
 
-                            Db.Database.ExecuteSqlRaw(
-                                "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
-                                dlvHeader.Code, dlvHeader.Date, dlvHeader.TransCode);
-
-                            if (dlvHeader.SrcTrans == 1)
-                            {
-                                // Execute sp_update_so_dlv_qty
-                                Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", dlvHeader.TransCode);
-                            }
-                            else
-                            {
-                                // Execute sp_update_sr_dlv_qty
-                                Db.Database.ExecuteSqlRaw("EXEC sp_update_sr_dlv_qty {0}", dlvHeader.TransCode);
-                            }
-
                             if (dlvHeader.Mark == "INV")
                             {
                                 var siDetailData = Db.SalesInvoiceDetails.FirstOrDefault(x => x.DoCode == dlvHeader.Code);
@@ -262,6 +247,21 @@ public class DeliveryPlanService : GeneralService<DeliveryPlanHeader>, IDelivery
                             Db.SalesDeliveryDetailFreeGoods.Update(sdDetail);
                         }
                     }
+                }
+
+                Db.Database.ExecuteSqlRaw(
+                                "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
+                                dlvHeader.Code, dlvHeader.Date, dlvHeader.TransCode);
+
+                if (dlvHeader.SrcTrans == 1)
+                {
+                    // Execute sp_update_so_dlv_qty
+                    Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", dlvHeader.TransCode);
+                }
+                else
+                {
+                    // Execute sp_update_sr_dlv_qty
+                    Db.Database.ExecuteSqlRaw("EXEC sp_update_sr_dlv_qty {0}", dlvHeader.TransCode);
                 }
             }
 
@@ -451,21 +451,6 @@ public class DeliveryPlanService : GeneralService<DeliveryPlanHeader>, IDelivery
                                 sdHeader.Dpp -= (sdDetail.Dpp * uItem.Qty);
                                 Db.SalesDeliveryHeaders.Update(sdHeader);
 
-                                Db.Database.ExecuteSqlRaw(
-                                    "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
-                                    sdHeader.Code, sdHeader.Date, sdHeader.TransCode);
-
-                                if (sdHeader.SrcTrans == 1)
-                                {
-                                    // Execute sp_update_so_dlv_qty
-                                    Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", sdHeader.TransCode);
-                                }
-                                else
-                                {
-                                    // Execute sp_update_sr_dlv_qty
-                                    Db.Database.ExecuteSqlRaw("EXEC sp_update_sr_dlv_qty {0}", sdHeader.TransCode);
-                                }
-
                                 if (sdHeader.Mark == "INV")
                                 {
                                     var siDetailData = Db.SalesInvoiceDetails.FirstOrDefault(x => x.DoCode == sdHeader.Code);
@@ -497,6 +482,22 @@ public class DeliveryPlanService : GeneralService<DeliveryPlanHeader>, IDelivery
                                 Db.SalesDeliveryDetailFreeGoods.Update(sdDetail);
                             }
                         }
+                    }
+
+                    var sdHead = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.Code == item.TransCode);
+                    Db.Database.ExecuteSqlRaw(
+                        "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
+                        sdHead.Code, sdHead.Date, sdHead.TransCode);
+
+                    if (sdHead.SrcTrans == 1)
+                    {
+                        // Execute sp_update_so_dlv_qty
+                        Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", sdHead.TransCode);
+                    }
+                    else
+                    {
+                        // Execute sp_update_sr_dlv_qty
+                        Db.Database.ExecuteSqlRaw("EXEC sp_update_sr_dlv_qty {0}", sdHead.TransCode);
                     }
                 }
                 else
@@ -532,6 +533,7 @@ public class DeliveryPlanService : GeneralService<DeliveryPlanHeader>, IDelivery
                                 Db.SalesDeliveryDetailFreeGoods.Update(sdDetail);
                                 Db.DeliveryPlanDetailItems.Remove(dpdItem);
                             }
+                            Db.SaveChanges();
                         }
                     }
 
@@ -590,21 +592,6 @@ public class DeliveryPlanService : GeneralService<DeliveryPlanHeader>, IDelivery
                                     Db.SalesDeliveryHeaders.Update(sdHeader);
 
                                     Db.SaveChanges();
-
-                                    Db.Database.ExecuteSqlRaw(
-                                        "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
-                                        sdHeader.Code, sdHeader.Date, sdHeader.TransCode);
-
-                                    if (sdHeader.SrcTrans == 1)
-                                    {
-                                        // Execute sp_update_so_dlv_qty
-                                        Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", sdHeader.TransCode);
-                                    }
-                                    else
-                                    {
-                                        // Execute sp_update_sr_dlv_qty
-                                        Db.Database.ExecuteSqlRaw("EXEC sp_update_sr_dlv_qty {0}", sdHeader.TransCode);
-                                    }
 
                                     if (sdHeader.Mark == "INV")
                                     {
@@ -704,21 +691,6 @@ public class DeliveryPlanService : GeneralService<DeliveryPlanHeader>, IDelivery
 
                                     Db.SaveChanges();
 
-                                    Db.Database.ExecuteSqlRaw(
-                                        "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
-                                        sdHeader.Code, sdHeader.Date, sdHeader.TransCode);
-
-                                    if (sdHeader.SrcTrans == 1)
-                                    {
-                                        // Execute sp_update_so_dlv_qty
-                                        Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", sdHeader.TransCode);
-                                    }
-                                    else
-                                    {
-                                        // Execute sp_update_sr_dlv_qty
-                                        Db.Database.ExecuteSqlRaw("EXEC sp_update_sr_dlv_qty {0}", sdHeader.TransCode);
-                                    }
-
                                     if (sdHeader.Mark == "INV")
                                     {
                                         var siDetailData = Db.SalesInvoiceDetails.FirstOrDefault(x => x.DoCode == sdHeader.Code);
@@ -764,6 +736,22 @@ public class DeliveryPlanService : GeneralService<DeliveryPlanHeader>, IDelivery
                                 }
                             }
                         }
+                    }
+
+                    var sdHead = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.Code == item.TransCode);
+                    Db.Database.ExecuteSqlRaw(
+                        "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
+                        sdHead.Code, sdHead.Date, sdHead.TransCode);
+
+                    if (sdHead.SrcTrans == 1)
+                    {
+                        // Execute sp_update_so_dlv_qty
+                        Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", sdHead.TransCode);
+                    }
+                    else
+                    {
+                        // Execute sp_update_sr_dlv_qty
+                        Db.Database.ExecuteSqlRaw("EXEC sp_update_sr_dlv_qty {0}", sdHead.TransCode);
                     }
                 }
             }
