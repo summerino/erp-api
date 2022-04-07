@@ -567,19 +567,6 @@ public class DeliveryPlanService : GeneralService<DeliveryPlanHeader>, IDelivery
                                     }
                                     else
                                     {
-                                        Db.DeliveryPlanDetailItems.Add(new DeliveryPlanDetailItem
-                                        {
-                                            Code = data.Code,
-                                            DlvPlanDetailId = item.Id,
-                                            LineNo = j,
-                                            TransDetailId = sdDetail.Id,
-                                            ItemId = sdDetail.ItemId,
-                                            UomId = sdDetail.UomId,
-                                            UnitId = sdDetail.UnitId,
-                                            Qty = sdDetail.Qty,
-                                            Type = uItem.Type
-                                        });
-
                                         sdDetail.Qty -= uItem.Qty;
                                         sdDetail.Total -= (sdDetail.NettPrice * uItem.Qty);
                                     }
@@ -628,19 +615,6 @@ public class DeliveryPlanService : GeneralService<DeliveryPlanHeader>, IDelivery
                                     }
                                     else
                                     {
-                                        Db.DeliveryPlanDetailItems.Add(new DeliveryPlanDetailItem
-                                        {
-                                            Code = data.Code,
-                                            DlvPlanDetailId = item.Id,
-                                            LineNo = j,
-                                            TransDetailId = sdDetail.Id,
-                                            ItemId = sdDetail.ItemId,
-                                            UomId = sdDetail.UomId,
-                                            UnitId = sdDetail.UnitId,
-                                            Qty = sdDetail.Qty,
-                                            Type = uItem.Type
-                                        });
-
                                         sdDetail.Qty -= uItem.Qty;
                                     }
                                     Db.SalesDeliveryDetailFreeGoods.Update(sdDetail);
@@ -666,18 +640,6 @@ public class DeliveryPlanService : GeneralService<DeliveryPlanHeader>, IDelivery
                                     var sdDetail = uItem?.DetailId == null ? Db.SalesDeliveryDetails.FirstOrDefault(x => x.Code == item.TransCode && x.ItemId == uItem.ItemId && x.UnitId == uItem.UnitId)
                                         : Db.SalesDeliveryDetails.FirstOrDefault(x => x.Id == uItem.DetailId);
                                     var sdHeader = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.Code == sdDetail.Code);
-                                    Db.DeliveryPlanDetailItems.Add(new DeliveryPlanDetailItem
-                                    {
-                                        Code = data.Code,
-                                        DlvPlanDetailId = item.Id,
-                                        LineNo = j,
-                                        TransDetailId = sdDetail.Id,
-                                        ItemId = sdDetail.ItemId,
-                                        UomId = sdDetail.UomId,
-                                        UnitId = sdDetail.UnitId,
-                                        Qty = sdDetail.Qty,
-                                        Type = uItem.Type
-                                    });
 
                                     sdDetail.Qty -= uItem.Qty;
                                     sdDetail.Total -= (sdDetail.NettPrice * uItem.Qty);
@@ -718,18 +680,6 @@ public class DeliveryPlanService : GeneralService<DeliveryPlanHeader>, IDelivery
                                 {
                                     var sdDetail = uItem?.DetailId == null ? Db.SalesDeliveryDetailFreeGoods.FirstOrDefault(x => x.Code == item.TransCode && x.ItemId == uItem.ItemId && x.UnitId == uItem.UnitId)
                                         : Db.SalesDeliveryDetailFreeGoods.FirstOrDefault(x => x.Id == uItem.DetailId);
-                                    Db.DeliveryPlanDetailItems.Add(new DeliveryPlanDetailItem
-                                    {
-                                        Code = data.Code,
-                                        DlvPlanDetailId = item.Id,
-                                        LineNo = j,
-                                        TransDetailId = sdDetail.Id,
-                                        ItemId = sdDetail.ItemId,
-                                        UomId = sdDetail.UomId,
-                                        UnitId = sdDetail.UnitId,
-                                        Qty = sdDetail.Qty,
-                                        Type = uItem.Type
-                                    });
 
                                     sdDetail.Qty -= uItem.Qty;
                                     Db.SalesDeliveryDetailFreeGoods.Update(sdDetail);
