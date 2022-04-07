@@ -4,6 +4,7 @@ using ERP.Entity;
 using ERP.Entity.Accounting;
 using ERP.Entity.Finance;
 using ERP.Entity.General;
+using ERP.Entity.MobileSales;
 using ERP.Entity.SystemManagement;
 
 namespace ERP.Web.API.Domain.Services;
@@ -72,6 +73,9 @@ public class ShardingService : IShardingService
         await tenantCtx.SeedEntityAsync<SupplierType>(jsonFilePath, true);
         await tenantCtx.SeedEntityAsync<Currency>(jsonFilePath, addIfNoExists: true, overwrite: true);
         await tenantCtx.SeedEntityAsync<Tax>(jsonFilePath, true);
+
+        // Mobile Sales entities
+        await tenantCtx.SeedEntityAsync<MobileReason>(jsonFilePath, true);
     }
 
     //public async Task SeedEntityAsync<TEntity>(TenantContext tenantCtx, bool firstInitialize = false,
