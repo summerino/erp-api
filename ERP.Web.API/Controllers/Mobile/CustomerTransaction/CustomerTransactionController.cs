@@ -26,7 +26,6 @@ public class CustomerTransactionController : ControllerBase
     [HttpGet]
     public IActionResult GetData(string filters, string sorts, int skip, int take, DateTime? date)
     {
-           
         var data =
             _customerTransaction.GetData(
                 skip, take,
@@ -43,7 +42,8 @@ public class CustomerTransactionController : ControllerBase
             x.SubTotal,
             x.TaxAmount,
             x.Total,
-            Status = x.Remaining == 0 ? "Lunas" : "Belum"
+            //Status = x.Remaining == 0 ? "Lunas" : "Belum"
+            Status = x.PaidAmount == x.Total ? "Lunas" : x.PaidAmount > 0 ? "Sebagian" : "Belum"
         }).ToList<dynamic>();
 
         return Ok(new MobileApiResponse

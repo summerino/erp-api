@@ -56,6 +56,7 @@ public class CustomerTransactionService : ICustomerTransactionService
                 so.FinalDisc,
                 so.SubTotal,
                 so.TaxAmount,
+                si.PaidAmount,
                 si.Total,
                 si.Remaining
             }).AsQueryable();
