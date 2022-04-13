@@ -931,8 +931,7 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
     {
         var empId = Db.Users.Where(x => x.Id.Equals(userId)).Select(y => y.EmployeeId).Single();
         var wh = Db.Employees.Where(x => x.Id.Equals(empId)).Select(y => y.WarehouseCode).Single();
-        var mobileReceive = (from mobilePO in Db.MobileReceiveItemHeaders
-            select mobilePO).ToList();
+        var mobileReceive = (from mobilePO in Db.MobileReceiveItemHeaders select mobilePO).ToList();
 
         var dataOrder = (from order in Db.PurchaseOrderHeaders
             join sup in Db.Suppliers on order.SupCode equals sup.Code
@@ -952,8 +951,9 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
                 srcTrans = 1
             }).AsQueryable();
 
-        dataOrder = dataOrder.Where(x => !mobileReceive.Select(t => t.TransCode).Contains(x.Code));
-        dataOrder = dataOrder.Where(x => x.Mark != "CMP" && x.Mark != "CLS" && x.Mark != "V");
+        //dataOrder = dataOrder.Where(x => !mobileReceive.Select(t => t.TransCode).Contains(x.Code));
+        //dataOrder = dataOrder.Where(x => x.Mark != "CMP" && x.Mark != "CLS" && x.Mark != "V");
+        dataOrder = dataOrder.Where(x => x.Mark == "A" || x.Mark == "PR");
 
         var dataRetur = (from retur in Db.PurchaseReturnHeaders
             join returDetail in Db.PurchaseReturnDetails on retur.Code equals returDetail.Code
@@ -974,8 +974,9 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
                 srcTrans = 2
             }).AsQueryable();
 
-        dataRetur = dataRetur.Where(x => !mobileReceive.Select(t => t.TransCode).Contains(x.Code));
-        dataRetur = dataRetur.Where(x => x.Mark != "CMP" && x.Mark != "V");
+        //dataRetur = dataRetur.Where(x => !mobileReceive.Select(t => t.TransCode).Contains(x.Code));
+        //dataRetur = dataRetur.Where(x => x.Mark != "CMP" && x.Mark != "V");
+        dataRetur = dataRetur.Where(x => x.Mark == "A" || x.Mark == "PR");
 
         var data = dataOrder.Union(dataRetur);
 
@@ -1010,8 +1011,8 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
                     ItemInitial = item.Initial,
                     ItemName = order_d.ItemName,
                     UnitName = order_d.UnitName,
-                    OrderQty = order_d.Qty,
-                    ReceiveQty = order_d.QtyRcv,
+                    OrderQty = order_d.Qty - (decimal) order_d.QtyRcv,
+                    ReceiveQty = 0, // order_d.QtyRcv,
                     TransDetailId = order_d.Id,
                     Type = order_d.Type,
                     UnitId = order_d.UnitId,
@@ -1035,8 +1036,8 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
                     ItemInitial = item.Initial,
                     ItemName = retur_d.ItemName,
                     UnitName = retur_d.UnitName,
-                    OrderQty = retur_d.Qty,
-                    ReceiveQty = retur_d.QtyRcv,
+                    OrderQty = retur_d.Qty - retur_d.QtyRcv,
+                    ReceiveQty = 0, // retur_d.QtyRcv,
                     TransDetailId = retur_d.Id,
                     Type = 0,
                     UnitId = retur_d.UnitId,
