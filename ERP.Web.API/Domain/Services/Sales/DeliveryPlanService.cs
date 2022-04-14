@@ -523,7 +523,6 @@ public class DeliveryPlanService : GeneralService<DeliveryPlanHeader>, IDelivery
                                 sdDetail.Qty = dpdItem.Qty;
                                 sdDetail.Total = (sdDetail.NettPrice * dpdItem.Qty);
                                 Db.SalesDeliveryDetails.Update(sdDetail);
-                                Db.DeliveryPlanDetailItems.Remove(dpdItem);
                             }
                             else
                             {
@@ -531,7 +530,6 @@ public class DeliveryPlanService : GeneralService<DeliveryPlanHeader>, IDelivery
                                 var sdDetail = Db.SalesDeliveryDetailFreeGoods.FirstOrDefault(x => x.Code == item.TransCode && x.ItemId == deletedItem.ItemId && x.UnitId == deletedItem.UnitId);
                                 sdDetail.Qty = dpdItem.Qty;
                                 Db.SalesDeliveryDetailFreeGoods.Update(sdDetail);
-                                Db.DeliveryPlanDetailItems.Remove(dpdItem);
                             }
                             Db.SaveChanges();
                         }
