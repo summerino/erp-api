@@ -38,50 +38,80 @@ public class MobileReceiveItemService : GeneralService<MobileReceiveItemHeader>,
                 PurchaseOrderHeader poHeadData = new();
                 List<PurchaseOrderDetail> poDetailData = new();
 
+                // Get new code
+                var newCode = GetNewCode("RCV_NUM_FMT", itemData.Date);
+                var rcvHeadData = new PurchaseReceiveHeader();
 
                 if (itemData.SrcTrans == 2)
                 {
                     rtnHeadData = Db.PurchaseReturnHeaders.FirstOrDefault(x => x.Code == itemData.TransCode);
                     rtnDetailData = Db.PurchaseReturnDetails.Where(x => x.Code == itemData.TransCode).ToList();
+
+                    rcvHeadData = new PurchaseReceiveHeader
+                    {
+                        Code = newCode,
+                        Date = itemData.Date,
+                        TransCode = itemData.TransCode,
+                        RefNo = itemData.Code,
+                        SrcTrans = itemData.SrcTrans,
+                        SupCode = itemData.SupCode,
+                        ReceiveBy = itemData.ReceiveBy,
+                        CurrCode = "IDR",
+                        Rate = 1,
+                        ShipmentFee = rtnHeadData.ShipmentFee,
+                        HandlingFee = rtnHeadData.HandlingFee,
+                        SubTotal = rtnHeadData.SubTotal,
+                        FinalDiscPercent = 0m,
+                        FinalDisc = rtnHeadData.FinalDisc,
+                        IncludeTax = rtnHeadData.IncludeTax,
+                        TaxAmount = rtnHeadData.TaxAmount,
+                        Total = rtnHeadData.Total,
+                        Dpp = rtnHeadData.Dpp,
+                        PaidAmount = 0m,
+                        Mark = "A",
+                        CreatedBy = userId,
+                        CreatedDate = DateTime.Now,
+                        UpdatedBy = userId,
+                        UpdatedDate = DateTime.Now,
+                        ApprovedBy = userId,
+                        ApprovedDate = DateTime.Now,
+                    };
                 }
                 else
                 {
                     poHeadData = Db.PurchaseOrderHeaders.FirstOrDefault(x => x.Code == itemData.TransCode);
                     poDetailData = Db.PurchaseOrderDetails.Where(x => x.Code == itemData.TransCode).ToList();
+
+                    rcvHeadData = new PurchaseReceiveHeader
+                    {
+                        Code = newCode,
+                        Date = itemData.Date,
+                        TransCode = itemData.TransCode,
+                        RefNo = itemData.Code,
+                        SrcTrans = itemData.SrcTrans,
+                        SupCode = itemData.SupCode,
+                        ReceiveBy = itemData.ReceiveBy,
+                        CurrCode = "IDR",
+                        Rate = 1,
+                        ShipmentFee = poHeadData.ShipmentFee,
+                        HandlingFee = poHeadData.HandlingFee,
+                        SubTotal = poHeadData.SubTotal,
+                        FinalDiscPercent = poHeadData.FinalDiscPercent,
+                        FinalDisc = poHeadData.FinalDisc,
+                        IncludeTax = poHeadData.IncludeTax,
+                        TaxAmount = poHeadData.TaxAmount,
+                        Total = poHeadData.Total,
+                        Dpp = poHeadData.Dpp,
+                        PaidAmount = 0m,
+                        Mark = "A",
+                        CreatedBy = userId,
+                        CreatedDate = DateTime.Now,
+                        UpdatedBy = userId,
+                        UpdatedDate = DateTime.Now,
+                        ApprovedBy = userId,
+                        ApprovedDate = DateTime.Now,
+                    };
                 }
-
-                // Get new code
-                var newCode = GetNewCode("RCV_NUM_FMT", itemData.Date);
-
-                var rcvHeadData = new PurchaseReceiveHeader
-                {
-                    Code = newCode,
-                    Date = itemData.Date,
-                    TransCode =  itemData.TransCode,
-                    RefNo = itemData.Code,
-                    SrcTrans = itemData.SrcTrans,
-                    SupCode = itemData.SupCode,
-                    ReceiveBy = itemData.ReceiveBy,
-                    CurrCode = "IDR",
-                    Rate = 1,
-                    ShipmentFee = 0m,
-                    HandlingFee = 0m,
-                    SubTotal = 0m,
-                    FinalDiscPercent = 0m,
-                    FinalDisc = 0m,
-                    IncludeTax = false,
-                    TaxAmount = 0m,
-                    Total = 0m,
-                    Dpp = 0m,
-                    PaidAmount = 0m,
-                    Mark = "A",
-                    CreatedBy = userId,
-                    CreatedDate = DateTime.Now,
-                    UpdatedBy = userId,
-                    UpdatedDate = DateTime.Now,
-                    ApprovedBy = userId,
-                    ApprovedDate = DateTime.Now,
-                };
 
                 Db.PurchaseReceiveHeaders.Add(rcvHeadData);
 
@@ -216,9 +246,9 @@ public class MobileReceiveItemService : GeneralService<MobileReceiveItemHeader>,
                 rcvHeadData.FinalDiscPercent = 0m;
                 rcvHeadData.FinalDisc = 0m;
                 rcvHeadData.IncludeTax = false;
-                rcvHeadData.TaxAmount = rcvDetail.Sum(x => x.Qty * x.TaxAmount);
-                rcvHeadData.Total = rcvDetail.Sum(x => x.Total);
-                rcvHeadData.Dpp = rcvDetail.Sum(x => x.Qty * x.Dpp);
+                rcvHeadData.TaxAmount = rcvDetail.Where(x => x.Type == 0).Sum(x => x.Qty * x.TaxAmount);
+                rcvHeadData.Total = rcvDetail.Where(x => x.Type == 0).Sum(x => x.Total);
+                rcvHeadData.Dpp = rcvDetail.Where(x => x.Type == 0).Sum(x => x.Qty * x.Dpp);
 
                 Db.PurchaseReceiveHeaders.Update(rcvHeadData);
 
