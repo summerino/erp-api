@@ -190,12 +190,20 @@ public class MobileDeliveryItemService : GeneralService<MobileDeliveryItemHeader
                         {
                             var dplDetailData = dplDetailList.FirstOrDefault(x => x.Code == itemData.DlvPlanCode && x.TransCode == itemDoData.Code);
                             var dplUndelivData = dplUndelivList.FirstOrDefault(x => x.ItemId == itemDetail.ItemId && x.DlvPlanDetailId == dplDetailData.Id);
+                            var dplDetailItemData = Db.DeliveryPlanDetailItems.FirstOrDefault(x => x.DlvPlanDetailId == dplDetailData.Id);
 
                             if (dplUndelivData != null)
                             {
-                                dplUndelivData.UomId = uomFailedtoSend;
-                                dplUndelivData.UnitId = unitFailedtoSend;
-                                dplUndelivData.Qty = qtyFailedtoSend;
+                                if (dplUndelivData.Qty + qtyFailedtoSend > dplDetailItemData.Qty)
+                                {
+                                    result.Message = @$"Data pengeluaran barang mobile gagal disetujui <br/>
+                                                        karena terdapat barang dengan qty gagal kirim <br/>
+                                                        melebihi qty diterima - {itemData.Code}.";
+                                    return result;
+                                }
+                                //dplUndelivData.UomId = uomFailedtoSend;
+                                //dplUndelivData.UnitId = unitFailedtoSend;
+                                dplUndelivData.Qty += qtyFailedtoSend;
                                 Db.DeliveryPlanUndeliveredItems.Update(dplUndelivData);
                             }
                             else
@@ -332,6 +340,50 @@ public class MobileDeliveryItemService : GeneralService<MobileDeliveryItemHeader
 
         result.Success = true;
         result.Message = "Data pengeluaran barang mobile berhasil disetujui.";
+        return result;
+    }
+
+    public SaveResult CheckUndelivData(List<MobileDeliveryItemHeader> data)
+    {
+        var result = new SaveResult(false);
+
+        try
+        {
+            foreach (var itemData in data)
+            {
+                var mdiDetailData = Db.MobileDeliveryItemDetails.Where(x => x.Code == itemData.Code).ToList();
+
+                var dplHeadData = Db.DeliveryPlanHeaders.FirstOrDefault(x => x.Code == itemData.DlvPlanCode);
+                var dplDetailList = Db.DeliveryPlanDetails.Where(x => x.Code == itemData.DlvPlanCode).ToList();
+                var dplUndelivList = Db.DeliveryPlanUndeliveredItems.Where(x => x.Code == itemData.DlvPlanCode).ToList();
+                foreach (var itemDetail in mdiDetailData)
+                {
+                    var undelivData = dplUndelivList.FirstOrDefault(x => x.ItemId == itemDetail.ItemId && x.UnitId == itemDetail.UnitId);
+                    if (undelivData != null)
+                    {
+                        var itemMaster = Db.Items.FirstOrDefault(x => x.Id == itemDetail.ItemId);
+                        var unitMaster = Db.UoMConversions.FirstOrDefault(x => x.Id == itemDetail.UnitId);
+
+                        result.Success = true;
+                        result.Data = new
+                        {
+                            Code = itemData.Code,
+                            ItemName = itemMaster.Name,
+                            UnitName = unitMaster.UnitEquivalent,
+                            Qty = undelivData.Qty
+                        };
+
+                        return result;
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            result.Message = ex.InnerException?.Message ?? ex.Message;
+            return result;
+        }
+
         return result;
     }
 

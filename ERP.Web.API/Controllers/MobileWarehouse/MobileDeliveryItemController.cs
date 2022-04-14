@@ -97,4 +97,12 @@ public class MobileDeliveryItemController : ControllerBase
 
         return Ok(result);
     }
+
+    [HttpPut("check-undeliv")]
+    public IActionResult CheckUndeliv(List<MobileDeliveryItemHeader> data)
+    {
+        var result = _md.CheckUndelivData(data);
+
+        return Ok(result);
+    }
 }
