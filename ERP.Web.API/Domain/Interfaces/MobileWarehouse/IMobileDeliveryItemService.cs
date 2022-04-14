@@ -17,4 +17,6 @@ public interface IMobileDeliveryItemService : IGeneralService<MobileDeliveryItem
     SaveResult Reject(List<MobileDeliveryItemHeader> data, int userId);
 
     SaveResult Update(MobileDeliveryItemRequest data);
+
+    SaveResult CheckUndelivData(List<MobileDeliveryItemHeader> data);
 }
