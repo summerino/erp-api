@@ -120,40 +120,95 @@ public class MobileReceiveItemService : GeneralService<MobileReceiveItemHeader>,
                 foreach (var itemDetail in rcvDetailData)
                 {
                     var itemMaster = Db.Items.FirstOrDefault(x => x.Id == itemDetail.ItemId);
+                    var unitMaster = Db.UoMConversions.FirstOrDefault(x => x.Id == itemDetail.UnitId);
                     if (itemDetail.Type == 0)
                     {
-                        var detailData = poDetailData.FirstOrDefault(x => x.ItemId == itemDetail.ItemId);
-                        var taxData = Db.Taxes.FirstOrDefault(x => x.Id == detailData.TaxId);
-                        var taxAmount = rcvHeadData.IncludeTax ? Math.Round((detailData.UnitPrice - detailData.Disc) - ((detailData.UnitPrice - detailData.Disc) / (1 + (taxData.Rate / 100))))
-                            : Math.Round((detailData.UnitPrice - detailData.Disc) * (taxData.Rate / 100));
-                        var nettPrice = rcvHeadData.IncludeTax ? detailData.UnitPrice - detailData.Disc : detailData.UnitPrice - detailData.Disc + taxAmount;
-                        var dpp = rcvHeadData.IncludeTax ? detailData.UnitPrice - detailData.Disc - taxAmount : detailData.UnitPrice - detailData.Disc;
-
-                        Db.PurchaseReceiveDetails.Add(new PurchaseReceiveDetail
+                        if (itemData.SrcTrans == 2)
                         {
-                            Code = newCode,
-                            LineNo = ++i,
-                            TransDetailId = itemDetail.TransDetailId,
-                            ItemId = itemDetail.ItemId,
-                            Qty = itemDetail.Qty,
-                            UomId = itemDetail.UomId,
-                            UnitId = itemDetail.UnitId,
-                            Length = itemMaster.Length,
-                            Width = itemMaster.Width,
-                            Height = itemMaster.Height,
-                            Weight = itemMaster.Weight,
-                            DimensionMeasurement = itemMaster.DimensionMeasurement,
-                            WeightMeasurement = itemMaster.WeightMeasurement,
-                            UnitPrice = detailData.UnitPrice,
-                            Disc = detailData.Disc,
-                            TaxId = detailData.TaxId,
-                            TaxAmount = taxAmount,
-                            NettPrice = nettPrice,
-                            Total = itemDetail.Qty * nettPrice,
-                            Dpp = dpp,
-                            WarehouseCode = itemDetail.WarehouseCode,
-                            Type = itemDetail.Type
-                        });
+                            var detailData = rtnDetailData.FirstOrDefault(x => x.ItemId == itemDetail.ItemId && x.UnitId == itemDetail.UnitId);
+                            var taxData = Db.Taxes.FirstOrDefault(x => x.Id == detailData.TaxId);
+                            var taxAmount = rcvHeadData.IncludeTax ? Math.Round((detailData.UnitPrice - detailData.Disc) - ((detailData.UnitPrice - detailData.Disc) / (1 + (taxData.Rate / 100))))
+                                : Math.Round((detailData.UnitPrice - detailData.Disc) * (taxData.Rate / 100));
+                            var nettPrice = rcvHeadData.IncludeTax ? detailData.UnitPrice - detailData.Disc : detailData.UnitPrice - detailData.Disc + taxAmount;
+                            var dpp = rcvHeadData.IncludeTax ? detailData.UnitPrice - detailData.Disc - taxAmount : detailData.UnitPrice - detailData.Disc;
+
+                            if(itemDetail.Qty > (detailData.Qty - detailData.QtyRcv)) //Check outstanding
+                            {
+                                result.Message = @$"Data {itemData.Code} tidak bisa disimpan karena jumlah qty <br/>
+                                                    barang {itemMaster.Name} - {unitMaster.UnitEquivalent} <br/>
+                                                    yg diterima lebih besar dari qty yang tersedia.";
+                                return result;
+                            }
+
+                            Db.PurchaseReceiveDetails.Add(new PurchaseReceiveDetail
+                            {
+                                Code = newCode,
+                                LineNo = ++i,
+                                TransDetailId = itemDetail.TransDetailId,
+                                ItemId = itemDetail.ItemId,
+                                Qty = itemDetail.Qty,
+                                UomId = itemDetail.UomId,
+                                UnitId = itemDetail.UnitId,
+                                Length = itemMaster.Length,
+                                Width = itemMaster.Width,
+                                Height = itemMaster.Height,
+                                Weight = itemMaster.Weight,
+                                DimensionMeasurement = itemMaster.DimensionMeasurement,
+                                WeightMeasurement = itemMaster.WeightMeasurement,
+                                UnitPrice = detailData.UnitPrice,
+                                Disc = detailData.Disc,
+                                TaxId = detailData.TaxId,
+                                TaxAmount = taxAmount,
+                                NettPrice = nettPrice,
+                                Total = itemDetail.Qty * nettPrice,
+                                Dpp = dpp,
+                                WarehouseCode = itemDetail.WarehouseCode,
+                                Type = itemDetail.Type
+                            });
+                        }
+                        else
+                        {
+                            var detailData = poDetailData.FirstOrDefault(x => x.ItemId == itemDetail.ItemId && x.UnitId == itemDetail.UnitId);
+                            var taxData = Db.Taxes.FirstOrDefault(x => x.Id == detailData.TaxId);
+                            var taxAmount = rcvHeadData.IncludeTax ? Math.Round((detailData.UnitPrice - detailData.Disc) - ((detailData.UnitPrice - detailData.Disc) / (1 + (taxData.Rate / 100))))
+                                : Math.Round((detailData.UnitPrice - detailData.Disc) * (taxData.Rate / 100));
+                            var nettPrice = rcvHeadData.IncludeTax ? detailData.UnitPrice - detailData.Disc : detailData.UnitPrice - detailData.Disc + taxAmount;
+                            var dpp = rcvHeadData.IncludeTax ? detailData.UnitPrice - detailData.Disc - taxAmount : detailData.UnitPrice - detailData.Disc;
+
+                            if (itemDetail.Qty > (detailData.Qty - detailData.QtyRcv)) //Check outstanding
+                            {
+                                result.Message = @$"Data {itemData.Code} tidak bisa disimpan karena jumlah qty <br/>
+                                                    barang {itemMaster.Name} - {unitMaster.UnitEquivalent} <br/>
+                                                    yg diterima lebih besar dari qty yang tersedia.";
+                                return result;
+                            }
+
+                            Db.PurchaseReceiveDetails.Add(new PurchaseReceiveDetail
+                            {
+                                Code = newCode,
+                                LineNo = ++i,
+                                TransDetailId = itemDetail.TransDetailId,
+                                ItemId = itemDetail.ItemId,
+                                Qty = itemDetail.Qty,
+                                UomId = itemDetail.UomId,
+                                UnitId = itemDetail.UnitId,
+                                Length = itemMaster.Length,
+                                Width = itemMaster.Width,
+                                Height = itemMaster.Height,
+                                Weight = itemMaster.Weight,
+                                DimensionMeasurement = itemMaster.DimensionMeasurement,
+                                WeightMeasurement = itemMaster.WeightMeasurement,
+                                UnitPrice = detailData.UnitPrice,
+                                Disc = detailData.Disc,
+                                TaxId = detailData.TaxId,
+                                TaxAmount = taxAmount,
+                                NettPrice = nettPrice,
+                                Total = itemDetail.Qty * nettPrice,
+                                Dpp = dpp,
+                                WarehouseCode = itemDetail.WarehouseCode,
+                                Type = itemDetail.Type
+                            });
+                        }
                     }
                     else
                     {
@@ -202,7 +257,7 @@ public class MobileReceiveItemService : GeneralService<MobileReceiveItemHeader>,
                         var availableAmount = dbtMemo.Amount - dbtMemo.Used;
                         if (rcvHeadData.Total > availableAmount)
                         {
-                            result.Message = "Tidak bisa disimpan karena jumlah total penerimaan pembeliam lebih besar dari jumlah total memo debit.";
+                            result.Message = $"Data {itemData.Code} tidak bisa disimpan karena jumlah total <br/> penerimaan pembeliam lebih besar dari jumlah total memo debit.";
                             return result;
                         }
                         availableAmount -= rcvHeadData.Total;
@@ -220,7 +275,7 @@ public class MobileReceiveItemService : GeneralService<MobileReceiveItemHeader>,
                             var availableQty = itemPr.Qty - itemPr.QtyRcv;
                             if (item.Qty > availableQty)
                             {
-                                result.Message = "Data penerimaan pembelian tidak bisa disimpan karena qty yg diterima lebih besar dari qty yang tersedia";
+                                result.Message = $"Data penerimaan pembelian {itemData.Code} tidak bisa disimpan <br/> karena qty yg diterima lebih besar dari qty yang tersedia";
                                 return result;
                             }
 
