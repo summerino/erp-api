@@ -40,6 +40,7 @@ public class MobileDeliveryItemService : GeneralService<MobileDeliveryItemHeader
                 var dplHeadData = Db.DeliveryPlanHeaders.FirstOrDefault(x => x.Code == itemData.DlvPlanCode);
                 var dplDetailList = Db.DeliveryPlanDetails.Where(x => x.Code == itemData.DlvPlanCode).ToList();
                 var dplUndelivList = Db.DeliveryPlanUndeliveredItems.Where(x => x.Code == itemData.DlvPlanCode).ToList();
+                var dplDetailItemList = Db.DeliveryPlanDetailItems.Where(x => x.Code == itemData.DlvPlanCode).ToList();
 
                 foreach (var itemDetail in mdiDetailData)
                 {
@@ -58,130 +59,41 @@ public class MobileDeliveryItemService : GeneralService<MobileDeliveryItemHeader
 
                         if (!isFailedtoSend)
                         {
-                            if (doDetailList.Select(y => y.ItemId).Contains(itemDetail.ItemId))
+                            if (dplDetailItemList.Where(x => x.Type == 0).Select(y => y.ItemId).Contains(itemDetail.ItemId))
                             {
-                                var doDetailData = doDetailList.First(x => x.ItemId == itemDetail.ItemId);
-                                if (doDetailData.UnitId != itemDetail.UnitId)
+                                var dplDetailItemData = dplDetailItemList.First(x => x.ItemId == itemDetail.ItemId && x.UnitId == itemDetail.UnitId && x.Type == 0);
+
+                                isFailedtoSend = qty < dplDetailItemData.Qty;
+                                if (isFailedtoSend)
                                 {
-                                    var doUom = uomList.First(x => doDetailData.UnitId == x.Id);
-                                    var mdiUom = uomList.First(x => itemDetail.UnitId == x.Id);
-                                    if (mdiUom.Seq > doUom.Seq)
-                                    {
-                                        var qtyField = Db.UoMConversions.Where(x => x.UomId == mdiUom.UomId && x.Seq >= doUom.Seq && x.Seq <= mdiUom.Seq).Select(x => x.Conversion).ToList();
-                                        var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
-                                        isFailedtoSend = (multipliedQty * qty) < doDetailData.Qty;
-                                        if (isFailedtoSend)
-                                        {
-                                            qtyFailedtoSend = doDetailData.Qty - (multipliedQty * qty);
-                                            uomFailedtoSend = doDetailData.UomId;
-                                            unitFailedtoSend = doDetailData.UnitId;
-                                            //qty = qtyFailedtoSend;
-                                        }
-                                        else
-                                        {
-                                            qty -= doDetailData.Qty * multipliedQty;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        var qtyField = Db.UoMConversions.Where(x => x.UomId == mdiUom.UomId && x.Seq >= doUom.Seq && x.Seq <= mdiUom.Seq).Select(x => x.Conversion).ToList();
-                                        var dividedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
-                                        isFailedtoSend = (qty / dividedQty) < doDetailData.Qty;
-                                        if (isFailedtoSend)
-                                        {
-                                            qtyFailedtoSend = doDetailData.Qty - (qty / dividedQty);
-                                            uomFailedtoSend = doDetailData.UomId;
-                                            unitFailedtoSend = doDetailData.UnitId;
-                                            //qty = qtyFailedtoSend;
-                                        }
-                                        else
-                                        {
-                                            qty -= doDetailData.Qty * dividedQty;
-                                        }
-                                    }
+                                    qtyFailedtoSend = dplDetailItemData.Qty - qty;
+                                    uomFailedtoSend = dplDetailItemData.UomId;
+                                    unitFailedtoSend = dplDetailItemData.UnitId;
                                 }
                                 else
                                 {
-                                    isFailedtoSend = qty < doDetailData.Qty;
-                                    if (isFailedtoSend)
-                                    {
-                                        qtyFailedtoSend = doDetailData.Qty - qty;
-                                        uomFailedtoSend = doDetailData.UomId;
-                                        unitFailedtoSend = doDetailData.UnitId;
-                                        //qty = qtyFailedtoSend;
-                                    }
-                                    else
-                                    {
-                                        qty -= doDetailData.Qty;
-                                    }
+                                    qty -= dplDetailItemData.Qty;
                                 }
                             }
                         }
 
-                        if (doFreeList != null)
+                        if (!isFailedtoSend)
                         {
-                            if (!isFailedtoSend)
+                            if (dplDetailItemList.Where(x => x.Type == 1).Select(y => y.ItemId).Contains(itemDetail.ItemId))
                             {
-                                if (doFreeList.Select(y => y.ItemId).Contains(itemDetail.ItemId))
+                                var dplDetailItemData = dplDetailItemList.First(x => x.ItemId == itemDetail.ItemId && x.UnitId == itemDetail.UnitId && x.Type == 1);
+
+                                isFailedtoSend = qty < dplDetailItemData.Qty;
+                                if (isFailedtoSend)
                                 {
-                                    var doFreeData = doFreeList.First(x => x.ItemId == itemDetail.ItemId);
-                                    if (doFreeData.UnitId != itemDetail.UnitId)
-                                    {
-                                        var doUom = uomList.First(x => doFreeData.UnitId == x.Id);
-                                        var mdiUom = uomList.First(x => itemDetail.UnitId == x.Id);
-                                        if (mdiUom.Seq > doUom.Seq)
-                                        {
-                                            var qtyField = Db.UoMConversions.Where(x => x.UomId == mdiUom.UomId && x.Seq >= doUom.Seq && x.Seq <= mdiUom.Seq).Select(x => x.Conversion).ToList();
-                                            var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
-                                            isFailedtoSend = (multipliedQty * qty) < doFreeData.Qty;
-                                            if (isFailedtoSend)
-                                            {
-                                                qtyFailedtoSend = doFreeData.Qty - (multipliedQty * qty);
-                                                uomFailedtoSend = doFreeData.UomId;
-                                                unitFailedtoSend = doFreeData.UnitId;
-                                                //qty = qtyFailedtoSend;
-                                                isBonus = true;
-                                            }
-                                            else
-                                            {
-                                                qty -= doFreeData.Qty * multipliedQty;
-                                            }
-                                        }
-                                        else
-                                        {
-                                            var qtyField = Db.UoMConversions.Where(x => x.UomId == mdiUom.UomId && x.Seq >= doUom.Seq && x.Seq <= mdiUom.Seq).Select(x => x.Conversion).ToList();
-                                            var dividedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
-                                            isFailedtoSend = (qty / dividedQty) < doFreeData.Qty;
-                                            if (isFailedtoSend)
-                                            {
-                                                qtyFailedtoSend = doFreeData.Qty - (qty / dividedQty);
-                                                uomFailedtoSend = doFreeData.UomId;
-                                                unitFailedtoSend = doFreeData.UnitId;
-                                                //qty = qtyFailedtoSend;
-                                                isBonus = true;
-                                            }
-                                            else
-                                            {
-                                                qty -= doFreeData.Qty * dividedQty;
-                                            }
-                                        }
-                                    }
-                                    else
-                                    {
-                                        isFailedtoSend = qty < doFreeData.Qty;
-                                        if (isFailedtoSend)
-                                        {
-                                            qtyFailedtoSend = doFreeData.Qty - qty;
-                                            uomFailedtoSend = doFreeData.UomId;
-                                            unitFailedtoSend = doFreeData.UnitId;
-                                            //qty = qtyFailedtoSend;
-                                            isBonus = true;
-                                        }
-                                        else
-                                        {
-                                            qty -= doFreeData.Qty;
-                                        }
-                                    }
+                                    qtyFailedtoSend = dplDetailItemData.Qty - qty;
+                                    uomFailedtoSend = dplDetailItemData.UomId;
+                                    unitFailedtoSend = dplDetailItemData.UnitId;
+                                    isBonus = true;
+                                }
+                                else
+                                {
+                                    qty -= dplDetailItemData.Qty;
                                 }
                             }
                         }
@@ -235,14 +147,14 @@ public class MobileDeliveryItemService : GeneralService<MobileDeliveryItemHeader
 
                             if (isBonus)
                             {
-                                var doFreeData = doFreeList.FirstOrDefault(x => x.ItemId == itemDetail.ItemId);
+                                var doFreeData = doFreeList.FirstOrDefault(x => x.ItemId == itemDetail.ItemId && x.UnitId == itemDetail.UnitId);
                                 if (doFreeData == null) continue;
                                 doFreeData.Qty -= qtyFailedtoSend;
                                 Db.SalesDeliveryDetailFreeGoods.Update(doFreeData);
                             }
                             else
                             {
-                                var doDetailData = doDetailList.FirstOrDefault(x => x.ItemId == itemDetail.ItemId);
+                                var doDetailData = doDetailList.FirstOrDefault(x => x.ItemId == itemDetail.ItemId && x.UnitId == itemDetail.UnitId);
                                 if (doDetailData == null) continue;
                                 doDetailData.Qty -= qtyFailedtoSend;
                                 doDetailData.Total -= (doDetailData.NettPrice * qtyFailedtoSend);
