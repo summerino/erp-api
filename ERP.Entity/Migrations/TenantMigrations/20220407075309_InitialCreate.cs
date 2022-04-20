@@ -6440,6 +6440,17 @@ BEGIN
 END";
             migrationBuilder.Sql(sql);
 
+            // Create function dbo.udf_current_local_time
+            sql = @"CREATE FUNCTION dbo.udf_current_local_time()
+RETURNS datetime
+AS
+BEGIN
+
+	RETURN CONVERT(datetime, CONVERT(datetimeoffset, GETUTCDATE()) AT TIME ZONE 'SE Asia Standard Time');
+
+END";
+            migrationBuilder.Sql(sql);
+
             // Create function dbo.udf_num_to_words_id
             sql = @"CREATE FUNCTION [dbo].[udf_num_to_words_id] (
 
@@ -8948,7 +8959,7 @@ BEGIN TRANSACTION
 		BEGIN
 		
 			IF @date IS NULL
-				SET @date = GETDATE()
+				SET @date = dbo.udf_current_local_time()
 
 			/* Replace format for date */
 			SET @format = REPLACE(@format, '{Y}', FORMAT(@date, 'yy'))
@@ -10206,10 +10217,10 @@ BEGIN
 			WHEN MATCHED THEN
 				UPDATE SET T.Amount = S.amount,
 						   T.UpdatedBy = @createdBy,
-						   T.UpdatedDate = GETDATE()
+						   T.UpdatedDate = dbo.udf_current_local_time()
 			WHEN NOT MATCHED BY TARGET THEN
 				INSERT ([Date], CurrCode, Amount, CreatedBy, CreatedDate, UpdatedBy, UpdatedDate)
-				VALUES (S.[date], S.currCode, S.amount, @createdBy, GETDATE(), @createdBy, GETDATE());
+				VALUES (S.[date], S.currCode, S.amount, @createdBy, dbo.udf_current_local_time(), @createdBy, dbo.udf_current_local_time());
 
 		COMMIT TRANSACTION
 	END TRY
@@ -11356,7 +11367,7 @@ BEGIN TRY
 				SET @BaseQty = (select BaseQty from Inventory.StockMutation where Id = @Id)
 				UPDATE Inventory.WarehouseQuantity SET QtyOnhand = (QtyOnhand + @BaseQty) WHERE ItemId = @ItemId And WarehouseCode = @WarehouseCode
 				INSERT INTO Inventory.WarehouseQuantity (WarehouseCode, ItemId, QtyOnHand, QtyOnOrder, QtyOnIndent, QtyReorderPoint, QtyOnTransfer, UpdatedDate)
-				VALUES (@WarehouseCode, @ItemId,@BaseQty,0,0,0,0,GetDate())
+				VALUES (@WarehouseCode, @ItemId, @BaseQty, 0, 0, 0, 0, dbo.udf_current_local_time())
 			END
 		END
 		
@@ -11507,7 +11518,7 @@ BEGIN TRY
 				SET @BaseQty = (select BaseQty from Inventory.StockMutation where Id = @Id)
 				UPDATE Inventory.WarehouseQuantity SET QtyOnhand = (QtyOnhand + @BaseQty) WHERE ItemId = @ItemId And WarehouseCode = @WarehouseCode
 				INSERT INTO Inventory.WarehouseQuantity (WarehouseCode, ItemId, QtyOnHand, QtyOnOrder, QtyOnIndent, QtyReorderPoint, QtyOnTransfer, UpdatedDate)
-				VALUES (@WarehouseCode, @ItemId,@BaseQty,0,0,0,0,GetDate())
+				VALUES (@WarehouseCode, @ItemId, @BaseQty, 0, 0, 0, 0, dbo.udf_current_local_time())
 			END
 		END
 		
@@ -11696,12 +11707,12 @@ BEGIN TRY
 
 			IF (@srcTrans = 1)
 			BEGIN
-				UPDATE Inventory.WarehouseQuantity SET QtyOnHand += @OldQty, UpdatedDate = GETDATE() WHERE WarehouseCode = @OldWhId AND ItemId = @OldItemId
-				UPDATE Inventory.WarehouseQuantity SET QtyOnOrder += @OldQty, UpdatedDate = GETDATE() WHERE WarehouseCode = (SELECT TOP 1 WarehouseCode FROM Inventory.StockMutation WHERE RefCode1 = @transCode AND ItemId = @OldItemId) AND ItemId = @OldItemId
+				UPDATE Inventory.WarehouseQuantity SET QtyOnHand += @OldQty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @OldWhId AND ItemId = @OldItemId
+				UPDATE Inventory.WarehouseQuantity SET QtyOnOrder += @OldQty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = (SELECT TOP 1 WarehouseCode FROM Inventory.StockMutation WHERE RefCode1 = @transCode AND ItemId = @OldItemId) AND ItemId = @OldItemId
 			END
 			ELSE
 			BEGIN
-				UPDATE Inventory.WarehouseQuantity SET QtyOnHand += @OldQty, UpdatedDate = GETDATE() WHERE WarehouseCode = @OldWhId AND ItemId = @OldItemId
+				UPDATE Inventory.WarehouseQuantity SET QtyOnHand += @OldQty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @OldWhId AND ItemId = @OldItemId
 			END
 			DELETE #tmp_ori_sm WHERE WarehouseCode = @OldWhId AND ItemId = @OldItemId
 		END
@@ -11715,12 +11726,12 @@ BEGIN TRY
 
 			IF (@srcTrans = 1)
 			BEGIN
-				UPDATE Inventory.WarehouseQuantity SET QtyOnHand += @OldQty, UpdatedDate = GETDATE() WHERE WarehouseCode = @OldWhId AND ItemId = @OldItemId
-				UPDATE Inventory.WarehouseQuantity SET QtyOnOrder += @OldQty, UpdatedDate = GETDATE() WHERE WarehouseCode = (SELECT TOP 1 WarehouseCode FROM Inventory.StockMutation WHERE RefCode1 = @transCode AND ItemId = @OldItemId) AND ItemId = @OldItemId
+				UPDATE Inventory.WarehouseQuantity SET QtyOnHand += @OldQty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @OldWhId AND ItemId = @OldItemId
+				UPDATE Inventory.WarehouseQuantity SET QtyOnOrder += @OldQty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = (SELECT TOP 1 WarehouseCode FROM Inventory.StockMutation WHERE RefCode1 = @transCode AND ItemId = @OldItemId) AND ItemId = @OldItemId
 			END
 			ELSE
 			BEGIN
-				UPDATE Inventory.WarehouseQuantity SET QtyOnHand += @OldQty, UpdatedDate = GETDATE() WHERE WarehouseCode = @OldWhId AND ItemId = @OldItemId
+				UPDATE Inventory.WarehouseQuantity SET QtyOnHand += @OldQty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @OldWhId AND ItemId = @OldItemId
 			END
 			DELETE #tmp_ori_sm_free WHERE WarehouseCode = @OldWhId AND ItemId = @OldItemId
 		END
@@ -11736,19 +11747,19 @@ BEGIN TRY
 			BEGIN
 				IF (@srcTrans = 1)
 				BEGIN
-					UPDATE Inventory.WarehouseQuantity SET QtyOnHand -= @Qty, UpdatedDate = GETDATE() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
-					UPDATE Inventory.WarehouseQuantity SET QtyOnOrder -= @Qty, UpdatedDate = GETDATE() WHERE WarehouseCode = (SELECT TOP 1 WarehouseCode FROM Inventory.StockMutation WHERE RefCode1 = @transCode AND ItemId = @ItemId) AND ItemId = @ItemId
+					UPDATE Inventory.WarehouseQuantity SET QtyOnHand -= @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
+					UPDATE Inventory.WarehouseQuantity SET QtyOnOrder -= @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = (SELECT TOP 1 WarehouseCode FROM Inventory.StockMutation WHERE RefCode1 = @transCode AND ItemId = @ItemId) AND ItemId = @ItemId
 				END
 				ELSE
 				BEGIN
-					UPDATE Inventory.WarehouseQuantity SET QtyOnHand -= @Qty, UpdatedDate = GETDATE() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
+					UPDATE Inventory.WarehouseQuantity SET QtyOnHand -= @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
 				END
 			END
 			ELSE
 			BEGIN
-				INSERT INTO Inventory.WarehouseQuantity(WarehouseCode,ItemId,QtyOnHand,QtyOnIndent,QtyOnOrder,QtyReorderPoint,QtyOnTransfer,UpdatedDate)
-				VALUES (@WHId,@ItemId,-@Qty,0,-@Qty,0,0,GETDATE())
-				UPDATE Inventory.WarehouseQuantity SET QtyOnOrder -= @Qty, UpdatedDate = GETDATE() WHERE WarehouseCode = (SELECT TOP 1 WarehouseCode FROM Inventory.StockMutation WHERE RefCode1 = @transCode AND ItemId = @ItemId) AND ItemId = @ItemId
+				INSERT INTO Inventory.WarehouseQuantity(WarehouseCode, ItemId, QtyOnHand, QtyOnIndent, QtyOnOrder, QtyReorderPoint, QtyOnTransfer, UpdatedDate)
+				VALUES (@WHId, @ItemId, -@Qty, 0, -@Qty, 0, 0, dbo.udf_current_local_time())
+				UPDATE Inventory.WarehouseQuantity SET QtyOnOrder -= @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = (SELECT TOP 1 WarehouseCode FROM Inventory.StockMutation WHERE RefCode1 = @transCode AND ItemId = @ItemId) AND ItemId = @ItemId
 			END
 			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId
 		END
@@ -11889,7 +11900,7 @@ BEGIN TRY
 		BEGIN
 			SELECT TOP 1 @OldQty = BaseQty, @OldItemId = ItemId, @OldWhId = WarehouseCode FROM #tmp_ori_sm
 
-			UPDATE Inventory.WarehouseQuantity SET QtyOnIndent -= @OldQty, UpdatedDate = GETDATE() WHERE WarehouseCode = @OldWhId AND ItemId = @OldItemId
+			UPDATE Inventory.WarehouseQuantity SET QtyOnIndent -= @OldQty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @OldWhId AND ItemId = @OldItemId
 
 			DELETE #tmp_ori_sm WHERE WarehouseCode = @OldWhId AND ItemId = @OldItemId
 		END
@@ -11903,12 +11914,12 @@ BEGIN TRY
 
 			IF EXISTS(SELECT *FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @WHId AND ItemId = @ItemId)
 			BEGIN
-				UPDATE Inventory.WarehouseQuantity SET QtyOnIndent += @Qty, UpdatedDate = GETDATE() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
+				UPDATE Inventory.WarehouseQuantity SET QtyOnIndent += @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
 			END
 			ELSE
 			BEGIN
-				INSERT INTO Inventory.WarehouseQuantity(WarehouseCode,ItemId,QtyOnHand,QtyOnIndent,QtyOnOrder,QtyReorderPoint,QtyOnTransfer,UpdatedDate)
-				VALUES (@WHId,@ItemId,0,@Qty,0,0,0,GETDATE())
+				INSERT INTO Inventory.WarehouseQuantity(WarehouseCode, ItemId, QtyOnHand, QtyOnIndent, QtyOnOrder, QtyReorderPoint, QtyOnTransfer, UpdatedDate)
+				VALUES (@WHId, @ItemId, 0, @Qty, 0, 0, 0, dbo.udf_current_local_time())
 			END
 			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId
 		END
@@ -12038,7 +12049,7 @@ BEGIN TRY
 		BEGIN
 			SELECT TOP 1 @OldQty = BaseQty, @OldItemId = ItemId, @OldWhId = WarehouseCode FROM #tmp_ori_sm		
 			
-			UPDATE Inventory.WarehouseQuantity SET QtyOnHand += @OldQty, UpdatedDate = GETDATE() WHERE WarehouseCode = @OldWhId AND ItemId = @OldItemId
+			UPDATE Inventory.WarehouseQuantity SET QtyOnHand += @OldQty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @OldWhId AND ItemId = @OldItemId
 
 			DELETE #tmp_ori_sm WHERE WarehouseCode = @OldWhId AND ItemId = @OldItemId
 		END
@@ -12050,12 +12061,12 @@ BEGIN TRY
 
 		IF EXISTS(SELECT *FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @WHId AND ItemId = @ItemId)
 		BEGIN
-			UPDATE Inventory.WarehouseQuantity SET QtyOnHand -= @Qty, UpdatedDate = GETDATE() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
+			UPDATE Inventory.WarehouseQuantity SET QtyOnHand -= @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
 		END
 		ELSE
 		BEGIN
-			INSERT INTO Inventory.WarehouseQuantity(WarehouseCode,ItemId,QtyOnHand,QtyOnIndent,QtyOnOrder,QtyReorderPoint,QtyOnTransfer,UpdatedDate)
-			VALUES (@WHId,@ItemId,-@Qty,0,0,0,0,GETDATE())
+			INSERT INTO Inventory.WarehouseQuantity(WarehouseCode, ItemId, QtyOnHand, QtyOnIndent, QtyOnOrder, QtyReorderPoint, QtyOnTransfer, UpdatedDate)
+			VALUES (@WHId, @ItemId, -@Qty, 0, 0, 0, 0, dbo.udf_current_local_time())
 		END
 
 		DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId
@@ -12205,12 +12216,12 @@ BEGIN TRY
 			
 			IF (@srcTrans = 1)
 			BEGIN
-				UPDATE Inventory.WarehouseQuantity SET QtyOnHand -= @OldQty, UpdatedDate = GETDATE() WHERE WarehouseCode = @OldWhId AND ItemId = @OldItemId
-				UPDATE Inventory.WarehouseQuantity SET QtyOnIndent += @OldQty, UpdatedDate = GETDATE() WHERE WarehouseCode = (SELECT WarehouseCode FROM Inventory.StockMutation WHERE RefCode1 = @transCode AND ItemId = @OldItemId AND UnitId = @OldUnitId) AND ItemId = @OldItemId
+				UPDATE Inventory.WarehouseQuantity SET QtyOnHand -= @OldQty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @OldWhId AND ItemId = @OldItemId
+				UPDATE Inventory.WarehouseQuantity SET QtyOnIndent += @OldQty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = (SELECT WarehouseCode FROM Inventory.StockMutation WHERE RefCode1 = @transCode AND ItemId = @OldItemId AND UnitId = @OldUnitId) AND ItemId = @OldItemId
 			END
 			ELSE
 			BEGIN
-				UPDATE Inventory.WarehouseQuantity SET QtyOnHand -= @OldQty, UpdatedDate = GETDATE() WHERE WarehouseCode = @OldWhId AND ItemId = @OldItemId
+				UPDATE Inventory.WarehouseQuantity SET QtyOnHand -= @OldQty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @OldWhId AND ItemId = @OldItemId
 			END
 			DELETE #tmp_ori_sm WHERE WarehouseCode = @OldWhId AND ItemId = @OldItemId AND UnitId = @OldUnitId
 		END
@@ -12226,19 +12237,19 @@ BEGIN TRY
 			BEGIN
 				IF (@srcTrans = 1)
 				BEGIN
-					UPDATE Inventory.WarehouseQuantity SET QtyOnHand += @Qty, UpdatedDate = GETDATE() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
-					UPDATE Inventory.WarehouseQuantity SET QtyOnIndent -= @Qty, UpdatedDate = GETDATE() WHERE WarehouseCode = (SELECT WarehouseCode FROM Inventory.StockMutation WHERE RefCode1 = @transCode AND ItemId = @ItemId AND UnitId = @UnitId) AND ItemId = @ItemId
+					UPDATE Inventory.WarehouseQuantity SET QtyOnHand += @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
+					UPDATE Inventory.WarehouseQuantity SET QtyOnIndent -= @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = (SELECT WarehouseCode FROM Inventory.StockMutation WHERE RefCode1 = @transCode AND ItemId = @ItemId AND UnitId = @UnitId) AND ItemId = @ItemId
 				END
 				ELSE
 				BEGIN
-					UPDATE Inventory.WarehouseQuantity SET QtyOnHand += @Qty, UpdatedDate = GETDATE() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
+					UPDATE Inventory.WarehouseQuantity SET QtyOnHand += @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
 				END
 			END
 			ELSE
 			BEGIN
-				INSERT INTO Inventory.WarehouseQuantity(WarehouseCode,ItemId,QtyOnHand,QtyOnIndent,QtyOnOrder,QtyReorderPoint,QtyOnTransfer,UpdatedDate)
-				VALUES (@WHId,@ItemId,@Qty,0,0,0,0,GETDATE())
-				UPDATE Inventory.WarehouseQuantity SET QtyOnIndent -= @Qty, UpdatedDate = GETDATE() WHERE WarehouseCode = (SELECT WarehouseCode FROM Inventory.StockMutation WHERE RefCode1 = @transCode AND ItemId = @ItemId AND UnitId = @UnitId) AND ItemId = @ItemId
+				INSERT INTO Inventory.WarehouseQuantity(WarehouseCode, ItemId, QtyOnHand, QtyOnIndent, QtyOnOrder, QtyReorderPoint, QtyOnTransfer, UpdatedDate)
+				VALUES (@WHId, @ItemId, @Qty, 0, 0, 0, 0, dbo.udf_current_local_time())
+				UPDATE Inventory.WarehouseQuantity SET QtyOnIndent -= @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = (SELECT WarehouseCode FROM Inventory.StockMutation WHERE RefCode1 = @transCode AND ItemId = @ItemId AND UnitId = @UnitId) AND ItemId = @ItemId
 			END
 			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId
 		END
@@ -12440,7 +12451,7 @@ BEGIN TRY
 		BEGIN
 			SELECT TOP 1 @OldQty = BaseQty, @OldItemId = ItemId, @OldWhId = WarehouseCode FROM #tmp_ori_sm
 
-			UPDATE Inventory.WarehouseQuantity SET QtyOnOrder -= @OldQty, UpdatedDate = GETDATE() WHERE WarehouseCode = @OldWhId AND ItemId = @OldItemId
+			UPDATE Inventory.WarehouseQuantity SET QtyOnOrder -= @OldQty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @OldWhId AND ItemId = @OldItemId
 
 			DELETE #tmp_ori_sm WHERE WarehouseCode = @OldWhId AND ItemId = @OldItemId
 		END
@@ -12452,7 +12463,7 @@ BEGIN TRY
 		BEGIN
 			SELECT TOP 1 @OldQty = BaseQty, @OldItemId = ItemId, @OldWhId = WarehouseCode FROM #tmp_ori_sm_free
 
-			UPDATE Inventory.WarehouseQuantity SET QtyOnOrder -= @OldQty, UpdatedDate = GETDATE() WHERE WarehouseCode = @OldWhId AND ItemId = @OldItemId
+			UPDATE Inventory.WarehouseQuantity SET QtyOnOrder -= @OldQty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @OldWhId AND ItemId = @OldItemId
 
 			DELETE #tmp_ori_sm_free WHERE WarehouseCode = @OldWhId AND ItemId = @OldItemId
 		END
@@ -12466,12 +12477,12 @@ BEGIN TRY
 
 			IF EXISTS(SELECT *FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @WHId AND ItemId = @ItemId)
 			BEGIN
-				UPDATE Inventory.WarehouseQuantity SET QtyOnOrder += @Qty, UpdatedDate = GETDATE() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
+				UPDATE Inventory.WarehouseQuantity SET QtyOnOrder += @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
 			END
 			ELSE
 			BEGIN
-				INSERT INTO Inventory.WarehouseQuantity(WarehouseCode,ItemId,QtyOnHand,QtyOnIndent,QtyOnOrder,QtyReorderPoint,QtyOnTransfer,UpdatedDate)
-				VALUES (@WHId,@ItemId,0,0,@Qty,0,0,GETDATE())
+				INSERT INTO Inventory.WarehouseQuantity(WarehouseCode, ItemId, QtyOnHand, QtyOnIndent, QtyOnOrder, QtyReorderPoint, QtyOnTransfer, UpdatedDate)
+				VALUES (@WHId, @ItemId, 0, 0, @Qty, 0, 0, dbo.udf_current_local_time())
 			END
 			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId
 		END
@@ -12619,7 +12630,7 @@ BEGIN TRY
 		BEGIN
 			SELECT TOP 1 @OldQty = BaseQty, @OldItemId = ItemId, @OldWhId = WarehouseCode FROM #tmp_ori_sm
 
-			UPDATE Inventory.WarehouseQuantity SET QtyOnHand -= @OldQty, UpdatedDate = GETDATE() WHERE WarehouseCode = @OldWhId AND ItemId = @OldItemId
+			UPDATE Inventory.WarehouseQuantity SET QtyOnHand -= @OldQty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @OldWhId AND ItemId = @OldItemId
 
 			DELETE #tmp_ori_sm WHERE WarehouseCode = @OldWhId AND ItemId = @OldItemId
 		END
@@ -12631,12 +12642,12 @@ BEGIN TRY
 
 		IF EXISTS(SELECT *FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @WHId AND ItemId = @ItemId)
 		BEGIN
-			UPDATE Inventory.WarehouseQuantity SET QtyOnHand += @Qty, UpdatedDate = GETDATE() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
+			UPDATE Inventory.WarehouseQuantity SET QtyOnHand += @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
 		END
 		ELSE
 		BEGIN
-			INSERT INTO Inventory.WarehouseQuantity(WarehouseCode,ItemId,QtyOnHand,QtyOnIndent,QtyOnOrder,QtyReorderPoint,QtyOnTransfer,UpdatedDate)
-			VALUES (@WHId,@ItemId,@Qty,0,0,0,0,GETDATE())
+			INSERT INTO Inventory.WarehouseQuantity(WarehouseCode, ItemId, QtyOnHand, QtyOnIndent, QtyOnOrder, QtyReorderPoint, QtyOnTransfer, UpdatedDate)
+			VALUES (@WHId, @ItemId, @Qty, 0, 0, 0, 0, dbo.udf_current_local_time())
 		END
 
 		DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId
@@ -12761,7 +12772,7 @@ BEGIN TRY
 
                 IF EXISTS(SELECT * FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @whCodeFrom AND ItemId = @itemID)
                 BEGIN
-                    UPDATE Inventory.WarehouseQuantity SET QtyOnHand = QtyOnHand - @qty, QtyOnTransfer = QtyOnTransfer + @qty, UpdatedDate = GETDATE() 
+                    UPDATE Inventory.WarehouseQuantity SET QtyOnHand = QtyOnHand - @qty, QtyOnTransfer = QtyOnTransfer + @qty, UpdatedDate = dbo.udf_current_local_time() 
                     WHERE WarehouseCode = @whCodeFrom AND ItemId = @ItemId
                 END
 
@@ -12774,18 +12785,18 @@ BEGIN TRY
             BEGIN
                 SELECT TOP 1 @itemID = ItemId, @qty = BaseQty FROM #tmp_its
 
-                UPDATE Inventory.WarehouseQuantity SET QtyOnTransfer = QtyOnTransfer - @qty, UpdatedDate = GETDATE() 
+                UPDATE Inventory.WarehouseQuantity SET QtyOnTransfer = QtyOnTransfer - @qty, UpdatedDate = dbo.udf_current_local_time() 
                 WHERE WarehouseCode = @whCodeFrom AND ItemId = @ItemId
 
                 IF EXISTS(SELECT * FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @whCodeTo AND ItemId = @itemID)
                 BEGIN
-                    UPDATE Inventory.WarehouseQuantity SET QtyOnHand = QtyOnHand + @qty, UpdatedDate = GETDATE() 
+                    UPDATE Inventory.WarehouseQuantity SET QtyOnHand = QtyOnHand + @qty, UpdatedDate = dbo.udf_current_local_time() 
                     WHERE WarehouseCode = @whCodeTo AND ItemId = @ItemId
                 END
                 ELSE
                 BEGIN
-                    INSERT INTO Inventory.WarehouseQuantity(WarehouseCode,ItemId,QtyOnHand,QtyOnIndent,QtyOnOrder,QtyReorderPoint,QtyOnTransfer,UpdatedDate)
-                    VALUES (@whCodeTo,@ItemId,@qty,0,0,0,0,GETDATE())
+                    INSERT INTO Inventory.WarehouseQuantity(WarehouseCode, ItemId, QtyOnHand, QtyOnIndent, QtyOnOrder, QtyReorderPoint, QtyOnTransfer, UpdatedDate)
+                    VALUES (@whCodeTo, @ItemId, @qty, 0, 0, 0, 0, dbo.udf_current_local_time())
                 END
 
                 DELETE #tmp_its WHERE ItemId = @ItemId
@@ -12824,16 +12835,16 @@ BEGIN TRY
 
                 IF EXISTS(SELECT * FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @whCodeFrom AND ItemId = @itemID)
                 BEGIN
-                    UPDATE Inventory.WarehouseQuantity SET QtyOnHand = QtyOnHand - @qty, UpdatedDate = GETDATE() WHERE WarehouseCode = @whCodeFrom AND ItemId = @ItemId
+                    UPDATE Inventory.WarehouseQuantity SET QtyOnHand = QtyOnHand - @qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @whCodeFrom AND ItemId = @ItemId
 
                     IF EXISTS(SELECT * FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @whCodeTo AND ItemId = @itemID)
                     BEGIN
-                        UPDATE Inventory.WarehouseQuantity SET QtyOnHand = QtyOnHand + @qty, UpdatedDate = GETDATE() WHERE WarehouseCode = @whCodeTo AND ItemId = @ItemId
+                        UPDATE Inventory.WarehouseQuantity SET QtyOnHand = QtyOnHand + @qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @whCodeTo AND ItemId = @ItemId
                     END
                     ELSE
                     BEGIN
-                        INSERT INTO Inventory.WarehouseQuantity(WarehouseCode,ItemId,QtyOnHand,QtyOnIndent,QtyOnOrder,QtyReorderPoint,QtyOnTransfer,UpdatedDate)
-                        VALUES (@whCodeTo,@ItemId,@qty,0,0,0,0,GETDATE())
+                        INSERT INTO Inventory.WarehouseQuantity(WarehouseCode, ItemId, QtyOnHand, QtyOnIndent, QtyOnOrder, QtyReorderPoint, QtyOnTransfer, UpdatedDate)
+                        VALUES (@whCodeTo, @ItemId, @qty, 0, 0, 0, 0, dbo.udf_current_local_time())
                     END
                 END
 
@@ -12851,7 +12862,7 @@ BEGIN TRY
 
                 IF EXISTS(SELECT * FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @whCodeFrom AND ItemId = @itemID)
                 BEGIN
-                    UPDATE Inventory.WarehouseQuantity SET QtyOnHand = QtyOnHand + @qty, QtyOnTransfer = QtyOnTransfer - @qty, UpdatedDate = GETDATE() WHERE WarehouseCode = @whCodeFrom AND ItemId = @ItemId
+                    UPDATE Inventory.WarehouseQuantity SET QtyOnHand = QtyOnHand + @qty, QtyOnTransfer = QtyOnTransfer - @qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @whCodeFrom AND ItemId = @ItemId
                 END
 
                 DELETE #tmp_its WHERE ItemId = @ItemId
@@ -12865,11 +12876,11 @@ BEGIN TRY
 
                 IF EXISTS(SELECT * FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @whCodeFrom AND ItemId = @itemID)
                 BEGIN
-                    UPDATE Inventory.WarehouseQuantity SET QtyOnTransfer = QtyOnTransfer + @qty, UpdatedDate = GETDATE() WHERE WarehouseCode = @whCodeFrom AND ItemId = @ItemId
+                    UPDATE Inventory.WarehouseQuantity SET QtyOnTransfer = QtyOnTransfer + @qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @whCodeFrom AND ItemId = @ItemId
 
                     IF EXISTS(SELECT * FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @whCodeTo AND ItemId = @itemID)
                     BEGIN
-                        UPDATE Inventory.WarehouseQuantity SET QtyOnHand = QtyOnHand - @qty, UpdatedDate = GETDATE() WHERE WarehouseCode = @whCodeTo AND ItemId = @ItemId
+                        UPDATE Inventory.WarehouseQuantity SET QtyOnHand = QtyOnHand - @qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @whCodeTo AND ItemId = @ItemId
                     END
                 END
 
@@ -12884,11 +12895,11 @@ BEGIN TRY
 
                 IF EXISTS(SELECT * FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @whCodeFrom AND ItemId = @itemID)
                 BEGIN
-                    UPDATE Inventory.WarehouseQuantity SET QtyOnHand = QtyOnHand + @qty, UpdatedDate = GETDATE() WHERE WarehouseCode = @whCodeFrom AND ItemId = @ItemId
+                    UPDATE Inventory.WarehouseQuantity SET QtyOnHand = QtyOnHand + @qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @whCodeFrom AND ItemId = @ItemId
 
                     IF EXISTS(SELECT * FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @whCodeTo AND ItemId = @itemID)
                     BEGIN
-                        UPDATE Inventory.WarehouseQuantity SET QtyOnHand = QtyOnHand - @qty, UpdatedDate = GETDATE() WHERE WarehouseCode = @whCodeTo AND ItemId = @ItemId
+                        UPDATE Inventory.WarehouseQuantity SET QtyOnHand = QtyOnHand - @qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @whCodeTo AND ItemId = @ItemId
                     END
                 END
 
