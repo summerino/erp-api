@@ -258,7 +258,7 @@ public class MobileDeliveryItemService : GeneralService<MobileDeliveryItemHeader
     public SaveResult CheckUndelivData(List<MobileDeliveryItemHeader> data)
     {
         var result = new SaveResult(false);
-
+        var listData = new List<dynamic>();
         try
         {
             foreach (var itemData in data)
@@ -276,18 +276,22 @@ public class MobileDeliveryItemService : GeneralService<MobileDeliveryItemHeader
                         var itemMaster = Db.Items.FirstOrDefault(x => x.Id == itemDetail.ItemId);
                         var unitMaster = Db.UoMConversions.FirstOrDefault(x => x.Id == itemDetail.UnitId);
 
-                        result.Success = true;
-                        result.Data = new
+                        listData.Add(new
                         {
-                            Code = itemData.Code,
-                            ItemName = itemMaster.Name,
+                            DlvPlanCode = itemData.DlvPlanCode,
+                            ItemInitial = itemMaster.Initial,
                             UnitName = unitMaster.UnitEquivalent,
                             Qty = undelivData.Qty
-                        };
+                        });
 
-                        return result;
                     }
                 }
+            }
+
+            if (listData.Count > 0)
+            {
+                result.Success = true;
+                result.Data = listData;
             }
         }
         catch (Exception ex)
