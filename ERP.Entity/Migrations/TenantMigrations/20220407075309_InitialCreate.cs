@@ -3155,7 +3155,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     Date = table.Column<DateTime>(type: "date", nullable: false),
                     VisitOrderCode = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: true),
                     SalesmanId = table.Column<long>(type: "bigint", nullable: false),
-                    CustCode = table.Column<string>(type: "varchar(8)", unicode: false, maxLength: 8, nullable: false),
+                    CustCode = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 8, nullable: false),
                     Scheduled = table.Column<bool>(type: "bit", nullable: false),
                     Visited = table.Column<bool>(type: "bit", nullable: true),
                     Lat = table.Column<decimal>(type: "decimal(9,6)", precision: 9, scale: 6, nullable: true),
@@ -3714,7 +3714,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     VisitLogCode = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
                     Date = table.Column<DateTime>(type: "date", nullable: false),
                     SalesmanId = table.Column<long>(type: "bigint", nullable: false),
-                    CustCode = table.Column<string>(type: "varchar(8)", unicode: false, maxLength: 8, nullable: false),
+                    CustCode = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 8, nullable: false),
                     CoaCode = table.Column<string>(type: "varchar(6)", unicode: false, maxLength: 6, nullable: false),
                     TransCode = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
                     Amount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
@@ -3885,7 +3885,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     VisitLogCode = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
                     SalesOrderCode = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: true),
                     Type = table.Column<short>(type: "smallint", nullable: false),
-                    CustCode = table.Column<string>(type: "varchar(8)", unicode: false, maxLength: 8, nullable: false),
+                    CustCode = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 8, nullable: false),
                     SalesBy = table.Column<long>(type: "bigint", nullable: false),
                     PaymentTermId = table.Column<int>(type: "int", nullable: true),
                     CurrCode = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
@@ -8599,7 +8599,15 @@ AS
             WHEN 'APR' THEN 'Disetujui'
             WHEN 'REJ' THEN 'Ditolak' END AS [Status]
     FROM MobileSales.MobileOrderHeader mo_h
-    LEFT JOIN General.Customer c
+    LEFT JOIN (
+		SELECT Code, Initial, [Name]
+		FROM General.Customer
+		WHERE IsActive = 1
+		UNION
+		SELECT Code, Initial, [Name]
+		FROM MobileSales.MobileCustomer
+		WHERE Mark != 'APR'
+	) c
         ON c.Code = mo_h.CustCode
     LEFT JOIN General.Employee e
         ON e.Id = mo_h.SalesBy
@@ -8655,7 +8663,15 @@ AS
 	FROM MobileSales.MobilePaymentInvoice pin
 	LEFT JOIN General.Employee emp
 		ON emp.Id = pin.SalesmanId
-	LEFT JOIN General.Customer cus
+	LEFT JOIN (
+		SELECT Code, Initial, [Name]
+		FROM General.Customer
+		WHERE IsActive = 1
+		UNION
+		SELECT Code, Initial, [Name]
+		FROM MobileSales.MobileCustomer
+		WHERE Mark != 'APR'
+	) cus
 		ON cus.Code = pin.CustCode
 	LEFT JOIN Accounting.COA coa
 		ON coa.Code = pin.CoaCode
@@ -8717,7 +8733,15 @@ AS
 	FROM MobileSales.MobileVisitLog vl
 	LEFT JOIN General.Employee emp
 		ON emp.Id = vl.SalesmanId
-	LEFT JOIN General.Customer cus
+	LEFT JOIN (
+		SELECT Code, Initial, [Name]
+		FROM General.Customer
+		WHERE IsActive = 1
+		UNION
+		SELECT Code, Initial, [Name]
+		FROM MobileSales.MobileCustomer
+		WHERE Mark != 'APR'
+	) cus
 		ON cus.Code = vl.CustCode
 	LEFT JOIN SystemManagement.[User] u_c
 		ON u_c.Id = vl.CreatedBy

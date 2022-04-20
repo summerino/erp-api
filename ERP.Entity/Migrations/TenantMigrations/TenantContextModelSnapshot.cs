@@ -18,7 +18,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
 #pragma warning disable 612, 618
             modelBuilder
                 .UseCollation("SQL_Latin1_General_CP1_CI_AS")
-                .HasAnnotation("ProductVersion", "6.0.3")
+                .HasAnnotation("ProductVersion", "6.0.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
@@ -8348,9 +8348,9 @@ namespace ERP.Entity.Migrations.TenantMigrations
 
                     b.Property<string>("CustCode")
                         .IsRequired()
-                        .HasMaxLength(8)
+                        .HasMaxLength(17)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(8)");
+                        .HasColumnType("varchar(17)");
 
                     b.Property<DateTime>("Date")
                         .HasColumnType("date");
@@ -8474,9 +8474,9 @@ namespace ERP.Entity.Migrations.TenantMigrations
 
                     b.Property<string>("CustCode")
                         .IsRequired()
-                        .HasMaxLength(8)
+                        .HasMaxLength(17)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(8)");
+                        .HasColumnType("varchar(17)");
 
                     b.Property<DateTime>("Date")
                         .HasColumnType("date");
@@ -8646,9 +8646,9 @@ namespace ERP.Entity.Migrations.TenantMigrations
 
                     b.Property<string>("CustCode")
                         .IsRequired()
-                        .HasMaxLength(8)
+                        .HasMaxLength(17)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(8)");
+                        .HasColumnType("varchar(17)");
 
                     b.Property<DateTime>("Date")
                         .HasColumnType("date");
