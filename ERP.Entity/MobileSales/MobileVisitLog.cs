@@ -23,7 +23,7 @@ public class MobileVisitLog : BaseEntityWithMarkApprovedAndRejected
     public long SalesmanId { get; set; }
 
     [Required]
-    [StringLength(8)]
+    [StringLength(17)]
     public string CustCode { get; set; }
 
     public bool Scheduled { get; set; }

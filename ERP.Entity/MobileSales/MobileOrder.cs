@@ -27,7 +27,7 @@ public class MobileOrderHeader : BaseEntityWithMarkApprovedAndRejected
     public short Type { get; set; }
 
     [Required]
-    [StringLength(8)]
+    [StringLength(17)]
     public string CustCode { get; set; }
 
     public long SalesBy { get; set; }
