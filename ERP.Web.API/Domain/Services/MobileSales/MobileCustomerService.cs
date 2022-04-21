@@ -150,6 +150,24 @@ public class MobileCustomerService : GeneralService<MobileCustomer>, IMobileCust
             mcData.ApprovedBy = userId;
             mcData.ApprovedDate = mcData.UpdatedDate;
             Db.MobileCustomers.Update(mcData);
+
+            var mvlData = Db.MobileVisitLogs.FirstOrDefault(x => x.CustCode == item.Code);
+            mvlData.CustCode = custCode;
+            mvlData.UpdatedBy = userId;
+            mvlData.UpdatedDate = DateTime.Now;
+            Db.MobileVisitLogs.Update(mvlData);
+
+            var moData = Db.MobileOrderHeaders.FirstOrDefault(x => x.CustCode == item.Code);
+            moData.CustCode = custCode;
+            moData.UpdatedBy = userId;
+            moData.UpdatedDate = DateTime.Now;
+            Db.MobileOrderHeaders.Update(moData);
+
+            var mpiData = Db.MobilePaymentInvoices.FirstOrDefault(x => x.CustCode == item.Code);
+            mpiData.CustCode = custCode;
+            mpiData.UpdatedBy = userId;
+            mpiData.UpdatedDate = DateTime.Now;
+            Db.MobilePaymentInvoices.Update(mpiData);
         }
 
         Db.SaveChanges();
@@ -185,6 +203,27 @@ public class MobileCustomerService : GeneralService<MobileCustomer>, IMobileCust
 
         result.Success = true;
         result.Message = "Data pelanggan mobile berhasil ditolak.";
+        return result;
+    }
+
+    public IEnumerable<dynamic> UnionCustomer()
+    {
+        var mobileData = Db.MobileCustomers.Select(x => new
+        {
+            x.Code,
+            x.Initial,
+            x.Name
+        }).ToList();
+
+        var masterData = Db.Customers.Select(x => new
+        {
+            x.Code,
+            x.Initial,
+            x.Name
+        }).ToList();
+
+        var result = mobileData.Union(masterData);
+
         return result;
     }
 

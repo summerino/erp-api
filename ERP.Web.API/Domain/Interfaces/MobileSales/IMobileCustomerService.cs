@@ -12,4 +12,6 @@ public interface IMobileCustomerService : IGeneralService<MobileCustomer>
     SaveResult Approve(List<MobileCustomer> data, int userId);
 
     SaveResult Reject(List<MobileCustomer> data, int userId);
+
+    IEnumerable<dynamic> UnionCustomer();
 }

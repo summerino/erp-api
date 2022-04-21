@@ -89,4 +89,19 @@ public class MobileVisitLogController : ControllerBase
 
         return Ok(result);
     }
+
+    [HttpPut("{code}")]
+    public IActionResult OnPut(string code, MobileVisitLog data)
+    {
+        //if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
+        //{
+        //    return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+        //}
+        data.UpdatedBy = _claim.UserId;
+        data.UpdatedDate = DateTime.Now;
+
+        var result = _vl.Update(data);
+
+        return Ok(result);
+    }
 }
