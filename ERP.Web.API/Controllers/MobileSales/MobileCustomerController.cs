@@ -84,4 +84,12 @@ public class MobileCustomerController : ControllerBase
 
         return Ok(result);
     }
+
+    [HttpGet("union")]
+    public IActionResult GetUnionData()
+    {
+        var data = _mc.UnionCustomer();
+
+        return Ok(data);
+    }
 }
