@@ -38,9 +38,9 @@ public class MobileVisitLogService : GeneralService<MobileVisitLog>, IMobileVisi
 
             foreach (var item in data)
             {
-                var mcustData = Db.MobileCustomers.FirstOrDefault(x => x.Code == item.Code);
+                var mcustData = Db.MobileCustomers.FirstOrDefault(x => x.Code == item.CustCode);
 
-                if (mcustData != null)
+                if (mcustData != null && mcustData.Mark == "A")
                 {
                     result.Message = "Terdapat data pelanggan baru yang belum disetujui.";
                     return result;
@@ -217,6 +217,36 @@ public class MobileVisitLogService : GeneralService<MobileVisitLog>, IMobileVisi
 
         result.Success = true;
         result.Message = "Data log kunjungan mobile berhasil ditolak.";
+        return result;
+    }
+
+    public override SaveResult Update(MobileVisitLog data)
+    {
+        var result = new SaveResult(false);
+
+        // Update data
+        Db.MobileVisitLogs.Update(data);
+        Db.Entry(data).Property(e => e.Code).IsModified = false;
+        Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
+        Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
+
+        var moData = Db.MobileOrderHeaders.FirstOrDefault(x => x.VisitLogCode == data.Code);
+        moData.CustCode = data.CustCode;
+        moData.UpdatedBy = data.UpdatedBy;
+        moData.UpdatedDate = DateTime.Now;
+        Db.MobileOrderHeaders.Update(moData);
+
+        var mpiData = Db.MobilePaymentInvoices.FirstOrDefault(x => x.VisitLogCode == data.Code);
+        mpiData.CustCode = data.CustCode;
+        mpiData.UpdatedBy = data.UpdatedBy;
+        mpiData.UpdatedDate = DateTime.Now;
+        Db.MobilePaymentInvoices.Update(mpiData);
+
+        Db.SaveChanges();
+
+        result.Success = true;
+        result.Data = data.Code;
+        result.Message = "Data log kunjungan mobile berhasil diperbarui.";
         return result;
     }
 }
