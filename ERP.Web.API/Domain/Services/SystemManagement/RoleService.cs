@@ -211,6 +211,6 @@ public class RoleService : GeneralService<Role>, IRoleService
 
     public bool IsInitialExists(string initial, int id)
     {
-        return Db.Items.Any(x => x.Initial == initial && x.Id != id);
+        return Db.Roles.Any(x => x.Initial == initial && x.Id != id);
     }
 }
