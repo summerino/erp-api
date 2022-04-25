@@ -197,7 +197,7 @@ public class MobileDeliveryItemService : GeneralService<MobileDeliveryItemHeader
                                         Db.SalesInvoiceDetails.Update(siDetailData);
 
                                         siHeadData.Total -= (doDetailData.NettPrice * qtyFailedtoSend);
-                                        if (siHeadData.Total < siHeadData.PaidAmount)
+                                        if (siHeadData.Total < siHeadData.PaidAmount && siHeadData.PaidAmount > 0)
                                         {
                                             result.Message = "Data pengeluaran barang mobile gagal disetujui karena terdapat total faktur lebih kecil dari total pembayaran.";
                                             return result;
