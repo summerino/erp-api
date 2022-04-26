@@ -101,8 +101,8 @@ public class MobileDeliveryItemService : GeneralService<MobileDeliveryItemHeader
                         if (isFailedtoSend)
                         {
                             var dplDetailData = dplDetailList.FirstOrDefault(x => x.Code == itemData.DlvPlanCode && x.TransCode == itemDoData.Code);
-                            var dplUndelivData = dplUndelivList.FirstOrDefault(x => x.ItemId == itemDetail.ItemId && x.DlvPlanDetailId == dplDetailData.Id);
-                            var dplDetailItemData = Db.DeliveryPlanDetailItems.FirstOrDefault(x => x.DlvPlanDetailId == dplDetailData.Id);
+                            var dplUndelivData = dplUndelivList.FirstOrDefault(x => x.ItemId == itemDetail.ItemId && x.UnitId == itemDetail.UnitId && x.DlvPlanDetailId == dplDetailData.Id);
+                            var dplDetailItemData = Db.DeliveryPlanDetailItems.FirstOrDefault(x => x.ItemId == itemDetail.ItemId && x.UnitId == itemDetail.UnitId && x.DlvPlanDetailId == dplDetailData.Id);
 
                             if (dplUndelivData != null)
                             {
