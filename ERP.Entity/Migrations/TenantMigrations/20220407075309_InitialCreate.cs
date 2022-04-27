@@ -8961,6 +8961,7 @@ AS
             sql = @"CREATE PROCEDURE [dbo].[sp_generate_autono]
 	@code varchar(20),
 	@date date = null,
+	@id varchar(10) = '',
 	@newAutoNo varchar(20) = null OUTPUT
 AS
 BEGIN TRANSACTION
@@ -8981,14 +8982,20 @@ BEGIN TRANSACTION
 		
 		IF @format IS NOT NULL
 		BEGIN
-		
+
+			/* Replace format for date */
 			IF @date IS NULL
 				SET @date = dbo.udf_current_local_time()
 
-			/* Replace format for date */
 			SET @format = REPLACE(@format, '{Y}', FORMAT(@date, 'yy'))
 			SET @format = REPLACE(@format, '{M}', FORMAT(@date, 'MM'))
 			SET @format = REPLACE(@format, '{D}', FORMAT(@date, 'dd'))
+
+			/* Replace format for id */
+			IF @id IS NULL
+				SET @id = ''
+
+			SET @format = REPLACE(@format, '{ID}', @id)
 
 			SET @digitFormat = SUBSTRING(@format, PATINDEX('%{[0-9]}%', @format), 5)
 			SET @digit = CONVERT(int, REPLACE(REPLACE(@digitFormat, '{', ''), '}', ''))
