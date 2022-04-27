@@ -87,10 +87,10 @@ public abstract class GeneralService<T> : IGeneralService<T>
         return result;
     }
 
-    public string GetNewCode(string code, DateTime? date = null)
+    public string GetNewCode(string code, DateTime? date = null, string id = null)
     {
         return Db.NewCodes
-            .FromSqlInterpolated($"EXEC sp_generate_autono {code}, {date}").ToList()
+            .FromSqlInterpolated($"EXEC sp_generate_autono {code}, {date}, {id}").ToList()
             .FirstOrDefault()?.Value;
     }
 }

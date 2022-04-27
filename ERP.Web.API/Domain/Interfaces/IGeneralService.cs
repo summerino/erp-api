@@ -19,5 +19,5 @@ public interface IGeneralService<T> where T : class
 
     SaveResult ReverseUpdate(T data, params Expression<Func<T, object>>[] properties);
 
-    string GetNewCode(string code, DateTime? date = null);
+    string GetNewCode(string code, DateTime? date = null, string id = null);
 }
