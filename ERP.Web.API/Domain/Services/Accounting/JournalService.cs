@@ -297,7 +297,7 @@ public class JournalService : IJournalService
                         CurrCode = itemData.RcvHeader.CurrCode,
                         Period = itemData.RcvHeader.Date.ToString("yyyyMMdd"),
                         Type = "D",
-                        Amount = itemDetail.RcvDetail.Type == 1 ? ivnValue : 0m,
+                        Amount = itemDetail.RcvDetail.Type == 0 ? ivnValue : 0m,
                         SrcTrans = "RCV"
                     });
                 }
@@ -369,7 +369,7 @@ public class JournalService : IJournalService
                         CurrCode = itemData.RcvHeader.CurrCode,
                         Period = itemData.RcvHeader.Date.ToString("yyyyMMdd"),
                         Type = "D",
-                        Amount = itemDetail.RcvDetail.Type == 1 ? ivnValue : 0m,
+                        Amount = itemDetail.RcvDetail.Type == 0 ? ivnValue : 0m,
                         SrcTrans = "RCV"
                     });
                 }
