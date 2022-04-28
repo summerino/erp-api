@@ -16,7 +16,7 @@ public interface ISalesDeliveryService : IGeneralService<SalesDeliveryHeader>
 
     IEnumerable<SalesDeliveryHeader> GetUnInvoiceData(string soCode, string invCode);
 
-    IEnumerable<SalesDeliveryDetailFreeGoodData> GetFreeDetailData(string code);
+    IEnumerable<dynamic> GetFreeDetailData(string code);
 
     SaveResult Insert(SalesDeliveryRequest data);
 

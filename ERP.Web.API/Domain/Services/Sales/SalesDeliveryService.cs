@@ -622,9 +622,18 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
                 data.Code, data.Date, data.TransCode);
 
             // Execute sp_update_so_dlv_qty / sp_update_sr_rcv_qty
-            Db.Database.ExecuteSqlRaw(
-                data.SrcTrans == 1 ? "EXEC sp_update_so_dlv_qty {0}" : "EXEC sp_update_sr_dlv_qty {0}",
-                data.TransCode);
+            if (data.SrcTrans == 1)
+            {
+                // Execute sp_update_so_dlv_qty
+                Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", data.TransCode);
+
+                Db.Database.ExecuteSqlRaw("EXEC sp_update_so_free_dlv_qty {0}", data.TransCode);
+            }
+            else
+            {
+                // Execute sp_update_sr_rcv_qty
+                Db.Database.ExecuteSqlRaw("EXEC sp_update_sr_dlv_qty {0}", data.TransCode);
+            }
 
             if (data.IsSoInv)
             {
@@ -846,29 +855,34 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
         return result;
     }
 
-    public IEnumerable<SalesDeliveryDetailFreeGoodData> GetFreeDetailData(string code)
+    public IEnumerable<dynamic> GetFreeDetailData(string code)
     {
         var result = (from dc in Db.SalesDeliveryDetailFreeGoods
-            join i in Db.Items on dc.ItemId equals i.Id
-            join u in Db.UoMConversions on dc.UnitId equals u.Id
-            where dc.Code == code
-            select new SalesDeliveryDetailFreeGoodData
-            {
-                Id = dc.Id,
-                Code = dc.Code,
-                DlvOrderDetailId = dc.DlvOrderDetailId,
-                LineNo = dc.LineNo,
-                PromoCode = dc.PromoCode,
-                ItemId = dc.ItemId,
-                UomId = dc.UomId,
-                UnitId = dc.UnitId,
-                Qty = dc.Qty,
-                UnitPrice = dc.UnitPrice,
-                CoaCode = dc.CoaCode,
-                Initial = i.Initial,
-                Name = i.Name,
-                UnitName = u.UnitEquivalent
-            }).ToList();
+                join sdd in Db.SalesDeliveryDetails on dc.DlvOrderDetailId equals sdd.Id
+                join sod in Db.SalesOrderDetails on sdd.SoDetailId equals sod.Id
+                join soc in Db.SalesOrderDetailFreeGoods on sod.Id equals soc.OrderDetailId
+                join i in Db.Items on dc.ItemId equals i.Id
+                join u in Db.UoMConversions on dc.UnitId equals u.Id
+                where dc.Code == code && soc.UnitId == dc.UnitId && soc.ItemId == dc.ItemId
+                select new
+                {
+                    Id = dc.Id,
+                    Code = dc.Code,
+                    DlvOrderDetailId = dc.DlvOrderDetailId,
+                    LineNo = dc.LineNo,
+                    PromoCode = dc.PromoCode,
+                    ItemId = dc.ItemId,
+                    UomId = dc.UomId,
+                    UnitId = dc.UnitId,
+                    Qty = dc.Qty,
+                    UnitPrice = dc.UnitPrice,
+                    CoaCode = dc.CoaCode,
+                    Initial = i.Initial,
+                    Name = i.Name,
+                    UnitName = u.UnitEquivalent,
+                    OutstandingQty = soc.Qty - soc.QtyClosed,
+                    OldQty = dc.Qty
+                }).ToList();
 
         return result.OrderBy(x => x.LineNo);
     }
