@@ -531,12 +531,10 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                 };
 
                 Db.SalesOrderDetails.Add(orderDetail);
-                idOrderDetail.Add(orderDetail.Id);
 
-                if (bonusPromoMulti.Any() || bonusPromo.Any() || discPromo.Any())
-                {
-                    Db.SaveChanges();
-                }
+                Db.SaveChanges();
+
+                idOrderDetail.Add(orderDetail.Id);
 
                 if (discPromo.Any())
                 {
@@ -679,15 +677,17 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
 
                 Db.SalesDeliveryDetails.Add(deliveryDetail);
 
-                if (item.FreeItemDetails.Any())
+                var freeOrderDataList = Db.SalesOrderDetailFreeGoods.Where(x => x.OrderDetailId == deliveryDetail.SoDetailId).ToList();
+
+                if (freeOrderDataList.Any())
                 {
                     Db.SaveChanges();
                 }
 
-                if (item.FreeItemDetails.Any())
+                if (freeOrderDataList.Any())
                 {
                     short f = 0;
-                    foreach (var freeItem in item.FreeItemDetails)
+                    foreach (var freeItem in freeOrderDataList)
                     {
                         var dlvFreeDetail = new SalesDeliveryDetailFreeGood
                         {
