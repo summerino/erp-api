@@ -232,6 +232,7 @@ public class DeliveryPlanMobileService : GeneralService<DeliveryPlanRequestModel
     public SaveResult Insert(DeliveryPlanRequestModel data, int userId)
     {
         var result = new SaveResult(false);
+        var empId = Db.Users.Where(x => x.Id.Equals(userId)).Select(y => y.EmployeeId).Single();
 
         var existed_transfer_stock_code = _db.MobileDeliveryItemHeaders.Any(x => x.DlvPlanCode == data.DlvPlanCode); // check code sebelumnya
         if (!existed_transfer_stock_code)
@@ -240,7 +241,7 @@ public class DeliveryPlanMobileService : GeneralService<DeliveryPlanRequestModel
             try
             {
                 var date = DateTime.Now;
-                var newCode = GetNewCode("MOB_DLV_NUM_FMT", DateTime.Now.Date);
+                var newCode = GetNewCode("MOB_DLV_NUM_FMT", DateTime.Now.Date, empId.ToString());
 
                 data.Code = newCode;
 

@@ -209,7 +209,7 @@ public class TransactionHistoryController : ControllerBase
         var data =
             _transactionHistory.GetDataBySubGroup(skip, take,
                 JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
-                JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"), 
+                JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
                 groupId, subGroup);
 
         var result = ((List<TransactionHistoryBySubGroup>)data.Data).ToList<dynamic>();
@@ -222,13 +222,13 @@ public class TransactionHistoryController : ControllerBase
     }
 
     [HttpGet("item-subgroup")]
-    public IActionResult GetItemByGroup(string filters, string sorts, int skip, int take, DateTime date,int groupId, string subGroup)
+    public IActionResult GetItemByGroup(string filters, string sorts, int skip, int take, DateTime date, int groupId, string subGroup)
     {
         var data =
             _transactionHistory.GetItemBySubGroup(skip, take,
                 JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
                 JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
-                date,groupId, subGroup);
+                date, groupId, subGroup);
 
         var result = ((List<TransactionHistoryItemBySubGroup>)data.Data).ToList<dynamic>();
 
@@ -245,7 +245,7 @@ public class TransactionHistoryController : ControllerBase
         var data =
             _transactionHistory.GetDataBySubGroupSummary(skip, take,
                 JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
-                JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"), date, 
+                JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"), date,
                 groupId, subGroupId);
 
         var result = ((List<TransactionHistoryBySubGroupSummary>)data.Data).ToList<dynamic>();

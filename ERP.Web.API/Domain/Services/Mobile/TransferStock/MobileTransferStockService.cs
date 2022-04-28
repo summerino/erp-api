@@ -155,6 +155,7 @@ public class MobileTransferStockService : GeneralService<MobileTransferStockHead
     public SaveResult Insert(TransferStockRequestModel data, int userId)
     {
         var result = new SaveResult(false);
+        var empId = Db.Users.Where(x => x.Id.Equals(userId)).Select(y => y.EmployeeId).Single();
 
         var existed_transfer_stock_code = Db.MobileTransferStockHeaders.Any(x => x.TransferCode == data.Code);
         if (!existed_transfer_stock_code)
@@ -164,7 +165,7 @@ public class MobileTransferStockService : GeneralService<MobileTransferStockHead
             {
                 var date = DateTime.Now;
                 // Get new code
-                var newCode = GetNewCode("MOB_TS_NUM_FMT", date);
+                var newCode = GetNewCode("MOB_TS_NUM_FMT", date, empId.ToString());
 
                 // Insert header data
                 Db.MobileTransferStockHeaders.Add(new MobileTransferStockHeader

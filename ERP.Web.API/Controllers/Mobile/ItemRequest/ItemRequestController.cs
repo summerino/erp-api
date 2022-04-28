@@ -61,7 +61,7 @@ public class ItemRequestController : ControllerBase
         data.UpdatedBy = data.CreatedBy;
         data.UpdatedDate = data.CreatedDate;
 
-        var result = _itemRequest.Insert(data);
+        var result = _itemRequest.Insert(data, _claim.UserId);
 
         return Ok(result);
     }
