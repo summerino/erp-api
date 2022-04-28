@@ -28,7 +28,7 @@ public class PurchaseInvoiceService : GeneralService<PurchaseInvoiceHeader>, IPu
                 ? data.Where(x => x.Date == searchDate)
                 : data.Where(x =>
                     x.Code.Contains(search) || x.SupName.Contains(search) || x.PoCode == search ||
-                    x.IssuedInitial.Contains(search) || x.RefNo.StartsWith(search));
+                    x.RefNo.StartsWith(search));
         }
 
         return data.ToDataSourceResult(skip, take, filter, sort);

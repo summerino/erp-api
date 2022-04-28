@@ -83,10 +83,6 @@ FROM SystemManagement.Company</CommandText>
           <DataField>SupCode</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="IssuedBy">
-          <DataField>IssuedBy</DataField>
-          <rd:TypeName>System.Int64</rd:TypeName>
-        </Field>
         <Field Name="CurrCode">
           <DataField>CurrCode</DataField>
           <rd:TypeName>System.String</rd:TypeName>
@@ -155,8 +151,8 @@ FROM SystemManagement.Company</CommandText>
           <DataField>SupPhone</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="IssuedInitial">
-          <DataField>IssuedInitial</DataField>
+        <Field Name="CreatedInitial">
+          <DataField>CreatedInitial</DataField>
           <rd:UserDefined>true</rd:UserDefined>
         </Field>
       </Fields>
@@ -658,7 +654,6 @@ FROM SystemManagement.Company</CommandText>
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
                         </Textbox>
-                        <rd:Selected>true</rd:Selected>
                       </CellContents>
                     </TablixCell>
                     <TablixCell>
@@ -1643,7 +1638,7 @@ FROM SystemManagement.Company</CommandText>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>Dikeluarkan Oleh</Value>
+                      <Value EvaluationMode="Constant">Dibuat Oleh</Value>
                       <Style>
                         <FontSize>9pt</FontSize>
                         <FontWeight>Normal</FontWeight>
@@ -1673,7 +1668,7 @@ FROM SystemManagement.Company</CommandText>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>=First(Fields!IssuedInitial.Value, "Header")</Value>
+                      <Value>=First(Fields!CreatedInitial.Value, "Header")</Value>
                       <Style>
                         <FontSize>9pt</FontSize>
                         <FontWeight>Normal</FontWeight>

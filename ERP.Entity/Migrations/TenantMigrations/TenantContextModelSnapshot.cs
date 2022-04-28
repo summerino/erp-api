@@ -10662,9 +10662,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.Property<DateTime>("DueDate")
                         .HasColumnType("date");
 
-                    b.Property<long>("IssuedBy")
-                        .HasColumnType("bigint");
-
                     b.Property<string>("Mark")
                         .IsRequired()
                         .HasMaxLength(3)
@@ -10724,8 +10721,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.HasKey("Code");
 
                     b.HasIndex("CurrCode");
-
-                    b.HasIndex("IssuedBy");
 
                     b.HasIndex("PoCode");
 
@@ -12683,13 +12678,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
 
                     b.Property<DateTime>("DueDate")
                         .HasColumnType("datetime2");
-
-                    b.Property<long>("IssuedBy")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("IssuedInitial")
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
 
                     b.Property<string>("Mark")
                         .HasMaxLength(3)
@@ -20936,12 +20924,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.HasOne("ERP.Entity.General.Currency", null)
                         .WithMany()
                         .HasForeignKey("CurrCode")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("ERP.Entity.General.Employee", null)
-                        .WithMany()
-                        .HasForeignKey("IssuedBy")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 

@@ -1892,11 +1892,6 @@ public class TenantContext : DbContext
                 .HasForeignKey(d => d.SupCode)
                 .OnDelete(DeleteBehavior.NoAction);
 
-            entity.HasOne<Employee>()
-                .WithMany()
-                .HasForeignKey(d => d.IssuedBy)
-                .OnDelete(DeleteBehavior.NoAction);
-
             entity.HasOne<Currency>()
                 .WithMany()
                 .HasForeignKey(d => d.CurrCode)

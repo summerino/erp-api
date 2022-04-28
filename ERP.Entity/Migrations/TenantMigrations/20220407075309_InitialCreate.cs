@@ -3223,7 +3223,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     POCode = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: true),
                     RefNo = table.Column<string>(type: "varchar(30)", unicode: false, maxLength: 30, nullable: true),
                     SupCode = table.Column<string>(type: "varchar(8)", unicode: false, maxLength: 8, nullable: false),
-                    IssuedBy = table.Column<long>(type: "bigint", nullable: false),
                     CurrCode = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
                     PaidAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
                     Total = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
@@ -3249,12 +3248,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         principalSchema: "General",
                         principalTable: "Currency",
                         principalColumn: "Code");
-                    table.ForeignKey(
-                        name: "FK_PurchaseInvoiceHeader_Employee_IssuedBy",
-                        column: x => x.IssuedBy,
-                        principalSchema: "General",
-                        principalTable: "Employee",
-                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_PurchaseInvoiceHeader_PurchaseOrderHeader_POCode",
                         column: x => x.POCode,
@@ -5972,12 +5965,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                 column: "CurrCode");
 
             migrationBuilder.CreateIndex(
-                name: "IX_PurchaseInvoiceHeader_IssuedBy",
-                schema: "Purchasing",
-                table: "PurchaseInvoiceHeader",
-                column: "IssuedBy");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_PurchaseInvoiceHeader_POCode",
                 schema: "Purchasing",
                 table: "PurchaseInvoiceHeader",
@@ -6835,7 +6822,6 @@ AS
     SELECT pi_h.*,
 		pi_h.Total - pi_h.PaidAmount as Remaining,
         s.[Name] AS SupName,
-        e.Initial AS IssuedInitial,
         u_c.Initial AS CreatedInitial,
         u_u.Initial AS UpdatedInitial,
         u_a.Initial AS ApprovedInitial,
@@ -6847,8 +6833,6 @@ AS
     FROM Purchasing.PurchaseInvoiceHeader pi_h
     LEFT JOIN General.Supplier s
         ON s.Code = pi_h.SupCode
-    LEFT JOIN General.Employee e
-        ON e.Id = pi_h.IssuedBy
     LEFT JOIN SystemManagement.[User] u_c
         ON u_c.Id = pi_h.CreatedBy
     LEFT JOIN SystemManagement.[User] u_u
@@ -9718,7 +9702,7 @@ BEGIN
 			dbo.udf_num_to_words_id(pi_h.Total, @centToWord) AS TotalInWord,
 			e_r.Initial AS RequestInitial,
 			s.Initial AS SupInitial, s.[Name] AS SupName, s.Address1 AS SupAddress1, s.Phone AS SupPhone,
-			e_i.Initial AS IssuedInitial
+			u_c.Initial AS CreatedInitial
 		FROM (
 			SELECT *
 			FROM Purchasing.PurchaseInvoiceHeader
@@ -9731,8 +9715,8 @@ BEGIN
 			ON e_r.Id = po_h.RequestBy
 		LEFT JOIN General.Supplier s
 			ON s.Code = pi_h.SupCode
-		LEFT JOIN General.Employee e_i
-			ON e_i.Id = pi_h.IssuedBy
+		LEFT JOIN SystemManagement.[User] u_c
+			ON u_c.Id = pi_h.CreatedBy
 	END
 
 	ELSE IF @displayType = 'DETAIL'

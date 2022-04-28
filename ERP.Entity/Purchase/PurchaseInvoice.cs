@@ -29,9 +29,7 @@ public class PurchaseInvoiceHeader : BaseEntityWithMarkApprovedAndViewed
     [Required]
     [StringLength(8)]
     public string SupCode { get; set; }
-
-    public long IssuedBy { get; set; }
-
+    
     [Required]
     [StringLength(3)]
     public string CurrCode { get; set; }
@@ -66,8 +64,6 @@ public class VwPurchaseInvoiceHeader : BaseEntityWithMarkApprovedAndViewed
 
     public string SupCode { get; set; }
 
-    public long IssuedBy { get; set; }
-
     public string CurrCode { get; set; }
 
     [Precision(19, 6)]
@@ -87,8 +83,6 @@ public class VwPurchaseInvoiceHeader : BaseEntityWithMarkApprovedAndViewed
 
 
     public string SupName { get; set; }
-
-    public string IssuedInitial { get; set; }
 
     public string CreatedInitial { get; set; }
 
