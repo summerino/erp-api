@@ -31,7 +31,7 @@ public class PurchaseReturnReportService : IPurchaseReturnReportService
 	                            WHEN 'CLS' THEN 'Ditutup' END AS [Status]
                             FROM Purchasing.vwPurchaseReturnHeader pr
                             LEFT JOIN Purchasing.vwPurchaseReturnDetail pr_d ON pr.Code = pr_d.Code" +
-                                                (string.IsNullOrEmpty(status) ? "" : $" WHERE pr.Mark = '{status.Replace("'", "''")}'") +
+                                                (string.IsNullOrEmpty(status) ? "" : status.Replace("'", "''").Equals("NV") ? " WHERE pr.Mark != 'V'" : $" WHERE pr.Mark = '{status.Replace("'", "''")}'") +
                                                 @" GROUP BY pr.[Date], pr.Code, pr.SupCode, pr.SupName, 
                             pr.DPP, pr.TaxAmount, pr.Total, pr.[Type], pr.Mark").ToList();
 

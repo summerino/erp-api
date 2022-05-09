@@ -26,7 +26,7 @@ public class PurchaseOrderReportService : IPurchaseOrderReportService
 	                            WHEN 'CLS' THEN 'Ditutup' END AS [Status]
                             FROM Purchasing.vwPurchaseOrderHeader po
                             LEFT JOIN Purchasing.vwPurchaseOrderDetail po_d ON po.Code = po_d.Code" +
-                                                (string.IsNullOrEmpty(status) ? "" : $" WHERE po.Mark = '{status.Replace("'", "''")}'") +
+                                                (string.IsNullOrEmpty(status) ? "" : status.Replace("'", "''").Equals("NV") ? " WHERE po.Mark != 'V'" : $" WHERE po.Mark = '{status.Replace("'", "''")}'") +
                                                 " GROUP BY po.[Date], po.Code, po.SupCode, po.SupName, po.SubTotal, po.DPP, po.TaxAmount, po.Total, po.Mark").ToList();
 
         var poDetailData = _db.ReportByDetailPOs.FromSqlRaw(@"SELECT po.[Date], po.Code, po.SupCode, po.SupName,

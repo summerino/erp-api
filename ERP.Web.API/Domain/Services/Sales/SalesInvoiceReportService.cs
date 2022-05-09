@@ -29,7 +29,7 @@ public class SalesInvoiceReportService : ISalesInvoiceReportService
                             LEFT JOIN Sales.SalesInvoiceDetail inv_d ON inv.Code = inv_d.Code
                             LEFT JOIN Sales.vwSalesDeliveryHeader dlv ON inv_d.DOCode = dlv.Code
                             LEFT JOIN Sales.SalesDeliveryDetail dlv_d ON dlv.Code = dlv_d.Code" +
-                                                (string.IsNullOrEmpty(status) ? "" : status == "A" ? $" WHERE inv.Mark IN('A', 'PP', 'CMP')" : $" WHERE inv.Mark = '{status.Replace("'", "''")}'") +
+                                                (string.IsNullOrEmpty(status) ? "" : status.Replace("'", "''").Equals("A") ? $" WHERE inv.Mark IN('A', 'PP', 'CMP')" : $" WHERE inv.Mark = '{status.Replace("'", "''")}'") +
                                                 @" GROUP BY inv.[Date], inv.DueDate, inv.Code, inv.SOCode, inv.CustCode, inv.CustName, dlv.DPP, dlv.TaxAmount, dlv.Total, inv.Mark)
                             SELECT ch.[Date], ch.DueDate, ch.Code, 
                             ch.OrderCode, ch.CustCode, ch.CustName,
