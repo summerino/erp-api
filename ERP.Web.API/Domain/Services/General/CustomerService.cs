@@ -462,6 +462,13 @@ public class CustomerService : GeneralService<Customer>, ICustomerService
                 return result;
             }
 
+            //Check if any consignee warehouse has item
+            if (Db.WarehouseQuantities.Any(x => x.WarehouseCode == data.Code))
+            {
+                result.Message = "Tidak bisa menghapus data pelanggan karena terdapat barang pada gudang konsinyi.";
+                return result;
+            }
+
             var addData = Db.CustomerAddress.Where(x => x.Code == data.Code);
             Db.CustomerAddress.RemoveRange(addData);
 
