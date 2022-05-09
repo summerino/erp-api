@@ -312,19 +312,19 @@ public class MobileCostService : GeneralService<MobileCostHeader>, IMobileCostSe
         return data.ToList();
     }
 
-    public SaveResult InsertForMobile(CostRequestModel data, int UserId)
+    public SaveResult InsertForMobile(CostRequestModel data, int userId)
     {
         var result = new SaveResult(false);
+        var empId = Db.Users.Where(x => x.Id.Equals(userId)).Select(y => y.EmployeeId).Single();
 
-        long? employeeId = Db.Users.Where(x => x.Id.Equals(UserId)).Select(u => u.EmployeeId).SingleOrDefault();
         using var transaction = Db.Database.BeginTransaction();
         try
         {
-            var newCode = GetNewCode("MOB_SC_NUM_FMT", data.Date);
+            var newCode = GetNewCode("MOB_SC_NUM_FMT", data.Date, empId.ToString());
 
             data.Code = newCode;
             data.Total = data.CostDetails.Sum(x => x.Amount);
-            data.SalesmanId = (long)employeeId;
+            data.SalesmanId = (long)empId;
 
             Db.MobileCostHeaders.Add(data);
 

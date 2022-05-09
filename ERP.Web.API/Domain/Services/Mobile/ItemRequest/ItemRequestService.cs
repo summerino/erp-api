@@ -30,7 +30,7 @@ public class ItemRequestService : GeneralService<ItemRequestHeader>, IItemReques
             join area5 in Db.Areas on header.AreaId5 equals area5.Id into a5
             from sub5 in a5.DefaultIfEmpty()
             where user.Id.Equals(userId) 
-                       
+
             select new ItemRequestHeader
             {
                 Code = header.Code,
@@ -75,15 +75,16 @@ public class ItemRequestService : GeneralService<ItemRequestHeader>, IItemReques
         return data;
     }
 
-    public SaveResult Insert(ItemRequestModel data)
+    public SaveResult Insert(ItemRequestModel data, int userId)
     {
         var result = new SaveResult(false);
+        var empId = Db.Users.Where(x => x.Id.Equals(userId)).Select(y => y.EmployeeId).Single();
 
         using var transaction = Db.Database.BeginTransaction();
         try
         {
             // Get new code
-            var newCode = GetNewCode("MOB_IR_NUM_FMT", data.Date);
+            var newCode = GetNewCode("MOB_IR_NUM_FMT", data.Date, empId.ToString());
 
             // Insert header data
             data.Code = newCode;

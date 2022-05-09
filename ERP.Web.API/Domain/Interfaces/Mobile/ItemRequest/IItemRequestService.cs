@@ -10,5 +10,5 @@ public interface IItemRequestService
 
     IEnumerable<ItemRequestDetail> GetDetail(string code);
 
-    SaveResult Insert(ItemRequestModel data);
+    SaveResult Insert(ItemRequestModel data, int userId);
 }

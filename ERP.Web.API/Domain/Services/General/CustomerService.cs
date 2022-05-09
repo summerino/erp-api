@@ -8,6 +8,7 @@ using ERP.Entity.Inventory;
 using ERP.Web.API.Domain.Interfaces.General;
 using ERP.Web.API.Model.General;
 using UserCatalog = ERP.Entity.Catalog.CustomerUser;
+using ERP.Web.API.Domain.Models.Mobile.General;
 
 namespace ERP.Web.API.Domain.Services.General;
 
@@ -26,7 +27,116 @@ public class CustomerService : GeneralService<Customer>, ICustomerService
     public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
         string search, string mobileLastSync)
     {
-        var data = Db.VwCustomers.AsQueryable();
+        //var data = Db.VwCustomers.AsQueryable();
+        var data = (from cust in Db.VwCustomers
+                    select new CustomerModel
+                    {
+                        Code = cust.Code,
+                        Initial = cust.Initial,
+                        Name = cust.Name,
+                        TypeId = cust.TypeId,
+                        TypeName = cust.TypeName,
+                        CreditLimit = cust.CreditLimit,
+                        Used = cust.CreditUsed,
+                        Remaining = cust.CreditLimit - cust.CreditUsed,
+                        AreaId1 = cust.AreaId1,
+                        AreaId2 = cust.AreaId2,
+                        AreaId3 = cust.AreaId3,
+                        AreaId4 = cust.AreaId4,
+                        AreaId5 = cust.AreaId5,
+                        AreaName1 = cust.AreaName1,
+                        AreaName2 = cust.AreaName2,
+                        AreaName3 = cust.AreaName3,
+                        AreaName4 = cust.AreaName4,
+                        AreaName5 = cust.AreaName5,
+                        Lat = cust.Lat,
+                        Lng = cust.Lng,
+                        InitialAddress = cust.InitialAddress,
+                        Address1 = cust.Address1,
+                        Address2 = cust.Address2,
+                        Phone = cust.Phone,
+                        Fax = cust.Fax,
+                        ContactPerson = cust.ContactPerson,
+                        IsActive = cust.IsActive,
+                        UpdatedDate = cust.UpdatedDate,
+                    });
+
+        if (!string.IsNullOrEmpty(mobileLastSync))
+        {
+            switch (mobileLastSync.Length)
+            {
+                case 21:
+                    mobileLastSync += "000";
+                    break;
+                case 22:
+                    mobileLastSync += "00";
+                    break;
+                case 23:
+                    mobileLastSync += "0";
+                    break;
+            }
+            data = data.Where(x => x.UpdatedDate > DateTime.ParseExact(mobileLastSync, "yyyy-MM-ddTHH:mm:ss.ffff", null));
+        }
+
+        if (!string.IsNullOrEmpty(search))
+        {
+            data = data.Where(x =>
+                x.Code.Contains(search) || x.Initial.Contains(search) || x.Name.Contains(search) || x.TypeName.Contains(search) ||
+                x.Address1.Contains(search) || x.Phone.Contains(search));
+        }
+        return data.ToDataSourceResult(skip, take, filter, sort);
+    }
+
+    public DataSourceResult GetMobileCustomer(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
+        string search, string mobileLastSync)
+    {
+        var data = (from custMobile in Db.MobileCustomers
+                    join custType in Db.CustomerTypes on custMobile.TypeId equals custType.Id into cT
+                    from cType in cT.DefaultIfEmpty()
+                    join custArea in Db.CustomerAddress on custMobile.Code equals custArea.Code into cA
+                    from cArea in cA.DefaultIfEmpty()
+                    join sales in Db.Areas on custMobile.AreaId1 equals sales.Id into sls1
+                    from a1 in sls1.DefaultIfEmpty()
+                    join sales in Db.Areas on custMobile.AreaId2 equals sales.Id into sls2
+                    from a2 in sls2.DefaultIfEmpty()
+                    join sales in Db.Areas on custMobile.AreaId3 equals sales.Id into sls3
+                    from a3 in sls3.DefaultIfEmpty()
+                    join sales in Db.Areas on custMobile.AreaId4 equals sales.Id into sls4
+                    from a4 in sls4.DefaultIfEmpty()
+                    join sales in Db.Areas on custMobile.AreaId5 equals sales.Id into sls5
+                    from a5 in sls5.DefaultIfEmpty()
+                    where custMobile.CustCode == null
+                    select new CustomerModel
+                    {
+                        Code = custMobile.Code,
+                        Initial = custMobile.Initial,
+                        Name = custMobile.Name,
+                        TypeId = custMobile.TypeId,
+                        TypeName = cType.Name,
+                        CreditLimit = (decimal)0.00,
+                        Used = (decimal)0.00,
+                        Remaining = (decimal)0.00,
+                        AreaId1 = custMobile.AreaId1,
+                        AreaId2 = custMobile.AreaId2,
+                        AreaId3 = custMobile.AreaId3,
+                        AreaId4 = custMobile.AreaId4,
+                        AreaId5 = custMobile.AreaId5,
+                        AreaName1 = a1.Name,
+                        AreaName2 = a2.Name,
+                        AreaName3 = a3.Name,
+                        AreaName4 = a4.Name,
+                        AreaName5 = a5.Name,
+                        Lat = custMobile.Lat,
+                        Lng = custMobile.Lng,
+                        InitialAddress = custMobile.InitialAddress,
+                        Address1 = custMobile.Address1,
+                        Address2 = custMobile.Address2,
+                        Phone = custMobile.Phone,
+                        Fax = custMobile.Fax,
+                        ContactPerson = custMobile.ContactPerson,
+                        IsActive = true,
+                        UpdatedDate = custMobile.UpdatedDate,
+                    });
 
         if (!string.IsNullOrEmpty(mobileLastSync))
         {
@@ -70,7 +180,7 @@ public class CustomerService : GeneralService<Customer>, ICustomerService
 
     public VwCustomer FindByCode(string code)
     {
-        return Db.VwCustomers.SingleOrDefault(x=>x.Code.Equals(code));
+        return Db.VwCustomers.SingleOrDefault(x => x.Code.Equals(code));
     }
 
     public SaveResult Insert(CustomerRequest data)
@@ -386,7 +496,8 @@ public class CustomerService : GeneralService<Customer>, ICustomerService
                 if (result == 0)
                 {
                     result += 1;
-                } else
+                }
+                else
                 {
                     return true;
                 }
@@ -410,21 +521,21 @@ public class CustomerService : GeneralService<Customer>, ICustomerService
         return 0;
     }
 
-    private SaveResult AddOrUpdateMobileSignIn(CustomerRequest data) 
+    private SaveResult AddOrUpdateMobileSignIn(CustomerRequest data)
     {
         var result = new SaveResult(false);
         if (data.MobileSignIn)
         {
             result = UpdateMobileSignIn(data);
         }
-        else 
+        else
         {
-            DeleteMobileSignIn(data);   
+            DeleteMobileSignIn(data);
         }
         result.Success = true;
         return result;
     }
-    private SaveResult UpdateMobileSignIn(CustomerRequest data) 
+    private SaveResult UpdateMobileSignIn(CustomerRequest data)
     {
         var result = new SaveResult(false);
 
@@ -463,7 +574,7 @@ public class CustomerService : GeneralService<Customer>, ICustomerService
             _catalogCtx.SaveChanges();
             data.CatalogUserId = newCatalogUser.Id;
         }
-        else 
+        else
         {
             if (!string.IsNullOrWhiteSpace(data.MobileUsername) && !string.IsNullOrWhiteSpace(data.MobilePassword))
             {
@@ -486,12 +597,12 @@ public class CustomerService : GeneralService<Customer>, ICustomerService
                 }
             }
         }
-            
+
         result.Success = true;
         return result;
     }
 
-    public void DeleteMobileSignIn(CustomerRequest data) 
+    public void DeleteMobileSignIn(CustomerRequest data)
     {
         if (data.CatalogUserId != null)
         {

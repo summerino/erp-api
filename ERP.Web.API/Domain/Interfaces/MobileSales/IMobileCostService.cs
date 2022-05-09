@@ -31,7 +31,7 @@ public interface IMobileCostService : IGeneralService<MobileCostHeader>
 
     IEnumerable<CostDetailModel> GetDetailForMobile(string Code);
 
-    SaveResult InsertForMobile(CostRequestModel data, int UserId);
+    SaveResult InsertForMobile(CostRequestModel data, int userId);
 
     IEnumerable<Coa> GetMobileCoaForMobile(string lastUpdate);
 

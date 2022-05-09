@@ -9,6 +9,8 @@ public interface ICustomerService : IGeneralService<Customer>
 {
     DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
         string search, string mobileLastSync = null);
+    DataSourceResult GetMobileCustomer(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
+        string search, string mobileLastSync = null);
 
     DataSourceResult GetLists(IEnumerable<Filter> filters, IEnumerable<Sort> sorts);
 

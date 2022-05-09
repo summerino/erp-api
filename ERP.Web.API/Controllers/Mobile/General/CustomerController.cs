@@ -51,8 +51,57 @@ public class CustomerController : ControllerBase
             x.TypeId,
             x.TypeName,
             x.CreditLimit,
-            Used = x.CreditUsed,
-            Remaining = x.CreditLimit-x.CreditUsed,
+            x.Used,
+            Remaining = x.CreditLimit-x.Used,
+            x.AreaId1,
+            x.AreaId2,
+            x.AreaId3,
+            x.AreaId4,
+            x.AreaId5,
+            x.AreaName1,
+            x.AreaName2,
+            x.AreaName3,
+            x.AreaName4,
+            x.AreaName5,
+            x.Lat,
+            x.Lng,
+            x.InitialAddress,
+            x.Address1,
+            x.Address2,
+            x.Phone,
+            x.Fax,
+            x.ContactPerson,
+            x.IsActive,
+            x.UpdatedDate
+        }).ToList<dynamic>();
+
+        return Ok(new MobileApiResponse
+        {
+            Count = data.Total,
+            Data = result.ToDynamicList()
+        });
+    }
+
+    [HttpGet("mobile")]
+    public IActionResult GetDataMobileCustomer(string search, string filters, string sorts, int skip, int take, string lastUpdate)
+    {
+        var data =
+            _customer.GetMobileCustomer(
+                skip, take,
+                JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
+                search, lastUpdate);
+
+        var result = data.Data.ToDynamicList().Select(x => new
+        {
+            x.Code,
+            x.Initial,
+            x.Name,
+            x.TypeId,
+            x.TypeName,
+            x.CreditLimit,
+            x.Used,
+            Remaining = x.CreditLimit - x.Used,
             x.AreaId1,
             x.AreaId2,
             x.AreaId3,
