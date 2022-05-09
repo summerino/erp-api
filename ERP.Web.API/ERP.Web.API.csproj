@@ -8,11 +8,11 @@
 	<Company>Sahassa Panca Manunggal</Company>
 	<Product>Sahassa® ERP</Product>
 	<Copyright>© Sahassa. All rights reserved.</Copyright>
-	<Version>22.4.27</Version>
+	<Version>22.5.9</Version>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="BoldReports.Net.Core" Version="3.3.34" />
+    <PackageReference Include="BoldReports.Net.Core" Version="4.1.78" />
     <PackageReference Include="Geolocation.NetStandard" Version="1.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.4" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="6.0.4" />
