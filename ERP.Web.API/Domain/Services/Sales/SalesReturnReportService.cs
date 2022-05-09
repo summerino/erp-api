@@ -30,7 +30,7 @@ public class SalesReturnReportService : ISalesReturnReportService
                                 WHEN 'CLS' THEN 'Ditutup' END AS [Status]
                             FROM Sales.vwSalesReturnHeader sr
                             LEFT JOIN Sales.vwSalesReturnDetail sr_d ON sr_d.Code = sr.Code" +
-                                                (string.IsNullOrEmpty(status) ? "" : $" WHERE sr.Mark = '{status.Replace("'", "''")}'") +
+                                                (string.IsNullOrEmpty(status) ? "" : status.Replace("'", "''").Equals("NV") ? " WHERE sr.Mark != 'V'" : $" WHERE sr.Mark = '{status.Replace("'", "''")}'") +
                                                 " GROUP BY sr.[Date], sr.Code, sr.CustCode, sr.CustName, sr.Mark, sr.[Type]").ToList();
 
         var srDetailData = _db.ReportByDetailSRs.FromSqlRaw(@"SELECT sr.[Date], sr.Code, sr.CustCode,sr.CustName,

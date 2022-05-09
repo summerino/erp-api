@@ -45,7 +45,7 @@ public class PurchaseReceiveReportService : IPurchaseReceiveReportService
 	                            WHEN 'INV' THEN 'Sudah Difakturkan' END AS [Status]
                             FROM Purchasing.vwPurchaseReceiveHeader rcv
                             LEFT JOIN cte_rcv_detail rcv_d ON rcv.Code = rcv_d.Code" +
-                                                  (string.IsNullOrEmpty(status) ? "" : $" WHERE rcv.Mark = '{status.Replace("'", "''")}'") +
+                                                  (string.IsNullOrEmpty(status) ? "" : status.Replace("'", "''").Equals("NV") ? " WHERE rcv.Mark != 'V'" : $" WHERE rcv.Mark = '{status.Replace("'", "''")}'") +
                                                   @" GROUP BY rcv.[Date], rcv.Code, rcv.SrcTrans,
                             rcv.TransCode, rcv.RefNo, rcv.SupCode,
                             rcv.SupName, rcv.TaxInvoiceNo, rcv.TaxInvoiceDate, rcv.Mark").ToList();

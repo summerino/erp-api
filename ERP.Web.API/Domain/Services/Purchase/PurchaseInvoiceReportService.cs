@@ -50,7 +50,7 @@ public class PurchaseInvoiceReportService : IPurchaseInvoiceReportService
                             LEFT JOIN Purchasing.PurchaseInvoiceDetail inv_d ON inv.Code = inv_d.Code
                             LEFT JOIN Purchasing.vwPurchaseReceiveHeader rcv ON inv_d.RcvCode = rcv.Code
                             LEFT JOIN cte_rcv_detail rcv_d ON rcv.Code = rcv_d.Code" +
-                                                   (string.IsNullOrEmpty(status) ? "" : status == "A" ? $" WHERE inv.Mark IN ('A','PP','CMP')" : $" WHERE inv.Mark = '{status.Replace("'", "''")}'") +
+                                                   (string.IsNullOrEmpty(status) ? "" : status.Replace("'", "''").Equals("A") ? $" WHERE inv.Mark IN ('A','PP','CMP')" : $" WHERE inv.Mark = '{status.Replace("'", "''")}'") +
                                                    @" GROUP BY inv.[Date], inv.DueDate, inv.Code, inv.POCode, inv.SupCode, inv.SupName, inv.RefNo, inv.Mark)
                             SELECT ch.[Date], ch.DueDate, ch.Code, 
                             ch.OrderCode, ch.SupCode, ch.SupName, ch.RefNo,
