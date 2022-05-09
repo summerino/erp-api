@@ -36,9 +36,16 @@ public class CustomerService : GeneralService<Customer>, ICustomerService
                         Name = cust.Name,
                         TypeId = cust.TypeId,
                         TypeName = cust.TypeName,
+                        Email = cust.Email,
+                        Website = cust.Website,
+                        PaymentTermId = cust.PaymentTermId,
                         CreditLimit = cust.CreditLimit,
                         Used = cust.CreditUsed,
                         Remaining = cust.CreditLimit - cust.CreditUsed,
+                        RefNo = cust.RefNo,
+                        Notes = cust.Notes,
+                        BillingAddressId = cust.BillingAddressId,
+                        ShippingAddressId = cust.ShippingAddressId,
                         AreaId1 = cust.AreaId1,
                         AreaId2 = cust.AreaId2,
                         AreaId3 = cust.AreaId3,
@@ -49,6 +56,8 @@ public class CustomerService : GeneralService<Customer>, ICustomerService
                         AreaName3 = cust.AreaName3,
                         AreaName4 = cust.AreaName4,
                         AreaName5 = cust.AreaName5,
+                        IsConsignee = cust.IsConsignee,
+                        MobileSignIn = cust.MobileSignIn,
                         Lat = cust.Lat,
                         Lng = cust.Lng,
                         InitialAddress = cust.InitialAddress,
@@ -58,7 +67,7 @@ public class CustomerService : GeneralService<Customer>, ICustomerService
                         Fax = cust.Fax,
                         ContactPerson = cust.ContactPerson,
                         IsActive = cust.IsActive,
-                        UpdatedDate = cust.UpdatedDate,
+                        UpdatedDate = cust.UpdatedDate
                     });
 
         if (!string.IsNullOrEmpty(mobileLastSync))
