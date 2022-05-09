@@ -135,6 +135,8 @@ public class VwSalesReturnHeader : BaseEntityWithMarkApprovedAndViewed
 
     public string SalesInitial { get; set; }
 
+    public string SalesName { get; set; }
+
     public string CreatedInitial { get; set; }
 
     public string UpdatedInitial { get; set; }

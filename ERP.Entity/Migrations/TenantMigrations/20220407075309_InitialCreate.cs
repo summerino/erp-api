@@ -7347,6 +7347,7 @@ AS
 	SELECT sr_h.*,
 		c.[Name] AS CustName,
 		e.Initial AS SalesInitial,
+        e.FirstName AS SalesName,
 		u_c.Initial AS CreatedInitial,
 		u_u.Initial AS UpdatedInitial,
 		u_a.Initial AS ApprovedInitial,

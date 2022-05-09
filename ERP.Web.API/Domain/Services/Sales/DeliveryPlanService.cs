@@ -50,47 +50,54 @@ public class DeliveryPlanService : GeneralService<DeliveryPlanHeader>, IDelivery
     public DataSourceResult GetAllTransaction(string warehouseCode, IEnumerable<Filter> filter)
     {
         var data = (from dt in Db.VwSalesDeliveryHeaders
-            where dt.WarehouseCode == warehouseCode && !dt.FromDirectInvoice
-                                                    && dt.Mark != "V" && (!(from ddp in Db.DeliveryPlanDetails
-                                                                              join dp in Db.DeliveryPlanHeaders on ddp.Code equals dp.Code
-                                                                              where dp.Mark != "V"
-                                                                              select ddp.TransCode).Contains(dt.Code)
-                                                                          || (from ddp in Db.DeliveryPlanDetails
-                                                                              join dp in Db.DeliveryPlanHeaders on ddp.Code equals dp.Code
-                                                                              where dp.Mark != "V" && ddp.FailedSendAll
-                                                                              select ddp.TransCode).Contains(dt.Code))
-            select new
-            {
-                dt.Code,
-                SoCode = dt.TransCode,
-                dt.Date,
-                dt.Mark,
-                Type = "Surat Jalan",
-                dt.CustName,
-                dt.CustAddress,
-                dt.CustArea
-            }).Union(from dt in Db.VwSalesInvoiceHeaders
-            join dtp in Db.VwSalesDeliveryHeaders on dt.Code equals dtp.Code
-            where dtp.WarehouseCode == warehouseCode && dt.FromDirectInvoice
-                                                     && dt.Mark != "V" && (!(from ddp in Db.DeliveryPlanDetails
-                                                                               join dp in Db.DeliveryPlanHeaders on ddp.Code equals dp.Code
-                                                                               where dp.Mark != "V"
-                                                                               select ddp.TransCode).Contains(dt.Code)
-                                                                           || (from ddp in Db.DeliveryPlanDetails
-                                                                               join dp in Db.DeliveryPlanHeaders on ddp.Code equals dp.Code
-                                                                               where dp.Mark != "V" && ddp.FailedSendAll
-                                                                               select ddp.TransCode).Contains(dt.Code))
-            select new
-            {
-                dt.Code,
-                dt.SoCode,
-                dt.Date,
-                dt.Mark,
-                Type = "Penjualan Langsung",
-                dt.CustName,
-                dt.CustAddress,
-                dt.CustArea
-            });
+                    join dto in Db.VwSalesOrderHeaders on dt.TransCode equals dto.Code
+                    join dtr in Db.VwSalesReturnHeaders on dt.TransCode equals dtr.Code
+                    where dt.WarehouseCode == warehouseCode && !dt.FromDirectInvoice &&
+                    dt.Mark != "V" &&
+                    (!(from ddp in Db.DeliveryPlanDetails
+                       join dp in Db.DeliveryPlanHeaders on ddp.Code equals dp.Code
+                       where dp.Mark != "V"
+                       select ddp.TransCode).Contains(dt.Code)
+                    || (from ddp in Db.DeliveryPlanDetails
+                        join dp in Db.DeliveryPlanHeaders on ddp.Code equals dp.Code
+                        where dp.Mark != "V" && ddp.FailedSendAll
+                        select ddp.TransCode).Contains(dt.Code))
+                    select new
+                    {
+                        dt.Code,
+                        SoCode = dt.TransCode,
+                        dt.Date,
+                        dt.Mark,
+                        Type = "Surat Jalan",
+                        dt.CustName,
+                        dt.CustAddress,
+                        dt.CustArea,
+                        SalesName = dt.SrcTrans == 1 ? dto.SalesName : dtr.SalesName
+                    }).Union(from dt in Db.VwSalesInvoiceHeaders
+                             join dtp in Db.VwSalesDeliveryHeaders on dt.Code equals dtp.Code
+                             join dto in Db.VwSalesOrderHeaders on dtp.TransCode equals dto.Code
+                             where dtp.WarehouseCode == warehouseCode && dt.FromDirectInvoice && 
+                             dt.Mark != "V" &&
+                             (!(from ddp in Db.DeliveryPlanDetails
+                                join dp in Db.DeliveryPlanHeaders on ddp.Code equals dp.Code
+                                where dp.Mark != "V"
+                                select ddp.TransCode).Contains(dt.Code)
+                            || (from ddp in Db.DeliveryPlanDetails
+                                join dp in Db.DeliveryPlanHeaders on ddp.Code equals dp.Code
+                                where dp.Mark != "V" && ddp.FailedSendAll
+                                select ddp.TransCode).Contains(dt.Code))
+                             select new
+                             {
+                                 dt.Code,
+                                 dt.SoCode,
+                                 dt.Date,
+                                 dt.Mark,
+                                 Type = "Penjualan Langsung",
+                                 dt.CustName,
+                                 dt.CustAddress,
+                                 dt.CustArea,
+                                 dto.SalesName
+                             });
 
         return data.AsQueryable().ToDataSourceResult(0, data.Count(), filter, null);
     }
