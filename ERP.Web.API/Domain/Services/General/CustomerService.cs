@@ -27,48 +27,7 @@ public class CustomerService : GeneralService<Customer>, ICustomerService
     public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
         string search, string mobileLastSync)
     {
-        //var data = Db.VwCustomers.AsQueryable();
-        var data = (from cust in Db.VwCustomers
-                    select new CustomerModel
-                    {
-                        Code = cust.Code,
-                        Initial = cust.Initial,
-                        Name = cust.Name,
-                        TypeId = cust.TypeId,
-                        TypeName = cust.TypeName,
-                        Email = cust.Email,
-                        Website = cust.Website,
-                        PaymentTermId = cust.PaymentTermId,
-                        CreditLimit = cust.CreditLimit,
-                        Used = cust.CreditUsed,
-                        Remaining = cust.CreditLimit - cust.CreditUsed,
-                        RefNo = cust.RefNo,
-                        Notes = cust.Notes,
-                        BillingAddressId = cust.BillingAddressId,
-                        ShippingAddressId = cust.ShippingAddressId,
-                        AreaId1 = cust.AreaId1,
-                        AreaId2 = cust.AreaId2,
-                        AreaId3 = cust.AreaId3,
-                        AreaId4 = cust.AreaId4,
-                        AreaId5 = cust.AreaId5,
-                        AreaName1 = cust.AreaName1,
-                        AreaName2 = cust.AreaName2,
-                        AreaName3 = cust.AreaName3,
-                        AreaName4 = cust.AreaName4,
-                        AreaName5 = cust.AreaName5,
-                        IsConsignee = cust.IsConsignee,
-                        MobileSignIn = cust.MobileSignIn,
-                        Lat = cust.Lat,
-                        Lng = cust.Lng,
-                        InitialAddress = cust.InitialAddress,
-                        Address1 = cust.Address1,
-                        Address2 = cust.Address2,
-                        Phone = cust.Phone,
-                        Fax = cust.Fax,
-                        ContactPerson = cust.ContactPerson,
-                        IsActive = cust.IsActive,
-                        UpdatedDate = cust.UpdatedDate
-                    });
+        var data = Db.VwCustomers.AsQueryable();
 
         if (!string.IsNullOrEmpty(mobileLastSync))
         {
