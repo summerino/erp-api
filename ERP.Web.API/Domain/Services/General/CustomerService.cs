@@ -274,6 +274,13 @@ public class CustomerService : GeneralService<Customer>, ICustomerService
             return result;
         }
 
+        //Check if any consignee warehouse has item
+        if ((!data.IsActive || !data.IsConsignee) && Db.WarehouseQuantities.Any(x => x.WarehouseCode == data.Code))
+        {
+            result.Message = "Tidak bisa menonaktifkan data pelanggan karena terdapat barang pada gudang konsinyi.";
+            return result;
+        }
+
         // handling mobile sign in
         AddOrUpdateMobileSignIn(data);
 
