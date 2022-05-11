@@ -50,8 +50,10 @@ public class DeliveryPlanService : GeneralService<DeliveryPlanHeader>, IDelivery
     public DataSourceResult GetAllTransaction(string warehouseCode, IEnumerable<Filter> filter)
     {
         var data = (from dt in Db.VwSalesDeliveryHeaders
-                    join dto in Db.VwSalesOrderHeaders on dt.TransCode equals dto.Code
-                    join dtr in Db.VwSalesReturnHeaders on dt.TransCode equals dtr.Code
+                    join dto in Db.VwSalesOrderHeaders on dt.TransCode equals dto.Code into dtos 
+                    from dtosRes in dtos.DefaultIfEmpty()
+                    join dtr in Db.VwSalesReturnHeaders on dt.TransCode equals dtr.Code into dtrs 
+                    from dtrsRes in dtrs.DefaultIfEmpty()
                     where dt.WarehouseCode == warehouseCode && !dt.FromDirectInvoice &&
                     dt.Mark != "V" &&
                     (!(from ddp in Db.DeliveryPlanDetails
@@ -72,7 +74,7 @@ public class DeliveryPlanService : GeneralService<DeliveryPlanHeader>, IDelivery
                         dt.CustName,
                         dt.CustAddress,
                         dt.CustArea,
-                        SalesName = dt.SrcTrans == 1 ? dto.SalesName : dtr.SalesName
+                        SalesName = dt.SrcTrans == 1 ? dtosRes.SalesName : dtrsRes.SalesName
                     }).Union(from dt in Db.VwSalesInvoiceHeaders
                              join dtp in Db.VwSalesDeliveryHeaders on dt.Code equals dtp.Code
                              join dto in Db.VwSalesOrderHeaders on dtp.TransCode equals dto.Code
