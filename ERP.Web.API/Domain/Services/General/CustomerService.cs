@@ -58,53 +58,74 @@ public class CustomerService : GeneralService<Customer>, ICustomerService
     public DataSourceResult GetMobileCustomer(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
         string search, string mobileLastSync)
     {
-        var data = (from custMobile in Db.MobileCustomers
-                    join custType in Db.CustomerTypes on custMobile.TypeId equals custType.Id into cT
-                    from cType in cT.DefaultIfEmpty()
-                    join custArea in Db.CustomerAddress on custMobile.Code equals custArea.Code into cA
-                    from cArea in cA.DefaultIfEmpty()
-                    join sales in Db.Areas on custMobile.AreaId1 equals sales.Id into sls1
-                    from a1 in sls1.DefaultIfEmpty()
-                    join sales in Db.Areas on custMobile.AreaId2 equals sales.Id into sls2
-                    from a2 in sls2.DefaultIfEmpty()
-                    join sales in Db.Areas on custMobile.AreaId3 equals sales.Id into sls3
-                    from a3 in sls3.DefaultIfEmpty()
-                    join sales in Db.Areas on custMobile.AreaId4 equals sales.Id into sls4
-                    from a4 in sls4.DefaultIfEmpty()
-                    join sales in Db.Areas on custMobile.AreaId5 equals sales.Id into sls5
-                    from a5 in sls5.DefaultIfEmpty()
-                    where custMobile.CustCode == null
-                    select new CustomerModel
-                    {
-                        Code = custMobile.Code,
-                        Initial = custMobile.Initial,
-                        Name = custMobile.Name,
-                        TypeId = custMobile.TypeId,
-                        TypeName = cType.Name,
-                        CreditLimit = (decimal)0.00,
-                        Used = (decimal)0.00,
-                        Remaining = (decimal)0.00,
-                        AreaId1 = custMobile.AreaId1,
-                        AreaId2 = custMobile.AreaId2,
-                        AreaId3 = custMobile.AreaId3,
-                        AreaId4 = custMobile.AreaId4,
-                        AreaId5 = custMobile.AreaId5,
-                        AreaName1 = a1.Name,
-                        AreaName2 = a2.Name,
-                        AreaName3 = a3.Name,
-                        AreaName4 = a4.Name,
-                        AreaName5 = a5.Name,
-                        Lat = custMobile.Lat,
-                        Lng = custMobile.Lng,
-                        InitialAddress = custMobile.InitialAddress,
-                        Address1 = custMobile.Address1,
-                        Address2 = custMobile.Address2,
-                        Phone = custMobile.Phone,
-                        Fax = custMobile.Fax,
-                        ContactPerson = custMobile.ContactPerson,
-                        IsActive = true,
-                        UpdatedDate = custMobile.UpdatedDate,
-                    });
+        var dataOriginal = (from cust in Db.VwCustomers
+                            select new CustomerModel
+                            {
+                                Code = cust.Code,
+                                Initial = cust.Initial,
+                                Name = cust.Name,
+                                TypeId = cust.TypeId,
+                                TypeName = cust.TypeName,
+                                CreditLimit = cust.CreditLimit,
+                                Used = cust.CreditUsed,
+                                Remaining = cust.CreditLimit - cust.CreditUsed,
+                                AreaId1 = cust.AreaId1,
+                                AreaId2 = cust.AreaId2,
+                                AreaId3 = cust.AreaId3,
+                                AreaId4 = cust.AreaId4,
+                                AreaId5 = cust.AreaId5,
+                                AreaName1 = cust.AreaName1,
+                                AreaName2 = cust.AreaName2,
+                                AreaName3 = cust.AreaName3,
+                                AreaName4 = cust.AreaName4,
+                                AreaName5 = cust.AreaName5,
+                                Lat = cust.Lat,
+                                Lng = cust.Lng,
+                                InitialAddress = cust.InitialAddress,
+                                Address1 = cust.Address1,
+                                Address2 = cust.Address2,
+                                Phone = cust.Phone,
+                                Fax = cust.Fax,
+                                ContactPerson = cust.ContactPerson,
+                                IsActive = true,
+                                UpdatedDate = cust.UpdatedDate,
+                            });
+
+        var dataMobile = (from custMobile in Db.VwMobileCustomers
+                          where custMobile.CustCode == null && custMobile.Mark == "A"
+                          select new CustomerModel
+                          {
+                              Code = custMobile.Code,
+                              Initial = custMobile.Initial,
+                              Name = custMobile.Name,
+                              TypeId = custMobile.TypeId,
+                              TypeName = custMobile.TypeName,
+                              CreditLimit = (decimal)0.00,
+                              Used = (decimal)0.00,
+                              Remaining = (decimal)0.00,
+                              AreaId1 = custMobile.AreaId1,
+                              AreaId2 = custMobile.AreaId2,
+                              AreaId3 = custMobile.AreaId3,
+                              AreaId4 = custMobile.AreaId4,
+                              AreaId5 = custMobile.AreaId5,
+                              AreaName1 = custMobile.AreaName1,
+                              AreaName2 = custMobile.AreaName2,
+                              AreaName3 = custMobile.AreaName3,
+                              AreaName4 = custMobile.AreaName4,
+                              AreaName5 = custMobile.AreaName5,
+                              Lat = custMobile.Lat,
+                              Lng = custMobile.Lng,
+                              InitialAddress = custMobile.InitialAddress,
+                              Address1 = custMobile.Address1,
+                              Address2 = custMobile.Address2,
+                              Phone = custMobile.Phone,
+                              Fax = custMobile.Fax,
+                              ContactPerson = custMobile.ContactPerson,
+                              IsActive = true,
+                              UpdatedDate = custMobile.UpdatedDate,
+                          });
+
+        var data = dataOriginal.Union(dataMobile).OrderBy(x => x.UpdatedDate).AsQueryable();
 
         if (!string.IsNullOrEmpty(mobileLastSync))
         {
