@@ -104,6 +104,18 @@ public class VwMobileCustomer : BaseEntityWithMarkApprovedAndRejected
     public decimal? Lng { get; set; }
 
 
+    public string TypeName { get; set; }
+
+    public string AreaName1 { get; set; }
+
+    public string AreaName2 { get; set; }
+
+    public string AreaName3 { get; set; }
+
+    public string AreaName4 { get; set; }
+
+    public string AreaName5 { get; set; }
+
     public string CreatedInitial { get; set; }
 
     public string UpdatedInitial { get; set; }

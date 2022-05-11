@@ -8939,6 +8939,26 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.Property<int?>("AreaId5")
                         .HasColumnType("int");
 
+                    b.Property<string>("AreaName1")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<string>("AreaName2")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<string>("AreaName3")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<string>("AreaName4")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<string>("AreaName5")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
                     b.Property<string>("Code")
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
@@ -9010,6 +9030,10 @@ namespace ERP.Entity.Migrations.TenantMigrations
 
                     b.Property<int>("TypeId")
                         .HasColumnType("int");
+
+                    b.Property<string>("TypeName")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
 
                     b.Property<int>("UpdatedBy")
                         .HasColumnType("int");
@@ -18603,6 +18627,10 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("bigint");
 
                     b.Property<string>("SalesInitial")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<string>("SalesName")
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
 

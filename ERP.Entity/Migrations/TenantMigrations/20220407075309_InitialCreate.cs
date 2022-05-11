@@ -8509,6 +8509,12 @@ AS
             sql = @"CREATE VIEW [MobileSales].[vwMobileCustomer]
 AS
     SELECT mc.*,
+		t.[Name] AS TypeName,
+		a1.[Name] as AreaName1,
+		a2.[Name] as AreaName2,
+		a3.[Name] as AreaName3,
+		a4.[Name] as AreaName4,
+		a5.[Name] as AreaName5,
         u_c.Initial AS CreatedInitial,
         u_u.Initial AS UpdatedInitial,
         u_a.Initial AS ApprovedInitial,
@@ -8518,6 +8524,18 @@ AS
             WHEN 'APR' THEN 'Approved'
             WHEN 'REJ' THEN 'Rejected' END AS [Status]
     FROM MobileSales.MobileCustomer mc
+	LEFT JOIN General.CustomerType t
+		ON t.Id = mc.TypeId
+	LEFT JOIN Sales.Area A1
+		ON mc.AreaId1 = a1.Id
+	LEFT JOIN Sales.Area A2
+		ON mc.AreaId2 = a2.Id
+	LEFT JOIN Sales.Area A3
+		ON mc.AreaId3 = a3.Id
+	LEFT JOIN Sales.Area A4
+		ON mc.AreaId4 = a4.Id
+	LEFT JOIN Sales.Area A5
+		ON mc.AreaId5 = a5.Id
     LEFT JOIN SystemManagement.[User] u_c
         ON u_c.Id = mc.CreatedBy
     LEFT JOIN SystemManagement.[User] u_u
