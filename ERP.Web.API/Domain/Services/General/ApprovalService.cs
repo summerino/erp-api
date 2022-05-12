@@ -6,6 +6,7 @@ using ERP.Entity;
 using ERP.Web.API.Domain.Interfaces.General;
 using ERP.Web.API.Domain.Models.General;
 using ERP.Web.API.Model.General;
+using ERP.Web.API.Model;
 
 namespace ERP.Web.API.Domain.Services.General;
 
@@ -66,12 +67,36 @@ public class ApprovalService : IApprovalService
     {
         var map = new MapApproval();
         var tableName = "";
-        var query = "UPDATE [TABLE] SET ApprovedBy='[USER]', ApprovedDate=GETDATE() WHERE Code='[CODE]'";
+        var query = "";
         var temp = map.Approvals.FirstOrDefault(x => x.ActionId == actionId);
-        if (temp != null) 
+        var isDirectInvoice = false;
+
+        if((int)Actions.ApproveSalesInvoice == actionId)
         {
+            isDirectInvoice = _tenantCtx.SalesInvoiceHeaders.FirstOrDefault(x => x.Code == code).FromDirectInvoice;
+        }
+
+        if (temp != null && isDirectInvoice)
+        {
+            query = @"UPDATE Sales.SalesOrderHeader SET ApprovedBy='[USER]', ApprovedDate=GETDATE() WHERE Code='[CODE]';
+                    UPDATE Sales.SalesDeliveryHeader SET ApprovedBy='[USER]', ApprovedDate=GETDATE() WHERE Code='[CODE]';
+                    UPDATE Sales.SalesInvoiceHeader SET ApprovedBy='[USER]', ApprovedDate=GETDATE() WHERE Code='[CODE]'";
+        }
+        else if (temp != null) 
+        {
+            query = "UPDATE [TABLE] SET ApprovedBy='[USER]', ApprovedDate=GETDATE() WHERE Code='[CODE]'";
             tableName = temp.TableName;
         }
-        return query.Replace("[TABLE]", tableName).Replace("[CODE]", code).Replace("[USER]", user.ToString());
+
+        if (isDirectInvoice)
+        {
+            query = query.Replace("[TABLE]", tableName).Replace("[CODE]", code).Replace("[USER]", user.ToString());
+        }
+        else
+        {
+            query = query.Replace("[CODE]", code).Replace("[USER]", user.ToString());
+        }
+
+        return query;
     }
 }
