@@ -15,5 +15,9 @@ public interface ICoaService : IGeneralService<Coa>
 
     DataSourceResult GetListParents(IEnumerable<Filter> filters, IEnumerable<Sort> sorts);
 
+    DataSourceResult GetListGeneralJournal();
+
+    DataSourceResult GetListGeneralTransaction();
+
     SaveResult Delete(int id, int userId);
 }

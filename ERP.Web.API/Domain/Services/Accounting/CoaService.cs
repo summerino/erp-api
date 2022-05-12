@@ -198,4 +198,41 @@ public class CoaService : GeneralService<Coa>, ICoaService
     {
         return Db.Coas.Any(x => x.Code == code && x.Id != id);
     }
+
+    public DataSourceResult GetListGeneralJournal()
+    {
+        var data = Db.Coas.Where(x => x.IsActive && x.TypeId != 1);
+        var dataT = data;
+
+        var specialCOA = new string[] { "AP_COA", "AP_DFR_COA", "AR_COA", "CM_AP_COA",
+            "COGS_COA", "CROSS_COA", "DM_AR_COA", "DPC_COA",
+            "DPS_COA", "EP_AP_COA", "INVENTORY_COA", "SENT_ITEM_COA" };
+
+        var sysParData = Db.SystemParameters.Where(x => specialCOA.Contains(x.Code)).ToList();
+
+        data = data.Where(x => !dataT.Select(t => t.ParentId).Contains(x.Id));
+
+        data = data.Where(x => !sysParData.Select(c => c.Value).Contains(x.Code));
+
+        return data.ToDataSourceResult(0, -1, null, null);
+    }
+
+    public DataSourceResult GetListGeneralTransaction()
+    {
+        var data = Db.Coas.Where(x => x.IsActive && x.TypeId != 1);
+        var dataT = data;
+
+        var specialCOA = new string[] { "AP_COA", "AP_DFR_COA", "AR_COA", "CM_AP_COA",
+            "COGS_COA", "CROSS_COA", "DM_AR_COA", "DPC_COA",
+            "DPS_COA", "EP_AP_COA", "INVENTORY_COA", "SENT_ITEM_COA",
+            "RETAINED_EARNING_COA", "SLS_COA", "SLS_DISC_COA", "SLS_RTN_COA", "CM_AP_COA"};
+
+        var sysParData = Db.SystemParameters.Where(x => specialCOA.Contains(x.Code)).ToList();
+
+        data = data.Where(x => !dataT.Select(t => t.ParentId).Contains(x.Id));
+
+        data = data.Where(x => !sysParData.Select(c => c.Value).Contains(x.Code));
+
+        return data.ToDataSourceResult(0, -1, null, null);
+    }
 }

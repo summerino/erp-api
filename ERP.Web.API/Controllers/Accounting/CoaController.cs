@@ -110,6 +110,48 @@ public class CoaController : ControllerBase
         });
     }
 
+    [HttpGet("list-general-journal")]
+    public IActionResult GetListGeneralJournal()
+    {
+        var data =
+            _coa.GetListGeneralJournal().Data
+                .ToDynamicList()
+                .Select(x => new
+                {
+                    x.Id,
+                    x.Code,
+                    x.Name
+                })
+                .ToList<dynamic>();
+
+        return Ok(new ApiResponse
+        {
+            RowCount = data.Count,
+            TableData = data
+        });
+    }
+
+    [HttpGet("list-general-transaction")]
+    public IActionResult GetListGeneralTransaction()
+    {
+        var data =
+            _coa.GetListGeneralTransaction().Data
+                .ToDynamicList()
+                .Select(x => new
+                {
+                    x.Id,
+                    x.Code,
+                    x.Name
+                })
+                .ToList<dynamic>();
+
+        return Ok(new ApiResponse
+        {
+            RowCount = data.Count,
+            TableData = data
+        });
+    }
+
     [HttpPost]
     public IActionResult OnPost(Coa data)
     {
