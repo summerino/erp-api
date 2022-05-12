@@ -67,7 +67,7 @@ public class ApprovalService : IApprovalService
         var map = new MapApproval();
         var tableName = "";
         var query = "UPDATE [TABLE] SET ApprovedBy='[USER]', ApprovedDate=GETDATE() WHERE Code='[CODE]'";
-        var temp = map.Approvals.SingleOrDefault(x => x.ActionId == actionId);
+        var temp = map.Approvals.FirstOrDefault(x => x.ActionId == actionId);
         if (temp != null) 
         {
             tableName = temp.TableName;
