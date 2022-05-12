@@ -8037,7 +8037,20 @@ AS
 	SELECT Code, PurchaseDate, [Name], 'Aktiva Tetap', UpdatedDate, 19, 30
 	FROM AssetManagement.FixedAsset
 	WHERE ApprovedBy IS NULL
-	AND Mark <> 'V'";
+	AND Mark <> 'V'
+    
+    UNION ALL  
+    SELECT si.Code, si.[Date],  
+    si.CustCode + ' - ' + c.[Name],  
+    'Penjualan Langsung', si.UpdatedDate, 20, 22  
+    FROM (  
+    SELECT Code, [Date], CustCode, UpdatedDate  
+    FROM Sales.SalesInvoiceHeader  
+    WHERE ApprovedBy IS NULL  
+    AND Mark <> 'V' AND FromDirectInvoice = 1
+    ) si  
+    LEFT JOIN General.Customer c  
+    ON c.Code = si.CustCode";
             migrationBuilder.Sql(sql);
 
             // Create view General.vwCustomer
