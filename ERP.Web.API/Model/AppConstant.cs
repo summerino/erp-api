@@ -134,6 +134,7 @@ public enum Menu
     // Finance
     CashBank = 82,
     InterCashBank = 83,
+    CashFlowReport = 157,
     OutstandingChequeReport = 149,
 
     // Accounting
