@@ -7899,6 +7899,7 @@ AS
 		FROM Sales.SalesOrderHeader
 		WHERE ApprovedBy IS NULL
 		AND Mark <> 'V'
+        AND FromDirectInvoice = 0
 	) so
 	LEFT JOIN General.Customer c
 		ON c.Code = so.CustCode
@@ -7912,6 +7913,7 @@ AS
 		FROM Sales.SalesDeliveryHeader
 		WHERE ApprovedBy IS NULL
 		AND Mark <> 'V'
+        AND FromDirectInvoice = 0
 	) dlv
 	LEFT JOIN General.Customer c
 		ON c.Code = dlv.CustCode
@@ -7925,6 +7927,7 @@ AS
 		FROM Sales.SalesInvoiceHeader
 		WHERE ApprovedBy IS NULL
 		AND Mark <> 'V'
+        AND FromDirectInvoice = 0
 	) si
 	LEFT JOIN General.Customer c
 		ON c.Code = si.CustCode
@@ -8044,10 +8047,11 @@ AS
     si.CustCode + ' - ' + c.[Name],  
     'Penjualan Langsung', si.UpdatedDate, 20, 22  
     FROM (  
-    SELECT Code, [Date], CustCode, UpdatedDate  
-    FROM Sales.SalesInvoiceHeader  
-    WHERE ApprovedBy IS NULL  
-    AND Mark <> 'V' AND FromDirectInvoice = 1
+        SELECT Code, [Date], CustCode, UpdatedDate  
+        FROM Sales.SalesInvoiceHeader  
+        WHERE ApprovedBy IS NULL  
+        AND Mark <> 'V'
+        AND FromDirectInvoice = 1
     ) si  
     LEFT JOIN General.Customer c  
     ON c.Code = si.CustCode";
