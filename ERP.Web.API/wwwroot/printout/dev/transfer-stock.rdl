@@ -1148,6 +1148,7 @@ FROM SystemManagement.Company</CommandText>
             <BackgroundColor>White</BackgroundColor>
           </Style>
         </PageFooter>
+        <PageHeight>5.5in</PageHeight>
         <LeftMargin>0.1in</LeftMargin>
         <RightMargin>0.1in</RightMargin>
         <TopMargin>0.1in</TopMargin>
