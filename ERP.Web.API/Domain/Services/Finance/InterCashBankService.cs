@@ -45,8 +45,8 @@ public class InterCashBankService : GeneralService<GeneralCashBankHeader>, IInte
         try
         {
             // Get new code
-            var newCode = GetNewCode("CB_NUM_FMT", data.Date);
-            var newCode2 = GetNewCode("CB_NUM_FMT", data.Date);
+            var newCode = GetNewCode("ICB_NUM_FMT", data.Date);
+            var newCode2 = GetNewCode("ICB_NUM_FMT", data.Date);
             var crossCoa = Db.SystemParameters.FirstOrDefault(x => x.Code == "CROSS_COA" && x.IsActive)?.Value;
 
             if (string.IsNullOrWhiteSpace(crossCoa))
