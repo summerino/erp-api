@@ -60,6 +60,9 @@ public class SalesReturnHeader : BaseEntityWithMarkApprovedAndViewed
     public decimal TaxAmount { get; set; }
 
     [Precision(18, 2)]
+    public decimal ExemptTaxAmount { get; set; }
+
+    [Precision(18, 2)]
     public decimal Total { get; set; }
 
     [Column("DPP", TypeName = "decimal(18, 2)")]
@@ -117,6 +120,9 @@ public class VwSalesReturnHeader : BaseEntityWithMarkApprovedAndViewed
 
     [Precision(18, 2)]
     public decimal TaxAmount { get; set; }
+
+    [Precision(18, 2)]
+    public decimal ExemptTaxAmount { get; set; }
 
     [Precision(18, 2)]
     public decimal Total { get; set; }
@@ -202,6 +208,9 @@ public class SalesReturnDetail
     public decimal TaxAmount { get; set; }
 
     [Precision(19, 6)]
+    public decimal ExemptTaxAmount { get; set; }
+
+    [Precision(19, 6)]
     public decimal NettPrice { get; set; }
 
     [Precision(19, 6)]
@@ -259,6 +268,9 @@ public class VwSalesReturnDetail
 
     [Precision(19, 6)]
     public decimal TaxAmount { get; set; }
+
+    [Precision(19, 6)]
+    public decimal ExemptTaxAmount { get; set; }
 
     [Precision(19, 6)]
     public decimal NettPrice { get; set; }

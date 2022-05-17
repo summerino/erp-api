@@ -24,6 +24,8 @@ public class ReportBySO
 
     public decimal TaxAmount { get; set; }
 
+    public decimal ExemptTaxAmount { get; set; }
+
     public decimal Total { get; set; }
 
     public string Status { get; set; }
@@ -65,6 +67,8 @@ public class ReportByDetailSO
 
     public decimal? TaxAmount { get; set; }
 
+    public decimal? ExemptTaxAmount { get; set; }
+
     public decimal? NettPrice { get; set; }
 
     public decimal TotalGrossAmount { get; set; }
@@ -78,6 +82,8 @@ public class ReportByDetailSO
     public decimal TotalDpp { get; set; }
 
     public decimal TotalTaxAmount { get; set; }
+
+    public decimal TotalExemptTaxAmount { get; set; }
 
     public decimal Total { get; set; }
 

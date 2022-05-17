@@ -24,8 +24,14 @@ public class Tax : BaseEntityWithActive
     [Precision(5, 2)]
     public decimal Rate { get; set; }
 
+    [Precision(5, 2)]
+    public decimal ExemptRate { get; set; }
+
     [StringLength(6)]
     public string CoaCode { get; set; }
+
+    [StringLength(6)]
+    public string ExemptCoaCode { get; set; }
 
     public short Seq { get; set; }
 }
@@ -43,7 +49,12 @@ public class VwTax : BaseEntityWithActive
     [Precision(5, 2)]
     public decimal Rate { get; set; }
 
+    [Precision(5, 2)]
+    public decimal ExemptRate { get; set; }
+
     public string CoaCode { get; set; }
+
+    public string ExemptCoaCode { get; set; }
 
     public short Seq { get; set; }
 
