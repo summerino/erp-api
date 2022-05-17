@@ -4123,7 +4123,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     UnitPrice = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
                     Disc = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
                     TaxId = table.Column<int>(type: "int", nullable: true),
-                    TaxAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    TaxAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
                     NettPrice = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
                     Total = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
                     DPP = table.Column<decimal>(type: "decimal(19,6)", nullable: false)
@@ -4179,7 +4179,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     UnitPrice = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
                     Disc = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
                     TaxId = table.Column<int>(type: "int", nullable: true),
-                    TaxAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    TaxAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
                     NettPrice = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
                     Total = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
                     DPP = table.Column<decimal>(type: "decimal(19,6)", nullable: false)

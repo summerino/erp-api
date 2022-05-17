@@ -153,7 +153,7 @@ public class MobileOrderDetail
 
     public int? TaxId { get; set; }
 
-    [Precision(18, 2)]
+    [Precision(19, 6)]
     public decimal TaxAmount { get; set; }
 
     [Precision(19, 6)]
@@ -191,7 +191,7 @@ public class VwMobileOrderDetail
 
     public int? TaxId { get; set; }
 
-    [Precision(18, 2)]
+    [Precision(19, 6)]
     public decimal TaxAmount { get; set; }
 
     [Precision(19, 6)]
