@@ -6,11 +6,11 @@ using ERP.Entity;
 using ERP.Web.API.Domain.Interfaces.Accounting;
 using ERP.Web.API.Domain.Interfaces.Auth;
 using ERP.Web.API.Domain.Interfaces.Finance;
+using ERP.Web.API.Domain.Interfaces.General;
 using ERP.Web.API.Domain.Interfaces.SystemManagement;
 using ERP.Web.API.Model;
 using ERP.Web.API.Model.Finance;
 using Newtonsoft.Json;
-using ERP.Web.API.Domain.Interfaces.General;
 
 namespace ERP.Web.API.Controllers.Finance;
 
@@ -24,7 +24,8 @@ public class InterCashBankController : ControllerBase
     private readonly IClaimService _claim;
     private readonly IAuthService _auth;
     private readonly IActiveTransactionService _activeTrans;
-    private const int MenuId = (int)Menu.InterCashBank;
+
+    private const int MenuId = (int) Menu.InterCashBank;
 
     public InterCashBankController(IInterCashBankService interCb, IClosingMonthService closingMonth,
         ISystemParameterService sysPar, IClaimService claim, IAuthService auth, IActiveTransactionService activeTrans)

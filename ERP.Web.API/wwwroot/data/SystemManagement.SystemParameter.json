@@ -37,7 +37,7 @@
 {"Id":37,"ModuleId":21,"Code":"CROSS_COA","Value":"174100","DataType":"string","Description":"Ayat Silang","Seq":5,"IsActive":true},
 {"Id":38,"ModuleId":21,"Code":"DPC_COA","Value":"212001","DataType":"string","Description":"Uang Muka Pelanggan","Seq":1,"IsActive":true},
 {"Id":39,"ModuleId":21,"Code":"DPS_COA","Value":"115001","DataType":"string","Description":"Uang Muka Pemasok","Seq":2,"IsActive":true},
-{"Id":40,"ModuleId":22,"Code":"CB_NUM_FMT","Value":"CB{Y}{M}{D}-{5}","DataType":"string","Description":"Kas Bank (Maks. 17 Karakter)","Seq":1,"IsActive":true},
+{"Id":40,"ModuleId":22,"Code":"CB_NUM_FMT","Value":"CB{Y}{M}{D}-{5}","DataType":"string","Description":"Kas Bank Umum (Maks. 17 Karakter)","Seq":1,"IsActive":true},
 {"Id":41,"ModuleId":23,"Code":"GEN_JR_NUM_FMT","Value":"GJ{Y}{M}{D}-{5}","DataType":"string","Description":"Jurnal Umum (Maks. 17 Karakter)","Seq":1,"IsActive":true},
 {"Id":42,"ModuleId":18,"Code":"JR_PREFIX_INVENTORY","Value":"Persediaan","DataType":"string","Description":"","Seq":1,"IsActive":false},
 {"Id":43,"ModuleId":18,"Code":"JR_PREFIX_COGS","Value":"HPP","DataType":"string","Description":"","Seq":1,"IsActive":false},
@@ -94,4 +94,5 @@
 {"Id":94,"ModuleId":11,"Code":"AP_RECOG_TIME","Value":"PI","DataType":"string","Description":"Pengakuan Hutang Dagang","Seq":3,"IsActive":false},
 {"Id":95,"ModuleId":31,"Code":"ACTIVE_TRANS_TIMEOUT","Value":"5","DataType":"string","Description":"Batas Waktu Transaksi Yang Aktif (Menit)","Seq":1,"IsActive":true},
 {"Id":96,"ModuleId":14,"Code":"ST_NUM_FMT","Value":"ST-{Y}{M}-{6}","DataType":"string","Description":"Target Penjualan (Maks. 17 Karakter)","Seq":1,"IsActive":true},
-{"Id":97,"ModuleId":32,"Code":"MOB_VST_RANGE_RADIUS","Value":"50","DataType":"string","Description":"Radius Jangkauan (Meter)","Seq":1,"IsActive":true}]
+{"Id":97,"ModuleId":32,"Code":"MOB_VST_RANGE_RADIUS","Value":"50","DataType":"string","Description":"Radius Jangkauan (Meter)","Seq":1,"IsActive":true},
+{"Id":98,"ModuleId":22,"Code":"ICB_NUM_FMT","Value":"ICB{Y}{M}{D}-{5}","DataType":"string","Description":"Pemindahan Dana (Maks. 17 Karakter)","Seq":2,"IsActive":true}]

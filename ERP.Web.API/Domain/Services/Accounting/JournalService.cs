@@ -2626,6 +2626,7 @@ public class JournalService : IJournalService
 
     private void CalculateHPP(TenantContext db, IEnumerable<StockMutation> stockMutations, int itemId, long id, string srcCode)
     {
+        DateTime latestDate;
         decimal latestQty = 0;
         decimal latestStockValue = 0;
         decimal hpp = 0;
@@ -2640,6 +2641,7 @@ public class JournalService : IJournalService
 
         if ((firstSM?.BaseNettPrice ?? 0m) != 0m)
         {
+            latestDate = firstSM.Date;
             latestStockValue += firstSM.BaseNettPrice * firstSM.BaseQty;
             latestQty += firstSM.BaseQty;
             hpp = latestStockValue / latestQty;
@@ -2656,21 +2658,6 @@ public class JournalService : IJournalService
 
             var prData = db.PurchaseReturnHeaders.ToList();
 
-            //var listSM = stockMutations.Where(x => x.Id != firstSM.Id
-            //            && srcType.Contains(x.Src)
-            //            && x.ItemId == itemId
-            //            && x.BaseQty != 0
-            //            && x.Date >= firstSM.Date
-            //            && x.Date <= currentSM.Date)
-            //            .OrderBy(x => x.Date)
-            //            .ThenBy(x => x.Src == "BB")
-            //            .ThenBy(x => x.Src == "RCV")
-            //            .ThenBy(x => (x.Src == "ADJ" && x.BaseQty > 0) || x.Src == "SR" || (new[] { "TS", "CNEE" }.Contains(x.Src) && x.Type == "OH" && x.BaseQty > 0))
-            //            .ThenBy(x => x.Src == "DO" && (srData.FirstOrDefault(z => z.Code == (doData.FirstOrDefault(y => y.Code == x.RefCode1)?.TransCode ?? ""))?.Type ?? 0) == 2)
-            //            .ThenBy(x => (x.Src == "ADJ" && x.BaseQty < 0) || (new[] { "TS", "CNEE" }.Contains(x.Src) && x.Type == "OH" && x.BaseQty < 0) || (new[] { "DO", "DOF", "PR" }.Contains(x.Src)))
-            //            .ThenBy(x => x.Id)
-            //            .ToList();
-
             var orderQuery = @" ORDER BY sm.Date, CASE
 					WHEN sm.Src = 'BB' THEN 1
 					WHEN sm.Src = 'RCV' AND rcv.SrcTrans = 1 THEN 2
@@ -2683,7 +2670,7 @@ public class JournalService : IJournalService
 					WHEN sm.Src IN('DO', 'DOF', 'PR') THEN 5
 					WHEN sm.Src IN('TS', 'CNEE') AND sm.[Type] = 'OH' AND sm.BaseQty < 0 THEN 5
 					ELSE 6
-					END";
+					END, sm.Id";
 
             var listSM = db.StockMutations.FromSqlRaw(@"SELECT sm.*
 				FROM Inventory.StockMutation sm
@@ -2699,19 +2686,34 @@ public class JournalService : IJournalService
             {
                 if (new[] { "RCV", "BB", "SR" }.Contains(item.Src))
                 {
-                    var rcvFromPRDI = (item.Src == "RCV" && (prData.FirstOrDefault(z => z.Code == (rcvData.FirstOrDefault(y => y.Code == item.RefCode1)?.TransCode ?? ""))?.Type ?? 0) == 3);
-                    if (item.Src == "SR" || rcvFromPRDI)
+                    var rcvFromPR = (item.Src == "RCV" && (rcvData.FirstOrDefault(x => x.Code == item.RefCode1)?.SrcTrans ?? 0) == 2);
+                    if (rcvFromPR) // same item
                     {
-                        item.BaseNettPrice = hpp;
-                        item.NettPrice = hpp * item.BaseQty / item.Qty;
-                        db.StockMutations.Update(item);
+                        if ((prData.FirstOrDefault(x => x.Code == item.RefCode2)?.Type ?? 0) == 2)
+                        {
+                            item.BaseNettPrice = listSM.FirstOrDefault(x => x.RefCode1 == item.RefCode2)?.BaseNettPrice ?? 0m;
+                            item.NettPrice = listSM.FirstOrDefault(x => x.RefCode1 == item.RefCode2)?.NettPrice ?? 0m;
+                            latestStockValue -= item.BaseNettPrice * item.BaseQty;
+                            latestQty -= item.BaseQty;
+                            db.StockMutations.Update(item);
+                        }
                     }
-                    latestStockValue += item.BaseNettPrice * item.BaseQty;
-                    latestQty += item.BaseQty;
-                    if (item.Src == "BB" || item.Src == "RCV" && (rcvData.FirstOrDefault(x => x.Code == item.RefCode1)?.SrcTrans ?? 0) == 1)
+                    else
                     {
-                        if (latestStockValue > 0 && latestQty > 0)
-                            hpp = latestStockValue / latestQty;
+                        var rcvFromPRDI = (item.Src == "RCV" && (prData.FirstOrDefault(z => z.Code == (rcvData.FirstOrDefault(y => y.Code == item.RefCode1)?.TransCode ?? ""))?.Type ?? 0) == 3);
+                        if (item.Src == "SR" || rcvFromPRDI)
+                        {
+                            item.BaseNettPrice = hpp;
+                            item.NettPrice = hpp * item.BaseQty / item.Qty;
+                            db.StockMutations.Update(item);
+                        }
+                        latestStockValue += item.BaseNettPrice * item.BaseQty;
+                        latestQty += item.BaseQty;
+                        if (item.Src == "BB" || item.Src == "RCV" && (rcvData.FirstOrDefault(x => x.Code == item.RefCode1)?.SrcTrans ?? 0) == 1)
+                        {
+                            if (latestStockValue > 0 && latestQty > 0)
+                                hpp = latestStockValue / latestQty;
+                        }
                     }
                 }
                 else if (new[] { "ADJ", "TS", "CNEE" }.Contains(item.Src))
@@ -2738,76 +2740,42 @@ public class JournalService : IJournalService
                 }
                 else
                 {
-                    if (item.Src == "DO" && (srData.FirstOrDefault(z => z.Code == (doData.FirstOrDefault(y => y.Code == item.RefCode1)?.TransCode ?? ""))?.Type ?? 0) == 3)
-                    {
-                        item.BaseNettPrice = hpp;
-                        item.NettPrice = hpp * item.BaseQty / item.Qty;
-                    }
-                    else
-                    {
-                        item.BaseNettPrice = hpp;
-                        item.NettPrice = hpp * item.BaseQty / item.Qty;
-                    }
-                    latestStockValue -= item.BaseNettPrice * item.BaseQty;
-                    latestQty -= item.BaseQty;
-                    db.StockMutations.Update(item);
-                }
-            }
-
-            if (listSM.Where(x => new[] { "RCV", "DO" }.Contains(x.Src)).Any())
-            {
-                foreach (var item in listSM)
-                {
-                    var rcvFromPR = (item.Src == "RCV" && (rcvData.FirstOrDefault(x => x.Code == item.RefCode1)?.SrcTrans ?? 0) == 2);
-                    if (rcvFromPR)
-                    {
-                        if ((prData.FirstOrDefault(x => x.Code == item.RefCode2)?.Type ?? 0) == 2)
-                        {
-                            item.BaseNettPrice = listSM.FirstOrDefault(x => x.RefCode1 == item.RefCode2)?.BaseNettPrice ?? 0m;
-                            item.NettPrice = listSM.FirstOrDefault(x => x.RefCode1 == item.RefCode2)?.NettPrice ?? 0m;
-                            db.StockMutations.Update(item);
-                        }
-                    }
-                    else if (item.Src == "DO" && (srData.FirstOrDefault(z => z.Code == (doData.FirstOrDefault(y => y.Code == item.RefCode1)?.TransCode ?? ""))?.Type ?? 0) == 2)
+                    var dofromPR = item.Src == "DO" && (srData.FirstOrDefault(z => z.Code == (doData.FirstOrDefault(y => y.Code == item.RefCode1)?.TransCode ?? ""))?.Type ?? 0) == 2;
+                    if (dofromPR) // same item
                     {
                         item.BaseNettPrice = listSM.FirstOrDefault(x => x.RefCode1 == item.RefCode2)?.BaseNettPrice ?? 0m;
                         item.NettPrice = listSM.FirstOrDefault(x => x.RefCode1 == item.RefCode2)?.NettPrice ?? 0m;
+                        latestStockValue -= item.BaseNettPrice * item.BaseQty;
+                        latestQty -= item.BaseQty;
+                        db.StockMutations.Update(item);
+                    }
+                    else
+                    {
+                        if (latestDate != item.Date)
+                        {
+                            if (latestStockValue > 0 && latestQty > 0)
+                                hpp = latestStockValue / latestQty;
+                        }
+
+                        if (item.Src == "DO" && (srData.FirstOrDefault(z => z.Code == (doData.FirstOrDefault(y => y.Code == item.RefCode1)?.TransCode ?? ""))?.Type ?? 0) == 3)
+                        {
+                            item.BaseNettPrice = hpp;
+                            item.NettPrice = hpp * item.BaseQty / item.Qty;
+                        }
+                        else
+                        {
+                            item.BaseNettPrice = hpp;
+                            item.NettPrice = hpp * item.BaseQty / item.Qty;
+                        }
+                        latestStockValue -= item.BaseNettPrice * item.BaseQty;
+                        latestQty -= item.BaseQty;
                         db.StockMutations.Update(item);
                     }
                 }
+
+                latestDate = item.Date;
             }
-            //foreach (var item in listSM)
-            //{
-            //    if (new[] { "RCV", "BB", "SR" }.Contains(item.Src))
-            //    {
-            //        if (item.Src == "SR" || (item.Src == "RCV" && (rcvData.FirstOrDefault(x => x.Code == item.RefCode1)?.SrcTrans ?? 0) == 2))
-            //        {
-            //            item.BaseNettPrice = hpp;
-            //            item.NettPrice = hpp * item.BaseQty / item.Qty;
-            //            db.StockMutations.Update(item);
-            //        }
-            //        latestStockValue += item.BaseNettPrice * item.BaseQty;
-            //        latestQty += item.BaseQty;
-            //    }
-            //    else if (new[] { "ADJ", "TS", "CNEE" }.Contains(item.Src))
-            //    {
-            //        item.BaseNettPrice = hpp;
-            //        item.NettPrice = hpp * item.BaseQty / item.Qty;
-            //        latestStockValue += item.BaseNettPrice * Math.Abs(item.BaseQty);
-            //        latestQty += item.BaseQty;
-            //        db.StockMutations.Update(item);
-            //    }
-            //    else
-            //    {
-            //        item.BaseNettPrice = hpp;
-            //        item.NettPrice = hpp * item.BaseQty / item.Qty;
-            //        latestStockValue -= item.BaseNettPrice * item.BaseQty;
-            //        latestQty -= item.BaseQty;
-            //        db.StockMutations.Update(item);
-            //    }
-            //    if (latestStockValue > 0 && latestQty > 0)
-            //        hpp = latestStockValue / latestQty;
-            //}
+
             db.SaveChanges();
         }
     }
