@@ -4123,7 +4123,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     UnitPrice = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
                     Disc = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
                     TaxId = table.Column<int>(type: "int", nullable: true),
-                    TaxAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    TaxAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
                     NettPrice = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
                     Total = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
                     DPP = table.Column<decimal>(type: "decimal(19,6)", nullable: false)
@@ -4179,7 +4179,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     UnitPrice = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
                     Disc = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
                     TaxId = table.Column<int>(type: "int", nullable: true),
-                    TaxAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    TaxAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
                     NettPrice = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
                     Total = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
                     DPP = table.Column<decimal>(type: "decimal(19,6)", nullable: false)
@@ -6899,6 +6899,7 @@ AS
 		e.Initial AS ReceiveInitial,
 		u_c.Initial AS CreatedInitial,
 		u_u.Initial AS UpdatedInitial,
+        u_a.Initial AS ApproveInitial,
 		CASE pr_h.Mark
 			WHEN 'A' THEN 'Active'
 			WHEN 'V' THEN 'Void'
@@ -6911,7 +6912,9 @@ AS
 	LEFT JOIN SystemManagement.[User] u_c
 		ON u_c.Id = pr_h.CreatedBy
 	LEFT JOIN SystemManagement.[User] u_u
-		ON u_u.Id = pr_h.UpdatedBy";
+		ON u_u.Id = pr_h.UpdatedBy
+    LEFT JOIN SystemManagement.[User] u_a  
+        ON u_a.Id = pr_h.ApprovedBy";
             migrationBuilder.Sql(sql);
 
             // Create view Purchasing.vwPurchaseReceiveDetail
@@ -7899,6 +7902,7 @@ AS
 		FROM Sales.SalesOrderHeader
 		WHERE ApprovedBy IS NULL
 		AND Mark <> 'V'
+        AND FromDirectInvoice = 0
 	) so
 	LEFT JOIN General.Customer c
 		ON c.Code = so.CustCode
@@ -7912,6 +7916,7 @@ AS
 		FROM Sales.SalesDeliveryHeader
 		WHERE ApprovedBy IS NULL
 		AND Mark <> 'V'
+        AND FromDirectInvoice = 0
 	) dlv
 	LEFT JOIN General.Customer c
 		ON c.Code = dlv.CustCode
@@ -7925,6 +7930,7 @@ AS
 		FROM Sales.SalesInvoiceHeader
 		WHERE ApprovedBy IS NULL
 		AND Mark <> 'V'
+        AND FromDirectInvoice = 0
 	) si
 	LEFT JOIN General.Customer c
 		ON c.Code = si.CustCode
@@ -8044,10 +8050,11 @@ AS
     si.CustCode + ' - ' + c.[Name],  
     'Penjualan Langsung', si.UpdatedDate, 20, 22  
     FROM (  
-    SELECT Code, [Date], CustCode, UpdatedDate  
-    FROM Sales.SalesInvoiceHeader  
-    WHERE ApprovedBy IS NULL  
-    AND Mark <> 'V' AND FromDirectInvoice = 1
+        SELECT Code, [Date], CustCode, UpdatedDate  
+        FROM Sales.SalesInvoiceHeader  
+        WHERE ApprovedBy IS NULL  
+        AND Mark <> 'V'
+        AND FromDirectInvoice = 1
     ) si  
     LEFT JOIN General.Customer c  
     ON c.Code = si.CustCode";
@@ -8858,7 +8865,8 @@ AS
 		uom_c_b.UnitEquivalent AS ItemUomBuyName,
 		i.BuyPrice AS ItemBuyPrice,
 		uom.Initial AS UomInitial,
-		uom_c.UnitEquivalent AS UnitName
+		uom_c.UnitEquivalent AS UnitName,
+		wh.Initial + ' - ' + wh.[Name] AS WarehouseInitial
 	FROM MobileWarehouse.MobileReceiveItemDetail rcv_d
 	LEFT JOIN Inventory.Item i
 		ON i.Id = rcv_d.ItemId
@@ -8867,7 +8875,9 @@ AS
 	LEFT JOIN Inventory.UoM uom
 		ON uom.Id = rcv_d.UomId
 	LEFT JOIN Inventory.UoMConversion uom_c
-		ON uom_c.Id = rcv_d.UnitId";
+		ON uom_c.Id = rcv_d.UnitId
+    LEFT JOIN Inventory.Warehouse wh
+		ON wh.Code = rcv_d.WarehouseCode";
             migrationBuilder.Sql(sql);
 
             // Create view MobileWarehouse.vwMobileTransferStockHeader
@@ -8883,6 +8893,7 @@ AS
             WHEN 'APR' THEN 'Disetujui'
             WHEN 'REJ' THEN 'Ditolak' END AS [Status],
 		ts_h.[Date],
+        ts_h.[Type],
 		ts_h.WarehouseCodeFrom,
 		ts_h.WarehouseInitialFrom,
 		ts_h.WarehouseCodeTo,

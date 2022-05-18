@@ -136,4 +136,6 @@ public class VwMobileReceiveItemDetail
     public string UomInitial { get; set; }
 
     public string UnitName { get; set; }
+
+    public string WarehouseInitial { get; set; }
 }

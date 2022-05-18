@@ -7284,8 +7284,8 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("TaxAmount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
+                        .HasPrecision(19, 6)
+                        .HasColumnType("decimal(19,6)");
 
                     b.Property<int?>("TaxId")
                         .HasColumnType("int");
@@ -7580,8 +7580,8 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("TaxAmount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
+                        .HasPrecision(19, 6)
+                        .HasColumnType("decimal(19,6)");
 
                     b.Property<int?>("TaxId")
                         .HasColumnType("int");
@@ -8171,8 +8171,8 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("TaxAmount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
+                        .HasPrecision(19, 6)
+                        .HasColumnType("decimal(19,6)");
 
                     b.Property<int?>("TaxId")
                         .HasColumnType("int");
@@ -9204,8 +9204,8 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("TaxAmount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
+                        .HasPrecision(19, 6)
+                        .HasColumnType("decimal(19,6)");
 
                     b.Property<int?>("TaxId")
                         .HasColumnType("int");

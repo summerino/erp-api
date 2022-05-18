@@ -41,6 +41,8 @@ public class VwMobileTransferStockHeader : BaseEntityWithMarkApprovedAndRejected
 
     public DateTime Date { get; set; }
 
+    public string Type { get; set; }
+
     public string WarehouseCodeFrom { get; set; }
 
     public string WarehouseInitialFrom { get; set; }

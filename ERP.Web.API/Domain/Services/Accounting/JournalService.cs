@@ -865,7 +865,7 @@ public class JournalService : IJournalService
                     TypeCode = "CB",
                     Notes = "Kas/Bank",
                     RefCode2 = itemData.Code,
-                    Group = (short)(itemDetailData.TypeAmount == "D" ? 1 : 2),
+                    Group = 3,
                     CurrCode = itemData.CurrCode,
                     Period = itemData.Date.ToString("yyyyMMdd"),
                     Type = itemDetailData.TypeAmount == "C" ? "D" : "C",
@@ -2686,17 +2686,17 @@ public class JournalService : IJournalService
             {
                 if (new[] { "RCV", "BB", "SR" }.Contains(item.Src))
                 {
-                    var rcvFromPR = (item.Src == "RCV" && (rcvData.FirstOrDefault(x => x.Code == item.RefCode1)?.SrcTrans ?? 0) == 2);
-                    if (rcvFromPR) // same item
+                    var rcvFromPRSI =
+                        item.Src == "RCV" &&
+                        (rcvData.FirstOrDefault(x => x.Code == item.RefCode1)?.SrcTrans ?? 0) == 2 &&
+                        (prData.FirstOrDefault(x => x.Code == item.RefCode2)?.Type ?? 0) == 2;
+                    if (rcvFromPRSI) // same item
                     {
-                        if ((prData.FirstOrDefault(x => x.Code == item.RefCode2)?.Type ?? 0) == 2)
-                        {
-                            item.BaseNettPrice = listSM.FirstOrDefault(x => x.RefCode1 == item.RefCode2)?.BaseNettPrice ?? 0m;
-                            item.NettPrice = listSM.FirstOrDefault(x => x.RefCode1 == item.RefCode2)?.NettPrice ?? 0m;
-                            latestStockValue -= item.BaseNettPrice * item.BaseQty;
-                            latestQty -= item.BaseQty;
-                            db.StockMutations.Update(item);
-                        }
+                        item.BaseNettPrice = listSM.FirstOrDefault(x => x.RefCode1 == item.RefCode2)?.BaseNettPrice ?? 0m;
+                        item.NettPrice = listSM.FirstOrDefault(x => x.RefCode1 == item.RefCode2)?.NettPrice ?? 0m;
+                        latestStockValue += item.BaseNettPrice * item.BaseQty;
+                        latestQty += item.BaseQty;
+                        db.StockMutations.Update(item);
                     }
                     else
                     {
