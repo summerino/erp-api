@@ -6914,7 +6914,7 @@ AS
 	LEFT JOIN SystemManagement.[User] u_u
 		ON u_u.Id = pr_h.UpdatedBy
     LEFT JOIN SystemManagement.[User] u_a  
-        ON u_a.Id = pr_h.ApprovedBy ";
+        ON u_a.Id = pr_h.ApprovedBy";
             migrationBuilder.Sql(sql);
 
             // Create view Purchasing.vwPurchaseReceiveDetail
@@ -8858,26 +8858,26 @@ AS
             // Create view MobileWarehouse.vwMobileReceiveItemDetail
             sql = @"CREATE VIEW [MobileWarehouse].[vwMobileReceiveItemDetail]
 AS
-	SELECT rcv_d.*,  
-      i.Initial AS ItemInitial,  
-      i.[Name] AS ItemName,  
-      i.UomBuyId AS ItemUomBuyId,  
-      uom_c_b.UnitEquivalent AS ItemUomBuyName,  
-      i.BuyPrice AS ItemBuyPrice,  
-      uom.Initial AS UomInitial,  
-      uom_c.UnitEquivalent AS UnitName,
-      wh.Initial + ' - ' + wh.[Name] AS WarehouseInitial
-     FROM MobileWarehouse.MobileReceiveItemDetail rcv_d  
-     LEFT JOIN Inventory.Item i  
-      ON i.Id = rcv_d.ItemId  
-     LEFT JOIN Inventory.UoMConversion uom_c_b  
-      ON uom_c_b.Id = i.UomBuyId  
-     LEFT JOIN Inventory.UoM uom  
-      ON uom.Id = rcv_d.UomId  
-     LEFT JOIN Inventory.UoMConversion uom_c  
-      ON uom_c.Id = rcv_d.UnitId
-     LEFT JOIN Inventory.Warehouse wh
-      ON wh.Code = rcv_d.WarehouseCode";
+	SELECT rcv_d.*,
+		i.Initial AS ItemInitial,
+		i.[Name] AS ItemName,
+		i.UomBuyId AS ItemUomBuyId,
+		uom_c_b.UnitEquivalent AS ItemUomBuyName,
+		i.BuyPrice AS ItemBuyPrice,
+		uom.Initial AS UomInitial,
+		uom_c.UnitEquivalent AS UnitName,
+		wh.Initial + ' - ' + wh.[Name] AS WarehouseInitial
+	FROM MobileWarehouse.MobileReceiveItemDetail rcv_d
+	LEFT JOIN Inventory.Item i
+		ON i.Id = rcv_d.ItemId
+	LEFT JOIN Inventory.UoMConversion uom_c_b
+		ON uom_c_b.Id = i.UomBuyId
+	LEFT JOIN Inventory.UoM uom
+		ON uom.Id = rcv_d.UomId
+	LEFT JOIN Inventory.UoMConversion uom_c
+		ON uom_c.Id = rcv_d.UnitId
+    LEFT JOIN Inventory.Warehouse wh
+		ON wh.Code = rcv_d.WarehouseCode";
             migrationBuilder.Sql(sql);
 
             // Create view MobileWarehouse.vwMobileTransferStockHeader
@@ -8893,11 +8893,11 @@ AS
             WHEN 'APR' THEN 'Disetujui'
             WHEN 'REJ' THEN 'Ditolak' END AS [Status],
 		ts_h.[Date],
+        ts_h.[Type],
 		ts_h.WarehouseCodeFrom,
 		ts_h.WarehouseInitialFrom,
 		ts_h.WarehouseCodeTo,
-		ts_h.WarehouseInitialTo,
-        ts_h.[Type]
+		ts_h.WarehouseInitialTo
     FROM MobileWarehouse.MobileTransferStockHeader mt_h
     LEFT JOIN SystemManagement.[User] u_c
         ON u_c.Id = mt_h.CreatedBy
