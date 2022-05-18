@@ -138,6 +138,8 @@ public class VwPurchaseReceiveHeader : BaseEntityWithMarkApprovedAndViewed
         
     public string UpdatedInitial { get; set; }
 
+    public string ApproveInitial { get; set; }
+
     public string Status { get; set; }
 }
 

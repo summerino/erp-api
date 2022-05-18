@@ -48,6 +48,8 @@ public class VwMobileTransferStockHeader : BaseEntityWithMarkApprovedAndRejected
     public string WarehouseCodeTo { get; set; }
 
     public string WarehouseInitialTo { get; set; }
+
+    public string Type { get; set; }
 }
 
 [Table("MobileTransferStockDetail", Schema = Schema.MobileWarehouse)]

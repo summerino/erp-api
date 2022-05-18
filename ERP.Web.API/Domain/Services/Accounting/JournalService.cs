@@ -865,7 +865,7 @@ public class JournalService : IJournalService
                     TypeCode = "CB",
                     Notes = "Kas/Bank",
                     RefCode2 = itemData.Code,
-                    Group = (short)(itemDetailData.TypeAmount == "D" ? 1 : 2),
+                    Group = 3,
                     CurrCode = itemData.CurrCode,
                     Period = itemData.Date.ToString("yyyyMMdd"),
                     Type = itemDetailData.TypeAmount == "C" ? "D" : "C",

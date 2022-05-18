@@ -63,6 +63,7 @@ public class MobileReceiveItemController : ControllerBase
                 x.UnitId,
                 x.UnitName,
                 x.WarehouseCode,
+                x.WarehouseInitial,
                 x.Type,
                 OldUnitId = x.ItemUomBuyId,
                 OldUnitName = x.ItemUomBuyName,
