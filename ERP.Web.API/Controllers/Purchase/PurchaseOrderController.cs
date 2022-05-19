@@ -69,7 +69,7 @@ public class PurchaseOrderController : ControllerBase
             {
                 x.Id, x.Code, x.LineNo, x.ItemId, x.ItemName, x.UomId, x.UnitId, x.UnitName, x.Qty,
                 x.Length, x.Width, x.Height, x.Weight, x.DimensionMeasurement, x.WeightMeasurement,
-                x.QtyRcv, x.UnitPrice, x.Disc, x.FinalDiscHeader, x.TaxId, x.TaxAmount,
+                x.QtyRcv, x.UnitPrice, x.Disc, x.FinalDiscHeader, x.TaxId, x.TaxAmount, x.ExemptTaxAmount,
                 x.NettPrice, x.Total, x.Dpp, x.Notes,
                 x.CoaInventory, x.CoaCogs, x.CoaPurc, x.CoaPurcDisc, x.CoaPurcReturn, x.Type,
                 Units = uomC.Where(u => u.UomId == x.UomId)
@@ -84,6 +84,7 @@ public class PurchaseOrderController : ControllerBase
                 OldUnitName = x.ItemUomBuyName,
                 OldUnitPrice = x.ItemBuyPrice,
                 TotTax = x.Qty * x.TaxAmount,
+                TotExemptTax = x.Qty * x.ExemptTaxAmount,
                 TotDPP = x.Qty * x.Dpp,
                 TotFDH = x.Qty * x.FinalDiscHeader,
                 State = ""
