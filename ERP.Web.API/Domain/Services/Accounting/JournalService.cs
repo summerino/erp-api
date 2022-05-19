@@ -2740,6 +2740,12 @@ public class JournalService : IJournalService
                 }
                 else
                 {
+                    if (latestDate != item.Date)
+                    {
+                        if (latestStockValue > 0 && latestQty > 0)
+                            hpp = latestStockValue / latestQty;
+                    }
+
                     var dofromPR = item.Src == "DO" && (srData.FirstOrDefault(z => z.Code == (doData.FirstOrDefault(y => y.Code == item.RefCode1)?.TransCode ?? ""))?.Type ?? 0) == 2;
                     if (dofromPR) // same item
                     {
@@ -2751,12 +2757,6 @@ public class JournalService : IJournalService
                     }
                     else
                     {
-                        if (latestDate != item.Date)
-                        {
-                            if (latestStockValue > 0 && latestQty > 0)
-                                hpp = latestStockValue / latestQty;
-                        }
-
                         if (item.Src == "DO" && (srData.FirstOrDefault(z => z.Code == (doData.FirstOrDefault(y => y.Code == item.RefCode1)?.TransCode ?? ""))?.Type ?? 0) == 3)
                         {
                             item.BaseNettPrice = hpp;
