@@ -26,6 +26,9 @@ public class PurchaseReceiveReportService : IPurchaseReceiveReportService
 	                            WHEN 0 THEN rcv_d.TaxAmount
 	                            WHEN 1 THEN CAST(0 AS decimal) END AS TaxAmount,
                             CASE rcv_d.[Type]
+	                            WHEN 0 THEN rcv_d.ExemptTaxAmount
+	                            WHEN 1 THEN CAST(0 AS decimal) END AS ExemptTaxAmount,
+                            CASE rcv_d.[Type]
 	                            WHEN 0 THEN rcv_d.NettPrice
 	                            WHEN 1 THEN CAST(0 AS decimal) END AS NettPrice,
                             CASE rcv_d.[Type]
@@ -38,7 +41,8 @@ public class PurchaseReceiveReportService : IPurchaseReceiveReportService
                             SELECT rcv.[Date], rcv.Code, CAST(rcv.SrcTrans AS int) AS SrcTrans,
                             rcv.TransCode, rcv.RefNo, rcv.SupCode, rcv.SupName, rcv.TaxInvoiceNo, rcv.TaxInvoiceDate,
                             SUM(rcv_d.Qty * rcv_d.UnitPrice) AS GrossAmount, SUM(rcv_d.Qty * (rcv_d.UnitPrice - rcv_d.Disc - rcv_d.FinalDiscHeader)) AS SubTotal,
-                            SUM(rcv_d.Qty * (rcv_d.Disc + rcv_d.FinalDiscHeader)) AS Disc, SUM(rcv_d.Qty * rcv_d.DPP) AS DPP, SUM(rcv_d.Qty * rcv_d.TaxAmount) AS TaxAmount, SUM(rcv_d.Total) AS Total,
+                            SUM(rcv_d.Qty * (rcv_d.Disc + rcv_d.FinalDiscHeader)) AS Disc, SUM(rcv_d.Qty * rcv_d.DPP) AS DPP,
+                            SUM(rcv_d.Qty * rcv_d.TaxAmount) AS TaxAmount, SUM(rcv_d.Qty * rcv_d.ExemptTaxAmount) AS ExemptTaxAmount, SUM(rcv_d.Total) AS Total,
                             CASE rcv.Mark
 	                            WHEN 'A' THEN 'Aktif'
 	                            WHEN 'V' THEN 'Void'
@@ -65,6 +69,10 @@ public class PurchaseReceiveReportService : IPurchaseReceiveReportService
 	                            WHEN 0 THEN rcv_d.TaxAmount
 	                            WHEN 1 THEN CAST(0 AS decimal)
 								ELSE CAST(0 AS decimal) END AS TaxAmount,
+                            CASE rcv_d.[Type]
+	                            WHEN 0 THEN rcv_d.ExemptTaxAmount
+	                            WHEN 1 THEN CAST(0 AS decimal)
+								ELSE CAST(0 AS decimal) END AS ExemptTaxAmount,
                             CASE rcv_d.[Type]
 	                            WHEN 0 THEN rcv_d.UnitPrice - rcv_d.Disc - rcv_d.FinalDiscHeader
 	                            WHEN 1 THEN CAST(0 AS decimal)
@@ -99,6 +107,10 @@ public class PurchaseReceiveReportService : IPurchaseReceiveReportService
 	                            WHEN 1 THEN CAST(0 AS decimal)
 								ELSE CAST(0 AS decimal) END AS TotalTaxAmount,
                             CASE rcv_d.[Type]
+	                            WHEN 0 THEN rcv_d.ExemptTaxAmount * rcv_d.Qty
+	                            WHEN 1 THEN CAST(0 AS decimal)
+								ELSE CAST(0 AS decimal) END AS TotalExemptTaxAmount,
+                            CASE rcv_d.[Type]
 	                            WHEN 0 THEN rcv_d.NettPrice * rcv_d.Qty
 	                            WHEN 1 THEN CAST(0 AS decimal)
 								ELSE CAST(0 AS decimal) END AS TotalNettPrice,
@@ -119,7 +131,7 @@ public class PurchaseReceiveReportService : IPurchaseReceiveReportService
                             uc.Id AS UnitId, uc.UnitEquivalent AS UnitName,
                             CAST (0 AS int) AS TotalTrans, CAST (0 AS decimal) AS Qty, CAST (0 AS decimal) AS SubTotal,
                             CAST (0 AS decimal) AS Disc, CAST (0 AS decimal) AS DiscHeader, CAST (0 AS decimal) AS Dpp,
-                            CAST (0 AS decimal) AS TaxAmount, CAST (0 AS decimal) AS Total, CAST (0 AS decimal) AS GrossAmount
+                            CAST (0 AS decimal) AS TaxAmount, CAST (0 AS decimal) AS ExemptTaxAmount, CAST (0 AS decimal) AS Total, CAST (0 AS decimal) AS GrossAmount
                             FROM Inventory.Item im
                             LEFT JOIN Purchasing.PurchaseReceiveDetail rcv_d ON rcv_d.ItemId = im.Id
                             LEFT JOIN Inventory.ItemCategory ic ON ic.Id = im.CategoryId
@@ -130,7 +142,8 @@ public class PurchaseReceiveReportService : IPurchaseReceiveReportService
         var supData = _db.ReportBySupplierPurchases.FromSqlRaw(@"SELECT sp.Code, sp.[Name], CAST (0 AS int) AS TotalTrans,
                             CAST (0 AS decimal) AS SubTotal, CAST (0 AS decimal) AS GrossAmount, 
                             CAST (0 AS decimal) AS Disc, CAST (0 AS decimal) AS DiscHeader,
-                            CAST (0 AS decimal) AS Dpp, CAST (0 AS decimal) AS TaxAmount, CAST (0 AS decimal) AS Total
+                            CAST (0 AS decimal) AS Dpp, CAST (0 AS decimal) AS TaxAmount, CAST (0 AS decimal) AS ExemptTaxAmount, 
+                            CAST (0 AS decimal) AS Total
                             FROM General.Supplier sp
                             WHERE sp.IsActive = 1
                             GROUP BY sp.Code, sp.[Name]").ToList();
@@ -139,7 +152,7 @@ public class PurchaseReceiveReportService : IPurchaseReceiveReportService
                             uc.Id AS UnitId, uc.UnitEquivalent AS UnitName,
                             CAST (0 AS int) AS TotalTrans, CAST (0 AS decimal) AS Qty, CAST (0 AS decimal) AS SubTotal,
                             CAST (0 AS decimal) AS Disc, CAST (0 AS decimal) AS DiscHeader, CAST (0 AS decimal) AS Dpp,
-                            CAST (0 AS decimal) AS TaxAmount, CAST (0 AS decimal) AS Total, CAST (0 AS decimal) AS GrossAmount
+                            CAST (0 AS decimal) AS TaxAmount, CAST (0 AS decimal) AS ExemptTaxAmount, CAST (0 AS decimal) AS Total, CAST (0 AS decimal) AS GrossAmount
                             FROM Inventory.ItemCategory ic
                             LEFT JOIN Inventory.Item im ON im.CategoryId = ic.Id 
                             LEFT JOIN Purchasing.PurchaseReceiveDetail rcv_d ON rcv_d.ItemId = im.Id
@@ -204,6 +217,7 @@ public class PurchaseReceiveReportService : IPurchaseReceiveReportService
                     Disc = rcvData.Sum(x => x.Disc),
                     Dpp = rcvData.Sum(x => x.Dpp),
                     TaxAmount = rcvData.Sum(x => x.TaxAmount),
+                    ExemptTaxAmount = rcvData.Sum(x => x.ExemptTaxAmount),
                     Total = rcvData.Sum(x => x.Total)
                 });
 
@@ -234,6 +248,7 @@ public class PurchaseReceiveReportService : IPurchaseReceiveReportService
                     itemSup.Disc = rcvDetailData.Where(x => x.SupCode == itemSup.Code).Sum(x => x.TotalDisc + x.TotalDiscHeader);
                     itemSup.Dpp = rcvDetailData.Where(x => x.SupCode == itemSup.Code).Sum(x => x.TotalDpp);
                     itemSup.TaxAmount = rcvDetailData.Where(x => x.SupCode == itemSup.Code).Sum(x => x.TotalTaxAmount);
+                    itemSup.ExemptTaxAmount = rcvDetailData.Where(x => x.SupCode == itemSup.Code).Sum(x => x.TotalExemptTaxAmount);
                     itemSup.Total = rcvDetailData.Where(x => x.SupCode == itemSup.Code).Sum(x => x.TotalNettPrice);
                 }
 
@@ -248,6 +263,7 @@ public class PurchaseReceiveReportService : IPurchaseReceiveReportService
                     Disc = supData.Sum(x => x.Disc),
                     Dpp = supData.Sum(x => x.Dpp),
                     TaxAmount = supData.Sum(x => x.TaxAmount),
+                    ExemptTaxAmount = supData.Sum(x => x.ExemptTaxAmount),
                     Total = supData.Sum(x => x.Total)
                 });
 
@@ -280,6 +296,7 @@ public class PurchaseReceiveReportService : IPurchaseReceiveReportService
                     item.DiscHeader = rcvDetailData.Where(x => x.ItemInitial == item.Initial && x.UnitId == item.UnitId).Sum(x => x.TotalDiscHeader);
                     item.Dpp = rcvDetailData.Where(x => x.ItemInitial == item.Initial && x.UnitId == item.UnitId).Sum(x => x.TotalDpp);
                     item.TaxAmount = rcvDetailData.Where(x => x.ItemInitial == item.Initial && x.UnitId == item.UnitId).Sum(x => x.TotalTaxAmount);
+                    item.ExemptTaxAmount = rcvDetailData.Where(x => x.ItemInitial == item.Initial && x.UnitId == item.UnitId).Sum(x => x.TotalExemptTaxAmount);
                     item.Total = rcvDetailData.Where(x => x.ItemInitial == item.Initial && x.UnitId == item.UnitId).Sum(x => x.TotalNettPrice);
                 }
 
@@ -296,6 +313,7 @@ public class PurchaseReceiveReportService : IPurchaseReceiveReportService
                     DiscHeader = itemData.Sum(x => x.DiscHeader),
                     Dpp = itemData.Sum(x => x.Dpp),
                     TaxAmount = itemData.Sum(x => x.TaxAmount),
+                    ExemptTaxAmount = itemData.Sum(x => x.ExemptTaxAmount),
                     Total = itemData.Sum(x => x.Total)
                 });
 
@@ -323,6 +341,7 @@ public class PurchaseReceiveReportService : IPurchaseReceiveReportService
                     item.DiscHeader = rcvDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).Sum(x => x.TotalDiscHeader);
                     item.Dpp = rcvDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).Sum(x => x.TotalDpp);
                     item.TaxAmount = rcvDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).Sum(x => x.TotalTaxAmount);
+                    item.ExemptTaxAmount = rcvDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).Sum(x => x.TotalExemptTaxAmount);
                     item.Total = rcvDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).Sum(x => x.TotalNettPrice);
                 }
 
@@ -339,6 +358,7 @@ public class PurchaseReceiveReportService : IPurchaseReceiveReportService
                     DiscHeader = itemCategoryData.Sum(x => x.DiscHeader),
                     Dpp = itemCategoryData.Sum(x => x.Dpp),
                     TaxAmount = itemCategoryData.Sum(x => x.TaxAmount),
+                    ExemptTaxAmount = itemCategoryData.Sum(x => x.ExemptTaxAmount),
                     Total = itemCategoryData.Sum(x => x.Total)
                 });
 
@@ -378,6 +398,7 @@ public class PurchaseReceiveReportService : IPurchaseReceiveReportService
                     TotalAfterDisc = rcvDetailData.Sum(x => x.TotalAfterDisc),
                     TotalDpp = rcvDetailData.Sum(x => x.TotalDpp),
                     TotalTaxAmount = rcvDetailData.Sum(x => x.TotalTaxAmount),
+                    TotalExemptTaxAmount = rcvDetailData.Sum(x => x.TotalExemptTaxAmount),
                     TotalNettPrice = rcvDetailData.Sum(x => x.TotalNettPrice)
                 });
 
@@ -405,6 +426,7 @@ public class PurchaseReceiveReportService : IPurchaseReceiveReportService
                     TotalAfterDisc = rcvDetailData.Sum(x => x.TotalAfterDisc),
                     TotalDpp = rcvDetailData.Sum(x => x.TotalDpp),
                     TotalTaxAmount = rcvDetailData.Sum(x => x.TotalTaxAmount),
+                    TotalExemptTaxAmount = rcvDetailData.Sum(x => x.TotalExemptTaxAmount),
                     TotalNettPrice = rcvDetailData.Sum(x => x.TotalNettPrice)
                 });
 
@@ -444,6 +466,7 @@ public class PurchaseReceiveReportService : IPurchaseReceiveReportService
                     TotalAfterDisc = rcvDetailData.Sum(x => x.TotalAfterDisc),
                     TotalDpp = rcvDetailData.Sum(x => x.TotalDpp),
                     TotalTaxAmount = rcvDetailData.Sum(x => x.TotalTaxAmount),
+                    TotalExemptTaxAmount = rcvDetailData.Sum(x => x.TotalExemptTaxAmount),
                     TotalNettPrice = rcvDetailData.Sum(x => x.TotalNettPrice)
                 });
 

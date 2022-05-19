@@ -17,7 +17,7 @@ public class PurchaseOrderReportService : IPurchaseOrderReportService
     {
         var poData = _db.ReportByPOs.FromSqlRaw(@"SELECT po.[Date], po.Code, po.SupCode, po.SupName,
                             SUM(po_d.Qty * po_d.UnitPrice) AS GrossAmount, SUM(po_d.Qty * (po_d.UnitPrice - po_d.Disc - po_d.FinalDiscHeader)) AS SubTotal,
-                            SUM(po_d.Qty * (po_d.Disc + po_d.FinalDiscHeader)) AS Disc, po.DPP, po.TaxAmount, po.Total,
+                            SUM(po_d.Qty * (po_d.Disc + po_d.FinalDiscHeader)) AS Disc, po.DPP, po.TaxAmount, po.ExemptTaxAmount, po.Total,
                             CASE po.Mark
 	                            WHEN 'A' THEN 'Aktif'
 	                            WHEN 'V' THEN 'Void'
@@ -27,17 +27,17 @@ public class PurchaseOrderReportService : IPurchaseOrderReportService
                             FROM Purchasing.vwPurchaseOrderHeader po
                             LEFT JOIN Purchasing.vwPurchaseOrderDetail po_d ON po.Code = po_d.Code" +
                                                 (string.IsNullOrEmpty(status) ? "" : status.Replace("'", "''").Equals("NV") ? " WHERE po.Mark != 'V'" : $" WHERE po.Mark = '{status.Replace("'", "''")}'") +
-                                                " GROUP BY po.[Date], po.Code, po.SupCode, po.SupName, po.SubTotal, po.DPP, po.TaxAmount, po.Total, po.Mark").ToList();
+                                                " GROUP BY po.[Date], po.Code, po.SupCode, po.SupName, po.SubTotal, po.DPP, po.TaxAmount, po.ExemptTaxAmount, po.Total, po.Mark").ToList();
 
         var poDetailData = _db.ReportByDetailPOs.FromSqlRaw(@"SELECT po.[Date], po.Code, po.SupCode, po.SupName,
                             im.Initial AS ItemInitial, im.[Name] AS ItemName, po_d.Qty,
                             po_d.UnitId, po_d.UnitName, po_d.UnitPrice AS GrossAmount,
                             po_d.Disc AS Disc, po_d.FinalDiscHeader AS DiscHeader,
                             po_d.UnitPrice - po_d.Disc - po_d.FinalDiscHeader AS SubTotal,
-                            po_d.DPP, po_d.TaxAmount, po_d.NettPrice,
+                            po_d.DPP, po_d.TaxAmount, po_d.ExemptTaxAmount, po_d.NettPrice,
                             po_d.UnitPrice * po_d.Qty AS TotalGrossAmount, (po_d.UnitPrice - po_d.Disc - po_d.FinalDiscHeader) * po_d.Qty AS TotalAfterDisc,
                             po_d.Disc * po_d.Qty AS TotalDisc, po_d.FinalDiscHeader * po_d.Qty AS TotalDiscHeader,
-                            po_d.DPP * po_d.Qty AS TotalDPP, po_d.TaxAmount * po_d.Qty AS TotalTaxAmount, po_d.Total, po_d.NettPrice * po_d.Qty AS TotalNettPrice,
+                            po_d.DPP * po_d.Qty AS TotalDPP, (po_d.TaxAmount * po_d.Qty) - (po_d.ExemptTaxAmount * po_d.Qty) AS TotalTaxAmount, po_d.Total, po_d.NettPrice * po_d.Qty AS TotalNettPrice,
                             CASE po.Mark
                                 WHEN 'A' THEN 'Aktif'
                                 WHEN 'V' THEN 'Void'
@@ -56,7 +56,7 @@ public class PurchaseOrderReportService : IPurchaseOrderReportService
                             uc.Id AS UnitId, uc.UnitEquivalent AS UnitName,
                             CAST (0 AS int) AS TotalTrans, CAST (0 AS decimal) AS Qty, CAST (0 AS decimal) AS SubTotal,
                             CAST (0 AS decimal) AS Disc, CAST (0 AS decimal) AS DiscHeader, CAST (0 AS decimal) AS Dpp,
-                            CAST (0 AS decimal) AS TaxAmount, CAST (0 AS decimal) AS Total, CAST (0 AS decimal) AS GrossAmount
+                            CAST (0 AS decimal) AS TaxAmount, CAST (0 AS decimal) AS ExemptTaxAmount, CAST (0 AS decimal) AS Total, CAST (0 AS decimal) AS GrossAmount
                             FROM Inventory.Item im
                             LEFT JOIN Purchasing.PurchaseOrderDetail po_d ON po_d.ItemId = im.Id
                             LEFT JOIN Inventory.ItemCategory ic ON ic.Id = im.CategoryId
@@ -67,7 +67,7 @@ public class PurchaseOrderReportService : IPurchaseOrderReportService
         var supData = _db.ReportBySupplierPurchases.FromSqlRaw(@"SELECT sp.Code, sp.[Name], CAST (0 AS int) AS TotalTrans,
                             CAST (0 AS decimal) AS SubTotal, CAST (0 AS decimal) AS GrossAmount, 
                             CAST (0 AS decimal) AS Disc, CAST (0 AS decimal) AS DiscHeader,
-                            CAST (0 AS decimal) AS Dpp, CAST (0 AS decimal) AS TaxAmount, CAST (0 AS decimal) AS Total
+                            CAST (0 AS decimal) AS Dpp, CAST (0 AS decimal) AS TaxAmount, CAST (0 AS decimal) AS ExemptTaxAmount, CAST (0 AS decimal) AS Total
                             FROM General.Supplier sp
                             WHERE sp.IsActive = 1
                             GROUP BY sp.Code, sp.[Name]").ToList();
@@ -76,7 +76,7 @@ public class PurchaseOrderReportService : IPurchaseOrderReportService
                             uc.Id AS UnitId, uc.UnitEquivalent AS UnitName,
                             CAST (0 AS int) AS TotalTrans, CAST (0 AS decimal) AS Qty, CAST (0 AS decimal) AS SubTotal,
                             CAST (0 AS decimal) AS Disc, CAST (0 AS decimal) AS DiscHeader, CAST (0 AS decimal) AS Dpp,
-                            CAST (0 AS decimal) AS TaxAmount, CAST (0 AS decimal) AS Total, CAST (0 AS decimal) AS GrossAmount
+                            CAST (0 AS decimal) AS TaxAmount, CAST (0 AS decimal) AS ExemptTaxAmount, CAST (0 AS decimal) AS Total, CAST (0 AS decimal) AS GrossAmount
                             FROM Inventory.ItemCategory ic
                             LEFT JOIN Inventory.Item im ON im.CategoryId = ic.Id 
                             LEFT JOIN Purchasing.PurchaseOrderDetail po_d ON po_d.ItemId = im.Id
@@ -132,6 +132,7 @@ public class PurchaseOrderReportService : IPurchaseOrderReportService
                     Disc = poData.Sum(x => x.Disc),
                     Dpp = poData.Sum(x => x.Dpp),
                     TaxAmount = poData.Sum(x => x.TaxAmount),
+                    ExemptTaxAmount = poData.Sum(x => x.ExemptTaxAmount),
                     Total = poData.Sum(x => x.Total)
                 });
 
@@ -162,6 +163,7 @@ public class PurchaseOrderReportService : IPurchaseOrderReportService
                     itemSup.SubTotal = poDetailData.Where(x => x.SupCode == itemSup.Code).Sum(x => x.TotalAfterDisc);
                     itemSup.Dpp = poDetailData.Where(x => x.SupCode == itemSup.Code).Sum(x => x.TotalDpp);
                     itemSup.TaxAmount = poDetailData.Where(x => x.SupCode == itemSup.Code).Sum(x => x.TotalTaxAmount);
+                    itemSup.ExemptTaxAmount = poDetailData.Where(x => x.SupCode == itemSup.Code).Sum(x => x.TotalExemptTaxAmount);
                     itemSup.Total = poDetailData.Where(x => x.SupCode == itemSup.Code).Sum(x => x.TotalNettPrice);
                 }
 
@@ -176,6 +178,7 @@ public class PurchaseOrderReportService : IPurchaseOrderReportService
                     Disc = supData.Sum(x => x.Disc),
                     Dpp = supData.Sum(x => x.Dpp),
                     TaxAmount = supData.Sum(x => x.TaxAmount),
+                    ExemptTaxAmount = supData.Sum(x => x.ExemptTaxAmount),
                     Total = supData.Sum(x => x.Total)
                 });
 
@@ -208,6 +211,7 @@ public class PurchaseOrderReportService : IPurchaseOrderReportService
                     item.DiscHeader = poDetailData.Where(x => x.ItemInitial == item.Initial && x.UnitId == item.UnitId).Sum(x => x.TotalDiscHeader);
                     item.Dpp = poDetailData.Where(x => x.ItemInitial == item.Initial && x.UnitId == item.UnitId).Sum(x => x.TotalDpp);
                     item.TaxAmount = poDetailData.Where(x => x.ItemInitial == item.Initial && x.UnitId == item.UnitId).Sum(x => x.TotalTaxAmount);
+                    item.ExemptTaxAmount = poDetailData.Where(x => x.ItemInitial == item.Initial && x.UnitId == item.UnitId).Sum(x => x.TotalExemptTaxAmount);
                     item.Total = poDetailData.Where(x => x.ItemInitial == item.Initial && x.UnitId == item.UnitId).Sum(x => x.TotalNettPrice);
                 }
 
@@ -224,6 +228,7 @@ public class PurchaseOrderReportService : IPurchaseOrderReportService
                     DiscHeader = itemData.Sum(x => x.DiscHeader),
                     Dpp = itemData.Sum(x => x.Dpp),
                     TaxAmount = itemData.Sum(x => x.TaxAmount),
+                    ExemptTaxAmount = itemData.Sum(x => x.ExemptTaxAmount),
                     Total = itemData.Sum(x => x.Total)
                 });
 
@@ -267,6 +272,7 @@ public class PurchaseOrderReportService : IPurchaseOrderReportService
                     DiscHeader = itemCategoryData.Sum(x => x.DiscHeader),
                     Dpp = itemCategoryData.Sum(x => x.Dpp),
                     TaxAmount = itemCategoryData.Sum(x => x.TaxAmount),
+                    ExemptTaxAmount = itemCategoryData.Sum(x => x.ExemptTaxAmount),
                     Total = itemCategoryData.Sum(x => x.Total)
                 });
 
@@ -306,6 +312,7 @@ public class PurchaseOrderReportService : IPurchaseOrderReportService
                     TotalAfterDisc = poDetailData.Sum(x => x.TotalAfterDisc),
                     TotalDpp = poDetailData.Sum(x => x.TotalDpp),
                     TotalTaxAmount = poDetailData.Sum(x => x.TotalTaxAmount),
+                    TotalExemptTaxAmount = poDetailData.Sum(x => x.TotalExemptTaxAmount),
                     TotalNettPrice = poDetailData.Sum(x => x.TotalNettPrice)
                 });
 
@@ -333,6 +340,7 @@ public class PurchaseOrderReportService : IPurchaseOrderReportService
                     TotalAfterDisc = poDetailData.Sum(x => x.TotalAfterDisc),
                     TotalDpp = poDetailData.Sum(x => x.TotalDpp),
                     TotalTaxAmount = poDetailData.Sum(x => x.TotalTaxAmount),
+                    TotalExemptTaxAmount = poDetailData.Sum(x => x.TotalExemptTaxAmount),
                     TotalNettPrice = poDetailData.Sum(x => x.TotalNettPrice)
                 });
 
@@ -372,6 +380,7 @@ public class PurchaseOrderReportService : IPurchaseOrderReportService
                     TotalAfterDisc = poDetailData.Sum(x => x.TotalAfterDisc),
                     TotalDpp = poDetailData.Sum(x => x.TotalDpp),
                     TotalTaxAmount = poDetailData.Sum(x => x.TotalTaxAmount),
+                    TotalExemptTaxAmount = poDetailData.Sum(x => x.TotalExemptTaxAmount),
                     TotalNettPrice = poDetailData.Sum(x => x.TotalNettPrice)
                 });
 
