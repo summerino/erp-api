@@ -71,7 +71,7 @@ public class SalesOrderController : ControllerBase
                 x.Id, x.Code, x.LineNo, x.ItemId, x.ItemInitial, x.ItemName,
                 x.UomId, x.UnitId, x.UnitName, x.Qty,
                 x.Length, x.Width, x.Height, x.Weight, x.DimensionMeasurement, x.WeightMeasurement,
-                x.QtyDlv, x.UnitPrice, x.Disc, x.FinalDiscHeader, x.TaxId, x.TaxAmount,
+                x.QtyDlv, x.UnitPrice, x.Disc, x.FinalDiscHeader, x.TaxId, x.TaxAmount, x.ExemptTaxAmount,
                 x.NettPrice, x.Total, x.Dpp, x.Notes,
                 x.CoaInventory, x.CoaCogs, x.CoaSls, x.CoaSlsDisc, x.CoaSlsReturn,
                 Units = uomC.Where(u => u.UomId == x.UomId)

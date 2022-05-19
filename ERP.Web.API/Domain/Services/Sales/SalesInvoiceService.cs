@@ -130,6 +130,7 @@ public class SalesInvoiceService : GeneralService<SalesInvoiceHeader>, ISalesInv
                     SubTotal = item.SubTotal,
                     FinalDisc = item.FinalDisc,
                     TaxAmount = item.TaxAmount,
+                    ExemptTaxAmount = item.ExemptTaxAmount,
                     Total = item.Total,
                     Dpp = item.Dpp
                 });
@@ -268,6 +269,7 @@ public class SalesInvoiceService : GeneralService<SalesInvoiceHeader>, ISalesInv
                         SubTotal = item.SubTotal,
                         FinalDisc = item.FinalDisc,
                         TaxAmount = item.TaxAmount,
+                        ExemptTaxAmount = item.ExemptTaxAmount,
                         Total = item.Total,
                         Dpp = item.Dpp
                     });

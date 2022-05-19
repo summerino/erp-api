@@ -58,6 +58,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
             FinalDisc = ordData?.FinalDisc ?? 0m,
             IncludeTax = ordData?.IncludeTax ?? false,
             TaxAmount = ordData?.TaxAmount ?? 0m,
+            ExemptTaxAmount = ordData?.ExemptTaxAmount ?? 0m,
             Dpp = ordData?.Dpp ?? 0m
         };
     }
@@ -137,6 +138,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
             var uomConversions = Db.UoMConversions.ToList();
             List<decimal> totalDetail = new();
             List<decimal> totalTax = new();
+            List<decimal> totalExemptTax = new();
             List<decimal> totalDpp = new();
 
             // Sales Order
@@ -477,13 +479,15 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                 if (data.IncludeTax)
                 {
                     item.TaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) - ((item.UnitPrice - item.Disc - discHeaderProrate) / (1 + (taxData.Rate / 100)));
+                    item.ExemptTaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) - ((item.UnitPrice - item.Disc - discHeaderProrate) / (1 + (taxData.ExemptRate / 100)));
                     item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate;
-                    item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate - item.TaxAmount;
+                    item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate - item.TaxAmount + item.ExemptTaxAmount;
                 }
                 else
                 {
                     item.TaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) * (taxData.Rate / 100);
-                    item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate + item.TaxAmount;
+                    item.ExemptTaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) * (taxData.ExemptRate / 100);
+                    item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate + item.TaxAmount - item.ExemptTaxAmount;
                     item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate;
                 }
 
@@ -497,6 +501,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                 item.Total = item.Qty * item.NettPrice;
                 totalDetail.Add(item.Total);
                 totalTax.Add(item.Qty * item.TaxAmount);
+                totalExemptTax.Add(item.Qty * item.ExemptTaxAmount);
                 totalDpp.Add(item.Qty * item.Dpp);
 
                 var orderDetail = new SalesOrderDetail
@@ -519,6 +524,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                     FinalDiscHeader = item.FinalDiscHeader,
                     TaxId = item.TaxId,
                     TaxAmount = item.TaxAmount,
+                    ExemptTaxAmount = item.ExemptTaxAmount,
                     NettPrice = item.NettPrice,
                     Total = item.Total,
                     Dpp = item.Dpp,
@@ -591,6 +597,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                 data.FinalDisc = data.ItemDetails.Sum(x => x.FinalDiscHeader * x.Qty);
             data.SubTotal = totalDetail.Sum();
             data.TaxAmount = totalTax.Sum();
+            data.ExemptTaxAmount = totalExemptTax.Sum();
             data.Dpp = totalDpp.Sum();
             data.Total = data.SubTotal;
 
@@ -609,6 +616,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                 FinalDisc = data.FinalDisc,
                 IncludeTax = data.IncludeTax,
                 TaxAmount = data.TaxAmount,
+                ExemptTaxAmount = data.ExemptTaxAmount,
                 Total = data.Total,
                 Dpp = data.Dpp,
                 Notes = data.Notes,
@@ -637,6 +645,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                 FinalDisc = data.FinalDisc,
                 IncludeTax = data.IncludeTax,
                 TaxAmount = data.TaxAmount,
+                ExemptTaxAmount = data.ExemptTaxAmount,
                 Total = data.Total,
                 Dpp = data.Dpp,
                 Mark = "INV",
@@ -671,6 +680,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                     TaxId = item.TaxId,
                     TaxAmount = item.TaxAmount,
                     NettPrice = item.NettPrice,
+                    ExemptTaxAmount = item.ExemptTaxAmount,
                     Total = item.Total,
                     Dpp = item.Dpp
                 };
@@ -742,6 +752,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                 SubTotal = data.SubTotal,
                 FinalDisc = data.FinalDisc,
                 TaxAmount = data.TaxAmount,
+                ExemptTaxAmount = data.ExemptTaxAmount,
                 Total = data.Total,
                 Dpp = data.Dpp
             });
@@ -861,6 +872,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
             var uomConversions = Db.UoMConversions.ToList();
             List<decimal> totalDetail = new();
             List<decimal> totalTax = new();
+            List<decimal> totalExemptTax = new();
             List<decimal> totalDpp = new();
 
             data.ApprovedBy = null;
@@ -1277,13 +1289,15 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                 if (data.IncludeTax)
                 {
                     item.TaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) - ((item.UnitPrice - item.Disc - discHeaderProrate) / (1 + (taxData.Rate / 100)));
+                    item.ExemptTaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) - ((item.UnitPrice - item.Disc - discHeaderProrate) / (1 + (taxData.ExemptRate / 100)));
                     item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate;
-                    item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate - item.TaxAmount;
+                    item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate - item.TaxAmount + item.ExemptTaxAmount;
                 }
                 else
                 {
                     item.TaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) * (taxData.Rate / 100);
-                    item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate + item.TaxAmount;
+                    item.ExemptTaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) * (taxData.ExemptRate / 100);
+                    item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate + item.TaxAmount - item.ExemptTaxAmount;
                     item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate;
                 }
 
@@ -1297,6 +1311,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                 item.Total = item.Qty * item.NettPrice;
                 totalDetail.Add(item.Total);
                 totalTax.Add(item.Qty * item.TaxAmount);
+                totalExemptTax.Add(item.Qty * item.ExemptTaxAmount);
                 totalDpp.Add(item.Qty * item.Dpp);
 
                 if (item.Id < 0)
@@ -1321,6 +1336,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                         FinalDiscHeader = item.FinalDiscHeader,
                         TaxId = item.TaxId,
                         TaxAmount = item.TaxAmount,
+                        ExemptTaxAmount = item.ExemptTaxAmount,
                         NettPrice = item.NettPrice,
                         Total = item.Total,
                         Dpp = item.Dpp,
@@ -1359,6 +1375,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                         orderDetail.FinalDiscHeader = item.FinalDiscHeader;
                         orderDetail.TaxId = item.TaxId;
                         orderDetail.TaxAmount = item.TaxAmount;
+                        orderDetail.ExemptTaxAmount = item.ExemptTaxAmount;
                         orderDetail.NettPrice = item.NettPrice;
                         orderDetail.Total = item.Total;
                         orderDetail.Dpp = item.Dpp;
@@ -1490,6 +1507,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                     FinalDiscHeader = item.FinalDiscHeader,
                     TaxId = item.TaxId,
                     TaxAmount = item.TaxAmount,
+                    ExemptTaxAmount = item.ExemptTaxAmount,
                     NettPrice = item.NettPrice,
                     Total = item.Total,
                     Dpp = item.Dpp
@@ -1536,6 +1554,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                 data.FinalDisc = data.ItemDetails.Sum(x => x.FinalDiscHeader * x.Qty);
             data.SubTotal = totalDetail.Sum();
             data.TaxAmount = totalTax.Sum();
+            data.ExemptTaxAmount = totalExemptTax.Sum();
             data.Dpp = totalDpp.Sum();
             data.Total = data.SubTotal;
 
@@ -1552,6 +1571,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
             orderData.FinalDisc = data.FinalDisc;
             orderData.IncludeTax = data.IncludeTax;
             orderData.TaxAmount = data.TaxAmount;
+            orderData.ExemptTaxAmount = data.ExemptTaxAmount;
             orderData.Total = data.Total;
             orderData.Dpp = data.Dpp;
             orderData.Notes = data.Notes;
@@ -1577,6 +1597,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
             deliveryData.FinalDisc = data.FinalDisc;
             deliveryData.IncludeTax = data.IncludeTax;
             deliveryData.TaxAmount = data.TaxAmount;
+            deliveryData.ExemptTaxAmount = data.ExemptTaxAmount;
             deliveryData.Total = data.Total;
             deliveryData.Dpp = data.Dpp;
             deliveryData.Mark = "INV";
@@ -1593,6 +1614,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
             InvoiceDetailData.SubTotal = data.SubTotal;
             InvoiceDetailData.FinalDisc = data.FinalDisc;
             InvoiceDetailData.TaxAmount = data.TaxAmount;
+            InvoiceDetailData.ExemptTaxAmount = data.ExemptTaxAmount;
             InvoiceDetailData.Total = data.Total;
             InvoiceDetailData.Dpp = data.Dpp;
             Db.SalesInvoiceDetails.Update(InvoiceDetailData);
