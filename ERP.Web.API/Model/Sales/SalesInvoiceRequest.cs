@@ -29,6 +29,8 @@ public class SalesInvoiceRequest : SalesInvoiceHeader
 
     public decimal TaxAmount { get; set; }
 
+    public decimal ExemptTaxAmount { get; set; }
+
     public decimal Dpp { get; set; }
     // End - Direct Invoice
 
