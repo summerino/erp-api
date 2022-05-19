@@ -110,6 +110,7 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
             var taxes = Db.Taxes.ToList();
             List<decimal> totalDetail = new();
             List<decimal> totalTax = new();
+            List<decimal> totalExemptTax = new();
             List<decimal> totalDpp = new();
 
             // Get new code
@@ -139,13 +140,15 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
                 if (data.IncludeTax)
                 {
                     item.TaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) - ((item.UnitPrice - item.Disc - discHeaderProrate) / (1 + (taxData.Rate / 100)));
+                    item.ExemptTaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) - ((item.UnitPrice - item.Disc - discHeaderProrate) / (1 + (taxData.ExemptRate / 100)));
                     item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate;
-                    item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate - item.TaxAmount;
+                    item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate - item.TaxAmount + item.ExemptTaxAmount;
                 }
                 else
                 {
                     item.TaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) * (taxData.Rate / 100);
-                    item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate + item.TaxAmount;
+                    item.ExemptTaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) * (taxData.ExemptRate / 100);
+                    item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate + item.TaxAmount - item.ExemptTaxAmount;
                     item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate;
                 }
 
@@ -153,6 +156,7 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
                 item.Total = item.Qty * item.NettPrice;
                 totalDetail.Add(item.Total);
                 totalTax.Add(item.Qty * item.TaxAmount);
+                totalExemptTax.Add(item.Qty * item.ExemptTaxAmount);
                 totalDpp.Add(item.Qty * item.Dpp);
 
                 var orderDetail = new PurchaseOrderDetail
@@ -175,6 +179,7 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
                     FinalDiscHeader = item.FinalDiscHeader,
                     TaxId = item.TaxId,
                     TaxAmount = item.TaxAmount,
+                    ExemptTaxAmount = item.ExemptTaxAmount,
                     NettPrice = item.NettPrice,
                     Total = item.Total,
                     Dpp = item.Dpp,
@@ -198,6 +203,7 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
 
             data.SubTotal = totalDetail.Sum();
             data.TaxAmount = totalTax.Sum();
+            data.ExemptTaxAmount = totalExemptTax.Sum();
             data.Dpp = totalDpp.Sum();
             data.Total = data.SubTotal;
             Db.PurchaseOrderHeaders.Add(data);
@@ -224,6 +230,7 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
                     FinalDisc = data.FinalDisc,
                     IncludeTax = data.IncludeTax,
                     TaxAmount = data.TaxAmount,
+                    ExemptTaxAmount = data.ExemptTaxAmount,
                     Total = data.Total,
                     Dpp = data.Dpp,
                     Mark = data.Mark,
@@ -257,6 +264,7 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
                         Disc = item.Disc,
                         TaxId = item.TaxId,
                         TaxAmount = item.TaxAmount,
+                        ExemptTaxAmount = item.ExemptTaxAmount,
                         NettPrice = item.NettPrice,
                         Total = item.Total,
                         Dpp = item.Dpp,
@@ -289,6 +297,7 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
                     FinalDisc = data.FinalDisc,
                     IncludeTax = data.IncludeTax,
                     TaxAmount = data.TaxAmount,
+                    ExemptTaxAmount = data.ExemptTaxAmount,
                     Total = data.Total,
                     Dpp = data.Dpp,
                     Mark = "INV",
@@ -345,6 +354,7 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
                         Disc = item.Disc,
                         TaxId = item.TaxId,
                         TaxAmount = item.TaxAmount,
+                        ExemptTaxAmount = item.ExemptTaxAmount,
                         NettPrice = item.NettPrice,
                         Total = item.Total,
                         Dpp = item.Dpp,
@@ -361,6 +371,7 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
                     SubTotal = data.Total,
                     FinalDisc = data.FinalDisc,
                     TaxAmount = data.TaxAmount,
+                    ExemptTaxAmount = data.ExemptTaxAmount,
                     Total = data.Total,
                     Dpp = data.Dpp
                 });
@@ -447,6 +458,7 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
             var taxes = Db.Taxes.ToList();
             List<decimal> totalDetail = new();
             List<decimal> totalTax = new();
+            List<decimal> totalExemptTax = new();
             List<decimal> totalDpp = new();
 
             data.ApprovedBy = null;
@@ -484,13 +496,15 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
                 if (data.IncludeTax)
                 {
                     item.TaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) - ((item.UnitPrice - item.Disc - discHeaderProrate) / (1 + (taxData.Rate / 100)));
+                    item.ExemptTaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) - ((item.UnitPrice - item.Disc - discHeaderProrate) / (1 + (taxData.ExemptRate / 100)));
                     item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate;
-                    item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate - item.TaxAmount;
+                    item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate - item.TaxAmount + item.ExemptTaxAmount;
                 }
                 else
                 {
                     item.TaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) * (taxData.Rate / 100);
-                    item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate + item.TaxAmount;
+                    item.ExemptTaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) * (taxData.ExemptRate / 100);
+                    item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate + item.TaxAmount - item.ExemptTaxAmount;
                     item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate;
                 }
 
@@ -498,6 +512,7 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
                 item.Total = item.Qty * item.NettPrice;
                 totalDetail.Add(item.Total);
                 totalTax.Add(item.Qty * item.TaxAmount);
+                totalExemptTax.Add(item.Qty * item.ExemptTaxAmount);
                 totalDpp.Add(item.Qty * item.Dpp);
 
                 if (item.Id <= 0)
@@ -522,6 +537,7 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
                         FinalDiscHeader = item.FinalDiscHeader,
                         TaxId = item.TaxId,
                         TaxAmount = item.TaxAmount,
+                        ExemptTaxAmount = item.ExemptTaxAmount,
                         NettPrice = item.NettPrice,
                         Total = item.Total,
                         Dpp = item.Dpp,
@@ -558,6 +574,7 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
 
             data.SubTotal = totalDetail.Sum();
             data.TaxAmount = totalTax.Sum();
+            data.ExemptTaxAmount = totalExemptTax.Sum();
             data.Dpp = totalDpp.Sum();
             data.Total = data.SubTotal;
             // Update header data
@@ -588,6 +605,7 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
                     FinalDisc = data.FinalDisc,
                     IncludeTax = data.IncludeTax,
                     TaxAmount = data.TaxAmount,
+                    ExemptTaxAmount = data.ExemptTaxAmount,
                     Total = data.Total,
                     Dpp = data.Dpp,
                     Mark = data.Mark,
@@ -621,6 +639,7 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
                         Disc = item.Disc,
                         TaxId = item.TaxId,
                         TaxAmount = item.TaxAmount,
+                        ExemptTaxAmount = item.ExemptTaxAmount,
                         NettPrice = item.NettPrice,
                         Total = item.Total,
                         Dpp = item.Dpp,
@@ -655,6 +674,7 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
                         FinalDisc = data.FinalDisc,
                         IncludeTax = data.IncludeTax,
                         TaxAmount = data.TaxAmount,
+                        ExemptTaxAmount = data.ExemptTaxAmount,
                         Total = data.Total,
                         Dpp = data.Dpp,
                         Mark = "INV",
@@ -711,6 +731,7 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
                             Disc = item.Disc,
                             TaxId = item.TaxId,
                             TaxAmount = item.TaxAmount,
+                            ExemptTaxAmount = item.ExemptTaxAmount,
                             NettPrice = item.NettPrice,
                             Total = item.Total,
                             Dpp = item.Dpp,
@@ -727,6 +748,7 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
                         SubTotal = data.Total,
                         FinalDisc = data.FinalDisc,
                         TaxAmount = data.TaxAmount,
+                        ExemptTaxAmount = data.ExemptTaxAmount,
                         Total = data.Total,
                         Dpp = data.Dpp
                     });
@@ -775,6 +797,7 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
                             SubTotal = RcvItem.Total,
                             FinalDisc = RcvItem.FinalDisc,
                             TaxAmount = RcvItem.TaxAmount,
+                            ExemptTaxAmount = RcvItem.ExemptTaxAmount,
                             Total = RcvItem.Total,
                             Dpp = RcvItem.Dpp
                         });
