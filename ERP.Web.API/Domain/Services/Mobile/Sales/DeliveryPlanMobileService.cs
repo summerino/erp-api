@@ -201,6 +201,8 @@ public class DeliveryPlanMobileService : GeneralService<DeliveryPlanRequestModel
             data = data.Where(x => x.Date.Equals(date1));
         }
 
+        data = data.OrderByDescending(x => x.Date).ThenByDescending(x => x.Code);
+
         return data.ToDataSourceResult(skip, take, filter, sort);
     }
 

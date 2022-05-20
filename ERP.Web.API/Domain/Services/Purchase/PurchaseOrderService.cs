@@ -51,8 +51,8 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
     public List<dynamic> GetRelatedTransactions(string code)
     {
         var data = from pr in Db.PurchaseReceiveHeaders
-            where pr.TransCode == code && pr.Mark != "V"
-            select new { pr.Code, pr.Date, pr.Mark };
+                   where pr.TransCode == code && pr.Mark != "V"
+                   select new { pr.Code, pr.Date, pr.Mark };
 
         return data.ToDynamicList();
     }
@@ -436,7 +436,7 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
                 result.Message = "Data order pembelian tidak bisa diubah karena sudah ditandai sebagai void.";
                 return result;
             }
-                
+
             var (isDuplicate, message) = CheckDuplicateDetail(data.ItemDetails);
             if (isDuplicate)
             {
@@ -862,7 +862,7 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
                 result.Message = "Data order pembelian tidak bisa ditandai sebagai void karena status bukan \"A\".";
                 return result;
             }
-                
+
             // Update header data
             data.Mark = "V";
             data.UpdatedBy = userId;
@@ -891,11 +891,12 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
         if (data != null)
         {
             // Checking mark header data
-            if (data.Mark != "A" && data.Mark != "PR") {
+            if (data.Mark != "A" && data.Mark != "PR")
+            {
                 result.Message = "Data order pembelian tidak bisa ditutup karena status bukan \"A\" & \"PR\".";
                 return result;
             }
-                
+
             // Update header data
             data.Mark = "CLS";
             data.UpdatedBy = userId;
@@ -1014,6 +1015,7 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
                        };
 
             data = data.OrderBy(x => x.LineNo);
+
             return data;
         }
         else
@@ -1039,6 +1041,7 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
                        };
 
             data = data.OrderBy(x => x.LineNo);
+
             return data;
         }
     }
@@ -1091,6 +1094,8 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
             var date1 = DateTime.ParseExact(date, "yyyy-MM-dd", null);
             data = data.Where(x => x.Date.Equals(date1));
         }
+
+        data = data.OrderByDescending(x => x.Date).ThenByDescending(x => x.Code);
 
         return data.ToDataSourceResult(skip, take, filter, sort);
     }
@@ -1198,71 +1203,71 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
         var result = new SaveResult(false);
         var empId = Db.Users.Where(x => x.Id.Equals(userId)).Select(y => y.EmployeeId).Single();
 
-        var existed_transfer_stock_code = Db.MobileReceiveItemHeaders.Any(x => x.TransCode == data.TransCode); // check code existed submission
-        if (!existed_transfer_stock_code)
+        //var existed_transfer_stock_code = Db.MobileReceiveItemHeaders.Any(x => x.TransCode == data.TransCode); // check code existed submission
+        //if (!existed_transfer_stock_code)
+        //{
+        using var transaction = Db.Database.BeginTransaction();
+        try
         {
-            using var transaction = Db.Database.BeginTransaction();
-            try
+            var date = DateTime.Now;
+            var newCode = GetNewCode("MOB_RCV_NUM_FMT", data.Date, empId.ToString());
+
+            data.Code = newCode;
+
+            Db.MobileReceiveItemHeaders.Add(new MobileReceiveItemHeader
             {
-                var date = DateTime.Now;
-                var newCode = GetNewCode("MOB_RCV_NUM_FMT", data.Date, empId.ToString());
+                Code = newCode,
+                Date = date,
+                TransCode = data.TransCode,
+                SrcTrans = data.SrcTrans,
+                SupCode = data.SupCode,
+                ReceiveBy = empId ?? 0,
+                SignatureImage = data.SignatureImage,
+                Mark = "A",
+                CreatedBy = userId,
+                CreatedDate = date,
+                UpdatedBy = userId,
+                UpdatedDate = date
+            });
 
-                data.Code = newCode;
-
-                Db.MobileReceiveItemHeaders.Add(new MobileReceiveItemHeader
+            short i = 0;
+            foreach (var rcv in data.PODetails)
+            {
+                rcv.Code = newCode;
+                Db.MobileReceiveItemDetails.Add(new MobileReceiveItemDetail
                 {
-                    Code = newCode,
-                    Date = date,
-                    TransCode = data.TransCode,
-                    SrcTrans = data.SrcTrans,
-                    SupCode = data.SupCode,
-                    ReceiveBy = empId ?? 0,
-                    SignatureImage = data.SignatureImage,
-                    Mark = "A",
-                    CreatedBy = userId,
-                    CreatedDate = date,
-                    UpdatedBy = userId,
-                    UpdatedDate = date
+                    Code = rcv.Code,
+                    LineNo = ++i,
+                    ItemId = rcv.ItemId,
+                    Qty = rcv.Qty,
+                    TransDetailId = rcv.Type == 1 ? null : rcv.TransDetailId,
+                    Type = rcv.Type,
+                    UnitId = rcv.UnitId,
+                    UomId = rcv.UomId,
+                    WarehouseCode = rcv.WarehouseCode
                 });
-
-                short i = 0;
-                foreach (var rcv in data.PODetails)
-                {
-                    rcv.Code = newCode;
-                    Db.MobileReceiveItemDetails.Add(new MobileReceiveItemDetail
-                    {
-                        Code = rcv.Code,
-                        LineNo = ++i,
-                        ItemId = rcv.ItemId,
-                        Qty = rcv.Qty,
-                        TransDetailId = rcv.Type == 1 ? null : rcv.TransDetailId,
-                        Type = rcv.Type,
-                        UnitId = rcv.UnitId,
-                        UomId = rcv.UomId,
-                        WarehouseCode = rcv.WarehouseCode
-                    });
-                }
-
-                Db.SaveChanges();
-                transaction.Commit();
-            }
-            catch (Exception ex)
-            {
-                result.Message = ex.InnerException?.Message ?? ex.Message;
-                return result;
             }
 
-            result.Success = true;
-            result.Data = data;
-            result.Message = "Penerimaan barang berhasil disimpan.";
-            return result;
+            Db.SaveChanges();
+            transaction.Commit();
         }
-        else
+        catch (Exception ex)
         {
-            result.Success = false;
-            result.Message = "Penerimaan barang sudah pernah disimpan";
+            result.Message = ex.InnerException?.Message ?? ex.Message;
             return result;
         }
+
+        result.Success = true;
+        result.Data = data;
+        result.Message = "Penerimaan barang berhasil disimpan.";
+        return result;
+        //}
+        //else
+        //{
+        //    result.Success = false;
+        //    result.Message = "Penerimaan barang sudah pernah disimpan";
+        //    return result;
+        //}
     }
     #endregion
 }
