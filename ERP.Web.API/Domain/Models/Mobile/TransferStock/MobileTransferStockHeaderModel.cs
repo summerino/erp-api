@@ -16,4 +16,5 @@ public class MobileTransferStockHeaderModel
     public string SalesNameFrom { get; set; }
     public string SalesNameTo { get; set; }
     public string TypeInitial { get; set; }
+    public string Mark { get; set; }
 }

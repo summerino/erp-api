@@ -24,13 +24,13 @@ public class TransactionHistoryController : ControllerBase
     }
 
     [HttpGet("by-customer")]
-    public IActionResult GetDataByCustomer(string search, string filters, string sorts, int skip, int take)
+    public IActionResult GetDataByCustomer(string search, string filters, string sorts, int skip, int take, DateTime? startDate, DateTime? endDate)
     {
         var data =
             _transactionHistory.GetDataByCustomer(skip, take,
                 JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
                 JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
-                search);
+                startDate, endDate, search);
 
         var temp = ((List<TransactionHistoryByCustomer>)data.Data);
 
@@ -49,13 +49,13 @@ public class TransactionHistoryController : ControllerBase
     }
 
     [HttpGet("by-product")]
-    public IActionResult GetDataByProduct(string search, string filters, string sorts, int skip, int take)
+    public IActionResult GetDataByProduct(string search, string filters, string sorts, int skip, int take, DateTime? startDate, DateTime? endDate)
     {
         var data =
             _transactionHistory.GetDataByProduct(skip, take,
                 JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
                 JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
-                search);
+                startDate, endDate, search);
 
         var temp = ((List<TransactionHistoryByProduct>)data.Data);
         var result = temp.Select(x => new
@@ -75,20 +75,21 @@ public class TransactionHistoryController : ControllerBase
     }
 
     [HttpGet("by-unit-product")]
-    public IActionResult GetData(int filterUnit, DateTime? date)
+    public IActionResult GetData(int filterUnit, DateTime? startDate, DateTime? endDate)
     {
-        var result = _transactionHistory.GetDataByUnitProduct(filterUnit, date, _claim.UserId);
+        var result = _transactionHistory.GetDataByUnitProduct(filterUnit, startDate, endDate, _claim.UserId);
 
         return Ok(result);
     }
 
     [HttpGet("by-date")]
-    public IActionResult GetDataByDate(string filters, string sorts, int skip, int take)
+    public IActionResult GetDataByDate(string filters, string sorts, int skip, int take, DateTime? startDate, DateTime? endDate)
     {
         var data =
             _transactionHistory.GetDataByDate(skip, take,
                 JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
-                JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"));
+                JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
+                startDate, endDate);
 
         var temp = ((List<TransactionHistoryByDate>)data.Data);
         var result = temp.Select(x => new
@@ -109,7 +110,8 @@ public class TransactionHistoryController : ControllerBase
         var data =
             _transactionHistory.GetItemDetail(skip, take,
                 JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
-                JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"), search);
+                JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
+                search);
 
         var temp = ((List<TransactionItemDetail>)data.Data);
         var result = temp.Select(x => new
@@ -204,13 +206,13 @@ public class TransactionHistoryController : ControllerBase
     }
 
     [HttpGet("by-subgroup")]
-    public IActionResult GetDataByGroup(string filters, string sorts, int skip, int take, int groupId, string subGroup)
+    public IActionResult GetDataByGroup(string filters, string sorts, int skip, int take, DateTime? startDate, DateTime? endDate, int groupId, string subGroup)
     {
         var data =
             _transactionHistory.GetDataBySubGroup(skip, take,
                 JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
                 JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
-                groupId, subGroup);
+                startDate, endDate, groupId, subGroup);
 
         var result = ((List<TransactionHistoryBySubGroup>)data.Data).ToList<dynamic>();
 
@@ -245,8 +247,8 @@ public class TransactionHistoryController : ControllerBase
         var data =
             _transactionHistory.GetDataBySubGroupSummary(skip, take,
                 JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
-                JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"), date,
-                groupId, subGroupId);
+                JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
+                 date, groupId, subGroupId);
 
         var result = ((List<TransactionHistoryBySubGroupSummary>)data.Data).ToList<dynamic>();
 
