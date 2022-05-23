@@ -20,7 +20,7 @@ public class SalesDeliveryReportService : ISalesDeliveryReportService
                             CAST(do.SrcTrans AS int) AS SrcTrans, do.TransCode, wh.[Name] AS WarehouseName,
                             SUM(do_d.Qty * do_d.UnitPrice) AS GrossAmount, SUM(do_d.Qty * (do_d.UnitPrice - do_d.Disc - do_d.FinalDiscHeader)) AS SubTotal,
                             SUM(do_d.Qty * do_d.Disc) AS Disc, SUM(do_d.Qty * do_d.FinalDiscHeader) AS DiscHeader,
-                            SUM(do_d.DPP * do_d.Qty) AS DPP, SUM(do_d.TaxAmount * do_d.Qty) AS TaxAmount, SUM(do_d.NettPrice * do_d.Qty) AS Total,
+                            SUM(do_d.DPP * do_d.Qty) AS DPP, SUM(do_d.TaxAmount * do_d.Qty) AS TaxAmount, SUM(do_d.ExemptTaxAmount * do_d.Qty) AS ExemptTaxAmount, SUM(do_d.NettPrice * do_d.Qty) AS Total,
                             CASE do.Mark
 	                            WHEN 'A' THEN 'Aktif'
 	                            WHEN 'V' THEN 'Void'
@@ -38,10 +38,10 @@ public class SalesDeliveryReportService : ISalesDeliveryReportService
                             do_d.UnitId, do_d.UnitName, do_d.UnitPrice AS GrossAmount,
                             do_d.Disc AS Disc, do_d.FinalDiscHeader AS DiscHeader,
                             do_d.UnitPrice - do_d.Disc - do_d.FinalDiscHeader AS SubTotal,
-                            do_d.DPP, do_d.TaxAmount, do_d.NettPrice,
+                            do_d.DPP, do_d.TaxAmount, do_d.ExemptTaxAmount, do_d.NettPrice,
                             do_d.UnitPrice * do_d.Qty AS TotalGrossAmount, (do_d.UnitPrice - do_d.Disc - do_d.FinalDiscHeader) * do_d.Qty AS TotalAfterDisc,
                             do_d.Disc * do_d.Qty AS TotalDisc, do_d.FinalDiscHeader * do_d.Qty AS TotalDiscHeader,
-                            do_d.DPP * do_d.Qty AS TotalDPP, do_d.TaxAmount * do_d.Qty AS TotalTaxAmount, do_d.Total, do_d.NettPrice * do_d.Qty AS TotalNettPrice,
+                            do_d.DPP * do_d.Qty AS TotalDPP, do_d.TaxAmount * do_d.Qty AS TotalTaxAmount, do_d.ExemptTaxAmount * do_d.Qty AS TotalExemptTaxAmount, do_d.Total, do_d.NettPrice * do_d.Qty AS TotalNettPrice,
                             CASE do.Mark
                                 WHEN 'A' THEN 'Aktif'
                                 WHEN 'V' THEN 'Void'
@@ -60,7 +60,7 @@ public class SalesDeliveryReportService : ISalesDeliveryReportService
                             uc.Id AS UnitId, uc.UnitEquivalent AS UnitName,
                             CAST (0 AS int) AS TotalTrans, CAST (0 AS decimal) AS Qty, CAST (0 AS decimal) AS SubTotal,
                             CAST (0 AS decimal) AS Disc, CAST (0 AS decimal) AS DiscHeader, CAST (0 AS decimal) AS Dpp,
-                            CAST (0 AS decimal) AS TaxAmount, CAST (0 AS decimal) AS Total, CAST (0 AS decimal) AS GrossAmount
+                            CAST (0 AS decimal) AS TaxAmount, CAST (0 AS decimal) AS ExemptTaxAmount, CAST (0 AS decimal) AS Total, CAST (0 AS decimal) AS GrossAmount
                             FROM Inventory.Item im
                             LEFT JOIN Sales.SalesDeliveryDetail do_d ON do_d.ItemId = im.Id
                             LEFT JOIN Sales.SalesDeliveryHeader do ON do.Code = do_d.Code
@@ -72,7 +72,7 @@ public class SalesDeliveryReportService : ISalesDeliveryReportService
         var custData = _db.ReportByCustomerSales.FromSqlRaw(@"SELECT cs.Code, cs.[Name], CAST (0 AS int) AS TotalTrans,
                             CAST (0 AS decimal) AS SubTotal, CAST (0 AS decimal) AS GrossAmount, 
                             CAST (0 AS decimal) AS Disc, CAST (0 AS decimal) AS DiscHeader,
-                            CAST (0 AS decimal) AS Dpp, CAST (0 AS decimal) AS TaxAmount, CAST (0 AS decimal) AS Total
+                            CAST (0 AS decimal) AS Dpp, CAST (0 AS decimal) AS TaxAmount, CAST (0 AS decimal) AS ExemptTaxAmount, CAST (0 AS decimal) AS Total
                             FROM General.Customer cs
                             WHERE cs.IsActive = 1
                             GROUP BY cs.Code, cs.[Name]").ToList();
@@ -81,7 +81,7 @@ public class SalesDeliveryReportService : ISalesDeliveryReportService
                             uc.Id AS UnitId, uc.UnitEquivalent AS UnitName,
                             CAST (0 AS int) AS TotalTrans, CAST (0 AS decimal) AS Qty, CAST (0 AS decimal) AS SubTotal,
                             CAST (0 AS decimal) AS Disc, CAST (0 AS decimal) AS DiscHeader, CAST (0 AS decimal) AS Dpp,
-                            CAST (0 AS decimal) AS TaxAmount, CAST (0 AS decimal) AS Total, CAST (0 AS decimal) AS GrossAmount
+                            CAST (0 AS decimal) AS TaxAmount, CAST (0 AS decimal) AS ExemptTaxAmount, CAST (0 AS decimal) AS Total, CAST (0 AS decimal) AS GrossAmount
                             FROM Inventory.ItemCategory ic
                             LEFT JOIN Inventory.Item im ON im.CategoryId = ic.Id 
                             LEFT JOIN Sales.SalesDeliveryDetail do_d ON do_d.ItemId = im.Id
@@ -148,6 +148,7 @@ public class SalesDeliveryReportService : ISalesDeliveryReportService
                     SubTotal = doData.Sum(x => x.SubTotal),
                     Dpp = doData.Sum(x => x.Dpp),
                     TaxAmount = doData.Sum(x => x.TaxAmount),
+                    ExemptTaxAmount = doData.Sum(x => x.ExemptTaxAmount),
                     Total = doData.Sum(x => x.Total)
                 });
 
@@ -179,6 +180,7 @@ public class SalesDeliveryReportService : ISalesDeliveryReportService
                     itemCust.SubTotal = doDetailData.Where(x => x.CustCode == itemCust.Code).Sum(x => x.TotalAfterDisc);
                     itemCust.Dpp = doDetailData.Where(x => x.CustCode == itemCust.Code).Sum(x => x.TotalDpp);
                     itemCust.TaxAmount = doDetailData.Where(x => x.CustCode == itemCust.Code).Sum(x => x.TotalTaxAmount);
+                    itemCust.ExemptTaxAmount = doDetailData.Where(x => x.CustCode == itemCust.Code).Sum(x => x.TotalExemptTaxAmount);
                     itemCust.Total = doDetailData.Where(x => x.CustCode == itemCust.Code).Sum(x => x.TotalNettPrice);
                 }
 
@@ -194,6 +196,7 @@ public class SalesDeliveryReportService : ISalesDeliveryReportService
                     SubTotal = custData.Sum(x => x.SubTotal),
                     Dpp = custData.Sum(x => x.Dpp),
                     TaxAmount = custData.Sum(x => x.TaxAmount),
+                    ExemptTaxAmount = custData.Sum(x => x.ExemptTaxAmount),
                     Total = custData.Sum(x => x.Total)
                 });
 
@@ -226,6 +229,7 @@ public class SalesDeliveryReportService : ISalesDeliveryReportService
                     item.SubTotal = doDetailData.Where(x => x.ItemInitial == item.Initial && x.UnitId == item.UnitId).Sum(x => x.TotalAfterDisc);
                     item.Dpp = doDetailData.Where(x => x.ItemInitial == item.Initial && x.UnitId == item.UnitId).Sum(x => x.TotalDpp);
                     item.TaxAmount = doDetailData.Where(x => x.ItemInitial == item.Initial && x.UnitId == item.UnitId).Sum(x => x.TotalTaxAmount);
+                    item.ExemptTaxAmount = doDetailData.Where(x => x.ItemInitial == item.Initial && x.UnitId == item.UnitId).Sum(x => x.TotalExemptTaxAmount);
                     item.Total = doDetailData.Where(x => x.ItemInitial == item.Initial && x.UnitId == item.UnitId).Sum(x => x.TotalNettPrice);
                 }
 
@@ -242,6 +246,7 @@ public class SalesDeliveryReportService : ISalesDeliveryReportService
                     SubTotal = itemData.Sum(x => x.SubTotal),
                     Dpp = itemData.Sum(x => x.Dpp),
                     TaxAmount = itemData.Sum(x => x.TaxAmount),
+                    ExemptTaxAmount = itemData.Sum(x => x.ExemptTaxAmount),
                     Total = itemData.Sum(x => x.Total)
                 });
 
@@ -269,6 +274,7 @@ public class SalesDeliveryReportService : ISalesDeliveryReportService
                     item.SubTotal = doDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).Sum(x => x.TotalAfterDisc);
                     item.Dpp = doDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).Sum(x => x.TotalDpp);
                     item.TaxAmount = doDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).Sum(x => x.TotalTaxAmount);
+                    item.ExemptTaxAmount = doDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).Sum(x => x.TotalExemptTaxAmount);
                     item.Total = doDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).Sum(x => x.TotalNettPrice);
                 }
 
@@ -285,6 +291,7 @@ public class SalesDeliveryReportService : ISalesDeliveryReportService
                     SubTotal = itemCategoryData.Sum(x => x.SubTotal),
                     Dpp = itemCategoryData.Sum(x => x.Dpp),
                     TaxAmount = itemCategoryData.Sum(x => x.TaxAmount),
+                    ExemptTaxAmount = itemCategoryData.Sum(x => x.ExemptTaxAmount),
                     Total = itemCategoryData.Sum(x => x.Total)
                 });
 
@@ -324,6 +331,7 @@ public class SalesDeliveryReportService : ISalesDeliveryReportService
                     TotalAfterDisc = doDetailData.Sum(x => x.TotalAfterDisc),
                     TotalDpp = doDetailData.Sum(x => x.TotalDpp),
                     TotalTaxAmount = doDetailData.Sum(x => x.TotalTaxAmount),
+                    TotalExemptTaxAmount = doDetailData.Sum(x => x.TotalExemptTaxAmount),
                     TotalNettPrice = doDetailData.Sum(x => x.TotalNettPrice)
                 });
 
@@ -351,6 +359,7 @@ public class SalesDeliveryReportService : ISalesDeliveryReportService
                     TotalAfterDisc = doDetailData.Sum(x => x.TotalAfterDisc),
                     TotalDpp = doDetailData.Sum(x => x.TotalDpp),
                     TotalTaxAmount = doDetailData.Sum(x => x.TotalTaxAmount),
+                    TotalExemptTaxAmount = doDetailData.Sum(x => x.TotalExemptTaxAmount),
                     TotalNettPrice = doDetailData.Sum(x => x.TotalNettPrice)
                 });
 
@@ -390,6 +399,7 @@ public class SalesDeliveryReportService : ISalesDeliveryReportService
                     TotalAfterDisc = doDetailData.Sum(x => x.TotalAfterDisc),
                     TotalDpp = doDetailData.Sum(x => x.TotalDpp),
                     TotalTaxAmount = doDetailData.Sum(x => x.TotalTaxAmount),
+                    TotalExemptTaxAmount = doDetailData.Sum(x => x.TotalExemptTaxAmount),
                     TotalNettPrice = doDetailData.Sum(x => x.TotalNettPrice)
                 });
 
