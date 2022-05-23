@@ -393,13 +393,13 @@ public class PurchaseReceiveService : GeneralService<PurchaseReceiveHeader>, IPu
 
                     if (data.IncludeTax)
                     {
-                        item.TaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) - ((item.UnitPrice - item.Disc - discHeaderProrate) / (1 + (taxData.Rate / 100)));
+                        item.TaxAmount = taxData != null ? (item.UnitPrice - item.Disc - discHeaderProrate) - ((item.UnitPrice - item.Disc - discHeaderProrate) / (1 + (taxData.Rate / 100))) : 0m;
                         item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate;
                         item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate - item.TaxAmount;
                     }
                     else
                     {
-                        item.TaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) * (taxData.Rate / 100);
+                        item.TaxAmount = taxData != null ? (item.UnitPrice - item.Disc - discHeaderProrate) * (taxData.Rate / 100) : 0m;
                         item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate + item.TaxAmount;
                         item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate;
                     }
