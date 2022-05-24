@@ -929,7 +929,7 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
     {
         var empId = Db.Users.Where(x => x.Id.Equals(userId)).Select(y => y.EmployeeId).Single();
         var wh = Db.Employees.Where(x => x.Id.Equals(empId)).Select(y => y.WarehouseCode).Single();
-        var mobileReceive = (from mobilePO in Db.MobileReceiveItemHeaders select mobilePO).ToList();
+        //var mobileReceive = (from mobilePO in Db.MobileReceiveItemHeaders select mobilePO).ToList();
 
         var dataOrder = (from order in Db.PurchaseOrderHeaders
                          join sup in Db.Suppliers on order.SupCode equals sup.Code
@@ -1104,11 +1104,32 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
     {
         if (srcTrans == 1)
         {
+            var poCode = (from header in Db.VwMobileReceiveItemHeaders
+                          where header.Code.Equals(code)
+                          select header.TransCode).Single();
+
+            var previousRcvDate = (from detail in Db.VwMobileReceiveItemDetails
+                                   join header in Db.VwMobileReceiveItemHeaders on detail.Code equals header.Code
+                                   where detail.Code.Equals(code)
+                                   select new { header.CreatedDate }).OrderBy(x => x.CreatedDate).LastOrDefault();
+
+            var previousPOReceiveQty = (from detail in Db.VwMobileReceiveItemDetails
+                                        join header in Db.VwMobileReceiveItemHeaders on detail.Code equals header.Code
+                                        join poDetail in Db.VwPurchaseOrderDetails on header.TransCode equals poDetail.Code
+                                        where (poDetail.ItemId == detail.ItemId || detail.Type.Equals(1)) && detail.Type == 0 && poDetail.Code.Equals(poCode) && header.CreatedDate <= previousRcvDate.CreatedDate
+                                        group new { detail, poDetail } by new { poDetail.Code, detail.ItemId, detail.Qty } into gRcv
+                                        select new { Code = gRcv.Key.Code, ItemId = gRcv.Key.ItemId, QtyRcv = gRcv.Sum(x => x.detail.Qty) });
+
+            var itemQty = from detailQty in previousPOReceiveQty
+                          group new { detailQty } by new { detailQty.Code, detailQty.ItemId } into g
+                          select new { Code = g.Key.Code, ItemId = g.Key.ItemId, QtyRcv = g.Sum(x => x.detailQty.QtyRcv) };
+
             var data = from detail in Db.VwMobileReceiveItemDetails
                        join header in Db.VwMobileReceiveItemHeaders on detail.Code equals header.Code
                        join poDetail in Db.VwPurchaseOrderDetails on header.TransCode equals poDetail.Code
-                       where poDetail.ItemId == detail.ItemId || detail.Type.Equals(1)
-                       group new { detail, header, poDetail } by new
+                       join itmQty in itemQty on poDetail.Code equals itmQty.Code
+                       where (poDetail.ItemId == detail.ItemId || detail.Type.Equals(1)) && detail.Code.Equals(code) && itmQty.ItemId.Equals(poDetail.ItemId)
+                       group new { detail, header, poDetail, itmQty } by new
                        {
                            Code = detail.Code,
                            Id = detail.Id,
@@ -1124,7 +1145,7 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
                            ItemInitial = detail.ItemInitial,
                            ItemName = detail.ItemName,
                            QtyOrder = detail.Type == 1 ? 0 : poDetail.Qty,
-                           QtyRemain = detail.Type == 1 ? 0 : (poDetail.Qty - detail.Qty)
+                           QtyRemain = detail.Type == 1 ? 0 : ((poDetail.Qty) - itmQty.QtyRcv)
                        } into poD
                        select new ReceiveItemDetailModel
                        {
@@ -1143,6 +1164,7 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
                            ItemName = poD.Key.ItemName,
                            QtyOrder = poD.Key.QtyOrder,
                            QtyRemain = poD.Key.QtyRemain
+                           //QtyRemain = poD.Key.Type == 1 ? 0 : ((poD.Key.PODetailQty) - poD.Sum(x => x.itmQty.QtyRcv))
                        };
 
             data = data.Where(x => x.Code.Equals(code)).OrderBy(x => x.LineNo);
@@ -1151,11 +1173,33 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
         }
         else
         {
+            var prCode = (from header in Db.VwMobileReceiveItemHeaders
+                          where header.Code.Equals(code)
+                          select header.TransCode).Single();
+
+            var previousRcvDate = (from detail in Db.VwMobileReceiveItemDetails
+                                   join header in Db.VwMobileReceiveItemHeaders on detail.Code equals header.Code
+                                   where header.Code.Equals(code)
+                                   select new { header.CreatedDate }).OrderBy(x => x.CreatedDate).LastOrDefault();
+
+            var previousPOReceiveQty = (from detail in Db.VwMobileReceiveItemDetails
+                                        join header in Db.VwMobileReceiveItemHeaders on detail.Code equals header.Code
+                                        join prDetail in Db.VwPurchaseReturnDetails on header.TransCode equals prDetail.Code
+                                        where (prDetail.ItemId == detail.ItemId || detail.Type.Equals(1)) && detail.Type == 0 && prDetail.Code.Equals(prCode) && header.CreatedDate <= previousRcvDate.CreatedDate
+                                        group new { detail, prDetail } by new { prDetail.Code, detail.ItemId, detail.Qty } into gRcv
+                                        select new { Code = gRcv.Key.Code, ItemId = gRcv.Key.ItemId, QtyRcv = gRcv.Sum(x => x.detail.Qty) });
+
+            var itemQty = from detailQty in previousPOReceiveQty
+                          group new { detailQty } by new { detailQty.Code, detailQty.ItemId } into g
+                          select new { Code = g.Key.Code, ItemId = g.Key.ItemId, QtyRcv = g.Sum(x => x.detailQty.QtyRcv) };
+
             var data = from detail in Db.VwMobileReceiveItemDetails
                        join header in Db.VwMobileReceiveItemHeaders on detail.Code equals header.Code
                        join prDetail in Db.VwPurchaseReturnDetails on header.TransCode equals prDetail.Code
-                       where prDetail.ItemId == detail.ItemId || detail.Type.Equals(1)
-                       group new { detail, header, prDetail } by new
+                       join itmQty in itemQty on prDetail.Code equals itmQty.Code
+                       where (prDetail.ItemId == detail.ItemId || detail.Type.Equals(1)) && detail.Code.Equals(code) && itmQty.ItemId.Equals(prDetail.ItemId)
+                       //orderby detail.LineNo
+                       group new { detail, header, prDetail, itmQty } by new
                        {
                            Code = detail.Code,
                            Id = detail.Id,
@@ -1171,25 +1215,25 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
                            ItemInitial = detail.ItemInitial,
                            ItemName = detail.ItemName,
                            QtyOrder = detail.Type == 1 ? 0 : prDetail.Qty,
-                           QtyRemain = detail.Type == 1 ? 0 : (prDetail.Qty - detail.Qty)
-                       } into poD
+                           QtyRemain = detail.Type == 1 ? 0 : ((prDetail.Qty) - itmQty.QtyRcv)
+                       } into prD
                        select new ReceiveItemDetailModel
                        {
-                           Code = poD.Key.Code,
-                           Id = poD.Key.Id,
-                           ItemId = poD.Key.ItemId,
-                           LineNo = poD.Key.LineNo,
-                           Qty = poD.Key.Qty,
-                           TransDetailId = poD.Key.TransDetailId ?? 0,
-                           Type = poD.Key.Type,
-                           UnitId = poD.Key.UnitId,
-                           UomId = poD.Key.UomId,
-                           UnitEquivalent = poD.Key.UnitEquivalent,
-                           WarehouseCode = poD.Key.WarehouseCode,
-                           ItemInitial = poD.Key.ItemInitial,
-                           ItemName = poD.Key.ItemName,
-                           QtyOrder = poD.Key.QtyOrder,
-                           QtyRemain = poD.Key.QtyRemain
+                           Code = prD.Key.Code,
+                           Id = prD.Key.Id,
+                           ItemId = prD.Key.ItemId,
+                           LineNo = prD.Key.LineNo,
+                           Qty = prD.Key.Qty,
+                           TransDetailId = prD.Key.TransDetailId ?? 0,
+                           Type = prD.Key.Type,
+                           UnitId = prD.Key.UnitId,
+                           UomId = prD.Key.UomId,
+                           UnitEquivalent = prD.Key.UnitEquivalent,
+                           WarehouseCode = prD.Key.WarehouseCode,
+                           ItemInitial = prD.Key.ItemInitial,
+                           ItemName = prD.Key.ItemName,
+                           QtyOrder = prD.Key.QtyOrder,
+                           QtyRemain = prD.Key.QtyRemain
                        };
 
             data = data.Where(x => x.Code.Equals(code)).OrderBy(x => x.LineNo);
