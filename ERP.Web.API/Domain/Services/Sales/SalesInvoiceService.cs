@@ -411,8 +411,25 @@ public class SalesInvoiceService : GeneralService<SalesInvoiceHeader>, ISalesInv
                 RestoreCreditMemo(code);
 
                 if (data.FromDirectInvoice)
-                // Decrease CreditUsed
+                {
+                    // Decrease CreditUsed
                     UpdateCreditUsed(data.CustCode, data.Total);
+
+                    // Execute sp_update_stock_mutation_from_do
+                    Db.Database.ExecuteSqlRaw(
+                        "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}, {3}",
+                        data.Code, data.Date, data.Code, true);
+
+                    // Execute sp_update_so_dlv_qty
+                    Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", data.Code);
+
+                    Db.Database.ExecuteSqlRaw("EXEC sp_update_so_free_dlv_qty {0}", data.Code);
+
+                    // Execute sp_update_stock_mutation_from_so
+                    Db.Database.ExecuteSqlRaw(
+                        "EXEC sp_update_stock_mutation_from_so {0}, {1}, {2}",
+                        data.Code, data.Date, true);
+                }
 
                 transaction.Commit();
             }

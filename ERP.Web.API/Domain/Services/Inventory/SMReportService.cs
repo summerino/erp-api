@@ -66,7 +66,7 @@ public class SMReportService : ISMReportService
 						WHEN @Unit = 1 THEN abs(sm.BaseQty) 
 						WHEN @Unit = 2 THEN abs(sm.BaseQty) / ( SELECT EXP(SUM(LOG(Conversion))) FROM Inventory.UoMConversion WHERE UomId = im.UomId AND Seq <= (SELECT Seq FROM Inventory.UoMConversion WHERE Id = im.UomBuyId))
 						WHEN @Unit = 3 THEN abs(sm.BaseQty) / ( SELECT EXP(SUM(LOG(Conversion))) FROM Inventory.UoMConversion WHERE UomId = im.UomId AND Seq <= (SELECT Seq FROM Inventory.UoMConversion WHERE Id = im.UomSellId))
-						END AS decimal)
+						END AS decimal(18,6))
 					ELSE CAST (0 AS decimal(18,6))
 					END AS QtyIn,
 					CASE
