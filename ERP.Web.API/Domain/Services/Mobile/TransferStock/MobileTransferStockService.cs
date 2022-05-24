@@ -30,19 +30,8 @@ public class MobileTransferStockService : GeneralService<MobileTransferStockHead
                     join emp2 in Db.Employees.Where(x => x.Type.Equals(2)) on th.WarehouseCodeTo equals emp2.WarehouseCode
                         into a2
                     from sub2 in a2.DefaultIfEmpty()
-                        //where (th.Mark == "A")
-                        //    && ((th.WarehouseCodeTo == wh)
-                        //        || (th.WarehouseCodeFrom == wh)
-                        //        || (th.Type == "DT" && th.WarehouseCodeTo == wh && th.WarehouseCodeFrom != wh)
-                        //        || (th.Type == "DT" && th.WarehouseCodeTo != wh && th.WarehouseCodeFrom == wh))
-                        ////|| !Db.MobileTransferStockHeaders.Any(x => x.TransferCode == th.OriginTransferCode && x.Mark == "A")
-                        ////where (th.WarehouseCodeTo == wh && th.Mark == "A")
-                        ////where th.Mark == "A"
-                        ////      && ((th.WarehouseCodeTo == wh)
-                        ////          || (th.WarehouseCodeFrom == wh)
-                        ////          || (th.Type == "DT" && th.WarehouseCodeTo == wh && th.WarehouseCodeFrom != wh)
-                        ////          || (th.Type == "DT" && th.WarehouseCodeTo != wh && th.WarehouseCodeFrom == wh))
                     where (th.WarehouseCodeTo == wh && th.Mark == "A")
+                        || (th.WarehouseCodeFrom == wh && th.Type != "IN" && th.Mark == "A")
                         || (th.WarehouseCodeFrom == wh && th.Type == "IN" && (Db.MobileTransferStockHeaders.Where(x => x.Code.Equals(th.OriginTransferCode)).Select(y => y.Mark).Single()) == "A")
                         || (th.Type == "DT" && th.WarehouseCodeTo == wh && th.WarehouseCodeFrom != wh && th.Mark == "A")
                         || (th.Type == "DT" && th.WarehouseCodeTo != wh && th.WarehouseCodeFrom == wh && th.Mark == "A")
