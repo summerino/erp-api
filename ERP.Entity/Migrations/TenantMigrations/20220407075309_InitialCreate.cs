@@ -7194,8 +7194,6 @@ AS
         u_c.Initial AS CreatedInitial,
         u_u.Initial AS UpdatedInitial,
         u_a.Initial AS ApprovedInitial,
-        emp.Initial AS SalesInitial,
-		emp.FirstName AS SalesName,
         CASE si_h.Mark
             WHEN 'A' THEN 'Active'
             WHEN 'PP' THEN 'Pending Payment'
@@ -7214,11 +7212,7 @@ AS
     LEFT JOIN SystemManagement.[User] u_u
         ON u_u.Id = si_h.UpdatedBy
     LEFT JOIN SystemManagement.[User] u_a
-        ON u_a.Id = si_h.ApprovedBy
-    LEFT JOIN Sales.SalesOrderHeader so_h
-		ON so_h.Code = si_h.SOCode
-	LEFT JOIN General.Employee emp
-		ON emp.Id = so_h.SalesBy";
+        ON u_a.Id = si_h.ApprovedBy";
             migrationBuilder.Sql(sql);
 
             // Create view Sales.vwSalesmanGroup
