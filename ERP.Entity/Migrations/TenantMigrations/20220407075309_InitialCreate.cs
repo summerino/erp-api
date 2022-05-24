@@ -12264,7 +12264,7 @@ BEGIN TRY
 	DECLARE @OldUnitId int
 
 
-	SELECT @srcTrans = SrcTrans FROM Purchasing.PurchaseReceiveHeader
+	SELECT @srcTrans = SrcTrans FROM Purchasing.PurchaseReceiveHeader WHERE Code = @code
 
 	IF EXISTS(SELECT *FROM #tmp_ori_sm)
 	BEGIN
@@ -12320,6 +12320,15 @@ BEGIN TRY
 
 			IF EXISTS(SELECT *FROM Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId AND RefCode1 = @code)
 			BEGIN
+                IF (@srcTrans = 1)
+				BEGIN
+					UPDATE Inventory.WarehouseQuantity SET QtyOnHand -= @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
+					UPDATE Inventory.WarehouseQuantity SET QtyOnIndent += @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = (SELECT WarehouseCode FROM Inventory.StockMutation WHERE RefCode1 = @transCode AND ItemId = @ItemId AND UnitId = @UnitId) AND ItemId = @ItemId
+				END
+				ELSE
+				BEGIN
+					UPDATE Inventory.WarehouseQuantity SET QtyOnHand -= @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
+				END
 				DELETE Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId AND RefCode1 = @code
 			END
 			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId
