@@ -4,6 +4,7 @@ using ERP.Entity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ERP.Entity.Migrations.TenantMigrations
 {
     [DbContext(typeof(TenantContext))]
-    partial class TenantContextModelSnapshot : ModelSnapshot
+    [Migration("20220524151743_AddingColumnExemptTax")]
+    partial class AddingColumnExemptTax
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -11575,10 +11577,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("decimal(19,6)")
                         .HasColumnName("DPP");
 
-                    b.Property<decimal>("ExemptTaxAmount")
-                        .HasPrecision(19, 6)
-                        .HasColumnType("decimal(19,6)");
-
                     b.Property<int>("ItemId")
                         .HasColumnType("int");
 
@@ -11601,8 +11599,8 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("bigint");
 
                     b.Property<decimal>("TaxAmount")
-                        .HasPrecision(19, 6)
-                        .HasColumnType("decimal(19,6)");
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int?>("TaxId")
                         .HasColumnType("int");
@@ -13724,10 +13722,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
-                    b.Property<decimal>("ExemptTaxAmount")
-                        .HasPrecision(19, 6)
-                        .HasColumnType("decimal(19,6)");
-
                     b.Property<long>("Id")
                         .HasColumnType("bigint");
 
@@ -13772,8 +13766,8 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("bigint");
 
                     b.Property<decimal>("TaxAmount")
-                        .HasPrecision(19, 6)
-                        .HasColumnType("decimal(19,6)");
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int?>("TaxId")
                         .HasColumnType("int");
@@ -16984,10 +16978,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("decimal(19,6)")
                         .HasColumnName("DPP");
 
-                    b.Property<decimal>("ExemptTaxAmount")
-                        .HasPrecision(19, 6)
-                        .HasColumnType("decimal(19,6)");
-
                     b.Property<int>("ItemId")
                         .HasColumnType("int");
 
@@ -17010,8 +17000,8 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("bigint");
 
                     b.Property<decimal>("TaxAmount")
-                        .HasPrecision(19, 6)
-                        .HasColumnType("decimal(19,6)");
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int?>("TaxId")
                         .HasColumnType("int");
@@ -18890,10 +18880,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
-                    b.Property<decimal>("ExemptTaxAmount")
-                        .HasPrecision(19, 6)
-                        .HasColumnType("decimal(19,6)");
-
                     b.Property<long>("Id")
                         .HasColumnType("bigint");
 
@@ -18938,8 +18924,8 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("bigint");
 
                     b.Property<decimal>("TaxAmount")
-                        .HasPrecision(19, 6)
-                        .HasColumnType("decimal(19,6)");
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int?>("TaxId")
                         .HasColumnType("int");

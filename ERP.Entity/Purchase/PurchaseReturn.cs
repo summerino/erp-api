@@ -330,8 +330,11 @@ public class PurchaseReturnDetailExchDiffItem
 
     public int? TaxId { get; set; }
 
-    [Precision(18, 2)]
+    [Precision(19, 6)]
     public decimal TaxAmount { get; set; }
+
+    [Precision(19, 6)]
+    public decimal ExemptTaxAmount { get; set; }
 
     [Precision(19, 6)]
     public decimal NettPrice { get; set; }
@@ -372,8 +375,11 @@ public class VwPurchaseReturnDetailExchDiffItem
 
     public int? TaxId { get; set; }
 
-    [Precision(18, 2)]
+    [Precision(19, 6)]
     public decimal TaxAmount { get; set; }
+
+    [Precision(19, 6)]
+    public decimal ExemptTaxAmount { get; set; }
 
     [Precision(19, 6)]
     public decimal NettPrice { get; set; }
