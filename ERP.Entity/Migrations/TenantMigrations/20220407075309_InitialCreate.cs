@@ -7188,6 +7188,8 @@ AS
 AS
     SELECT si_h.*,
 		si_h.Total - si_h.PaidAmount AS Remaining,
+		e.Initial AS SalesInitial,
+		e.FirstName AS SalesName,
         c.[Name] AS CustName,
 		ca.Address1 AS CustAddress,
 		sa.[Name] AS CustArea,
@@ -7200,6 +7202,10 @@ AS
             WHEN 'CMP' THEN 'Completed'
             WHEN 'V' THEN 'Void' END AS [Status]
     FROM Sales.SalesInvoiceHeader si_h
+	LEFT JOIN Sales.SalesOrderHeader so_h
+		ON so_h.Code = si_h.SOCode
+	LEFT JOIN General.Employee e
+		ON e.Id = so_h.SalesBy
     LEFT JOIN General.Customer c
         ON c.Code = si_h.CustCode
 	LEFT JOIN General.CustomerAddress ca
