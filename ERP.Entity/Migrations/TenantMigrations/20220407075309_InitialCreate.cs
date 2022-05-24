@@ -7188,6 +7188,8 @@ AS
 AS
     SELECT si_h.*,
 		si_h.Total - si_h.PaidAmount AS Remaining,
+		e.Initial AS SalesInitial,
+		e.FirstName AS SalesName,
         c.[Name] AS CustName,
 		ca.Address1 AS CustAddress,
 		sa.[Name] AS CustArea,
@@ -7200,6 +7202,10 @@ AS
             WHEN 'CMP' THEN 'Completed'
             WHEN 'V' THEN 'Void' END AS [Status]
     FROM Sales.SalesInvoiceHeader si_h
+	LEFT JOIN Sales.SalesOrderHeader so_h
+		ON so_h.Code = si_h.SOCode
+	LEFT JOIN General.Employee e
+		ON e.Id = so_h.SalesBy
     LEFT JOIN General.Customer c
         ON c.Code = si_h.CustCode
 	LEFT JOIN General.CustomerAddress ca
@@ -12990,6 +12996,92 @@ BEGIN CATCH
 END CATCH";
             migrationBuilder.Sql(sql);
 
+            // Create procedure dbo.sp_refresh_wh_qty
+            sql = @"CREATE PROCEDURE [dbo].[sp_refresh_wh_qty] 
+	-- Add the parameters for the stored procedure here
+AS
+BEGIN TRY
+	-- SET NOCOUNT ON added to prevent extra result sets from
+	-- interfering with SELECT statements.
+	SET NOCOUNT ON;
+
+    -- Select Data
+	WITH cte_on_transfer AS (
+	SELECT WarehouseCode, ItemId, SUM(BaseQty) AS TotalBaseQty From Inventory.StockMutation WHERE [Type] = 'OT' GROUP BY WarehouseCode, ItemId
+	),
+	cte_on_hand AS (
+	SELECT WarehouseCode, ItemId, SUM(BaseQty) AS TotalBaseQty From Inventory.StockMutation WHERE [Type] = 'OH' GROUP BY WarehouseCode, ItemId 
+	),
+	cte_on_order AS (
+	SELECT WarehouseCode, ItemId, SUM(BaseQty) AS TotalBaseQty From Inventory.StockMutation WHERE [Type] = 'OO'GROUP BY WarehouseCode, ItemId
+	),
+	cte_on_indent AS (
+	SELECT WarehouseCode, ItemId, SUM(BaseQty) AS TotalBaseQty From Inventory.StockMutation WHERE [Type] = 'OI' GROUP BY WarehouseCode, ItemId
+	)
+
+	SELECT dt.WarehouseCode, dt.ItemId, 
+	CASE
+		WHEN SUM(oh.TotalBaseQty) IS NOT NULL THEN SUM(oh.TotalBaseQty)
+		ELSE CAST(0 AS decimal(19,8))
+	END
+	AS QtyOnHand, 
+	CASE
+		WHEN SUM(oi.TotalBaseQty) IS NOT NULL THEN SUM(oi.TotalBaseQty)
+		ELSE CAST(0 AS decimal(19,8))
+	END
+	AS QtyOnIndent,
+	CASE
+		WHEN SUM(oo.TotalBaseQty) IS NOT NULL THEN SUM(oo.TotalBaseQty)
+		ELSE CAST(0 AS decimal(19,8))
+	END 
+	AS QtyOnOrder,
+	CASE
+		WHEN SUM(ot.TotalBaseQty) IS NOT NULL THEN SUM(ot.TotalBaseQty)
+		ELSE CAST(0 AS decimal(19,8))
+	END AS QtyOnTransfer,
+	CAST(0 AS decimal(19,8)) AS QtyReorderPoint
+	INTO #tmp_dt
+	FROM Inventory.WarehouseQuantity dt
+	LEFT JOIN cte_on_hand oh ON dt.WarehouseCode = oh.WarehouseCode AND dt.ItemId = oh.ItemId
+	LEFT JOIN cte_on_indent oi ON dt.WarehouseCode = oi.WarehouseCode AND dt.ItemId = oi.ItemId
+	LEFT JOIN cte_on_order oo ON dt.WarehouseCode = oo.WarehouseCode AND dt.ItemId = oo.ItemId
+	LEFT JOIN cte_on_transfer ot ON dt.WarehouseCode = ot.WarehouseCode AND dt.ItemId = ot.ItemId
+	GROUP BY dt.WarehouseCode, dt.ItemId
+	ORDER BY dt.WarehouseCode, dt.ItemId
+
+
+	-- Update Process
+	DECLARE @WHId varchar(max)
+	DECLARE @ItemId int
+	DECLARE @QtyOO decimal(19,8)
+	DECLARE @QtyOH decimal(19,8)
+	DECLARE @QtyOI decimal(19,8)
+	DECLARE @QtyOT decimal(19,8)
+	DECLARE @QtyRP decimal(19,8)
+
+	IF EXISTS(SELECT *FROM #tmp_dt)
+	BEGIN
+		WHILE EXISTS(SELECT *FROM #tmp_dt)
+		BEGIN
+			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @QtyOH = QtyOnHand, @QtyOI = QtyOnIndent, @QtyOO = QtyOnOrder, @QtyOT = QtyOnTransfer, @QtyRP = QtyReorderPoint FROM #tmp_dt
+			--Update Data
+			UPDATE Inventory.WarehouseQuantity SET QtyOnHand = @QtyOH, QtyOnIndent = @QtyOI, QtyOnOrder = @QtyOO, QtyOnTransfer = @QtyOT, QtyReorderPoint = @QtyRP, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
+			DELETE #tmp_dt WHERE WarehouseCode = @WHId AND ItemId = @ItemId
+		END
+	END
+
+	PRINT('Proses Selesai')
+END TRY
+BEGIN CATCH
+	-- Drop temp tables
+	IF OBJECT_ID('tempdb.dbo.#tmp_dt') IS NOT NULL
+		DROP TABLE #tmp_dt
+
+	-- Raise error
+	EXEC dbo.sp_raiseerror
+END CATCH";
+            migrationBuilder.Sql(sql);
+
             // Disabling constraints foreign key FK_Customer_CustomerAddress_BillingAddressId
             sql = @"ALTER TABLE [General].[Customer] NOCHECK CONSTRAINT [FK_Customer_CustomerAddress_BillingAddressId]";
             migrationBuilder.Sql(sql);
@@ -14108,6 +14200,10 @@ END CATCH";
 
             // Drop procedure dbo.sp_update_transfer_stock
             sql = @"DROP PROCEDURE [dbo].[sp_update_transfer_stock]";
+            migrationBuilder.Sql(sql);
+
+            // Drop procedure dbo.sp_refresh_wh_qty
+            sql = @"DROP PROCEDURE [dbo].[sp_refresh_wh_qty]";
             migrationBuilder.Sql(sql);
         }
     }

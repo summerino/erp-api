@@ -71,7 +71,15 @@ public class VwSalesInvoiceHeader : BaseEntityWithMarkApprovedAndViewed
     public bool FromDirectInvoice { get; set; }
 
 
+    public string SalesInitial { get; set; }
+
+    public string SalesName { get; set; }
+
     public string CustName { get; set; }
+
+    public string CustAddress { get; set; }
+
+    public string CustArea { get; set; }
 
     public string CreatedInitial { get; set; }
 
@@ -80,10 +88,6 @@ public class VwSalesInvoiceHeader : BaseEntityWithMarkApprovedAndViewed
     public string ApprovedInitial { get; set; }
 
     public string Status { get; set; }
-
-    public string CustAddress { get; set; }
-
-    public string CustArea { get; set; }
 }
 
 [Table("SalesInvoiceDetail", Schema = Schema.Sales)]
