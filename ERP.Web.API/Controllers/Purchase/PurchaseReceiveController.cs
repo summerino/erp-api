@@ -11,6 +11,7 @@ using ERP.Web.API.Model;
 using ERP.Web.API.Model.Purchase;
 using Newtonsoft.Json;
 using ERP.Web.API.Domain.Interfaces.General;
+using ERP.Web.API.Domain.Interfaces.Inventory;
 
 namespace ERP.Web.API.Controllers.Purchase;
 
@@ -19,6 +20,7 @@ namespace ERP.Web.API.Controllers.Purchase;
 public class PurchaseReceiveController : ControllerBase
 {
     private readonly IPurchaseReceiveService _rcv;
+    private readonly IUnitOfMeasurementService _uom;
     private readonly IClosingMonthService _closingMonth;
     private readonly ISystemParameterService _sysPar;
     private readonly IClaimService _claim;
@@ -26,10 +28,11 @@ public class PurchaseReceiveController : ControllerBase
     private readonly IActiveTransactionService _activeTrans;
     private const int MenuId = (int)Menu.PurchaseReceive;
 
-    public PurchaseReceiveController(IPurchaseReceiveService rcv, IClosingMonthService closingMonth,
+    public PurchaseReceiveController(IPurchaseReceiveService rcv, IClosingMonthService closingMonth, IUnitOfMeasurementService uom,
         ISystemParameterService sysPar, IClaimService claim, IAuthService auth, IActiveTransactionService activeTrans)
     {
         _rcv = rcv;
+        _uom = uom;
         _closingMonth = closingMonth;
         _sysPar = sysPar;
         _claim = claim;
@@ -57,6 +60,8 @@ public class PurchaseReceiveController : ControllerBase
     [HttpGet("item")]
     public IActionResult GetDetailData(string code)
     {
+        var uomC = _uom.GetDataConversion().ToList();
+
         var data = _rcv.GetDetailData(code)
             .Select(x => new
             {
@@ -67,6 +72,19 @@ public class PurchaseReceiveController : ControllerBase
                 x.Length, x.Width, x.Height, x.Weight, x.DimensionMeasurement, x.WeightMeasurement,
                 x.UnitPrice, x.Disc, x.TaxId, x.TaxAmount, x.NettPrice, x.Total, x.Dpp,
                 x.WarehouseCode, x.Type,
+                Units = uomC.Where(u => u.UomId == x.UomId)
+                    .Select(u => new
+                    {
+                        u.Id,
+                        u.UomId,
+                        u.UnitToConvert,
+                        u.UnitEquivalent,
+                        u.Conversion,
+                        u.IsBaseUnit,
+                        u.Seq
+                    })
+                    .OrderBy(u => u.Seq)
+                    .ToList(),
                 OldUnitId = x.ItemUomBuyId,
                 OldUnitName = x.ItemUomBuyName,
                 OldUnitPrice = x.ItemBuyPrice,
