@@ -79,6 +79,10 @@ public class VwSalesInvoiceHeader : BaseEntityWithMarkApprovedAndViewed
 
     public string ApprovedInitial { get; set; }
 
+    public string SalesInitial { get; set; }
+
+    public string SalesName { get; set; }
+
     public string Status { get; set; }
 
     public string CustAddress { get; set; }
