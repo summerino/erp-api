@@ -193,8 +193,8 @@ public class SalesReturnService : GeneralService<SalesReturnHeader>, ISalesRetur
             }
                 
             Db.Database.ExecuteSqlRaw(
-                "EXEC sp_update_stock_mutation_from_sr {0}, {1}, {2}, {3}",
-                data.Code, data.Date, data.TransCode, data.WarehouseCode);
+                "EXEC sp_update_stock_mutation_from_sr {0}, {1}, {2}, {3}, {4}",
+                data.Code, data.Date, data.TransCode, data.WarehouseCode, true);
 
             transaction.Commit();
         }
