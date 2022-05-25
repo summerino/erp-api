@@ -14,7 +14,7 @@ namespace ERP.Web.API.Domain.Services.MobileSales;
 public class MobileCostService : GeneralService<MobileCostHeader>, IMobileCostService
 {
     public MobileCostService(TenantContext db)
-        :base(db)
+        : base(db)
     {
     }
 
@@ -276,18 +276,18 @@ public class MobileCostService : GeneralService<MobileCostHeader>, IMobileCostSe
     public DataSourceResult GetDataForMobile(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, int userId, string date)
     {
         var data = (from costHeader in Db.MobileCostHeaders
-            join user in Db.Users on costHeader.SalesmanId equals user.EmployeeId
-            where user.Id.Equals(userId)
-            select new MobileCostHeader
-            {
-                Code = costHeader.Code,
-                Date = costHeader.Date,
-                Mark = costHeader.Mark,
-                SalesmanId = costHeader.SalesmanId,
-                Rate = costHeader.Rate,
-                ApprovedDate = costHeader.ApprovedDate,
-                Total = costHeader.Total,
-            }).AsQueryable();
+                    join user in Db.Users on costHeader.SalesmanId equals user.EmployeeId
+                    where user.Id.Equals(userId)
+                    select new MobileCostHeader
+                    {
+                        Code = costHeader.Code,
+                        Date = costHeader.Date,
+                        Mark = costHeader.Mark,
+                        SalesmanId = costHeader.SalesmanId,
+                        Rate = costHeader.Rate,
+                        ApprovedDate = costHeader.ApprovedDate,
+                        Total = costHeader.Total,
+                    }).AsQueryable();
         if (!string.IsNullOrEmpty(date))
         {
             var date1 = DateTime.ParseExact(date, "yyyy-MM-dd", null);
@@ -299,16 +299,16 @@ public class MobileCostService : GeneralService<MobileCostHeader>, IMobileCostSe
     public IEnumerable<CostDetailModel> GetDetailForMobile(string Code)
     {
         var data = from cost in Db.MobileCostDetails
-            join coa in Db.Coas on cost.CoaCode equals coa.Code
-            where cost.Code.Equals(Code)
-            select new CostDetailModel
-            {
-                Code = cost.Code,
-                LineNo = cost.LineNo,
-                CoaCode = cost.CoaCode,
-                CoaName = coa.Name,
-                Amount = cost.Amount,
-            };
+                   join coa in Db.Coas on cost.CoaCode equals coa.Code
+                   where cost.Code.Equals(Code)
+                   select new CostDetailModel
+                   {
+                       Code = cost.Code,
+                       LineNo = cost.LineNo,
+                       CoaCode = cost.CoaCode,
+                       CoaName = coa.Name,
+                       Amount = cost.Amount,
+                   };
         return data.ToList();
     }
 
@@ -389,13 +389,13 @@ public class MobileCostService : GeneralService<MobileCostHeader>, IMobileCostSe
     public IEnumerable<CostImageModel> GetImageForMobile(string Code)
     {
         var data = from image in Db.MobileCostImages
-            where image.Code.Equals(Code)
-            select new CostImageModel
-            {
-                Code = image.Code,
-                LineNo = image.LineNo,
-                Image = image.Image,
-            };
+                   where image.Code.Equals(Code)
+                   select new CostImageModel
+                   {
+                       Code = image.Code,
+                       LineNo = image.LineNo,
+                       Image = image.Image,
+                   };
         return data.ToList();
     }
 
