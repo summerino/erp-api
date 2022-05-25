@@ -8,7 +8,7 @@ public class ReportByRCV
 
     public string Code { get; set; }
 
-    public int SrcTrans { get; set; }
+    public int? SrcTrans { get; set; }
 
     public string TransCode { get; set; }
 
@@ -18,17 +18,17 @@ public class ReportByRCV
 
     public string SupName { get; set; }
 
-    public decimal GrossAmount { get; set; }
+    public decimal? GrossAmount { get; set; }
 
-    public decimal SubTotal { get; set; }
+    public decimal? SubTotal { get; set; }
 
-    public decimal Disc { get; set; }
+    public decimal? Disc { get; set; }
 
-    public decimal Dpp { get; set; }
+    public decimal? Dpp { get; set; }
 
-    public decimal TaxAmount { get; set; }
+    public decimal? TaxAmount { get; set; }
 
-    public decimal Total { get; set; }
+    public decimal? Total { get; set; }
 
     public string Status { get; set; }
 
