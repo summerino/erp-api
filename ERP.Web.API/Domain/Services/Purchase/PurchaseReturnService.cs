@@ -464,6 +464,33 @@ public class PurchaseReturnService : GeneralService<PurchaseReturnHeader>, IPurc
         return result;
     }
 
+    public SaveResult Close(string code, int userId)
+    {
+        var result = new SaveResult(false);
+
+        var data = Db.PurchaseReturnHeaders.Find(code);
+        if (data != null)
+        {
+            // Checking mark header data
+            if (data.Mark != "A" && data.Mark != "PR")
+            {
+                result.Message = "Data pengembalian pembelian tidak bisa ditutup karena status bukan \"A\" & \"PR\".";
+                return result;
+            }
+
+            // Update header data
+            data.Mark = "CLS";
+            data.UpdatedBy = userId;
+            data.UpdatedDate = DateTime.Now;
+
+            Db.SaveChanges();
+        }
+
+        result.Success = true;
+        result.Message = "Data pengembalian pembelian berhasil ditutup.";
+        return result;
+    }
+
     private bool IsPurchaseReceiveInvalid(string rcvCode)
     {
         return Db.PurchaseReceiveHeaders.Any(x => x.Code == rcvCode && new[] { "V", "CLS" }.Contains(x.Mark));
@@ -529,5 +556,5 @@ public class PurchaseReturnService : GeneralService<PurchaseReturnHeader>, IPurc
         return result;
     }
 
-        
+
 }

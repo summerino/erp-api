@@ -454,6 +454,29 @@ public class SalesReturnService : GeneralService<SalesReturnHeader>, ISalesRetur
         return result;
     }
 
+    public SaveResult Close(string code, int userId)
+    {
+        var result = new SaveResult(false);
+        var data = Db.SalesReturnHeaders.Find(code);
+        if (data != null)
+        {
+            // Checking mark header data
+            if (data.Mark == "CLS")
+            {
+                result.Message = "Data pengembalian penjualan tidak bisa ditutup karena sudah ditutup.";
+                return result;
+            }
+            // Update header data
+            data.Mark = "CLS";
+            data.UpdatedBy = userId;
+            data.UpdatedDate = DateTime.Now;
+            Db.SaveChanges();
+        }
+        result.Success = true;
+        result.Message = "Data pengembalian penjualan berhasil ditutup.";
+        return result;
+    }
+
     private bool IsQtyExcess(string warehouseCode,IEnumerable<SalesReturnDetailExchDiffItem> items, string code)
     {
         var result = false;
