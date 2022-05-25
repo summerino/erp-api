@@ -21,4 +21,6 @@ public interface ISalesReturnService : IGeneralService<SalesReturnHeader>
     SaveResult Update(SalesReturnRequest data);
 
     SaveResult Delete(string code, int userId);
+
+    SaveResult Close(string code, int userId);
 }

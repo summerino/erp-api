@@ -21,4 +21,6 @@ public interface IPurchaseReturnService : IGeneralService<PurchaseReturnHeader>
     SaveResult Update(PurchaseReturnRequest data);
 
     SaveResult Delete(string code, int userId);
+
+    SaveResult Close(string code, int userId);
 }
