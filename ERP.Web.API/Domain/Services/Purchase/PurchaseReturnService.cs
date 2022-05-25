@@ -438,14 +438,8 @@ public class PurchaseReturnService : GeneralService<PurchaseReturnHeader>, IPurc
                 }
 
                 Db.Database.ExecuteSqlRaw(
-                    "EXEC sp_update_stock_mutation_from_pr {0}, {1}, {2}",
-                    data.Code, data.Date, data.RcvCode);
-
-                var stockPR = Db.StockMutations.Where(x => x.RefCode1 == data.Code);
-                if (stockPR != null)
-                {
-                    Db.StockMutations.RemoveRange(stockPR);
-                }
+                    "EXEC sp_update_stock_mutation_from_pr {0}, {1}, {2}, {3}",
+                    data.Code, data.Date, data.RcvCode, true);
 
                 // Save changes
                 Db.SaveChanges();

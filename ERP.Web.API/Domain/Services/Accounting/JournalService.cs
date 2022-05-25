@@ -2720,6 +2720,12 @@ public class JournalService : IJournalService
                 {
                     if (item.Src == "TS" && (tsData.FirstOrDefault(x => x.Code == item.RefCode1)?.Type ?? "") == "OUT")
                     {
+                        if (latestDate != item.Date)
+                        {
+                            if (latestStockValue > 0 && latestQty > 0)
+                                hpp = latestStockValue / latestQty;
+                        }
+
                         item.BaseNettPrice = hpp;
                         item.NettPrice = hpp * item.BaseQty / item.Qty;
                     }
@@ -2730,6 +2736,12 @@ public class JournalService : IJournalService
                     }
                     else
                     {
+                        if (latestDate != item.Date)
+                        {
+                            if (latestStockValue > 0 && latestQty > 0)
+                                hpp = latestStockValue / latestQty;
+                        }
+
                         item.BaseNettPrice = hpp;
                         item.NettPrice = hpp * item.BaseQty / item.Qty;
                     }
