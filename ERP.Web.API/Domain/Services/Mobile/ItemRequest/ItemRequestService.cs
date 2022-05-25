@@ -16,7 +16,6 @@ public class ItemRequestService : GeneralService<ItemRequestHeader>, IItemReques
         
     public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, int userId, int? areaId)
     {
-        
         var data = (from header in Db.MobileItemRequestHeaders
             join user in Db.Users on header.SalesmanId equals user.EmployeeId
             join area1 in Db.Areas on header.AreaId1 equals area1.Id into a1
@@ -30,7 +29,6 @@ public class ItemRequestService : GeneralService<ItemRequestHeader>, IItemReques
             join area5 in Db.Areas on header.AreaId5 equals area5.Id into a5
             from sub5 in a5.DefaultIfEmpty()
             where user.Id.Equals(userId) 
-
             select new ItemRequestHeader
             {
                 Code = header.Code,
@@ -48,10 +46,14 @@ public class ItemRequestService : GeneralService<ItemRequestHeader>, IItemReques
                 AreaName5 = sub5.Name,
                 Mark = header.Mark
             }).AsQueryable();
+
         if (areaId.HasValue)
         {
             data = data.Where(x => x.AreaId1.Equals(areaId) || x.AreaId2.Equals(areaId) ||x.AreaId3.Equals(areaId) || x.AreaId4.Equals(areaId) || x.AreaId5.Equals(areaId));
         }
+
+        data = data.OrderByDescending(x => x.Date).ThenByDescending(x => x.Code);
+
         return data.ToDataSourceResult(skip, take, filters, sorts);
     }
 

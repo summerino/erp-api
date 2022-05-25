@@ -1113,16 +1113,22 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
                                    where detail.Code.Equals(code)
                                    select new { header.CreatedDate }).OrderBy(x => x.CreatedDate).LastOrDefault();
 
-            var previousPOReceiveQty = (from detail in Db.VwMobileReceiveItemDetails
-                                        join header in Db.VwMobileReceiveItemHeaders on detail.Code equals header.Code
-                                        join poDetail in Db.VwPurchaseOrderDetails on header.TransCode equals poDetail.Code
-                                        where (poDetail.ItemId == detail.ItemId || detail.Type.Equals(1)) && detail.Type == 0 && poDetail.Code.Equals(poCode) && header.CreatedDate <= previousRcvDate.CreatedDate
-                                        group new { detail, poDetail } by new { poDetail.Code, detail.ItemId, detail.Qty } into gRcv
-                                        select new { Code = gRcv.Key.Code, ItemId = gRcv.Key.ItemId, QtyRcv = gRcv.Sum(x => x.detail.Qty) });
-
-            var itemQty = from detailQty in previousPOReceiveQty
-                          group new { detailQty } by new { detailQty.Code, detailQty.ItemId } into g
-                          select new { Code = g.Key.Code, ItemId = g.Key.ItemId, QtyRcv = g.Sum(x => x.detailQty.QtyRcv) };
+            var itemQty = (from detail in Db.VwMobileReceiveItemDetails
+                           join header in Db.VwMobileReceiveItemHeaders on detail.Code equals header.Code
+                           join poDetail in Db.VwPurchaseOrderDetails on header.TransCode equals poDetail.Code
+                           where (poDetail.ItemId == detail.ItemId || detail.Type.Equals(1)) && detail.Type == 0 && poDetail.Code.Equals(poCode) && header.CreatedDate <= previousRcvDate.CreatedDate
+                           group new { detail, poDetail } by new
+                           {
+                               poDetail.Code,
+                               detail.ItemId,
+                               poDetail.QtyRcv
+                           } into gRcv
+                           select new
+                           {
+                               Code = gRcv.Key.Code,
+                               ItemId = gRcv.Key.ItemId,
+                               QtyRcv = gRcv.Key.QtyRcv
+                           });
 
             var data = from detail in Db.VwMobileReceiveItemDetails
                        join header in Db.VwMobileReceiveItemHeaders on detail.Code equals header.Code
@@ -1182,23 +1188,28 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
                                    where header.Code.Equals(code)
                                    select new { header.CreatedDate }).OrderBy(x => x.CreatedDate).LastOrDefault();
 
-            var previousPOReceiveQty = (from detail in Db.VwMobileReceiveItemDetails
-                                        join header in Db.VwMobileReceiveItemHeaders on detail.Code equals header.Code
-                                        join prDetail in Db.VwPurchaseReturnDetails on header.TransCode equals prDetail.Code
-                                        where (prDetail.ItemId == detail.ItemId || detail.Type.Equals(1)) && detail.Type == 0 && prDetail.Code.Equals(prCode) && header.CreatedDate <= previousRcvDate.CreatedDate
-                                        group new { detail, prDetail } by new { prDetail.Code, detail.ItemId, detail.Qty } into gRcv
-                                        select new { Code = gRcv.Key.Code, ItemId = gRcv.Key.ItemId, QtyRcv = gRcv.Sum(x => x.detail.Qty) });
-
-            var itemQty = from detailQty in previousPOReceiveQty
-                          group new { detailQty } by new { detailQty.Code, detailQty.ItemId } into g
-                          select new { Code = g.Key.Code, ItemId = g.Key.ItemId, QtyRcv = g.Sum(x => x.detailQty.QtyRcv) };
+            var itemQty = (from detail in Db.VwMobileReceiveItemDetails
+                           join header in Db.VwMobileReceiveItemHeaders on detail.Code equals header.Code
+                           join prDetail in Db.VwPurchaseReturnDetails on header.TransCode equals prDetail.Code
+                           where (prDetail.ItemId == detail.ItemId || detail.Type.Equals(1)) && detail.Type == 0 && prDetail.Code.Equals(prCode) && header.CreatedDate <= previousRcvDate.CreatedDate
+                           group new { detail, prDetail } by new
+                           {
+                               prDetail.Code,
+                               detail.ItemId,
+                               prDetail.QtyRcv
+                           } into gRcv
+                           select new
+                           {
+                               Code = gRcv.Key.Code,
+                               ItemId = gRcv.Key.ItemId,
+                               QtyRcv = gRcv.Key.QtyRcv
+                           });
 
             var data = from detail in Db.VwMobileReceiveItemDetails
                        join header in Db.VwMobileReceiveItemHeaders on detail.Code equals header.Code
                        join prDetail in Db.VwPurchaseReturnDetails on header.TransCode equals prDetail.Code
                        join itmQty in itemQty on prDetail.Code equals itmQty.Code
                        where (prDetail.ItemId == detail.ItemId || detail.Type.Equals(1)) && detail.Code.Equals(code) && itmQty.ItemId.Equals(prDetail.ItemId)
-                       //orderby detail.LineNo
                        group new { detail, header, prDetail, itmQty } by new
                        {
                            Code = detail.Code,
