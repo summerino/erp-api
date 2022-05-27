@@ -50,30 +50,35 @@ public class BaseEntityWithMark
 
 public class BaseEntityWithMarkAndApproved
 {
+    [Column(Order = 100)]
     [StringLength(3)]
     public string Mark { get; set; }
         
+    [Column(Order = 101)]
     public int CreatedBy { get; set; }
 
-    [Column(TypeName = "datetime")]
+    [Column(TypeName = "datetime", Order = 102)]
     public DateTime CreatedDate { get; set; }
 
+    [Column(Order = 103)]
     public int UpdatedBy { get; set; }
 
-    [Column(TypeName = "datetime")]
+    [Column(TypeName = "datetime", Order = 104)]
     public DateTime UpdatedDate { get; set; }
 
+    [Column(Order = 105)]
     public int? ApprovedBy { get; set; }
 
-    [Column(TypeName = "datetime")]
+    [Column(TypeName = "datetime", Order = 106)]
     public DateTime? ApprovedDate { get; set; }
 }
 
 public class BaseEntityWithMarkApprovedAndViewed : BaseEntityWithMarkAndApproved
 {
+    [Column(Order = 101)]
     public int? ViewedBy { get; set; }
 
-    [Column(TypeName = "datetime")]
+    [Column(TypeName = "datetime", Order = 101)]
     public DateTime? ViewedDate { get; set; }
 }
 
