@@ -13048,7 +13048,7 @@ END CATCH";
             migrationBuilder.Sql(sql);
 
             // Create procedure dbo.sp_refresh_wh_qty
-            sql = @"ALTER PROCEDURE [dbo].[sp_refresh_wh_qty]   
+            sql = @"CREATE PROCEDURE [dbo].[sp_refresh_wh_qty]   
 	-- Add the parameters for the stored procedure here  
 AS  
 BEGIN TRY  
