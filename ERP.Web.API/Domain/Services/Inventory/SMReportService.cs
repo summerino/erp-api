@@ -236,6 +236,7 @@ public class SMReportService : ISMReportService
         {
             itemData = itemData.Where(x => x.Id == itemId).ToList();
             initData = initData.Where(x => x.ItemId == itemId).ToList();
+            smData = smData.Where(x => x.ItemId == itemId).ToList();
         }
 
         if (type == 3)
