@@ -194,8 +194,8 @@ public class SalesReturnService : GeneralService<SalesReturnHeader>, ISalesRetur
             }
                 
             Db.Database.ExecuteSqlRaw(
-                "EXEC sp_update_stock_mutation_from_sr {0}, {1}, {2}, {3}",
-                data.Code, data.Date, data.TransCode, data.WarehouseCode);
+                "EXEC sp_update_stock_mutation_from_sr {0}, {1}, {2}, {3}, {4}",
+                data.Code, data.Date, data.TransCode, data.WarehouseCode, true);
 
             transaction.Commit();
         }
@@ -453,6 +453,29 @@ public class SalesReturnService : GeneralService<SalesReturnHeader>, ISalesRetur
 
         result.Success = true;
         result.Message = "Data pengembalian penjualan berhasil ditandai sebagai void.";
+        return result;
+    }
+
+    public SaveResult Close(string code, int userId)
+    {
+        var result = new SaveResult(false);
+        var data = Db.SalesReturnHeaders.Find(code);
+        if (data != null)
+        {
+            // Checking mark header data
+            if (data.Mark == "CLS")
+            {
+                result.Message = "Data pengembalian penjualan tidak bisa ditutup karena sudah ditutup.";
+                return result;
+            }
+            // Update header data
+            data.Mark = "CLS";
+            data.UpdatedBy = userId;
+            data.UpdatedDate = DateTime.Now;
+            Db.SaveChanges();
+        }
+        result.Success = true;
+        result.Message = "Data pengembalian penjualan berhasil ditutup.";
         return result;
     }
 

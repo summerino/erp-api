@@ -251,6 +251,23 @@ public class PurchaseReturnController : ControllerBase
         return Ok(result);
     }
 
+    [HttpPut("close/{code}")]
+    public IActionResult OnClose(string code, PurchaseReturnRequest data)
+    {
+        // Checking role authorization
+        if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Close }).Any())
+            return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+
+        // Validate process
+        var (isValid, message) = Validate(data, true);
+        if (!isValid)
+            return Ok(new SaveResult(false, message));
+
+        var result = _rtn.Close(code, _claim.UserId);
+
+        return Ok(result);
+    }
+
     private (bool, string) Validate(PurchaseReturnRequest data, bool onDelete = false, bool checkSeenByOther = true)
     {
         var periods = new List<string> { data.Date.ToString("yyyyMM") };

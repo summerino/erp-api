@@ -11836,6 +11836,15 @@ BEGIN TRY
 
 			IF EXISTS(SELECT *FROM Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code)
 			BEGIN
+                IF (@srcTrans = 1)
+				BEGIN
+					UPDATE Inventory.WarehouseQuantity SET QtyOnHand += @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
+					UPDATE Inventory.WarehouseQuantity SET QtyOnOrder += @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = (SELECT TOP 1 WarehouseCode FROM Inventory.StockMutation WHERE RefCode1 = @transCode AND ItemId = @ItemId) AND ItemId = @ItemId
+				END
+				ELSE
+				BEGIN
+					UPDATE Inventory.WarehouseQuantity SET QtyOnHand += @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
+				END
 				DELETE Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code
 			END
 			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId
@@ -11996,6 +12005,8 @@ BEGIN TRY
 
 			IF EXISTS(SELECT *FROM Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code)
 			BEGIN
+				UPDATE Inventory.WarehouseQuantity SET QtyOnIndent -= @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
+
 				DELETE Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code
 			END
 			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId
@@ -12026,7 +12037,8 @@ END CATCH";
             sql = @"CREATE PROCEDURE [dbo].[sp_update_stock_mutation_from_pr]
 	@code varchar(17),
 	@date date,
-	@rcvCode varchar(17)
+	@rcvCode varchar(17),
+	@isVoid bit = 0
 AS
 BEGIN TRY
 	-- Collect original stock mutation
@@ -12119,21 +12131,39 @@ BEGIN TRY
 		END
 	END
 
-	WHILE EXISTS(SELECT * FROM #tmp_wq)
+	IF(@isVoid = 0)
 	BEGIN
-		SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty FROM #tmp_wq
-
-		IF EXISTS(SELECT *FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @WHId AND ItemId = @ItemId)
+		WHILE EXISTS(SELECT * FROM #tmp_wq)
 		BEGIN
-			UPDATE Inventory.WarehouseQuantity SET QtyOnHand -= @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
-		END
-		ELSE
-		BEGIN
-			INSERT INTO Inventory.WarehouseQuantity(WarehouseCode, ItemId, QtyOnHand, QtyOnIndent, QtyOnOrder, QtyReorderPoint, QtyOnTransfer, UpdatedDate)
-			VALUES (@WHId, @ItemId, -@Qty, 0, 0, 0, 0, dbo.udf_current_local_time())
-		END
+			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty FROM #tmp_wq
 
-		DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId
+			IF EXISTS(SELECT *FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @WHId AND ItemId = @ItemId)
+			BEGIN
+				UPDATE Inventory.WarehouseQuantity SET QtyOnHand -= @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
+			END
+			ELSE
+			BEGIN
+				INSERT INTO Inventory.WarehouseQuantity(WarehouseCode, ItemId, QtyOnHand, QtyOnIndent, QtyOnOrder, QtyReorderPoint, QtyOnTransfer, UpdatedDate)
+				VALUES (@WHId, @ItemId, -@Qty, 0, 0, 0, 0, dbo.udf_current_local_time())
+			END
+
+			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId
+		END
+	END
+	ELSE -- If data voided
+	BEGIN
+	WHILE EXISTS(SELECT * FROM #tmp_wq)
+		BEGIN
+			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty FROM #tmp_wq
+
+			IF EXISTS(SELECT *FROM Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code)
+			BEGIN
+				UPDATE Inventory.WarehouseQuantity SET QtyOnHand += @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
+				
+				DELETE Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code
+			END
+			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId
+		END
 	END
 
 	-- Drop temp tables
@@ -12568,6 +12598,8 @@ BEGIN TRY
 
 			IF EXISTS(SELECT *FROM Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code)
 			BEGIN
+				UPDATE Inventory.WarehouseQuantity SET QtyOnOrder -= @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
+
 				DELETE Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code
 			END
 			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId
@@ -12605,7 +12637,8 @@ END CATCH";
 	@code varchar(17),
 	@date date,
 	@dlvCode varchar(17),
-	@warehouseCode varchar(20)
+	@warehouseCode varchar(20),
+	@isVoid bit = 0
 AS
 BEGIN TRY
 
@@ -12709,21 +12742,39 @@ BEGIN TRY
 		END
 	END
 
-	WHILE EXISTS(SELECT * FROM #tmp_wq)
+	IF(@isVoid = 0)
 	BEGIN
-		SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty FROM #tmp_wq
-
-		IF EXISTS(SELECT *FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @WHId AND ItemId = @ItemId)
+		WHILE EXISTS(SELECT * FROM #tmp_wq)
 		BEGIN
-			UPDATE Inventory.WarehouseQuantity SET QtyOnHand += @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
-		END
-		ELSE
-		BEGIN
-			INSERT INTO Inventory.WarehouseQuantity(WarehouseCode, ItemId, QtyOnHand, QtyOnIndent, QtyOnOrder, QtyReorderPoint, QtyOnTransfer, UpdatedDate)
-			VALUES (@WHId, @ItemId, @Qty, 0, 0, 0, 0, dbo.udf_current_local_time())
-		END
+			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty FROM #tmp_wq
 
-		DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId
+			IF EXISTS(SELECT *FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @WHId AND ItemId = @ItemId)
+			BEGIN
+				UPDATE Inventory.WarehouseQuantity SET QtyOnHand += @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
+			END
+			ELSE
+			BEGIN
+				INSERT INTO Inventory.WarehouseQuantity(WarehouseCode, ItemId, QtyOnHand, QtyOnIndent, QtyOnOrder, QtyReorderPoint, QtyOnTransfer, UpdatedDate)
+				VALUES (@WHId, @ItemId, @Qty, 0, 0, 0, 0, dbo.udf_current_local_time())
+			END
+
+			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId
+		END
+	END
+	ELSE -- If data voided
+	BEGIN
+	WHILE EXISTS(SELECT * FROM #tmp_wq)
+		BEGIN
+			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty FROM #tmp_wq
+
+			IF EXISTS(SELECT *FROM Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code)
+			BEGIN
+				UPDATE Inventory.WarehouseQuantity SET QtyOnHand -= @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
+
+				DELETE Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code
+			END
+			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId
+		END
 	END
 
 	-- Drop temp tables
@@ -12997,88 +13048,163 @@ END CATCH";
             migrationBuilder.Sql(sql);
 
             // Create procedure dbo.sp_refresh_wh_qty
-            sql = @"CREATE PROCEDURE [dbo].[sp_refresh_wh_qty] 
-	-- Add the parameters for the stored procedure here
-AS
-BEGIN TRY
-	-- SET NOCOUNT ON added to prevent extra result sets from
-	-- interfering with SELECT statements.
-	SET NOCOUNT ON;
-
-    -- Select Data
-	WITH cte_on_transfer AS (
-	SELECT WarehouseCode, ItemId, SUM(BaseQty) AS TotalBaseQty From Inventory.StockMutation WHERE [Type] = 'OT' GROUP BY WarehouseCode, ItemId
+            sql = @"ALTER PROCEDURE [dbo].[sp_refresh_wh_qty]   
+	-- Add the parameters for the stored procedure here  
+AS  
+BEGIN TRY  
+	-- SET NOCOUNT ON added to prevent extra result sets from  
+	-- interfering with SELECT statements.  
+	SET NOCOUNT ON;  
+  
+	-- Select Data  
+	WITH cte_on_transfer AS (  
+		SELECT WarehouseCode, ItemId, CAST(SUM(BaseQty) AS decimal(19,8)) AS TotalBaseQty From Inventory.StockMutation WHERE [Type] = 'OT' GROUP BY WarehouseCode, ItemId  
+	),  
+	cte_on_hand AS (  
+		SELECT WarehouseCode, ItemId, CAST(SUM(BaseQtyValue) AS decimal(19,8)) AS TotalBaseQty FROM 
+		( 
+			SELECT *, 
+			CASE
+				WHEN Src IN ('BB','RCV','SR') THEN BaseQty
+				WHEN Src IN ('DO', 'DOF', 'PR') THEN -BaseQty
+				ELSE BaseQty
+			END BaseQtyValue
+			FROM Inventory.StockMutation
+		) sm
+		WHERE [Type] = 'OH' GROUP BY WarehouseCode, ItemId   
 	),
-	cte_on_hand AS (
-	SELECT WarehouseCode, ItemId, SUM(BaseQty) AS TotalBaseQty From Inventory.StockMutation WHERE [Type] = 'OH' GROUP BY WarehouseCode, ItemId 
+	cte_base_qty_order AS (
+		SELECT so_d.Id,
+		CASE WHEN uom_c.IsBaseUnit = 1 THEN so_d.Qty
+				ELSE so_d.Qty * (
+					SELECT EXP(SUM(LOG(Conversion)))
+					FROM Inventory.UoMConversion
+					WHERE UomId = uom_c.UomId
+					AND Seq <= uom_c.Seq
+				) END AS BaseQty,
+		CASE WHEN uom_c.IsBaseUnit = 1 THEN so_d.QtyDlv
+				ELSE so_d.QtyDlv * (
+					SELECT EXP(SUM(LOG(Conversion)))
+					FROM Inventory.UoMConversion
+					WHERE UomId = uom_c.UomId
+					AND Seq <= uom_c.Seq
+				) END AS BaseQtyDlv
+		FROM Sales.SalesOrderDetail so_d
+		LEFT JOIN Inventory.UoMConversion uom_c
+			ON uom_c.UomId = so_d.UomId
+			AND uom_c.Id = so_d.UnitId
 	),
-	cte_on_order AS (
-	SELECT WarehouseCode, ItemId, SUM(BaseQty) AS TotalBaseQty From Inventory.StockMutation WHERE [Type] = 'OO'GROUP BY WarehouseCode, ItemId
+	cte_on_order AS (  
+		SELECT sm.WarehouseCode, sm.ItemId, 
+		CAST(
+			CASE WHEN SUM(so_d.BaseQtyDlv - so_d.BaseQty) < 0 THEN 0
+			ELSE SUM(so_d.BaseQtyDlv - so_d.BaseQty)
+			END
+		AS decimal(19,8)) AS TotalBaseQty
+		FROM (
+			SELECT *
+			FROM Inventory.StockMutation
+			WHERE [Type] = 'OO'
+		) sm
+		LEFT JOIN cte_base_qty_order so_d
+		ON so_d.Id = sm.RefDetailId1
+		GROUP BY sm.WarehouseCode, sm.ItemId
 	),
-	cte_on_indent AS (
-	SELECT WarehouseCode, ItemId, SUM(BaseQty) AS TotalBaseQty From Inventory.StockMutation WHERE [Type] = 'OI' GROUP BY WarehouseCode, ItemId
-	)
-
-	SELECT dt.WarehouseCode, dt.ItemId, 
-	CASE
-		WHEN SUM(oh.TotalBaseQty) IS NOT NULL THEN SUM(oh.TotalBaseQty)
-		ELSE CAST(0 AS decimal(19,8))
-	END
-	AS QtyOnHand, 
-	CASE
-		WHEN SUM(oi.TotalBaseQty) IS NOT NULL THEN SUM(oi.TotalBaseQty)
-		ELSE CAST(0 AS decimal(19,8))
-	END
-	AS QtyOnIndent,
-	CASE
-		WHEN SUM(oo.TotalBaseQty) IS NOT NULL THEN SUM(oo.TotalBaseQty)
-		ELSE CAST(0 AS decimal(19,8))
-	END 
-	AS QtyOnOrder,
-	CASE
-		WHEN SUM(ot.TotalBaseQty) IS NOT NULL THEN SUM(ot.TotalBaseQty)
-		ELSE CAST(0 AS decimal(19,8))
-	END AS QtyOnTransfer,
-	CAST(0 AS decimal(19,8)) AS QtyReorderPoint
-	INTO #tmp_dt
-	FROM Inventory.WarehouseQuantity dt
-	LEFT JOIN cte_on_hand oh ON dt.WarehouseCode = oh.WarehouseCode AND dt.ItemId = oh.ItemId
-	LEFT JOIN cte_on_indent oi ON dt.WarehouseCode = oi.WarehouseCode AND dt.ItemId = oi.ItemId
-	LEFT JOIN cte_on_order oo ON dt.WarehouseCode = oo.WarehouseCode AND dt.ItemId = oo.ItemId
-	LEFT JOIN cte_on_transfer ot ON dt.WarehouseCode = ot.WarehouseCode AND dt.ItemId = ot.ItemId
-	GROUP BY dt.WarehouseCode, dt.ItemId
-	ORDER BY dt.WarehouseCode, dt.ItemId
-
-
-	-- Update Process
-	DECLARE @WHId varchar(max)
-	DECLARE @ItemId int
-	DECLARE @QtyOO decimal(19,8)
-	DECLARE @QtyOH decimal(19,8)
-	DECLARE @QtyOI decimal(19,8)
-	DECLARE @QtyOT decimal(19,8)
-	DECLARE @QtyRP decimal(19,8)
-
-	IF EXISTS(SELECT *FROM #tmp_dt)
-	BEGIN
-		WHILE EXISTS(SELECT *FROM #tmp_dt)
-		BEGIN
-			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @QtyOH = QtyOnHand, @QtyOI = QtyOnIndent, @QtyOO = QtyOnOrder, @QtyOT = QtyOnTransfer, @QtyRP = QtyReorderPoint FROM #tmp_dt
-			--Update Data
-			UPDATE Inventory.WarehouseQuantity SET QtyOnHand = @QtyOH, QtyOnIndent = @QtyOI, QtyOnOrder = @QtyOO, QtyOnTransfer = @QtyOT, QtyReorderPoint = @QtyRP, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
-			DELETE #tmp_dt WHERE WarehouseCode = @WHId AND ItemId = @ItemId
+	cte_base_qty_indent AS (
+		SELECT po_d.Id,
+		CASE WHEN uom_c.IsBaseUnit = 1 THEN po_d.Qty
+				ELSE po_d.Qty * (
+					SELECT EXP(SUM(LOG(Conversion)))
+					FROM Inventory.UoMConversion
+					WHERE UomId = uom_c.UomId
+					AND Seq <= uom_c.Seq
+				) END AS BaseQty,
+		CASE WHEN uom_c.IsBaseUnit = 1 THEN po_d.QtyRcv
+				ELSE po_d.QtyRcv * (
+					SELECT EXP(SUM(LOG(Conversion)))
+					FROM Inventory.UoMConversion
+					WHERE UomId = uom_c.UomId
+					AND Seq <= uom_c.Seq
+				) END AS BaseQtyRcv
+		FROM Purchasing.PurchaseOrderDetail po_d
+		LEFT JOIN Inventory.UoMConversion uom_c
+			ON uom_c.UomId = po_d.UomId
+			AND uom_c.Id = po_d.UnitId
+	),
+	cte_on_indent AS (  
+		SELECT sm.WarehouseCode, sm.ItemId,
+		CAST(
+			CASE WHEN SUM(po_d.BaseQtyRcv - po_d.BaseQty) < 0 THEN 0
+			ELSE SUM(po_d.BaseQtyRcv - po_d.BaseQty)
+			END
+		AS decimal(19,8)) AS TotalBaseQty
+		FROM (
+			SELECT *
+			FROM Inventory.StockMutation
+			WHERE [Type] = 'OI'
+		) sm
+		LEFT JOIN cte_base_qty_indent po_d
+		ON po_d.Id = sm.RefDetailId1
+		GROUP BY sm.WarehouseCode, sm.ItemId
+	)  
+  
+	SELECT dt.WarehouseCode, dt.ItemId,   
+		CASE  
+			WHEN SUM(oh.TotalBaseQty) IS NOT NULL THEN SUM(oh.TotalBaseQty)  
+			ELSE CAST(0 AS decimal(19,8))  
+		END AS QtyOnHand,   
+		CASE  
+			WHEN SUM(oi.TotalBaseQty) IS NOT NULL THEN SUM(oi.TotalBaseQty)  
+			ELSE CAST(0 AS decimal(19,8))  
+		END AS QtyOnIndent,  
+		CASE  
+			WHEN SUM(oo.TotalBaseQty) IS NOT NULL THEN SUM(oo.TotalBaseQty)  
+			ELSE CAST(0 AS decimal(19,8))  
+		END AS QtyOnOrder,  
+		CASE  
+			WHEN SUM(ot.TotalBaseQty) IS NOT NULL THEN SUM(ot.TotalBaseQty)  
+			ELSE CAST(0 AS decimal(19,8))  
+		END AS QtyOnTransfer,  
+		CAST(0 AS decimal(19,8)) AS QtyReorderPoint  
+	INTO #tmp_dt  
+	FROM Inventory.WarehouseQuantity dt  
+	LEFT JOIN cte_on_hand oh ON dt.WarehouseCode = oh.WarehouseCode AND dt.ItemId = oh.ItemId  
+	LEFT JOIN cte_on_indent oi ON dt.WarehouseCode = oi.WarehouseCode AND dt.ItemId = oi.ItemId  
+	LEFT JOIN cte_on_order oo ON dt.WarehouseCode = oo.WarehouseCode AND dt.ItemId = oo.ItemId  
+	LEFT JOIN cte_on_transfer ot ON dt.WarehouseCode = ot.WarehouseCode AND dt.ItemId = ot.ItemId  
+	GROUP BY dt.WarehouseCode, dt.ItemId  
+	ORDER BY dt.WarehouseCode, dt.ItemId  
+  
+  
+	-- Update Process  
+	DECLARE @WHId varchar(max)  
+	DECLARE @ItemId int  
+	DECLARE @QtyOO decimal(19,8)  
+	DECLARE @QtyOH decimal(19,8)  
+	DECLARE @QtyOI decimal(19,8)  
+	DECLARE @QtyOT decimal(19,8)  
+	DECLARE @QtyRP decimal(19,8)  
+  
+	IF EXISTS(SELECT *FROM #tmp_dt)  
+	BEGIN  
+		WHILE EXISTS(SELECT *FROM #tmp_dt)  
+		BEGIN  
+			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @QtyOH = QtyOnHand, @QtyOI = QtyOnIndent, @QtyOO = QtyOnOrder, @QtyOT = QtyOnTransfer, @QtyRP = QtyReorderPoint FROM #tmp_dt  
+			--Update Data  
+			UPDATE Inventory.WarehouseQuantity SET QtyOnHand = @QtyOH, QtyOnIndent = @QtyOI, QtyOnOrder = @QtyOO, QtyOnTransfer = @QtyOT, QtyReorderPoint = @QtyRP, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId  
+			DELETE #tmp_dt WHERE WarehouseCode = @WHId AND ItemId = @ItemId  
 		END
-	END
-
-	PRINT('Proses Selesai')
-END TRY
-BEGIN CATCH
-	-- Drop temp tables
-	IF OBJECT_ID('tempdb.dbo.#tmp_dt') IS NOT NULL
-		DROP TABLE #tmp_dt
-
-	-- Raise error
-	EXEC dbo.sp_raiseerror
+	END  
+  
+	PRINT('Proses Selesai')  
+END TRY  
+BEGIN CATCH  
+	-- Drop temp tables  
+	IF OBJECT_ID('tempdb.dbo.#tmp_dt') IS NOT NULL  
+	DROP TABLE #tmp_dt  
+  
+	-- Raise error  
+	EXEC dbo.sp_raiseerror  
 END CATCH";
             migrationBuilder.Sql(sql);
 
