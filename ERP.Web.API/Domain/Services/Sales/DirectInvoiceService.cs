@@ -94,11 +94,10 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
         using var transaction = Db.Database.BeginTransaction();
         try
         {
-            if (!CheckCreditLimit(data.CustCode, data.Total))
-            {
-                result.Message = "Nilai transaksi lebih besar dari nilai batas kredit.";
-                return result;
-            }
+            // Check & assign overlimit
+            var isOverLimit = !CheckCreditLimit(data.CustCode, data.Total);
+            if (isOverLimit)
+                data.Mark = "OL";
 
             // Checking deliver qty is excess or not
             if (IsQtyExcess(data.WarehouseCode, data.ItemDetails, null))
@@ -648,7 +647,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                 ExemptTaxAmount = data.ExemptTaxAmount,
                 Total = data.Total,
                 Dpp = data.Dpp,
-                Mark = "INV",
+                Mark = isOverLimit ? "OL" : "INV",
                 Notes = data.Notes,
                 CreatedBy = data.CreatedBy,
                 CreatedDate = data.CreatedDate,
@@ -770,7 +769,8 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
             }
 
             // Credit Used
-            UpdateCreditUsed(data.CustCode, data.Total);
+            if (!isOverLimit)
+                UpdateCreditUsed(data.CustCode, data.Total);
 
             Db.SaveChanges();
 
@@ -787,7 +787,8 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                 dlvData?.Code, data.Date, newCode);
 
             // Execute sp_update_po_rcv_qty
-            Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", newCode);
+            if (!isOverLimit)
+                Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", newCode);
 
             // Update sales order to closed if all sales delivery are invoiced
             //if (
@@ -841,11 +842,10 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                 return result;
             }
 
-            if (!CheckCreditLimit(data.CustCode, data.Total))
-            {
-                result.Message = "Nilai transaksi lebih besar dari nilai batas kredit.";
-                return result;
-            }
+            // Check & assign overlimit
+            var isOverLimit = !CheckCreditLimit(data.CustCode, data.Total);
+            if (isOverLimit)
+                data.Mark = "OL";
 
             var (isDuplicate, message) = CheckDuplicateDetail(data.ItemDetails);
             if (isDuplicate)
@@ -1660,7 +1660,8 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
             Db.SaveChanges();
 
             // Credit Used
-            UpdateCreditUsed(data.CustCode, data.Total);
+            if (!isOverLimit)
+                UpdateCreditUsed(data.CustCode, data.Total);
 
             // Execute sp_update_stock_mutation_from_so
             Db.Database.ExecuteSqlRaw(

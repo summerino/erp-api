@@ -24,12 +24,13 @@ public class SalesDeliveryReportService : ISalesDeliveryReportService
                             CASE do.Mark
 	                            WHEN 'A' THEN 'Aktif'
 	                            WHEN 'V' THEN 'Void'
-	                            WHEN 'INV' THEN 'Difakturkan' END AS [Status]
+	                            WHEN 'INV' THEN 'Difakturkan'
+                                WHEN 'OL' THEN 'Kredit Melebihi Batas' END AS [Status]
                             FROM Sales.vwSalesDeliveryHeader do
                             LEFT JOIN Sales.vwSalesDeliveryDetail do_d ON do_d.Code = do.Code
                             LEFT JOIN Inventory.Warehouse wh ON wh.Code = do.WarehouseCode
                             WHERE do.FromDirectInvoice = 0" +
-                                                (string.IsNullOrEmpty(status) ? "" : status.Replace("'", "''").Equals("NV") ? " AND do.Mark != 'V'" : $" AND do.Mark = '{status.Replace("'", "''")}'") +
+                                                (string.IsNullOrEmpty(status) ? "" : status.Replace("'", "''").Equals("NV") ? " AND do.Mark NOT IN ('V', 'OL)" : $" AND do.Mark = '{status.Replace("'", "''")}'") +
                                                 " GROUP BY do.[Date], do.Code, do.CustCode, do.CustName, do.SrcTrans, do.TransCode, wh.[Name], do.Mark").ToList();
 
         var doDetailData = _db.ReportByDetailDOs.FromSqlRaw(@"SELECT do.[Date], do.Code, do.CustCode, do.CustName,

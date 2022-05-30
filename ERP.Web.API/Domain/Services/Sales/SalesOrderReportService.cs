@@ -25,11 +25,12 @@ public class SalesOrderReportService : ISalesOrderReportService
 	                            WHEN 'V' THEN 'Void'
 	                            WHEN 'PS' THEN 'Dikirim Sebagian'
 	                            WHEN 'CMP' THEN 'Dikirim Seluruhnya'
-	                            WHEN 'CLS' THEN 'Ditutup' END AS [Status]
+	                            WHEN 'CLS' THEN 'Ditutup'
+                                WHEN 'OL' THEN 'Kredit Melebihi Batas' END AS [Status]
                             FROM Sales.vwSalesOrderHeader so
                             LEFT JOIN Sales.vwSalesOrderDetail so_d ON so_d.Code = so.Code
                             WHERE so.FromDirectInvoice = 0" +
-                                                (string.IsNullOrEmpty(status) ? "" : status.Replace("'", "''").Equals("NV") ? " AND so.Mark != 'V'" : $" AND so.Mark = '{status.Replace("'", "''")}'") +
+                                                (string.IsNullOrEmpty(status) ? "" : status.Replace("'", "''").Equals("NV") ? " AND so.Mark NOT IN ('V', 'OL)" : $" AND so.Mark = '{status.Replace("'", "''")}'") +
                                                 " GROUP BY so.[Date], so.Code, so.CustCode, so.CustName, so.Mark").ToList();
 
         var soDetailData = _db.ReportByDetailSOs.FromSqlRaw(@"SELECT so.[Date], so.Code, so.CustCode,so.CustName,

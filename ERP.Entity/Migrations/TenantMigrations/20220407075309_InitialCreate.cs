@@ -7636,7 +7636,7 @@ AS
 	FROM Sales.SalesInvoiceHeader S
 	JOIN General.Customer C
 		ON S.CustCode = C.Code
-	WHERE S.PaidAmount < S.Total AND S.Mark != 'V'";
+	WHERE S.PaidAmount < S.Total AND S.Mark NOT IN ('V', 'OL')";
             migrationBuilder.Sql(sql);
 
             // Create view Finance.vwCashBankType
