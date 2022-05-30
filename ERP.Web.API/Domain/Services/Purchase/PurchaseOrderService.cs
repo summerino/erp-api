@@ -1151,7 +1151,8 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
                            ItemInitial = detail.ItemInitial,
                            ItemName = detail.ItemName,
                            QtyOrder = detail.Type == 1 ? 0 : poDetail.Qty,
-                           QtyRemain = detail.Type == 1 ? 0 : ((poDetail.Qty) - itmQty.QtyRcv)
+                           QtyRemain = detail.Type == 1 ? 0 : ((poDetail.Qty) - (header.Mark == "APR" ? itmQty.QtyRcv : detail.Qty))
+                           //QtyRemain = detail.Type == 1 ? 0 : ((poDetail.Qty) - itmQty.QtyRcv)
                        } into poD
                        select new ReceiveItemDetailModel
                        {
@@ -1226,7 +1227,7 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
                            ItemInitial = detail.ItemInitial,
                            ItemName = detail.ItemName,
                            QtyOrder = detail.Type == 1 ? 0 : prDetail.Qty,
-                           QtyRemain = detail.Type == 1 ? 0 : ((prDetail.Qty) - itmQty.QtyRcv)
+                           QtyRemain = detail.Type == 1 ? 0 : ((prDetail.Qty) - (header.Mark == "APR" ? itmQty.QtyRcv : detail.Qty))
                        } into prD
                        select new ReceiveItemDetailModel
                        {
