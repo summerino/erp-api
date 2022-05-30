@@ -41,7 +41,7 @@ public class SalesTargetReportService : ISalesTargetReportService
                             LEFT JOIN Inventory.ItemCategory ic ON ic.Id = im.CategoryId
                             LEFT JOIN Inventory.ItemGroup ig ON ig.Id = ic.GroupId
                             LEFT JOIN Inventory.ItemGroupSubGroup igs ON igs.ItemGroupId = ig.Id
-                            WHERE inv.Mark != 'V'" +
+                            WHERE inv.Mark NOT IN ('V', 'OL')" +
                           (!salesId.HasValue || salesId <= 0 ? "" : $" AND so.SalesBy = {salesId}") +
                           (!groupId.HasValue || groupId <= 0 ? "" : $" AND ig.Id = {groupId}") +
                           (!groupSubGroupId.HasValue || groupSubGroupId <= 0 ? "" : $" AND igs.Id = {groupSubGroupId}") +

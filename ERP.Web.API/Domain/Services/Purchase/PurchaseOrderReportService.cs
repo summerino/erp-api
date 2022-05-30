@@ -37,7 +37,7 @@ public class PurchaseOrderReportService : IPurchaseOrderReportService
                             po_d.DPP, po_d.TaxAmount, po_d.ExemptTaxAmount, po_d.NettPrice,
                             po_d.UnitPrice * po_d.Qty AS TotalGrossAmount, (po_d.UnitPrice - po_d.Disc - po_d.FinalDiscHeader) * po_d.Qty AS TotalAfterDisc,
                             po_d.Disc * po_d.Qty AS TotalDisc, po_d.FinalDiscHeader * po_d.Qty AS TotalDiscHeader,
-                            po_d.DPP * po_d.Qty AS TotalDPP, (po_d.TaxAmount * po_d.Qty) - (po_d.ExemptTaxAmount * po_d.Qty) AS TotalTaxAmount, po_d.Total, po_d.NettPrice * po_d.Qty AS TotalNettPrice,
+                            po_d.DPP * po_d.Qty AS TotalDPP, (po_d.TaxAmount * po_d.Qty) AS TotalTaxAmount, (po_d.ExemptTaxAmount * po_d.Qty) AS TotalExemptTaxAmount, po_d.Total, po_d.NettPrice * po_d.Qty AS TotalNettPrice,
                             CASE po.Mark
                                 WHEN 'A' THEN 'Aktif'
                                 WHEN 'V' THEN 'Void'
