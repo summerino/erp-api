@@ -3,6 +3,7 @@ using ERP.Common.Models;
 using ERP.Entity;
 using ERP.Entity.Inventory;
 using ERP.Web.API.Domain.Interfaces.Mobile.TransactionHistory;
+using ERP.Web.API.Domain.Models.Mobile.General;
 using ERP.Web.API.Domain.Models.Mobile.TransactionHistory;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
@@ -20,68 +21,120 @@ public class TransactionHistoryService : ITransactionHistoryService
 
     public DataSourceResult GetDataByCustomer(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, DateTime? startDate, DateTime? endDate, string search)
     {
-        var dataMobile = (from so in Db.VwMobileOrderHeaders.Where(x => x.SalesOrderCode.Equals(null))
-                          join cust in Db.Customers on so.CustCode equals cust.Code
-                          group new { so, cust } by new { so.CustCode, cust.Name, so.SalesBy, so.Date } into g
-                          select new TransactionHistoryByCustomer
-                          {
-                              SalesId = g.Key.SalesBy,
-                              Date = g.Key.Date,
-                              CustomerId = g.Key.CustCode,
-                              CustomerName = g.Key.Name,
-                              Total = g.Sum(tl => tl.so.SubTotal)
-                          }).AsQueryable();
+        var customers = getCustomers();
 
-        var dataOrder = (from so in Db.VwSalesOrderHeaders
-                         join cust in Db.Customers on so.CustCode equals cust.Code
-                         group new { so, cust } by new { so.CustCode, cust.Name, so.SalesBy, so.Date } into g
+        var dataMobile = from so in Db.VwMobileOrderHeaders.Where(x => x.SalesOrderCode.Equals(null))
+                             //join cu in Db.Customers on so.CustCode equals cu.Code
+                         group new { so } by new
+                         {
+                             so.CustCode,
+                             //cu.Name,
+                             so.SalesBy,
+                             so.Date
+                         } into g
                          select new TransactionHistoryByCustomer
                          {
                              SalesId = g.Key.SalesBy,
                              Date = g.Key.Date,
                              CustomerId = g.Key.CustCode,
-                             CustomerName = g.Key.Name,
+                             //CustomerName = g.Key.Name,
                              Total = g.Sum(tl => tl.so.SubTotal)
-                         }).AsQueryable();
+                         };
+
+        //var dataMobile = (from so in Db.VwMobileOrderHeaders.Where(x => x.SalesOrderCode.Equals(null))
+        //                  join cust in customers on so.CustCode equals cust.Code
+        //                  group new { so, cust } by new { so.CustCode, cust.Name, so.SalesBy, so.Date } into g
+        //                  select new TransactionHistoryByCustomer
+        //                  {
+        //                      SalesId = g.Key.SalesBy,
+        //                      Date = g.Key.Date,
+        //                      CustomerId = g.Key.CustCode,
+        //                      CustomerName = g.Key.Name,
+        //                      Total = g.Sum(tl => tl.so.SubTotal)
+        //                  });
+
+        var dataOrder = (from so in Db.VwSalesOrderHeaders
+                             //join cu in customers on so.CustCode equals cust.Code
+                         group new { so } by new
+                         {
+                             so.CustCode,
+                             so.SalesBy,
+                             so.Date
+                         } into g
+                         select new TransactionHistoryByCustomer
+                         {
+                             SalesId = g.Key.SalesBy,
+                             Date = g.Key.Date,
+                             CustomerId = g.Key.CustCode,
+                             //CustomerName = g.Key.Name,
+                             Total = g.Sum(tl => tl.so.SubTotal)
+                         });
 
         var data = (from so in dataOrder.Union(dataMobile)
-                    group so by new { so.CustomerId, so.CustomerName, so.SalesId, so.Date } into g
+                    join cust in customers on so.CustomerId equals cust.Code
+                    group new { so } by new { so.CustomerId, cust.Name, so.SalesId, so.Date } into g
                     select new TransactionHistoryByCustomer
                     {
                         SalesId = g.Key.SalesId,
                         Date = g.Key.Date,
                         CustomerId = g.Key.CustomerId,
-                        CustomerName = g.Key.CustomerName,
-                        Total = g.Sum(tl => tl.Total)
+                        CustomerName = g.Key.Name,
+                        Total = g.Sum(tl => tl.so.Total)
                     }).OrderBy(x => x.Date).AsQueryable();
 
-        if (startDate != null && startDate.HasValue)
+        //if (startDate != null && startDate.HasValue)
+        //{
+        //    data = data.Where(x => x.Date >= startDate && x.Date <= endDate);
+        //}
+        if (startDate != null && startDate.HasValue && endDate != null && endDate.HasValue)
         {
             data = data.Where(x => x.Date >= startDate && x.Date <= endDate);
         }
+        else if (startDate != null && startDate.HasValue && endDate == null && !endDate.HasValue)
+        {
+            data = data.Where(x => x.Date >= startDate);
+        }
+        else if (startDate == null && !startDate.HasValue && endDate != null && endDate.HasValue)
+        {
+            data = data.Where(x => x.Date >= startDate);
+        }
+
         if (!string.IsNullOrEmpty(search))
         {
             data = data.Where(x => x.CustomerName.Contains(search));
         }
 
         var result = data.ToDataSourceResult(skip, take, filter, sort);
+
         return result;
     }
 
-
     public DataSourceResult GetItemDetail(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, string search)
     {
-        var dataMobile = (from so in Db.MobileOrderHeaders.Where(x => x.SalesOrderCode.Equals(null))
-                          join sod in Db.MobileOrderDetails on so.Code equals sod.Code
-                          join c in Db.Customers on so.CustCode equals c.Code
+        var customers = getCustomers();
+
+        var dataMobile = (from so in Db.VwMobileOrderHeaders.Where(x => x.SalesOrderCode.Equals(null))
+                          join sod in Db.VwMobileOrderDetails on so.Code equals sod.Code
+                          //join c in Db.Customers on so.CustCode equals c.Code
                           join i in Db.Items on sod.ItemId equals i.Id
                           join u in Db.UoMConversions on sod.UnitId equals u.Id
-                          group new { so, sod, i, u } by new { so.Date, so.SalesBy, c.Code, sod.ItemId, i.Name, sod.UnitPrice, sod.UomId, u.UnitEquivalent } into g
+                          group new { so, sod, i, u } by new
+                          {
+                              so.Date,
+                              so.SalesBy,
+                              //c.Code,
+                              so.CustCode,
+                              sod.ItemId,
+                              i.Name,
+                              sod.UnitPrice,
+                              sod.UomId,
+                              u.UnitEquivalent
+                          } into g
                           select new TransactionItemDetail
                           {
                               SalesId = g.Key.SalesBy,
                               Date = g.Key.Date,
-                              CustomerId = g.Key.Code,
+                              CustomerId = g.Key.CustCode,
                               ItemId = g.Key.ItemId,
                               ItemName = g.Key.Name,
                               Quantity = g.Sum(qt => qt.sod.Qty),
@@ -90,19 +143,29 @@ public class TransactionHistoryService : ITransactionHistoryService
                               Price = g.Key.UnitPrice,
                               Discount = g.Sum(dc => dc.sod.Disc),
                               Total = g.Sum(tl => tl.sod.Total)
-                          }).AsQueryable();
+                          });
 
-        var dataOrder = (from so in Db.SalesOrderHeaders
-                         join sod in Db.SalesOrderDetails on so.Code equals sod.Code
-                         join c in Db.Customers on so.CustCode equals c.Code
+        var dataOrder = (from so in Db.VwSalesOrderHeaders
+                         join sod in Db.VwSalesOrderDetails on so.Code equals sod.Code
+                         //join c in Db.Customers on so.CustCode equals c.Code
                          join i in Db.Items on sod.ItemId equals i.Id
                          join u in Db.UoMConversions on sod.UnitId equals u.Id
-                         group new { so, sod, i, u } by new { so.Date, so.SalesBy, c.Code, sod.ItemId, i.Name, sod.UnitPrice, sod.UomId, u.UnitEquivalent } into g
+                         group new { so, sod, i, u } by new
+                         {
+                             so.Date,
+                             so.SalesBy,
+                             so.CustCode,
+                             sod.ItemId,
+                             i.Name,
+                             sod.UnitPrice,
+                             sod.UomId,
+                             u.UnitEquivalent
+                         } into g
                          select new TransactionItemDetail
                          {
                              SalesId = g.Key.SalesBy,
                              Date = g.Key.Date,
-                             CustomerId = g.Key.Code,
+                             CustomerId = g.Key.CustCode,
                              ItemId = g.Key.ItemId,
                              ItemName = g.Key.Name,
                              Quantity = g.Sum(qt => qt.sod.Qty),
@@ -111,10 +174,21 @@ public class TransactionHistoryService : ITransactionHistoryService
                              Price = g.Key.UnitPrice,
                              Discount = g.Sum(dc => dc.sod.Disc),
                              Total = g.Sum(tl => tl.sod.Total)
-                         }).AsQueryable();
+                         });
 
         var data = (from so in dataOrder.Union(dataMobile)
-                    group so by new { so.SalesId, so.Date, so.CustomerId, so.ItemId, so.ItemName, so.Unit, so.Price } into g
+                    join cu in customers on so.CustomerId equals cu.Code
+                    group new { so } by new
+                    {
+                        so.SalesId,
+                        so.Date,
+                        //so.CustomerId,
+                        CustomerId = cu.Code,
+                        so.ItemId,
+                        so.ItemName,
+                        so.Unit,
+                        so.Price
+                    } into g
                     select new TransactionItemDetail
                     {
                         SalesId = g.Key.SalesId,
@@ -122,12 +196,12 @@ public class TransactionHistoryService : ITransactionHistoryService
                         CustomerId = g.Key.CustomerId,
                         ItemId = g.Key.ItemId,
                         ItemName = g.Key.ItemName,
-                        Quantity = g.Sum(qt => qt.Quantity),
-                        //UomId = g.Key.UomId,
+                        Quantity = g.Sum(qt => qt.so.Quantity),
+                        //UomId = g.Key.UomId, 
                         Unit = g.Key.Unit,
                         Price = g.Key.Price,
-                        Discount = g.Sum(dc => dc.Discount),
-                        Total = g.Sum(tl => tl.Total)
+                        Discount = g.Sum(dc => dc.so.Discount),
+                        Total = g.Sum(tl => tl.so.Total)
                     }).AsQueryable();
 
         if (!string.IsNullOrEmpty(search))
@@ -140,44 +214,80 @@ public class TransactionHistoryService : ITransactionHistoryService
 
     public DataSourceResult GetCustomerDetail(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, string search)
     {
-        var dataMobile = (from so in Db.MobileOrderHeaders.Where(x => x.SalesOrderCode.Equals(null))
-                          join sod in Db.MobileOrderDetails on so.Code equals sod.Code
-                          join c in Db.Customers on so.CustCode equals c.Code
+        var customers = getCustomers();
+
+        var dataMobile = (from so in Db.VwMobileOrderHeaders.Where(x => x.SalesOrderCode.Equals(null))
+                          join sod in Db.VwMobileOrderDetails on so.Code equals sod.Code
+                          //join c in customers on so.CustCode equals c.Code
                           join u in Db.UoMConversions on sod.UnitId equals u.Id
-                          group new { so, sod } by new { so.Date, so.SalesBy, c.Code, c.Name, sod.ItemId, sod.UnitPrice, sod.UomId, u.UnitEquivalent } into g
+                          join i in Db.Items on sod.ItemId equals i.Id
+                          group new { so, sod, u, i } by new
+                          {
+                              so.Date,
+                              so.SalesBy,
+                              so.CustCode,
+                              //c.Name,
+                              sod.ItemId,
+                              ItemName = i.Name,
+                              sod.UnitPrice,
+                              sod.UomId,
+                              u.UnitEquivalent
+                          } into g
                           select new TransactionCustomerDetail
                           {
                               SalesId = g.Key.SalesBy,
                               Date = g.Key.Date,
-                              CustomerId = g.Key.Code,
-                              CustomerName = g.Key.Name,
+                              CustomerId = g.Key.CustCode,
+                              //CustomerName = g.Key.Name,
                               ItemId = g.Key.ItemId,
-                              ItemName = g.Key.Name,
+                              ItemName = g.Key.ItemName,
                               Quantity = g.Sum(qt => qt.sod.Qty),
                               Unit = g.Key.UnitEquivalent,
                               Total = g.Sum(tl => tl.sod.Total)
-                          }).AsQueryable();
+                          });
 
-        var dataOrder = (from so in Db.SalesOrderHeaders
-                         join sod in Db.SalesOrderDetails on so.Code equals sod.Code
-                         join c in Db.Customers on so.CustCode equals c.Code
+        var dataOrder = (from so in Db.VwSalesOrderHeaders
+                         join sod in Db.VwSalesOrderDetails on so.Code equals sod.Code
+                         //join c in customers on so.CustCode equals c.Code
                          join u in Db.UoMConversions on sod.UnitId equals u.Id
-                         group new { so, sod } by new { so.Date, so.SalesBy, c.Code, c.Name, sod.ItemId, sod.UnitPrice, sod.UomId, u.UnitEquivalent } into g
+                         join i in Db.Items on sod.ItemId equals i.Id
+                         group new { so, sod, u, i } by new
+                         {
+                             so.Date,
+                             so.SalesBy,
+                             so.CustCode,
+                             //c.Name,
+                             sod.ItemId,
+                             ItemName = i.Name,
+                             sod.UnitPrice,
+                             sod.UomId,
+                             u.UnitEquivalent
+                         } into g
                          select new TransactionCustomerDetail
                          {
                              SalesId = g.Key.SalesBy,
                              Date = g.Key.Date,
-                             CustomerId = g.Key.Code,
-                             CustomerName = g.Key.Name,
+                             CustomerId = g.Key.CustCode,
+                             //CustomerName = g.Key.Name,
                              ItemId = g.Key.ItemId,
-                             ItemName = g.Key.Name,
+                             ItemName = g.Key.ItemName,
                              Quantity = g.Sum(qt => qt.sod.Qty),
                              Unit = g.Key.UnitEquivalent,
                              Total = g.Sum(tl => tl.sod.Total)
-                         }).AsQueryable();
+                         });
 
         var data = (from so in dataOrder.Union(dataMobile)
-                    group so by new { so.Date, so.SalesId, so.CustomerId, so.CustomerName, so.ItemId, so.ItemName, so.Unit } into g
+                    join cu in customers on so.CustomerId equals cu.Code
+                    group so by new
+                    {
+                        so.Date,
+                        so.SalesId,
+                        CustomerId = cu.Code,
+                        CustomerName = cu.Name,
+                        so.ItemId,
+                        so.ItemName,
+                        so.Unit
+                    } into g
                     select new TransactionCustomerDetail
                     {
                         SalesId = g.Key.SalesId,
@@ -190,6 +300,58 @@ public class TransactionHistoryService : ITransactionHistoryService
                         Unit = g.Key.Unit,
                         Total = g.Sum(tl => tl.Total)
                     }).AsQueryable();
+
+        //var dataMobile = (from so in Db.MobileOrderHeaders.Where(x => x.SalesOrderCode.Equals(null))
+        //                  join sod in Db.MobileOrderDetails on so.Code equals sod.Code
+        //                  join c in customers on so.CustCode equals c.Code
+        //                  join u in Db.UoMConversions on sod.UnitId equals u.Id
+        //                  group new { so, sod } by new { so.Date, so.SalesBy, c.Code, c.Name, sod.ItemId, sod.UnitPrice, sod.UomId, u.UnitEquivalent } into g
+        //                  select new TransactionCustomerDetail
+        //                  {
+        //                      SalesId = g.Key.SalesBy,
+        //                      Date = g.Key.Date,
+        //                      CustomerId = g.Key.Code,
+        //                      CustomerName = g.Key.Name,
+        //                      ItemId = g.Key.ItemId,
+        //                      ItemName = g.Key.Name,
+        //                      Quantity = g.Sum(qt => qt.sod.Qty),
+        //                      Unit = g.Key.UnitEquivalent,
+        //                      Total = g.Sum(tl => tl.sod.Total)
+        //                  }).AsQueryable();
+
+        //var dataOrder = (from so in Db.SalesOrderHeaders
+        //                 join sod in Db.SalesOrderDetails on so.Code equals sod.Code
+        //                 join c in customers on so.CustCode equals c.Code
+        //                 join u in Db.UoMConversions on sod.UnitId equals u.Id
+        //                 group new { so, sod } by new { so.Date, so.SalesBy, c.Code, c.Name, sod.ItemId, sod.UnitPrice, sod.UomId, u.UnitEquivalent } into g
+        //                 select new TransactionCustomerDetail
+        //                 {
+        //                     SalesId = g.Key.SalesBy,
+        //                     Date = g.Key.Date,
+        //                     CustomerId = g.Key.Code,
+        //                     CustomerName = g.Key.Name,
+        //                     ItemId = g.Key.ItemId,
+        //                     ItemName = g.Key.Name,
+        //                     Quantity = g.Sum(qt => qt.sod.Qty),
+        //                     Unit = g.Key.UnitEquivalent,
+        //                     Total = g.Sum(tl => tl.sod.Total)
+        //                 }).AsQueryable();
+
+        //var data = (from so in dataOrder.Union(dataMobile)
+        //            group so by new { so.Date, so.SalesId, so.CustomerId, so.CustomerName, so.ItemId, so.ItemName, so.Unit } into g
+        //            select new TransactionCustomerDetail
+        //            {
+        //                SalesId = g.Key.SalesId,
+        //                Date = g.Key.Date,
+        //                CustomerId = g.Key.CustomerId,
+        //                CustomerName = g.Key.CustomerName,
+        //                ItemId = g.Key.ItemId,
+        //                ItemName = g.Key.ItemName,
+        //                Quantity = g.Sum(qt => qt.Quantity),
+        //                Unit = g.Key.Unit,
+        //                Total = g.Sum(tl => tl.Total)
+        //            }).AsQueryable();
+
 
         if (!string.IsNullOrEmpty(search))
         {
@@ -228,9 +390,17 @@ public class TransactionHistoryService : ITransactionHistoryService
                         Total = g.Sum(tl => tl.Total)
                     }).AsQueryable();
 
-        if (startDate != null && startDate.HasValue)
+        if (startDate != null && startDate.HasValue && endDate != null && endDate.HasValue)
         {
             data = data.Where(x => x.Date >= startDate && x.Date <= endDate);
+        }
+        else if (startDate != null && startDate.HasValue && endDate == null && !endDate.HasValue)
+        {
+            data = data.Where(x => x.Date >= startDate);
+        }
+        else if (startDate == null && !startDate.HasValue && endDate != null && endDate.HasValue)
+        {
+            data = data.Where(x => x.Date >= startDate);
         }
 
         return data.ToDataSourceResult(skip, take, filter, sort);
@@ -283,10 +453,23 @@ public class TransactionHistoryService : ITransactionHistoryService
                         Total = g.Sum(tl => tl.Total)
                     }).AsQueryable();
 
-        if (startDate != null && startDate.HasValue)
+        //if (startDate != null && startDate.HasValue)
+        //{
+        //    data = data.Where(x => x.Date >= startDate && x.Date <= endDate);
+        //}
+        if (startDate != null && startDate.HasValue && endDate != null && endDate.HasValue)
         {
             data = data.Where(x => x.Date >= startDate && x.Date <= endDate);
         }
+        else if (startDate != null && startDate.HasValue && endDate == null && !endDate.HasValue)
+        {
+            data = data.Where(x => x.Date >= startDate);
+        }
+        else if (startDate == null && !startDate.HasValue && endDate != null && endDate.HasValue)
+        {
+            data = data.Where(x => x.Date >= startDate);
+        }
+
         if (!string.IsNullOrEmpty(search))
         {
             data = data.Where(x => x.ItemName.Contains(search));
@@ -470,9 +653,21 @@ public class TransactionHistoryService : ITransactionHistoryService
                 rslt.Quantity /= count;
             }
 
-            if (startDate != null && startDate.HasValue)
+            if (startDate != null && startDate.HasValue && endDate != null && endDate.HasValue)
             {
                 var result = resultSum.Where(x => x.Date >= startDate && x.Date <= endDate);
+
+                return result;
+            }
+            else if (startDate != null && startDate.HasValue && endDate == null && !endDate.HasValue)
+            {
+                var result = resultSum.Where(x => x.Date >= startDate);
+
+                return result;
+            }
+            else if (startDate == null && !startDate.HasValue && endDate != null && endDate.HasValue)
+            {
+                var result = resultSum.Where(x => x.Date >= startDate);
 
                 return result;
             }
@@ -631,9 +826,21 @@ public class TransactionHistoryService : ITransactionHistoryService
                 Total = y.Sum(tl => tl.Total)
             }).ToList();
 
-            if (startDate != null && startDate.HasValue)
+            if (startDate != null && startDate.HasValue && endDate != null && endDate.HasValue)
             {
                 var result = resultSum.Where(x => x.Date >= startDate && x.Date <= endDate);
+
+                return result;
+            }
+            else if (startDate != null && startDate.HasValue && endDate == null && !endDate.HasValue)
+            {
+                var result = resultSum.Where(x => x.Date >= startDate);
+
+                return result;
+            }
+            else if (startDate == null && !startDate.HasValue && endDate != null && endDate.HasValue)
+            {
+                var result = resultSum.Where(x => x.Date >= startDate);
 
                 return result;
             }
@@ -793,9 +1000,21 @@ public class TransactionHistoryService : ITransactionHistoryService
                 Total = y.Sum(tl => tl.Total)
             }).ToList();
 
-            if (startDate != null && startDate.HasValue)
+            if (startDate != null && startDate.HasValue && endDate != null && endDate.HasValue)
             {
                 var result = resultSum.Where(x => x.Date >= startDate && x.Date <= endDate);
+
+                return result;
+            }
+            else if (startDate != null && startDate.HasValue && endDate == null && !endDate.HasValue)
+            {
+                var result = resultSum.Where(x => x.Date >= startDate);
+
+                return result;
+            }
+            else if (startDate == null && !startDate.HasValue && endDate != null && endDate.HasValue)
+            {
+                var result = resultSum.Where(x => x.Date >= startDate);
 
                 return result;
             }
@@ -980,10 +1199,10 @@ public class TransactionHistoryService : ITransactionHistoryService
                         Total = g.Sum(tl => tl.Total)
                     }).AsQueryable();
 
-        if (startDate != null && startDate.HasValue)
-        {
-            data = data.Where(x => x.Date >= startDate && x.Date <= endDate);
-        }
+        //if (startDate != null && startDate.HasValue)
+        //{
+        //    data = data.Where(x => x.Date >= startDate && x.Date <= endDate);
+        //}
 
         return data.ToDataSourceResult(skip, take, filter, sort);
     }
@@ -1048,7 +1267,7 @@ public class TransactionHistoryService : ITransactionHistoryService
         return data.ToDataSourceResult(skip, take, filter, sort);
     }
 
-    public DataSourceResult GetDataBySubGroupSummary(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, DateTime? date, int? groupId, int? subGroupId)
+    public DataSourceResult GetDataBySubGroupSummary(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, DateTime? startDate, DateTime? endDate, int? groupId, int? subGroupId)
     {
         var subGroups = (from G in groupId == null ? Db.ItemGroups : Db.ItemGroups.Where(x => x.Id.Equals(groupId))
                          join S in subGroupId == null ? Db.ItemGroupSubGroups : Db.ItemGroupSubGroups.Where(y => y.Id.Equals(subGroupId)) on G.Id equals S.ItemGroupId
@@ -1083,7 +1302,7 @@ public class TransactionHistoryService : ITransactionHistoryService
         // if date null
         foreach (var sub in subGroup)
         {
-            var dataMobile = (from so in Db.MobileOrderHeaders.Where(x => x.SalesOrderCode.Equals(null) && x.Date.Equals(date != DateTime.MinValue ? date : x.Date)) // 
+            var dataMobile = (from so in Db.MobileOrderHeaders.Where(x => x.SalesOrderCode.Equals(null) && x.Date.Equals(startDate != DateTime.MinValue ? startDate : x.Date)) // 
                               join sod in Db.MobileOrderDetails on so.Code equals sod.Code
                               join it in Db.Items.Where(x => x.SubGroup1.Contains(sub.Value) || x.SubGroup2.Contains(sub.Value) ||
                                                              x.SubGroup3.Contains(sub.Value) || x.SubGroup4.Contains(sub.Value) ||
@@ -1114,7 +1333,6 @@ public class TransactionHistoryService : ITransactionHistoryService
                 }
             }
         }
-
 
 
         return data.AsQueryable().ToDataSourceResult(skip, take, filter, sort);
@@ -1205,5 +1423,80 @@ public class TransactionHistoryService : ITransactionHistoryService
         var data = Db.ItemGroupSubGroups.Where(x => x.ItemGroupId.Equals(groupId) && x.ShowInMobile).ToList();
 
         return data;
+    }
+
+    public IQueryable<CustomerModel> getCustomers()
+    {
+        // customers and mobile customers
+        var dataOriginal = (from cust in Db.VwCustomers
+                            select new CustomerModel
+                            {
+                                Code = cust.Code,
+                                Initial = cust.Initial,
+                                Name = cust.Name,
+                                TypeId = cust.TypeId,
+                                TypeName = cust.TypeName,
+                                CreditLimit = cust.CreditLimit,
+                                Used = cust.CreditUsed,
+                                Remaining = cust.CreditLimit - cust.CreditUsed,
+                                AreaId1 = cust.AreaId1,
+                                AreaId2 = cust.AreaId2,
+                                AreaId3 = cust.AreaId3,
+                                AreaId4 = cust.AreaId4,
+                                AreaId5 = cust.AreaId5,
+                                AreaName1 = cust.AreaName1,
+                                AreaName2 = cust.AreaName2,
+                                AreaName3 = cust.AreaName3,
+                                AreaName4 = cust.AreaName4,
+                                AreaName5 = cust.AreaName5,
+                                Lat = cust.Lat,
+                                Lng = cust.Lng,
+                                InitialAddress = cust.InitialAddress,
+                                Address1 = cust.Address1,
+                                Address2 = cust.Address2,
+                                Phone = cust.Phone,
+                                Fax = cust.Fax,
+                                ContactPerson = cust.ContactPerson,
+                                IsActive = true,
+                                UpdatedDate = cust.UpdatedDate,
+                            });
+
+        var dataMobile = (from custMobile in Db.VwMobileCustomers
+                          where custMobile.CustCode == null && custMobile.Mark == "A"
+                          select new CustomerModel
+                          {
+                              Code = custMobile.Code,
+                              Initial = custMobile.Initial,
+                              Name = custMobile.Name,
+                              TypeId = custMobile.TypeId,
+                              TypeName = custMobile.TypeName,
+                              CreditLimit = (decimal)0.00,
+                              Used = (decimal)0.00,
+                              Remaining = (decimal)0.00,
+                              AreaId1 = custMobile.AreaId1,
+                              AreaId2 = custMobile.AreaId2,
+                              AreaId3 = custMobile.AreaId3,
+                              AreaId4 = custMobile.AreaId4,
+                              AreaId5 = custMobile.AreaId5,
+                              AreaName1 = custMobile.AreaName1,
+                              AreaName2 = custMobile.AreaName2,
+                              AreaName3 = custMobile.AreaName3,
+                              AreaName4 = custMobile.AreaName4,
+                              AreaName5 = custMobile.AreaName5,
+                              Lat = custMobile.Lat,
+                              Lng = custMobile.Lng,
+                              InitialAddress = custMobile.InitialAddress,
+                              Address1 = custMobile.Address1,
+                              Address2 = custMobile.Address2,
+                              Phone = custMobile.Phone,
+                              Fax = custMobile.Fax,
+                              ContactPerson = custMobile.ContactPerson,
+                              IsActive = true,
+                              UpdatedDate = custMobile.UpdatedDate,
+                          });
+
+        var dataCustomer = dataOriginal.Union(dataMobile).OrderBy(x => x.UpdatedDate).AsQueryable();
+
+        return dataCustomer;
     }
 }
