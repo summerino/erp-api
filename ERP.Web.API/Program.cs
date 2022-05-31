@@ -285,6 +285,7 @@ builder.Services.AddScoped<ISalesInvoiceReportService, SalesInvoiceReportService
 builder.Services.AddScoped<ISalesReturnReportService, SalesReturnReportService>();
 builder.Services.AddScoped<ISalesTargetService, SalesTargetService>();
 builder.Services.AddScoped<ISalesTargetReportService, SalesTargetReportService>();
+builder.Services.AddScoped<ICreditLimitApprovalService, CreditLimitApprovalService>();
 
 
 // System Management services
