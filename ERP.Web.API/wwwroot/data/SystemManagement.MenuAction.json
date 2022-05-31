@@ -308,4 +308,6 @@
 {"Id":308,"MenuId":154,"ActionId":2},
 {"Id":309,"MenuId":154,"ActionId":3},
 {"Id":310,"MenuId":156,"ActionId":41},
-{"Id":311,"MenuId":157,"ActionId":41}]
+{"Id":311,"MenuId":157,"ActionId":41},
+{"Id":312,"MenuId":39,"ActionId":7},
+{"Id":313,"MenuId":47,"ActionId":7}]
