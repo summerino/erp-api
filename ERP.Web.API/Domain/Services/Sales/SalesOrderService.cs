@@ -556,7 +556,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
             if(!isOverLimit)
                 UpdateCreditUsed(data.CustCode, data.Total);
 
-            if (data.IsSoDlv)
+            if (data.IsSoDlv && !isOverLimit)
             {
                 var newDlvCode = GetNewCode("DO_NUM_FMT", data.Date);
 
@@ -620,7 +620,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                 }
             }
 
-            if (data.IsSoInv)
+            if (data.IsSoInv && !isOverLimit)
             {
                 // Sales Delivery
                 var newDlvCode = GetNewCode("DO_NUM_FMT", data.Date);
@@ -646,7 +646,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                     ExemptTaxAmount = data.ExemptTaxAmount,
                     Total = data.Total,
                     Dpp = data.Dpp,
-                    Mark = isOverLimit ? "OL" : "INV",
+                    Mark = "INV",
                     CreatedBy = data.CreatedBy,
                     CreatedDate = data.CreatedDate,
                     UpdatedBy = data.UpdatedBy,
@@ -728,7 +728,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                 "EXEC sp_update_stock_mutation_from_so {0}, {1}",
                 data.Code, data.Date);
 
-            if (data.IsSoDlv || data.IsSoInv)
+            if ((data.IsSoDlv || data.IsSoInv) && !isOverLimit)
             {
                 var dlvData = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.TransCode == newCode);
 
@@ -738,31 +738,8 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                     dlvData?.Code, data.Date, newCode);
 
                 // Execute sp_update_po_rcv_qty
-                if (!isOverLimit)
-                    Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", newCode);
+                Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", newCode);
             }
-
-            //if (data.IsSoInv)
-            //{
-            //    var dlvData = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.TransCode == newCode);
-
-            //    // Execute sp_update_stock_mutation_from_rcv
-            //    Db.Database.ExecuteSqlRaw(
-            //        "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
-            //        dlvData?.Code, data.Date, newCode);
-
-            //    // Execute sp_update_po_rcv_qty
-            //    Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", newCode);
-
-            //    // Update sales order to closed if all sales delivery are invoiced
-            //    if (
-            //        !Db.SalesDeliveryHeaders
-            //            .Any(x => x.TransCode == newCode && x.Mark != "INV"))
-            //    {
-            //        Db.Database.ExecuteSqlRaw(
-            //            "UPDATE Sales.SalesOrderHeader SET Mark='CLS' WHERE Code={0} AND Mark='CMP'", newCode);
-            //    }
-            //}
                 
             transaction.Commit();
         }
@@ -1325,7 +1302,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
             if (!isOverLimit)
                 UpdateCreditUsed(data.CustCode, data.Total);
 
-            if (data.IsSoDlv)
+            if (data.IsSoDlv && !isOverLimit)
             {
                 var newDlvCode = GetNewCode("DO_NUM_FMT", data.Date);
 
@@ -1389,7 +1366,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                 }
             }
 
-            if (data.IsSoInv)
+            if (data.IsSoInv && !isOverLimit)
             {
                 var DlvData = Db.SalesDeliveryHeaders.Where(x => x.TransCode == data.Code).ToList();
                 if(DlvData.Count == 0)
@@ -1418,7 +1395,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                         ExemptTaxAmount = data.ExemptTaxAmount,
                         Total = data.Total,
                         Dpp = data.Dpp,
-                        Mark = isOverLimit ? "OL" : "INV",
+                        Mark = "INV",
                         CreatedBy = data.CreatedBy,
                         CreatedDate = data.CreatedDate,
                         UpdatedBy = data.UpdatedBy,
@@ -1519,7 +1496,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                     foreach (var Dlvitem in DlvData)
                     {
                         Dlvitem.Date = data.DlvDate;
-                        Dlvitem.Mark = isOverLimit ? "OL" : "INV";
+                        Dlvitem.Mark = "INV";
                         Dlvitem.UpdatedBy = data.UpdatedBy;
                         Dlvitem.UpdatedDate = data.UpdatedDate;
 
@@ -1550,7 +1527,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                 "EXEC sp_update_stock_mutation_from_so {0}, {1}",
                 data.Code, data.Date);
 
-            if (data.IsSoDlv || data.IsSoInv)
+            if ((data.IsSoDlv || data.IsSoInv) && !isOverLimit)
             {
                 var dlvData = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.TransCode == data.Code);
 
@@ -1560,42 +1537,8 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                     dlvData?.Code, data.Date, data.Code);
 
                 // Execute sp_update_po_rcv_qty
-                if (!isOverLimit)
-                    Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", data.Code);
+                Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", data.Code);
             }
-
-            //if (data.IsSoInv)
-            //{
-            //    var dlvData = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.TransCode == data.Code);
-
-            //    // Execute sp_update_stock_mutation_from_rcv
-            //    Db.Database.ExecuteSqlRaw(
-            //        "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
-            //        dlvData?.Code, data.Date, data.Code);
-
-            //    // Execute sp_update_po_rcv_qty
-            //    Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", data.Code);
-
-            //    // Check all sales delivery are invoiced
-            //    if (
-            //        !Db.SalesDeliveryHeaders
-            //            .Any(x => x.TransCode == data.Code && x.Mark != "INV"))
-            //    {
-            //        // Update sales order to closed
-            //        Db.Database.ExecuteSqlRaw(
-            //            "UPDATE Sales.SalesOrderHeader SET Mark='CLS' WHERE Code={0} AND Mark='CMP'", data.Code);
-            //    }
-            //    else
-            //    {
-            //        // Update sales order to partial receive or completed
-            //        var soMark = Db.SalesOrderDetails.Any(x => x.Code == data.Code && x.Qty > x.QtyDlv)
-            //            ? "PS"
-            //            : "CMP";
-
-            //        Db.Database.ExecuteSqlRaw(
-            //            "UPDATE Sales.SalesOrderHeader SET Mark={0} WHERE Code={1}", soMark, data.Code);
-            //    }
-            //}
 
             transaction.Commit();
         }
