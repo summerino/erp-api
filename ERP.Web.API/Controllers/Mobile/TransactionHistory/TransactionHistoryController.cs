@@ -242,13 +242,13 @@ public class TransactionHistoryController : ControllerBase
     }
 
     [HttpGet("by-subgroup-summary")]
-    public IActionResult GetDataByGroupSummary(string filters, string sorts, int skip, int take, DateTime date, int? groupId, int? subGroupId)
+    public IActionResult GetDataByGroupSummary(string filters, string sorts, int skip, int take, DateTime startDate, DateTime? endDate, int? groupId, int? subGroupId)
     {
         var data =
             _transactionHistory.GetDataBySubGroupSummary(skip, take,
                 JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
                 JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
-                 date, groupId, subGroupId);
+                startDate, endDate, groupId, subGroupId);
 
         var result = ((List<TransactionHistoryBySubGroupSummary>)data.Data).ToList<dynamic>();
 
