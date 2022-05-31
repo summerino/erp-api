@@ -22,5 +22,7 @@ public class DirectInvoiceHeader : VwSalesInvoiceHeader
 
     public decimal TaxAmount { get; set; }
 
+    public decimal ExemptTaxAmount { get; set; }
+
     public decimal Dpp { get; set; }
 }

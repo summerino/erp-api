@@ -124,6 +124,7 @@ public class SalesReturnService : GeneralService<SalesReturnHeader>, ISalesRetur
                     Disc = item.Disc,
                     TaxId = item.TaxId,
                     TaxAmount = item.TaxAmount,
+                    ExemptTaxAmount = item.ExemptTaxAmount,
                     NettPrice = item.NettPrice,
                     Total = item.Total,
                     Dpp = item.Dpp
@@ -283,6 +284,7 @@ public class SalesReturnService : GeneralService<SalesReturnHeader>, ISalesRetur
                         Disc = item.Disc,
                         TaxId = item.TaxId,
                         TaxAmount = item.TaxAmount,
+                        ExemptTaxAmount = item.ExemptTaxAmount,
                         NettPrice = item.NettPrice,
                         Total = item.Total,
                         Dpp = item.Dpp

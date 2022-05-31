@@ -20,11 +20,13 @@ public interface ISalesOrderService : IGeneralService<SalesOrderHeader>
 
     IEnumerable<VwSalesOrderHeader> GetInCompleteInvoiceData(string searchBy, string search, string invCode);
 
-    SaveResult Insert(SalesOrderRequest data, bool isOverLimit);
+    SaveResult Insert(SalesOrderRequest data);
 
     SaveResult Update(SalesOrderRequest data);
 
     SaveResult Delete(string code, int userId);
 
     SaveResult Close(string code, int userId);
+
+    SaveResult CheckOverLimit(SalesOrderRequest data);
 }

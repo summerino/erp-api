@@ -28,6 +28,8 @@ public class ReportByItemCategorySales
 
     public decimal TaxAmount { get; set; }
 
+    public decimal ExemptTaxAmount { get; set; }
+
     public decimal Total { get; set; }
 }
 
@@ -50,6 +52,8 @@ public class ReportByCustomerSales
     public decimal Dpp { get; set; }
 
     public decimal TaxAmount { get; set; }
+
+    public decimal ExemptTaxAmount { get; set; }
 
     public decimal Total { get; set; }
 }
@@ -83,6 +87,8 @@ public class ReportByItemSales
     public decimal Dpp { get; set; }
 
     public decimal TaxAmount { get; set; }
+
+    public decimal ExemptTaxAmount { get; set; }
 
     public decimal Total { get; set; }
 }

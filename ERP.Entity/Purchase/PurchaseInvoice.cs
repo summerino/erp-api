@@ -122,6 +122,9 @@ public class PurchaseInvoiceDetail
     [Precision(18, 2)]
     public decimal TaxAmount { get; set; }
 
+    [Precision(18, 2)]
+    public decimal ExemptTaxAmount { get; set; }
+
     [Precision(19, 6)]
     public decimal Total { get; set; }
 

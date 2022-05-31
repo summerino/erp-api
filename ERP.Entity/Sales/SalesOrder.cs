@@ -57,6 +57,9 @@ public class SalesOrderHeader : BaseEntityWithMarkApprovedAndViewed
     public decimal TaxAmount { get; set; }
 
     [Precision(18, 2)]
+    public decimal ExemptTaxAmount { get; set; }
+
+    [Precision(18, 2)]
     public decimal Total { get; set; }
 
     [Column("DPP", TypeName = "decimal(18, 2)")]
@@ -66,6 +69,12 @@ public class SalesOrderHeader : BaseEntityWithMarkApprovedAndViewed
     public string Notes { get; set; }
 
     public bool FromDirectInvoice { get; set; }
+
+    [Column(Order = 107)]
+    public int? OverlimitApprovedBy { get; set; }
+
+    [Column(TypeName = "datetime", Order = 108)]
+    public DateTime? OverlimitApprovedDate { get; set; }
 }
 
 public class VwSalesOrderHeader : BaseEntityWithMarkApprovedAndViewed
@@ -110,6 +119,9 @@ public class VwSalesOrderHeader : BaseEntityWithMarkApprovedAndViewed
     public decimal TaxAmount { get; set; }
 
     [Precision(18, 2)]
+    public decimal ExemptTaxAmount { get; set; }
+
+    [Precision(18, 2)]
     public decimal Total { get; set; }
 
     [Precision(18, 2)]
@@ -118,6 +130,12 @@ public class VwSalesOrderHeader : BaseEntityWithMarkApprovedAndViewed
     public string Notes { get; set; }
 
     public bool FromDirectInvoice { get; set; }
+
+    [Column(Order = 107)]
+    public int? OverlimitApprovedBy { get; set; }
+
+    [Column(TypeName = "datetime", Order = 108)]
+    public DateTime? OverlimitApprovedDate { get; set; }
 
 
     public string CustName { get; set; }
@@ -188,6 +206,9 @@ public class SalesOrderDetail
 
     [Precision(19, 6)]
     public decimal TaxAmount { get; set; }
+
+    [Precision(19, 6)]
+    public decimal ExemptTaxAmount { get; set; }
 
     [Precision(19, 6)]
     public decimal NettPrice { get; set; }
@@ -267,6 +288,9 @@ public class VwSalesOrderDetail
 
     [Precision(19, 6)]
     public decimal TaxAmount { get; set; }
+
+    [Precision(19, 6)]
+    public decimal ExemptTaxAmount { get; set; }
 
     [Precision(19, 6)]
     public decimal NettPrice { get; set; }

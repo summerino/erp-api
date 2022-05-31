@@ -87,6 +87,7 @@ public class PurchaseReturnController : ControllerBase
                 x.Disc,
                 x.TaxId,
                 x.TaxAmount,
+                x.ExemptTaxAmount,
                 x.NettPrice,
                 x.Total,
                 x.Dpp,
@@ -107,6 +108,7 @@ public class PurchaseReturnController : ControllerBase
                     .OrderBy(u => u.Seq)
                     .ToList(),
                 TotTax = x.Qty * x.TaxAmount,
+                TotExemptTax = x.Qty * x.ExemptTaxAmount,
                 TotDPP = x.Qty * x.Dpp,
                 State = ""
             })

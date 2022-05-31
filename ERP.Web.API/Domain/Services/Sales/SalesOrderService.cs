@@ -92,7 +92,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
         };
     }
 
-    public SaveResult Insert(SalesOrderRequest data, bool isOverLimit)
+    public SaveResult Insert(SalesOrderRequest data)
     {
         var result = new SaveResult(false);
         var listIdDetail = new List<long>();
@@ -109,11 +109,10 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                 return result;
             }
 
-            if (!isOverLimit && !CheckCreditLimit(data.CustCode, data.Total)) 
-            {
-                result.Message = "Nilai transaksi lebih besar dari nilai batas kredit.";
-                return result;
-            }
+            // Check & assign overlimit
+            var isOverLimit = !CheckCreditLimit(data.CustCode, data.Total);
+            if (isOverLimit)
+                data.Mark = "OL";
 
             var (isDuplicate, message) = CheckDuplicateDetail(data.ItemDetails);
             if (isDuplicate)
@@ -140,6 +139,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
             var uomConversions = Db.UoMConversions.ToList();
             List<decimal> totalDetail = new();
             List<decimal> totalTax = new();
+            List<decimal> totalExemptTax = new();
             List<decimal> totalDpp = new();
 
             // Get new code
@@ -430,13 +430,15 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                 if (data.IncludeTax)
                 {
                     item.TaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) - ((item.UnitPrice - item.Disc - discHeaderProrate) / (1 + (taxData.Rate / 100)));
+                    item.ExemptTaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) - ((item.UnitPrice - item.Disc - discHeaderProrate) / (1 + (taxData.ExemptRate / 100)));
                     item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate;
-                    item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate - item.TaxAmount;
+                    item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate - item.TaxAmount + item.ExemptTaxAmount;
                 }
                 else
                 {
                     item.TaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) * (taxData.Rate / 100);
-                    item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate + item.TaxAmount;
+                    item.ExemptTaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) * (taxData.ExemptRate / 100);
+                    item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate + item.TaxAmount - item.ExemptTaxAmount;
                     item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate;
                 }
 
@@ -450,6 +452,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                 item.Total = item.Qty * item.NettPrice;
                 totalDetail.Add(item.Total);
                 totalTax.Add(item.Qty * item.TaxAmount);
+                totalExemptTax.Add(item.Qty * item.ExemptTaxAmount);
                 totalDpp.Add(item.Qty * item.Dpp);
 
                 var orderDetail = new SalesOrderDetail
@@ -472,6 +475,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                     FinalDiscHeader = item.FinalDiscHeader,
                     TaxId = item.TaxId,
                     TaxAmount = item.TaxAmount,
+                    ExemptTaxAmount = item.ExemptTaxAmount,
                     NettPrice = item.NettPrice,
                     Total = item.Total,
                     Dpp = item.Dpp,
@@ -543,12 +547,14 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                 data.FinalDisc = data.ItemDetails.Sum(x => x.FinalDiscHeader * x.Qty);
             data.SubTotal = totalDetail.Sum();
             data.TaxAmount = totalTax.Sum();
+            data.ExemptTaxAmount = totalExemptTax.Sum();
             data.Dpp = totalDpp.Sum();
             data.Total = data.SubTotal;
             Db.SalesOrderHeaders.Add(data);
 
             // Update Credit Used
-            UpdateCreditUsed(data.CustCode, data.Total);
+            if(!isOverLimit)
+                UpdateCreditUsed(data.CustCode, data.Total);
 
             if (data.IsSoDlv)
             {
@@ -572,6 +578,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                     FinalDisc = data.FinalDisc,
                     IncludeTax = data.IncludeTax,
                     TaxAmount = data.TaxAmount,
+                    ExemptTaxAmount = data.ExemptTaxAmount,
                     Total = data.Total,
                     Dpp = data.Dpp,
                     Mark = data.Mark,
@@ -605,6 +612,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                         Disc = item.Disc,
                         TaxId = item.TaxId,
                         TaxAmount = item.TaxAmount,
+                        ExemptTaxAmount = item.ExemptTaxAmount,
                         NettPrice = item.NettPrice,
                         Total = item.Total,
                         Dpp = item.Dpp
@@ -635,9 +643,10 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                     FinalDisc = data.FinalDisc,
                     IncludeTax = data.IncludeTax,
                     TaxAmount = data.TaxAmount,
+                    ExemptTaxAmount = data.ExemptTaxAmount,
                     Total = data.Total,
                     Dpp = data.Dpp,
-                    Mark = "INV",
+                    Mark = isOverLimit ? "OL" : "INV",
                     CreatedBy = data.CreatedBy,
                     CreatedDate = data.CreatedDate,
                     UpdatedBy = data.UpdatedBy,
@@ -689,6 +698,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                         Disc = item.Disc,
                         TaxId = item.TaxId,
                         TaxAmount = item.TaxAmount,
+                        ExemptTaxAmount = item.ExemptTaxAmount,
                         NettPrice = item.NettPrice,
                         Total = item.Total,
                         Dpp = item.Dpp
@@ -705,6 +715,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                     SubTotal = data.SubTotal,
                     FinalDisc = data.FinalDisc,
                     TaxAmount = data.TaxAmount,
+                    ExemptTaxAmount = data.ExemptTaxAmount,
                     Total = data.Total,
                     Dpp = data.Dpp
                 });
@@ -727,7 +738,8 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                     dlvData?.Code, data.Date, newCode);
 
                 // Execute sp_update_po_rcv_qty
-                Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", newCode);
+                if (!isOverLimit)
+                    Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", newCode);
             }
 
             //if (data.IsSoInv)
@@ -782,6 +794,11 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                 return result;
             }
 
+            // Check & assign overlimit
+            var isOverLimit = !CheckCreditLimit(data.CustCode, data.Total);
+            if (isOverLimit)
+                data.Mark = "OL";
+
             // Checking order qty is excess or not
             var checkQty = Db.SystemParameters.FirstOrDefault(x => x.Code == "DEF_SLS_ORD_CHECK_QTY")?.Value == "1";
 
@@ -816,6 +833,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
             var uomConversions = Db.UoMConversions.ToList();
             List<decimal> totalDetail = new();
             List<decimal> totalTax = new();
+            List<decimal> totalExemptTax = new();
             List<decimal> totalDpp = new();
 
             data.ApprovedBy = null;
@@ -1125,13 +1143,15 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                 if (data.IncludeTax)
                 {
                     item.TaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) - ((item.UnitPrice - item.Disc - discHeaderProrate) / (1 + (taxData.Rate / 100)));
+                    item.ExemptTaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) - ((item.UnitPrice - item.Disc - discHeaderProrate) / (1 + (taxData.ExemptRate / 100)));
                     item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate;
-                    item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate - item.TaxAmount;
+                    item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate - item.TaxAmount + item.ExemptTaxAmount;
                 }
                 else
                 {
                     item.TaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) * (taxData.Rate / 100);
-                    item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate + item.TaxAmount;
+                    item.ExemptTaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) * (taxData.ExemptRate / 100);
+                    item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate + item.TaxAmount - item.ExemptTaxAmount;
                     item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate;
                 }
 
@@ -1145,6 +1165,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                 item.Total = item.Qty * item.NettPrice;
                 totalDetail.Add(item.Total);
                 totalTax.Add(item.Qty * item.TaxAmount);
+                totalExemptTax.Add(item.Qty * item.ExemptTaxAmount);
                 totalDpp.Add(item.Qty * item.Dpp);
 
                 if (item.Id <= 0)
@@ -1169,6 +1190,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                         FinalDiscHeader = item.FinalDiscHeader,
                         TaxId = item.TaxId,
                         TaxAmount = item.TaxAmount,
+                        ExemptTaxAmount = item.ExemptTaxAmount,
                         NettPrice = item.NettPrice,
                         Total = item.Total,
                         Dpp = item.Dpp,
@@ -1290,6 +1312,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                 data.FinalDisc = data.ItemDetails.Sum(x => x.FinalDiscHeader * x.Qty);
             data.SubTotal = totalDetail.Sum();
             data.TaxAmount = totalTax.Sum();
+            data.ExemptTaxAmount = totalExemptTax.Sum();
             data.Dpp = totalDpp.Sum();
             data.Total = data.SubTotal;
             // Update header data
@@ -1299,7 +1322,8 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
             Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
 
             // Update Credit Used
-            UpdateCreditUsed(data.CustCode, data.Total);
+            if (!isOverLimit)
+                UpdateCreditUsed(data.CustCode, data.Total);
 
             if (data.IsSoDlv)
             {
@@ -1323,6 +1347,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                     FinalDisc = data.FinalDisc,
                     IncludeTax = data.IncludeTax,
                     TaxAmount = data.TaxAmount,
+                    ExemptTaxAmount = data.ExemptTaxAmount,
                     Total = data.Total,
                     Dpp = data.Dpp,
                     Mark = data.Mark,
@@ -1356,6 +1381,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                         Disc = item.Disc,
                         TaxId = item.TaxId,
                         TaxAmount = item.TaxAmount,
+                        ExemptTaxAmount = item.ExemptTaxAmount,
                         NettPrice = item.NettPrice,
                         Total = item.Total,
                         Dpp = item.Dpp
@@ -1389,9 +1415,10 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                         FinalDisc = data.FinalDisc,
                         IncludeTax = data.IncludeTax,
                         TaxAmount = data.TaxAmount,
+                        ExemptTaxAmount = data.ExemptTaxAmount,
                         Total = data.Total,
                         Dpp = data.Dpp,
-                        Mark = "INV",
+                        Mark = isOverLimit ? "OL" : "INV",
                         CreatedBy = data.CreatedBy,
                         CreatedDate = data.CreatedDate,
                         UpdatedBy = data.UpdatedBy,
@@ -1443,6 +1470,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                             Disc = item.Disc,
                             TaxId = item.TaxId,
                             TaxAmount = item.TaxAmount,
+                            ExemptTaxAmount = item.ExemptTaxAmount,
                             NettPrice = item.NettPrice,
                             Total = item.Total,
                             Dpp = item.Dpp
@@ -1459,6 +1487,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                         SubTotal = data.SubTotal,
                         FinalDisc = data.FinalDisc,
                         TaxAmount = data.TaxAmount,
+                        ExemptTaxAmount = data.ExemptTaxAmount,
                         Total = data.Total,
                         Dpp = data.Dpp
                     });
@@ -1490,7 +1519,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                     foreach (var Dlvitem in DlvData)
                     {
                         Dlvitem.Date = data.DlvDate;
-                        Dlvitem.Mark = "INV";
+                        Dlvitem.Mark = isOverLimit ? "OL" : "INV";
                         Dlvitem.UpdatedBy = data.UpdatedBy;
                         Dlvitem.UpdatedDate = data.UpdatedDate;
 
@@ -1506,6 +1535,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                             SubTotal = Dlvitem.SubTotal,
                             FinalDisc = Dlvitem.FinalDisc,
                             TaxAmount = Dlvitem.TaxAmount,
+                            ExemptTaxAmount = Dlvitem.ExemptTaxAmount,
                             Total = Dlvitem.Total,
                             Dpp = Dlvitem.Dpp
                         });
@@ -1530,7 +1560,8 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                     dlvData?.Code, data.Date, data.Code);
 
                 // Execute sp_update_po_rcv_qty
-                Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", data.Code);
+                if (!isOverLimit)
+                    Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", data.Code);
             }
 
             //if (data.IsSoInv)
@@ -1739,6 +1770,11 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
     public IEnumerable<SalesOrderDetailDiscount> GetDiscDetailData(string code)
     {
         return Db.SalesOrderDetailDiscounts.Where(x => x.Code == code).ToList();
+    }
+
+    public SaveResult CheckOverLimit(SalesOrderRequest data)
+    {
+        return new SaveResult(!CheckCreditLimit(data.CustCode, data.Total));
     }
 
     private (bool, string) CheckDuplicateDetail(IEnumerable<SalesOrderDetail> data)

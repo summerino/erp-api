@@ -60,6 +60,9 @@ public class PurchaseReceiveHeader : BaseEntityWithMarkApprovedAndViewed
     public decimal TaxAmount { get; set; }
 
     [Precision(18, 2)]
+    public decimal ExemptTaxAmount { get; set; }
+
+    [Precision(18, 2)]
     public decimal Total { get; set; }
 
     [Column("DPP", TypeName = "decimal(18, 2)")]
@@ -115,6 +118,9 @@ public class VwPurchaseReceiveHeader : BaseEntityWithMarkApprovedAndViewed
 
     [Precision(18, 2)]
     public decimal TaxAmount { get; set; }
+
+    [Precision(18, 2)]
+    public decimal ExemptTaxAmount { get; set; }
 
     [Precision(18, 2)]
     public decimal Total { get; set; }
@@ -197,6 +203,9 @@ public class PurchaseReceiveDetail
     public decimal TaxAmount { get; set; }
 
     [Precision(19, 6)]
+    public decimal ExemptTaxAmount { get; set; }
+
+    [Precision(19, 6)]
     public decimal NettPrice { get; set; }
 
     [Precision(19, 6)]
@@ -260,6 +269,9 @@ public class VwPurchaseReceiveDetail
 
     [Precision(19, 6)]
     public decimal TaxAmount { get; set; }
+
+    [Precision(19, 6)]
+    public decimal ExemptTaxAmount { get; set; }
 
     [Precision(19, 6)]
     public decimal NettPrice { get; set; }

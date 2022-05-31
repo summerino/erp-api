@@ -4,6 +4,7 @@ using ERP.Entity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ERP.Entity.Migrations.TenantMigrations
 {
     [DbContext(typeof(TenantContext))]
-    partial class TenantContextModelSnapshot : ModelSnapshot
+    [Migration("20220524151743_AddingColumnExemptTax")]
+    partial class AddingColumnExemptTax
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -602,20 +604,16 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(17)");
 
                     b.Property<int?>("ApprovedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(105);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ApprovedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(106);
+                        .HasColumnType("datetime");
 
                     b.Property<int>("CreatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(102);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("CurrCode")
                         .IsRequired()
@@ -630,8 +628,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .IsRequired()
                         .HasMaxLength(3)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(3)")
-                        .HasColumnOrder(100);
+                        .HasColumnType("varchar(3)");
 
                     b.Property<string>("Notes")
                         .HasMaxLength(256)
@@ -647,20 +644,16 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("UpdatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(103);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetime");
 
                     b.Property<int?>("ViewedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ViewedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(101);
+                        .HasColumnType("datetime");
 
                     b.HasKey("Code");
 
@@ -1629,12 +1622,10 @@ namespace ERP.Entity.Migrations.TenantMigrations
             modelBuilder.Entity("ERP.Entity.Accounting.VwGeneralJournalHeader", b =>
                 {
                     b.Property<int?>("ApprovedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(105);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ApprovedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(106);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("ApprovedInitial")
                         .IsUnicode(false)
@@ -1645,12 +1636,10 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(max)");
 
                     b.Property<int>("CreatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(102);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("CreatedInitial")
                         .IsUnicode(false)
@@ -1666,8 +1655,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.Property<string>("Mark")
                         .HasMaxLength(3)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(3)")
-                        .HasColumnOrder(100);
+                        .HasColumnType("varchar(3)");
 
                     b.Property<string>("Notes")
                         .IsUnicode(false)
@@ -1682,24 +1670,20 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("UpdatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(103);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("UpdatedInitial")
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
 
                     b.Property<int?>("ViewedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ViewedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(101);
+                        .HasColumnType("datetime");
 
                     b.ToView("vwGeneralJournalHeader", "Accounting");
                 });
@@ -1809,12 +1793,10 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int?>("ApprovedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(105);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ApprovedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(106);
+                        .HasColumnType("datetime");
 
                     b.Property<decimal>("BookValue")
                         .HasPrecision(18, 2)
@@ -1832,12 +1814,10 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(17)");
 
                     b.Property<int>("CreatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(102);
+                        .HasColumnType("datetime");
 
                     b.Property<int>("DepartmentId")
                         .HasColumnType("int");
@@ -1865,8 +1845,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .IsRequired()
                         .HasMaxLength(3)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(3)")
-                        .HasColumnOrder(100);
+                        .HasColumnType("varchar(3)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -1915,20 +1894,16 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("int");
 
                     b.Property<int>("UpdatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(103);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetime");
 
                     b.Property<int?>("ViewedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ViewedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(101);
+                        .HasColumnType("datetime");
 
                     b.Property<int>("YearWarranty")
                         .HasColumnType("int");
@@ -2078,12 +2053,10 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int?>("ApprovedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(105);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ApprovedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(106);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("ApprovedInitial")
                         .IsUnicode(false)
@@ -2110,12 +2083,10 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(max)");
 
                     b.Property<int>("CreatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(102);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("CreatedInitial")
                         .IsUnicode(false)
@@ -2144,8 +2115,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.Property<string>("Mark")
                         .HasMaxLength(3)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(3)")
-                        .HasColumnOrder(100);
+                        .HasColumnType("varchar(3)");
 
                     b.Property<string>("Name")
                         .IsUnicode(false)
@@ -2193,24 +2163,20 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("int");
 
                     b.Property<int>("UpdatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(103);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("UpdatedInitial")
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
 
                     b.Property<int?>("ViewedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ViewedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(101);
+                        .HasColumnType("datetime");
 
                     b.Property<int>("YearWarranty")
                         .HasColumnType("int");
@@ -2269,20 +2235,16 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int?>("ApprovedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(105);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ApprovedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(106);
+                        .HasColumnType("datetime");
 
                     b.Property<int>("CreatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(102);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("CurrCode")
                         .IsRequired()
@@ -2300,8 +2262,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .IsRequired()
                         .HasMaxLength(3)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(3)")
-                        .HasColumnOrder(100);
+                        .HasColumnType("varchar(3)");
 
                     b.Property<string>("Notes")
                         .HasMaxLength(256)
@@ -2331,20 +2292,16 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(8)");
 
                     b.Property<int>("UpdatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(103);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetime");
 
                     b.Property<int?>("ViewedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ViewedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(101);
+                        .HasColumnType("datetime");
 
                     b.HasKey("Code");
 
@@ -2421,12 +2378,10 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int?>("ApprovedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(105);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ApprovedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(106);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("ApprovedInitial")
                         .IsUnicode(false)
@@ -2437,12 +2392,10 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(max)");
 
                     b.Property<int>("CreatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(102);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("CreatedInitial")
                         .IsUnicode(false)
@@ -2461,8 +2414,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.Property<string>("Mark")
                         .HasMaxLength(3)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(3)")
-                        .HasColumnOrder(100);
+                        .HasColumnType("varchar(3)");
 
                     b.Property<string>("Notes")
                         .IsUnicode(false)
@@ -2504,24 +2456,20 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(max)");
 
                     b.Property<int>("UpdatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(103);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("UpdatedInitial")
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
 
                     b.Property<int?>("ViewedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ViewedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(101);
+                        .HasColumnType("datetime");
 
                     b.ToView("vwExpeditionInvoiceHeader", "Expedition");
                 });
@@ -2816,12 +2764,10 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int?>("ApprovedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(105);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ApprovedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(106);
+                        .HasColumnType("datetime");
 
                     b.Property<DateTime?>("ChequeDate")
                         .HasColumnType("date");
@@ -2838,12 +2784,10 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(6)");
 
                     b.Property<int>("CreatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(102);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("CurrCode")
                         .IsRequired()
@@ -2861,8 +2805,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .IsRequired()
                         .HasMaxLength(3)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(3)")
-                        .HasColumnOrder(100);
+                        .HasColumnType("varchar(3)");
 
                     b.Property<string>("Notes")
                         .HasMaxLength(256)
@@ -2880,20 +2823,16 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(1)");
 
                     b.Property<int>("UpdatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(103);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetime");
 
                     b.Property<int?>("ViewedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ViewedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(101);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("VouCode")
                         .HasMaxLength(17)
@@ -3167,12 +3106,10 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int?>("ApprovedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(105);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ApprovedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(106);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("ApprovedInitial")
                         .IsUnicode(false)
@@ -3198,12 +3135,10 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(max)");
 
                     b.Property<int>("CreatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(102);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("CreatedInitial")
                         .IsUnicode(false)
@@ -3222,8 +3157,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.Property<string>("Mark")
                         .HasMaxLength(3)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(3)")
-                        .HasColumnOrder(100);
+                        .HasColumnType("varchar(3)");
 
                     b.Property<string>("Notes")
                         .IsUnicode(false)
@@ -3246,24 +3180,20 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(max)");
 
                     b.Property<int>("UpdatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(103);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("UpdatedInitial")
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
 
                     b.Property<int?>("ViewedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ViewedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(101);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("VouCode")
                         .IsUnicode(false)
@@ -3283,12 +3213,10 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int?>("ApprovedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(105);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ApprovedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(106);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("ApprovedInitial")
                         .IsUnicode(false)
@@ -3322,12 +3250,10 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(max)");
 
                     b.Property<int>("CreatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(102);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("CreatedInitial")
                         .IsUnicode(false)
@@ -3350,8 +3276,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.Property<string>("Mark")
                         .HasMaxLength(3)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(3)")
-                        .HasColumnOrder(100);
+                        .HasColumnType("varchar(3)");
 
                     b.Property<string>("Notes")
                         .IsUnicode(false)
@@ -3394,12 +3319,10 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(max)");
 
                     b.Property<int>("UpdatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(103);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("UpdatedInitial")
                         .IsUnicode(false)
@@ -5279,20 +5202,16 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(17)");
 
                     b.Property<int?>("ApprovedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(105);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ApprovedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(106);
+                        .HasColumnType("datetime");
 
                     b.Property<int>("CreatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(102);
+                        .HasColumnType("datetime");
 
                     b.Property<DateTime>("Date")
                         .HasColumnType("date");
@@ -5301,8 +5220,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .IsRequired()
                         .HasMaxLength(3)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(3)")
-                        .HasColumnOrder(100);
+                        .HasColumnType("varchar(3)");
 
                     b.Property<string>("Notes")
                         .HasMaxLength(256)
@@ -5313,20 +5231,16 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("smallint");
 
                     b.Property<int>("UpdatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(103);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetime");
 
                     b.Property<int?>("ViewedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ViewedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(101);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("WarehouseCode")
                         .IsRequired()
@@ -6204,20 +6118,16 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(17)");
 
                     b.Property<int?>("ApprovedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(105);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ApprovedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(106);
+                        .HasColumnType("datetime");
 
                     b.Property<int>("CreatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(102);
+                        .HasColumnType("datetime");
 
                     b.Property<DateTime>("Date")
                         .HasColumnType("date");
@@ -6229,8 +6139,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .IsRequired()
                         .HasMaxLength(3)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(3)")
-                        .HasColumnOrder(100);
+                        .HasColumnType("varchar(3)");
 
                     b.Property<string>("Notes")
                         .HasMaxLength(256)
@@ -6249,20 +6158,16 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(5)");
 
                     b.Property<int>("UpdatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(103);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetime");
 
                     b.Property<int?>("ViewedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ViewedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(101);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("WarehouseCodeFrom")
                         .HasMaxLength(8)
@@ -6435,12 +6340,10 @@ namespace ERP.Entity.Migrations.TenantMigrations
             modelBuilder.Entity("ERP.Entity.Inventory.VwAdjustmentHeader", b =>
                 {
                     b.Property<int?>("ApprovedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(105);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ApprovedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(106);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("ApprovedInitial")
                         .IsUnicode(false)
@@ -6451,12 +6354,10 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(max)");
 
                     b.Property<int>("CreatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(102);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("CreatedInitial")
                         .IsUnicode(false)
@@ -6468,8 +6369,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.Property<string>("Mark")
                         .HasMaxLength(3)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(3)")
-                        .HasColumnOrder(100);
+                        .HasColumnType("varchar(3)");
 
                     b.Property<string>("Notes")
                         .IsUnicode(false)
@@ -6487,24 +6387,20 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(max)");
 
                     b.Property<int>("UpdatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(103);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("UpdatedInitial")
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
 
                     b.Property<int?>("ViewedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ViewedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(101);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("WarehouseCode")
                         .IsUnicode(false)
@@ -7198,12 +7094,10 @@ namespace ERP.Entity.Migrations.TenantMigrations
             modelBuilder.Entity("ERP.Entity.Inventory.VwTransferStockHeader", b =>
                 {
                     b.Property<int?>("ApprovedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(105);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ApprovedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(106);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("ApprovedInitial")
                         .IsUnicode(false)
@@ -7214,12 +7108,10 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(max)");
 
                     b.Property<int>("CreatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(102);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("CreatedInitial")
                         .IsUnicode(false)
@@ -7234,8 +7126,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.Property<string>("Mark")
                         .HasMaxLength(3)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(3)")
-                        .HasColumnOrder(100);
+                        .HasColumnType("varchar(3)");
 
                     b.Property<string>("Notes")
                         .IsUnicode(false)
@@ -7258,24 +7149,20 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(max)");
 
                     b.Property<int>("UpdatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(103);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("UpdatedInitial")
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
 
                     b.Property<int?>("ViewedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ViewedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(101);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("WarehouseCodeFrom")
                         .IsUnicode(false)
@@ -10986,20 +10873,16 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(17)");
 
                     b.Property<int?>("ApprovedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(105);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ApprovedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(106);
+                        .HasColumnType("datetime");
 
                     b.Property<int>("CreatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(102);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("CurrCode")
                         .IsRequired()
@@ -11017,8 +10900,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .IsRequired()
                         .HasMaxLength(3)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(3)")
-                        .HasColumnOrder(100);
+                        .HasColumnType("varchar(3)");
 
                     b.Property<string>("Notes")
                         .HasMaxLength(256)
@@ -11059,20 +10941,16 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("UpdatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(103);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetime");
 
                     b.Property<int?>("ViewedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ViewedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(101);
+                        .HasColumnType("datetime");
 
                     b.HasKey("Code");
 
@@ -11227,20 +11105,16 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(17)");
 
                     b.Property<int?>("ApprovedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(105);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ApprovedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(106);
+                        .HasColumnType("datetime");
 
                     b.Property<int>("CreatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(102);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("CurrCode")
                         .IsRequired()
@@ -11278,8 +11152,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .IsRequired()
                         .HasMaxLength(3)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(3)")
-                        .HasColumnOrder(100);
+                        .HasColumnType("varchar(3)");
 
                     b.Property<string>("Notes")
                         .HasMaxLength(256)
@@ -11316,20 +11189,16 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("UpdatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(103);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetime");
 
                     b.Property<int?>("ViewedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ViewedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(101);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("WarehouseCode")
                         .HasMaxLength(8)
@@ -11457,20 +11326,16 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(17)");
 
                     b.Property<int?>("ApprovedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(105);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ApprovedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(106);
+                        .HasColumnType("datetime");
 
                     b.Property<int>("CreatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(102);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("CurrCode")
                         .IsRequired()
@@ -11508,8 +11373,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .IsRequired()
                         .HasMaxLength(3)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(3)")
-                        .HasColumnOrder(100);
+                        .HasColumnType("varchar(3)");
 
                     b.Property<decimal>("PaidAmount")
                         .HasPrecision(19, 6)
@@ -11567,20 +11431,16 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(17)");
 
                     b.Property<int>("UpdatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(103);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetime");
 
                     b.Property<int?>("ViewedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ViewedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(101);
+                        .HasColumnType("datetime");
 
                     b.HasKey("Code");
 
@@ -11717,10 +11577,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("decimal(19,6)")
                         .HasColumnName("DPP");
 
-                    b.Property<decimal>("ExemptTaxAmount")
-                        .HasPrecision(19, 6)
-                        .HasColumnType("decimal(19,6)");
-
                     b.Property<int>("ItemId")
                         .HasColumnType("int");
 
@@ -11743,8 +11599,8 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("bigint");
 
                     b.Property<decimal>("TaxAmount")
-                        .HasPrecision(19, 6)
-                        .HasColumnType("decimal(19,6)");
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int?>("TaxId")
                         .HasColumnType("int");
@@ -11781,20 +11637,16 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(17)");
 
                     b.Property<int?>("ApprovedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(105);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ApprovedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(106);
+                        .HasColumnType("datetime");
 
                     b.Property<int>("CreatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(102);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("CurrCode")
                         .IsRequired()
@@ -11828,8 +11680,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .IsRequired()
                         .HasMaxLength(3)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(3)")
-                        .HasColumnOrder(100);
+                        .HasColumnType("varchar(3)");
 
                     b.Property<bool>("NoTax")
                         .HasColumnType("bit");
@@ -11891,20 +11742,16 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("smallint");
 
                     b.Property<int>("UpdatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(103);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetime");
 
                     b.Property<int?>("ViewedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ViewedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(101);
+                        .HasColumnType("datetime");
 
                     b.HasKey("Code");
 
@@ -12773,30 +12620,30 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.Property<DateTime?>("Date")
                         .HasColumnType("datetime2");
 
-                    b.Property<decimal?>("Disc")
+                    b.Property<decimal>("Disc")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<decimal?>("Dpp")
+                    b.Property<decimal>("Dpp")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("ExemptTaxAmount")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<decimal?>("GrossAmount")
+                    b.Property<decimal>("GrossAmount")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("RefNo")
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
 
-                    b.Property<int?>("SrcTrans")
+                    b.Property<int>("SrcTrans")
                         .HasColumnType("int");
 
                     b.Property<string>("Status")
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
 
-                    b.Property<decimal?>("SubTotal")
+                    b.Property<decimal>("SubTotal")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("SupCode")
@@ -12807,7 +12654,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
 
-                    b.Property<decimal?>("TaxAmount")
+                    b.Property<decimal>("TaxAmount")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime?>("TaxInvoiceDate")
@@ -13102,12 +12949,10 @@ namespace ERP.Entity.Migrations.TenantMigrations
             modelBuilder.Entity("ERP.Entity.Purchase.VwPurchaseInvoiceHeader", b =>
                 {
                     b.Property<int?>("ApprovedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(105);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ApprovedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(106);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("ApprovedInitial")
                         .IsUnicode(false)
@@ -13118,12 +12963,10 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(max)");
 
                     b.Property<int>("CreatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(102);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("CreatedInitial")
                         .IsUnicode(false)
@@ -13142,8 +12985,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.Property<string>("Mark")
                         .HasMaxLength(3)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(3)")
-                        .HasColumnOrder(100);
+                        .HasColumnType("varchar(3)");
 
                     b.Property<string>("Notes")
                         .IsUnicode(false)
@@ -13189,24 +13031,20 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("UpdatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(103);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("UpdatedInitial")
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
 
                     b.Property<int?>("ViewedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ViewedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(101);
+                        .HasColumnType("datetime");
 
                     b.ToView("vwPurchaseInvoiceHeader", "Purchasing");
                 });
@@ -13356,12 +13194,10 @@ namespace ERP.Entity.Migrations.TenantMigrations
             modelBuilder.Entity("ERP.Entity.Purchase.VwPurchaseOrderHeader", b =>
                 {
                     b.Property<int?>("ApprovedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(105);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ApprovedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(106);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("ApprovedInitial")
                         .IsUnicode(false)
@@ -13372,12 +13208,10 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(max)");
 
                     b.Property<int>("CreatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(102);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("CreatedInitial")
                         .IsUnicode(false)
@@ -13416,8 +13250,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.Property<string>("Mark")
                         .HasMaxLength(3)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(3)")
-                        .HasColumnOrder(100);
+                        .HasColumnType("varchar(3)");
 
                     b.Property<string>("Notes")
                         .IsUnicode(false)
@@ -13463,24 +13296,20 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("UpdatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(103);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("UpdatedInitial")
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
 
                     b.Property<int?>("ViewedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ViewedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(101);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("WarehouseCode")
                         .IsUnicode(false)
@@ -13628,24 +13457,20 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(max)");
 
                     b.Property<int?>("ApprovedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(105);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ApprovedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(106);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("Code")
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
 
                     b.Property<int>("CreatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(102);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("CreatedInitial")
                         .IsUnicode(false)
@@ -13684,8 +13509,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.Property<string>("Mark")
                         .HasMaxLength(3)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(3)")
-                        .HasColumnOrder(100);
+                        .HasColumnType("varchar(3)");
 
                     b.Property<decimal>("PaidAmount")
                         .HasPrecision(19, 6)
@@ -13749,24 +13573,20 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(max)");
 
                     b.Property<int>("UpdatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(103);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("UpdatedInitial")
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
 
                     b.Property<int?>("ViewedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ViewedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(101);
+                        .HasColumnType("datetime");
 
                     b.ToView("vwPurchaseReceiveHeader", "Purchasing");
                 });
@@ -13902,10 +13722,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
-                    b.Property<decimal>("ExemptTaxAmount")
-                        .HasPrecision(19, 6)
-                        .HasColumnType("decimal(19,6)");
-
                     b.Property<long>("Id")
                         .HasColumnType("bigint");
 
@@ -13950,8 +13766,8 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("bigint");
 
                     b.Property<decimal>("TaxAmount")
-                        .HasPrecision(19, 6)
-                        .HasColumnType("decimal(19,6)");
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int?>("TaxId")
                         .HasColumnType("int");
@@ -13984,24 +13800,20 @@ namespace ERP.Entity.Migrations.TenantMigrations
             modelBuilder.Entity("ERP.Entity.Purchase.VwPurchaseReturnHeader", b =>
                 {
                     b.Property<int?>("ApprovedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(105);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ApprovedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(106);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("Code")
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
 
                     b.Property<int>("CreatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(102);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("CreatedInitial")
                         .IsUnicode(false)
@@ -14036,8 +13848,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.Property<string>("Mark")
                         .HasMaxLength(3)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(3)")
-                        .HasColumnOrder(100);
+                        .HasColumnType("varchar(3)");
 
                     b.Property<bool>("NoTax")
                         .HasColumnType("bit");
@@ -14108,24 +13919,20 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(max)");
 
                     b.Property<int>("UpdatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(103);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("UpdatedInitial")
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
 
                     b.Property<int?>("ViewedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ViewedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(101);
+                        .HasColumnType("datetime");
 
                     b.ToView("vwPurchaseReturnHeader", "Purchasing");
                 });
@@ -14374,20 +14181,16 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(17)");
 
                     b.Property<int?>("ApprovedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(105);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ApprovedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(106);
+                        .HasColumnType("datetime");
 
                     b.Property<int>("CreatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(102);
+                        .HasColumnType("datetime");
 
                     b.Property<DateTime>("Date")
                         .HasColumnType("date");
@@ -14399,8 +14202,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .IsRequired()
                         .HasMaxLength(3)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(3)")
-                        .HasColumnOrder(100);
+                        .HasColumnType("varchar(3)");
 
                     b.Property<string>("Notes")
                         .HasMaxLength(256)
@@ -14427,23 +14229,19 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<int>("UpdatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(103);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetime");
 
                     b.Property<int>("VehicleId")
                         .HasColumnType("int");
 
                     b.Property<int?>("ViewedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ViewedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(101);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("WarehouseCode")
                         .IsRequired()
@@ -14688,12 +14486,10 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("smallint");
 
                     b.Property<int?>("ApprovedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(105);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ApprovedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(106);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("CoaCost")
                         .IsRequired()
@@ -14706,12 +14502,10 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(max)");
 
                     b.Property<int>("CreatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(102);
+                        .HasColumnType("datetime");
 
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("date");
@@ -14720,8 +14514,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .IsRequired()
                         .HasMaxLength(3)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(3)")
-                        .HasColumnOrder(100);
+                        .HasColumnType("varchar(3)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -14733,20 +14526,16 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("date");
 
                     b.Property<int>("UpdatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(103);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetime");
 
                     b.Property<int?>("ViewedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ViewedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(101);
+                        .HasColumnType("datetime");
 
                     b.HasKey("Code");
 
@@ -16242,20 +16031,16 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(17)");
 
                     b.Property<int?>("ApprovedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(105);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ApprovedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(106);
+                        .HasColumnType("datetime");
 
                     b.Property<int>("CreatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(102);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("CurrCode")
                         .IsRequired()
@@ -16302,8 +16087,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .IsRequired()
                         .HasMaxLength(3)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(3)")
-                        .HasColumnOrder(100);
+                        .HasColumnType("varchar(3)");
 
                     b.Property<string>("Notes")
                         .HasMaxLength(256)
@@ -16355,20 +16139,16 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(17)");
 
                     b.Property<int>("UpdatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(103);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetime");
 
                     b.Property<int?>("ViewedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ViewedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(101);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("WarehouseCode")
                         .IsRequired()
@@ -16493,20 +16273,16 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(17)");
 
                     b.Property<int?>("ApprovedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(105);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ApprovedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(106);
+                        .HasColumnType("datetime");
 
                     b.Property<int>("CreatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(102);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("CurrCode")
                         .IsRequired()
@@ -16533,8 +16309,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .IsRequired()
                         .HasMaxLength(3)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(3)")
-                        .HasColumnOrder(100);
+                        .HasColumnType("varchar(3)");
 
                     b.Property<string>("Notes")
                         .HasMaxLength(256)
@@ -16556,20 +16331,16 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("UpdatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(103);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetime");
 
                     b.Property<int?>("ViewedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ViewedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(101);
+                        .HasColumnType("datetime");
 
                     b.HasKey("Code");
 
@@ -16970,23 +16741,19 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(17)");
 
                     b.Property<int?>("ApprovedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(105);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ApprovedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(106);
+                        .HasColumnType("datetime");
 
                     b.Property<int?>("BillingAddressId")
                         .HasColumnType("int");
 
                     b.Property<int>("CreatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(102);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("CurrCode")
                         .IsRequired()
@@ -17033,21 +16800,12 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .IsRequired()
                         .HasMaxLength(3)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(3)")
-                        .HasColumnOrder(100);
+                        .HasColumnType("varchar(3)");
 
                     b.Property<string>("Notes")
                         .HasMaxLength(256)
                         .IsUnicode(false)
                         .HasColumnType("varchar(256)");
-
-                    b.Property<int?>("OverlimitApprovedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(107);
-
-                    b.Property<DateTime?>("OverlimitApprovedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(108);
 
                     b.Property<int?>("PaymentTermId")
                         .HasColumnType("int");
@@ -17076,20 +16834,16 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("UpdatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(103);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetime");
 
                     b.Property<int?>("ViewedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ViewedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(101);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("WarehouseCode")
                         .HasMaxLength(8)
@@ -17224,10 +16978,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("decimal(19,6)")
                         .HasColumnName("DPP");
 
-                    b.Property<decimal>("ExemptTaxAmount")
-                        .HasPrecision(19, 6)
-                        .HasColumnType("decimal(19,6)");
-
                     b.Property<int>("ItemId")
                         .HasColumnType("int");
 
@@ -17250,8 +17000,8 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("bigint");
 
                     b.Property<decimal>("TaxAmount")
-                        .HasPrecision(19, 6)
-                        .HasColumnType("decimal(19,6)");
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int?>("TaxId")
                         .HasColumnType("int");
@@ -17288,20 +17038,16 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(17)");
 
                     b.Property<int?>("ApprovedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(105);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ApprovedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(106);
+                        .HasColumnType("datetime");
 
                     b.Property<int>("CreatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(102);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("CurrCode")
                         .IsRequired()
@@ -17341,8 +17087,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .IsRequired()
                         .HasMaxLength(3)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(3)")
-                        .HasColumnOrder(100);
+                        .HasColumnType("varchar(3)");
 
                     b.Property<bool>("NoTax")
                         .HasColumnType("bit");
@@ -17396,20 +17141,16 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("smallint");
 
                     b.Property<int>("UpdatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(103);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetime");
 
                     b.Property<int?>("ViewedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ViewedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(101);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("WarehouseCode")
                         .IsRequired()
@@ -17547,20 +17288,16 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(17)");
 
                     b.Property<int?>("ApprovedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(105);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ApprovedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(106);
+                        .HasColumnType("datetime");
 
                     b.Property<int>("CreatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(102);
+                        .HasColumnType("datetime");
 
                     b.Property<DateTime>("Date")
                         .HasColumnType("date");
@@ -17569,8 +17306,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .IsRequired()
                         .HasMaxLength(3)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(3)")
-                        .HasColumnOrder(100);
+                        .HasColumnType("varchar(3)");
 
                     b.Property<string>("Notes")
                         .HasMaxLength(256)
@@ -17581,20 +17317,16 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("bigint");
 
                     b.Property<int>("UpdatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(103);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetime");
 
                     b.Property<int?>("ViewedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ViewedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(101);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("VisitPlanCode")
                         .HasMaxLength(17)
@@ -17725,20 +17457,16 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(17)");
 
                     b.Property<int?>("ApprovedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(105);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ApprovedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(106);
+                        .HasColumnType("datetime");
 
                     b.Property<int>("CreatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(102);
+                        .HasColumnType("datetime");
 
                     b.Property<DateTime>("Date")
                         .HasColumnType("date");
@@ -17750,16 +17478,13 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .IsRequired()
                         .HasMaxLength(3)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(3)")
-                        .HasColumnOrder(100);
+                        .HasColumnType("varchar(3)");
 
                     b.Property<int>("UpdatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(103);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetime");
 
                     b.HasKey("Code");
 
@@ -17900,12 +17625,10 @@ namespace ERP.Entity.Migrations.TenantMigrations
             modelBuilder.Entity("ERP.Entity.Sales.VwDeliveryPlanHeader", b =>
                 {
                     b.Property<int?>("ApprovedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(105);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ApprovedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(106);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("ApprovedInitial")
                         .IsUnicode(false)
@@ -17916,12 +17639,10 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(max)");
 
                     b.Property<int>("CreatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(102);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("CreatedInitial")
                         .IsUnicode(false)
@@ -17940,8 +17661,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.Property<string>("Mark")
                         .HasMaxLength(3)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(3)")
-                        .HasColumnOrder(100);
+                        .HasColumnType("varchar(3)");
 
                     b.Property<string>("Notes")
                         .IsUnicode(false)
@@ -17971,12 +17691,10 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<int>("UpdatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(103);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("UpdatedInitial")
                         .IsUnicode(false)
@@ -17990,12 +17708,10 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(max)");
 
                     b.Property<int?>("ViewedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ViewedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(101);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("WarehouseCode")
                         .IsUnicode(false)
@@ -18014,12 +17730,10 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("smallint");
 
                     b.Property<int?>("ApprovedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(105);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ApprovedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(106);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("ApprovedInitial")
                         .IsUnicode(false)
@@ -18038,12 +17752,10 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(max)");
 
                     b.Property<int>("CreatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(102);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("CreatedInitial")
                         .IsUnicode(false)
@@ -18055,8 +17767,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.Property<string>("Mark")
                         .HasMaxLength(3)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(3)")
-                        .HasColumnOrder(100);
+                        .HasColumnType("varchar(3)");
 
                     b.Property<string>("Name")
                         .IsUnicode(false)
@@ -18070,24 +17781,20 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(max)");
 
                     b.Property<int>("UpdatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(103);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("UpdatedInitial")
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
 
                     b.Property<int?>("ViewedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ViewedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(101);
+                        .HasColumnType("datetime");
 
                     b.ToView("vwPromoHeader", "Sales");
                 });
@@ -18220,24 +17927,20 @@ namespace ERP.Entity.Migrations.TenantMigrations
             modelBuilder.Entity("ERP.Entity.Sales.VwSalesDeliveryHeader", b =>
                 {
                     b.Property<int?>("ApprovedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(105);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ApprovedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(106);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("Code")
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
 
                     b.Property<int>("CreatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(102);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("CurrCode")
                         .IsUnicode(false)
@@ -18291,8 +17994,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.Property<string>("Mark")
                         .HasMaxLength(3)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(3)")
-                        .HasColumnOrder(100);
+                        .HasColumnType("varchar(3)");
 
                     b.Property<string>("Notes")
                         .IsUnicode(false)
@@ -18348,24 +18050,20 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(max)");
 
                     b.Property<int>("UpdatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(103);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("UpdatedInitial")
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
 
                     b.Property<int?>("ViewedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ViewedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(101);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("WarehouseCode")
                         .IsUnicode(false)
@@ -18377,12 +18075,10 @@ namespace ERP.Entity.Migrations.TenantMigrations
             modelBuilder.Entity("ERP.Entity.Sales.VwSalesInvoiceHeader", b =>
                 {
                     b.Property<int?>("ApprovedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(105);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ApprovedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(106);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("ApprovedInitial")
                         .IsUnicode(false)
@@ -18393,12 +18089,10 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(max)");
 
                     b.Property<int>("CreatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(102);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("CreatedInitial")
                         .IsUnicode(false)
@@ -18436,8 +18130,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.Property<string>("Mark")
                         .HasMaxLength(3)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(3)")
-                        .HasColumnOrder(100);
+                        .HasColumnType("varchar(3)");
 
                     b.Property<string>("Notes")
                         .IsUnicode(false)
@@ -18472,24 +18165,20 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("UpdatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(103);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("UpdatedInitial")
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
 
                     b.Property<int?>("ViewedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ViewedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(101);
+                        .HasColumnType("datetime");
 
                     b.ToView("vwSalesInvoiceHeader", "Sales");
                 });
@@ -18927,12 +18616,10 @@ namespace ERP.Entity.Migrations.TenantMigrations
             modelBuilder.Entity("ERP.Entity.Sales.VwSalesOrderHeader", b =>
                 {
                     b.Property<int?>("ApprovedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(105);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ApprovedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(106);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("ApprovedInitial")
                         .IsUnicode(false)
@@ -18946,12 +18633,10 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(max)");
 
                     b.Property<int>("CreatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(102);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("CreatedInitial")
                         .IsUnicode(false)
@@ -19001,20 +18686,11 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.Property<string>("Mark")
                         .HasMaxLength(3)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(3)")
-                        .HasColumnOrder(100);
+                        .HasColumnType("varchar(3)");
 
                     b.Property<string>("Notes")
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
-
-                    b.Property<int?>("OverlimitApprovedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(107);
-
-                    b.Property<DateTime?>("OverlimitApprovedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(108);
 
                     b.Property<int?>("PaymentTermId")
                         .HasColumnType("int");
@@ -19055,24 +18731,20 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("UpdatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(103);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("UpdatedInitial")
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
 
                     b.Property<int?>("ViewedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ViewedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(101);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("WarehouseCode")
                         .IsUnicode(false)
@@ -19208,10 +18880,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
-                    b.Property<decimal>("ExemptTaxAmount")
-                        .HasPrecision(19, 6)
-                        .HasColumnType("decimal(19,6)");
-
                     b.Property<long>("Id")
                         .HasColumnType("bigint");
 
@@ -19256,8 +18924,8 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("bigint");
 
                     b.Property<decimal>("TaxAmount")
-                        .HasPrecision(19, 6)
-                        .HasColumnType("decimal(19,6)");
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int?>("TaxId")
                         .HasColumnType("int");
@@ -19294,12 +18962,10 @@ namespace ERP.Entity.Migrations.TenantMigrations
             modelBuilder.Entity("ERP.Entity.Sales.VwSalesReturnHeader", b =>
                 {
                     b.Property<int?>("ApprovedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(105);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ApprovedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(106);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("ApprovedInitial")
                         .IsUnicode(false)
@@ -19310,12 +18976,10 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(max)");
 
                     b.Property<int>("CreatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(102);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("CreatedInitial")
                         .IsUnicode(false)
@@ -19358,8 +19022,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.Property<string>("Mark")
                         .HasMaxLength(3)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(3)")
-                        .HasColumnOrder(100);
+                        .HasColumnType("varchar(3)");
 
                     b.Property<bool>("NoTax")
                         .HasColumnType("bit");
@@ -19425,24 +19088,20 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(max)");
 
                     b.Property<int>("UpdatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(103);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("UpdatedInitial")
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
 
                     b.Property<int?>("ViewedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ViewedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(101);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("WarehouseCode")
                         .IsUnicode(false)
@@ -19502,12 +19161,10 @@ namespace ERP.Entity.Migrations.TenantMigrations
             modelBuilder.Entity("ERP.Entity.Sales.VwVisitOrder", b =>
                 {
                     b.Property<int?>("ApprovedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(105);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ApprovedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(106);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("ApprovedInitial")
                         .IsUnicode(false)
@@ -19518,12 +19175,10 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(max)");
 
                     b.Property<int>("CreatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(102);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("CreatedInitial")
                         .IsUnicode(false)
@@ -19543,8 +19198,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.Property<string>("Mark")
                         .HasMaxLength(3)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(3)")
-                        .HasColumnOrder(100);
+                        .HasColumnType("varchar(3)");
 
                     b.Property<string>("Notes")
                         .IsUnicode(false)
@@ -19570,12 +19224,10 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(max)");
 
                     b.Property<int>("UpdatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(103);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("UpdatedInitial")
                         .IsUnicode(false)
@@ -19826,12 +19478,10 @@ namespace ERP.Entity.Migrations.TenantMigrations
             modelBuilder.Entity("ERP.Entity.Sales.VwVisitPlanHeader", b =>
                 {
                     b.Property<int?>("ApprovedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(105);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ApprovedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(106);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("ApprovedInitial")
                         .IsUnicode(false)
@@ -19842,12 +19492,10 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(max)");
 
                     b.Property<int>("CreatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(101);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(102);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("CreatedInitial")
                         .IsUnicode(false)
@@ -19870,8 +19518,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.Property<string>("Mark")
                         .HasMaxLength(3)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(3)")
-                        .HasColumnOrder(100);
+                        .HasColumnType("varchar(3)");
 
                     b.Property<string>("Status")
                         .IsUnicode(false)
@@ -19882,12 +19529,10 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(max)");
 
                     b.Property<int>("UpdatedBy")
-                        .HasColumnType("int")
-                        .HasColumnOrder(103);
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetime");
 
                     b.Property<string>("UpdatedInitial")
                         .IsUnicode(false)

@@ -18,7 +18,7 @@ public class PurchaseReturnReportService : IPurchaseReturnReportService
     {
         var prData = _db.ReportByPRs.FromSqlRaw(@"SELECT pr.[Date], pr.Code, pr.SupCode,
                             pr.SupName, SUM(pr_d.UnitPrice * pr_d.Qty) AS GrossAmount,
-                            pr.DPP, pr.TaxAmount, pr.Total,
+                            pr.DPP, pr.TaxAmount, pr.ExemptTaxAmount, pr.Total,
                             CASE pr.[Type] 
 	                            When '1' THEN 'Tukar Memo'
 	                            When '2' THEN 'Tukar Barang Sama'
@@ -33,14 +33,14 @@ public class PurchaseReturnReportService : IPurchaseReturnReportService
                             LEFT JOIN Purchasing.vwPurchaseReturnDetail pr_d ON pr.Code = pr_d.Code" +
                                                 (string.IsNullOrEmpty(status) ? "" : status.Replace("'", "''").Equals("NV") ? " WHERE pr.Mark != 'V'" : $" WHERE pr.Mark = '{status.Replace("'", "''")}'") +
                                                 @" GROUP BY pr.[Date], pr.Code, pr.SupCode, pr.SupName, 
-                            pr.DPP, pr.TaxAmount, pr.Total, pr.[Type], pr.Mark").ToList();
+                            pr.DPP, pr.TaxAmount, pr.ExemptTaxAmount, pr.Total, pr.[Type], pr.Mark").ToList();
 
         var prDetailData = _db.ReportByDetailPRs.FromSqlRaw(@"SELECT pr.[Date], pr.Code, pr.SupCode, pr.SupName,
                             im.Initial AS ItemInitial, im.[Name] AS ItemName, wh.[Name] AS WarehouseName, pr_d.Qty,
                             pr_d.UnitId, pr_d.UnitName, pr_d.UnitPrice AS GrossAmount,
-                            pr_d.DPP, pr_d.TaxAmount, pr_d.NettPrice,
+                            pr_d.DPP, pr_d.TaxAmount, pr_d.ExemptTaxAmount, pr_d.NettPrice,
                             pr_d.UnitPrice * pr_d.Qty AS TotalGrossAmount, pr_d.DPP * pr_d.Qty AS TotalDPP,
-                            pr_d.TaxAmount * pr_d.Qty AS TotalTaxAmount, pr_d.NettPrice * pr_d.Qty AS TotalNettPrice,
+                            pr_d.TaxAmount * pr_d.Qty AS TotalTaxAmount, pr_d.ExemptTaxAmount * pr_d.Qty AS TotalExemptTaxAmount, pr_d.NettPrice * pr_d.Qty AS TotalNettPrice,
                             CASE pr.[Type] 
 	                            When '1' THEN 'Tukar Memo'
 	                            When '2' THEN 'Tukar Barang Sama'
@@ -64,7 +64,7 @@ public class PurchaseReturnReportService : IPurchaseReturnReportService
                             uc.Id AS UnitId, uc.UnitEquivalent AS UnitName,
                             CAST (0 AS int) AS TotalTrans, CAST (0 AS decimal) AS Qty, CAST (0 AS decimal) AS SubTotal,
                             CAST (0 AS decimal) AS Disc, CAST (0 AS decimal) AS DiscHeader, CAST (0 AS decimal) AS Dpp,
-                            CAST (0 AS decimal) AS TaxAmount, CAST (0 AS decimal) AS Total, CAST (0 AS decimal) AS GrossAmount
+                            CAST (0 AS decimal) AS TaxAmount, CAST (0 AS decimal) AS ExemptTaxAmount, CAST (0 AS decimal) AS Total, CAST (0 AS decimal) AS GrossAmount
                             FROM Inventory.Item im
                             LEFT JOIN Purchasing.PurchaseReturnDetail rtn_d ON rtn_d.ItemId = im.Id
                             LEFT JOIN Inventory.ItemCategory ic ON ic.Id = im.CategoryId
@@ -75,7 +75,7 @@ public class PurchaseReturnReportService : IPurchaseReturnReportService
         var supData = _db.ReportBySupplierPurchases.FromSqlRaw(@"SELECT sp.Code, sp.[Name], CAST (0 AS int) AS TotalTrans,
                             CAST (0 AS decimal) AS SubTotal, CAST (0 AS decimal) AS GrossAmount, 
                             CAST (0 AS decimal) AS Disc, CAST (0 AS decimal) AS DiscHeader,
-                            CAST (0 AS decimal) AS Dpp, CAST (0 AS decimal) AS TaxAmount, CAST (0 AS decimal) AS Total
+                            CAST (0 AS decimal) AS Dpp, CAST (0 AS decimal) AS TaxAmount, CAST (0 AS decimal) AS ExemptTaxAmount, CAST (0 AS decimal) AS Total
                             FROM General.Supplier sp
                             WHERE sp.IsActive = 1
                             GROUP BY sp.Code, sp.[Name]").ToList();
@@ -84,7 +84,7 @@ public class PurchaseReturnReportService : IPurchaseReturnReportService
                             uc.Id AS UnitId, uc.UnitEquivalent AS UnitName,
                             CAST (0 AS int) AS TotalTrans, CAST (0 AS decimal) AS Qty, CAST (0 AS decimal) AS SubTotal,
                             CAST (0 AS decimal) AS Disc, CAST (0 AS decimal) AS DiscHeader, CAST (0 AS decimal) AS Dpp,
-                            CAST (0 AS decimal) AS TaxAmount, CAST (0 AS decimal) AS Total, CAST (0 AS decimal) AS GrossAmount
+                            CAST (0 AS decimal) AS TaxAmount, CAST (0 AS decimal) AS ExemptTaxAmount, CAST (0 AS decimal) AS Total, CAST (0 AS decimal) AS GrossAmount
                             FROM Inventory.ItemCategory ic
                             LEFT JOIN Inventory.Item im ON im.CategoryId = ic.Id 
                             LEFT JOIN Purchasing.PurchaseReturnDetail rtn_d ON rtn_d.ItemId = im.Id
@@ -138,6 +138,7 @@ public class PurchaseReturnReportService : IPurchaseReturnReportService
                     GrossAmount = prData.Sum(x => x.GrossAmount),
                     Dpp = prData.Sum(x => x.Dpp),
                     TaxAmount = prData.Sum(x => x.TaxAmount),
+                    ExemptTaxAmount = prData.Sum(x => x.ExemptTaxAmount),
                     Total = prData.Sum(x => x.Total)
                 });
 
@@ -166,6 +167,7 @@ public class PurchaseReturnReportService : IPurchaseReturnReportService
                     itemSup.GrossAmount = prDetailData.Where(x => x.SupCode == itemSup.Code).Sum(x => x.TotalGrossAmount);
                     itemSup.Dpp = prDetailData.Where(x => x.SupCode == itemSup.Code).Sum(x => x.TotalDpp);
                     itemSup.TaxAmount = prDetailData.Where(x => x.SupCode == itemSup.Code).Sum(x => x.TotalTaxAmount);
+                    itemSup.ExemptTaxAmount = prDetailData.Where(x => x.SupCode == itemSup.Code).Sum(x => x.TotalExemptTaxAmount);
                     itemSup.Total = prDetailData.Where(x => x.SupCode == itemSup.Code).Sum(x => x.TotalNettPrice);
                 }
 
@@ -178,6 +180,7 @@ public class PurchaseReturnReportService : IPurchaseReturnReportService
                     GrossAmount = supData.Sum(x => x.GrossAmount),
                     Dpp = supData.Sum(x => x.Dpp),
                     TaxAmount = supData.Sum(x => x.TaxAmount),
+                    ExemptTaxAmount = supData.Sum(x => x.ExemptTaxAmount),
                     Total = supData.Sum(x => x.Total)
                 });
 
@@ -207,6 +210,7 @@ public class PurchaseReturnReportService : IPurchaseReturnReportService
                     item.GrossAmount = prDetailData.Where(x => x.ItemInitial == item.Initial && x.UnitId == item.UnitId).Sum(x => x.TotalGrossAmount);
                     item.Dpp = prDetailData.Where(x => x.ItemInitial == item.Initial && x.UnitId == item.UnitId).Sum(x => x.TotalDpp);
                     item.TaxAmount = prDetailData.Where(x => x.ItemInitial == item.Initial && x.UnitId == item.UnitId).Sum(x => x.TotalTaxAmount);
+                    item.ExemptTaxAmount = prDetailData.Where(x => x.ItemInitial == item.Initial && x.UnitId == item.UnitId).Sum(x => x.TotalExemptTaxAmount);
                     item.Total = prDetailData.Where(x => x.ItemInitial == item.Initial && x.UnitId == item.UnitId).Sum(x => x.TotalNettPrice);
                 }
 
@@ -222,6 +226,7 @@ public class PurchaseReturnReportService : IPurchaseReturnReportService
                     DiscHeader = itemData.Sum(x => x.DiscHeader),
                     Dpp = itemData.Sum(x => x.Dpp),
                     TaxAmount = itemData.Sum(x => x.TaxAmount),
+                    ExemptTaxAmount = itemData.Sum(x => x.ExemptTaxAmount),
                     Total = itemData.Sum(x => x.Total)
                 });
 
@@ -246,6 +251,7 @@ public class PurchaseReturnReportService : IPurchaseReturnReportService
                     item.GrossAmount = prDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).Sum(x => x.TotalGrossAmount);
                     item.Dpp = prDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).Sum(x => x.TotalDpp);
                     item.TaxAmount = prDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).Sum(x => x.TotalTaxAmount);
+                    item.ExemptTaxAmount = prDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).Sum(x => x.TotalExemptTaxAmount);
                     item.Total = prDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).Sum(x => x.TotalNettPrice);
                 }
 
@@ -259,6 +265,7 @@ public class PurchaseReturnReportService : IPurchaseReturnReportService
                     GrossAmount = itemCategoryData.Sum(x => x.GrossAmount),
                     Dpp = itemCategoryData.Sum(x => x.Dpp),
                     TaxAmount = itemCategoryData.Sum(x => x.TaxAmount),
+                    ExemptTaxAmount = itemCategoryData.Sum(x => x.ExemptTaxAmount),
                     Total = itemCategoryData.Sum(x => x.Total)
                 });
 
@@ -295,6 +302,7 @@ public class PurchaseReturnReportService : IPurchaseReturnReportService
                     TotalGrossAmount = prDetailData.Sum(x => x.TotalGrossAmount),
                     TotalDpp = prDetailData.Sum(x => x.TotalDpp),
                     TotalTaxAmount = prDetailData.Sum(x => x.TotalTaxAmount),
+                    TotalExemptTaxAmount = prDetailData.Sum(x => x.TotalExemptTaxAmount),
                     TotalNettPrice = prDetailData.Sum(x => x.TotalNettPrice)
                 });
 
@@ -319,6 +327,7 @@ public class PurchaseReturnReportService : IPurchaseReturnReportService
                     TotalGrossAmount = prDetailData.Sum(x => x.TotalGrossAmount),
                     TotalDpp = prDetailData.Sum(x => x.TotalDpp),
                     TotalTaxAmount = prDetailData.Sum(x => x.TotalTaxAmount),
+                    TotalExemptTaxAmount = prDetailData.Sum(x => x.TotalExemptTaxAmount),
                     TotalNettPrice = prDetailData.Sum(x => x.TotalNettPrice)
                 });
 
@@ -355,6 +364,7 @@ public class PurchaseReturnReportService : IPurchaseReturnReportService
                     TotalGrossAmount = prDetailData.Sum(x => x.TotalGrossAmount),
                     TotalDpp = prDetailData.Sum(x => x.TotalDpp),
                     TotalTaxAmount = prDetailData.Sum(x => x.TotalTaxAmount),
+                    TotalExemptTaxAmount = prDetailData.Sum(x => x.TotalExemptTaxAmount),
                     TotalNettPrice = prDetailData.Sum(x => x.TotalNettPrice)
                 });
 

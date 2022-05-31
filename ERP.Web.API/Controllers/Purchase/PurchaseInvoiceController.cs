@@ -61,7 +61,7 @@ public class PurchaseInvoiceController : ControllerBase
             .Select(x => new
             {
                 x.Id, x.Code, x.LineNo, x.RcvCode, x.ShipmentFee, x.HandlingFee,
-                x.SubTotal, x.FinalDisc, x.TaxAmount, x.Total, x.Dpp,
+                x.SubTotal, x.FinalDisc, x.TaxAmount, x.ExemptTaxAmount, x.Total, x.Dpp,
                 State = ""
             })
             .ToList<dynamic>();

@@ -91,6 +91,9 @@ public class TenantContext : DbContext
     public DbSet<VwOutstandingDebitMemo> VwOutstandingDebitMemos { get; set; }
     public DbSet<VwDebitCreditPayment> VwDebitCreditPayments { get; set; }
     public DbSet<OutstandingChequeReport> OutstandingChequeReports { get; set; }
+    public DbSet<CashFlowReportAll> CashFlowReportAlls { get; set; }
+    public DbSet<CashFlowReportByCOA> CashFlowReportByCOAs { get; set; }
+
 
     // General entities
     public DbSet<VwApproval> VwApprovals { get; set; }
@@ -731,6 +734,14 @@ public class TenantContext : DbContext
         modelBuilder.Entity<OutstandingChequeReport>()
             .HasNoKey()
             .ToTable("OutstandingChequeReport", t => t.ExcludeFromMigrations());
+
+        modelBuilder.Entity<CashFlowReportAll>()
+            .HasNoKey()
+            .ToTable("CashFlowReportAll", t => t.ExcludeFromMigrations());
+
+        modelBuilder.Entity<CashFlowReportByCOA>()
+            .HasNoKey()
+            .ToTable("CashFlowReportByCOA", t => t.ExcludeFromMigrations());
 
         // General entities
         // Approval model

@@ -87,6 +87,7 @@ public class SalesReturnController : ControllerBase
                 x.Disc,
                 x.TaxId,
                 x.TaxAmount,
+                x.ExemptTaxAmount,
                 x.NettPrice,
                 x.Total,
                 x.Dpp,

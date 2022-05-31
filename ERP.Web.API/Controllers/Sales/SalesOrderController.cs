@@ -71,7 +71,7 @@ public class SalesOrderController : ControllerBase
                 x.Id, x.Code, x.LineNo, x.ItemId, x.ItemInitial, x.ItemName,
                 x.UomId, x.UnitId, x.UnitName, x.Qty,
                 x.Length, x.Width, x.Height, x.Weight, x.DimensionMeasurement, x.WeightMeasurement,
-                x.QtyDlv, x.UnitPrice, x.Disc, x.FinalDiscHeader, x.TaxId, x.TaxAmount,
+                x.QtyDlv, x.UnitPrice, x.Disc, x.FinalDiscHeader, x.TaxId, x.TaxAmount, x.ExemptTaxAmount,
                 x.NettPrice, x.Total, x.Dpp, x.Notes,
                 x.CoaInventory, x.CoaCogs, x.CoaSls, x.CoaSlsDisc, x.CoaSlsReturn,
                 Units = uomC.Where(u => u.UomId == x.UomId)
@@ -157,7 +157,7 @@ public class SalesOrderController : ControllerBase
         data.UpdatedBy = data.CreatedBy;
         data.UpdatedDate = data.CreatedDate;
             
-        var result = _so.Insert(data, _auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.OverLimit }).Any());
+        var result = _so.Insert(data);
 
         return Ok(result);
     }
@@ -214,6 +214,15 @@ public class SalesOrderController : ControllerBase
             return Ok(new SaveResult(false, message));
 
         var result = _so.Close(code, _claim.UserId);
+
+        return Ok(result);
+    }
+
+    [HttpPut("check-over-limit")]
+    public IActionResult CheckOverLimit(SalesOrderRequest data)
+    {
+        //Validate Process
+        var result = _so.CheckOverLimit(data);
 
         return Ok(result);
     }
