@@ -49,6 +49,13 @@ public class TaxService : GeneralService<Tax>, ITaxService
                 return result;
             }
 
+            // Checking if exempt rate exceed rate value
+            if (IsExemptRateExceed(data.ExemptRate, data.Rate))
+            {
+                result.Message = "Persentase pajak yang dibebaskan tidak boleh lebih besar dari persentase pajak.";
+                return result;
+            }
+
             Db.Add(data);
 
             Db.SaveChanges();
@@ -74,6 +81,13 @@ public class TaxService : GeneralService<Tax>, ITaxService
         if (IsInitialExists(data.Initial, data.Id))
         {
             result.Message = "Inisial sudah terdaftar. Tolong gunakan inisial lain.";
+            return result;
+        }
+
+        // Checking if exempt rate exceed rate value
+        if (IsExemptRateExceed(data.ExemptRate, data.Rate))
+        {
+            result.Message = "Persentase pajak yang dibebaskan tidak boleh lebih besar dari persentase pajak.";
             return result;
         }
 
@@ -134,5 +148,9 @@ public class TaxService : GeneralService<Tax>, ITaxService
     private bool IsInitialExists(string initial, int id)
     {
         return Db.Taxes.Any(x => x.Initial == initial && x.Id != id);
+    }
+    private bool IsExemptRateExceed(decimal exemptRate, decimal rate)
+    {
+        return exemptRate > rate;
     }
 }
