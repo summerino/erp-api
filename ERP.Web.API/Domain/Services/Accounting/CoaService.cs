@@ -102,7 +102,7 @@ public class CoaService : GeneralService<Coa>, ICoaService
                 var dataParent = Db.Coas.FirstOrDefault(x => x.Id == data.ParentId);
                 if (dataParent.ShowInMobile)
                 {
-                    result.Message = $"Akun {data.Code} - {data.Name} tidak bisa dijadikan induk akun karena sudah ditampilkan di mobile.";
+                    result.Message = $"Akun {dataParent.Code} - {dataParent.Name} tidak bisa dijadikan induk akun karena sudah ditampilkan di mobile.";
                     return result;
                 }
                 data.Deep = dataParent.Deep == null ? 1 : dataParent.Deep + 1;
@@ -148,7 +148,7 @@ public class CoaService : GeneralService<Coa>, ICoaService
             var dataParent = Db.Coas.FirstOrDefault(x => x.Id == data.ParentId);
             if (dataParent.ShowInMobile)
             {
-                result.Message = $"Akun {data.Code} - {data.Name} tidak bisa dijadikan induk akun karena sudah ditampilkan di mobile.";
+                result.Message = $"Akun {dataParent.Code} - {dataParent.Name} tidak bisa dijadikan induk akun karena sudah ditampilkan di mobile.";
                 return result;
             }
             data.Deep = dataParent.Deep == null ? 1 : dataParent.Deep + 1;
