@@ -97,25 +97,6 @@ namespace ERP.Web.API.Domain.Services.Sales
                         _tenantCtx.SalesOrderHeaders.Update(soData);
 
                         UpdateCreditUsed(soData.CustCode, soData.Total);
-
-                        var doData = _tenantCtx.SalesDeliveryHeaders.FirstOrDefault(x => x.TransCode == item.Code);
-                        if (doData != null && doData.Mark == "OL")
-                        {
-                            doData.Mark = "A";
-                            _tenantCtx.SalesDeliveryHeaders.Update(doData);
-
-                            _tenantCtx.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", soData.Code);
-
-                            var siData = _tenantCtx.SalesInvoiceHeaders.FirstOrDefault(x => x.SoCode == item.Code);
-                            if (siData != null && siData.Mark == "OL")
-                            {
-                                doData.Mark = "INV";
-                                _tenantCtx.SalesDeliveryHeaders.Update(doData);
-
-                                siData.Mark = "A";
-                                _tenantCtx.SalesInvoiceHeaders.Update(siData);
-                            }
-                        }
                     }
                 }
 
