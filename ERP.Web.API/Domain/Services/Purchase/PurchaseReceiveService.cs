@@ -173,7 +173,7 @@ public class PurchaseReceiveService : GeneralService<PurchaseReceiveHeader>, IPu
                     item.Total = item.Qty * item.NettPrice;
                     totalDetail.Add(item.Total);
                     totalTax.Add(item.TaxAmount != 0 ? item.Qty * item.TaxAmount : 0m);
-                    totalTax.Add(item.ExemptTaxAmount != 0 ? item.Qty * item.ExemptTaxAmount : 0m);
+                    totalExemptTax.Add(item.ExemptTaxAmount != 0 ? item.Qty * item.ExemptTaxAmount : 0m);
                     totalDpp.Add(item.Qty * item.Dpp);
                 }
 
