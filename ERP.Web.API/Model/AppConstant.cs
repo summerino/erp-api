@@ -114,6 +114,7 @@ public enum Menu
     SalesInvoice = 46,
     DirectInvoice = 46,
     SalesReturn = 47,
+    OverlimitApproval = 158,
     DeliveryPlan = 48,
     CreditMemo = 49,
     VisitPlan = 54,
@@ -127,6 +128,7 @@ public enum Menu
     AccountReceivableMutationReport = 132,
     AccountReceivableAgingReport = 134,
     CreditMemoReport = 138,
+    ReleaseOverlimitReport = 159,
 
     // Expedition
     ExpeditionInvoice = 70,

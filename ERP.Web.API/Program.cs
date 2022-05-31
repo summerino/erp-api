@@ -266,6 +266,7 @@ builder.Services.AddScoped<IAreaService, AreaService>();
 builder.Services.AddScoped<ICreditMemoService, CreditMemoService>();
 builder.Services.AddScoped<IDeliveryPlanService, DeliveryPlanService>();
 builder.Services.AddScoped<IDirectInvoiceService, DirectInvoiceService>();
+builder.Services.AddScoped<IOverlimitApprovalService, OverlimitApprovalService>();
 builder.Services.AddScoped<IPromoService, PromoService>();
 builder.Services.AddScoped<ISalesDeliveryService, SalesDeliveryService>();
 builder.Services.AddScoped<ISalesInvoiceService, SalesInvoiceService>();
@@ -285,7 +286,6 @@ builder.Services.AddScoped<ISalesInvoiceReportService, SalesInvoiceReportService
 builder.Services.AddScoped<ISalesReturnReportService, SalesReturnReportService>();
 builder.Services.AddScoped<ISalesTargetService, SalesTargetService>();
 builder.Services.AddScoped<ISalesTargetReportService, SalesTargetReportService>();
-builder.Services.AddScoped<ICreditLimitApprovalService, CreditLimitApprovalService>();
 
 
 // System Management services
