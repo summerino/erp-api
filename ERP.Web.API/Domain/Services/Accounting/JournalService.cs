@@ -1859,7 +1859,7 @@ public class JournalService : IJournalService
                             CurrCode = itemDlvData.DlvHeader.CurrCode,
                             Period = itemDlvData.DlvHeader.Date.ToString("yyyyMMdd"),
                             Type = "D",
-                            Amount = itemData.RtnHeader.Type == 2 ? itemDlvData.DlvHeader.Total : journals.FirstOrDefault(x => x.Code == itemData.RtnHeader.Code && x.Group == 4).Amount,
+                            Amount = itemData.RtnHeader.Type == 2 ? itemDlvData.DlvHeader.Total : journals.FirstOrDefault(x => x.Code == itemData.RtnHeader.Code && x.Group == 5).Amount,
                             SrcTrans = "DLV"
                         });
 
