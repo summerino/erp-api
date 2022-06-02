@@ -24,7 +24,6 @@ public class TransactionHistoryService : ITransactionHistoryService
         var customers = getCustomers();
 
         var dataMobile = from so in Db.VwMobileOrderHeaders.Where(x => x.SalesOrderCode.Equals(null))
-                             //join cu in Db.Customers on so.CustCode equals cu.Code
                          group new { so } by new
                          {
                              so.CustCode,
@@ -41,20 +40,7 @@ public class TransactionHistoryService : ITransactionHistoryService
                              Total = g.Sum(tl => tl.so.SubTotal)
                          };
 
-        //var dataMobile = (from so in Db.VwMobileOrderHeaders.Where(x => x.SalesOrderCode.Equals(null))
-        //                  join cust in customers on so.CustCode equals cust.Code
-        //                  group new { so, cust } by new { so.CustCode, cust.Name, so.SalesBy, so.Date } into g
-        //                  select new TransactionHistoryByCustomer
-        //                  {
-        //                      SalesId = g.Key.SalesBy,
-        //                      Date = g.Key.Date,
-        //                      CustomerId = g.Key.CustCode,
-        //                      CustomerName = g.Key.Name,
-        //                      Total = g.Sum(tl => tl.so.SubTotal)
-        //                  });
-
         var dataOrder = (from so in Db.VwSalesOrderHeaders
-                             //join cu in customers on so.CustCode equals cust.Code
                          group new { so } by new
                          {
                              so.CustCode,
@@ -66,7 +52,6 @@ public class TransactionHistoryService : ITransactionHistoryService
                              SalesId = g.Key.SalesBy,
                              Date = g.Key.Date,
                              CustomerId = g.Key.CustCode,
-                             //CustomerName = g.Key.Name,
                              Total = g.Sum(tl => tl.so.SubTotal)
                          });
 
@@ -96,7 +81,7 @@ public class TransactionHistoryService : ITransactionHistoryService
         }
         else if (startDate == null && !startDate.HasValue && endDate != null && endDate.HasValue)
         {
-            data = data.Where(x => x.Date >= startDate);
+            data = data.Where(x => x.Date <= endDate);
         }
 
         if (!string.IsNullOrEmpty(search))
@@ -122,7 +107,6 @@ public class TransactionHistoryService : ITransactionHistoryService
                           {
                               so.Date,
                               so.SalesBy,
-                              //c.Code,
                               so.CustCode,
                               sod.ItemId,
                               i.Name,
@@ -147,7 +131,6 @@ public class TransactionHistoryService : ITransactionHistoryService
 
         var dataOrder = (from so in Db.VwSalesOrderHeaders
                          join sod in Db.VwSalesOrderDetails on so.Code equals sod.Code
-                         //join c in Db.Customers on so.CustCode equals c.Code
                          join i in Db.Items on sod.ItemId equals i.Id
                          join u in Db.UoMConversions on sod.UnitId equals u.Id
                          group new { so, sod, i, u } by new
@@ -182,7 +165,6 @@ public class TransactionHistoryService : ITransactionHistoryService
                     {
                         so.SalesId,
                         so.Date,
-                        //so.CustomerId,
                         CustomerId = cu.Code,
                         so.ItemId,
                         so.ItemName,
@@ -248,7 +230,6 @@ public class TransactionHistoryService : ITransactionHistoryService
 
         var dataOrder = (from so in Db.VwSalesOrderHeaders
                          join sod in Db.VwSalesOrderDetails on so.Code equals sod.Code
-                         //join c in customers on so.CustCode equals c.Code
                          join u in Db.UoMConversions on sod.UnitId equals u.Id
                          join i in Db.Items on sod.ItemId equals i.Id
                          group new { so, sod, u, i } by new
@@ -256,7 +237,6 @@ public class TransactionHistoryService : ITransactionHistoryService
                              so.Date,
                              so.SalesBy,
                              so.CustCode,
-                             //c.Name,
                              sod.ItemId,
                              ItemName = i.Name,
                              sod.UnitPrice,
@@ -268,7 +248,6 @@ public class TransactionHistoryService : ITransactionHistoryService
                              SalesId = g.Key.SalesBy,
                              Date = g.Key.Date,
                              CustomerId = g.Key.CustCode,
-                             //CustomerName = g.Key.Name,
                              ItemId = g.Key.ItemId,
                              ItemName = g.Key.ItemName,
                              Quantity = g.Sum(qt => qt.sod.Qty),
@@ -300,58 +279,6 @@ public class TransactionHistoryService : ITransactionHistoryService
                         Unit = g.Key.Unit,
                         Total = g.Sum(tl => tl.Total)
                     }).AsQueryable();
-
-        //var dataMobile = (from so in Db.MobileOrderHeaders.Where(x => x.SalesOrderCode.Equals(null))
-        //                  join sod in Db.MobileOrderDetails on so.Code equals sod.Code
-        //                  join c in customers on so.CustCode equals c.Code
-        //                  join u in Db.UoMConversions on sod.UnitId equals u.Id
-        //                  group new { so, sod } by new { so.Date, so.SalesBy, c.Code, c.Name, sod.ItemId, sod.UnitPrice, sod.UomId, u.UnitEquivalent } into g
-        //                  select new TransactionCustomerDetail
-        //                  {
-        //                      SalesId = g.Key.SalesBy,
-        //                      Date = g.Key.Date,
-        //                      CustomerId = g.Key.Code,
-        //                      CustomerName = g.Key.Name,
-        //                      ItemId = g.Key.ItemId,
-        //                      ItemName = g.Key.Name,
-        //                      Quantity = g.Sum(qt => qt.sod.Qty),
-        //                      Unit = g.Key.UnitEquivalent,
-        //                      Total = g.Sum(tl => tl.sod.Total)
-        //                  }).AsQueryable();
-
-        //var dataOrder = (from so in Db.SalesOrderHeaders
-        //                 join sod in Db.SalesOrderDetails on so.Code equals sod.Code
-        //                 join c in customers on so.CustCode equals c.Code
-        //                 join u in Db.UoMConversions on sod.UnitId equals u.Id
-        //                 group new { so, sod } by new { so.Date, so.SalesBy, c.Code, c.Name, sod.ItemId, sod.UnitPrice, sod.UomId, u.UnitEquivalent } into g
-        //                 select new TransactionCustomerDetail
-        //                 {
-        //                     SalesId = g.Key.SalesBy,
-        //                     Date = g.Key.Date,
-        //                     CustomerId = g.Key.Code,
-        //                     CustomerName = g.Key.Name,
-        //                     ItemId = g.Key.ItemId,
-        //                     ItemName = g.Key.Name,
-        //                     Quantity = g.Sum(qt => qt.sod.Qty),
-        //                     Unit = g.Key.UnitEquivalent,
-        //                     Total = g.Sum(tl => tl.sod.Total)
-        //                 }).AsQueryable();
-
-        //var data = (from so in dataOrder.Union(dataMobile)
-        //            group so by new { so.Date, so.SalesId, so.CustomerId, so.CustomerName, so.ItemId, so.ItemName, so.Unit } into g
-        //            select new TransactionCustomerDetail
-        //            {
-        //                SalesId = g.Key.SalesId,
-        //                Date = g.Key.Date,
-        //                CustomerId = g.Key.CustomerId,
-        //                CustomerName = g.Key.CustomerName,
-        //                ItemId = g.Key.ItemId,
-        //                ItemName = g.Key.ItemName,
-        //                Quantity = g.Sum(qt => qt.Quantity),
-        //                Unit = g.Key.Unit,
-        //                Total = g.Sum(tl => tl.Total)
-        //            }).AsQueryable();
-
 
         if (!string.IsNullOrEmpty(search))
         {
@@ -400,7 +327,7 @@ public class TransactionHistoryService : ITransactionHistoryService
         }
         else if (startDate == null && !startDate.HasValue && endDate != null && endDate.HasValue)
         {
-            data = data.Where(x => x.Date >= startDate);
+            data = data.Where(x => x.Date <= endDate);
         }
 
         return data.ToDataSourceResult(skip, take, filter, sort);
@@ -453,10 +380,6 @@ public class TransactionHistoryService : ITransactionHistoryService
                         Total = g.Sum(tl => tl.Total)
                     }).AsQueryable();
 
-        //if (startDate != null && startDate.HasValue)
-        //{
-        //    data = data.Where(x => x.Date >= startDate && x.Date <= endDate);
-        //}
         if (startDate != null && startDate.HasValue && endDate != null && endDate.HasValue)
         {
             data = data.Where(x => x.Date >= startDate && x.Date <= endDate);
@@ -467,7 +390,7 @@ public class TransactionHistoryService : ITransactionHistoryService
         }
         else if (startDate == null && !startDate.HasValue && endDate != null && endDate.HasValue)
         {
-            data = data.Where(x => x.Date >= startDate);
+            data = data.Where(x => x.Date <= endDate);
         }
 
         if (!string.IsNullOrEmpty(search))
@@ -499,6 +422,7 @@ public class TransactionHistoryService : ITransactionHistoryService
                                   so.SalesBy,
                                   so.Date,
                                   sod.ItemId,
+                                  i.Initial,
                                   i.Name,
                                   sod.UomId,
                                   uom.Id,
@@ -513,6 +437,7 @@ public class TransactionHistoryService : ITransactionHistoryService
                                   SalesId = g.Key.SalesBy,
                                   Date = g.Key.Date,
                                   ItemId = g.Key.ItemId,
+                                  ItemInitial = g.Key.Initial,
                                   ItemName = g.Key.Name,
                                   Quantity = g.Sum(qt => qt.sod.Qty),
                                   UomId = g.Key.UomId,
@@ -535,6 +460,7 @@ public class TransactionHistoryService : ITransactionHistoryService
                                  so.SalesBy,
                                  so.Date,
                                  sod.ItemId,
+                                 i.Initial,
                                  i.Name,
                                  sod.UomId,
                                  uom.Id,
@@ -549,6 +475,7 @@ public class TransactionHistoryService : ITransactionHistoryService
                                  SalesId = g.Key.SalesBy,
                                  Date = g.Key.Date,
                                  ItemId = g.Key.ItemId,
+                                 ItemInitial = g.Key.Initial,
                                  ItemName = g.Key.Name,
                                  Quantity = g.Sum(qt => qt.sod.Qty),
                                  UomId = g.Key.UomId,
@@ -568,6 +495,7 @@ public class TransactionHistoryService : ITransactionHistoryService
                                   SalesId = g.Key.SalesId,
                                   Date = g.Key.Date,
                                   ItemId = g.Key.ItemId,
+                                  ItemInitial = g.Key.ItemInitial,
                                   ItemName = g.Key.ItemName,
                                   Quantity = g.Sum(qt => qt.Quantity),
                                   UomId = g.Key.UomId,
@@ -608,6 +536,7 @@ public class TransactionHistoryService : ITransactionHistoryService
                 so.SalesId,
                 so.Date,
                 so.ItemId,
+                so.ItemInitial,
                 so.ItemName,
                 so.UomId,
                 //so.UomToConvertId,
@@ -621,6 +550,7 @@ public class TransactionHistoryService : ITransactionHistoryService
                 SalesId = y.Key.SalesId,
                 Date = y.Key.Date,
                 ItemId = y.Key.ItemId,
+                ItemInitial = y.Key.ItemInitial,
                 ItemName = y.Key.ItemName,
                 Quantity = y.Sum(qt => qt.Quantity),
                 UomId = y.Key.UomId,
@@ -667,7 +597,7 @@ public class TransactionHistoryService : ITransactionHistoryService
             }
             else if (startDate == null && !startDate.HasValue && endDate != null && endDate.HasValue)
             {
-                var result = resultSum.Where(x => x.Date >= startDate);
+                var result = resultSum.Where(x => x.Date <= endDate);
 
                 return result;
             }
@@ -699,6 +629,7 @@ public class TransactionHistoryService : ITransactionHistoryService
                                   SalesId = so.SalesBy,
                                   Date = so.Date,
                                   ItemId = sod.ItemId,
+                                  ItemInitial = i.Initial,
                                   ItemName = i.Name,
                                   Quantity = sod.Qty,
                                   UomId = sod.UomId,
@@ -721,6 +652,7 @@ public class TransactionHistoryService : ITransactionHistoryService
                                  SalesId = so.SalesBy,
                                  Date = so.Date,
                                  ItemId = sod.ItemId,
+                                 ItemInitial = i.Initial,
                                  ItemName = i.Name,
                                  Quantity = sod.Qty,
                                  UomId = sod.UomId,
@@ -740,6 +672,7 @@ public class TransactionHistoryService : ITransactionHistoryService
                                   SalesId = g.Key.SalesId,
                                   Date = g.Key.Date,
                                   ItemId = g.Key.ItemId,
+                                  ItemInitial = g.Key.ItemInitial,
                                   ItemName = g.Key.ItemName,
                                   Quantity = g.Sum(qt => qt.Quantity),
                                   UomId = g.Key.UomId,
@@ -801,6 +734,7 @@ public class TransactionHistoryService : ITransactionHistoryService
                 so.SalesId,
                 so.Date,
                 so.ItemId,
+                so.ItemInitial,
                 so.ItemName,
                 so.UomId,
                 //so.UomToConvertId,
@@ -814,6 +748,7 @@ public class TransactionHistoryService : ITransactionHistoryService
                 SalesId = y.Key.SalesId,
                 Date = y.Key.Date,
                 ItemId = y.Key.ItemId,
+                ItemInitial = y.Key.ItemInitial,
                 ItemName = y.Key.ItemName,
                 Quantity = y.Sum(qt => qt.Quantity),
                 UomId = y.Key.UomId,
@@ -840,7 +775,7 @@ public class TransactionHistoryService : ITransactionHistoryService
             }
             else if (startDate == null && !startDate.HasValue && endDate != null && endDate.HasValue)
             {
-                var result = resultSum.Where(x => x.Date >= startDate);
+                var result = resultSum.Where(x => x.Date <= endDate);
 
                 return result;
             }
@@ -872,6 +807,7 @@ public class TransactionHistoryService : ITransactionHistoryService
                                   SalesId = so.SalesBy,
                                   Date = so.Date,
                                   ItemId = sod.ItemId,
+                                  ItemInitial = i.Initial,
                                   ItemName = i.Name,
                                   Quantity = sod.Qty,
                                   UomId = sod.UomId,
@@ -894,6 +830,7 @@ public class TransactionHistoryService : ITransactionHistoryService
                                  SalesId = so.SalesBy,
                                  Date = so.Date,
                                  ItemId = sod.ItemId,
+                                 ItemInitial = i.Initial,
                                  ItemName = i.Name,
                                  Quantity = sod.Qty,
                                  UomId = sod.UomId,
@@ -913,6 +850,7 @@ public class TransactionHistoryService : ITransactionHistoryService
                                   SalesId = g.Key.SalesId,
                                   Date = g.Key.Date,
                                   ItemId = g.Key.ItemId,
+                                  ItemInitial = g.Key.ItemInitial,
                                   ItemName = g.Key.ItemName,
                                   Quantity = g.Sum(qt => qt.Quantity),
                                   UomId = g.Key.UomId,
@@ -975,6 +913,7 @@ public class TransactionHistoryService : ITransactionHistoryService
                 so.SalesId,
                 so.Date,
                 so.ItemId,
+                so.ItemInitial,
                 so.ItemName,
                 so.UomId,
                 //so.UomToConvertId,
@@ -988,6 +927,7 @@ public class TransactionHistoryService : ITransactionHistoryService
                 SalesId = y.Key.SalesId,
                 Date = y.Key.Date,
                 ItemId = y.Key.ItemId,
+                ItemInitial = y.Key.ItemInitial,
                 ItemName = y.Key.ItemName,
                 Quantity = y.Sum(qt => qt.Quantity),
                 UomId = y.Key.UomId,
@@ -1014,7 +954,7 @@ public class TransactionHistoryService : ITransactionHistoryService
             }
             else if (startDate == null && !startDate.HasValue && endDate != null && endDate.HasValue)
             {
-                var result = resultSum.Where(x => x.Date >= startDate);
+                var result = resultSum.Where(x => x.Date <= endDate);
 
                 return result;
             }
@@ -1203,6 +1143,18 @@ public class TransactionHistoryService : ITransactionHistoryService
         //{
         //    data = data.Where(x => x.Date >= startDate && x.Date <= endDate);
         //}
+        if (startDate != null && startDate.HasValue && endDate != null && endDate.HasValue)
+        {
+            data = data.Where(x => x.Date >= startDate && x.Date <= endDate);
+        }
+        else if (startDate != null && startDate.HasValue && endDate == null && !endDate.HasValue)
+        {
+            data = data.Where(x => x.Date >= startDate);
+        }
+        else if (startDate == null && !startDate.HasValue && endDate != null && endDate.HasValue)
+        {
+            data = data.Where(x => x.Date <= endDate);
+        }
 
         return data.ToDataSourceResult(skip, take, filter, sort);
     }
@@ -1333,7 +1285,6 @@ public class TransactionHistoryService : ITransactionHistoryService
                 }
             }
         }
-
 
         return data.AsQueryable().ToDataSourceResult(skip, take, filter, sort);
     }

@@ -5,6 +5,7 @@ public class TransactionHistoryByUnitProduct
     public long SalesId { get; set; }
     public DateTime Date { get; set; }
     public int ItemId { get; set; }
+    public string ItemInitial { get; set; }
     public string ItemName { get; set; }
     public decimal Quantity { get; set; }
     public int UomId { get; set; }
