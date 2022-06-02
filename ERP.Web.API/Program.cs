@@ -280,6 +280,7 @@ builder.Services.AddScoped<IARReportService, ARReportService>();
 builder.Services.AddScoped<IARMutationReportService, ARMutationReportService>();
 builder.Services.AddScoped<IARAgingReportService, ARAgingReportService>();
 builder.Services.AddScoped<ICreditMemoReportService, CreditMemoReportService>();
+builder.Services.AddScoped<IReleaseOverlimitReportService, ReleaseOverlimitReportService>();
 builder.Services.AddScoped<ISalesOrderReportService, SalesOrderReportService>();
 builder.Services.AddScoped<ISalesDeliveryReportService, SalesDeliveryReportService>();
 builder.Services.AddScoped<ISalesInvoiceReportService, SalesInvoiceReportService>();
