@@ -147,29 +147,21 @@ public class PurchaseReceiveService : GeneralService<PurchaseReceiveHeader>, IPu
                 if (data.SrcTrans == 1)
                 {
                     var taxData = taxes.FirstOrDefault(x => x.Id == item.TaxId);
-                    var discHeaderProrate = 0m;
-                    if (data.FinalDisc > 0)
-                    {
-                        discHeaderProrate = (data.FinalDisc / data.ItemDetails.Sum(x => (x.UnitPrice - x.Disc) * x.Qty)) * (item.Qty * (item.UnitPrice - item.Disc));
-                        discHeaderProrate /= item.Qty;
-                    }
-
                     if (data.IncludeTax)
                     {
-                        item.TaxAmount = taxData != null ? item.Type  == 1 ? 0m : (item.UnitPrice - item.Disc - discHeaderProrate) - ((item.UnitPrice - item.Disc - discHeaderProrate) / (1 + (taxData.Rate / 100))) : 0m;
-                        item.ExemptTaxAmount = taxData != null ? item.Type  == 1 ? 0m : (item.UnitPrice - item.Disc - discHeaderProrate) - ((item.UnitPrice - item.Disc - discHeaderProrate) / (1 + (taxData.ExemptRate / 100))) : 0m;
-                        item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate;
-                        item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate - item.TaxAmount + item.ExemptTaxAmount;
+                        item.TaxAmount = taxData != null ? item.Type  == 1 ? 0m : (item.UnitPrice - item.Disc - item.FinalDiscHeader) - ((item.UnitPrice - item.Disc - item.FinalDiscHeader) / (1 + (taxData.Rate / 100))) : 0m;
+                        item.ExemptTaxAmount = taxData != null ? item.Type  == 1 ? 0m : (item.UnitPrice - item.Disc - item.FinalDiscHeader) - ((item.UnitPrice - item.Disc - item.FinalDiscHeader) / (1 + (taxData.ExemptRate / 100))) : 0m;
+                        item.NettPrice = item.UnitPrice - item.Disc - item.FinalDiscHeader;
+                        item.Dpp = item.UnitPrice - item.Disc - item.FinalDiscHeader - item.TaxAmount + item.ExemptTaxAmount;
                     }
                     else
                     {
-                        item.TaxAmount = taxData != null ? item.Type == 1 ? 0m : (item.UnitPrice - item.Disc - discHeaderProrate) * (taxData.Rate / 100) : 0m;
-                        item.ExemptTaxAmount = taxData != null ? item.Type == 1 ? 0m : (item.UnitPrice - item.Disc - discHeaderProrate) * (taxData.ExemptRate / 100) : 0m;
-                        item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate + item.TaxAmount - item.ExemptTaxAmount;
-                        item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate;
+                        item.TaxAmount = taxData != null ? item.Type == 1 ? 0m : (item.UnitPrice - item.Disc - item.FinalDiscHeader) * (taxData.Rate / 100) : 0m;
+                        item.ExemptTaxAmount = taxData != null ? item.Type == 1 ? 0m : (item.UnitPrice - item.Disc - item.FinalDiscHeader) * (taxData.ExemptRate / 100) : 0m;
+                        item.NettPrice = item.UnitPrice - item.Disc - item.FinalDiscHeader + item.TaxAmount - item.ExemptTaxAmount;
+                        item.Dpp = item.UnitPrice - item.Disc - item.FinalDiscHeader;
                     }
 
-                    item.FinalDiscHeader = discHeaderProrate;
                     item.Total = item.Qty * item.NettPrice;
                     totalDetail.Add(item.Total);
                     totalTax.Add(item.TaxAmount != 0 ? item.Qty * item.TaxAmount : 0m);
@@ -392,29 +384,21 @@ public class PurchaseReceiveService : GeneralService<PurchaseReceiveHeader>, IPu
                 if (data.SrcTrans == 1)
                 {
                     var taxData = taxes.FirstOrDefault(x => x.Id == item.TaxId);
-                    var discHeaderProrate = 0m;
-                    if (data.FinalDisc > 0)
-                    {
-                        discHeaderProrate = (data.FinalDisc / data.ItemDetails.Sum(x => (x.UnitPrice - x.Disc) * x.Qty)) * (item.Qty * (item.UnitPrice - item.Disc));
-                        discHeaderProrate /= item.Qty;
-                    }
-
                     if (data.IncludeTax)
                     {
-                        item.TaxAmount = taxData != null ? (item.UnitPrice - item.Disc - discHeaderProrate) - ((item.UnitPrice - item.Disc - discHeaderProrate) / (1 + (taxData.Rate / 100))) : 0m;
-                        item.ExemptTaxAmount = taxData != null ? (item.UnitPrice - item.Disc - discHeaderProrate) - ((item.UnitPrice - item.Disc - discHeaderProrate) / (1 + (taxData.ExemptRate / 100))) : 0m;
-                        item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate;
-                        item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate - item.TaxAmount + item.ExemptTaxAmount;
+                        item.TaxAmount = taxData != null ? (item.UnitPrice - item.Disc - item.FinalDiscHeader) - ((item.UnitPrice - item.Disc - item.FinalDiscHeader) / (1 + (taxData.Rate / 100))) : 0m;
+                        item.ExemptTaxAmount = taxData != null ? (item.UnitPrice - item.Disc - item.FinalDiscHeader) - ((item.UnitPrice - item.Disc - item.FinalDiscHeader) / (1 + (taxData.ExemptRate / 100))) : 0m;
+                        item.NettPrice = item.UnitPrice - item.Disc - item.FinalDiscHeader;
+                        item.Dpp = item.UnitPrice - item.Disc - item.FinalDiscHeader - item.TaxAmount + item.ExemptTaxAmount;
                     }
                     else
                     {
-                        item.TaxAmount = taxData != null ? (item.UnitPrice - item.Disc - discHeaderProrate) * (taxData.Rate / 100) : 0m;
-                        item.ExemptTaxAmount = taxData != null ? (item.UnitPrice - item.Disc - discHeaderProrate) * (taxData.ExemptRate / 100) : 0m;
-                        item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate + item.TaxAmount - item.ExemptTaxAmount;
-                        item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate;
+                        item.TaxAmount = taxData != null ? (item.UnitPrice - item.Disc - item.FinalDiscHeader) * (taxData.Rate / 100) : 0m;
+                        item.ExemptTaxAmount = taxData != null ? (item.UnitPrice - item.Disc - item.FinalDiscHeader) * (taxData.ExemptRate / 100) : 0m;
+                        item.NettPrice = item.UnitPrice - item.Disc - item.FinalDiscHeader + item.TaxAmount - item.ExemptTaxAmount;
+                        item.Dpp = item.UnitPrice - item.Disc - item.FinalDiscHeader;
                     }
 
-                    item.FinalDiscHeader = discHeaderProrate;
                     item.Total = item.Qty * item.NettPrice;
                     totalDetail.Add(item.Total);
                     totalTax.Add(item.Qty * item.TaxAmount);
