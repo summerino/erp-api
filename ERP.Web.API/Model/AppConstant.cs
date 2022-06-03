@@ -56,7 +56,8 @@ public enum Actions
     Reject = 44,
     ShowInventoryValue = 45,
     Unlock = 46,
-    Clone = 47
+    Clone = 47,
+    ViewOtherUserTransaction = 48
 }
 
 public enum Menu 
