@@ -12,4 +12,5 @@ public class ReceiveItemHeaderModel
     public string SupName { get; set; }
     public string SupPhone { get; set; }
     public long ReceiveBy { get; set; }
+    public string Mark { get; set; }
 }
