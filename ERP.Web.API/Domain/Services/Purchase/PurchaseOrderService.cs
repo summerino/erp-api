@@ -1078,6 +1078,7 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
                          {
                              Code = rcvHeader.Code,
                              Date = rcvHeader.Date,
+                             Mark = rcvHeader.Mark,
                              PONumber = po.Code,
                              PODate = po.Date,
                              RcvCode = rcvHeader.RcvCode,
@@ -1087,6 +1088,7 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
                              SupName = sup.Name,
                              SupPhone = sup.Phone
                          };
+        //data_order = data_order.Where(x => x.Mark == "A" || x.Mark == "APR");
 
         var data_return = from rcvHeader in Db.MobileReceiveItemHeaders
                           join pr in Db.VwPurchaseReturnHeaders on rcvHeader.TransCode equals pr.Code
@@ -1095,6 +1097,7 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
                           {
                               Code = rcvHeader.Code,
                               Date = rcvHeader.Date,
+                              Mark = rcvHeader.Mark,
                               PONumber = pr.Code,
                               PODate = pr.Date,
                               RcvCode = rcvHeader.RcvCode,
@@ -1104,6 +1107,8 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
                               SupName = sup.Name,
                               SupPhone = sup.Phone
                           };
+
+        //data_return = data_return.Where(x => x.Mark == "A" || x.Mark == "APR");
 
         var data = (data_order.AsQueryable()).Union(data_return.AsQueryable());
 
@@ -1174,7 +1179,7 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
                            ItemInitial = detail.ItemInitial,
                            ItemName = detail.ItemName,
                            QtyOrder = detail.Type == 1 ? 0 : poDetail.Qty,
-                           QtyRemain = detail.Type == 1 ? 0 : ((poDetail.Qty) - (header.Mark == "APR" ? itmQty.QtyRcv : detail.Qty))
+                           QtyRemain = detail.Type == 1 ? 0 : ((poDetail.Qty) - (header.Mark == "APR" ? itmQty.QtyRcv : (detail.Qty + itmQty.QtyRcv)))
                            //QtyRemain = detail.Type == 1 ? 0 : ((poDetail.Qty) - itmQty.QtyRcv)
                        } into poD
                        select new ReceiveItemDetailModel
@@ -1250,7 +1255,7 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
                            ItemInitial = detail.ItemInitial,
                            ItemName = detail.ItemName,
                            QtyOrder = detail.Type == 1 ? 0 : prDetail.Qty,
-                           QtyRemain = detail.Type == 1 ? 0 : ((prDetail.Qty) - (header.Mark == "APR" ? itmQty.QtyRcv : detail.Qty))
+                           QtyRemain = detail.Type == 1 ? 0 : ((prDetail.Qty) - (header.Mark == "APR" ? itmQty.QtyRcv : (detail.Qty + itmQty.QtyRcv)))
                        } into prD
                        select new ReceiveItemDetailModel
                        {

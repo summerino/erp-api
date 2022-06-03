@@ -261,16 +261,16 @@ public class JournalService : IJournalService
         var apRecog = systemParam.FirstOrDefault(x => x.Code == "AP_RECOG_TIME").Value;
 
         var RcvData = (from rcvheader in db.PurchaseReceiveHeaders
-            join supplier in db.Suppliers on rcvheader.SupCode equals supplier.Code
-            where rcvheader.Date.Month == dateTime.Month && rcvheader.Date.Year == dateTime.Year && rcvheader.SrcTrans == 1 && rcvheader.Mark != "V"
-            select new { RcvHeader = rcvheader, Supplier = supplier }).ToList();
+                       join supplier in db.Suppliers on rcvheader.SupCode equals supplier.Code
+                       where rcvheader.Date.Month == dateTime.Month && rcvheader.Date.Year == dateTime.Year && rcvheader.SrcTrans == 1 && rcvheader.Mark != "V"
+                       select new { RcvHeader = rcvheader, Supplier = supplier }).ToList();
 
         foreach (var itemData in RcvData)
         {
             var RcvDetailData = (from rcvdetail in db.PurchaseReceiveDetails
-                join item in db.Items on rcvdetail.ItemId equals item.Id
-                where rcvdetail.Code == itemData.RcvHeader.Code
-                select new { RcvDetail = rcvdetail, Item = item }).ToList();
+                                 join item in db.Items on rcvdetail.ItemId equals item.Id
+                                 where rcvdetail.Code == itemData.RcvHeader.Code
+                                 select new { RcvDetail = rcvdetail, Item = item }).ToList();
             short i = 0;
             short j = 0;
             short k = 0;
@@ -473,16 +473,16 @@ public class JournalService : IJournalService
         if (apRecog == "PI")
         {
             var InvData = (from invheader in db.PurchaseInvoiceHeaders
-                join supplier in db.Suppliers on invheader.SupCode equals supplier.Code
-                where invheader.Date.Month == dateTime.Month && invheader.Date.Year == dateTime.Year && invheader.Mark != "V"
-                select new { InvHeader = invheader, Supplier = supplier }).ToList();
+                           join supplier in db.Suppliers on invheader.SupCode equals supplier.Code
+                           where invheader.Date.Month == dateTime.Month && invheader.Date.Year == dateTime.Year && invheader.Mark != "V"
+                           select new { InvHeader = invheader, Supplier = supplier }).ToList();
 
             foreach (var itemData in InvData)
             {
                 var InvDetailData = (from invdetail in db.PurchaseInvoiceDetails
-                    join rcvdata in db.PurchaseReceiveHeaders on invdetail.RcvCode equals rcvdata.Code
-                    where invdetail.Code == itemData.InvHeader.Code
-                    select new { InvDetail = invdetail, RcvData = rcvdata }).ToList();
+                                     join rcvdata in db.PurchaseReceiveHeaders on invdetail.RcvCode equals rcvdata.Code
+                                     where invdetail.Code == itemData.InvHeader.Code
+                                     select new { InvDetail = invdetail, RcvData = rcvdata }).ToList();
 
                 decimal taxAmount = 0m;
                 decimal extTaxAmount = 0m;
@@ -608,30 +608,30 @@ public class JournalService : IJournalService
         List<Journal> journals = new();
 
         var DlvData = (from dlvheader in db.SalesDeliveryHeaders
-            join customer in db.Customers on dlvheader.CustCode equals customer.Code
-            where dlvheader.Date.Month == dateTime.Month && dlvheader.Date.Year == dateTime.Year && dlvheader.SrcTrans == 1 && dlvheader.Mark != "V"
-            select new { Dlvheader = dlvheader, Customer = customer }).ToList();
+                       join customer in db.Customers on dlvheader.CustCode equals customer.Code
+                       where dlvheader.Date.Month == dateTime.Month && dlvheader.Date.Year == dateTime.Year && dlvheader.SrcTrans == 1 && dlvheader.Mark != "V"
+                       select new { Dlvheader = dlvheader, Customer = customer }).ToList();
 
         foreach (var itemData in DlvData)
         {
             var DlvDetailData = (from dlvdetail in db.SalesDeliveryDetails
-                join item in db.Items on dlvdetail.ItemId equals item.Id
-                where dlvdetail.Code == itemData.Dlvheader.Code
-                select new { DlvDetail = dlvdetail, Item = item }).ToList();
+                                 join item in db.Items on dlvdetail.ItemId equals item.Id
+                                 where dlvdetail.Code == itemData.Dlvheader.Code
+                                 select new { DlvDetail = dlvdetail, Item = item }).ToList();
 
             var DlvDetailFreeData = (from fg in db.SalesDeliveryDetailFreeGoods
-                join item in db.Items on fg.ItemId equals item.Id
-                where fg.Code == itemData.Dlvheader.Code
-                group new { fg, item } by new { fg.Id, fg.Code, fg.CoaCode, fg.ItemId, item.Initial } into grp
-                select new
-                {
-                    grp.Key.Id,
-                    grp.Key.Code,
-                    grp.Key.CoaCode,
-                    grp.Key.ItemId,
-                    grp.Key.Initial,
-                    UnitPrice = grp.Sum(x => x.fg.UnitPrice * x.fg.Qty)
-                }).ToList();
+                                     join item in db.Items on fg.ItemId equals item.Id
+                                     where fg.Code == itemData.Dlvheader.Code
+                                     group new { fg, item } by new { fg.Id, fg.Code, fg.CoaCode, fg.ItemId, item.Initial } into grp
+                                     select new
+                                     {
+                                         grp.Key.Id,
+                                         grp.Key.Code,
+                                         grp.Key.CoaCode,
+                                         grp.Key.ItemId,
+                                         grp.Key.Initial,
+                                         UnitPrice = grp.Sum(x => x.fg.UnitPrice * x.fg.Qty)
+                                     }).ToList();
 
             var discAmount = 0m;
             var taxAmount = 0m;
@@ -695,7 +695,7 @@ public class JournalService : IJournalService
                     taxAmount += itemDetail.DlvDetail.TaxAmount * itemDetail.DlvDetail.Qty;
                 //Pajak Yang Dibebaskan
                 if (itemDetail.DlvDetail.ExemptTaxAmount > 0)
-                    extTaxAmount += itemDetail.DlvDetail.ExemptTaxAmount * itemDetail.DlvDetail.Qty;                
+                    extTaxAmount += itemDetail.DlvDetail.ExemptTaxAmount * itemDetail.DlvDetail.Qty;
             }
 
             //Discount - Diskon
@@ -1186,18 +1186,18 @@ public class JournalService : IJournalService
     {
         List<Journal> journals = new();
         var RtnData = (from rtnheader in db.PurchaseReturnHeaders
-            join supplier in db.Suppliers on rtnheader.SupCode equals supplier.Code
-            where rtnheader.Date.Month == dateTime.Month && rtnheader.Date.Year == dateTime.Year && rtnheader.Mark != "V"
-            select new { RtnHeader = rtnheader, Supplier = supplier }).ToList();
+                       join supplier in db.Suppliers on rtnheader.SupCode equals supplier.Code
+                       where rtnheader.Date.Month == dateTime.Month && rtnheader.Date.Year == dateTime.Year && rtnheader.Mark != "V"
+                       select new { RtnHeader = rtnheader, Supplier = supplier }).ToList();
 
         foreach (var itemData in RtnData)
         {
             if (itemData.RtnHeader.Type != 1)
             {
                 var RtnDetailData = (from rtndetail in db.PurchaseReturnDetails
-                    join item in db.Items on rtndetail.ItemId equals item.Id
-                    where rtndetail.Code == itemData.RtnHeader.Code
-                    select new { RtnDetail = rtndetail, Item = item }).ToList();
+                                     join item in db.Items on rtndetail.ItemId equals item.Id
+                                     where rtndetail.Code == itemData.RtnHeader.Code
+                                     select new { RtnDetail = rtndetail, Item = item }).ToList();
                 var RtnDetailExData = db.PurchaseReturnDetailExchDiffItems.Where(x => x.Code == itemData.RtnHeader.Code).ToList();
 
                 var taxAmount = 0m;
@@ -1320,18 +1320,18 @@ public class JournalService : IJournalService
 
                 //Receive Process
                 var RcvData = (from rcvheader in db.PurchaseReceiveHeaders
-                    join supplier in db.Suppliers on rcvheader.SupCode equals supplier.Code
-                    where rcvheader.TransCode == itemData.RtnHeader.Code && rcvheader.Mark != "V"
-                    select new { RcvHeader = rcvheader, Supplier = supplier }).ToList();
+                               join supplier in db.Suppliers on rcvheader.SupCode equals supplier.Code
+                               where rcvheader.TransCode == itemData.RtnHeader.Code && rcvheader.Mark != "V"
+                               select new { RcvHeader = rcvheader, Supplier = supplier }).ToList();
 
                 if (RcvData.Any())
                 {
                     foreach (var itemRcvData in RcvData)
                     {
                         var RcvDetailData = (from rcvdetail in db.PurchaseReceiveDetails
-                            join item in db.Items on rcvdetail.ItemId equals item.Id
-                            where rcvdetail.Code == itemRcvData.RcvHeader.Code
-                            select new { RcvDetail = rcvdetail, Item = item }).ToList();
+                                             join item in db.Items on rcvdetail.ItemId equals item.Id
+                                             where rcvdetail.Code == itemRcvData.RcvHeader.Code
+                                             select new { RcvDetail = rcvdetail, Item = item }).ToList();
                         short k = 0;
                         foreach (var itemDetail in RcvDetailData)
                         {
@@ -1467,9 +1467,9 @@ public class JournalService : IJournalService
             else
             {
                 var RtnDetailData = (from rtndetail in db.PurchaseReturnDetails
-                    join item in db.Items on rtndetail.ItemId equals item.Id
-                    where rtndetail.Code == itemData.RtnHeader.Code
-                    select new { RtnDetail = rtndetail, Item = item }).ToList();
+                                     join item in db.Items on rtndetail.ItemId equals item.Id
+                                     where rtndetail.Code == itemData.RtnHeader.Code
+                                     select new { RtnDetail = rtndetail, Item = item }).ToList();
 
                 var taxAmount = 0m;
                 var extTaxAmount = 0m;
@@ -1588,18 +1588,18 @@ public class JournalService : IJournalService
     {
         List<Journal> journals = new();
         var RtnData = (from rtnheader in db.SalesReturnHeaders
-            join customer in db.Customers on rtnheader.CustCode equals customer.Code
-            where rtnheader.Date.Month == dateTime.Month && rtnheader.Date.Year == dateTime.Year && rtnheader.Mark != "V"
-            select new { RtnHeader = rtnheader, Customer = customer }).ToList();
+                       join customer in db.Customers on rtnheader.CustCode equals customer.Code
+                       where rtnheader.Date.Month == dateTime.Month && rtnheader.Date.Year == dateTime.Year && rtnheader.Mark != "V"
+                       select new { RtnHeader = rtnheader, Customer = customer }).ToList();
 
         foreach (var itemData in RtnData)
         {
             if (itemData.RtnHeader.Type != 1)
             {
                 var RtnDetailData = (from rtndetail in db.SalesReturnDetails
-                    join item in db.Items on rtndetail.ItemId equals item.Id
-                    where rtndetail.Code == itemData.RtnHeader.Code
-                    select new { RtnDetail = rtndetail, Item = item }).ToList();
+                                     join item in db.Items on rtndetail.ItemId equals item.Id
+                                     where rtndetail.Code == itemData.RtnHeader.Code
+                                     select new { RtnDetail = rtndetail, Item = item }).ToList();
                 var RtnDetailExData = db.SalesReturnDetailExchDiffItems.Where(x => x.Code == itemData.RtnHeader.Code).ToList();
 
                 var taxAmount = 0m;
@@ -1740,17 +1740,17 @@ public class JournalService : IJournalService
 
                 //Delivery Process
                 var DlvData = (from dlvheader in db.SalesDeliveryHeaders
-                    join customer in db.Customers on dlvheader.CustCode equals customer.Code
-                    where dlvheader.TransCode == itemData.RtnHeader.Code && dlvheader.Mark != "V"
-                    select new { DlvHeader = dlvheader, Customer = customer }).ToList();
+                               join customer in db.Customers on dlvheader.CustCode equals customer.Code
+                               where dlvheader.TransCode == itemData.RtnHeader.Code && dlvheader.Mark != "V"
+                               select new { DlvHeader = dlvheader, Customer = customer }).ToList();
                 if (DlvData.Any())
                 {
                     foreach (var itemDlvData in DlvData)
                     {
                         var DlvDetailData = (from dlvdetail in db.SalesDeliveryDetails
-                            join item in db.Items on dlvdetail.ItemId equals item.Id
-                            where dlvdetail.Code == itemDlvData.DlvHeader.Code
-                            select new { DlvDetail = dlvdetail, Item = item }).ToList();
+                                             join item in db.Items on dlvdetail.ItemId equals item.Id
+                                             where dlvdetail.Code == itemDlvData.DlvHeader.Code
+                                             select new { DlvDetail = dlvdetail, Item = item }).ToList();
 
                         short l = 0;
                         short m = 0;
@@ -1907,9 +1907,9 @@ public class JournalService : IJournalService
             else
             {
                 var RtnDetailData = (from rtndetail in db.SalesReturnDetails
-                    join item in db.Items on rtndetail.ItemId equals item.Id
-                    where rtndetail.Code == itemData.RtnHeader.Code
-                    select new { RtnDetail = rtndetail, Item = item }).ToList();
+                                     join item in db.Items on rtndetail.ItemId equals item.Id
+                                     where rtndetail.Code == itemData.RtnHeader.Code
+                                     select new { RtnDetail = rtndetail, Item = item }).ToList();
 
                 var taxAmount = 0m;
                 var extTaxAmount = 0m;
@@ -2053,9 +2053,9 @@ public class JournalService : IJournalService
     {
         List<Journal> journals = new();
         var expeditionData = (from expheader in db.ExpeditionInvoiceHeaders
-            join supplier in db.Suppliers on expheader.SupCode equals supplier.Code
-            where expheader.Date.Month == dateTime.Month && expheader.Date.Year == dateTime.Year && expheader.Mark != "V"
-            select new { ExpHeader = expheader, Supplier = supplier }).ToList();
+                              join supplier in db.Suppliers on expheader.SupCode equals supplier.Code
+                              where expheader.Date.Month == dateTime.Month && expheader.Date.Year == dateTime.Year && expheader.Mark != "V"
+                              select new { ExpHeader = expheader, Supplier = supplier }).ToList();
         short i = 0;
         short j = 0;
         foreach (var itemData in expeditionData)
@@ -2103,10 +2103,10 @@ public class JournalService : IJournalService
     {
         List<Journal> journals = new();
         var fixedAssetData = (from fixedAsset in db.FixedAssets
-            join supplier in db.Suppliers on fixedAsset.SupCode equals supplier.Code
-            join assetType in db.AssetTypes on fixedAsset.TypeId equals assetType.Id
-            where fixedAsset.PurchaseDate.Month == dateTime.Month && fixedAsset.PurchaseDate.Year == dateTime.Year && fixedAsset.Mark != "V"
-            select new { FixedAsset = fixedAsset, Supplier = supplier, AssetType = assetType }).ToList();
+                              join supplier in db.Suppliers on fixedAsset.SupCode equals supplier.Code
+                              join assetType in db.AssetTypes on fixedAsset.TypeId equals assetType.Id
+                              where fixedAsset.PurchaseDate.Month == dateTime.Month && fixedAsset.PurchaseDate.Year == dateTime.Year && fixedAsset.Mark != "V"
+                              select new { FixedAsset = fixedAsset, Supplier = supplier, AssetType = assetType }).ToList();
         short i = 0;
         foreach (var itemData in fixedAssetData)
         {
@@ -2153,11 +2153,11 @@ public class JournalService : IJournalService
     {
         List<Journal> journals = new();
         var fixedAssetData = (from fixedAsset in db.FixedAssets
-            join supplier in db.Suppliers on fixedAsset.SupCode equals supplier.Code
-            join assetType in db.AssetTypes on fixedAsset.TypeId equals assetType.Id
-            where fixedAsset.DepreciationMethod == 2 && fixedAsset.StartDepreciateOn.Month <= dateTime.Month &&
-                  fixedAsset.StartDepreciateOn.Month + fixedAsset.EstimatedLife >= dateTime.Month && fixedAsset.PurchaseDate.Year == dateTime.Year && fixedAsset.Mark != "V"
-            select new { FixedAsset = fixedAsset, Supplier = supplier, AssetType = assetType }).ToList();
+                              join supplier in db.Suppliers on fixedAsset.SupCode equals supplier.Code
+                              join assetType in db.AssetTypes on fixedAsset.TypeId equals assetType.Id
+                              where fixedAsset.DepreciationMethod == 2 && fixedAsset.StartDepreciateOn.Month <= dateTime.Month &&
+                                    fixedAsset.StartDepreciateOn.Month + fixedAsset.EstimatedLife >= dateTime.Month && fixedAsset.PurchaseDate.Year == dateTime.Year && fixedAsset.Mark != "V"
+                              select new { FixedAsset = fixedAsset, Supplier = supplier, AssetType = assetType }).ToList();
 
         foreach (var itemData in fixedAssetData)
         {
@@ -2535,9 +2535,9 @@ public class JournalService : IJournalService
         foreach (var itemData in adjData)
         {
             var adjDetailData = (from adjdetail in db.AdjustmentDetails
-                join item in db.Items on adjdetail.ItemId equals item.Id
-                where adjdetail.Code == itemData.Code
-                select new { AdjDetail = adjdetail, Item = item }).ToList();
+                                 join item in db.Items on adjdetail.ItemId equals item.Id
+                                 where adjdetail.Code == itemData.Code
+                                 select new { AdjDetail = adjdetail, Item = item }).ToList();
 
             short k = 0;
             short l = 0;
@@ -2703,14 +2703,14 @@ public class JournalService : IJournalService
             .Where(x => x.Date.Month == dateTime.Month && x.Date.Year == dateTime.Year && x.Mark != "V")
             .ToList();
 
-        var dataHPP = (new[] { new { Code = "", ItemId = 0, HPP = 0m } }).ToList();
+        var dataHPP = (new[] { new { Code = "", ItemId = 0, UnitId = 0, HPP = 0m } }).ToList();
 
         foreach (var itemData in dataHeader)
         {
             var dataDetail = (from tsdetail in db.TransferStockDetails
-                join item in db.Items on tsdetail.ItemId equals item.Id
-                where tsdetail.Code == itemData.Code
-                select new { TsDetail = tsdetail, Item = item }).ToList();
+                              join item in db.Items on tsdetail.ItemId equals item.Id
+                              where tsdetail.Code == itemData.Code
+                              select new { TsDetail = tsdetail, Item = item }).ToList();
 
             short i = 0;
             short j = 0;
@@ -2730,11 +2730,11 @@ public class JournalService : IJournalService
                 }
 
                 if (itemData.Type == "OUT")
-                    dataHPP.Add(new { Code = itemData.Code, ItemId = itemDetail.TsDetail.ItemId, HPP = resultHpp });
+                    dataHPP.Add(new { Code = itemData.Code, ItemId = itemDetail.TsDetail.ItemId, UnitId = itemDetail.TsDetail.UnitId, HPP = resultHpp });
 
                 if (itemData.Type == "IN")
                 {
-                    var valueHPP = dataHPP.FirstOrDefault(x => x.Code == itemData.OriginTransferCode && x.ItemId == itemDetail.TsDetail.ItemId);
+                    var valueHPP = dataHPP.FirstOrDefault(x => x.Code == itemData.OriginTransferCode && x.ItemId == itemDetail.TsDetail.ItemId && x.UnitId == itemDetail.TsDetail.UnitId);
                     if (valueHPP != null)
                         resultHpp = valueHPP.HPP;
                 }
