@@ -168,29 +168,22 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
                 if (data.SrcTrans == 1)
                 {
                     var taxData = taxes.FirstOrDefault(x => x.Id == item.TaxId);
-                    var discHeaderProrate = 0m;
-                    if (data.FinalDisc > 0)
-                    {
-                        discHeaderProrate = (data.FinalDisc / data.ItemDetails.Sum(x => (x.UnitPrice - x.Disc) * x.Qty)) * (item.Qty * (item.UnitPrice - item.Disc));
-                        discHeaderProrate /= item.Qty;
-                    }
 
                     if (data.IncludeTax)
                     {
-                        item.TaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) - ((item.UnitPrice - item.Disc - discHeaderProrate) / (1 + (taxData.Rate / 100)));
-                        item.ExemptTaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) - ((item.UnitPrice - item.Disc - discHeaderProrate) / (1 + (taxData.ExemptRate / 100)));
-                        item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate;
-                        item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate - item.TaxAmount + item.ExemptTaxAmount;
+                        item.TaxAmount = (item.UnitPrice - item.Disc - item.FinalDiscHeader) - ((item.UnitPrice - item.Disc - item.FinalDiscHeader) / (1 + (taxData.Rate / 100)));
+                        item.ExemptTaxAmount = (item.UnitPrice - item.Disc - item.FinalDiscHeader) - ((item.UnitPrice - item.Disc - item.FinalDiscHeader) / (1 + (taxData.ExemptRate / 100)));
+                        item.NettPrice = item.UnitPrice - item.Disc - item.FinalDiscHeader;
+                        item.Dpp = item.UnitPrice - item.Disc - item.FinalDiscHeader - item.TaxAmount + item.ExemptTaxAmount;
                     }
                     else
                     {
-                        item.TaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) * (taxData.Rate / 100);
-                        item.ExemptTaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) * (taxData.ExemptRate / 100);
-                        item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate + item.TaxAmount - item.ExemptTaxAmount;
-                        item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate;
+                        item.TaxAmount = (item.UnitPrice - item.Disc - item.FinalDiscHeader) * (taxData.Rate / 100);
+                        item.ExemptTaxAmount = (item.UnitPrice - item.Disc - item.FinalDiscHeader) * (taxData.ExemptRate / 100);
+                        item.NettPrice = item.UnitPrice - item.Disc - item.FinalDiscHeader + item.TaxAmount - item.ExemptTaxAmount;
+                        item.Dpp = item.UnitPrice - item.Disc - item.FinalDiscHeader;
                     }
 
-                    item.FinalDiscHeader = discHeaderProrate;
                     item.Total = item.Qty * item.NettPrice;
                     totalDetail.Add(item.Total);
                     totalTax.Add(item.Qty * item.TaxAmount);
@@ -460,29 +453,21 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
                 if (data.SrcTrans == 1)
                 {
                     var taxData = taxes.FirstOrDefault(x => x.Id == item.TaxId);
-                    var discHeaderProrate = 0m;
-                    if (data.FinalDisc > 0)
-                    {
-                        discHeaderProrate = (data.FinalDisc / data.ItemDetails.Sum(x => (x.UnitPrice - x.Disc) * x.Qty)) * (item.Qty * (item.UnitPrice - item.Disc));
-                        discHeaderProrate /= item.Qty;
-                    }
-
                     if (data.IncludeTax)
                     {
-                        item.TaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) - ((item.UnitPrice - item.Disc - discHeaderProrate) / (1 + (taxData.Rate / 100)));
-                        item.ExemptTaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) - ((item.UnitPrice - item.Disc - discHeaderProrate) / (1 + (taxData.ExemptRate / 100)));
-                        item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate;
-                        item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate - item.TaxAmount + item.ExemptTaxAmount;
+                        item.TaxAmount = (item.UnitPrice - item.Disc - item.FinalDiscHeader) - ((item.UnitPrice - item.Disc - item.FinalDiscHeader) / (1 + (taxData.Rate / 100)));
+                        item.ExemptTaxAmount = (item.UnitPrice - item.Disc - item.FinalDiscHeader) - ((item.UnitPrice - item.Disc - item.FinalDiscHeader) / (1 + (taxData.ExemptRate / 100)));
+                        item.NettPrice = item.UnitPrice - item.Disc - item.FinalDiscHeader;
+                        item.Dpp = item.UnitPrice - item.Disc - item.FinalDiscHeader - item.TaxAmount + item.ExemptTaxAmount;
                     }
                     else
                     {
-                        item.TaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) * (taxData.Rate / 100);
-                        item.ExemptTaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) * (taxData.ExemptRate / 100);
-                        item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate + item.TaxAmount - item.ExemptTaxAmount;
-                        item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate;
+                        item.TaxAmount = (item.UnitPrice - item.Disc - item.FinalDiscHeader) * (taxData.Rate / 100);
+                        item.ExemptTaxAmount = (item.UnitPrice - item.Disc - item.FinalDiscHeader) * (taxData.ExemptRate / 100);
+                        item.NettPrice = item.UnitPrice - item.Disc - item.FinalDiscHeader + item.TaxAmount - item.ExemptTaxAmount;
+                        item.Dpp = item.UnitPrice - item.Disc - item.FinalDiscHeader;
                     }
 
-                    item.FinalDiscHeader = discHeaderProrate;
                     item.Total = item.Qty * item.NettPrice;
                     totalDetail.Add(item.Total);
                     totalTax.Add(item.Qty * item.TaxAmount);
