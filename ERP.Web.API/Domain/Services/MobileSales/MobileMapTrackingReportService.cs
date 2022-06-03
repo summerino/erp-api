@@ -21,6 +21,8 @@ public class MobileMapTrackingReportService : IMobileMapTrackingReportService
 
         return type == 1
             ? data.OrderBy(y => y.TrackedDate)
+            : type == 3
+            ? data.OrderByDescending(y => y.TrackedDate)
             : data.OrderByDescending(y => y.TrackedDate).Take(1);
     }
 
