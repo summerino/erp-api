@@ -34,7 +34,7 @@
 {"Id":34,"ModuleId":20,"Code":"SLS_DISC_COA","Value":"421001","DataType":"string","Description":"Diskon Penjualan","Seq":3,"IsActive":true},
 {"Id":35,"ModuleId":20,"Code":"SLS_RTN_COA","Value":"431001","DataType":"string","Description":"Retur Penjualan","Seq":4,"IsActive":true},
 {"Id":36,"ModuleId":20,"Code":"TAX_OUT_COA","Value":"213006","DataType":"string","Description":"Pajak Masukan","Seq":5,"IsActive":true},
-{"Id":37,"ModuleId":21,"Code":"CROSS_COA","Value":"174100","DataType":"string","Description":"Ayat Silang","Seq":5,"IsActive":true},
+{"Id":37,"ModuleId":21,"Code":"CROSS_COA","Value":"174100","DataType":"string","Description":"Ayat Silang","Seq":7,"IsActive":true},
 {"Id":38,"ModuleId":21,"Code":"DPC_COA","Value":"212001","DataType":"string","Description":"Uang Muka Pelanggan","Seq":1,"IsActive":true},
 {"Id":39,"ModuleId":21,"Code":"DPS_COA","Value":"115001","DataType":"string","Description":"Uang Muka Pemasok","Seq":2,"IsActive":true},
 {"Id":40,"ModuleId":22,"Code":"CB_NUM_FMT","Value":"CB{Y}{M}{D}-{5}","DataType":"string","Description":"Kas Bank Umum (Maks. 17 Karakter)","Seq":1,"IsActive":true},
@@ -95,4 +95,6 @@
 {"Id":95,"ModuleId":31,"Code":"ACTIVE_TRANS_TIMEOUT","Value":"5","DataType":"string","Description":"Batas Waktu Transaksi Yang Aktif (Menit)","Seq":1,"IsActive":true},
 {"Id":96,"ModuleId":14,"Code":"ST_NUM_FMT","Value":"ST-{Y}{M}-{6}","DataType":"string","Description":"Target Penjualan (Maks. 17 Karakter)","Seq":1,"IsActive":true},
 {"Id":97,"ModuleId":32,"Code":"MOB_VST_RANGE_RADIUS","Value":"50","DataType":"string","Description":"Radius Jangkauan (Meter)","Seq":1,"IsActive":true},
-{"Id":98,"ModuleId":22,"Code":"ICB_NUM_FMT","Value":"ICB{Y}{M}{D}-{5}","DataType":"string","Description":"Pemindahan Dana (Maks. 17 Karakter)","Seq":2,"IsActive":true}]
+{"Id":98,"ModuleId":22,"Code":"ICB_NUM_FMT","Value":"ICB{Y}{M}{D}-{5}","DataType":"string","Description":"Pemindahan Dana (Maks. 17 Karakter)","Seq":2,"IsActive":true}
+{"Id":99,"ModuleId":21,"Code":"CHQ_AP_COA","Value":"211004","DataType":"string","Description":"Hutang Giro Mundur","Seq":5,"IsActive":true},
+{"Id":100,"ModuleId":21,"Code":"CHQ_AR_COA","Value":"112004","DataType":"string","Description":"Piutang Giro Mundur","Seq":6,"IsActive":true}]
