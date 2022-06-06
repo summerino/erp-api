@@ -6,12 +6,12 @@ using ERP.Entity;
 using ERP.Web.API.Domain.Interfaces.Accounting;
 using ERP.Web.API.Domain.Interfaces.Auth;
 using ERP.Web.API.Domain.Interfaces.Finance;
+using ERP.Web.API.Domain.Interfaces.General;
 using ERP.Web.API.Domain.Interfaces.SystemManagement;
 using ERP.Web.API.Domain.Models.Finance;
 using ERP.Web.API.Model;
 using ERP.Web.API.Model.Finance;
 using Newtonsoft.Json;
-using ERP.Web.API.Domain.Interfaces.General;
 
 namespace ERP.Web.API.Controllers.Finance;
 
@@ -25,6 +25,7 @@ public class CashBankController : ControllerBase
     private readonly IClaimService _claim;
     private readonly IAuthService _auth;
     private readonly IActiveTransactionService _activeTrans;
+
     private const int MenuId = (int)Menu.CashBank;
 
     public CashBankController(ICashBankService cb, IClosingMonthService closingMonth,
@@ -41,6 +42,15 @@ public class CashBankController : ControllerBase
     [HttpGet]
     public IActionResult GetData(string search, string filters, string sorts, int skip, int take)
     {
+        if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.ViewOtherUserTransaction }).Any())
+        {
+            var filter = JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]");
+
+            filter.Add(new Filter { Field = "CreatedBy", Operator = "eq", Keyword = (object)_claim.UserId });
+
+            filters = JsonConvert.SerializeObject(filter);
+        }
+
         var data =
             _cb.GetData(
                 skip, take,
