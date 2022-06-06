@@ -288,6 +288,12 @@ public class CashBankService : GeneralService<GeneralCashBankHeader>, ICashBankS
                 return result;
             }
 
+            if (Db.GeneralCashBankHeaders.Any(x => x.Code == data.Code && x.Mark == "REJ"))
+            {
+                result.Message = "Data kas bank umum tidak bisa diubah karena sudah ditolak.";
+                return result;
+            }
+
             data.ApprovedBy = null;
             data.ApprovedDate = null;
 
@@ -424,6 +430,61 @@ public class CashBankService : GeneralService<GeneralCashBankHeader>, ICashBankS
 
         result.Success = true;
         result.Message = "Data kas bank umum berhasil ditandai sebagai void.";
+        return result;
+    }
+
+
+    public SaveResult Reject(string code, int userId, int menuId, int roleId)
+    {
+        var result = new SaveResult(false);
+
+        var data = Db.GeneralCashBankHeaders.Find(code);
+        if (data != null)
+        {
+            // Checking mark header data
+            if (new[] { "V", "REJ" }.Contains(data.Mark))
+            {
+                result.Message = "Data kas bank umum tidak bisa ditolak karena status tidak aktif.";
+                return result;
+            }
+
+            // Checking role authorization for item details
+            var map = new MapCbTypeToAction();
+            var types =
+                Db.GeneralCashBankDetails
+                    .Where(x => x.Code == code)
+                    .Select(x => x.Type).Distinct().ToList();
+            var actionIdLists =
+                map.CbTypeToActions
+                    .Where(t => types.Contains(t.Code))
+                    .Select(t => t.ActionId).ToList();
+
+            var countRoleMenuAction =
+                Db.RoleMenuActions
+                    .Count(x => x.MenuId == menuId && x.RoleId == roleId && actionIdLists.Contains(x.ActionId));
+
+            if (countRoleMenuAction != actionIdLists.Count)
+            {
+                result.Message = AppConstant.UnAuthMessage;
+                return result;
+            }
+
+            // restore cash bank transaction
+            Db.Database.ExecuteSqlRaw($"sp_restore_cash_bank_transaction '{code}';");
+
+            // restore credit used customer
+            RestoreCreditUsed(code);
+
+            // Update header data
+            data.Mark = "REJ";
+            data.UpdatedBy = userId;
+            data.UpdatedDate = DateTime.Now;
+
+            Db.SaveChanges();
+        }
+
+        result.Success = true;
+        result.Message = "Data kas bank umum berhasil ditolak.";
         return result;
     }
 

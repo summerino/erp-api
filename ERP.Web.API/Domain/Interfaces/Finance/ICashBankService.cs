@@ -32,4 +32,6 @@ public interface ICashBankService : IGeneralService<GeneralCashBankHeader>
     SaveResult Update(CashBankRequest data);
 
     SaveResult Delete(string code, int userId, int menuId, int roleId);
+
+    SaveResult Reject(string code, int userId, int menuId, int roleId);
 }
