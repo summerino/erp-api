@@ -214,8 +214,8 @@ public class CoaService : GeneralService<Coa>, ICoaService
         var data = Db.Coas.Where(x => x.IsActive && x.TypeId != 1);
         var dataT = data;
 
-        var specialCOA = new string[] { "AP_COA", "AP_DFR_COA", "AR_COA", "CM_AP_COA",
-            "COGS_COA", "CROSS_COA", "DM_AR_COA", "DPC_COA",
+        var specialCOA = new[] { "AP_COA", "AP_DFR_COA", "AR_COA", "CHQ_AP_COA", "CHQ_AR_COA",
+            "CM_AP_COA", "COGS_COA", "CROSS_COA", "DM_AR_COA", "DPC_COA",
             "DPS_COA", "EP_AP_COA", "INVENTORY_COA", "SENT_ITEM_COA" };
 
         var sysParData = Db.SystemParameters.Where(x => specialCOA.Contains(x.Code)).ToList();
@@ -232,8 +232,8 @@ public class CoaService : GeneralService<Coa>, ICoaService
         var data = Db.Coas.Where(x => x.IsActive && x.TypeId != 1);
         var dataT = data;
 
-        var specialCOA = new string[] { "AP_COA", "AP_DFR_COA", "AR_COA", "CM_AP_COA",
-            "COGS_COA", "CROSS_COA", "DM_AR_COA", "DPC_COA",
+        var specialCOA = new[] { "AP_COA", "AP_DFR_COA", "AR_COA", "CHQ_AP_COA", "CHQ_AR_COA",
+            "CM_AP_COA", "COGS_COA", "CROSS_COA", "DM_AR_COA", "DPC_COA",
             "DPS_COA", "EP_AP_COA", "INVENTORY_COA", "SENT_ITEM_COA",
             "RETAINED_EARNING_COA", "SLS_COA", "SLS_DISC_COA", "SLS_RTN_COA", "CM_AP_COA"};
 
