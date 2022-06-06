@@ -41,6 +41,15 @@ public class CashBankController : ControllerBase
     [HttpGet]
     public IActionResult GetData(string search, string filters, string sorts, int skip, int take)
     {
+        if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.ViewOtherUserTransaction }).Any())
+        {
+            var filter = JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]");
+
+            filter.Add(new Filter { Field = "createdBy", Operator = "eq", Keyword = (object)_claim.UserId });
+
+            filters = JsonConvert.SerializeObject(filter);
+        }
+
         var data =
             _cb.GetData(
                 skip, take,
