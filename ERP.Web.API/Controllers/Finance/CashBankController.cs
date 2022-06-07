@@ -245,6 +245,23 @@ public class CashBankController : ControllerBase
         return Ok(result);
     }
 
+    [HttpPut("reject/{code}")]
+    public IActionResult OnReject(string code, CashBankRequest data)
+    {
+        // Checking role authorization
+        if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Reject }).Any())
+            return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
+
+        // Validate process
+        var (isValid, message) = Validate(data, true);
+        if (!isValid)
+            return Ok(new SaveResult(false, message));
+
+        var result = _cb.Reject(data.Code, _claim.UserId, MenuId, _claim.RoleId);
+
+        return Ok(result);
+    }
+
     [HttpDelete("{code}")]
     public IActionResult OnDelete(string code, CashBankRequest data)
     {

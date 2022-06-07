@@ -309,9 +309,9 @@
 {"Id":309,"MenuId":154,"ActionId":3},
 {"Id":310,"MenuId":156,"ActionId":41},
 {"Id":311,"MenuId":157,"ActionId":41},
-{"Id":312,"MenuId":39,"ActionId":7},
-{"Id":313,"MenuId":47,"ActionId":7},
-{"Id":314,"MenuId":158,"ActionId":43},
-{"Id":315,"MenuId":159,"ActionId":41},
-{"Id":316,"MenuId":82,"ActionId":48},
-{"Id":317,"MenuId":82,"ActionId":44}]
+{"Id":312,"MenuId":158,"ActionId":43},
+{"Id":313,"MenuId":159,"ActionId":41},
+{"Id":314,"MenuId":82,"ActionId":48},
+{"Id":315,"MenuId":82,"ActionId":44},
+{"Id":316,"MenuId":160,"ActionId":41},
+{"Id":317,"MenuId":161,"ActionId":41}]

@@ -43,7 +43,7 @@ public class OutstandingChequeReportService : IOutstandingChequeReportService
 						LEFT JOIN Purchasing.vwDebitMemo dm ON dm.Code = cb_d.TransCode
 						LEFT JOIN Sales.vwCreditMemo cm ON cm.Code = cb_d.TransCode
 						LEFT JOIN Finance.vwGeneralCashBankHeader cb ON cb.Code = cb_d.Code
-						WHERE cb.ChequeDate IS NOT NULL" +
+						WHERE cb.ChequeDate IS NOT NULL AND cb.Mark = 'A'" +
                                                              (string.IsNullOrEmpty(coaCode) ? "" : $" AND cb_d.CoaCode = '{coaCode.Replace("'", "''")}'") +
                                                              " ORDER BY cb.ChequeDate ASC, cb_d.CoaName ASC, BalanceIn DESC, BalanceOut DESC").ToList();
 

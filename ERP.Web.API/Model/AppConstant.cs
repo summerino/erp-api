@@ -103,6 +103,7 @@ public enum Menu
     AccountPayableReport = 92,
     AccountPayableMutationReport = 131,
     AccountPayableAgingReport = 133,
+    AccountPayableCardReport = 160,
     DebitMemoReport = 137,
 
     // Sales
@@ -128,6 +129,7 @@ public enum Menu
     AccountReceivableReport = 93,
     AccountReceivableMutationReport = 132,
     AccountReceivableAgingReport = 134,
+    AccountReceivableCardReport = 161,
     CreditMemoReport = 138,
     ReleaseOverlimitReport = 159,
 
