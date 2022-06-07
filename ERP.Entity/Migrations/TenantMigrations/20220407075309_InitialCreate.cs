@@ -13054,7 +13054,8 @@ AS
 BEGIN TRY  
 	-- SET NOCOUNT ON added to prevent extra result sets from  
 	-- interfering with SELECT statements.  
-	SET NOCOUNT ON;  
+	SET NOCOUNT ON;
+	SET ANSI_WARNINGS OFF;
   
 	-- Select Data  
 	WITH cte_on_transfer AS (  
@@ -13073,6 +13074,30 @@ BEGIN TRY
 		) sm
 		WHERE [Type] = 'OH' GROUP BY WarehouseCode, ItemId   
 	),
+	cte_base_qty_order_free AS (
+		SELECT so_d.Id,
+		CASE WHEN uom_c.IsBaseUnit = 1 THEN so_d.Qty
+				ELSE so_d.Qty * (
+					SELECT EXP(SUM(LOG(Conversion)))
+					FROM Inventory.UoMConversion
+					WHERE UomId = uom_c.UomId
+					AND Seq <= uom_c.Seq
+				) END AS BaseQty,
+		CASE WHEN uom_c.IsBaseUnit = 1 THEN so_d.QtyClosed
+				ELSE so_d.QtyClosed * (
+					SELECT EXP(SUM(LOG(Conversion)))
+					FROM Inventory.UoMConversion
+					WHERE UomId = uom_c.UomId
+					AND Seq <= uom_c.Seq
+				) END AS BaseQtyDlv
+		FROM Sales.SalesOrderDetailFreeGood so_d
+		LEFT JOIN Sales.SalesOrderHeader so_h
+			ON so_h.Code = so_d.Code
+		LEFT JOIN Inventory.UoMConversion uom_c
+			ON uom_c.UomId = so_d.UomId
+			AND uom_c.Id = so_d.UnitId
+		WHERE so_h.Mark NOT IN ('V', 'OL', 'CLS', 'CMP')
+	),
 	cte_base_qty_order AS (
 		SELECT so_d.Id,
 		CASE WHEN uom_c.IsBaseUnit = 1 THEN so_d.Qty
@@ -13090,24 +13115,34 @@ BEGIN TRY
 					AND Seq <= uom_c.Seq
 				) END AS BaseQtyDlv
 		FROM Sales.SalesOrderDetail so_d
+		LEFT JOIN Sales.SalesOrderHeader so_h
+			ON so_h.Code = so_d.Code
 		LEFT JOIN Inventory.UoMConversion uom_c
 			ON uom_c.UomId = so_d.UomId
 			AND uom_c.Id = so_d.UnitId
+		WHERE so_h.Mark NOT IN ('V', 'OL', 'CLS', 'CMP')
 	),
 	cte_on_order AS (  
 		SELECT sm.WarehouseCode, sm.ItemId, 
-		CAST(
-			CASE WHEN SUM(so_d.BaseQtyDlv - so_d.BaseQty) < 0 THEN 0
+		ISNULL(CAST(
+			CASE WHEN SUM(so_d.BaseQtyDlv - so_d.BaseQty) < 0 THEN ABS(SUM(so_d.BaseQtyDlv - so_d.BaseQty))
 			ELSE SUM(so_d.BaseQtyDlv - so_d.BaseQty)
 			END
-		AS decimal(19,8)) AS TotalBaseQty
+		AS decimal(19,8)), CAST(0 as decimal(19,8))) AS TotalBaseQty,
+		ISNULL(CAST(
+			CASE WHEN SUM(so_df.BaseQtyDlv - so_df.BaseQty) < 0 THEN ABS(SUM(so_df.BaseQtyDlv - so_df.BaseQty))
+			ELSE SUM(so_df.BaseQtyDlv - so_df.BaseQty)
+			END
+		AS decimal(19,8)), CAST(0 as decimal(19,8))) AS TotalBaseQtyFree
 		FROM (
 			SELECT *
 			FROM Inventory.StockMutation
 			WHERE [Type] = 'OO'
 		) sm
 		LEFT JOIN cte_base_qty_order so_d
-		ON so_d.Id = sm.RefDetailId1
+			ON so_d.Id = sm.RefDetailId1 AND sm.Src = 'SO'
+		LEFT JOIN cte_base_qty_order_free so_df
+			ON so_df.Id = sm.RefDetailId1 AND sm.Src = 'SOF'
 		GROUP BY sm.WarehouseCode, sm.ItemId
 	),
 	cte_base_qty_indent AS (
@@ -13127,14 +13162,17 @@ BEGIN TRY
 					AND Seq <= uom_c.Seq
 				) END AS BaseQtyRcv
 		FROM Purchasing.PurchaseOrderDetail po_d
+		LEFT JOIN Purchasing.PurchaseOrderHeader po_h
+			ON po_h.Code = po_d.Code
 		LEFT JOIN Inventory.UoMConversion uom_c
 			ON uom_c.UomId = po_d.UomId
 			AND uom_c.Id = po_d.UnitId
+		WHERE po_h.Code NOT IN ('V', 'CMP')
 	),
 	cte_on_indent AS (  
 		SELECT sm.WarehouseCode, sm.ItemId,
 		CAST(
-			CASE WHEN SUM(po_d.BaseQtyRcv - po_d.BaseQty) < 0 THEN 0
+			CASE WHEN SUM(po_d.BaseQtyRcv - po_d.BaseQty) < 0 THEN ABS(SUM(po_d.BaseQtyRcv - po_d.BaseQty))
 			ELSE SUM(po_d.BaseQtyRcv - po_d.BaseQty)
 			END
 		AS decimal(19,8)) AS TotalBaseQty
@@ -13158,7 +13196,7 @@ BEGIN TRY
 			ELSE CAST(0 AS decimal(19,8))  
 		END AS QtyOnIndent,  
 		CASE  
-			WHEN SUM(oo.TotalBaseQty) IS NOT NULL THEN SUM(oo.TotalBaseQty)  
+			WHEN SUM(oo.TotalBaseQty + oo.TotalBaseQtyFree) IS NOT NULL THEN SUM(oo.TotalBaseQty + oo.TotalBaseQtyFree)
 			ELSE CAST(0 AS decimal(19,8))  
 		END AS QtyOnOrder,  
 		CASE  
