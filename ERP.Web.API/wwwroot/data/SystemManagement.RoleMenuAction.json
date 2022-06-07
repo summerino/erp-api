@@ -309,9 +309,9 @@
 {"Id":309,"RoleId":1,"MenuId":154,"ActionId":3,"UpdatedBy":1,"UpdatedDate":"2021-06-18T10:39:07"},
 {"Id":310,"RoleId":1,"MenuId":156,"ActionId":41,"UpdatedBy":1,"UpdatedDate":"2021-06-18T10:39:07"},
 {"Id":311,"RoleId":1,"MenuId":157,"ActionId":41,"UpdatedBy":1,"UpdatedDate":"2021-06-18T10:39:07"},
-{"Id":312,"RoleId":1,"MenuId":39,"ActionId":7,"UpdatedBy":1,"UpdatedDate":"2021-06-18T10:39:07"},
-{"Id":313,"RoleId":1,"MenuId":47,"ActionId":7,"UpdatedBy":1,"UpdatedDate":"2021-06-18T10:39:07"},
-{"Id":314,"RoleId":1,"MenuId":158,"ActionId":43,"UpdatedBy":1,"UpdatedDate":"2021-06-18T10:39:07"},
-{"Id":315,"RoleId":1,"MenuId":159,"ActionId":41,"UpdatedBy":1,"UpdatedDate":"2021-06-18T10:39:07"},
-{"Id":316,"RoleId":1,"MenuId":82,"ActionId":48,"UpdatedBy":1,"UpdatedDate":"2021-06-18T10:39:07"},
-{"Id":317,"RoleId":1,"MenuId":82,"ActionId":44,"UpdatedBy":1,"UpdatedDate":"2021-06-18T10:39:07"}]
+{"Id":312,"RoleId":1,"MenuId":158,"ActionId":43,"UpdatedBy":1,"UpdatedDate":"2021-06-18T10:39:07"},
+{"Id":313,"RoleId":1,"MenuId":159,"ActionId":41,"UpdatedBy":1,"UpdatedDate":"2021-06-18T10:39:07"},
+{"Id":314,"RoleId":1,"MenuId":82,"ActionId":48,"UpdatedBy":1,"UpdatedDate":"2021-06-18T10:39:07"},
+{"Id":315,"RoleId":1,"MenuId":82,"ActionId":44,"UpdatedBy":1,"UpdatedDate":"2021-06-18T10:39:07"},
+{"Id":316,"RoleId":1,"MenuId":160,"ActionId":41,"UpdatedBy":1,"UpdatedDate":"2021-06-18T10:39:07"},
+{"Id":317,"RoleId":1,"MenuId":161,"ActionId":41,"UpdatedBy":1,"UpdatedDate":"2021-06-18T10:39:07"}]
