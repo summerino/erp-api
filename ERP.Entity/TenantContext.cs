@@ -251,6 +251,7 @@ public class TenantContext : DbContext
     public DbSet<ReportByInvoiceAPAging> ReportByInvoiceAPAgings { get; set; }
     public DbSet<ReportByDebitMemo> ReportByDebitMemos { get; set; }
     public DbSet<ReportByItemCategoryPurchase> ReportByItemCategoryPurchases { get; set; }
+    public DbSet<ReportByAPCard> ReportByAPCards { get; set; }
 
 
     // Sales entities
@@ -2088,6 +2089,10 @@ public class TenantContext : DbContext
         modelBuilder.Entity<ReportByItemCategoryPurchase>()
             .HasNoKey()
             .ToTable("ReportByItemCategoryPurchase", t => t.ExcludeFromMigrations());
+
+        modelBuilder.Entity<ReportByAPCard>()
+            .HasNoKey()
+            .ToTable("ReportByAPCard", t => t.ExcludeFromMigrations());
 
         // Sales entities
         // Area model
