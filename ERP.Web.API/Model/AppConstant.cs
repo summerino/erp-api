@@ -116,8 +116,8 @@ public enum Menu
     SalesInvoice = 46,
     DirectInvoice = 46,
     SalesReturn = 47,
-    DeliveryPlan = 48,
     CreditMemo = 49,
+    DeliveryPlan = 48,
     VisitPlan = 54,
     VisitOrder = 55,
     SalesOrderReport = 145,
@@ -130,6 +130,7 @@ public enum Menu
     AccountReceivableAgingReport = 134,
     AccountReceivableCardReport = 161,
     CreditMemoReport = 138,
+    DeliveryPlanReport = 162,
 
     // Expedition
     ExpeditionInvoice = 70,
