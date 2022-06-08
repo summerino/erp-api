@@ -75,6 +75,10 @@ public class SalesOrderHeader : BaseEntityWithMarkApprovedAndViewed
 
     [Column(TypeName = "datetime", Order = 108)]
     public DateTime? OverlimitApprovedDate { get; set; }
+
+    [Column(Order = 109)]
+    [StringLength(256)]
+    public string OverlimitApprovedReason { get; set; }
 }
 
 public class VwSalesOrderHeader : BaseEntityWithMarkApprovedAndViewed
@@ -131,11 +135,11 @@ public class VwSalesOrderHeader : BaseEntityWithMarkApprovedAndViewed
 
     public bool FromDirectInvoice { get; set; }
 
-    [Column(Order = 107)]
     public int? OverlimitApprovedBy { get; set; }
 
-    [Column(TypeName = "datetime", Order = 108)]
     public DateTime? OverlimitApprovedDate { get; set; }
+
+    public string OverlimitApprovedReason { get; set; }
 
 
     public string CustName { get; set; }
