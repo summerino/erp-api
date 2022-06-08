@@ -255,9 +255,9 @@ public class ExpeditionInvoiceService : GeneralService<ExpeditionInvoiceHeader>,
                         dt.Date,
                         dt.SupName,
                         dt.Mark
-                    }).ToList();
+                    }).AsQueryable();
 
-        return data.AsQueryable().ToDataSourceResult(0, data.Count(), filter, null);
+        return data.ToDataSourceResult(0, data.Count(), filter, null);
     }
 
     public DataSourceResult GetDeliveriesData(IEnumerable<Filter> filter)
@@ -281,8 +281,8 @@ public class ExpeditionInvoiceService : GeneralService<ExpeditionInvoiceHeader>,
                         dt.CustName,
                         SalesName = dt.SrcTrans == 1 ? dtosRes.SalesName : dtrsRes.SalesName,
                         dt.Mark
-                    }).ToList();
+                    }).AsQueryable();
 
-        return data.AsQueryable().ToDataSourceResult(0, data.Count(), filter, null);
+        return data.ToDataSourceResult(0, data.Count(), filter, null);
     }
 }

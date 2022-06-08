@@ -919,7 +919,7 @@ public class JournalService : IJournalService
                 {
                     Code = itemData.Code,
                     LineNo = ++i,
-                    Date = itemData.ChequeDate.HasValue ? itemData.ChequeDate.Value : itemData.Date,
+                    Date = itemData.Date,
                     CoaCode = itemDetailData.CoaCode ?? systemParam.FirstOrDefault(x => x.Code == $"{itemDetailData.Type}_COA")?.Value ?? "",
                     TypeCode = $"CB_{itemDetailData.Type}",
                     Notes = ($"{systemParam.FirstOrDefault(x => x.Code == $"JR_PREFIX_{itemDetailData.Type}")?.Value ?? ""} {itemDetailData.Notes}").Trim(),
@@ -937,7 +937,7 @@ public class JournalService : IJournalService
                 {
                     Code = itemData.Code,
                     LineNo = ++j,
-                    Date = itemData.ChequeDate.HasValue ? itemData.ChequeDate.Value : itemData.Date,
+                    Date = itemData.Date,
                     CoaCode = itemData.CoaCode ?? "",
                     TypeCode = "CB",
                     Notes = "Kas/Bank",
@@ -957,7 +957,7 @@ public class JournalService : IJournalService
                     {
                         Code = itemData.Code,
                         LineNo = 1,
-                        Date = itemData.ChequeDate.Value,
+                        Date = itemData.Date,
                         CoaCode = systemParam.FirstOrDefault(x => x.Code == $"CHQ_{(itemData.Type == "D" ? "AR" : "AP")}_COA")?.Value ?? "",
                         TypeCode = "CB",
                         Notes = $"Terima Cek / Giro, Kode Cek: {(string.IsNullOrEmpty(itemData.ChequeNo) ? "-" : $"{itemData.ChequeNo}")}",
@@ -974,7 +974,7 @@ public class JournalService : IJournalService
                     {
                         Code = itemData.Code,
                         LineNo = 1,
-                        Date = itemData.ChequeDate.Value,
+                        Date = itemData.Date,
                         CoaCode = systemParam.FirstOrDefault(x => x.Code == $"CHQ_{(itemData.Type == "D" ? "AR" : "AP")}_COA")?.Value ?? "",
                         TypeCode = "CB",
                         Notes = $"{(itemData.Mark == "A" ? "Kliring" : "Penolakan")} Cek / Giro, Kode Cek: {(string.IsNullOrEmpty(itemData.ChequeNo) ? "-" : $"{itemData.ChequeNo}")}",
@@ -993,7 +993,7 @@ public class JournalService : IJournalService
                         {
                             Code = itemData.Code,
                             LineNo = ++k,
-                            Date = itemData.ChequeDate.HasValue ? itemData.ChequeDate.Value : itemData.Date,
+                            Date = itemData.Date,
                             CoaCode = itemDetailData.CoaCode ?? systemParam.FirstOrDefault(x => x.Code == $"{itemDetailData.Type}_COA")?.Value ?? "",
                             TypeCode = $"CB_{itemDetailData.Type}",
                             Notes = $"Penolakan Cek / Giro, Kode Cek: {(string.IsNullOrEmpty(itemData.ChequeNo) ? "-" : $"{itemData.ChequeNo}")}",
@@ -1001,7 +1001,7 @@ public class JournalService : IJournalService
                             Group = (short)(itemDetailData.TypeAmount == "D" ? 2 : 1),
                             CurrCode = itemDetailData.CurrCode,
                             Period = itemData.Date.ToString("yyyyMMdd"),
-                            Type = itemDetailData.TypeAmount,
+                            Type = itemDetailData.TypeAmount == "C" ? "D" : "C",
                             Amount = itemDetailData.Amount,
                             SrcTrans = "CB"
                         });
@@ -1010,7 +1010,7 @@ public class JournalService : IJournalService
                         {
                             Code = itemData.Code,
                             LineNo = ++l,
-                            Date = itemData.ChequeDate.HasValue ? itemData.ChequeDate.Value : itemData.Date,
+                            Date = itemData.Date,
                             CoaCode = itemData.CoaCode ?? "",
                             TypeCode = "CB",
                             Notes = $"Penolakan Cek / Giro, Kode Cek: {(string.IsNullOrEmpty(itemData.ChequeNo) ? "-" : $"{itemData.ChequeNo}")}",
