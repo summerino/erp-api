@@ -21,6 +21,12 @@ namespace ERP.Entity.Migrations.TenantMigrations
             // Refresh view Sales.vwSalesOrderHeader
             var sql = @"EXEC sp_refreshview 'Sales.vwSalesOrderHeader'";
             migrationBuilder.Sql(sql);
+
+            // Update MenuId for Action Overlimit in SystemManagement.RoleMenuAction
+            sql = @"UPDATE SystemManagement.RoleMenuAction
+SET MenuId = 120
+WHERE ActionId = 42";
+            migrationBuilder.Sql(sql);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

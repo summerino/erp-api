@@ -39,7 +39,7 @@
 {"Id":39,"Name":"Type - Sales Return"},
 {"Id":40,"Name":"Type - Purchase Return"},
 {"Id":41,"Name":"Print"},
-{"Id":42,"Name":"Over Limit"},
+{"Id":42,"Name":"Overlimit"},
 {"Id":43,"Name":"Approve"},
 {"Id":44,"Name":"Reject"},
 {"Id":45,"Name":"Show Inventory Value"},
