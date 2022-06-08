@@ -65,17 +65,17 @@ public class ItemController : ControllerBase
     public IActionResult GetOrderTrans(string whid, int itemid, int from)
     {
         List<dynamic> data = new();
-        if (from == 1)
+        switch (from)
         {
-            data = _item.GetRelatedOrderTrans(whid, itemid).ToList<dynamic>();
-        }
-        else if (from == 2)
-        {
-            data = _item.GetRelatedIndentTrans(whid, itemid).ToList<dynamic>();
-        }
-        else
-        {
-            data = _item.GetRelatedTransferTrans(whid, itemid).ToList<dynamic>();
+            case 1:
+                data = _item.GetRelatedOrderTrans(whid, itemid).ToList<dynamic>();
+                break;
+            case 2:
+                data = _item.GetRelatedIndentTrans(whid, itemid).ToList<dynamic>();
+                break;
+            default:
+                data = _item.GetRelatedTransferTrans(whid, itemid).ToList<dynamic>();
+                break;
         }
 
         return Ok(new ApiResponse
