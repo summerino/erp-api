@@ -7,6 +7,7 @@ using ERP.Entity.MobileSales;
 using ERP.Entity.Sales;
 using ERP.Web.API.Domain.Interfaces.MobileSales;
 using ERP.Web.API.Model.MobileSales;
+using System.Linq.Dynamic.Core;
 
 namespace ERP.Web.API.Domain.Services.MobileSales;
 
@@ -17,7 +18,7 @@ public class MobileOrderService : GeneralService<MobileOrderHeader>, IMobileOrde
     {
     }
 
-    public SaveResult Approve(List<MobileOrderHeader> data, int userId)
+    public SaveResult Approve(List<MobileOrderHeader> data, int userId, bool allowOverlimit, string reason)
     {
         var result = new SaveResult(false);
 
@@ -102,7 +103,10 @@ public class MobileOrderService : GeneralService<MobileOrderHeader>, IMobileOrde
                         UpdatedDate = DateTime.Now,
                         ApprovedBy = userId,
                         ApprovedDate = DateTime.Now,
-                        FromDirectInvoice = true
+                        FromDirectInvoice = true,
+                        OverlimitApprovedBy = allowOverlimit && !string.IsNullOrEmpty(reason) ? userId : null,
+                        OverlimitApprovedDate = allowOverlimit && !string.IsNullOrEmpty(reason) ? DateTime.Now : null,
+                        OverlimitApprovedReason = allowOverlimit && !string.IsNullOrEmpty(reason) ? reason : null
                     };
 
                     Db.SalesOrderHeaders.Add(soData);
@@ -628,6 +632,30 @@ public class MobileOrderService : GeneralService<MobileOrderHeader>, IMobileOrde
         return result;
     }
 
+    public IEnumerable<dynamic> ValidateOverlimit(List<MobileOrderHeader> data)
+    {
+        List<dynamic> result = new List<dynamic>();
+
+        var groupedData = data.GroupBy(x => x.CustCode, (key, g) => new
+        {
+            CustCode = key,
+            Total = g.Sum(y => y.Total),
+            IsOverlimit = !CheckCreditLimit(key, g.Sum(y => y.Total))
+        }).Where(x => x.IsOverlimit).ToList();
+
+        var custData = Db.Customers.ToList();
+
+        result = custData.Where(x => groupedData.Select(y => y.CustCode).Contains(x.Code) && x.CreditLimit > 0).Select(x => new
+        {
+            CustCode = x.Code,
+            CustName = x.Name,
+            RemainingAmount = x.CreditLimit - x.CreditUsed,
+            TransAmount = groupedData.FirstOrDefault(y => y.CustCode == x.Code).Total
+        }).ToDynamicList();
+
+        return result;
+    }
+
     private bool IsQtyExcess(string warehouseCode, IEnumerable<MobileOrderDetail> items)
     {
         var result = false;
@@ -664,6 +692,8 @@ public class MobileOrderService : GeneralService<MobileOrderHeader>, IMobileOrde
     }
 
     #region Credit Used - Limit
+    private bool CheckCreditLimit(string custCode, decimal total) => Db.Customers.Any(c => c.Code.Equals(custCode) && (c.CreditLimit <= 0 || (c.CreditLimit - c.CreditUsed) >= total));
+
     private void UpdateCreditUsed(string custCode, decimal total)
     {
         string query = $"update General.Customer set CreditUsed= (CreditUsed + {total}) where code = '{custCode}'";
