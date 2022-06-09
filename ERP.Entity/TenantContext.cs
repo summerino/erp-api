@@ -94,7 +94,6 @@ public class TenantContext : DbContext
     public DbSet<CashFlowReportAll> CashFlowReportAlls { get; set; }
     public DbSet<CashFlowReportByCOA> CashFlowReportByCOAs { get; set; }
 
-
     // General entities
     public DbSet<VwApproval> VwApprovals { get; set; }
     public DbSet<Currency> Currencies { get; set; }
@@ -253,7 +252,6 @@ public class TenantContext : DbContext
     public DbSet<ReportByItemCategoryPurchase> ReportByItemCategoryPurchases { get; set; }
     public DbSet<ReportByAPCard> ReportByAPCards { get; set; }
 
-
     // Sales entities
     public DbSet<Area> Areas { get; set; }
     public DbSet<VwArea> VwAreas { get; set; }
@@ -336,6 +334,10 @@ public class TenantContext : DbContext
     public DbSet<ReportByDetailST> ReportByDetailSTs { get; set; }
     public DbSet<ReportByTarget> ReportByTargets { get; set; }
     public DbSet<ReleaseOverlimitReport> ReleaseOverlimitReports { get; set; }
+    public DbSet<ReportByDP> ReportByDPs { get; set; }
+    public DbSet<ReportByDetailDP> ReportByDetailDPs { get; set; }
+    public DbSet<ReportByItemDP> ReportByItemDPs { get; set; }
+    public DbSet<ReportByItemCategoryDP> ReportByItemCategoryDPs { get; set; }
 
     // System Management entities
     public DbSet<SystemManagement.Action> Actions { get; set; }
@@ -2525,10 +2527,6 @@ public class TenantContext : DbContext
             .HasNoKey()
             .ToTable("ReportByTarget", t => t.ExcludeFromMigrations());
 
-        modelBuilder.Entity<ReleaseOverlimitReport>()
-            .HasNoKey()
-            .ToTable("ReleaseOverlimitReport", t => t.ExcludeFromMigrations());
-
         // Visit Order model
         modelBuilder.Entity<VisitOrder>(entity =>
             entity.Property(e => e.Mark)
@@ -2652,6 +2650,28 @@ public class TenantContext : DbContext
         modelBuilder.Entity<ReportByDetailSR>()
             .HasNoKey()
             .ToTable("ReportByDetailSR", t => t.ExcludeFromMigrations());
+
+        // Delivery Plan Report model
+        modelBuilder.Entity<ReportByDP>()
+            .HasNoKey()
+            .ToTable("ReportByDP", t => t.ExcludeFromMigrations());
+
+        modelBuilder.Entity<ReportByDetailDP>()
+            .HasNoKey()
+            .ToTable("ReportByDetailDP", t => t.ExcludeFromMigrations());
+
+        modelBuilder.Entity<ReportByItemDP>()
+            .HasNoKey()
+            .ToTable("ReportByItemDP", t => t.ExcludeFromMigrations());
+
+        modelBuilder.Entity<ReportByItemCategoryDP>()
+            .HasNoKey()
+            .ToTable("ReportByItemCategoryDP", t => t.ExcludeFromMigrations());
+
+        // Release Overlimit Report model
+        modelBuilder.Entity<ReleaseOverlimitReport>()
+            .HasNoKey()
+            .ToTable("ReleaseOverlimitReport", t => t.ExcludeFromMigrations());
 
         // System Management entities
         // Company model
