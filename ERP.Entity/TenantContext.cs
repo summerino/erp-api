@@ -334,6 +334,11 @@ public class TenantContext : DbContext
     public DbSet<ReportByST> ReportBySTs { get; set; }
     public DbSet<ReportByDetailST> ReportByDetailSTs { get; set; }
     public DbSet<ReportByTarget> ReportByTargets { get; set; }
+    public DbSet<ReportByDP> ReportByDPs { get; set; }
+    public DbSet<ReportByDetailDP> ReportByDetailDPs { get; set; }
+    public DbSet<ReportByItemDP> ReportByItemDPs { get; set; }
+    public DbSet<ReportByItemCategoryDP> ReportByItemCategoryDPs { get; set; }
+
 
     // System Management entities
     public DbSet<SystemManagement.Action> Actions { get; set; }
@@ -2518,6 +2523,22 @@ public class TenantContext : DbContext
         modelBuilder.Entity<ReportByTarget>()
             .HasNoKey()
             .ToTable("ReportByTarget", t => t.ExcludeFromMigrations());
+
+        modelBuilder.Entity<ReportByDP>()
+            .HasNoKey()
+            .ToTable("ReportByDP", t => t.ExcludeFromMigrations());
+
+        modelBuilder.Entity<ReportByDetailDP>()
+            .HasNoKey()
+            .ToTable("ReportByDetailDP", t => t.ExcludeFromMigrations());
+
+        modelBuilder.Entity<ReportByItemDP>()
+            .HasNoKey()
+            .ToTable("ReportByItemDP", t => t.ExcludeFromMigrations());
+
+        modelBuilder.Entity<ReportByItemCategoryDP>()
+            .HasNoKey()
+            .ToTable("ReportByItemCategoryDP", t => t.ExcludeFromMigrations());
 
         // Visit Order model
         modelBuilder.Entity<VisitOrder>(entity =>
