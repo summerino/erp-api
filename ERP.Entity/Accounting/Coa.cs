@@ -44,8 +44,12 @@ public class Coa : BaseEntityWithActive
     [StringLength(4)]
     public string IsCode { get; set; }
 
+    public int? IsSeq { get; set; }
+
     [StringLength(4)]
     public string IsDetCode { get; set; }
+    
+    public int? IsDetSeq { get; set; }
 
     public bool ShowInMobile { get; set; }
 }
@@ -76,7 +80,11 @@ public class VwCoa : BaseEntityWithActive
 
     public string IsCode { get; set; }
 
+    public int? IsSeq { get; set; }
+
     public string IsDetCode { get; set; }
+
+    public int? IsDetSeq { get; set; }
 
     public bool ShowInMobile { get; set; }
 

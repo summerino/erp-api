@@ -13,7 +13,7 @@ using Newtonsoft.Json;
 
 namespace ERP.Web.API.Controllers.Inventory;
 
-[Route("bb")]
+[Route("bb-stock")]
 [ApiController]
 
 public class BeginningBalanceStockController : ControllerBase
