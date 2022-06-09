@@ -352,6 +352,13 @@ public class PurchaseReceiveService : GeneralService<PurchaseReceiveHeader>, IPu
                     return result;
                 }
             }
+
+            //update Data if changed TransCode
+            var oldRcvData = Db.PurchaseReceiveHeaders.AsNoTracking().FirstOrDefault(x => x.Code == data.Code);
+            if (oldRcvData.TransCode != data.TransCode)
+            {
+                RestorePrevData(oldRcvData.Code, oldRcvData.TransCode, oldRcvData.SrcTrans);
+            }
                 
             // Checking receive qty is excess or not
             if (IsQtyExcess(data.SrcTrans, data.TransCode, data.ItemDetails, data.Code))
@@ -620,10 +627,10 @@ public class PurchaseReceiveService : GeneralService<PurchaseReceiveHeader>, IPu
                             result = true;
                         }
                     }
-                    else
+                    else if(dataPODetail != null)
                     {
                         var oldPRD = Db.PurchaseReceiveDetails.AsNoTracking().FirstOrDefault(x => x.Code == code && x.ItemId == item.ItemId);
-                        var availableStock = dataPODetail.Qty - (dataPODetail.QtyRcv - oldPRD.Qty);
+                        var availableStock = dataPODetail.Qty - (dataPODetail.QtyRcv - oldPRD?.Qty ?? 0);
                         if (item.Qty > availableStock)
                         {
                             result = true;
@@ -648,10 +655,10 @@ public class PurchaseReceiveService : GeneralService<PurchaseReceiveHeader>, IPu
                         result = true;
                     }
                 }
-                else
+                else if (prData.Type == 2 ? dataPRDetail != null : dataPRXDetail != null)
                 {
                     var oldPRD = Db.PurchaseReceiveDetails.AsNoTracking().FirstOrDefault(x => x.Code == code && x.ItemId == item.ItemId);
-                    var availableStock = (prData.Type == 2 ? dataPRDetail.Qty : dataPRXDetail.Qty) - ((prData.Type == 2 ? dataPRDetail.QtyRcv : dataPRXDetail.QtyRcv) - oldPRD.Qty);
+                    var availableStock = (prData.Type == 2 ? dataPRDetail.Qty : dataPRXDetail.Qty) - ((prData.Type == 2 ? dataPRDetail.QtyRcv : dataPRXDetail.QtyRcv) - oldPRD?.Qty ?? 0);
                     if (item.Qty > availableStock)
                     {
                         result = true;
@@ -660,5 +667,44 @@ public class PurchaseReceiveService : GeneralService<PurchaseReceiveHeader>, IPu
             }
         }
         return result;
+    }
+
+    private void RestorePrevData(string code, string transCode, int srcTrans)
+    {
+        var detailRcvData = Db.PurchaseReceiveDetails.AsNoTracking().Where(x => x.Code == code).ToList();
+        if (srcTrans == 1)
+        {
+            var PoData = Db.PurchaseOrderHeaders.FirstOrDefault(x => x.Code == transCode);
+            var detailPoData = Db.PurchaseOrderDetails.Where(x => x.Code == transCode).ToList();
+
+            foreach (var item in detailPoData)
+            {
+                item.QtyRcv -= detailRcvData.FirstOrDefault(x => x.ItemId == item.ItemId && x.UnitId == item.UnitId).Qty;
+            }
+
+            Db.PurchaseOrderDetails.UpdateRange(detailPoData);
+
+            PoData.Mark = detailPoData.Sum(x => x.QtyRcv) == 0 ? "A" : detailPoData.Sum(x => x.QtyRcv) == detailPoData.Sum(x => x.Qty) ? "CMP" : "PR";
+
+            Db.PurchaseOrderHeaders.Update(PoData);
+        }
+        else
+        {
+            var PrData = Db.PurchaseReturnHeaders.FirstOrDefault(x => x.Code == transCode);
+            var detailPrData = Db.PurchaseReturnDetails.Where(x => x.Code == transCode).ToList();
+
+            foreach (var item in detailPrData)
+            {
+                item.QtyRcv -= detailRcvData.FirstOrDefault(x => x.ItemId == item.ItemId && x.UnitId == item.UnitId).Qty;
+            }
+
+            Db.PurchaseReturnDetails.UpdateRange(detailPrData);
+
+            PrData.Mark = detailPrData.Sum(x => x.QtyRcv) == 0 ? "A" : detailPrData.Sum(x => x.QtyRcv) == detailPrData.Sum(x => x.Qty) ? "CMP" : "PR";
+
+            Db.PurchaseReturnHeaders.Update(PrData);
+        }
+
+        Db.SaveChanges();
     }
 }
