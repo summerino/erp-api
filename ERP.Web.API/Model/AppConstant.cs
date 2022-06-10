@@ -56,7 +56,8 @@ public enum Actions
     Reject = 44,
     ShowInventoryValue = 45,
     Unlock = 46,
-    Clone = 47
+    Clone = 47,
+    ViewOtherUserTransaction = 48
 }
 
 public enum Menu 
@@ -102,6 +103,7 @@ public enum Menu
     AccountPayableReport = 92,
     AccountPayableMutationReport = 131,
     AccountPayableAgingReport = 133,
+    AccountPayableCardReport = 160,
     DebitMemoReport = 137,
 
     // Sales
@@ -114,8 +116,8 @@ public enum Menu
     SalesInvoice = 46,
     DirectInvoice = 46,
     SalesReturn = 47,
-    DeliveryPlan = 48,
     CreditMemo = 49,
+    DeliveryPlan = 48,
     VisitPlan = 54,
     VisitOrder = 55,
     SalesOrderReport = 145,
@@ -126,7 +128,9 @@ public enum Menu
     AccountReceivableReport = 93,
     AccountReceivableMutationReport = 132,
     AccountReceivableAgingReport = 134,
+    AccountReceivableCardReport = 161,
     CreditMemoReport = 138,
+    DeliveryPlanReport = 162,
 
     // Expedition
     ExpeditionInvoice = 70,

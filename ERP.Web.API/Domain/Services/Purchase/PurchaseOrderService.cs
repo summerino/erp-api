@@ -1088,7 +1088,7 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
                              SupName = sup.Name,
                              SupPhone = sup.Phone
                          };
-        data_order = data_order.Where(x => x.Mark == "A" || x.Mark == "APR");
+        //data_order = data_order.Where(x => x.Mark == "A" || x.Mark == "APR");
 
         var data_return = from rcvHeader in Db.MobileReceiveItemHeaders
                           join pr in Db.VwPurchaseReturnHeaders on rcvHeader.TransCode equals pr.Code
@@ -1108,7 +1108,7 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
                               SupPhone = sup.Phone
                           };
 
-        data_return = data_return.Where(x => x.Mark == "A" || x.Mark == "APR");
+        //data_return = data_return.Where(x => x.Mark == "A" || x.Mark == "APR");
 
         var data = (data_order.AsQueryable()).Union(data_return.AsQueryable());
 

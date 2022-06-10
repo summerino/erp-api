@@ -251,31 +251,35 @@ public class ItemService : GeneralService<Item>, IItemService
         var header = Db.VwSalesOrderHeaders.Where(s => (new string[] { "A", "PS" }).Contains(s.Mark) && stockM.Select(x => x.RefCode1).Contains(s.Code)).ToList();
         var details = Db.VwSalesOrderDetails.Where(r => header.Select(x => x.Code).Contains(r.Code) && r.ItemId == itemid).ToList();
         var free = Db.SalesOrderDetailFreeGoods.Where(r => header.Select(x => x.Code).Contains(r.Code) && r.ItemId == itemid).ToList();
-        var result = (
-            new[] { new { Code = "", Date = new DateTime(), Type = "", CustName = "", Qty = 0, QtyDlv = 0, QtyRemain = 0 } }
-        ).Union(from h in header
+        var uomConv = Db.UoMConversions.ToList();
+        var result = (from h in header
             join d in details on h.Code equals d.Code
             select new
             {
                 Code = h.Code,
                 Date = h.Date,
                 Type = h.FromDirectInvoice == true ? "Penjualan Langsung" : "Order Penjualan",
+                CustCode = h.CustCode,
                 CustName = h.CustName,
                 Qty = Convert.ToInt32(d.Qty),
                 QtyDlv = Convert.ToInt32(d.QtyDlv),
-                QtyRemain = Convert.ToInt32(d.Qty - d.QtyDlv)
+                QtyRemain = Convert.ToInt32(d.Qty - d.QtyDlv),
+                UnitName = d.UnitName
             }).Union(from h in header
             join f in free on h.Code equals f.Code
+            join d in uomConv on f.UnitId equals d.Id
             select new
             {
                 Code = h.Code,
                 Date = h.Date,
                 Type = "Bonus",
+                CustCode = h.CustCode,
                 CustName = h.CustName,
                 Qty = Convert.ToInt32(f.Qty),
                 QtyDlv = Convert.ToInt32(f.QtyClosed),
-                QtyRemain = Convert.ToInt32(f.Qty - f.QtyClosed)
-            }).Skip(1);
+                QtyRemain = Convert.ToInt32(f.Qty - f.QtyClosed),
+                UnitName = d.UnitEquivalent
+            }).ToDynamicList();
         return result;
     }
 
@@ -293,7 +297,8 @@ public class ItemService : GeneralService<Item>, IItemService
                 Type = "Order Pembelian",
                 Qty = Convert.ToInt32(d.Qty),
                 QtyDlv = Convert.ToInt32(d.QtyRcv),
-                QtyRemain = Convert.ToInt32(d.Qty - d.QtyRcv)
+                QtyRemain = Convert.ToInt32(d.Qty - d.QtyRcv),
+                UnitName = d.UnitName
             }).ToDynamicList();
 
         return result;
@@ -312,7 +317,8 @@ public class ItemService : GeneralService<Item>, IItemService
                 Code = h.Code,
                 Date = h.Date,
                 Type = "Transfer Persediaan",
-                Qty = Convert.ToInt32(d.Qty)
+                Qty = Convert.ToInt32(d.Qty),
+                UnitName = d.UnitName
             }).ToDynamicList();
 
         return result;

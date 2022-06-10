@@ -32,9 +32,43 @@ public class ExpeditionInvoiceService : GeneralService<ExpeditionInvoiceHeader>,
         return data.ToDataSourceResult(skip, take, filter, sort);
     }
 
-    public IEnumerable<ExpeditionInvoiceDetail> GetDetailData(string code)
+    public IEnumerable<dynamic> GetDetailData(string code)
     {
-        return Db.ExpeditionInvoiceDetails.Where(x => x.Code == code).OrderBy(x => x.LineNo);
+        var headerData = Db.ExpeditionInvoiceHeaders.FirstOrDefault(x => x.Code == code);
+        List<dynamic> data;
+
+        if (headerData.SrcTrans == 1)
+        {
+            data = (from dt in Db.ExpeditionInvoiceDetails
+                    join dto in Db.PurchaseReceiveHeaders on dt.TransCode equals dto.Code
+                    where dt.Code == code
+                    select new
+                    {
+                        dt.Id,
+                        dt.TransCode,
+                        dt.LineNo,
+                        dto.Date,
+                        dto.Mark
+
+                    }).ToList<dynamic>();
+        }
+        else
+        {
+            data = (from dt in Db.ExpeditionInvoiceDetails
+                    join dto in Db.SalesDeliveryHeaders on dt.TransCode equals dto.Code
+                    where dt.Code == code
+                    select new
+                    {
+                        dt.Id,
+                        dt.TransCode,
+                        dt.LineNo,
+                        dto.Date,
+                        dto.Mark
+
+                    }).ToList<dynamic>();
+        }
+
+        return data.OrderBy(x => x.LineNo).ToDynamicList();
     }
 
     public List<dynamic> GetRelatedTransactions(string code)
@@ -203,5 +237,52 @@ public class ExpeditionInvoiceService : GeneralService<ExpeditionInvoiceHeader>,
         result.Success = true;
         result.Message = "Data faktur ekspedisi berhasil ditandai sebagai void.";
         return result;
+    }
+
+    public DataSourceResult GetReceivesData(IEnumerable<Filter> filter)
+    {
+        var data = (from dt in Db.VwPurchaseReceiveHeaders
+                    where dt.Mark != "V" &&
+                    (
+                        !(from eid in Db.ExpeditionInvoiceDetails 
+                        join eih in Db.ExpeditionInvoiceHeaders on eid.Code equals eih.Code
+                        where eih.Mark != "V"
+                        select eid.TransCode).Contains(dt.Code)
+                    )
+                    select new
+                    {
+                        dt.Code,
+                        dt.Date,
+                        dt.SupName,
+                        dt.Mark
+                    }).AsQueryable();
+
+        return data.ToDataSourceResult(0, data.Count(), filter, null);
+    }
+
+    public DataSourceResult GetDeliveriesData(IEnumerable<Filter> filter)
+    {
+        var data = (from dt in Db.VwSalesDeliveryHeaders
+                    join dto in Db.VwSalesOrderHeaders on dt.TransCode equals dto.Code into dtos
+                    from dtosRes in dtos.DefaultIfEmpty()
+                    join dtr in Db.VwSalesReturnHeaders on dt.TransCode equals dtr.Code into dtrs
+                    from dtrsRes in dtrs.DefaultIfEmpty()
+                    where dt.Mark != "V" &&
+                    (
+                        !(from eid in Db.ExpeditionInvoiceDetails
+                          join eih in Db.ExpeditionInvoiceHeaders on eid.Code equals eih.Code
+                          where eih.Mark != "V"
+                          select eid.TransCode).Contains(dt.Code)
+                    )
+                    select new
+                    {
+                        dt.Code,
+                        dt.Date,
+                        dt.CustName,
+                        SalesName = dt.SrcTrans == 1 ? dtosRes.SalesName : dtrsRes.SalesName,
+                        dt.Mark
+                    }).AsQueryable();
+
+        return data.ToDataSourceResult(0, data.Count(), filter, null);
     }
 }

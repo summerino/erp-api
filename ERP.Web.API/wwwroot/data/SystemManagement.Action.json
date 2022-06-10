@@ -44,4 +44,5 @@
 {"Id":44,"Name":"Reject"},
 {"Id":45,"Name":"Show Inventory Value"},
 {"Id":46,"Name":"Unlock"},
-{"Id":47,"Name":"Clone"}]
+{"Id":47,"Name":"Clone"},
+{"Id":48,"Name":"View Other User Transaction"}]

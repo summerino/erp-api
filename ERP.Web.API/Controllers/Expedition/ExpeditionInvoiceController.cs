@@ -58,20 +58,12 @@ public class ExpeditionInvoiceController : ControllerBase
     [HttpGet("detail")]
     public IActionResult GetDetailData(string code)
     {
-        var data = _inv.GetDetailData(code)
-            .Select(x => new
-            {
-                x.Id,
-                x.Code,
-                x.LineNo,
-                x.TransCode
-            })
-            .ToList<dynamic>();
+        var data = _inv.GetDetailData(code);
 
         return Ok(new ApiResponse
         {
-            RowCount = data.Count,
-            TableData = data
+            RowCount = data.Count(),
+            TableData = data.ToDynamicList()
         });
     }
 
@@ -86,6 +78,25 @@ public class ExpeditionInvoiceController : ControllerBase
                 Total = x.Amount,
                 Type = "Kas Bank"
             }).ToList<dynamic>();
+
+        return Ok(new ApiResponse
+        {
+            RowCount = data.Count,
+            TableData = data
+        });
+    }
+
+    [HttpGet("find-detail")]
+    public IActionResult FindDetailData(int type, string filters)
+    {
+        List<dynamic> data;
+
+        if (type == 1)
+            data = _inv.GetReceivesData(JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"))
+                .Data.ToDynamicList();
+        else
+            data = _inv.GetDeliveriesData(JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"))
+                .Data.ToDynamicList();
 
         return Ok(new ApiResponse
         {

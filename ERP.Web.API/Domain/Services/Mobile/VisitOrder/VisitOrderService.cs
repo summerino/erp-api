@@ -582,7 +582,6 @@ public class VisitOrderService : GeneralService<MobileVisitLog>, IVisitOrderServ
         using var transaction = Db.Database.BeginTransaction();
         try
         {
-
             Db.MobileVisitLogs.Add(data);
 
             //if (data.Visited == true)
@@ -606,7 +605,6 @@ public class VisitOrderService : GeneralService<MobileVisitLog>, IVisitOrderServ
                     VisitReasonId = reason
                 });
             }
-
 
             foreach (var invoice in data.Invoices)
             {

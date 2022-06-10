@@ -1689,7 +1689,442 @@ ALTER TABLE Sales.SalesReturnHeader ADD CONSTRAINT
 GO
 COMMIT";
             migrationBuilder.Sql(sql);
-			
+
+			// Reorder column MobileSales.MobileOrderHeader
+			sql = @"BEGIN TRANSACTION
+SET QUOTED_IDENTIFIER ON
+SET ARITHABORT ON
+SET NUMERIC_ROUNDABORT OFF
+SET CONCAT_NULL_YIELDS_NULL ON
+SET ANSI_NULLS ON
+SET ANSI_PADDING ON
+SET ANSI_WARNINGS ON
+COMMIT
+BEGIN TRANSACTION
+GO
+ALTER TABLE MobileSales.MobileOrderHeader
+	DROP CONSTRAINT FK_MobileOrderHeader_SalesOrderHeader_SalesOrderCode
+GO
+ALTER TABLE Sales.SalesOrderHeader SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+ALTER TABLE MobileSales.MobileOrderHeader
+	DROP CONSTRAINT FK_MobileOrderHeader_PaymentTerm_PaymentTermId
+GO
+ALTER TABLE General.PaymentTerm SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+ALTER TABLE MobileSales.MobileOrderHeader
+	DROP CONSTRAINT FK_MobileOrderHeader_MobileVisitLog_VisitLogCode
+GO
+ALTER TABLE MobileSales.MobileVisitLog SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+ALTER TABLE MobileSales.MobileOrderHeader
+	DROP CONSTRAINT FK_MobileOrderHeader_Employee_SalesBy
+GO
+ALTER TABLE General.Employee SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+CREATE TABLE MobileSales.Tmp_MobileOrderHeader
+	(
+	Code varchar(17) NOT NULL,
+	Date date NOT NULL,
+	VisitLogCode varchar(17) NOT NULL,
+	SalesOrderCode varchar(17) NULL,
+	Type smallint NOT NULL,
+	CustCode varchar(17) NOT NULL,
+	SalesBy bigint NOT NULL,
+	PaymentTermId int NULL,
+	CurrCode varchar(3) NOT NULL,
+	Rate decimal(18, 2) NOT NULL,
+	SubTotal decimal(18, 2) NOT NULL,
+	FinalDiscPercent decimal(5, 2) NOT NULL,
+	FinalDisc decimal(18, 2) NOT NULL,
+	IncludeTax bit NOT NULL,
+	TaxAmount decimal(18, 2) NOT NULL,
+	ExemptTaxAmount decimal(18, 2) NOT NULL,
+	Total decimal(18, 2) NOT NULL,
+	DPP decimal(18, 2) NOT NULL,
+	PaidAmount decimal(18, 2) NOT NULL,
+	Mark varchar(3) NOT NULL,
+	CreatedBy int NOT NULL,
+	CreatedDate datetime NOT NULL,
+	UpdatedBy int NOT NULL,
+	UpdatedDate datetime NOT NULL,
+	ApprovedBy int NULL,
+	ApprovedDate datetime NULL,
+	RejectedBy int NULL,
+	RejectedDate datetime NULL
+	)  ON [PRIMARY]
+GO
+ALTER TABLE MobileSales.Tmp_MobileOrderHeader SET (LOCK_ESCALATION = TABLE)
+GO
+IF EXISTS(SELECT * FROM MobileSales.MobileOrderHeader)
+	 EXEC('INSERT INTO MobileSales.Tmp_MobileOrderHeader (Code, Date, VisitLogCode, SalesOrderCode, Type, CustCode, SalesBy, PaymentTermId, CurrCode, Rate, SubTotal, FinalDiscPercent, FinalDisc, IncludeTax, TaxAmount, ExemptTaxAmount, Total, DPP, PaidAmount, Mark, CreatedBy, CreatedDate, UpdatedBy, UpdatedDate, ApprovedBy, ApprovedDate, RejectedBy, RejectedDate)
+		SELECT Code, Date, VisitLogCode, SalesOrderCode, Type, CustCode, SalesBy, PaymentTermId, CurrCode, Rate, SubTotal, FinalDiscPercent, FinalDisc, IncludeTax, TaxAmount, ExemptTaxAmount, Total, DPP, PaidAmount, Mark, CreatedBy, CreatedDate, UpdatedBy, UpdatedDate, ApprovedBy, ApprovedDate, RejectedBy, RejectedDate FROM MobileSales.MobileOrderHeader WITH (HOLDLOCK TABLOCKX)')
+GO
+ALTER TABLE MobileSales.MobileOrderDetailDiscount
+	DROP CONSTRAINT FK_MobileOrderDetailDiscount_MobileOrderHeader_Code
+GO
+ALTER TABLE MobileSales.MobileOrderDetailFreeGood
+	DROP CONSTRAINT FK_MobileOrderDetailFreeGood_MobileOrderHeader_Code
+GO
+ALTER TABLE MobileSales.MobileOrderDetail
+	DROP CONSTRAINT FK_MobileOrderDetail_MobileOrderHeader_Code
+GO
+DROP TABLE MobileSales.MobileOrderHeader
+GO
+EXECUTE sp_rename N'MobileSales.Tmp_MobileOrderHeader', N'MobileOrderHeader', 'OBJECT' 
+GO
+ALTER TABLE MobileSales.MobileOrderHeader ADD CONSTRAINT
+	PK_MobileOrderHeader PRIMARY KEY CLUSTERED 
+	(
+	Code
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+
+GO
+CREATE NONCLUSTERED INDEX IX_MobileOrderHeader_CustCode ON MobileSales.MobileOrderHeader
+	(
+	CustCode
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+GO
+CREATE NONCLUSTERED INDEX IX_MobileOrderHeader_PaymentTermId ON MobileSales.MobileOrderHeader
+	(
+	PaymentTermId
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+GO
+CREATE NONCLUSTERED INDEX IX_MobileOrderHeader_SalesBy ON MobileSales.MobileOrderHeader
+	(
+	SalesBy
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+GO
+CREATE NONCLUSTERED INDEX IX_MobileOrderHeader_SalesOrderCode ON MobileSales.MobileOrderHeader
+	(
+	SalesOrderCode
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+GO
+CREATE NONCLUSTERED INDEX IX_MobileOrderHeader_VisitLogCode ON MobileSales.MobileOrderHeader
+	(
+	VisitLogCode
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+GO
+ALTER TABLE MobileSales.MobileOrderHeader ADD CONSTRAINT
+	FK_MobileOrderHeader_Employee_SalesBy FOREIGN KEY
+	(
+	SalesBy
+	) REFERENCES General.Employee
+	(
+	Id
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE MobileSales.MobileOrderHeader ADD CONSTRAINT
+	FK_MobileOrderHeader_MobileVisitLog_VisitLogCode FOREIGN KEY
+	(
+	VisitLogCode
+	) REFERENCES MobileSales.MobileVisitLog
+	(
+	Code
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE MobileSales.MobileOrderHeader ADD CONSTRAINT
+	FK_MobileOrderHeader_PaymentTerm_PaymentTermId FOREIGN KEY
+	(
+	PaymentTermId
+	) REFERENCES General.PaymentTerm
+	(
+	Id
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE MobileSales.MobileOrderHeader ADD CONSTRAINT
+	FK_MobileOrderHeader_SalesOrderHeader_SalesOrderCode FOREIGN KEY
+	(
+	SalesOrderCode
+	) REFERENCES Sales.SalesOrderHeader
+	(
+	Code
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+ALTER TABLE MobileSales.MobileOrderDetail ADD CONSTRAINT
+	FK_MobileOrderDetail_MobileOrderHeader_Code FOREIGN KEY
+	(
+	Code
+	) REFERENCES MobileSales.MobileOrderHeader
+	(
+	Code
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE MobileSales.MobileOrderDetail SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+ALTER TABLE MobileSales.MobileOrderDetailFreeGood ADD CONSTRAINT
+	FK_MobileOrderDetailFreeGood_MobileOrderHeader_Code FOREIGN KEY
+	(
+	Code
+	) REFERENCES MobileSales.MobileOrderHeader
+	(
+	Code
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE MobileSales.MobileOrderDetailFreeGood SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+ALTER TABLE MobileSales.MobileOrderDetailDiscount ADD CONSTRAINT
+	FK_MobileOrderDetailDiscount_MobileOrderHeader_Code FOREIGN KEY
+	(
+	Code
+	) REFERENCES MobileSales.MobileOrderHeader
+	(
+	Code
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE MobileSales.MobileOrderDetailDiscount SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT";
+            migrationBuilder.Sql(sql);
+
+			// Reorder column MobileSales.MobileOrderDetail
+			sql = @"BEGIN TRANSACTION
+SET QUOTED_IDENTIFIER ON
+SET ARITHABORT ON
+SET NUMERIC_ROUNDABORT OFF
+SET CONCAT_NULL_YIELDS_NULL ON
+SET ANSI_NULLS ON
+SET ANSI_PADDING ON
+SET ANSI_WARNINGS ON
+COMMIT
+BEGIN TRANSACTION
+GO
+ALTER TABLE MobileSales.MobileOrderDetail
+	DROP CONSTRAINT FK_MobileOrderDetail_Item_ItemId
+GO
+ALTER TABLE Inventory.Item SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+ALTER TABLE MobileSales.MobileOrderDetail
+	DROP CONSTRAINT FK_MobileOrderDetail_MobileOrderHeader_Code
+GO
+ALTER TABLE MobileSales.MobileOrderHeader SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+ALTER TABLE MobileSales.MobileOrderDetail
+	DROP CONSTRAINT FK_MobileOrderDetail_Tax_TaxId
+GO
+ALTER TABLE General.Tax SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+ALTER TABLE MobileSales.MobileOrderDetail
+	DROP CONSTRAINT FK_MobileOrderDetail_UoMConversion_UnitId
+GO
+ALTER TABLE Inventory.UoMConversion SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+ALTER TABLE MobileSales.MobileOrderDetail
+	DROP CONSTRAINT FK_MobileOrderDetail_UoM_UomId
+GO
+ALTER TABLE Inventory.UoM SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+CREATE TABLE MobileSales.Tmp_MobileOrderDetail
+	(
+	Id bigint NOT NULL IDENTITY (1, 1),
+	Code varchar(17) NOT NULL,
+	[LineNo] smallint NOT NULL,
+	ItemId int NOT NULL,
+	UomId int NOT NULL,
+	UnitId int NOT NULL,
+	Qty decimal(18, 2) NOT NULL,
+	UnitPrice decimal(19, 6) NOT NULL,
+	Disc decimal(19, 6) NOT NULL,
+	TaxId int NULL,
+	TaxAmount decimal(19, 6) NOT NULL,
+	ExemptTaxAmount decimal(19, 6) NOT NULL,
+	NettPrice decimal(19, 6) NOT NULL,
+	Total decimal(19, 6) NOT NULL,
+	DPP decimal(19, 6) NOT NULL
+	)  ON [PRIMARY]
+GO
+ALTER TABLE MobileSales.Tmp_MobileOrderDetail SET (LOCK_ESCALATION = TABLE)
+GO
+SET IDENTITY_INSERT MobileSales.Tmp_MobileOrderDetail ON
+GO
+IF EXISTS(SELECT * FROM MobileSales.MobileOrderDetail)
+	 EXEC('INSERT INTO MobileSales.Tmp_MobileOrderDetail (Id, Code, [LineNo], ItemId, UomId, UnitId, Qty, UnitPrice, Disc, TaxId, TaxAmount, ExemptTaxAmount, NettPrice, Total, DPP)
+		SELECT Id, Code, [LineNo], ItemId, UomId, UnitId, Qty, UnitPrice, Disc, TaxId, TaxAmount, ExemptTaxAmount, NettPrice, Total, DPP FROM MobileSales.MobileOrderDetail WITH (HOLDLOCK TABLOCKX)')
+GO
+SET IDENTITY_INSERT MobileSales.Tmp_MobileOrderDetail OFF
+GO
+ALTER TABLE MobileSales.MobileOrderDetailFreeGood
+	DROP CONSTRAINT FK_MobileOrderDetailFreeGood_MobileOrderDetail_OrderDetailId
+GO
+ALTER TABLE MobileSales.MobileOrderDetailDiscount
+	DROP CONSTRAINT FK_MobileOrderDetailDiscount_MobileOrderDetail_OrderDetailId
+GO
+DROP TABLE MobileSales.MobileOrderDetail
+GO
+EXECUTE sp_rename N'MobileSales.Tmp_MobileOrderDetail', N'MobileOrderDetail', 'OBJECT' 
+GO
+ALTER TABLE MobileSales.MobileOrderDetail ADD CONSTRAINT
+	PK_MobileOrderDetail PRIMARY KEY CLUSTERED 
+	(
+	Id
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+
+GO
+CREATE NONCLUSTERED INDEX IX_MobileOrderDetail_Code ON MobileSales.MobileOrderDetail
+	(
+	Code
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+GO
+CREATE NONCLUSTERED INDEX IX_MobileOrderDetail_ItemId ON MobileSales.MobileOrderDetail
+	(
+	ItemId
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+GO
+CREATE NONCLUSTERED INDEX IX_MobileOrderDetail_TaxId ON MobileSales.MobileOrderDetail
+	(
+	TaxId
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+GO
+CREATE NONCLUSTERED INDEX IX_MobileOrderDetail_UnitId ON MobileSales.MobileOrderDetail
+	(
+	UnitId
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+GO
+CREATE NONCLUSTERED INDEX IX_MobileOrderDetail_UomId ON MobileSales.MobileOrderDetail
+	(
+	UomId
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+GO
+ALTER TABLE MobileSales.MobileOrderDetail ADD CONSTRAINT
+	FK_MobileOrderDetail_UoM_UomId FOREIGN KEY
+	(
+	UomId
+	) REFERENCES Inventory.UoM
+	(
+	Id
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE MobileSales.MobileOrderDetail ADD CONSTRAINT
+	FK_MobileOrderDetail_UoMConversion_UnitId FOREIGN KEY
+	(
+	UnitId
+	) REFERENCES Inventory.UoMConversion
+	(
+	Id
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE MobileSales.MobileOrderDetail ADD CONSTRAINT
+	FK_MobileOrderDetail_Tax_TaxId FOREIGN KEY
+	(
+	TaxId
+	) REFERENCES General.Tax
+	(
+	Id
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE MobileSales.MobileOrderDetail ADD CONSTRAINT
+	FK_MobileOrderDetail_MobileOrderHeader_Code FOREIGN KEY
+	(
+	Code
+	) REFERENCES MobileSales.MobileOrderHeader
+	(
+	Code
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE MobileSales.MobileOrderDetail ADD CONSTRAINT
+	FK_MobileOrderDetail_Item_ItemId FOREIGN KEY
+	(
+	ItemId
+	) REFERENCES Inventory.Item
+	(
+	Id
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+ALTER TABLE MobileSales.MobileOrderDetailDiscount ADD CONSTRAINT
+	FK_MobileOrderDetailDiscount_MobileOrderDetail_OrderDetailId FOREIGN KEY
+	(
+	OrderDetailId
+	) REFERENCES MobileSales.MobileOrderDetail
+	(
+	Id
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE MobileSales.MobileOrderDetailDiscount SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+ALTER TABLE MobileSales.MobileOrderDetailFreeGood ADD CONSTRAINT
+	FK_MobileOrderDetailFreeGood_MobileOrderDetail_OrderDetailId FOREIGN KEY
+	(
+	OrderDetailId
+	) REFERENCES MobileSales.MobileOrderDetail
+	(
+	Id
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE MobileSales.MobileOrderDetailFreeGood SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT";
+            migrationBuilder.Sql(sql);
+
 			// Refresh view General.vwTax
 			sql = @"EXEC sp_refreshview 'General.vwTax'";
             migrationBuilder.Sql(sql);
@@ -1748,6 +2183,14 @@ COMMIT";
 
 			// Refresh view Sales.vwSalesReturnHeader
 			sql = @"EXEC sp_refreshview 'Sales.vwSalesReturnHeader'";
+            migrationBuilder.Sql(sql);
+
+			// Refresh view MobileSales.vwMobileOrderHeader
+			sql = @"EXEC sp_refreshview 'MobileSales.vwMobileOrderHeader'";
+            migrationBuilder.Sql(sql);
+
+			// Refresh view MobileSales.vwMobileOrderDetail
+			sql = @"EXEC sp_refreshview 'MobileSales.vwMobileOrderDetail'";
             migrationBuilder.Sql(sql);
 		}
 
