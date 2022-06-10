@@ -1321,6 +1321,19 @@ public class TransactionHistoryService : ITransactionHistoryService
 
         foreach (var sub in subGroup)
         {
+            var targets = (from th in Db.SalesTargetHeaders
+                               join td in Db.SalesTargetDetails.Where(x => x.ItemGroupId.Equals(groupId) && x.ItemSubGroupId.Equals(subGroupId) && x.SubGroup.Equals(sub.Value))
+                               on th.Code equals td.Code
+                               join ts in Db.SalesTargetSubjects on th.Code equals ts.Code
+                               group new { th, td, ts } by new { td.ItemGroupId, td.ItemSubGroupId, td.SubGroup,ts.SalesmanId } into g
+                               select new
+                               {
+                                   SalesId = g.Key.SalesmanId,
+                                   Amount = g.Sum(tl =>tl.td.Amount)
+
+                               });
+
+
             var dataMobile = (from so in Db.MobileOrderHeaders.Where(x => x.SalesOrderCode.Equals(null) && x.Date.Equals(date != DateTime.MinValue ? date : x.Date))
                               join sod in Db.MobileOrderDetails on so.Code equals sod.Code
                               join it in Db.Items.Where(x => x.SubGroup1.Contains(sub.Value) || x.SubGroup2.Contains(sub.Value) || x.SubGroup3.Contains(sub.Value) || x.SubGroup4.Contains(sub.Value) || x.SubGroup5.Contains(sub.Value)) on sod.ItemId equals it.Id
@@ -1329,7 +1342,9 @@ public class TransactionHistoryService : ITransactionHistoryService
                               {
                                   SalesId = g.Key.SalesBy,
                                   DetailSubGroup = sub.Value,
-                                  Total = g.Sum(tl => tl.sod.Total)
+                                  Total = g.Sum(tl => tl.sod.Total),
+                                  Target = targets.Where(x => x.SalesId.Equals(g.Key.SalesBy)).FirstOrDefault() == null?0: targets.Where(x => x.SalesId.Equals(g.Key.SalesBy)).FirstOrDefault().Amount,
+                                  PercentAchieved = targets.Where(x => x.SalesId.Equals(g.Key.SalesBy)).FirstOrDefault() == null ? 0 : g.Sum(tl => tl.sod.Total) / targets.Where(x => x.SalesId.Equals(g.Key.SalesBy)).FirstOrDefault().Amount * 100
                               }).ToList();
 
             foreach (var item in dataMobile)
