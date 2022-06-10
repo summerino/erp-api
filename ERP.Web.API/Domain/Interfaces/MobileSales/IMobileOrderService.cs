@@ -16,9 +16,11 @@ public interface IMobileOrderService : IGeneralService<MobileOrderHeader>
 
     IEnumerable<MobileOrderDetailDiscount> GetDiscDetailData(string code);
 
-    SaveResult Approve(List<MobileOrderHeader> data, int userId);
+    SaveResult Approve(List<MobileOrderHeader> data, int userId, bool allowOverlimit, string reason);
 
     SaveResult Reject(List<MobileOrderHeader> data, int userId);
 
     SaveResult Update(MobileOrderRequest data);
+
+    IEnumerable<dynamic> ValidateOverlimit(List<MobileOrderHeader> data);
 }

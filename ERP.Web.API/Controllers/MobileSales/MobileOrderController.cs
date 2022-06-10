@@ -136,13 +136,16 @@ public class MobileOrderController : ControllerBase
     }
 
     [HttpPut("approve")]
-    public IActionResult Approve(List<MobileOrderHeader> data)
+    public IActionResult Approve(List<MobileOrderHeader> data, string reason = null)
     {
         if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Approve }).Any())
         {
             return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
         }
-        var result = _mo.Approve(data, _claim.UserId);
+
+        var allowOverlimit = _auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.OverLimit }).Any();
+
+        var result = _mo.Approve(data, _claim.UserId, allowOverlimit, reason);
 
         return Ok(result);
     }
@@ -157,5 +160,17 @@ public class MobileOrderController : ControllerBase
         var result = _mo.Reject(data, _claim.UserId);
 
         return Ok(result);
+    }
+
+    [HttpPut("validate-overlimit")]
+    public IActionResult ValidateOverlimit(List<MobileOrderHeader> data)
+    {
+        var result = _mo.ValidateOverlimit(data);
+
+        return Ok(new ApiResponse
+        {
+            RowCount = result.Count(),
+            TableData = result.ToDynamicList()
+        });
     }
 }
