@@ -10,6 +10,7 @@ namespace ERP.Web.API.Controllers.Finance
     public class CashFlowReportController : ControllerBase
     {
         private readonly ICashFlowReportService _cfr;
+
         public CashFlowReportController(ICashFlowReportService cfr)
         {
             _cfr = cfr;

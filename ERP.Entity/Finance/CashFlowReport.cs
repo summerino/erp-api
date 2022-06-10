@@ -16,6 +16,12 @@ namespace ERP.Entity.Finance
 
         public string TypeTranIO { get; set; }
 
+        public string CbCode { get; set; }
+
+        public string TransCode { get; set; }
+
+        public string Notes { get; set; }
+
         public decimal? AmountOc { get; set; }
 
         public decimal? AmountIdr { get; set; }
@@ -81,10 +87,6 @@ namespace ERP.Entity.Finance
         public decimal? Amount29 { get; set; }
 
         public decimal? Amount30 { get; set; }
-
-        public string TransCode { get; set; }
-
-        public string Notes { get; set; }
     }
 
     public class CashFlowReportByCOA
@@ -97,12 +99,14 @@ namespace ERP.Entity.Finance
 
         public string TypeTranIO { get; set; }
 
-        public decimal? AmountOc { get; set; }
-
-        public decimal? AmountIdr { get; set; }
+        public string CbCode { get; set; }
 
         public string TransCode { get; set; }
 
         public string Notes { get; set; }
+
+        public decimal? AmountOc { get; set; }
+
+        public decimal? AmountIdr { get; set; }
     }
 }
