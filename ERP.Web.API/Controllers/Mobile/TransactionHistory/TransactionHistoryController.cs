@@ -265,8 +265,8 @@ public class TransactionHistoryController : ControllerBase
         var data =
             _transactionHistory.GetDataDetailBySubGroupSummary(skip, take,
                 JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
-                JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"), date,
-                groupId, subGroupId);
+                JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
+                date, groupId, subGroupId);
 
         var result = ((List<TransactionHistoryDetailBySubGroupSummary>)data.Data).ToList<dynamic>();
 

@@ -1337,16 +1337,18 @@ public class TransactionHistoryService : ITransactionHistoryService
         foreach (var sub in subGroup)
         {
             var targets = (from th in Db.SalesTargetHeaders
-                               join td in Db.SalesTargetDetails.Where(x => x.ItemGroupId.Equals(groupId) && x.ItemSubGroupId.Equals(subGroupId) && x.SubGroup.Equals(sub.Value))
-                               on th.Code equals td.Code
-                               join ts in Db.SalesTargetSubjects on th.Code equals ts.Code
-                               group new { th, td, ts } by new { td.ItemGroupId, td.ItemSubGroupId, td.SubGroup,ts.SalesmanId } into g
-                               select new
-                               {
-                                   SalesId = g.Key.SalesmanId,
-                                   Amount = g.Sum(tl =>tl.td.Amount)
-
-                               });
+                           join td in Db.SalesTargetDetails.Where(x => x.ItemGroupId.Equals(groupId) && x.ItemSubGroupId.Equals(subGroupId) && x.SubGroup.Equals(sub.Value))
+                           on th.Code equals td.Code
+                           join ts in Db.SalesTargetSubjects on th.Code equals ts.Code
+                           group new { th, td, ts } by new { td.ItemGroupId, td.ItemSubGroupId, td.SubGroup, ts.SalesmanId, th.StartDate, th.EndDate } into g
+                           select new
+                           {
+                               SalesId = g.Key.SalesmanId,
+                               StartDate = g.Key.StartDate,
+                               EndDate = g.Key.EndDate,
+                               SubGroup = g.Key.SubGroup,
+                               Amount = g.Sum(tl => tl.td.Amount)
+                           });
 
 
             var dataMobile = (from so in Db.MobileOrderHeaders.Where(x => x.SalesOrderCode.Equals(null) && x.Date.Equals(date != DateTime.MinValue ? date : x.Date))
@@ -1356,9 +1358,11 @@ public class TransactionHistoryService : ITransactionHistoryService
                               select new TransactionHistoryDetailBySubGroupSummary
                               {
                                   SalesId = g.Key.SalesBy,
+                                  StartDate = targets.Where(x => x.SubGroup.Equals(sub.Value)).FirstOrDefault().StartDate,
+                                  EndDate = targets.Where(x => x.SubGroup.Equals(sub.Value)).FirstOrDefault().EndDate,
                                   DetailSubGroup = sub.Value,
                                   Total = g.Sum(tl => tl.sod.Total),
-                                  Target = targets.Where(x => x.SalesId.Equals(g.Key.SalesBy)).FirstOrDefault() == null?0: targets.Where(x => x.SalesId.Equals(g.Key.SalesBy)).FirstOrDefault().Amount,
+                                  Target = targets.Where(x => x.SalesId.Equals(g.Key.SalesBy)).FirstOrDefault() == null ? 0 : targets.Where(x => x.SalesId.Equals(g.Key.SalesBy)).FirstOrDefault().Amount,
                                   PercentAchieved = targets.Where(x => x.SalesId.Equals(g.Key.SalesBy)).FirstOrDefault() == null ? 0 : g.Sum(tl => tl.sod.Total) / targets.Where(x => x.SalesId.Equals(g.Key.SalesBy)).FirstOrDefault().Amount * 100
                               }).ToList();
 
