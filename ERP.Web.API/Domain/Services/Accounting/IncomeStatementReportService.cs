@@ -93,7 +93,7 @@ public class IncomeStatementReportService : IIncomeStatementReportService
                     UNION ALL
                     SELECT TBA.Code AS isCode,TBA.Name AS isName
                     ,TBA.ParentCode AS isParent,TBA.PercentOf AS isPercentOf,TBA.PercentFrom AS isPercentFrom
-                    ,TBA.Position AS isPosition,TBA.Deep AS isDeep,TBA.Sort AS isSort,TBA.SubTotalSort AS isSubTotalSort
+                    ,TBA.Position AS isPosition,TBA.Deep AS isDeep,TBA.Sort AS isSeq,TBA.Sort AS isSort,TBA.SubTotalSort AS isSubTotalSort
                     ,CASE WHEN ISNULL(TBB.isShowed,0) = 1 THEN 0 ELSE TBA.Detail END AS isDetail
                     ,TBA.Hidden AS isHidden,TBA.Bold AS isBold
                     ,1 AS isShowed
@@ -131,7 +131,7 @@ public class IncomeStatementReportService : IIncomeStatementReportService
                     UNION ALL
                     SELECT TBA.Code AS isCode,TBA.Name AS isName
                     ,TBA.ParentCode AS isParent,TBA.PercentOf AS isPercentOf,TBA.PercentFrom AS isPercentFrom
-                    ,TBA.Position AS isPosition,TBA.Deep AS isDeep,TBA.Sort AS isSort,TBA.SubTotalSort AS isSubTotalSort
+                    ,TBA.Position AS isPosition,TBA.Deep AS isDeep,TBA.Sort AS isSeq,TBA.Sort AS isSort,TBA.SubTotalSort AS isSubTotalSort
                     ,TBA.Detail AS isDetail,TBA.Hidden AS isHidden,TBA.Bold AS isBold
                     ,1 AS isShowed
                     ,2 AS isOutdent
@@ -160,7 +160,7 @@ public class IncomeStatementReportService : IIncomeStatementReportService
         {
             sqlSort += $@"
                 UPDATE TBA SET
-                isRptSort = ISNULL(TBB.isRptSort,'') + RIGHT('0000000' + CONVERT(VARCHAR,TBA.isSort), 7)
+                isRptSort = ISNULL(TBB.isRptSort,'') + RIGHT('0000000' + CONVERT(VARCHAR,TBA.isSeq), 7) + RIGHT('0000000' + CONVERT(VARCHAR,TBA.isSort), 7)
                 FROM (
                     SELECT * FROM #tmpIsRpt_{tmpTableName}
                     WHERE isDeep = {i}
@@ -195,6 +195,7 @@ public class IncomeStatementReportService : IIncomeStatementReportService
                     ,TBC.PercentOf AS isPercentOf,TBC.PercentFrom AS isPercentFrom
                     ,TBC.Position AS isPosition
                     ,ISNULL(TBC.Deep,0) + 1 AS isDeep
+                    ,ISNULL(TBB.isSeq,0) AS isSeq
                     ,CONVERT(INT,TBA.CoaCode) AS isSort
                     ,0 AS isSubTotalSort
                     ,TBC.Detail AS isDetail
@@ -211,13 +212,14 @@ public class IncomeStatementReportService : IIncomeStatementReportService
                     INNER JOIN (
                         SELECT Code
                         ,CASE WHEN 'S' = '{fmtType}' THEN isCode ELSE isDetCode END AS isCode
+                        ,CASE WHEN 'S' = '{fmtType}' THEN isSeq ELSE isDetSeq END AS isSeq
                         FROM Accounting.COA
                         WHERE isActive = 1
                     ) TBB
                         ON TBB.Code = TBA.CoaCode
                     LEFT JOIN #tmpIsFormat_{tmpTableName} TBC
                         ON TBC.Code = TBB.isCode
-                    GROUP BY TBA.CoaCode,TBA.coaName,TBB.isCode
+                    GROUP BY TBA.CoaCode,TBA.coaName,TBB.isCode,TBB.isSeq
                     ,TBC.PercentOf,TBC.PercentFrom,TBC.Position
                     ,TBC.Deep,TBC.Detail,TBC.Hidden{(rptBy == "1" ? "" : ",TBC.ByAccount")},TBC.isPercent
                     ,TBA.period,TBA.src
@@ -228,13 +230,13 @@ public class IncomeStatementReportService : IIncomeStatementReportService
 
 	            ;WITH cte_is_subtot_src_0 AS (
                     SELECT isCode,isName,isParent
-                    ,isPercentOf,isPercentFrom,isPosition,isDeep,isSort,isSubTotalSort
+                    ,isPercentOf,isPercentFrom,isPosition,isDeep,isSeq,isSort,isSubTotalSort
                     ,isDetail,isHidden,isBold,isShowed,isOutdent,isExpanded,isHasChild,isPercent
                     ,isPeriod,isSource
                     ,SUM(ISNULL(isAmountIdr,0)) AS isAmountIdr
                     FROM #tmpIsSrc_{tmpTableName}
                     GROUP BY isCode,isName,isParent
-                    ,isPercentOf,isPercentFrom,isPosition,isDeep,isSort,isSubTotalSort
+                    ,isPercentOf,isPercentFrom,isPosition,isDeep,isSeq,isSort,isSubTotalSort
                     ,isDetail,isHidden,isBold,isShowed,isOutdent,isExpanded,isHasChild,isPercent
                     ,isPeriod,isSource
                 )
@@ -255,6 +257,7 @@ public class IncomeStatementReportService : IIncomeStatementReportService
                     ,TBA.isPercentOf,TBA.isPercentFrom
                     ,TBA.isPosition
                     ,TBA.isDeep + 1 AS isDeep
+                    ,ISNULL(TBB.isMaxSort,0) + 1 AS isSeq
                     ,ISNULL(TBB.isMaxSort,0) + 1 AS isSort
                     ,TBA.isSubTotalSort
                     ,0 AS isDetail
@@ -280,10 +283,10 @@ public class IncomeStatementReportService : IIncomeStatementReportService
                     ,TBA.isExpanded,TBA.isPeriod,TBA.isSource
                 )
                 SELECT isCode,isName,isParent
-                ,isPercentOf,isPercentFrom,isPosition,isDeep,isSort,isSubTotalSort
+                ,isPercentOf,isPercentFrom,isPosition,isDeep,isSeq,isSort,isSubTotalSort
                 ,isDetail,isHidden,isBold,isShowed,isOutdent,isExpanded,isHasChild,isPercent
                 ,isPeriod,isSource
-                ,CONVERT(VARCHAR,'') AS isRptSort
+                ,CONVERT(VARCHAR(MAX),'') AS isRptSort
                 ,CASE isPosition WHEN 'D' THEN 1 WHEN 'C' THEN -1 END AS isPm
                 ,isAmountIdr
 				INTO #tmpIsRpt_{tmpTableName}
@@ -291,10 +294,10 @@ public class IncomeStatementReportService : IIncomeStatementReportService
                 WHERE isShowed = 1
                     UNION ALL
                 SELECT isCode,isName,isParent
-                ,isPercentOf,isPercentFrom,isPosition,isDeep,isSort,isSubTotalSort
+                ,isPercentOf,isPercentFrom,isPosition,isDeep,isSeq,isSort,isSubTotalSort
                 ,isDetail,isHidden,isBold,isShowed,isOutdent,isExpanded,isHasChild,isPercent
                 ,isPeriod,isSource
-                ,CONVERT(VARCHAR,'') AS isRptSort
+                ,CONVERT(VARCHAR(MAX),'') AS isRptSort
                 ,CASE isPosition WHEN 'D' THEN 1 WHEN 'C' THEN -1 END AS isPm
                 ,isAmountIdr
                 FROM cte_is_format_src_2
@@ -302,20 +305,20 @@ public class IncomeStatementReportService : IIncomeStatementReportService
 
                 INSERT INTO #tmpIsRpt_{tmpTableName}
                 SELECT isCode,isName,isParent
-                ,isPercentOf,isPercentFrom,isPosition,isDeep,isSort,isSubTotalSort
+                ,isPercentOf,isPercentFrom,isPosition,isDeep,isSeq,isSort,isSubTotalSort
                 ,isDetail,isHidden,isBold,isShowed,isOutdent,isExpanded,isHasChild,isPercent
                 ,'{nowPeriod[..4]}99' AS isPeriod,isSource,isRptSort,isPm
                 ,SUM(isAmountIdr) AS isAmountIdr
                 FROM #tmpIsRpt_{tmpTableName}
                 WHERE (isPeriod > '{nowPeriod[..4]}00' AND isPeriod <= '{nowPeriod}')
                 GROUP BY isCode,isName,isParent
-                ,isPercentOf,isPercentFrom,isPosition,isDeep,isSort,isSubTotalSort
+                ,isPercentOf,isPercentFrom,isPosition,isDeep,isSeq,isSort,isSubTotalSort
                 ,isDetail,isHidden,isBold,isShowed,isOutdent,isExpanded,isHasChild,isPercent
                 ,isPeriod,isSource,isRptSort,isPm
 
                 INSERT INTO #tmpIsRpt_{tmpTableName}
                 SELECT isCode,isName,isParent
-                ,isPercentOf,isPercentFrom,isPosition,isDeep,isSort,isSubTotalSort
+                ,isPercentOf,isPercentFrom,isPosition,isDeep,isSeq,isSort,isSubTotalSort
                 ,isDetail,isHidden,isBold,isShowed,isOutdent,isExpanded,isHasChild,isPercent
                 ,'{prevPeriod[..4]}99' AS isPeriod,isSource,isRptSort,isPm
                 ,SUM(isAmountIdr) AS isAmountIdr
@@ -323,13 +326,13 @@ public class IncomeStatementReportService : IIncomeStatementReportService
                 WHERE (isPeriod > '{prevPeriod[..4]}00' AND isPeriod <= '{prevPeriod}')
                 AND isSource <> 'END_YEAR' {(periodType is "Y" or "A" ? "" : "AND 1 = 2")}
                 GROUP BY isCode,isName,isParent
-                ,isPercentOf,isPercentFrom,isPosition,isDeep,isSort,isSubTotalSort
+                ,isPercentOf,isPercentFrom,isPosition,isDeep,isSeq,isSort,isSubTotalSort
                 ,isDetail,isHidden,isBold,isShowed,isOutdent,isExpanded,isHasChild,isPercent
                 ,isPeriod,isSource,isRptSort,isPm
 
                 INSERT INTO #tmpIsRpt_{tmpTableName}
                 SELECT TBA.Code,TBA.Name,TBA.ParentCode
-                ,TBA.PercentOf,TBA.PercentFrom,TBA.Position,TBA.Deep,TBA.Sort,TBA.SubTotalSort
+                ,TBA.PercentOf,TBA.PercentFrom,TBA.Position,TBA.Deep,TBA.Sort,TBA.Sort,TBA.SubTotalSort
                 ,TBA.Detail,TBA.hidden,TBA.Bold,1 AS isShowed,2 AS isOutdent,0 AS isExpanded,0 AS isHasChild,1 AS isPercent
                 ,TBC.isPeriod,'' AS isSource,TBC.isRptSort
                 ,CASE TBA.Position WHEN 'D' THEN 1 WHEN 'C' THEN -1 END AS isPm

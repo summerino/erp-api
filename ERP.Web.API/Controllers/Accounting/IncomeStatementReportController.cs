@@ -15,7 +15,7 @@ public class IncomeStatementReportController : ControllerBase
     private readonly IRoleService _role;
     private readonly IClaimService _claim;
 
-    private const int MenuId = (int)Menu.IncomeStatementReport;
+    private const int MenuId = (int) Menu.IncomeStatementReport;
 
     public IncomeStatementReportController(IIncomeStatementReportService isr, IRoleService role,
         IClaimService claim)

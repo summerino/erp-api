@@ -15,9 +15,8 @@ public class IncomeStatementFormatController : ControllerBase
     private readonly IIncomeStatementFormatService _isf;
     private readonly IClaimService _claim;
     private readonly IAuthService _auth;
- 
 
-    private const int MenuId = (int)Menu.IncomeStatementFormat;
+    private const int MenuId = (int) Menu.IncomeStatementFormat;
 
     public IncomeStatementFormatController(IIncomeStatementFormatService isf, IClaimService claim, IAuthService auth)
     {
@@ -30,9 +29,7 @@ public class IncomeStatementFormatController : ControllerBase
     public IActionResult OnPost(IncomeStatementFormat data)
     {
         if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Insert }).Any())
-        {
             return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-        }
 
         data.IsActive = true;
         data.CreatedBy = _claim.UserId;
@@ -49,9 +46,7 @@ public class IncomeStatementFormatController : ControllerBase
     public IActionResult OnPut(string code, IncomeStatementFormat data)
     {
         if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
-        {
             return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-        }
 
         data.UpdatedBy = _claim.UserId;
         data.UpdatedDate = DateTime.Now;
@@ -65,9 +60,7 @@ public class IncomeStatementFormatController : ControllerBase
     public IActionResult OnMove(string type, IncomeStatementFormat data)
     {
         if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
-        {
             return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-        }
 
         data.UpdatedBy = _claim.UserId;
         data.UpdatedDate = DateTime.Now;
@@ -81,9 +74,7 @@ public class IncomeStatementFormatController : ControllerBase
     public IActionResult OnDelete(string code)
     {
         if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Delete }).Any())
-        {
             return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-        }
 
         var result = _isf.Delete(code, _claim.UserId);
 
@@ -106,9 +97,7 @@ public class IncomeStatementFormatController : ControllerBase
     public IActionResult InsertSub(string subCode, string code)
     {
         if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
-        {
             return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-        }
 
         var result = _isf.InsertSub(subCode, code, _claim.UserId);
 
@@ -119,9 +108,7 @@ public class IncomeStatementFormatController : ControllerBase
     public IActionResult RemoveSub(string subCode, string code)
     {
         if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
-        {
             return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
-        }
 
         var result = _isf.RemoveSub(subCode, code);
 
