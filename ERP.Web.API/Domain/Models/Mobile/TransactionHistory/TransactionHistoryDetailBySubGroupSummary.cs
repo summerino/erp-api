@@ -3,6 +3,10 @@
 public class TransactionHistoryDetailBySubGroupSummary
 {
     public long SalesId { get; set; }
+    public DateTime StartDate { get; set; }
+    public DateTime EndDate { get; set; }
     public string DetailSubGroup { get; set; }
     public decimal Total { get; set; }
+    public decimal Target { get; set; }
+    public decimal PercentAchieved { get; set; }
 }
