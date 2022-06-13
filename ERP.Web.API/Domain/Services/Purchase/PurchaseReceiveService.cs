@@ -353,13 +353,6 @@ public class PurchaseReceiveService : GeneralService<PurchaseReceiveHeader>, IPu
                     return result;
                 }
 
-                //update Data if changed TransCode
-                var oldRcvData = Db.PurchaseReceiveHeaders.AsNoTracking().FirstOrDefault(x => x.Code == data.Code);
-                if (oldRcvData.TransCode != data.TransCode)
-                {
-                    RestorePrevData(oldRcvData.Code, oldRcvData.TransCode, oldRcvData.SrcTrans);
-                }
-
                 // Checking purchase order date with purchase receive
                 if (transData.Date > data.Date)
                 {
@@ -367,7 +360,14 @@ public class PurchaseReceiveService : GeneralService<PurchaseReceiveHeader>, IPu
                     return result;
                 }
             }
-                
+
+            //update Data if changed TransCode
+            var oldRcvData = Db.PurchaseReceiveHeaders.AsNoTracking().FirstOrDefault(x => x.Code == data.Code);
+            if (oldRcvData.TransCode != data.TransCode)
+            {
+                RestorePrevData(oldRcvData.Code, oldRcvData.TransCode, oldRcvData.SrcTrans);
+            }
+
             // Checking receive qty is excess or not
             if (IsQtyExcess(data.SrcTrans, data.TransCode, data.ItemDetails, data.Code))
             {
