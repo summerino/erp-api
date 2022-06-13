@@ -70,7 +70,7 @@ public class PurchaseReceiveController : ControllerBase
                 x.OrderQty, x.OutstandingQty, x.Qty,
                 x.UomId, x.UnitId, x.UnitName,
                 x.Length, x.Width, x.Height, x.Weight, x.DimensionMeasurement, x.WeightMeasurement,
-                x.UnitPrice, x.Disc, x.TaxId, x.TaxAmount, x.NettPrice, x.Total, x.Dpp, x.ExemptTaxAmount,
+                x.UnitPrice, x.Disc, x.FinalDiscHeader, x.TaxId, x.TaxAmount, x.NettPrice, x.Total, x.Dpp, x.ExemptTaxAmount,
                 x.WarehouseCode, x.Type,
                 Units = uomC.Where(u => u.UomId == x.UomId)
                     .Select(u => new

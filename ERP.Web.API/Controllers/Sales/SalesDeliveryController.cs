@@ -64,7 +64,7 @@ public class SalesDeliveryController : ControllerBase
                 x.OrderQty, x.OutstandingQty, x.Qty,
                 x.UomId, x.UnitId, x.UnitName,
                 x.Length, x.Width, x.Height, x.Weight, x.DimensionMeasurement, x.WeightMeasurement,
-                x.UnitPrice, x.Disc, x.TaxId, x.TaxAmount, x.ExemptTaxAmount, x.NettPrice, x.Total, x.Dpp,
+                x.UnitPrice, x.Disc, x.FinalDiscHeader, x.TaxId, x.TaxAmount, x.ExemptTaxAmount, x.NettPrice, x.Total, x.Dpp,
                 OldUnitId = x.ItemUomSellId,
                 OldUnitName = x.ItemUomSellName,
                 OldUnitPrice = x.ItemSellPrice,
