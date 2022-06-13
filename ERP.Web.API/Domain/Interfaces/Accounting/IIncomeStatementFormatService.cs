@@ -1,5 +1,6 @@
 ﻿using ERP.Common;
 using ERP.Entity.Accounting;
+using ERP.Web.API.Model.Accounting;
 
 namespace ERP.Web.API.Domain.Interfaces.Accounting;
 
@@ -8,6 +9,8 @@ public interface IIncomeStatementFormatService : IGeneralService<IncomeStatement
     object GetFormatHierarchy(string category);
 
     IEnumerable<IncomeStatementFormat> GetFormatLists(string category);
+
+    SaveResult Update(IncomeStatementFormatRequest data);
 
     SaveResult Move(IncomeStatementFormat data, string type);
 

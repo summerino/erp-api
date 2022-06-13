@@ -4,6 +4,7 @@ using ERP.Entity.Accounting;
 using ERP.Web.API.Domain.Interfaces.Accounting;
 using ERP.Web.API.Domain.Interfaces.Auth;
 using ERP.Web.API.Model;
+using ERP.Web.API.Model.Accounting;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ERP.Web.API.Controllers.Accounting;
@@ -43,7 +44,7 @@ public class IncomeStatementFormatController : ControllerBase
     }
 
     [HttpPut("{code}")]
-    public IActionResult OnPut(string code, IncomeStatementFormat data)
+    public IActionResult OnPut(string code, IncomeStatementFormatRequest data)
     {
         if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Update }).Any())
             return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
