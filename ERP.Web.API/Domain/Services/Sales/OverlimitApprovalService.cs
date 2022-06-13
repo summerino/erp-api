@@ -24,6 +24,7 @@ public class OverlimitApprovalService : IOverlimitApprovalService
             {
                 x.Code,
                 x.Date,
+                x.CurrCode,
                 x.SalesInitial,
                 x.SalesName,
                 x.CustCode,
@@ -31,6 +32,7 @@ public class OverlimitApprovalService : IOverlimitApprovalService
                 x.Total,
                 x.Mark,
                 x.UpdatedDate,
+                x.FromDirectInvoice,
                 SourceTrans = x.FromDirectInvoice ? "Penjualan Langsung" : "Order Penjualan"
             });
 
