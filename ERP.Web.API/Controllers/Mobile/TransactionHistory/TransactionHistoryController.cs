@@ -248,7 +248,7 @@ public class TransactionHistoryController : ControllerBase
             _transactionHistory.GetDataBySubGroupSummary(skip, take,
                 JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
                 JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
-                startDate, endDate, groupId, subGroupId);
+                startDate, endDate, groupId, subGroupId, _claim.UserId);
 
         var result = ((List<TransactionHistoryBySubGroupSummary>)data.Data).ToList<dynamic>();
 
@@ -265,8 +265,8 @@ public class TransactionHistoryController : ControllerBase
         var data =
             _transactionHistory.GetDataDetailBySubGroupSummary(skip, take,
                 JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
-                JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"), date,
-                groupId, subGroupId);
+                JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
+                date, groupId, subGroupId);
 
         var result = ((List<TransactionHistoryDetailBySubGroupSummary>)data.Data).ToList<dynamic>();
 
