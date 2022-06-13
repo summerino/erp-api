@@ -344,7 +344,7 @@ public class PurchaseReceiveService : GeneralService<PurchaseReceiveHeader>, IPu
                     result.Message = "Data penerimaan pembelian tidak bisa diubah karena data order pembelian sudah ditandai sebagai void.";
                     return result;
                 }
-                
+
                 // Checking purchase order date with purchase receive
                 if (transData.Date > data.Date)
                 {
@@ -359,7 +359,7 @@ public class PurchaseReceiveService : GeneralService<PurchaseReceiveHeader>, IPu
             {
                 RestorePrevData(oldRcvData.Code, oldRcvData.TransCode, oldRcvData.SrcTrans);
             }
-                
+
             // Checking receive qty is excess or not
             if (IsQtyExcess(data.SrcTrans, data.TransCode, data.ItemDetails, data.Code))
             {
