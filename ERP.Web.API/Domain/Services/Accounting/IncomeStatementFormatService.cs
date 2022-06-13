@@ -3,6 +3,7 @@ using ERP.Entity;
 using ERP.Entity.Accounting;
 using ERP.Entity.SystemManagement;
 using ERP.Web.API.Domain.Interfaces.Accounting;
+using ERP.Web.API.Model.Accounting;
 using Microsoft.EntityFrameworkCore;
 
 namespace ERP.Web.API.Domain.Services.Accounting;
@@ -58,7 +59,7 @@ public class IncomeStatementFormatService : GeneralService<IncomeStatementFormat
         return result;
     }
 
-    public override SaveResult Update(IncomeStatementFormat data)
+    public SaveResult Update(IncomeStatementFormatRequest data)
     {
         var result = new SaveResult(false);
 
@@ -92,6 +93,19 @@ public class IncomeStatementFormatService : GeneralService<IncomeStatementFormat
         Db.Entry(data).Property(e => e.Code).IsModified = false;
         Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
         Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
+
+        if (data.Coas.Count() > 0)
+        {
+            foreach (var item in data.Coas)
+            {
+                var coaData = Db.Coas.FirstOrDefault(x => x.Code == item.Code);
+
+                coaData.IsSeq = item.IsSeq;
+                coaData.IsDetSeq = item.IsDetSeq;
+
+                Db.Coas.Update(coaData);
+            }
+        }
 
         Db.SaveChanges();
 
