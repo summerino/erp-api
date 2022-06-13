@@ -422,6 +422,13 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
                     return result;
             }
 
+            //update Data if changed TransCode
+            var oldDlvData = Db.SalesDeliveryHeaders.AsNoTracking().FirstOrDefault(x => x.Code == data.Code);
+            if (oldDlvData.TransCode != data.TransCode)
+            {
+                RestorePrevData(oldDlvData.Code, oldDlvData.TransCode, oldDlvData.SrcTrans);
+            }
+
             // Checking deliver qty is excess or not
             if (IsQtyExcess(data.Code, data.SrcTrans, data.TransCode, data.ItemDetails))
             {
@@ -453,6 +460,7 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
                 if (data.SrcTrans == 1)
                 {
                     var taxData = taxes.FirstOrDefault(x => x.Id == item.TaxId);
+
                     if (data.IncludeTax)
                     {
                         item.TaxAmount = (item.UnitPrice - item.Disc - item.FinalDiscHeader) - ((item.UnitPrice - item.Disc - item.FinalDiscHeader) / (1 + (taxData.Rate / 100)));
@@ -754,10 +762,10 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
                         result = true;
                     }
                 }
-                else
+                else if (dataSODetail != null)
                 {
                     var oldSDD = Db.SalesDeliveryDetails.AsNoTracking().FirstOrDefault(x => x.Code == code && x.ItemId == item.ItemId);
-                    var availableStock = dataSODetail.Qty - (dataSODetail.QtyDlv - oldSDD.Qty);
+                    var availableStock = dataSODetail.Qty - (dataSODetail.QtyDlv - oldSDD?.Qty ?? 0);
                     if (item.Qty > availableStock)
                     {
                         result = true;
@@ -780,10 +788,10 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
                         result = true;
                     }
                 }
-                else
+                else if (srData.Type == 2 ? dataSRDetail != null : dataSRXDetail != null)
                 {
                     var oldSDD = Db.SalesDeliveryDetails.AsNoTracking().FirstOrDefault(x => x.Code == code && x.ItemId == item.ItemId);
-                    var availableStock = (srData.Type == 2 ? dataSRDetail.Qty : dataSRXDetail.Qty) - ((srData.Type == 2 ? dataSRDetail.Qty : dataSRXDetail.Qty) - oldSDD.Qty);
+                    var availableStock = (srData.Type == 2 ? dataSRDetail.Qty : dataSRXDetail.Qty) - ((srData.Type == 2 ? dataSRDetail.Qty : dataSRXDetail.Qty) - oldSDD?.Qty ?? 0);
                     if (item.Qty > availableStock)
                     {
                         result = true;
@@ -884,5 +892,51 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
                 }).ToList();
 
         return result.OrderBy(x => x.LineNo);
+    }
+
+    private void RestorePrevData(string code, string transCode, int srcTrans)
+    {
+        var detailDoData = Db.SalesDeliveryDetails.AsNoTracking().Where(x => x.Code == code).ToList();
+        var detailDoFreeData = Db.SalesDeliveryDetailFreeGoods.AsNoTracking().Where(x => x.Code == code).ToList();
+        if (srcTrans == 1)
+        {
+            var SoData = Db.SalesOrderHeaders.FirstOrDefault(x => x.Code == transCode);
+            var detailSoData = Db.SalesOrderDetails.Where(x => x.Code == transCode).ToList();
+            var detailSoFreeData = Db.SalesOrderDetailFreeGoods.Where(x => x.Code == transCode).ToList();
+            foreach (var item in detailSoData)
+            {
+                item.QtyDlv -= detailDoData.FirstOrDefault(x => x.ItemId == item.ItemId && x.UnitId == item.UnitId).Qty;
+            }
+            Db.SalesOrderDetails.UpdateRange(detailSoData);
+
+            if (detailSoFreeData.Count > 0)
+            {
+                foreach (var item in detailSoFreeData)
+                {
+                    item.QtyClosed -= detailDoFreeData.FirstOrDefault(x => x.ItemId == item.ItemId && x.UnitId == item.UnitId).Qty;
+                }
+                SoData.Mark = (detailSoData.Sum(x => x.QtyDlv) == 0 && detailSoFreeData.Sum(x => x.QtyClosed) == 0) ? "A" : 
+                    (detailSoData.Sum(x => x.QtyDlv) == detailSoData.Sum(x => x.Qty) && detailSoFreeData.Sum(x => x.QtyClosed) == detailSoFreeData.Sum(x => x.Qty)) ? "CMP" : "PS";
+            }
+            else
+            {
+                SoData.Mark = detailSoData.Sum(x => x.QtyDlv) == 0 ? "A" : detailSoData.Sum(x => x.QtyDlv) == detailSoData.Sum(x => x.Qty) ? "CMP" : "PS";
+            }
+
+            Db.SalesOrderHeaders.Update(SoData);
+        }
+        else
+        {
+            var SrData = Db.SalesReturnHeaders.FirstOrDefault(x => x.Code == transCode);
+            var detailSrData = Db.SalesReturnDetails.Where(x => x.Code == transCode).ToList();
+            foreach (var item in detailSrData)
+            {
+                item.QtyDlv -= detailSrData.FirstOrDefault(x => x.ItemId == item.ItemId && x.UnitId == item.UnitId).Qty;
+            }
+            Db.SalesReturnDetails.UpdateRange(detailSrData);
+            SrData.Mark = detailSrData.Sum(x => x.QtyDlv) == 0 ? "A" : detailSrData.Sum(x => x.QtyDlv) == detailSrData.Sum(x => x.Qty) ? "CMP" : "PR";
+            Db.SalesReturnHeaders.Update(SrData);
+        }
+        Db.SaveChanges();
     }
 }

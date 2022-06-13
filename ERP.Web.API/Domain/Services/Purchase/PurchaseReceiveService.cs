@@ -344,7 +344,7 @@ public class PurchaseReceiveService : GeneralService<PurchaseReceiveHeader>, IPu
                     result.Message = "Data penerimaan pembelian tidak bisa diubah karena data order pembelian sudah ditandai sebagai void.";
                     return result;
                 }
-
+                
                 // Checking purchase order date with purchase receive
                 if (transData.Date > data.Date)
                 {
@@ -391,17 +391,18 @@ public class PurchaseReceiveService : GeneralService<PurchaseReceiveHeader>, IPu
                 if (data.SrcTrans == 1)
                 {
                     var taxData = taxes.FirstOrDefault(x => x.Id == item.TaxId);
+
                     if (data.IncludeTax)
                     {
                         item.TaxAmount = taxData != null ? (item.UnitPrice - item.Disc - item.FinalDiscHeader) - ((item.UnitPrice - item.Disc - item.FinalDiscHeader) / (1 + (taxData.Rate / 100))) : 0m;
-                        item.ExemptTaxAmount = taxData != null ? (item.UnitPrice - item.Disc - item.FinalDiscHeader) - ((item.UnitPrice - item.Disc - item.FinalDiscHeader) / (1 + (taxData.ExemptRate / 100))) : 0m;
+                        item.ExemptTaxAmount = (item.UnitPrice - item.Disc - item.FinalDiscHeader) - ((item.UnitPrice - item.Disc - item.FinalDiscHeader) / (1 + (taxData.ExemptRate / 100)));
                         item.NettPrice = item.UnitPrice - item.Disc - item.FinalDiscHeader;
                         item.Dpp = item.UnitPrice - item.Disc - item.FinalDiscHeader - item.TaxAmount + item.ExemptTaxAmount;
                     }
                     else
                     {
                         item.TaxAmount = taxData != null ? (item.UnitPrice - item.Disc - item.FinalDiscHeader) * (taxData.Rate / 100) : 0m;
-                        item.ExemptTaxAmount = taxData != null ? (item.UnitPrice - item.Disc - item.FinalDiscHeader) * (taxData.ExemptRate / 100) : 0m;
+                        item.ExemptTaxAmount = (item.UnitPrice - item.Disc - item.FinalDiscHeader) * (taxData.ExemptRate / 100);
                         item.NettPrice = item.UnitPrice - item.Disc - item.FinalDiscHeader + item.TaxAmount - item.ExemptTaxAmount;
                         item.Dpp = item.UnitPrice - item.Disc - item.FinalDiscHeader;
                     }
@@ -627,7 +628,7 @@ public class PurchaseReceiveService : GeneralService<PurchaseReceiveHeader>, IPu
                             result = true;
                         }
                     }
-                    else if(dataPODetail != null)
+                    else if (dataPODetail != null)
                     {
                         var oldPRD = Db.PurchaseReceiveDetails.AsNoTracking().FirstOrDefault(x => x.Code == code && x.ItemId == item.ItemId);
                         var availableStock = dataPODetail.Qty - (dataPODetail.QtyRcv - oldPRD?.Qty ?? 0);
@@ -676,35 +677,26 @@ public class PurchaseReceiveService : GeneralService<PurchaseReceiveHeader>, IPu
         {
             var PoData = Db.PurchaseOrderHeaders.FirstOrDefault(x => x.Code == transCode);
             var detailPoData = Db.PurchaseOrderDetails.Where(x => x.Code == transCode).ToList();
-
             foreach (var item in detailPoData)
             {
                 item.QtyRcv -= detailRcvData.FirstOrDefault(x => x.ItemId == item.ItemId && x.UnitId == item.UnitId).Qty;
             }
-
             Db.PurchaseOrderDetails.UpdateRange(detailPoData);
-
             PoData.Mark = detailPoData.Sum(x => x.QtyRcv) == 0 ? "A" : detailPoData.Sum(x => x.QtyRcv) == detailPoData.Sum(x => x.Qty) ? "CMP" : "PR";
-
             Db.PurchaseOrderHeaders.Update(PoData);
         }
         else
         {
             var PrData = Db.PurchaseReturnHeaders.FirstOrDefault(x => x.Code == transCode);
             var detailPrData = Db.PurchaseReturnDetails.Where(x => x.Code == transCode).ToList();
-
             foreach (var item in detailPrData)
             {
                 item.QtyRcv -= detailRcvData.FirstOrDefault(x => x.ItemId == item.ItemId && x.UnitId == item.UnitId).Qty;
             }
-
             Db.PurchaseReturnDetails.UpdateRange(detailPrData);
-
             PrData.Mark = detailPrData.Sum(x => x.QtyRcv) == 0 ? "A" : detailPrData.Sum(x => x.QtyRcv) == detailPrData.Sum(x => x.Qty) ? "CMP" : "PR";
-
             Db.PurchaseReturnHeaders.Update(PrData);
         }
-
         Db.SaveChanges();
     }
 }
