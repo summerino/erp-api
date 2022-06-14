@@ -65,7 +65,7 @@ public class OverlimitApprovalService : IOverlimitApprovalService
                     if (soData == null)
                         return new SaveResult(false, $"Data dengan kode { item.Code } tidak valid.");
 
-                    soData.Mark = "A";
+                    soData.Mark = "CMP";
                     soData.OverlimitApprovedBy = userId;
                     soData.OverlimitApprovedDate = DateTime.Now;
                     _tenantCtx.SalesOrderHeaders.Update(soData);
