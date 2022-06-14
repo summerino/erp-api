@@ -4,6 +4,7 @@ using ERP.Common.Models;
 using ERP.Entity;
 using ERP.Entity.Accounting;
 using ERP.Web.API.Domain.Interfaces.Accounting;
+using Microsoft.EntityFrameworkCore;
 
 namespace ERP.Web.API.Domain.Services.Accounting;
 
@@ -96,8 +97,12 @@ public class CoaService : GeneralService<Coa>, ICoaService
                 return result;
             }
 
+            //Set default seq value
+            data.IsSeq = int.MaxValue;
+            data.IsDetSeq = int.MaxValue;
+
             // Insert data
-            if(data.ParentId != null)
+            if (data.ParentId != null)
             {
                 var dataParent = Db.Coas.FirstOrDefault(x => x.Id == data.ParentId);
                 if (dataParent.ShowInMobile)
@@ -134,6 +139,13 @@ public class CoaService : GeneralService<Coa>, ICoaService
             result.Message = "Kode sudah terdaftar. Tolong gunakan kode lain.";
             return result;
         }
+
+        var oldData = Db.Coas.AsNoTracking().FirstOrDefault(x => x.Code == data.Code);
+        if (oldData.IsCode != data.IsCode)
+            data.IsSeq = int.MaxValue;
+
+        if (oldData.IsDetCode != data.IsDetCode)
+            data.IsDetSeq = int.MaxValue;
 
         // Checking if coa type is cash bank
         if (data.TypeId == 2)
