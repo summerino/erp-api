@@ -24,7 +24,7 @@ public class ReportJournalResult
 
     public string CurrCode { get; set; }
 
-    public decimal Rate { get; set; }
+    public decimal? Rate { get; set; }
 
     public decimal DebetOc { get; set; }
 
