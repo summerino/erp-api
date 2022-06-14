@@ -86,7 +86,7 @@ public class JournalReportController : ControllerBase
                 RefCode3 = item.RefCode3,
                 RefCode4 = item.RefCode4,
                 CurrCode = item.CurrCode,
-                Rate = item.Rate.ToString(CultureInfo.InvariantCulture),
+                Rate = item.Rate.HasValue ? item.Rate.Value.ToString(CultureInfo.InvariantCulture) : "1",
                 DebetOc = item.DebetOc.ToString(CultureInfo.InvariantCulture),
                 CreditOc = item.CreditOc.ToString(CultureInfo.InvariantCulture)
             });

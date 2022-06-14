@@ -679,7 +679,8 @@ public class PurchaseReceiveService : GeneralService<PurchaseReceiveHeader>, IPu
             var detailPoData = Db.PurchaseOrderDetails.Where(x => x.Code == transCode).ToList();
             foreach (var item in detailPoData)
             {
-                item.QtyRcv -= detailRcvData.FirstOrDefault(x => x.ItemId == item.ItemId && x.UnitId == item.UnitId).Qty;
+                if (detailRcvData.Where(x => x.ItemId == item.ItemId && x.UnitId == item.UnitId).Any())
+                    item.QtyRcv -= detailRcvData.FirstOrDefault(x => x.ItemId == item.ItemId && x.UnitId == item.UnitId).Qty;
             }
             Db.PurchaseOrderDetails.UpdateRange(detailPoData);
             PoData.Mark = detailPoData.Sum(x => x.QtyRcv) == 0 ? "A" : detailPoData.Sum(x => x.QtyRcv) == detailPoData.Sum(x => x.Qty) ? "CMP" : "PR";
@@ -691,7 +692,8 @@ public class PurchaseReceiveService : GeneralService<PurchaseReceiveHeader>, IPu
             var detailPrData = Db.PurchaseReturnDetails.Where(x => x.Code == transCode).ToList();
             foreach (var item in detailPrData)
             {
-                item.QtyRcv -= detailRcvData.FirstOrDefault(x => x.ItemId == item.ItemId && x.UnitId == item.UnitId).Qty;
+                if (detailRcvData.Where(x => x.ItemId == item.ItemId && x.UnitId == item.UnitId).Any())
+                    item.QtyRcv -= detailRcvData.FirstOrDefault(x => x.ItemId == item.ItemId && x.UnitId == item.UnitId).Qty;
             }
             Db.PurchaseReturnDetails.UpdateRange(detailPrData);
             PrData.Mark = detailPrData.Sum(x => x.QtyRcv) == 0 ? "A" : detailPrData.Sum(x => x.QtyRcv) == detailPrData.Sum(x => x.Qty) ? "CMP" : "PR";
