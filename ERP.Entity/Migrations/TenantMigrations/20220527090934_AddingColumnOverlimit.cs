@@ -1797,7 +1797,7 @@ AS
     LEFT JOIN SystemManagement.[User] u_a
         ON u_a.Id = so_h.ApprovedBy
     LEFT JOIN SystemManagement.[User] u_o
-        ON u_a.Id = so_h.OverlimitApprovedBy";
+        ON u_o.Id = so_h.OverlimitApprovedBy";
             migrationBuilder.Sql(sql);
         }
 
