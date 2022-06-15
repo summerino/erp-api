@@ -46,13 +46,13 @@ public class OverlimitApprovalController : ControllerBase
     }
 
     [HttpPost]
-    public IActionResult OnPost(List<SalesOrderRequest> data)
+    public IActionResult OnPost(List<SalesOrderRequest> data, string reason)
     {
         // Checking role authorization
         if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Approve }).Any())
             return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
 
-        var result = _approval.SaveChanges(data, _claim.UserId);
+        var result = _approval.SaveChanges(data, _claim.UserId, reason);
 
         return Ok(result);
     }
