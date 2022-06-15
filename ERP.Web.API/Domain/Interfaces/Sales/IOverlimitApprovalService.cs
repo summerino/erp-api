@@ -8,5 +8,5 @@ public interface IOverlimitApprovalService
 {
     DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string search);
 
-    SaveResult SaveChanges(List<SalesOrderRequest> data, int userId);
+    SaveResult SaveChanges(List<SalesOrderRequest> data, int userId, string reason);
 }

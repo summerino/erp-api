@@ -5,6 +5,7 @@ using ERP.Common.Models;
 using ERP.Entity;
 using ERP.Web.API.Domain.Interfaces.Sales;
 using ERP.Web.API.Model.Sales;
+using System.Linq.Dynamic.Core;
 
 namespace ERP.Web.API.Domain.Services.Sales;
 
@@ -48,7 +49,7 @@ public class OverlimitApprovalService : IOverlimitApprovalService
         return data.ToDataSourceResult(skip, take, filters, sorts);
     }
 
-    public SaveResult SaveChanges(List<SalesOrderRequest> data, int userId)
+    public SaveResult SaveChanges(List<SalesOrderRequest> data, int userId, string reason)
     {
         var result = new SaveResult(false);
 
@@ -68,6 +69,7 @@ public class OverlimitApprovalService : IOverlimitApprovalService
                     soData.Mark = "CMP";
                     soData.OverlimitApprovedBy = userId;
                     soData.OverlimitApprovedDate = DateTime.Now;
+                    soData.OverlimitApprovedReason = reason;
                     _tenantCtx.SalesOrderHeaders.Update(soData);
 
                     UpdateCreditUsed(soData.CustCode, soData.Total);
@@ -97,6 +99,7 @@ public class OverlimitApprovalService : IOverlimitApprovalService
                     soData.Mark = "A";
                     soData.OverlimitApprovedBy = userId;
                     soData.OverlimitApprovedDate = DateTime.Now;
+                    soData.OverlimitApprovedReason = reason;
                     _tenantCtx.SalesOrderHeaders.Update(soData);
 
                     UpdateCreditUsed(soData.CustCode, soData.Total);
