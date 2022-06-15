@@ -282,9 +282,6 @@ public class JournalService : IJournalService
                     if (itemData.RcvHeader.TaxAmount > 0)
                         if (itemData.RcvHeader.IncludeTax)
                             ivnValue -= itemDetail.RcvDetail.TaxAmount * itemDetail.RcvDetail.Qty;
-                    if (itemData.RcvHeader.ExemptTaxAmount > 0)
-                        if (itemData.RcvHeader.IncludeTax)
-                            ivnValue += itemDetail.RcvDetail.ExemptTaxAmount * itemDetail.RcvDetail.Qty;
 
                     //Inventory
                     journals.Add(new Journal
@@ -347,7 +344,7 @@ public class JournalService : IJournalService
                             CurrCode = itemData.RcvHeader.CurrCode,
                             Period = itemData.RcvHeader.Date.ToString("yyyyMMdd"),
                             Type = "D",
-                            Amount = itemDetail.RcvDetail.TaxAmount * itemDetail.RcvDetail.Qty,
+                            Amount = (itemDetail.RcvDetail.TaxAmount - itemDetail.RcvDetail.ExemptTaxAmount) != 0 ? (itemDetail.RcvDetail.TaxAmount - itemDetail.RcvDetail.ExemptTaxAmount) * itemDetail.RcvDetail.Qty : 0,
                             SrcTrans = "RCV"
                         });
                     }
@@ -372,17 +369,33 @@ public class JournalService : IJournalService
                             Amount = itemDetail.RcvDetail.ExemptTaxAmount * itemDetail.RcvDetail.Qty,
                             SrcTrans = "RCV"
                         });
+
+                        //PPN Yang Dibebaskan
+                        journals.Add(new Journal
+                        {
+                            Code = itemData.RcvHeader.Code,
+                            LineNo = k,
+                            Date = itemData.RcvHeader.Date,
+                            CoaCode = string.IsNullOrWhiteSpace(taxes.FirstOrDefault(x => x.Id == itemDetail.RcvDetail.TaxId)?.ExemptCoaCode) ? "" : taxes.FirstOrDefault(x => x.Id == itemDetail.RcvDetail.TaxId)?.ExemptCoaCode,
+                            TypeCode = "RCV_DT",
+                            Notes = "PPN Yang Dibebaskan",
+                            RefCode1 = itemData.RcvHeader.TransCode,
+                            RefCode2 = itemDetail.Item.Initial,
+                            Group = 5,
+                            CurrCode = itemData.RcvHeader.CurrCode,
+                            Period = itemData.RcvHeader.Date.ToString("yyyyMMdd"),
+                            Type = "D",
+                            Amount = itemDetail.RcvDetail.ExemptTaxAmount * itemDetail.RcvDetail.Qty,
+                            SrcTrans = "RCV"
+                        });
                     }
 
                     var ivnValue = (itemDetail.RcvDetail.UnitPrice - itemDetail.RcvDetail.Disc - prorateHeaderDisc) * itemDetail.RcvDetail.Qty;
                     var taxValue = journals.Where(x => x.Code == itemData.RcvHeader.Code && x.RefCode2 == itemDetail.Item.Initial && x.Group == 2).Sum(x => x.Amount);
-                    var extTaxValue = journals.Where(x => x.Code == itemData.RcvHeader.Code && x.RefCode2 == itemDetail.Item.Initial && x.Group == 3).Sum(x => x.Amount);
+                    //var extTaxValue = journals.Where(x => x.Code == itemData.RcvHeader.Code && x.RefCode2 == itemDetail.Item.Initial && x.Group == 3).Sum(x => x.Amount);
                     if (itemData.RcvHeader.TaxAmount > 0)
                         if (itemData.RcvHeader.IncludeTax)
                             ivnValue -= taxValue;
-                    if (itemData.RcvHeader.ExemptTaxAmount > 0)
-                        if (itemData.RcvHeader.IncludeTax)
-                            ivnValue += extTaxValue;
 
                     //Inventory
                     journals.Add(new Journal
@@ -430,7 +443,7 @@ public class JournalService : IJournalService
                                             TypeCode = "DN",
                                             Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_DPS")?.Value ?? ""} {itemData.Supplier.Initial}").Trim(),
                                             RefCode1 = itemMemo.DebitMemoCode,
-                                            Group = 5,
+                                            Group = 6,
                                             CurrCode = itemData.RcvHeader.CurrCode,
                                             Period = itemData.RcvHeader.Date.ToString("yyyyMMdd"),
                                             Type = "C",
@@ -485,7 +498,7 @@ public class JournalService : IJournalService
                                      select new { InvDetail = invdetail, RcvData = rcvdata }).ToList();
 
                 decimal taxAmount = 0m;
-                decimal extTaxAmount = 0m;
+                //decimal extTaxAmount = 0m;
                 short i = 0;
 
                 foreach (var itemDetail in InvDetailData)
@@ -512,7 +525,57 @@ public class JournalService : IJournalService
                     //PPN
                     taxAmount += itemDetail.RcvData.TaxAmount;
                     //PPN Yang Dibebaskan
-                    extTaxAmount += itemDetail.RcvData.ExemptTaxAmount;
+                    //extTaxAmount += itemDetail.RcvData.ExemptTaxAmount;
+                    var RcvDetailData = (from rcvdetail in db.PurchaseReceiveDetails
+                                         join item in db.Items on rcvdetail.ItemId equals item.Id
+                                         where rcvdetail.Code == itemDetail.RcvData.Code
+                                         select new { RcvDetail = rcvdetail, Item = item }).ToList();
+
+                    short ix = 0;
+                    foreach (var itemRcvDetail in RcvDetailData)
+                    {
+                        if (itemRcvDetail.RcvDetail.ExemptTaxAmount > 0)
+                        {
+                            taxAmount -= itemRcvDetail.RcvDetail.ExemptTaxAmount * itemRcvDetail.RcvDetail.Qty;
+                            //PPN Yang Dibebaskan
+                            journals.Add(new Journal
+                            {
+                                Code = itemDetail.RcvData.Code,
+                                LineNo = ++ix,
+                                Date = itemDetail.RcvData.Date,
+                                CoaCode = string.IsNullOrWhiteSpace(taxes.FirstOrDefault(x => x.Id == itemRcvDetail.RcvDetail.TaxId)?.ExemptCoaCode) ? "" : taxes.FirstOrDefault(x => x.Id == itemRcvDetail.RcvDetail.TaxId)?.ExemptCoaCode,
+                                TypeCode = "EPPN",
+                                Notes = "PPN Yang Dibebaskan",
+                                RefCode1 = itemDetail.RcvData.TransCode,
+                                RefCode2 = itemRcvDetail.Item.Initial,
+                                Group = 3,
+                                CurrCode = itemDetail.RcvData.CurrCode,
+                                Period = itemDetail.RcvData.Date.ToString("yyyyMMdd"),
+                                Type = "C",
+                                Amount = itemRcvDetail.RcvDetail.ExemptTaxAmount * itemRcvDetail.RcvDetail.Qty,
+                                SrcTrans = "PI"
+                            });
+
+                            //PPN Yang Dibebaskan
+                            journals.Add(new Journal
+                            {
+                                Code = itemDetail.RcvData.Code,
+                                LineNo = ix,
+                                Date = itemDetail.RcvData.Date,
+                                CoaCode = string.IsNullOrWhiteSpace(taxes.FirstOrDefault(x => x.Id == itemRcvDetail.RcvDetail.TaxId)?.ExemptCoaCode) ? "" : taxes.FirstOrDefault(x => x.Id == itemRcvDetail.RcvDetail.TaxId)?.ExemptCoaCode,
+                                TypeCode = "EPPN",
+                                Notes = "PPN Yang Dibebaskan",
+                                RefCode1 = itemDetail.RcvData.TransCode,
+                                RefCode2 = itemRcvDetail.Item.Initial,
+                                Group = 5,
+                                CurrCode = itemDetail.RcvData.CurrCode,
+                                Period = itemDetail.RcvData.Date.ToString("yyyyMMdd"),
+                                Type = "D",
+                                Amount = itemRcvDetail.RcvDetail.ExemptTaxAmount * itemRcvDetail.RcvDetail.Qty,
+                                SrcTrans = "PI"
+                            });
+                        }
+                    }
                 }
 
                 //PPN
@@ -534,22 +597,22 @@ public class JournalService : IJournalService
                 });
 
                 //PPN Yang Dibebaskan
-                journals.Add(new Journal
-                {
-                    Code = itemData.InvHeader.Code,
-                    LineNo = 1,
-                    Date = itemData.InvHeader.Date,
-                    CoaCode = systemParam.FirstOrDefault(x => x.Code == "TAX_OUT_COA")?.Value ?? "",
-                    TypeCode = "EPPN",
-                    Notes = "PPN Yang Dibebaskan",
-                    RefCode1 = itemData.InvHeader.PoCode,
-                    Group = 3,
-                    CurrCode = itemData.InvHeader.CurrCode,
-                    Period = itemData.InvHeader.Date.ToString("yyyyMMdd"),
-                    Type = "C",
-                    Amount = extTaxAmount,
-                    SrcTrans = "PI"
-                });
+                //journals.Add(new Journal
+                //{
+                //    Code = itemData.InvHeader.Code,
+                //    LineNo = 1,
+                //    Date = itemData.InvHeader.Date,
+                //    CoaCode = systemParam.FirstOrDefault(x => x.Code == "TAX_OUT_COA")?.Value ?? "",
+                //    TypeCode = "EPPN",
+                //    Notes = "PPN Yang Dibebaskan",
+                //    RefCode1 = itemData.InvHeader.PoCode,
+                //    Group = 3,
+                //    CurrCode = itemData.InvHeader.CurrCode,
+                //    Period = itemData.InvHeader.Date.ToString("yyyyMMdd"),
+                //    Type = "C",
+                //    Amount = extTaxAmount,
+                //    SrcTrans = "PI"
+                //});
 
                 var invMemo = db.PurchaseInvoiceDebitMemos.Where(x => x.InvCode == itemData.InvHeader.Code).ToList();
                 if (invMemo.Any())
@@ -569,7 +632,7 @@ public class JournalService : IJournalService
                                 TypeCode = "DN",
                                 Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_DPS")?.Value ?? ""} {itemData.Supplier.Initial}").Trim(),
                                 RefCode1 = itemMemo.DebitMemoCode,
-                                Group = 5,
+                                Group = 6,
                                 CurrCode = itemData.InvHeader.CurrCode,
                                 Period = itemData.InvHeader.Date.ToString("yyyyMMdd"),
                                 Type = "C",
@@ -594,7 +657,7 @@ public class JournalService : IJournalService
                     CurrCode = itemData.InvHeader.CurrCode,
                     Period = itemData.InvHeader.Date.ToString("yyyyMMdd"),
                     Type = "C",
-                    Amount = journals.Where(x => x.Code == itemData.InvHeader.Code && new[] { 1, 2 }.Contains(x.Group)).Sum(x => x.Amount) - journals.Where(x => x.Code == itemData.InvHeader.Code && new[] { 3, 5 }.Contains(x.Group)).Sum(x => x.Amount),
+                    Amount = journals.Where(x => x.Code == itemData.InvHeader.Code && new[] { 1, 2 }.Contains(x.Group)).Sum(x => x.Amount) - journals.Where(x => x.Code == itemData.InvHeader.Code && new[] { 3, 6 }.Contains(x.Group)).Sum(x => x.Amount),
                     SrcTrans = "PI"
                 });
             }
@@ -635,11 +698,12 @@ public class JournalService : IJournalService
 
             var discAmount = 0m;
             var taxAmount = 0m;
-            var extTaxAmount = 0m;
+            //var extTaxAmount = 0m;
             short Ninv = 0;
             short Nfree = 0;
             short Nakun = 0;
             short Nhpp = 0;
+            short Next = 0;
             foreach (var itemDetail in DlvDetailData)
             {
                 var smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.DlvDetail.Id && x.RefCode1 == itemDetail.DlvDetail.Code);
@@ -695,7 +759,44 @@ public class JournalService : IJournalService
                     taxAmount += itemDetail.DlvDetail.TaxAmount * itemDetail.DlvDetail.Qty;
                 //Pajak Yang Dibebaskan
                 if (itemDetail.DlvDetail.ExemptTaxAmount > 0)
-                    extTaxAmount += itemDetail.DlvDetail.ExemptTaxAmount * itemDetail.DlvDetail.Qty;
+                {
+                    taxAmount -= itemDetail.DlvDetail.ExemptTaxAmount * itemDetail.DlvDetail.Qty;
+                    journals.Add(new Journal
+                    {
+                        Code = itemData.Dlvheader.Code,
+                        LineNo = ++Next,
+                        Date = itemData.Dlvheader.Date,
+                        CoaCode = string.IsNullOrWhiteSpace(taxes.FirstOrDefault(x => x.Id == itemDetail.DlvDetail.TaxId)?.ExemptCoaCode) ? "" : taxes.FirstOrDefault(x => x.Id == itemDetail.DlvDetail.TaxId)?.ExemptCoaCode,
+                        TypeCode = "DLV_DT",
+                        Notes = "PPN Yang Dibebaskan",
+                        RefCode1 = itemData.Dlvheader.TransCode,
+                        RefCode2 = itemDetail.Item.Initial,
+                        Group = 10,
+                        CurrCode = itemData.Dlvheader.CurrCode,
+                        Period = itemData.Dlvheader.Date.ToString("yyyyMMdd"),
+                        Type = "C",
+                        Amount = itemDetail.DlvDetail.ExemptTaxAmount * itemDetail.DlvDetail.Qty,
+                        SrcTrans = "DLV"
+                    });
+
+                    journals.Add(new Journal
+                    {
+                        Code = itemData.Dlvheader.Code,
+                        LineNo = Next,
+                        Date = itemData.Dlvheader.Date,
+                        CoaCode = string.IsNullOrWhiteSpace(taxes.FirstOrDefault(x => x.Id == itemDetail.DlvDetail.TaxId)?.ExemptCoaCode) ? "" : taxes.FirstOrDefault(x => x.Id == itemDetail.DlvDetail.TaxId)?.ExemptCoaCode,
+                        TypeCode = "DLV_DT",
+                        Notes = "PPN Yang Dibebaskan",
+                        RefCode1 = itemData.Dlvheader.TransCode,
+                        RefCode2 = itemDetail.Item.Initial,
+                        Group = 6,
+                        CurrCode = itemData.Dlvheader.CurrCode,
+                        Period = itemData.Dlvheader.Date.ToString("yyyyMMdd"),
+                        Type = "D",
+                        Amount = itemDetail.DlvDetail.ExemptTaxAmount * itemDetail.DlvDetail.Qty,
+                        SrcTrans = "DLV"
+                    });
+                }
             }
 
             //Discount - Diskon
@@ -743,26 +844,26 @@ public class JournalService : IJournalService
             }
 
             //Pajak Yang Dibebaskan
-            if (extTaxAmount > 0)
-            {
-                journals.Add(new Journal
-                {
-                    Code = itemData.Dlvheader.Code,
-                    LineNo = 1,
-                    Date = itemData.Dlvheader.Date,
-                    CoaCode = systemParam.FirstOrDefault(x => x.Code == "TAX_IN_COA")?.Value ?? "",
-                    TypeCode = "EPPN",
-                    Notes = ($"Pajak Yang Dibebaskan {itemData.Customer.Initial}").Trim(),
-                    RefCode1 = itemData.Dlvheader.TransCode,
-                    RefCode2 = "",
-                    Group = 6,
-                    CurrCode = itemData.Dlvheader.CurrCode,
-                    Period = itemData.Dlvheader.Date.ToString("yyyyMMdd"),
-                    Type = "D",
-                    Amount = extTaxAmount,
-                    SrcTrans = "DLV"
-                });
-            }
+            //if (extTaxAmount > 0)
+            //{
+            //    journals.Add(new Journal
+            //    {
+            //        Code = itemData.Dlvheader.Code,
+            //        LineNo = 1,
+            //        Date = itemData.Dlvheader.Date,
+            //        CoaCode = systemParam.FirstOrDefault(x => x.Code == "TAX_IN_COA")?.Value ?? "",
+            //        TypeCode = "EPPN",
+            //        Notes = ($"Pajak Yang Dibebaskan {itemData.Customer.Initial}").Trim(),
+            //        RefCode1 = itemData.Dlvheader.TransCode,
+            //        RefCode2 = "",
+            //        Group = 6,
+            //        CurrCode = itemData.Dlvheader.CurrCode,
+            //        Period = itemData.Dlvheader.Date.ToString("yyyyMMdd"),
+            //        Type = "D",
+            //        Amount = extTaxAmount,
+            //        SrcTrans = "DLV"
+            //    });
+            //}
 
             var invDetData = db.SalesInvoiceDetails.Where(x => x.DoCode == itemData.Dlvheader.Code).ToList();
             if (invDetData.Any())
@@ -790,7 +891,7 @@ public class JournalService : IJournalService
                                         TypeCode = "CN",
                                         Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_DPC")?.Value ?? ""} {itemData.Customer.Initial}").Trim(),
                                         RefCode1 = itemMemo.CreditMemoCode,
-                                        Group = 10,
+                                        Group = 11,
                                         CurrCode = itemData.Dlvheader.CurrCode,
                                         Period = itemData.Dlvheader.Date.ToString("yyyyMMdd"),
                                         Type = "D",
@@ -843,7 +944,7 @@ public class JournalService : IJournalService
                 CurrCode = itemData.Dlvheader.CurrCode,
                 Period = itemData.Dlvheader.Date.ToString("yyyyMMdd"),
                 Type = "C",
-                Amount = itemData.Dlvheader.Total - journals.Where(x => x.Code == itemData.Dlvheader.Code && new[] { 4, 5 }.Contains(x.Group)).Sum(x => x.Amount) + journals.Where(x => x.Code == itemData.Dlvheader.Code && new[] { 2, 3, 6 }.Contains(x.Group)).Sum(x => x.Amount),
+                Amount = itemData.Dlvheader.Total - journals.Where(x => x.Code == itemData.Dlvheader.Code && new[] { 4, 5, 6 }.Contains(x.Group)).Sum(x => x.Amount) + journals.Where(x => x.Code == itemData.Dlvheader.Code && new[] { 2, 3 }.Contains(x.Group)).Sum(x => x.Amount),
                 SrcTrans = "DLV"
             });
 
@@ -1279,8 +1380,9 @@ public class JournalService : IJournalService
                 var RtnDetailExData = db.PurchaseReturnDetailExchDiffItems.Where(x => x.Code == itemData.RtnHeader.Code).ToList();
 
                 var taxAmount = 0m;
-                var extTaxAmount = 0m;
+                //var extTaxAmount = 0m;
                 short i = 0;
+                short ix = 0;
                 foreach (var itemDetail in RtnDetailData)
                 {
                     var smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.RtnDetail.Id && x.RefCode1 == itemDetail.RtnDetail.Code);
@@ -1311,7 +1413,42 @@ public class JournalService : IJournalService
                     if (itemDetail.RtnDetail.TaxAmount > 0)
                         taxAmount += itemDetail.RtnDetail.Qty * itemDetail.RtnDetail.TaxAmount;
                     if (itemDetail.RtnDetail.ExemptTaxAmount > 0)
-                        extTaxAmount += itemDetail.RtnDetail.Qty * itemDetail.RtnDetail.ExemptTaxAmount;
+                    {
+                        taxAmount -= itemDetail.RtnDetail.Qty * itemDetail.RtnDetail.ExemptTaxAmount;
+                        journals.Add(new Journal
+                        {
+                            Code = itemData.RtnHeader.Code,
+                            LineNo = ++ix,
+                            Date = itemData.RtnHeader.Date,
+                            CoaCode = string.IsNullOrWhiteSpace(taxes.FirstOrDefault(x => x.Id == itemDetail.RtnDetail.TaxId)?.ExemptCoaCode) ? "" : taxes.FirstOrDefault(x => x.Id == itemDetail.RtnDetail.TaxId)?.ExemptCoaCode,
+                            TypeCode = "PR_DT",
+                            Notes = "PPN Yang Dibebaskan",
+                            RefCode1 = itemDetail.Item.Initial,
+                            Group = 6,
+                            CurrCode = itemData.RtnHeader.CurrCode,
+                            Period = itemData.RtnHeader.Date.ToString("yyyyMMdd"),
+                            Type = "C",
+                            Amount = itemDetail.RtnDetail.ExemptTaxAmount * itemDetail.RtnDetail.Qty,
+                            SrcTrans = "PR"
+                        });
+
+                        journals.Add(new Journal
+                        {
+                            Code = itemData.RtnHeader.Code,
+                            LineNo = ix,
+                            Date = itemData.RtnHeader.Date,
+                            CoaCode = string.IsNullOrWhiteSpace(taxes.FirstOrDefault(x => x.Id == itemDetail.RtnDetail.TaxId)?.ExemptCoaCode) ? "" : taxes.FirstOrDefault(x => x.Id == itemDetail.RtnDetail.TaxId)?.ExemptCoaCode,
+                            TypeCode = "PR_DT",
+                            Notes = "PPN Yang Dibebaskan",
+                            RefCode1 = itemDetail.Item.Initial,
+                            Group = 4,
+                            CurrCode = itemData.RtnHeader.CurrCode,
+                            Period = itemData.RtnHeader.Date.ToString("yyyyMMdd"),
+                            Type = "D",
+                            Amount = itemDetail.RtnDetail.ExemptTaxAmount * itemDetail.RtnDetail.Qty,
+                            SrcTrans = "PR"
+                        });
+                    }
                 }
 
                 if (taxAmount > 0)
@@ -1335,26 +1472,26 @@ public class JournalService : IJournalService
                     });
                 }
 
-                if (extTaxAmount > 0)
-                {
-                    //Pajak Yang Dibebaskan
-                    journals.Add(new Journal
-                    {
-                        Code = itemData.RtnHeader.Code,
-                        LineNo = 1,
-                        Date = itemData.RtnHeader.Date,
-                        CoaCode = systemParam.FirstOrDefault(x => x.Code == "TAX_IN_COA")?.Value ?? "",
-                        TypeCode = "EPPN",
-                        Notes = ($"Pajak Yang Dibebaskan {itemData.Supplier.Initial}").Trim(),
-                        RefCode1 = "",
-                        Group = 4,
-                        CurrCode = itemData.RtnHeader.CurrCode,
-                        Period = itemData.RtnHeader.Date.ToString("yyyyMMdd"),
-                        Type = "D",
-                        Amount = extTaxAmount,
-                        SrcTrans = "PR"
-                    });
-                }
+                //if (extTaxAmount > 0)
+                //{
+                //    //Pajak Yang Dibebaskan
+                //    journals.Add(new Journal
+                //    {
+                //        Code = itemData.RtnHeader.Code,
+                //        LineNo = 1,
+                //        Date = itemData.RtnHeader.Date,
+                //        CoaCode = systemParam.FirstOrDefault(x => x.Code == "TAX_IN_COA")?.Value ?? "",
+                //        TypeCode = "EPPN",
+                //        Notes = ($"Pajak Yang Dibebaskan {itemData.Supplier.Initial}").Trim(),
+                //        RefCode1 = "",
+                //        Group = 4,
+                //        CurrCode = itemData.RtnHeader.CurrCode,
+                //        Period = itemData.RtnHeader.Date.ToString("yyyyMMdd"),
+                //        Type = "D",
+                //        Amount = extTaxAmount,
+                //        SrcTrans = "PR"
+                //    });
+                //}
 
                 //Hutang Dagang
                 journals.Add(new Journal
@@ -1411,6 +1548,7 @@ public class JournalService : IJournalService
                                              where rcvdetail.Code == itemRcvData.RcvHeader.Code
                                              select new { RcvDetail = rcvdetail, Item = item }).ToList();
                         short k = 0;
+                        short l = 0;
                         foreach (var itemDetail in RcvDetailData)
                         {
                             var smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.RcvDetail.Id && x.RefCode1 == itemDetail.RcvDetail.Code);
@@ -1438,6 +1576,45 @@ public class JournalService : IJournalService
                                 Amount = resultHpp,
                                 SrcTrans = "RCV"
                             });
+
+                            if (itemDetail.RcvDetail.ExemptTaxAmount > 0)
+                            {
+                                journals.Add(new Journal
+                                {
+                                    Code = itemRcvData.RcvHeader.Code,
+                                    LineNo = ++l,
+                                    Date = itemRcvData.RcvHeader.Date,
+                                    CoaCode = string.IsNullOrWhiteSpace(taxes.FirstOrDefault(x => x.Id == itemDetail.RcvDetail.TaxId)?.ExemptCoaCode) ? "" : taxes.FirstOrDefault(x => x.Id == itemDetail.RcvDetail.TaxId)?.ExemptCoaCode,
+                                    TypeCode = "RCV_DT",
+                                    Notes = "PPN Yang Dibebaskan",
+                                    RefCode1 = itemRcvData.RcvHeader.TransCode,
+                                    RefCode2 = itemDetail.Item.Initial,
+                                    Group = 3,
+                                    CurrCode = itemRcvData.RcvHeader.CurrCode,
+                                    Period = itemRcvData.RcvHeader.Date.ToString("yyyyMMdd"),
+                                    Type = "C",
+                                    Amount = itemDetail.RcvDetail.ExemptTaxAmount * itemDetail.RcvDetail.Qty,
+                                    SrcTrans = "RCV"
+                                });
+
+                                journals.Add(new Journal
+                                {
+                                    Code = itemRcvData.RcvHeader.Code,
+                                    LineNo = l,
+                                    Date = itemRcvData.RcvHeader.Date,
+                                    CoaCode = string.IsNullOrWhiteSpace(taxes.FirstOrDefault(x => x.Id == itemDetail.RcvDetail.TaxId)?.ExemptCoaCode) ? "" : taxes.FirstOrDefault(x => x.Id == itemDetail.RcvDetail.TaxId)?.ExemptCoaCode,
+                                    TypeCode = "RCV_DT",
+                                    Notes = "PPN Yang Dibebaskan",
+                                    RefCode1 = itemRcvData.RcvHeader.TransCode,
+                                    RefCode2 = itemDetail.Item.Initial,
+                                    Group = 7,
+                                    CurrCode = itemRcvData.RcvHeader.CurrCode,
+                                    Period = itemRcvData.RcvHeader.Date.ToString("yyyyMMdd"),
+                                    Type = "D",
+                                    Amount = itemDetail.RcvDetail.ExemptTaxAmount * itemDetail.RcvDetail.Qty,
+                                    SrcTrans = "RCV"
+                                });
+                            }
                         }
 
                         if (journals.Where(x => x.Code == itemData.RtnHeader.Code && x.Group == 3).Any())
@@ -1461,26 +1638,26 @@ public class JournalService : IJournalService
                             });
                         }
 
-                        if (journals.Where(x => x.Code == itemData.RtnHeader.Code && x.Group == 4).Any())
-                        {
-                            //Pajak - PPN
-                            journals.Add(new Journal
-                            {
-                                Code = itemRcvData.RcvHeader.Code,
-                                LineNo = 1,
-                                Date = itemRcvData.RcvHeader.Date,
-                                CoaCode = systemParam.FirstOrDefault(x => x.Code == "TAX_OUT_COA")?.Value ?? "",
-                                TypeCode = "EPPN",
-                                Notes = ($"Pajak Yang Dibebaskan {itemData.Supplier.Initial}").Trim(),
-                                RefCode1 = "",
-                                Group = 3,
-                                CurrCode = itemRcvData.RcvHeader.CurrCode,
-                                Period = itemRcvData.RcvHeader.Date.ToString("yyyyMMdd"),
-                                Type = "C",
-                                Amount = journals.Where(x => x.Code == itemData.RtnHeader.Code && x.Group == 4).Sum(x => x.Amount),
-                                SrcTrans = "RCV"
-                            });
-                        }
+                        //if (journals.Where(x => x.Code == itemData.RtnHeader.Code && x.Group == 4).Any())
+                        //{
+                        //    //Pajak - PPN
+                        //    journals.Add(new Journal
+                        //    {
+                        //        Code = itemRcvData.RcvHeader.Code,
+                        //        LineNo = 1,
+                        //        Date = itemRcvData.RcvHeader.Date,
+                        //        CoaCode = systemParam.FirstOrDefault(x => x.Code == "TAX_OUT_COA")?.Value ?? "",
+                        //        TypeCode = "EPPN",
+                        //        Notes = ($"Pajak Yang Dibebaskan {itemData.Supplier.Initial}").Trim(),
+                        //        RefCode1 = "",
+                        //        Group = 3,
+                        //        CurrCode = itemRcvData.RcvHeader.CurrCode,
+                        //        Period = itemRcvData.RcvHeader.Date.ToString("yyyyMMdd"),
+                        //        Type = "C",
+                        //        Amount = journals.Where(x => x.Code == itemData.RtnHeader.Code && x.Group == 4).Sum(x => x.Amount),
+                        //        SrcTrans = "RCV"
+                        //    });
+                        //}
 
                         //Hutang - AP
                         journals.Add(new Journal
@@ -1550,8 +1727,9 @@ public class JournalService : IJournalService
                                      select new { RtnDetail = rtndetail, Item = item }).ToList();
 
                 var taxAmount = 0m;
-                var extTaxAmount = 0m;
+                //var extTaxAmount = 0m;
                 short i = 0;
+                short ix = 0;
                 foreach (var itemDetail in RtnDetailData)
                 {
                     var smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.RtnDetail.Id && x.RefCode1 == itemDetail.RtnDetail.Code);
@@ -1582,7 +1760,42 @@ public class JournalService : IJournalService
                     if (itemDetail.RtnDetail.TaxAmount > 0)
                         taxAmount += itemDetail.RtnDetail.Qty * itemDetail.RtnDetail.TaxAmount;
                     if (itemDetail.RtnDetail.ExemptTaxAmount > 0)
-                        extTaxAmount += itemDetail.RtnDetail.Qty * itemDetail.RtnDetail.ExemptTaxAmount;
+                    {
+                        taxAmount -= itemDetail.RtnDetail.Qty * itemDetail.RtnDetail.ExemptTaxAmount;
+                        journals.Add(new Journal
+                        {
+                            Code = itemData.RtnHeader.Code,
+                            LineNo = ++ix,
+                            Date = itemData.RtnHeader.Date,
+                            CoaCode = string.IsNullOrWhiteSpace(taxes.FirstOrDefault(x => x.Id == itemDetail.RtnDetail.TaxId)?.ExemptCoaCode) ? "" : taxes.FirstOrDefault(x => x.Id == itemDetail.RtnDetail.TaxId)?.ExemptCoaCode,
+                            TypeCode = "PR_DT",
+                            Notes = "PPN Yang Dibebaskan",
+                            RefCode1 = itemDetail.Item.Initial,
+                            Group = 6,
+                            CurrCode = itemData.RtnHeader.CurrCode,
+                            Period = itemData.RtnHeader.Date.ToString("yyyyMMdd"),
+                            Type = "C",
+                            Amount = itemDetail.RtnDetail.ExemptTaxAmount * itemDetail.RtnDetail.Qty,
+                            SrcTrans = "PR"
+                        });
+
+                        journals.Add(new Journal
+                        {
+                            Code = itemData.RtnHeader.Code,
+                            LineNo = ix,
+                            Date = itemData.RtnHeader.Date,
+                            CoaCode = string.IsNullOrWhiteSpace(taxes.FirstOrDefault(x => x.Id == itemDetail.RtnDetail.TaxId)?.ExemptCoaCode) ? "" : taxes.FirstOrDefault(x => x.Id == itemDetail.RtnDetail.TaxId)?.ExemptCoaCode,
+                            TypeCode = "PR_DT",
+                            Notes = "PPN Yang Dibebaskan",
+                            RefCode1 = itemDetail.Item.Initial,
+                            Group = 4,
+                            CurrCode = itemData.RtnHeader.CurrCode,
+                            Period = itemData.RtnHeader.Date.ToString("yyyyMMdd"),
+                            Type = "D",
+                            Amount = itemDetail.RtnDetail.ExemptTaxAmount * itemDetail.RtnDetail.Qty,
+                            SrcTrans = "PR"
+                        });
+                    }
                 }
 
                 //Pajak - PPN
@@ -1603,23 +1816,23 @@ public class JournalService : IJournalService
                     SrcTrans = "PR"
                 });
 
-                //Pajak Yang Dibebaskan
-                journals.Add(new Journal
-                {
-                    Code = itemData.RtnHeader.Code,
-                    LineNo = 1,
-                    Date = itemData.RtnHeader.Date,
-                    CoaCode = systemParam.FirstOrDefault(x => x.Code == "TAX_IN_COA")?.Value ?? "",
-                    TypeCode = "EPPN",
-                    Notes = ($"Pajak Yang Dibebaskan {itemData.Supplier.Initial}").Trim(),
-                    RefCode1 = "",
-                    Group = 4,
-                    CurrCode = itemData.RtnHeader.CurrCode,
-                    Period = itemData.RtnHeader.Date.ToString("yyyyMMdd"),
-                    Type = "D",
-                    Amount = extTaxAmount,
-                    SrcTrans = "PR"
-                });
+                ////Pajak Yang Dibebaskan
+                //journals.Add(new Journal
+                //{
+                //    Code = itemData.RtnHeader.Code,
+                //    LineNo = 1,
+                //    Date = itemData.RtnHeader.Date,
+                //    CoaCode = systemParam.FirstOrDefault(x => x.Code == "TAX_IN_COA")?.Value ?? "",
+                //    TypeCode = "EPPN",
+                //    Notes = ($"Pajak Yang Dibebaskan {itemData.Supplier.Initial}").Trim(),
+                //    RefCode1 = "",
+                //    Group = 4,
+                //    CurrCode = itemData.RtnHeader.CurrCode,
+                //    Period = itemData.RtnHeader.Date.ToString("yyyyMMdd"),
+                //    Type = "D",
+                //    Amount = extTaxAmount,
+                //    SrcTrans = "PR"
+                //});
 
                 //Uang Muka Pembelian
                 journals.Add(new Journal
@@ -1639,7 +1852,7 @@ public class JournalService : IJournalService
                     SrcTrans = "PR"
                 });
 
-                var hppValue = (itemData.RtnHeader.Total - itemData.RtnHeader.TaxAmount + itemData.RtnHeader.ExemptTaxAmount) - journals.Where(x => x.Code == itemData.RtnHeader.Code && x.Group == 2).Sum(x => x.Amount);
+                var hppValue = (itemData.RtnHeader.Total - itemData.RtnHeader.TaxAmount - itemData.RtnHeader.ExemptTaxAmount) - journals.Where(x => x.Code == itemData.RtnHeader.Code && x.Group == 2).Sum(x => x.Amount);
                 //COGS - HPP
                 journals.Add(new Journal
                 {
@@ -1681,10 +1894,11 @@ public class JournalService : IJournalService
                 var RtnDetailExData = db.SalesReturnDetailExchDiffItems.Where(x => x.Code == itemData.RtnHeader.Code).ToList();
 
                 var taxAmount = 0m;
-                var extTaxAmount = 0m;
+                //var extTaxAmount = 0m;
                 //Return Detail
                 short i = 0;
                 short j = 0;
+                short ix = 0;
                 foreach (var itemDetail in RtnDetailData)
                 {
                     var smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.RtnDetail.Id && x.RefCode1 == itemDetail.RtnDetail.Code);
@@ -1735,7 +1949,42 @@ public class JournalService : IJournalService
                         taxAmount += itemDetail.RtnDetail.TaxAmount * itemDetail.RtnDetail.Qty;
                     //PPN Yang Dibebaskan
                     if (itemDetail.RtnDetail.ExemptTaxAmount > 0)
-                        extTaxAmount += itemDetail.RtnDetail.ExemptTaxAmount * itemDetail.RtnDetail.Qty;
+                    {
+                        taxAmount -= itemDetail.RtnDetail.Qty * itemDetail.RtnDetail.ExemptTaxAmount;
+                        journals.Add(new Journal
+                        {
+                            Code = itemData.RtnHeader.Code,
+                            LineNo = ++ix,
+                            Date = itemData.RtnHeader.Date,
+                            CoaCode = string.IsNullOrWhiteSpace(taxes.FirstOrDefault(x => x.Id == itemDetail.RtnDetail.TaxId)?.ExemptCoaCode) ? "" : taxes.FirstOrDefault(x => x.Id == itemDetail.RtnDetail.TaxId)?.ExemptCoaCode,
+                            TypeCode = "SR_DT",
+                            Notes = "PPN Yang Dibebaskan",
+                            RefCode1 = itemDetail.Item.Initial,
+                            Group = 4,
+                            CurrCode = itemData.RtnHeader.CurrCode,
+                            Period = itemData.RtnHeader.Date.ToString("yyyyMMdd"),
+                            Type = "C",
+                            Amount = itemDetail.RtnDetail.ExemptTaxAmount * itemDetail.RtnDetail.Qty,
+                            SrcTrans = "SR"
+                        });
+
+                        journals.Add(new Journal
+                        {
+                            Code = itemData.RtnHeader.Code,
+                            LineNo = ix,
+                            Date = itemData.RtnHeader.Date,
+                            CoaCode = string.IsNullOrWhiteSpace(taxes.FirstOrDefault(x => x.Id == itemDetail.RtnDetail.TaxId)?.ExemptCoaCode) ? "" : taxes.FirstOrDefault(x => x.Id == itemDetail.RtnDetail.TaxId)?.ExemptCoaCode,
+                            TypeCode = "SR_DT",
+                            Notes = "PPN Yang Dibebaskan",
+                            RefCode1 = itemDetail.Item.Initial,
+                            Group = 7,
+                            CurrCode = itemData.RtnHeader.CurrCode,
+                            Period = itemData.RtnHeader.Date.ToString("yyyyMMdd"),
+                            Type = "D",
+                            Amount = itemDetail.RtnDetail.ExemptTaxAmount * itemDetail.RtnDetail.Qty,
+                            SrcTrans = "SR"
+                        });
+                    }
                 }
 
                 //PPN - Pajak
@@ -1759,26 +2008,26 @@ public class JournalService : IJournalService
                     });
                 }
 
-                //PPN Yang Dibebaskan
-                if (extTaxAmount > 0)
-                {
-                    journals.Add(new Journal
-                    {
-                        Code = itemData.RtnHeader.Code,
-                        LineNo = 1,
-                        Date = itemData.RtnHeader.Date,
-                        CoaCode = systemParam.FirstOrDefault(x => x.Code == "TAX_IN_COA")?.Value ?? "",
-                        TypeCode = "EPPN",
-                        Notes = ($"PPN Yang Dibebaskan {itemData.Customer.Initial}").Trim(),
-                        RefCode1 = "",
-                        Group = 4,
-                        CurrCode = itemData.RtnHeader.CurrCode,
-                        Period = itemData.RtnHeader.Date.ToString("yyyyMMdd"),
-                        Type = "C",
-                        Amount = taxAmount,
-                        SrcTrans = "SR"
-                    });
-                }
+                ////PPN Yang Dibebaskan
+                //if (extTaxAmount > 0)
+                //{
+                //    journals.Add(new Journal
+                //    {
+                //        Code = itemData.RtnHeader.Code,
+                //        LineNo = 1,
+                //        Date = itemData.RtnHeader.Date,
+                //        CoaCode = systemParam.FirstOrDefault(x => x.Code == "TAX_IN_COA")?.Value ?? "",
+                //        TypeCode = "EPPN",
+                //        Notes = ($"PPN Yang Dibebaskan {itemData.Customer.Initial}").Trim(),
+                //        RefCode1 = "",
+                //        Group = 4,
+                //        CurrCode = itemData.RtnHeader.CurrCode,
+                //        Period = itemData.RtnHeader.Date.ToString("yyyyMMdd"),
+                //        Type = "C",
+                //        Amount = taxAmount,
+                //        SrcTrans = "SR"
+                //    });
+                //}
 
                 //Piutang - AR
                 journals.Add(new Journal
@@ -1832,6 +2081,7 @@ public class JournalService : IJournalService
 
                         short l = 0;
                         short m = 0;
+                        short lx = 0;
                         foreach (var itemDetail in DlvDetailData)
                         {
                             var smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.DlvDetail.Id && x.RefCode1 == itemDetail.DlvDetail.Code);
@@ -1878,6 +2128,46 @@ public class JournalService : IJournalService
                                 Amount = resultHpp,
                                 SrcTrans = "DLV"
                             });
+
+                            //PPN Yang Dibebaskan
+                            if (itemDetail.DlvDetail.ExemptTaxAmount > 0)
+                            {
+                                journals.Add(new Journal
+                                {
+                                    Code = itemDlvData.DlvHeader.Code,
+                                    LineNo = ++lx,
+                                    Date = itemDlvData.DlvHeader.Date,
+                                    CoaCode = string.IsNullOrWhiteSpace(taxes.FirstOrDefault(x => x.Id == itemDetail.DlvDetail.TaxId)?.ExemptCoaCode) ? "" : taxes.FirstOrDefault(x => x.Id == itemDetail.DlvDetail.TaxId)?.ExemptCoaCode,
+                                    TypeCode = "DLV_DT",
+                                    Notes = "PPN Yang Dibebaskan",
+                                    RefCode1 = itemData.RtnHeader.Code,
+                                    RefCode2 = itemDetail.Item.Initial,
+                                    Group = 8,
+                                    CurrCode = itemDlvData.DlvHeader.CurrCode,
+                                    Period = itemDlvData.DlvHeader.Date.ToString("yyyyMMdd"),
+                                    Type = "C",
+                                    Amount = itemDetail.DlvDetail.ExemptTaxAmount * itemDetail.DlvDetail.Qty,
+                                    SrcTrans = "DLV"
+                                });
+
+                                journals.Add(new Journal
+                                {
+                                    Code = itemDlvData.DlvHeader.Code,
+                                    LineNo = lx,
+                                    Date = itemDlvData.DlvHeader.Date,
+                                    CoaCode = string.IsNullOrWhiteSpace(taxes.FirstOrDefault(x => x.Id == itemDetail.DlvDetail.TaxId)?.ExemptCoaCode) ? "" : taxes.FirstOrDefault(x => x.Id == itemDetail.DlvDetail.TaxId)?.ExemptCoaCode,
+                                    TypeCode = "DLV_DT",
+                                    Notes = "PPN Yang Dibebaskan",
+                                    RefCode1 = itemData.RtnHeader.Code,
+                                    RefCode2 = itemDetail.Item.Initial,
+                                    Group = 6,
+                                    CurrCode = itemDlvData.DlvHeader.CurrCode,
+                                    Period = itemDlvData.DlvHeader.Date.ToString("yyyyMMdd"),
+                                    Type = "D",
+                                    Amount = itemDetail.DlvDetail.ExemptTaxAmount * itemDetail.DlvDetail.Qty,
+                                    SrcTrans = "DLV"
+                                });
+                            }
                         }
                         //PPN - Pajak
                         if (itemDlvData.DlvHeader.TaxAmount > 0)
@@ -1901,27 +2191,27 @@ public class JournalService : IJournalService
                             });
                         }
 
-                        //Pajak Yang Dibebaskan
-                        if (itemDlvData.DlvHeader.ExemptTaxAmount > 0)
-                        {
-                            journals.Add(new Journal
-                            {
-                                Code = itemDlvData.DlvHeader.Code,
-                                LineNo = 1,
-                                Date = itemDlvData.DlvHeader.Date,
-                                CoaCode = systemParam.FirstOrDefault(x => x.Code == "TAX_OUT_COA")?.Value ?? "",
-                                TypeCode = "EPPN",
-                                Notes = ($"Pajak Yang Dibebaskan {itemDlvData.Customer.Initial}").Trim(),
-                                RefCode1 = itemData.RtnHeader.Code,
-                                RefCode2 = "",
-                                Group = 6,
-                                CurrCode = itemDlvData.DlvHeader.CurrCode,
-                                Period = itemDlvData.DlvHeader.Date.ToString("yyyyMMdd"),
-                                Type = "D",
-                                Amount = extTaxAmount,
-                                SrcTrans = "DLV"
-                            });
-                        }
+                        ////Pajak Yang Dibebaskan
+                        //if (itemDlvData.DlvHeader.ExemptTaxAmount > 0)
+                        //{
+                        //    journals.Add(new Journal
+                        //    {
+                        //        Code = itemDlvData.DlvHeader.Code,
+                        //        LineNo = 1,
+                        //        Date = itemDlvData.DlvHeader.Date,
+                        //        CoaCode = systemParam.FirstOrDefault(x => x.Code == "TAX_OUT_COA")?.Value ?? "",
+                        //        TypeCode = "EPPN",
+                        //        Notes = ($"Pajak Yang Dibebaskan {itemDlvData.Customer.Initial}").Trim(),
+                        //        RefCode1 = itemData.RtnHeader.Code,
+                        //        RefCode2 = "",
+                        //        Group = 6,
+                        //        CurrCode = itemDlvData.DlvHeader.CurrCode,
+                        //        Period = itemDlvData.DlvHeader.Date.ToString("yyyyMMdd"),
+                        //        Type = "D",
+                        //        Amount = extTaxAmount,
+                        //        SrcTrans = "DLV"
+                        //    });
+                        //}
 
                         //Piutang - AR
                         journals.Add(new Journal
@@ -1955,7 +2245,7 @@ public class JournalService : IJournalService
                             CurrCode = itemDlvData.DlvHeader.CurrCode,
                             Period = itemDlvData.DlvHeader.Date.ToString("yyyyMMdd"),
                             Type = "C",
-                            Amount = itemDlvData.DlvHeader.Total - journals.Where(x => x.Code == itemDlvData.DlvHeader.Code && x.Group == 5).Sum(x => x.Amount) + journals.Where(x => x.Code == itemDlvData.DlvHeader.Code && x.Group == 6).Sum(x => x.Amount),
+                            Amount = itemDlvData.DlvHeader.Total - journals.Where(x => x.Code == itemDlvData.DlvHeader.Code && x.Group == 5).Sum(x => x.Amount),
                             SrcTrans = "DLV"
                         });
 
@@ -1990,9 +2280,10 @@ public class JournalService : IJournalService
                                      select new { RtnDetail = rtndetail, Item = item }).ToList();
 
                 var taxAmount = 0m;
-                var extTaxAmount = 0m;
+                //var extTaxAmount = 0m;
                 short i = 0;
                 short j = 0;
+                short ix = 0;
                 foreach (var itemDetail in RtnDetailData)
                 {
                     var smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.RtnDetail.Id && x.RefCode1 == itemDetail.RtnDetail.Code);
@@ -2042,7 +2333,42 @@ public class JournalService : IJournalService
                     if (itemDetail.RtnDetail.TaxAmount > 0)
                         taxAmount += itemDetail.RtnDetail.TaxAmount * itemDetail.RtnDetail.Qty;
                     if (itemDetail.RtnDetail.ExemptTaxAmount > 0)
-                        extTaxAmount += itemDetail.RtnDetail.ExemptTaxAmount * itemDetail.RtnDetail.Qty;
+                    {
+                        taxAmount -= itemDetail.RtnDetail.Qty * itemDetail.RtnDetail.ExemptTaxAmount;
+                        journals.Add(new Journal
+                        {
+                            Code = itemData.RtnHeader.Code,
+                            LineNo = ++ix,
+                            Date = itemData.RtnHeader.Date,
+                            CoaCode = string.IsNullOrWhiteSpace(taxes.FirstOrDefault(x => x.Id == itemDetail.RtnDetail.TaxId)?.ExemptCoaCode) ? "" : taxes.FirstOrDefault(x => x.Id == itemDetail.RtnDetail.TaxId)?.ExemptCoaCode,
+                            TypeCode = "SR_DT",
+                            Notes = "PPN Yang Dibebaskan",
+                            RefCode1 = itemDetail.Item.Initial,
+                            Group = 3,
+                            CurrCode = itemData.RtnHeader.CurrCode,
+                            Period = itemData.RtnHeader.Date.ToString("yyyyMMdd"),
+                            Type = "C",
+                            Amount = itemDetail.RtnDetail.ExemptTaxAmount * itemDetail.RtnDetail.Qty,
+                            SrcTrans = "SR"
+                        });
+
+                        journals.Add(new Journal
+                        {
+                            Code = itemData.RtnHeader.Code,
+                            LineNo = ix,
+                            Date = itemData.RtnHeader.Date,
+                            CoaCode = string.IsNullOrWhiteSpace(taxes.FirstOrDefault(x => x.Id == itemDetail.RtnDetail.TaxId)?.ExemptCoaCode) ? "" : taxes.FirstOrDefault(x => x.Id == itemDetail.RtnDetail.TaxId)?.ExemptCoaCode,
+                            TypeCode = "SR_DT",
+                            Notes = "PPN Yang Dibebaskan",
+                            RefCode1 = itemDetail.Item.Initial,
+                            Group = 7,
+                            CurrCode = itemData.RtnHeader.CurrCode,
+                            Period = itemData.RtnHeader.Date.ToString("yyyyMMdd"),
+                            Type = "D",
+                            Amount = itemDetail.RtnDetail.ExemptTaxAmount * itemDetail.RtnDetail.Qty,
+                            SrcTrans = "SR"
+                        });
+                    }
                 }
 
                 if (taxAmount > 0)
@@ -2066,26 +2392,26 @@ public class JournalService : IJournalService
                     });
                 }
 
-                if (extTaxAmount > 0)
-                {
-                    //PPN Yang Dibebaskan
-                    journals.Add(new Journal
-                    {
-                        Code = itemData.RtnHeader.Code,
-                        LineNo = 1,
-                        Date = itemData.RtnHeader.Date,
-                        CoaCode = systemParam.FirstOrDefault(x => x.Code == "TAX_IN_COA")?.Value ?? "",
-                        TypeCode = "EPPN",
-                        Notes = ($"Pajak Yang Dibebaskan {itemData.Customer.Initial}").Trim(),
-                        RefCode1 = "",
-                        Group = 3,
-                        CurrCode = itemData.RtnHeader.CurrCode,
-                        Period = itemData.RtnHeader.Date.ToString("yyyyMMdd"),
-                        Type = "C",
-                        Amount = extTaxAmount,
-                        SrcTrans = "SR"
-                    });
-                }
+                //if (extTaxAmount > 0)
+                //{
+                //    //PPN Yang Dibebaskan
+                //    journals.Add(new Journal
+                //    {
+                //        Code = itemData.RtnHeader.Code,
+                //        LineNo = 1,
+                //        Date = itemData.RtnHeader.Date,
+                //        CoaCode = systemParam.FirstOrDefault(x => x.Code == "TAX_IN_COA")?.Value ?? "",
+                //        TypeCode = "EPPN",
+                //        Notes = ($"Pajak Yang Dibebaskan {itemData.Customer.Initial}").Trim(),
+                //        RefCode1 = "",
+                //        Group = 3,
+                //        CurrCode = itemData.RtnHeader.CurrCode,
+                //        Period = itemData.RtnHeader.Date.ToString("yyyyMMdd"),
+                //        Type = "C",
+                //        Amount = extTaxAmount,
+                //        SrcTrans = "SR"
+                //    });
+                //}
 
                 //Retur Penjualan
                 journals.Add(new Journal
@@ -2101,7 +2427,7 @@ public class JournalService : IJournalService
                     CurrCode = itemData.RtnHeader.CurrCode,
                     Period = itemData.RtnHeader.Date.ToString("yyyyMMdd"),
                     Type = "D",
-                    Amount = itemData.RtnHeader.Total - itemData.RtnHeader.TaxAmount + itemData.RtnHeader.ExemptTaxAmount,
+                    Amount = itemData.RtnHeader.Total - itemData.RtnHeader.TaxAmount - itemData.RtnHeader.ExemptTaxAmount,
                     SrcTrans = "SR"
                 });
 
