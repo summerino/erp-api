@@ -2,7 +2,6 @@
 
 public class TransactionHistoryBySubGroupSummary
 {
-    public DateTime Date { get; set; }
     public long SalesId { get; set; }
     public int GroupId { get; set; }
     public string GroupName { get; set; }
