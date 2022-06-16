@@ -97,4 +97,5 @@
 {"Id":97,"ModuleId":32,"Code":"MOB_VST_RANGE_RADIUS","Value":"50","DataType":"string","Description":"Radius Jangkauan (Meter)","Seq":1,"IsActive":true},
 {"Id":98,"ModuleId":22,"Code":"ICB_NUM_FMT","Value":"ICB{Y}{M}{D}-{5}","DataType":"string","Description":"Pemindahan Dana (Maks. 17 Karakter)","Seq":2,"IsActive":true},
 {"Id":99,"ModuleId":21,"Code":"CHQ_AP_COA","Value":"211004","DataType":"string","Description":"Hutang Giro Mundur","Seq":5,"IsActive":true},
-{"Id":100,"ModuleId":21,"Code":"CHQ_AR_COA","Value":"112004","DataType":"string","Description":"Piutang Giro Mundur","Seq":6,"IsActive":true}]
+{"Id":100,"ModuleId":21,"Code":"CHQ_AR_COA","Value":"112004","DataType":"string","Description":"Piutang Giro Mundur","Seq":6,"IsActive":true},
+{"Id":101,"ModuleId":13,"Code":"AR_RECOG_TIME","Value":"SI","DataType":"string","Description":"Pengakuan Piutang Dagang","Seq":4,"IsActive":false}]
