@@ -58,6 +58,9 @@ public class Item : BaseEntityWithActive
     public string SubGroup5 { get; set; }
 
     [StringLength(6)]
+    public string CoaTransit { get; set; }
+
+    [StringLength(6)]
     public string CoaInventory { get; set; }
 
     [StringLength(6)]
@@ -151,6 +154,8 @@ public class VwItem : BaseEntityWithActive
 
     public string SubGroup5 { get; set; }
 
+    public string CoaTransit { get; set; }
+
     public string CoaInventory { get; set; }
 
     public string CoaCogs { get; set; }
@@ -213,6 +218,9 @@ public class VwItem : BaseEntityWithActive
 
     [Precision(19, 6)]
     public decimal? QtyOnTransfer { get; set; }
+
+    [Precision(19, 6)]
+    public decimal? QtyOnTransit { get; set; }
 
     [Precision(19, 6)]
     public decimal SellQtyAvailable { get; set; }

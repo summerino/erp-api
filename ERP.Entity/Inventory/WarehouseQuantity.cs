@@ -32,6 +32,9 @@ public class WarehouseQuantity
     [Precision(19, 6)]
     public decimal QtyOnTransfer { get; set; }
 
+    [Precision(19, 6)]
+    public decimal QtyOnTransit { get; set; }
+
     [Column(TypeName = "datetime")]
     public DateTime UpdatedDate { get; set; }
 }
@@ -58,6 +61,9 @@ public class VwWarehouseQuantity
 
     [Precision(19, 6)]
     public decimal QtyOnTransfer { get; set; }
+
+    [Precision(19, 6)]
+    public decimal QtyOnTransit { get; set; }
 
     public DateTime UpdatedDate { get; set; }
 
