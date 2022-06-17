@@ -45,3 +45,28 @@ public class ReportByDelivery
 
     public decimal RemainderAmount { get; set; }
 }
+
+public class ReportByInvoiceAR
+{
+    public DateTime Date { get; set; }
+
+    public DateTime? DueDate { get; set; }
+
+    public string Code { get; set; }
+
+    public string OrderCode { get; set; }
+
+    public long SalesId { get; set; }
+
+    public string SalesName { get; set; }
+
+    public string CustCode { get; set; }
+
+    public string CustName { get; set; }
+
+    public decimal TotalAmount { get; set; }
+
+    public decimal PaidAmount { get; set; }
+
+    public decimal RemainderAmount { get; set; }
+}
