@@ -6,6 +6,7 @@ public class OrderHeaderModel
 {
     public decimal Total { get; set; }
     public decimal TaxAmount { get; set; }
+    public decimal ExemptTaxAmount { get; set; }
     public bool IncludeTax { get; set; }
     public decimal FinalDisc { get; set; }
     public decimal FinalDiscPercent { get; set; }
