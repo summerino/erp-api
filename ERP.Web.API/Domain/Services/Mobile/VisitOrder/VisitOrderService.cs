@@ -167,6 +167,7 @@ public class VisitOrderService : GeneralService<MobileVisitLog>, IVisitOrderServ
                 TaxId = od.TaxId,
                 TaxName = sub.Name,
                 TaxAmount = od.TaxAmount,
+                ExemptTaxAmount = od.ExemptTaxAmount,
                 NettPrice = od.NettPrice,
                 Total = od.Total,
                 Dpp = od.Dpp
@@ -201,6 +202,7 @@ public class VisitOrderService : GeneralService<MobileVisitLog>, IVisitOrderServ
                 PaymentTermName = sub.Name,
                 PaidAmount = oh.PaidAmount,
                 TaxAmount = oh.TaxAmount,
+                ExemptTaxAmount = oh.ExemptTaxAmount,
                 Dpp = oh.Dpp,
                 Rate = oh.Rate,
                 FinalDisc = oh.FinalDisc,
@@ -658,6 +660,7 @@ public class VisitOrderService : GeneralService<MobileVisitLog>, IVisitOrderServ
                     FinalDisc = data.OrderHeader.FinalDisc,
                     IncludeTax = data.OrderHeader.IncludeTax,
                     TaxAmount = data.OrderHeader.TaxAmount,
+                    ExemptTaxAmount = data.OrderHeader.ExemptTaxAmount,
                     Total = data.OrderHeader.Total,
                     Dpp = data.OrderHeader.Dpp,
                     PaidAmount = data.OrderHeader.PaidAmount,
@@ -685,6 +688,7 @@ public class VisitOrderService : GeneralService<MobileVisitLog>, IVisitOrderServ
                         Disc = detail.Disc,
                         TaxId = detail.TaxId,
                         TaxAmount = detail.TaxAmount,
+                        ExemptTaxAmount = detail.ExemptTaxAmount,
                         NettPrice = detail.NettPrice,
                         Total = detail.Total,
                         Dpp = detail.Dpp

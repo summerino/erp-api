@@ -10,6 +10,7 @@ public class VisitOrderDetailRequest
     public decimal Disc { get; set; }
     public int? TaxId { get; set; }
     public decimal TaxAmount { get; set; }
+    public decimal ExemptTaxAmount { get; set; }
     public decimal NettPrice { get; set; }
     public decimal Total { get; set; }
     public decimal Dpp { get; set; }
