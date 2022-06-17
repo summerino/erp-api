@@ -16,7 +16,7 @@ public class SalesDeliveryReportService : ISalesDeliveryReportService
 
     public DataSourceResult GetData(int type, int? srcTrans, string startDate, string endDate, string custCode, string status, int? itemId, string code, bool isDetail, int? unitId, int? categoryId)
     {
-        var doData = _db.ReportByDOs.FromSqlRaw(@"SELECT do.[Date], do.Code, do.CustCode, do.CustName,
+        var doData = _db.ReportByDOs.FromSqlRaw(@"SELECT do.[Date], do.Code, do.CustCode, do.CustName, do.TaxInvoiceNo, do.TaxInvoiceDate,
                             CAST(do.SrcTrans AS int) AS SrcTrans, do.TransCode, wh.[Name] AS WarehouseName,
                             SUM(do_d.Qty * do_d.UnitPrice) AS GrossAmount, SUM(do_d.Qty * (do_d.UnitPrice - do_d.Disc - do_d.FinalDiscHeader)) AS SubTotal,
                             SUM(do_d.Qty * do_d.Disc) AS Disc, SUM(do_d.Qty * do_d.FinalDiscHeader) AS DiscHeader,
@@ -29,10 +29,10 @@ public class SalesDeliveryReportService : ISalesDeliveryReportService
                             LEFT JOIN Sales.vwSalesDeliveryDetail do_d ON do_d.Code = do.Code
                             LEFT JOIN Inventory.Warehouse wh ON wh.Code = do.WarehouseCode
                             WHERE do.FromDirectInvoice = 0" +
-                                                (string.IsNullOrEmpty(status) ? " AND do.Mark <> 'OL'" : status.Replace("'", "''").Equals("NV") ? " AND do.Mark NOT IN ('V', 'OL')" : $" AND do.Mark = '{status.Replace("'", "''")}'") +
-                                                " GROUP BY do.[Date], do.Code, do.CustCode, do.CustName, do.SrcTrans, do.TransCode, wh.[Name], do.Mark").ToList();
+                            (string.IsNullOrEmpty(status) ? " AND do.Mark <> 'OL'" : status.Replace("'", "''").Equals("NV") ? " AND do.Mark NOT IN ('V', 'OL')" : $" AND do.Mark = '{status.Replace("'", "''")}'") +
+                            " GROUP BY do.[Date], do.Code, do.CustCode, do.CustName, do.SrcTrans, do.TransCode, wh.[Name], do.Mark, do.TaxInvoiceNo, do.TaxInvoiceDate,").ToList();
 
-        var doDetailData = _db.ReportByDetailDOs.FromSqlRaw(@"SELECT do.[Date], do.Code, do.CustCode, do.CustName,
+        var doDetailData = _db.ReportByDetailDOs.FromSqlRaw(@"SELECT do.[Date], do.Code, do.CustCode, do.CustName, do.TaxInvoiceNo, do.TaxInvoiceDate,
                             CAST(do.SrcTrans AS int) AS SrcTrans, do.TransCode, wh.[Name] AS WarehouseName,
                             im.Initial AS ItemInitial, im.[Name] AS ItemName, do_d.Qty,
                             do_d.UnitId, do_d.UnitName, do_d.UnitPrice AS GrossAmount,

@@ -35,6 +35,10 @@ public class ReportByDO
     public decimal Total { get; set; }
 
     public string Status { get; set; }
+
+    public string TaxInvoiceNo { get; set; }
+
+    public DateTime? TaxInvoiceDate { get; set; }
 }
 
 public class ReportByDetailDO
@@ -102,4 +106,8 @@ public class ReportByDetailDO
     public decimal TotalNettPrice { get; set; }
 
     public string Status { get; set; }
+
+    public string TaxInvoiceNo { get; set; }
+
+    public DateTime? TaxInvoiceDate { get; set; }
 }
