@@ -24,14 +24,36 @@ public class ARMutationReportService : IARMutationReportService
                             LEFT JOIN Sales.SalesInvoiceHeader inv ON inv.Code = invD.Code AND inv.Mark IN('A', 'PP', 'CMP')
                             WHERE dlv.Mark IN('A', 'INV') AND inv.Total IS NOT NULL GROUP BY cs.Code, cs.Initial, cs.[Name]").ToList();
 
-        var dlvData = _db.ReportByDeliveryARMutations.FromSqlRaw(@"SELECT dlv.[Date], inv.DueDate, dlv.Code, dlv.TransCode AS SrcCode, inv.Code AS InvCode, sls.FirstName AS SlsName, dlv.CustCode, sp.[Name] AS CustName, CAST (0 AS decimal) AS BeginningBalance, dlv.Total AS TransAmount, CAST (0 AS decimal) AS PaidAmount, CAST (0 AS decimal) AS EndingBalance
-                            FROM Sales.SalesDeliveryHeader dlv
-                            LEFT JOIN Sales.SalesOrderHeader so ON so.Code = dlv.TransCode
-                            LEFT JOIN General.Employee sls ON sls.Id = so.SalesBy
-                            LEFT JOIN General.Customer sp ON sp.Code = dlv.CustCode
-                            LEFT JOIN Sales.SalesInvoiceDetail invD ON invD.DOCode = dlv.Code
-                            LEFT JOIN Sales.SalesInvoiceHeader inv ON inv.Code = invD.Code AND inv.Mark IN('A','PP','CMP')
-                            WHERE dlv.Mark IN('A','INV')" + (slsId > 0 ? $" AND so.SalesBy = {slsId} " : " ") + "").ToList();
+        var query = "";
+        var sysData = _db.SystemParameters.FirstOrDefault(x => x.Code == "AR_RECOG_TIME");
+
+        if (sysData.Value == "SI")
+        {
+            query = @"SELECT inv.[Date], inv.DueDate, inv.Code, inv.SOCode AS SrcCode, inv.Code AS InvCode, sls.FirstName AS SlsName,
+                    inv.CustCode, sp.[Name] AS CustName, CAST (0 AS decimal) AS BeginningBalance, inv.Total AS TransAmount,
+                    CAST (0 AS decimal) AS PaidAmount, CAST (0 AS decimal) AS EndingBalance
+                    FROM Sales.SalesInvoiceHeader inv
+                    LEFT JOIN Sales.SalesOrderHeader so ON so.Code = inv.SOCode
+                    LEFT JOIN General.Employee sls ON sls.Id = so.SalesBy
+                    LEFT JOIN General.Customer sp ON sp.Code = inv.CustCode
+                    WHERE inv.Mark IN('A','INV')";
+        }
+        else
+        {
+            query = @"SELECT dlv.[Date], inv.DueDate, dlv.Code, dlv.TransCode AS SrcCode, inv.Code AS InvCode, sls.FirstName AS SlsName,
+                    dlv.CustCode, sp.[Name] AS CustName, CAST (0 AS decimal) AS BeginningBalance, dlv.Total AS TransAmount,
+                    CAST (0 AS decimal) AS PaidAmount, CAST (0 AS decimal) AS EndingBalance
+                    FROM Sales.SalesDeliveryHeader dlv
+                    LEFT JOIN Sales.SalesOrderHeader so ON so.Code = dlv.TransCode
+                    LEFT JOIN General.Employee sls ON sls.Id = so.SalesBy
+                    LEFT JOIN General.Customer sp ON sp.Code = dlv.CustCode
+                    LEFT JOIN Sales.SalesInvoiceDetail invD ON invD.DOCode = dlv.Code
+                    LEFT JOIN Sales.SalesInvoiceHeader inv ON inv.Code = invD.Code AND inv.Mark IN('A','PP','CMP')
+                    WHERE dlv.Mark IN('A','INV')";
+        }
+
+
+        var dlvData = _db.ReportByDeliveryARMutations.FromSqlRaw(query + (slsId > 0 ? $" AND so.SalesBy = {slsId} " : " ") + "").ToList();
 
         var cbData = _db.GeneralCashBankHeaders.Where(x => x.Mark != "V").ToList();
 
