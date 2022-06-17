@@ -227,6 +227,9 @@ public class SalesOrderDetail
     public string Notes { get; set; }
 
     [StringLength(6)]
+    public string CoaTransit { get; set; }
+
+    [StringLength(6)]
     public string CoaInventory { get; set; }
 
     [Column("CoaCOGS")]
@@ -306,6 +309,8 @@ public class VwSalesOrderDetail
     public decimal Dpp { get; set; }
 
     public string Notes { get; set; }
+
+    public string CoaTransit { get; set; }
 
     public string CoaInventory { get; set; }
 
