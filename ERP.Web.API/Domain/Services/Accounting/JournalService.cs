@@ -439,9 +439,9 @@ public class JournalService : IJournalService
                                             Code = itemData.RcvHeader.Code,
                                             LineNo = ++l,
                                             Date = itemData.RcvHeader.Date,
-                                            CoaCode = systemParam.FirstOrDefault(x => x.Code == "DPS_COA")?.Value ?? "",
-                                            TypeCode = "DN",
-                                            Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_DPS")?.Value ?? ""} {itemData.Supplier.Initial}").Trim(),
+                                            CoaCode = systemParam.FirstOrDefault(x => x.Code == "DM_AR_COA")?.Value ?? "",
+                                            TypeCode = "DM_AP",
+                                            Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_DM_AR")?.Value ?? ""} {itemData.Supplier.Initial}").Trim(),
                                             RefCode1 = itemMemo.DebitMemoCode,
                                             Group = 6,
                                             CurrCode = itemData.RcvHeader.CurrCode,
@@ -628,9 +628,9 @@ public class JournalService : IJournalService
                                 Code = itemData.InvHeader.Code,
                                 LineNo = ++k,
                                 Date = itemData.InvHeader.Date,
-                                CoaCode = systemParam.FirstOrDefault(x => x.Code == "DPS_COA")?.Value ?? "",
-                                TypeCode = "DN",
-                                Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_DPS")?.Value ?? ""} {itemData.Supplier.Initial}").Trim(),
+                                CoaCode = systemParam.FirstOrDefault(x => x.Code == "DM_AR_COA")?.Value ?? "",
+                                TypeCode = "DM_AR",
+                                Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_DM_AR")?.Value ?? ""} {itemData.Supplier.Initial}").Trim(),
                                 RefCode1 = itemMemo.DebitMemoCode,
                                 Group = 6,
                                 CurrCode = itemData.InvHeader.CurrCode,
@@ -887,9 +887,9 @@ public class JournalService : IJournalService
                                         Code = itemData.Dlvheader.Code,
                                         LineNo = ++k,
                                         Date = itemData.Dlvheader.Date,
-                                        CoaCode = systemParam.FirstOrDefault(x => x.Code == "DPC_COA")?.Value ?? "",
-                                        TypeCode = "CN",
-                                        Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_DPC")?.Value ?? ""} {itemData.Customer.Initial}").Trim(),
+                                        CoaCode = systemParam.FirstOrDefault(x => x.Code == "CM_AP_COA")?.Value ?? "",
+                                        TypeCode = "CM_AP",
+                                        Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_CM_AP")?.Value ?? ""} {itemData.Customer.Initial}").Trim(),
                                         RefCode1 = itemMemo.CreditMemoCode,
                                         Group = 11,
                                         CurrCode = itemData.Dlvheader.CurrCode,
@@ -1834,15 +1834,15 @@ public class JournalService : IJournalService
                 //    SrcTrans = "PR"
                 //});
 
-                //Uang Muka Pembelian
+                //Piutang Nota Debit
                 journals.Add(new Journal
                 {
                     Code = itemData.RtnHeader.Code,
                     LineNo = 1,
                     Date = itemData.RtnHeader.Date,
-                    CoaCode = systemParam.FirstOrDefault(x => x.Code == "DPS_COA")?.Value ?? "",
+                    CoaCode = systemParam.FirstOrDefault(x => x.Code == "DM_AR_COA")?.Value ?? "",
                     TypeCode = "DM_AR",
-                    Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_DPS")?.Value ?? ""} Pembelian {itemData.Supplier.Initial}").Trim(),
+                    Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_DM_AR")?.Value ?? ""} {itemData.Supplier.Initial}").Trim(),
                     RefCode1 = "",
                     Group = 1,
                     CurrCode = itemData.RtnHeader.CurrCode,
