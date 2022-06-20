@@ -32,6 +32,7 @@ public class MobileOrderService : GeneralService<MobileOrderHeader>, IMobileOrde
         try
         {
             var sysparamData = Db.SystemParameters.ToList();
+            var validateOL = ValidateOverlimit(data);
             foreach (var itemData in data)
             {
                 var vlData = Db.MobileVisitLogs.FirstOrDefault(x => x.Code == itemData.VisitLogCode);
@@ -104,9 +105,9 @@ public class MobileOrderService : GeneralService<MobileOrderHeader>, IMobileOrde
                         ApprovedBy = userId,
                         ApprovedDate = DateTime.Now,
                         FromDirectInvoice = true,
-                        OverlimitApprovedBy = allowOverlimit && !string.IsNullOrEmpty(reason) ? userId : null,
-                        OverlimitApprovedDate = allowOverlimit && !string.IsNullOrEmpty(reason) ? DateTime.Now : null,
-                        OverlimitApprovedReason = allowOverlimit && !string.IsNullOrEmpty(reason) ? reason : null
+                        OverlimitApprovedBy = allowOverlimit && !string.IsNullOrEmpty(reason) && validateOL.Where(x => x.CustCode == itemData.CustCode).Any() ? userId : null,
+                        OverlimitApprovedDate = allowOverlimit && !string.IsNullOrEmpty(reason) && validateOL.Where(x => x.CustCode == itemData.CustCode).Any() ? DateTime.Now : null,
+                        OverlimitApprovedReason = allowOverlimit && !string.IsNullOrEmpty(reason) && validateOL.Where(x => x.CustCode == itemData.CustCode).Any() ? reason : null
                     };
 
                     Db.SalesOrderHeaders.Add(soData);
