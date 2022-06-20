@@ -148,5 +148,6 @@ public class ItemController : ControllerBase
         data.QtyOnIndent ??= 0;
         data.QtyOnOrder ??= 0;
         data.QtyOnTransfer ??= 0;
+        data.QtyOnTransit ??= 0;
     }
 }

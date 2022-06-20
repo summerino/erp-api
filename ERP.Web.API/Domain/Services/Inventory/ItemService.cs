@@ -66,6 +66,7 @@ public class ItemService : GeneralService<Item>, IItemService
                         QtyOnIndent = X.Sum(x => x.QtyOnIndent),
                         QtyOnOrder = X.Sum(x => x.QtyOnOrder),
                         QtyOnTransfer = X.Sum(x => x.QtyOnTransfer),
+                        QtyOnTransit = X.Sum(x => x.QtyOnTransit),
                         QtyReorderPoint = X.Sum(x => x.QtyReorderPoint)
                     }).AsQueryable();
         }
@@ -81,6 +82,7 @@ public class ItemService : GeneralService<Item>, IItemService
                         QtyOnIndent = X.Sum(x => x.QtyOnIndent),
                         QtyOnOrder = X.Sum(x => x.QtyOnOrder),
                         QtyOnTransfer = X.Sum(x => x.QtyOnTransfer),
+                        QtyOnTransit = X.Sum(x => x.QtyOnTransit),
                         QtyReorderPoint = X.Sum(x => x.QtyReorderPoint)
                     }).AsQueryable();
         }
@@ -106,6 +108,7 @@ public class ItemService : GeneralService<Item>, IItemService
                 CoaPurc = x.CoaPurc,
                 CoaCost = x.CoaCost,
                 CoaExpense = x.CoaExpense,
+                CoaTransit = x.CoaTransit,
                 CoaInventory = x.CoaInventory,
                 CoaOffSet = x.CoaOffSet,
                 CoaPurcReturn = x.CoaPurcReturn,
@@ -144,7 +147,8 @@ public class ItemService : GeneralService<Item>, IItemService
                 QtyOnHand = g.QtyOnHand == 0 ? 0 : g.QtyOnHand,
                 QtyOnIndent = g.QtyOnIndent == 0 ? 0 : g.QtyOnIndent,
                 QtyOnOrder = g.QtyOnOrder == 0 ? 0 : g.QtyOnOrder,
-                QtyOnTransfer = g.QtyOnTransfer == 0 ? 0 : g.QtyOnTransfer
+                QtyOnTransfer = g.QtyOnTransfer == 0 ? 0 : g.QtyOnTransfer,
+                QtyOnTransit = g.QtyOnTransit == 0 ? 0 : g.QtyOnTransit
             });
 
         return data.ToDataSourceResult(skip, take, filter, sort);
