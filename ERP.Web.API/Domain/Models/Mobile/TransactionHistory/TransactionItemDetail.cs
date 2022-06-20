@@ -12,5 +12,6 @@ public class TransactionItemDetail
     public string Unit { get; set; }
     public decimal Discount { get; set; }
     public decimal TaxAmount { get; set; }
+    public decimal ExemptTaxAmount { get; set; }
     public decimal Total { get; set; }
 }

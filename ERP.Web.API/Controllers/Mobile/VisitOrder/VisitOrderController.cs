@@ -243,7 +243,9 @@ public class VisitOrderController : ControllerBase
                 x.Name,
                 x.TypeId,
                 x.Rate,
+                x.ExemptRate,
                 x.CoaCode,
+                x.ExemptCoaCode,
                 x.Seq,
                 x.IsActive,
                 x.UpdatedDate

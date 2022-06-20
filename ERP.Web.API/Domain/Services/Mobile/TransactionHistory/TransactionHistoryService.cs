@@ -27,7 +27,6 @@ public class TransactionHistoryService : ITransactionHistoryService
                          group new { so } by new
                          {
                              so.CustCode,
-                             //cu.Name,
                              so.SalesBy,
                              so.Date
                          } into g
@@ -36,7 +35,6 @@ public class TransactionHistoryService : ITransactionHistoryService
                              SalesId = g.Key.SalesBy,
                              Date = g.Key.Date,
                              CustomerId = g.Key.CustCode,
-                             //CustomerName = g.Key.Name,
                              Total = g.Sum(tl => tl.so.SubTotal)
                          };
 
@@ -67,10 +65,6 @@ public class TransactionHistoryService : ITransactionHistoryService
                         Total = g.Sum(tl => tl.so.Total)
                     }).OrderBy(x => x.Date).AsQueryable();
 
-        //if (startDate != null && startDate.HasValue)
-        //{
-        //    data = data.Where(x => x.Date >= startDate && x.Date <= endDate);
-        //}
         if (startDate != null && startDate.HasValue && endDate != null && endDate.HasValue)
         {
             data = data.Where(x => x.Date >= startDate && x.Date <= endDate);
@@ -100,7 +94,6 @@ public class TransactionHistoryService : ITransactionHistoryService
 
         var dataMobile = (from so in Db.VwMobileOrderHeaders.Where(x => x.SalesOrderCode.Equals(null))
                           join sod in Db.VwMobileOrderDetails on so.Code equals sod.Code
-                          //join c in Db.Customers on so.CustCode equals c.Code
                           join i in Db.Items on sod.ItemId equals i.Id
                           join u in Db.UoMConversions on sod.UnitId equals u.Id
                           group new { so, sod, i, u } by new
@@ -122,10 +115,11 @@ public class TransactionHistoryService : ITransactionHistoryService
                               ItemId = g.Key.ItemId,
                               ItemName = g.Key.Name,
                               Quantity = g.Sum(qt => qt.sod.Qty),
-                              //UomId = g.Key.UomId,
                               Unit = g.Key.UnitEquivalent,
                               Price = g.Key.UnitPrice,
                               Discount = g.Sum(dc => dc.sod.Disc),
+                              TaxAmount = g.Sum(tx => tx.sod.TaxAmount),
+                              ExemptTaxAmount = g.Sum(etx => etx.sod.ExemptTaxAmount),
                               Total = g.Sum(tl => tl.sod.Total)
                           });
 
@@ -152,10 +146,11 @@ public class TransactionHistoryService : ITransactionHistoryService
                              ItemId = g.Key.ItemId,
                              ItemName = g.Key.Name,
                              Quantity = g.Sum(qt => qt.sod.Qty),
-                             //UomId = g.Key.UomId,
                              Unit = g.Key.UnitEquivalent,
                              Price = g.Key.UnitPrice,
                              Discount = g.Sum(dc => dc.sod.Disc),
+                             TaxAmount = g.Sum(tx => tx.sod.TaxAmount),
+                             ExemptTaxAmount = g.Sum(etx => etx.sod.ExemptTaxAmount),
                              Total = g.Sum(tl => tl.sod.Total)
                          });
 
@@ -179,10 +174,11 @@ public class TransactionHistoryService : ITransactionHistoryService
                         ItemId = g.Key.ItemId,
                         ItemName = g.Key.ItemName,
                         Quantity = g.Sum(qt => qt.so.Quantity),
-                        //UomId = g.Key.UomId, 
                         Unit = g.Key.Unit,
                         Price = g.Key.Price,
                         Discount = g.Sum(dc => dc.so.Discount),
+                        TaxAmount = g.Sum(tx => tx.so.TaxAmount),
+                        ExemptTaxAmount = g.Sum(etx => etx.so.ExemptTaxAmount),
                         Total = g.Sum(tl => tl.so.Total)
                     }).AsQueryable();
 
@@ -191,7 +187,9 @@ public class TransactionHistoryService : ITransactionHistoryService
             data = data.Where(x => x.ItemName.Contains(search));
         }
 
-        return data.ToDataSourceResult(skip, take, filter, sort);
+        DataSourceResult result = data.ToDataSourceResult(skip, take, filter, sort);
+
+        return result;
     }
 
     public DataSourceResult GetCustomerDetail(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, string search)
@@ -200,7 +198,6 @@ public class TransactionHistoryService : ITransactionHistoryService
 
         var dataMobile = (from so in Db.VwMobileOrderHeaders.Where(x => x.SalesOrderCode.Equals(null))
                           join sod in Db.VwMobileOrderDetails on so.Code equals sod.Code
-                          //join c in customers on so.CustCode equals c.Code
                           join u in Db.UoMConversions on sod.UnitId equals u.Id
                           join i in Db.Items on sod.ItemId equals i.Id
                           group new { so, sod, u, i } by new
@@ -208,7 +205,6 @@ public class TransactionHistoryService : ITransactionHistoryService
                               so.Date,
                               so.SalesBy,
                               so.CustCode,
-                              //c.Name,
                               sod.ItemId,
                               ItemName = i.Name,
                               sod.UnitPrice,
@@ -220,7 +216,6 @@ public class TransactionHistoryService : ITransactionHistoryService
                               SalesId = g.Key.SalesBy,
                               Date = g.Key.Date,
                               CustomerId = g.Key.CustCode,
-                              //CustomerName = g.Key.Name,
                               ItemId = g.Key.ItemId,
                               ItemName = g.Key.ItemName,
                               Quantity = g.Sum(qt => qt.sod.Qty),
@@ -1101,6 +1096,7 @@ public class TransactionHistoryService : ITransactionHistoryService
     {
         var salesId = Db.Users.Where(x => x.Id.Equals(userId)).Select(y => y.EmployeeId).Single();
         var categories = Db.ItemCategories.Where(x => x.GroupId.Equals(groupId)).Select(y => y.Id);
+
         var dataMobile = (from so in Db.MobileOrderHeaders.Where(x => x.SalesOrderCode.Equals(null) && x.SalesBy.Equals(salesId))
                           join sod in Db.MobileOrderDetails on so.Code equals sod.Code
                           join i in Db.Items.Where(x => categories.Contains(x.CategoryId) &&
@@ -1177,6 +1173,8 @@ public class TransactionHistoryService : ITransactionHistoryService
                               Unit = g.Key.UnitEquivalent,
                               Price = g.Key.UnitPrice,
                               Discount = g.Sum(dc => dc.sod.Disc),
+                              TaxAmount = g.Sum(tx => tx.sod.TaxAmount),
+                              ExemptTaxAmount = g.Sum(etx => etx.sod.ExemptTaxAmount),
                               Total = g.Sum(tl => tl.sod.Total)
                           }).AsQueryable();
 
@@ -1197,6 +1195,8 @@ public class TransactionHistoryService : ITransactionHistoryService
                              Unit = g.Key.UnitEquivalent,
                              Price = g.Key.UnitPrice,
                              Discount = g.Sum(dc => dc.sod.Disc),
+                             TaxAmount = g.Sum(tx => tx.sod.TaxAmount),
+                             ExemptTaxAmount = g.Sum(etx => etx.sod.ExemptTaxAmount),
                              Total = g.Sum(tl => tl.sod.Total)
                          }).AsQueryable();
 
@@ -1211,6 +1211,8 @@ public class TransactionHistoryService : ITransactionHistoryService
                         Unit = g.Key.Unit,
                         Price = g.Key.Price,
                         Discount = g.Sum(dc => dc.Discount),
+                        TaxAmount = g.Sum(tx => tx.TaxAmount),
+                        ExemptTaxAmount = g.Sum(etx => etx.ExemptTaxAmount),
                         Total = g.Sum(tl => tl.Total)
                     }).AsQueryable();
 
@@ -1478,6 +1480,9 @@ public class TransactionHistoryService : ITransactionHistoryService
                               ItemName = g.Key.Name,
                               Unit = g.Key.UnitEquivalent,
                               Quantity = g.Sum(tl => tl.sod.Qty),
+                              Discount = g.Sum(dc => dc.sod.Disc),
+                              TaxAmount = g.Sum(tx => tx.sod.TaxAmount),
+                              ExemptTaxAmount = g.Sum(etx => etx.sod.ExemptTaxAmount),
                               Total = g.Sum(tl => tl.sod.Total)
                           });
 
@@ -1495,12 +1500,30 @@ public class TransactionHistoryService : ITransactionHistoryService
                              ItemName = g.Key.Name,
                              Unit = g.Key.UnitEquivalent,
                              Quantity = g.Sum(tl => tl.sod.Qty),
+                             Discount = g.Sum(dc => dc.sod.Disc),
+                             TaxAmount = g.Sum(tx => tx.sod.TaxAmount),
+                             ExemptTaxAmount = g.Sum(etx => etx.sod.ExemptTaxAmount),
                              Total = g.Sum(tl => tl.sod.Total)
                          });
 
         var dataUnion = dataOrder.Union(dataMobile);
 
-        DataSourceResult result = dataUnion.ToDataSourceResult(skip, take, filter, sort);
+        var daraResult = (from so in dataOrder.Union(dataMobile)
+                          group so by new { so.SalesId, so.ItemId, so.ItemName, so.Unit } into g
+                          select new TransactionHistoryItemBySubGroupSummary
+                          {
+                              SalesId = g.Key.SalesId,
+                              ItemId = g.Key.ItemId,
+                              ItemName = g.Key.ItemName,
+                              Unit = g.Key.Unit,
+                              Quantity = g.Sum(tl => tl.Quantity),
+                              Discount = g.Sum(dc => dc.Discount),
+                              TaxAmount = g.Sum(tx => tx.TaxAmount),
+                              ExemptTaxAmount = g.Sum(etx => etx.ExemptTaxAmount),
+                              Total = g.Sum(tl => tl.Total)
+                          });
+
+        DataSourceResult result = daraResult.ToDataSourceResult(skip, take, filter, sort);
 
         return result;
     }

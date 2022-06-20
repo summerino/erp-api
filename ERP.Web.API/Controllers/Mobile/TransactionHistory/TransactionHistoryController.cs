@@ -123,6 +123,8 @@ public class TransactionHistoryController : ControllerBase
             x.Unit,
             x.Price,
             x.Discount,
+            x.TaxAmount,
+            x.ExemptTaxAmount,
             x.Total
         }).ToList<dynamic>();
         return Ok(new MobileApiResponse
