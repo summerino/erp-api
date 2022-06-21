@@ -73,8 +73,11 @@ public class ItemController : ControllerBase
             case 2:
                 data = _item.GetRelatedIndentTrans(whid, itemid).ToList<dynamic>();
                 break;
-            default:
+            case 3:
                 data = _item.GetRelatedTransferTrans(whid, itemid).ToList<dynamic>();
+                break;
+            default:
+                data = _item.GetRelatedTransitTrans(whid, itemid).ToList<dynamic>();
                 break;
         }
 
