@@ -18,6 +18,8 @@ public interface IItemService : IGeneralService<Item>
 
     IEnumerable<dynamic> GetRelatedTransferTrans(string whId, int itemId);
 
+    IEnumerable<dynamic> GetRelatedTransitTrans(string whid, int itemid);
+
     bool IsItemUsed(int id);
 
     #region Mobile
