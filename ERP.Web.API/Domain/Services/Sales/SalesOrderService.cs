@@ -484,7 +484,8 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                     CoaCogs = item.CoaCogs,
                     CoaSls = item.CoaSls,
                     CoaSlsDisc = item.CoaSlsDisc,
-                    CoaSlsReturn = item.CoaSlsReturn
+                    CoaSlsReturn = item.CoaSlsReturn,
+                    CoaTransit = string.IsNullOrEmpty(item.CoaTransit) ? Db.SystemParameters.FirstOrDefault(x => x.Code == "TRANSIT_ITEM_COA")?.Value ?? "" : item.CoaTransit
                 };
 
                 Db.SalesOrderDetails.Add(orderDetail);
@@ -1184,7 +1185,8 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                         CoaCogs = item.CoaCogs,
                         CoaSls = item.CoaSls,
                         CoaSlsDisc = item.CoaSlsDisc,
-                        CoaSlsReturn = item.CoaSlsReturn
+                        CoaSlsReturn = item.CoaSlsReturn,
+                        CoaTransit = string.IsNullOrEmpty(item.CoaTransit) ? Db.SystemParameters.FirstOrDefault(x => x.Code == "TRANSIT_ITEM_COA")?.Value ?? "" : item.CoaTransit
                     };
 
                     Db.SalesOrderDetails.Add(orderDetail);
