@@ -7650,10 +7650,10 @@ AS
 			WHEN 'AP' THEN 32
 			WHEN 'EPAP' THEN 33
 			WHEN 'TU' THEN 34
-			WHEN 'DPC' THEN 35
-			WHEN 'RDPC' THEN 36
-			WHEN 'DPS' THEN 37
-			WHEN 'RDPS' THEN 38
+			WHEN 'DEPC' THEN 35
+			WHEN 'RDEPC' THEN 36
+			WHEN 'DEPS' THEN 37
+			WHEN 'RDEPS' THEN 38
 			WHEN 'SR' THEN 39
 			WHEN 'PR' THEN 40
 			ELSE 0 END AS ActionId
@@ -10508,7 +10508,7 @@ BEGIN
 			UPDATE Expedition.ExpeditionInvoiceHeader SET PaidAmount = @paidAmount, Mark = @mark WHERE Code = @transCode;
 
 		END
-		ELSE IF (@type = 'DPC')
+		ELSE IF (@type = 'DEPC')
 		BEGIN
 
 			UPDATE Sales.CreditMemo
@@ -10516,7 +10516,7 @@ BEGIN
 			WHERE Code = @transCode;
 
 		END
-		ELSE IF (@type = 'DPS')
+		ELSE IF (@type = 'DEPS')
 		BEGIN
 
 			UPDATE Purchasing.DebitMemo
@@ -10524,7 +10524,7 @@ BEGIN
 			WHERE Code = @transCode;
 
 		END
-		ELSE IF ((@type = 'RDPC' OR @type = 'SR') AND @src = 'BB')
+		ELSE IF ((@type = 'RDEPC' OR @type = 'SR') AND @src = 'BB')
 		BEGIN
 
 			UPDATE Accounting.BeginningBalanceCreditMemo
@@ -10532,7 +10532,7 @@ BEGIN
 			WHERE Code = @transCode;
 
 		END
-		ELSE IF (@type = 'RDPC' OR @type = 'SR')
+		ELSE IF (@type = 'RDEPC' OR @type = 'SR')
 		BEGIN
 
 			SET @used = ((SELECT Used FROM Sales.CreditMemo where Code = @transCode) - @transAmount)
@@ -10541,7 +10541,7 @@ BEGIN
 			UPDATE Sales.CreditMemo SET Used = @used, Mark=@mark WHERE Code = @transCode
 
 		END
-		ELSE IF ((@type = 'RDPS' OR @type = 'PR') AND @src = 'BB')
+		ELSE IF ((@type = 'RDEPS' OR @type = 'PR') AND @src = 'BB')
 		BEGIN
 
 			UPDATE Accounting.BeginningBalanceDebitMemo
@@ -10549,7 +10549,7 @@ BEGIN
 			WHERE Code = @transCode;
 
 		END
-		ELSE IF (@type = 'RDPS' OR @type = 'PR')
+		ELSE IF (@type = 'RDEPS' OR @type = 'PR')
 		BEGIN
 
 			SET @used = ((SELECT Used FROM Purchasing.DebitMemo where Code = @transCode) - @transAmount)

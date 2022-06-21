@@ -19,10 +19,10 @@ public class MapCbTypeToAction
             new() { Code = "AP", ActionId = (int)Actions.CbTypeAccountPayable },
             new() { Code = "EPAP", ActionId = (int)Actions.CbTypeExpeditionDebt },
             new() { Code = "TU", ActionId = (int)Actions.CbTypeGeneralTransaction },
-            new() { Code = "DPC", ActionId = (int)Actions.CbTypeSalesDownPayment },
-            new() { Code = "RDPC", ActionId = (int)Actions.CbTypeSalesDownPaymentReturn },
-            new() { Code = "DPS", ActionId = (int)Actions.CbTypePurchaseDownPayment },
-            new() { Code = "RDPS", ActionId = (int)Actions.CbTypePurchaseDownPaymentReturn },
+            new() { Code = "DEPC", ActionId = (int)Actions.CbTypeDepositCustomer },
+            new() { Code = "RDEPC", ActionId = (int)Actions.CbTypeReturnDepositCustomer },
+            new() { Code = "DEPS", ActionId = (int)Actions.CbTypeDepositSupplier },
+            new() { Code = "RDEPS", ActionId = (int)Actions.CbTypeReturnDepositSupplier },
             new() { Code = "SR", ActionId = (int)Actions.CbTypeSalesReturn },
             new() { Code = "PR", ActionId = (int)Actions.CbTypePurchaseReturn }
         };

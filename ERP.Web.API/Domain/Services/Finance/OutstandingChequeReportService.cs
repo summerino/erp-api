@@ -21,11 +21,11 @@ public class OutstandingChequeReportService : IOutstandingChequeReportService
 							WHEN 'AP' THEN pi_h.SupName
 							WHEN 'AR' THEN si_h.CustName
 							WHEN 'EPAP' THEN ep_h.SupName
-							WHEN 'DPC' THEN cm.CustName
-							WHEN 'RDPC' THEN cm.CustName
+							WHEN 'DEPC' THEN cm.CustName
+							WHEN 'RDEPC' THEN cm.CustName
 							WHEN 'SR' THEN cm.CustName
-							WHEN 'DPS' THEN dm.SupName
-							WHEN 'RPDS' THEN dm.SupName
+							WHEN 'DEPS' THEN dm.SupName
+							WHEN 'RDEPS' THEN dm.SupName
 							WHEN 'PR' THEN dm.SupName
 							ELSE ''
 						END AS ClientName,

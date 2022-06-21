@@ -146,9 +146,9 @@ public class CashBankController : ControllerBase
         switch (type)
         {
             // Checking role authorization
-            case "DPC" when !_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.CbTypeSalesDownPayment }).Any():
+            case "DEPC" when !_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.CbTypeDepositCustomer }).Any():
                 return Ok(new ApiResponse { TableData = new List<dynamic>() });
-            case "RDPC" when !_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.CbTypeSalesDownPaymentReturn }).Any():
+            case "RDEPC" when !_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.CbTypeReturnDepositCustomer }).Any():
                 return Ok(new ApiResponse { TableData = new List<dynamic>() });
             case "SR" when !_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.CbTypeSalesReturn }).Any():
                 return Ok(new ApiResponse { TableData = new List<dynamic>() });
@@ -176,9 +176,9 @@ public class CashBankController : ControllerBase
         switch (type)
         {
             // Checking role authorization
-            case "DPS" when !_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.CbTypePurchaseDownPayment }).Any():
+            case "DEPS" when !_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.CbTypeDepositSupplier }).Any():
                 return Ok(new ApiResponse { TableData = new List<dynamic>() });
-            case "RDPS" when !_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.CbTypePurchaseDownPaymentReturn }).Any():
+            case "RDEPS" when !_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.CbTypeReturnDepositSupplier }).Any():
                 return Ok(new ApiResponse { TableData = new List<dynamic>() });
             case "PR" when !_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.CbTypePurchaseReturn }).Any():
                 return Ok(new ApiResponse { TableData = new List<dynamic>() });

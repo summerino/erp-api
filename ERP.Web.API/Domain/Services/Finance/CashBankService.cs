@@ -97,7 +97,7 @@ public class CashBankService : GeneralService<GeneralCashBankHeader>, ICashBankS
 
         switch (type)
         {
-            case "DPC":
+            case "DEPC":
             {
                 var data = Db.VwCreditMemos.Where(x => x.SrcTrans == 1 && x.Mark == "PP");
 
@@ -106,7 +106,7 @@ public class CashBankService : GeneralService<GeneralCashBankHeader>, ICashBankS
 
                 return data.ToDataSourceResult(skip, take, filters, sorts);
             }
-            case "RDPC":
+            case "RDEPC":
             {
                 //var data = (from bb in Db.BeginningBalanceCreditMemos
                 //        join c in Db.Customers on bb.CustCode equals c.Code into cs
@@ -163,7 +163,7 @@ public class CashBankService : GeneralService<GeneralCashBankHeader>, ICashBankS
 
         switch (type)
         {
-            case "DPS":
+            case "DEPS":
             {
                 var data = Db.VwDebitMemos.Where(x => x.SrcTrans == 1 && x.Mark == "PP");
 
@@ -172,7 +172,7 @@ public class CashBankService : GeneralService<GeneralCashBankHeader>, ICashBankS
 
                 return data.ToDataSourceResult(skip, take, filters, sorts);
             }
-            case "RDPS":
+            case "RDEPS":
             {
                 var data = Db.VwOutstandingDebitMemos.Where(x => x.Type == 1);
 
@@ -617,7 +617,7 @@ public class CashBankService : GeneralService<GeneralCashBankHeader>, ICashBankS
                 queries.Add(
                     $"UPDATE Expedition.ExpeditionInvoiceHeader SET PaidAmount='{totalAmount}', Mark='{mark}' WHERE Code='{item.TransCode}';");
             }
-            else if (item.Type == "DPC")
+            else if (item.Type == "DEPC")
             {
                 var memo = Db.CreditMemos.SingleOrDefault(x => x.Code == item.TransCode);
 
@@ -630,7 +630,7 @@ public class CashBankService : GeneralService<GeneralCashBankHeader>, ICashBankS
                 var query = QueryBuilder(item.Type, item.TransCode);
                 queries.Add(query);
             }
-            else if (item.Type == "DPS")
+            else if (item.Type == "DEPS")
             {
                 var memo = Db.DebitMemos.SingleOrDefault(x => x.Code == item.TransCode);
 
@@ -643,10 +643,10 @@ public class CashBankService : GeneralService<GeneralCashBankHeader>, ICashBankS
                 var query = QueryBuilder(item.Type, item.TransCode);
                 queries.Add(query);
             }
-            else if (item.Type is "PR" or "RDPS" or "RDPC" or "SR")
+            else if (item.Type is "PR" or "RDEPS" or "RDEPC" or "SR")
             {
-                // Validasi retur uang muka pembelian dan retur pembelian
-                if (item.Type is "RDPS" or "PR")
+                // Validasi retur deposit supplier dan retur pembelian
+                if (item.Type is "RDEPS" or "PR")
                 {
                     var prevTransaction = oldTransactions.Where(x => x.TransCode == item.TransCode && x.TypeAmount == "C").Sum(x => x.Amount);
                     var totalAmount = prevTransaction + item.Amount;
@@ -686,7 +686,7 @@ public class CashBankService : GeneralService<GeneralCashBankHeader>, ICashBankS
                             $"UPDATE Purchasing.DebitMemo SET Used='{totalAmount}', Mark='{mark}' WHERE Code='{item.TransCode}';");
                     }
                 }
-                else if (item.Type is "RDPC" or "SR")
+                else if (item.Type is "RDEPC" or "SR")
                 {
                     var prevTransaction = oldTransactions.Where(x => x.TransCode == item.TransCode && x.TypeAmount == "D").Sum(x => x.Amount);
                     var totalAmount = prevTransaction + item.Amount;
@@ -736,8 +736,8 @@ public class CashBankService : GeneralService<GeneralCashBankHeader>, ICashBankS
     {
         return type switch
         {
-            "DPC" => $"UPDATE Sales.CreditMemo SET Mark='A' WHERE Code='{code}';",
-            "DPS" => $"UPDATE Purchasing.DebitMemo SET Mark='A' WHERE Code='{code}';",
+            "DEPC" => $"UPDATE Sales.CreditMemo SET Mark='A' WHERE Code='{code}';",
+            "DEPS" => $"UPDATE Purchasing.DebitMemo SET Mark='A' WHERE Code='{code}';",
             _ => ""
         };
     }
