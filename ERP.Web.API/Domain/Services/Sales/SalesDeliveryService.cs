@@ -265,10 +265,11 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
  
             Db.SalesDeliveryHeaders.Add(data);
 
+            var newInvCode = "";
             if (data.IsSoInv)
             {
                 // Sales Invoice
-                var newInvCode = GetNewCode("SI_NUM_FMT", data.Date);
+                newInvCode = GetNewCode("SI_NUM_FMT", data.Date);
                 var newSinvData = new SalesInvoiceHeader
                 {
                     Code = newInvCode,
@@ -311,6 +312,14 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
             Db.Database.ExecuteSqlRaw(
                 "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
                 data.Code, data.Date, data.TransCode);
+
+            if (data.IsSoInv)
+            {
+                // Execute sp_update_stock_mutation_from_si
+                Db.Database.ExecuteSqlRaw(
+                    "EXEC sp_update_stock_mutation_from_si {0}, {1}, {2}",
+                    newInvCode, data.Date, data.Code);
+            }
 
             // Execute sp_update_so_dlv_qty /sp_update_sr_rcv_qty
             Db.Database.ExecuteSqlRaw(
@@ -581,10 +590,11 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
             Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
             Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
 
+            var newInvCode = "";
             if (data.IsSoInv)
             {
                 // Sales Invoice
-                var newInvCode = GetNewCode("SI_NUM_FMT", data.Date);
+                newInvCode = GetNewCode("SI_NUM_FMT", data.Date);
                 var newSinvData = new SalesInvoiceHeader
                 {
                     Code = newInvCode,
@@ -627,6 +637,14 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
             Db.Database.ExecuteSqlRaw(
                 "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
                 data.Code, data.Date, data.TransCode);
+
+            if (data.IsSoInv)
+            {
+                // Execute sp_update_stock_mutation_from_si
+                Db.Database.ExecuteSqlRaw(
+                    "EXEC sp_update_stock_mutation_from_si {0}, {1}, {2}",
+                    newInvCode, data.Date, data.Code);
+            }
 
             // Execute sp_update_so_dlv_qty / sp_update_sr_rcv_qty
             if (data.SrcTrans == 1)

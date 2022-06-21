@@ -786,6 +786,11 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                 "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
                 dlvData?.Code, data.Date, newCode);
 
+            // Execute sp_update_stock_mutation_from_si
+            Db.Database.ExecuteSqlRaw(
+                "EXEC sp_update_stock_mutation_from_si {0}, {1}, {2}",
+                newCode, data.Date, newCode);
+
             // Execute sp_update_po_rcv_qty
             if (!isOverLimit)
                 Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", newCode);
@@ -1672,6 +1677,11 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
             Db.Database.ExecuteSqlRaw(
                 "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
                 InvoiceDetailData.DoCode, data.Date, data.SoCode);
+
+            // Execute sp_update_stock_mutation_from_si
+            Db.Database.ExecuteSqlRaw(
+                "EXEC sp_update_stock_mutation_from_si {0}, {1}, {2}",
+                data.Code, data.Date, data.Code);
 
             // Check all sales delivery are invoiced
             //if (
