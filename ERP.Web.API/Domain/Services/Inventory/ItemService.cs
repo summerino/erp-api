@@ -328,6 +328,25 @@ public class ItemService : GeneralService<Item>, IItemService
         return result;
     }
 
+    public IEnumerable<dynamic> GetRelatedTransitTrans(string whid, int itemid)
+    {
+        var stockM = Db.StockMutations.Where(x => x.WarehouseCode == whid && x.ItemId == itemid && x.Type == "OTS").ToList();
+        var header = Db.VwSalesDeliveryHeaders.Where(s => s.Mark == "A" && stockM.Select(x => x.RefCode1).Contains(s.Code)).ToList();
+        var details = Db.VwSalesDeliveryDetails.Where(r => header.Select(x => x.Code).Contains(r.Code) && r.ItemId == itemid).ToList();
+        var result = (from h in header
+                      join d in details on h.Code equals d.Code
+                      select new
+                      {
+                          Code = h.Code,
+                          Date = h.Date,
+                          Type = "Barang Dalam Pengiriman",
+                          Qty = Convert.ToInt32(d.Qty),
+                          UnitName = d.UnitName
+                      }).ToDynamicList();
+
+        return result;
+    }
+
     public bool IsItemUsed(int id)
     {
         return Db.WarehouseQuantities.Where(x => x.ItemId == id).Any();
