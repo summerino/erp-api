@@ -619,7 +619,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                     });
                 }
             }
-
+            var newInvCode = "";
             if (data.IsSoInv && !isOverLimit)
             {
                 // Sales Delivery
@@ -656,7 +656,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                 Db.SalesDeliveryHeaders.Add(newSdlvData);
 
                 // Sales Invoice
-                var newInvCode = GetNewCode("SI_NUM_FMT", data.Date);
+                newInvCode = GetNewCode("SI_NUM_FMT", data.Date);
                 var newSinvData = new SalesInvoiceHeader
                 {
                     Code = newInvCode,
@@ -739,6 +739,14 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
 
                 // Execute sp_update_po_rcv_qty
                 Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", newCode);
+
+                if (data.IsSoInv)
+                {
+                    // Execute sp_update_stock_mutation_from_si
+                    Db.Database.ExecuteSqlRaw(
+                        "EXEC sp_update_stock_mutation_from_si {0}, {1}, {2}",
+                        newInvCode, data.Date, dlvData?.Code);
+                }
             }
                 
             transaction.Commit();
@@ -1365,7 +1373,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                     });
                 }
             }
-
+            var newInvCode = "";
             if (data.IsSoInv && !isOverLimit)
             {
                 var DlvData = Db.SalesDeliveryHeaders.Where(x => x.TransCode == data.Code).ToList();
@@ -1405,7 +1413,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                     Db.SalesDeliveryHeaders.Add(newSdlvData);
 
                     // Sales Invoice
-                    var newInvCode = GetNewCode("SI_NUM_FMT", data.Date);
+                    newInvCode = GetNewCode("SI_NUM_FMT", data.Date);
                     var newSinvData = new SalesInvoiceHeader
                     {
                         Code = newInvCode,
@@ -1472,7 +1480,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                 else
                 {
                     // Sales Invoice
-                    var newInvCode = GetNewCode("SI_NUM_FMT", data.Date);
+                    newInvCode = GetNewCode("SI_NUM_FMT", data.Date);
                     var newSinvData = new SalesInvoiceHeader
                     {
                         Code = newInvCode,
@@ -1538,6 +1546,14 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
 
                 // Execute sp_update_po_rcv_qty
                 Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", data.Code);
+
+                if (data.IsSoInv)
+                {
+                    // Execute sp_update_stock_mutation_from_si
+                    Db.Database.ExecuteSqlRaw(
+                        "EXEC sp_update_stock_mutation_from_si {0}, {1}, {2}",
+                        newInvCode, data.Date, dlvData?.Code);
+                }
             }
 
             transaction.Commit();

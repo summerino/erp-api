@@ -150,6 +150,14 @@ public class SalesInvoiceService : GeneralService<SalesInvoiceHeader>, ISalesInv
             // Save changes
             Db.SaveChanges();
 
+            // Execute sp_update_stock_mutation_from_si
+            foreach (var item in data.Details)
+            {
+                Db.Database.ExecuteSqlRaw(
+                    "EXEC sp_update_stock_mutation_from_si {0}, {1}, {2}",
+                    data.Code, data.Date, item.DoCode);
+            }
+
             // Update sales delivery to invoiced
             Db.Database.ExecuteSqlRaw(
                 $@"UPDATE Sales.SalesDeliveryHeader
@@ -313,6 +321,14 @@ public class SalesInvoiceService : GeneralService<SalesInvoiceHeader>, ISalesInv
             // Save changes
             Db.SaveChanges();
 
+            // Execute sp_update_stock_mutation_from_si
+            foreach (var item in data.Details)
+            {
+                Db.Database.ExecuteSqlRaw(
+                    "EXEC sp_update_stock_mutation_from_si {0}, {1}, {2}",
+                    data.Code, data.Date, item.DoCode);
+            }
+
             // Update sales delivery to invoiced
             Db.Database.ExecuteSqlRaw(
                 $@"UPDATE Sales.SalesDeliveryHeader
@@ -388,6 +404,15 @@ public class SalesInvoiceService : GeneralService<SalesInvoiceHeader>, ISalesInv
 
                 // Save changes
                 Db.SaveChanges();
+
+                var details = Db.SalesInvoiceDetails.Where(x => x.Code == code).ToList();
+                // Execute sp_update_stock_mutation_from_si
+                foreach (var item in details)
+                {
+                    Db.Database.ExecuteSqlRaw(
+                        "EXEC sp_update_stock_mutation_from_si {0}, {1}, {2}, {3}",
+                        data.Code, data.Date, item.DoCode, true);
+                }
 
                 // Get sales delivery code and join
                 var doCodeJoin = string.Join("','",
