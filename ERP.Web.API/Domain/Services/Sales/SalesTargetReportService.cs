@@ -83,6 +83,20 @@ public class SalesTargetReportService : ISalesTargetReportService
         }
         else
         {
+            var dateClause = "";
+            if (!string.IsNullOrEmpty(startDate) && !string.IsNullOrEmpty(endDate))
+            {
+                dateClause = $" AND (st_h.StartDate BETWEEN '{startDate}' AND '{endDate}') OR (st_h.EndDate BETWEEN '{startDate}' AND '{endDate}') ";
+            }
+            else if (!string.IsNullOrEmpty(startDate))
+            {
+                dateClause = $" AND (st_h.StartDate >= '{startDate}') OR (st_h.EndDate >= '{startDate}') ";
+            }
+            else if (!string.IsNullOrEmpty(endDate))
+            {
+                dateClause = $" AND ('{endDate}' <= st_h.StartDate) OR ('{endDate}' <= st_h.EndDate ) ";
+            }
+
             var targetData = _db.ReportByTargets.FromSqlRaw(@"SELECT st_s.SalesmanId AS SalesId, st_d.ItemGroupId,
                     st_d.ItemSubGroupId, st_d.SubGroup AS ItemSubGroup2,
                     SUM(st_d.Amount) AS TargetAmount
@@ -90,9 +104,8 @@ public class SalesTargetReportService : ISalesTargetReportService
                     LEFT JOIN Sales.SalesTargetSubject st_s ON st_s.Code = st_h.Code
                     LEFT JOIN Sales.SalesTargetDetail st_d ON st_d.Code = st_h.Code
                     WHERE st_h.Mark != 'V'" +
-                                                            (string.IsNullOrEmpty(startDate) ? "" : $" AND st_h.StartDate >= '{startDate}'") +
-                                                            (string.IsNullOrEmpty(endDate) ? "" : $" AND st_h.EndDate <= '{endDate}'") +
-                                                            @"GROUP BY st_s.SalesmanId, st_d.ItemGroupId,
+                    dateClause +
+                    @" GROUP BY st_s.SalesmanId, st_d.ItemGroupId,
                     st_d.ItemSubGroupId, st_d.SubGroup");
 
             var tsData = _db.ReportBySTs.FromSqlRaw(@"DECLARE @Delimiter CHAR = ';';
