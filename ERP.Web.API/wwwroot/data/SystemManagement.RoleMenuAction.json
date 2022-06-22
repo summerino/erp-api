@@ -321,4 +321,6 @@
 {"Id":321,"RoleId":1,"MenuId":163,"ActionId":2,"UpdatedBy":1,"UpdatedDate":"2021-06-18T10:39:07"},
 {"Id":322,"RoleId":1,"MenuId":163,"ActionId":4,"UpdatedBy":1,"UpdatedDate":"2021-06-18T10:39:07"},
 {"Id":323,"RoleId":1,"MenuId":163,"ActionId":6,"UpdatedBy":1,"UpdatedDate":"2021-06-18T10:39:07"},
-{"Id":324,"RoleId":1,"MenuId":163,"ActionId":8,"UpdatedBy":1,"UpdatedDate":"2021-06-18T10:39:07"}]
+{"Id":324,"RoleId":1,"MenuId":163,"ActionId":8,"UpdatedBy":1,"UpdatedDate":"2021-06-18T10:39:07"},
+{"Id":325,"RoleId":1,"MenuId":82,"ActionId":49,"UpdatedBy":1,"UpdatedDate":"2021-06-18T10:39:07"},
+{"Id":326,"RoleId":1,"MenuId":82,"ActionId":50,"UpdatedBy":1,"UpdatedDate":"2021-06-18T10:39:07"}]
