@@ -315,4 +315,9 @@
 {"Id":315,"MenuId":82,"ActionId":44},
 {"Id":316,"MenuId":160,"ActionId":41},
 {"Id":317,"MenuId":161,"ActionId":41},
-{"Id":318,"MenuId":162,"ActionId":41}]
+{"Id":318,"MenuId":162,"ActionId":41},
+{"Id":319,"MenuId":163,"ActionId":1},
+{"Id":320,"MenuId":163,"ActionId":2},
+{"Id":321,"MenuId":163,"ActionId":4},
+{"Id":322,"MenuId":163,"ActionId":6},
+{"Id":323,"MenuId":163,"ActionId":8}]

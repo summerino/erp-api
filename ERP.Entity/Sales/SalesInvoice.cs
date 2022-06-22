@@ -141,6 +141,7 @@ public class SalesInvoiceDetail
 }
 
 [Table("SalesInvoiceCreditMemo", Schema = Schema.Sales)]
+[Index(nameof(CreditMemoCode))]
 public class SalesInvoiceCreditMemo
 {
     public long Id { get; set; }
@@ -155,6 +156,13 @@ public class SalesInvoiceCreditMemo
     [Precision(18, 2)]
     public decimal InvAmount { get; set; }
 
-    [Precision(18, 2)]
+    [Precision(19, 6)]
     public decimal CreditMemoAmount { get; set; }
+
+    [Precision(19, 6)]
+    public decimal CreditMemoTaxAmount { get; set; }
+
+    [Required]
+    [StringLength(5)]
+    public string Src { get; set; }
 }

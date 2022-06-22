@@ -1149,8 +1149,8 @@ BEGIN CATCH
 END CATCH";
             migrationBuilder.Sql(sql);
 
-			// Alter procedure dbo.sp_update_stock_mutation_from_si
-			sql = @"ALTER PROCEDURE [dbo].[sp_update_stock_mutation_from_si]
+			// Create procedure dbo.sp_update_stock_mutation_from_si
+			sql = @"CREATE PROCEDURE [dbo].[sp_update_stock_mutation_from_si]
 	@code varchar(17),
 	@date date,
 	@transCode varchar(17),

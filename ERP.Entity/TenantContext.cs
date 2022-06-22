@@ -2118,6 +2118,11 @@ public class TenantContext : DbContext
                 .WithMany()
                 .HasForeignKey(d => d.CurrCode)
                 .OnDelete(DeleteBehavior.NoAction);
+
+            entity.HasOne<Tax>()
+                .WithMany()
+                .HasForeignKey(d => d.TaxId)
+                .OnDelete(DeleteBehavior.NoAction);
         });
 
         modelBuilder.Entity<VwCreditMemo>()
@@ -2365,11 +2370,6 @@ public class TenantContext : DbContext
             entity.HasOne<SalesInvoiceHeader>()
                 .WithMany()
                 .HasForeignKey(d => d.InvCode)
-                .OnDelete(DeleteBehavior.NoAction);
-
-            entity.HasOne<CreditMemo>()
-                .WithMany()
-                .HasForeignKey(d => d.CreditMemoCode)
                 .OnDelete(DeleteBehavior.NoAction);
         });
 

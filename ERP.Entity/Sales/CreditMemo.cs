@@ -33,10 +33,20 @@ public class CreditMemo : BaseEntityWithMark
     [Precision(18, 2)]
     public decimal Rate { get; set; }
 
-    [Precision(18, 2)]
+    [Precision(19, 6)]
     public decimal Amount { get; set; }
+    
+    public bool IncludeTax { get; set; }
 
-    [Precision(18, 2)]
+    public int? TaxId { get; set; }
+
+    [Precision(19, 6)]
+    public decimal TaxAmount { get; set; }
+
+    [Precision(19, 6)]
+    public decimal Total { get; set; }
+
+    [Precision(19, 6)]
     public decimal Used { get; set; }
 
     [StringLength(256)]
@@ -60,16 +70,26 @@ public class VwCreditMemo : BaseEntityWithMark
     [Precision(18, 2)]
     public decimal Rate { get; set; }
 
-    [Precision(18, 2)]
+    [Precision(19, 6)]
     public decimal Amount { get; set; }
 
-    [Precision(18, 2)]
+    public bool IncludeTax { get; set; }
+
+    public int? TaxId { get; set; }
+
+    [Precision(19, 6)]
+    public decimal TaxAmount { get; set; }
+
+    [Precision(19, 6)]
+    public decimal Total { get; set; }
+
+    [Precision(19, 6)]
     public decimal Used { get; set; }
 
     public string Notes { get; set; }
 
 
-    [Precision(19, 2)]
+    [Precision(19, 6)]
     public decimal Remaining { get; set; }
 
     public string CustInitial { get; set; }
