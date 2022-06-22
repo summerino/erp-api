@@ -73,6 +73,8 @@ public class ReportByDetailST
 
     public decimal? TaxAmount { get; set; }
 
+    public decimal? ExemptTaxAmount { get; set; }
+
     public decimal? NettPrice { get; set; }
 
     public decimal? TotalGrossAmount { get; set; }
@@ -86,6 +88,8 @@ public class ReportByDetailST
     public decimal? TotalDpp { get; set; }
 
     public decimal? TotalTaxAmount { get; set; }
+
+    public decimal? TotalExemptTaxAmount { get; set; }
 
     public decimal? Total { get; set; }
 
