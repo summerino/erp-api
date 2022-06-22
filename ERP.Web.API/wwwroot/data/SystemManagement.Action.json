@@ -45,4 +45,8 @@
 {"Id":45,"Name":"Show Inventory Value"},
 {"Id":46,"Name":"Unlock"},
 {"Id":47,"Name":"Clone"},
-{"Id":48,"Name":"View Other User Transaction"}]
+{"Id":48,"Name":"View Other User Transaction"},
+{"Id":49,"Name":"Type - Sales Down Payment"},
+{"Id":50,"Name":"Type - Return Sales Down Payment"},
+{"Id":51,"Name":"Type - Purchase Down Payment"},
+{"Id":52,"Name":"Type - Return Purchase Down Payment"}]

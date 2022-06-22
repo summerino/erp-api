@@ -4,7 +4,9 @@
 {"Code":"TU","Name":"Transaksi Umum","SysParCode":null,"Seq":4},
 {"Code":"DEPC","Name":"Deposit Pelanggan","SysParCode":"DEP_CUST_COA","Seq":5},
 {"Code":"RDEPC","Name":"Retur Deposit Pelanggan","SysParCode":"DEP_CUST_COA","Seq":6},
-{"Code":"DEPS","Name":"Deposit Pemasok","SysParCode":"DEP_SUP_COA","Seq":7},
-{"Code":"RDEPS","Name":"Retur Deposit Pemasok","SysParCode":"DEP_SUP_COA","Seq":8},
-{"Code":"SR","Name":"Retur Penjualan","SysParCode":"CM_AP_COA","Seq":9},
-{"Code":"PR","Name":"Retur Pembelian","SysParCode":"DM_AR_COA","Seq":10}]
+{"Code":"SDP","Name":"Uang Muka Penjualan","SysParCode":"SLS_DP_COA","Seq":7},
+{"Code":"RSDP","Name":"Retur Uang Muka Penjualan","SysParCode":"SLS_DP_COA","Seq":8},
+{"Code":"DEPS","Name":"Deposit Pemasok","SysParCode":"DEP_SUP_COA","Seq":9},
+{"Code":"RDEPS","Name":"Retur Deposit Pemasok","SysParCode":"DEP_SUP_COA","Seq":10},
+{"Code":"SR","Name":"Retur Penjualan","SysParCode":"CM_AP_COA","Seq":11},
+{"Code":"PR","Name":"Retur Pembelian","SysParCode":"DM_AR_COA","Seq":12}]

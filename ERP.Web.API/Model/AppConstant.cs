@@ -57,7 +57,11 @@ public enum Actions
     ShowInventoryValue = 45,
     Unlock = 46,
     Clone = 47,
-    ViewOtherUserTransaction = 48
+    ViewOtherUserTransaction = 48,
+    CbTypeSalesDownPayment = 49,
+    CbTypeSalesDownPaymentReturn = 50,
+    CbTypePurchaseDownPayment = 51,
+    CbTypePurchaseDownPaymentReturn = 52
 }
 
 public enum Menu 
@@ -118,6 +122,7 @@ public enum Menu
     SalesReturn = 47,
     OverlimitApproval = 158,
     CreditMemo = 49,
+    SalesDownPayment = 163,
     DeliveryPlan = 48,
     VisitPlan = 54,
     VisitOrder = 55,
