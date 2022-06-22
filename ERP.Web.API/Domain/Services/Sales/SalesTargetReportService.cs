@@ -20,10 +20,11 @@ public class SalesTargetReportService : ISalesTargetReportService
                             dlv_d.UnitId, dlv_d.UnitName, dlv_d.UnitPrice AS GrossAmount,
                             dlv_d.Disc AS Disc, dlv_d.FinalDiscHeader AS DiscHeader,
                             dlv_d.UnitPrice - dlv_d.Disc - dlv_d.FinalDiscHeader AS SubTotal,
-                            dlv_d.DPP, dlv_d.TaxAmount, dlv_d.NettPrice,
+                            dlv_d.DPP, dlv_d.TaxAmount, dlv_d.ExemptTaxAmount, dlv_d.NettPrice,
                             dlv_d.UnitPrice * dlv_d.Qty AS TotalGrossAmount, (dlv_d.UnitPrice - dlv_d.Disc - dlv_d.FinalDiscHeader) * dlv_d.Qty AS TotalAfterDisc,
                             dlv_d.Disc * dlv_d.Qty AS TotalDisc, dlv_d.FinalDiscHeader * dlv_d.Qty AS TotalDiscHeader,
-                            dlv_d.DPP * dlv_d.Qty AS TotalDPP, dlv_d.TaxAmount * dlv_d.Qty AS TotalTaxAmount, dlv_d.Total, dlv_d.NettPrice * dlv_d.Qty AS TotalNettPrice,
+                            dlv_d.DPP * dlv_d.Qty AS TotalDPP, dlv_d.TaxAmount * dlv_d.Qty AS TotalTaxAmount,
+                            dlv_d.ExemptTaxAmount * dlv_d.Qty AS TotalExemptTaxAmount, dlv_d.Total, dlv_d.NettPrice * dlv_d.Qty AS TotalNettPrice,
                             CASE inv.Mark
 	                            WHEN 'A' THEN 'Aktif'
 	                            WHEN 'PP' THEN 'Aktif'
@@ -76,6 +77,7 @@ public class SalesTargetReportService : ISalesTargetReportService
                 TotalAfterDisc = tsDetailData.Sum(x => x.TotalAfterDisc),
                 TotalDpp = tsDetailData.Sum(x => x.TotalDpp),
                 TotalTaxAmount = tsDetailData.Sum(x => x.TotalTaxAmount),
+                TotalExemptTaxAmount = tsDetailData.Sum(x => x.TotalExemptTaxAmount),
                 TotalNettPrice = tsDetailData.Sum(x => x.TotalNettPrice)
             });
 
