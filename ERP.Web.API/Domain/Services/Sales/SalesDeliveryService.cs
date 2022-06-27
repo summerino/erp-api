@@ -431,19 +431,22 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
                     return result;
             }
 
-            //update Data if changed TransCode
-            var oldDlvData = Db.SalesDeliveryHeaders.AsNoTracking().FirstOrDefault(x => x.Code == data.Code);
-            if (oldDlvData.TransCode != data.TransCode)
-            {
-                RestorePrevData(oldDlvData.Code, oldDlvData.TransCode, oldDlvData.SrcTrans);
-            }
-
             // Checking deliver qty is excess or not
             if (IsQtyExcess(data.Code, data.SrcTrans, data.TransCode, data.ItemDetails))
             {
                 result.Message = "Data pengiriman penjualan tidak bisa disimpan karena qty yg dikirim lebih besar dari qty yang tersedia.";
                 return result;
             }
+
+            //update Data if changed TransCode
+            var oldDlvData = Db.SalesDeliveryHeaders.AsNoTracking().FirstOrDefault(x => x.Code == data.Code);
+            if (oldDlvData.TransCode != data.TransCode)
+            {
+                RestoreDeliveredQty(oldDlvData.Code, oldDlvData.TransCode, oldDlvData.SrcTrans);
+            }
+
+            //Restore stock mutation
+            RestoreWarehouseQty(oldDlvData.Code, oldDlvData.TransCode, oldDlvData.SrcTrans);
 
             var taxes = Db.Taxes.ToList();
             List<decimal> totalDetail = new();
@@ -912,7 +915,7 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
         return result.OrderBy(x => x.LineNo);
     }
 
-    private void RestorePrevData(string code, string transCode, int srcTrans)
+    private void RestoreDeliveredQty(string code, string transCode, int srcTrans)
     {
         var detailDoData = Db.SalesDeliveryDetails.AsNoTracking().Where(x => x.Code == code).ToList();
         var detailDoFreeData = Db.SalesDeliveryDetailFreeGoods.AsNoTracking().Where(x => x.Code == code).ToList();
@@ -957,6 +960,47 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
             Db.SalesReturnDetails.UpdateRange(detailSrData);
             SrData.Mark = detailSrData.Sum(x => x.QtyDlv) == 0 ? "A" : detailSrData.Sum(x => x.QtyDlv) == detailSrData.Sum(x => x.Qty) ? "CMP" : "PR";
             Db.SalesReturnHeaders.Update(SrData);
+        }
+        Db.SaveChanges();
+    }
+
+    private void RestoreWarehouseQty(string code, string srcCode, short srcTrans)
+    {
+        var dlvSMData = Db.StockMutations.AsNoTracking().Where(x => x.RefCode1 == code).ToList();
+        var transSMData = Db.StockMutations.AsNoTracking().Where(x => x.RefCode1 == srcCode).ToList();
+        if (srcTrans == 1)
+        {
+            foreach (var itemData in dlvSMData)
+            {
+                var whQtyData = new Entity.Inventory.WarehouseQuantity();
+                if (itemData.Type == "OH")
+                {
+                    whQtyData = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == itemData.WarehouseCode && x.ItemId == itemData.ItemId);
+                    whQtyData.QtyOnHand = whQtyData.QtyOnHand + itemData.BaseQty;
+                }
+                else if (itemData.Type == "OO")
+                {
+                    var itemTransSMData = transSMData.FirstOrDefault(x => x.ItemId == itemData.ItemId && x.UnitId == itemData.UnitId);
+                    whQtyData = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == itemTransSMData.WarehouseCode && x.ItemId == itemData.ItemId);
+                    whQtyData.QtyOnOrder = whQtyData.QtyOnOrder + itemData.BaseQty;
+                }
+                else
+                {
+                    whQtyData = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == itemData.WarehouseCode && x.ItemId == itemData.ItemId);
+                    whQtyData.QtyOnTransit = whQtyData.QtyOnTransit - itemData.BaseQty;
+                }
+                Db.WarehouseQuantities.Update(whQtyData);
+            }
+        }
+        else
+        {
+            foreach (var itemData in dlvSMData)
+            {
+                var whQtyData = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == itemData.WarehouseCode && x.ItemId == itemData.ItemId);
+                if (itemData.Type == "OH")
+                    whQtyData.QtyOnHand = whQtyData.QtyOnHand + itemData.BaseQty;
+                Db.WarehouseQuantities.Update(whQtyData);
+            }
         }
         Db.SaveChanges();
     }
