@@ -32,7 +32,7 @@ public class ARReportService : IARReportService
                             inv.Total AS TotalAmount, CAST (0 AS decimal) AS PaidAmount, CAST (0 AS decimal) AS RemainderAmount
                             FROM Sales.SalesInvoiceHeader inv
                             LEFT JOIN General.Customer cust on cust.Code = inv.CustCode
-                            LEFT JOIN Sales.SalesOrderHeader so ON so_h.Code = so.SOCode  
+                            LEFT JOIN Sales.SalesOrderHeader so ON so.Code = inv.SOCode
                             LEFT JOIN General.Employee e ON e.Id = so.SalesBy  
                             WHERE inv.Mark IN('A', 'PP', 'CMP')" + (slsId > 0 ? $" and so.SalesBy = {slsId} " : " ") + "").ToList();
 
