@@ -1,15 +1,16 @@
-﻿using ERP.Common.Extensions;
+﻿using Microsoft.EntityFrameworkCore;
+using ERP.Common.Extensions;
 using ERP.Common.Models;
 using ERP.Entity;
 using ERP.Entity.Sales;
 using ERP.Web.API.Domain.Interfaces.Sales;
-using Microsoft.EntityFrameworkCore;
 
 namespace ERP.Web.API.Domain.Services.Sales;
 
 public class CreditMemoReportService : ICreditMemoReportService
 {
     private readonly TenantContext _db;
+
     public CreditMemoReportService(TenantContext db)
     {
         _db = db;
@@ -20,9 +21,10 @@ public class CreditMemoReportService : ICreditMemoReportService
                             FROM General.Customer cs
                             GROUP BY cs.Code, cs.Initial, cs.Name").ToList();
 
-        var cmData = _db.ReportByCreditMemos.FromSqlRaw(@"SELECT cm.Date, cm.Code, cm.TransCode as SrcCode, cm.CustCode, cm.CustName, cm.Amount, cm.Used AS UsedAmount, CAST (0 AS decimal) AS RemainderAmount
+        var cmData = _db.ReportByCreditMemos.FromSqlRaw(@"SELECT cm.Date, cm.Code, cm.TransCode as SrcCode, cm.CustCode, cm.CustName, cm.Amount, cm.Used AS UsedAmount, CAST (0 AS decimal) AS RemainderAmount, cm.Mark
                         FROM Sales.vwCreditMemo cm
-                        WHERE cm.Mark != 'V'").ToList();
+                        WHERE cm.Mark != 'V'
+                        AND cm.SrcTrans IN (1, 2)").ToList();
 
         var cbData = _db.GeneralCashBankHeaders.Where(x => x.Mark != "V" && (x.ChequeDate ?? x.Date) <= Convert.ToDateTime(date)).ToList();
 
@@ -51,7 +53,11 @@ public class CreditMemoReportService : ICreditMemoReportService
                 CustName = itemBB.CustName,
                 Amount = itemBB.Amount,
                 UsedAmount = totCb,
-                RemainderAmount = itemBB.Amount - totCb
+                RemainderAmount = itemBB.Amount - totCb,
+                Mark = totCb == 0 
+                    ? "A"
+                    : itemBB.Amount - totCb > 0 && totCb > 0
+                        ? "PU" : "FU"
             });
         }
 
@@ -59,18 +65,12 @@ public class CreditMemoReportService : ICreditMemoReportService
 
         if (!string.IsNullOrEmpty(status))
         {
-            if (status == "A")
+            cmData = status switch
             {
-                cmData = cmData.Where(x => x.UsedAmount == 0).ToList();
-            }
-            else if (status == "PU")
-            {
-                cmData = cmData.Where(x => x.RemainderAmount > 0 && x.UsedAmount > 0).ToList();
-            }
-            else if (status == "FU")
-            {
-                cmData = cmData.Where(x => x.RemainderAmount == 0).ToList();
-            }
+                "PP" or "A" or "PU" or "FU" => cmData.Where(x => x.Mark == status).ToList(),
+                "OS" => cmData.Where(x => new[] {"A", "PU"}.Contains(x.Mark)).ToList(),
+                _ => cmData
+            };
         }
 
         foreach (var itemCus in cusData)

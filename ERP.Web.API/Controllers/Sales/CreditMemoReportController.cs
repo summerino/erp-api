@@ -1,10 +1,9 @@
-﻿using ERP.Common.Models;
+﻿using System.Linq.Dynamic.Core;
+using Microsoft.AspNetCore.Mvc;
+using ERP.Common.Models;
 using ERP.Web.API.Domain.Interfaces.Sales;
 using ERP.Web.API.Model;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using System.Linq.Dynamic.Core;
 
 namespace ERP.Web.API.Controllers.Sales;
 
@@ -13,6 +12,7 @@ namespace ERP.Web.API.Controllers.Sales;
 public class CreditMemoReportController : ControllerBase
 {
     private readonly ICreditMemoReportService _cmr;
+
     public CreditMemoReportController(ICreditMemoReportService cmr)
     {
         _cmr = cmr;

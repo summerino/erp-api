@@ -19,4 +19,6 @@ public class ReportByCreditMemo
     public decimal UsedAmount { get; set; }
 
     public decimal RemainderAmount { get; set; }
+
+    public string Mark { get; set; }
 }

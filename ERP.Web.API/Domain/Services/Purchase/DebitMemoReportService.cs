@@ -1,15 +1,16 @@
-﻿using ERP.Common.Extensions;
+﻿using Microsoft.EntityFrameworkCore;
+using ERP.Common.Extensions;
 using ERP.Common.Models;
 using ERP.Entity;
 using ERP.Entity.Purchase;
 using ERP.Web.API.Domain.Interfaces.Purchase;
-using Microsoft.EntityFrameworkCore;
 
 namespace ERP.Web.API.Domain.Services.Purchase;
 
 public class DebitMemoReportService : IDebitMemoReportService
 {
     private readonly TenantContext _db;
+
     public DebitMemoReportService(TenantContext db)
     {
         _db = db;
@@ -21,7 +22,7 @@ public class DebitMemoReportService : IDebitMemoReportService
                         FROM General.Supplier sp
                         GROUP BY sp.Code, sp.Initial, sp.Name").ToList();
 
-        var dmData = _db.ReportByDebitMemos.FromSqlRaw(@"SELECT dm.Date, dm.Code, dm.TransCode as SrcCode, dm.SupCode, dm.SupName, dm.Amount, dm.Used AS UsedAmount, CAST (0 AS decimal) AS RemainderAmount
+        var dmData = _db.ReportByDebitMemos.FromSqlRaw(@"SELECT dm.Date, dm.Code, dm.TransCode as SrcCode, dm.SupCode, dm.SupName, dm.Amount, dm.Used AS UsedAmount, CAST (0 AS decimal) AS RemainderAmount, dm.Mark
                         FROM Purchasing.vwDebitMemo dm
                         WHERE dm.Mark != 'V'").ToList();
 
@@ -52,7 +53,11 @@ public class DebitMemoReportService : IDebitMemoReportService
                 SupName = itemBB.SupName,
                 Amount = itemBB.Amount,
                 UsedAmount = totCb,
-                RemainderAmount = itemBB.Amount - totCb
+                RemainderAmount = itemBB.Amount - totCb,
+                Mark = totCb == 0
+                    ? "A"
+                    : itemBB.Amount - totCb > 0 && totCb > 0
+                        ? "PU" : "FU"
             });
         }
 
@@ -60,18 +65,12 @@ public class DebitMemoReportService : IDebitMemoReportService
 
         if (!string.IsNullOrEmpty(status))
         {
-            if (status == "A")
+            dmData = status switch
             {
-                dmData = dmData.Where(x => x.UsedAmount == 0).ToList();
-            }
-            else if (status == "PU")
-            {
-                dmData = dmData.Where(x => x.RemainderAmount > 0 && x.UsedAmount > 0).ToList();
-            }
-            else if (status == "FU")
-            {
-                dmData = dmData.Where(x => x.RemainderAmount == 0).ToList();
-            }
+                "PP" or "A" or "PU" or "FU" => dmData.Where(x => x.Mark == status).ToList(),
+                "OS" => dmData.Where(x => new[] { "A", "PU" }.Contains(x.Mark)).ToList(),
+                _ => dmData
+            };
         }
 
         foreach (var itemSup in supData)
