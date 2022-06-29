@@ -1415,6 +1415,7 @@ public class JournalService : IJournalService
                     TypeCode = $"CB_{itemDetailData.Type}",
                     Notes = ($"{systemParam.FirstOrDefault(x => x.Code == $"JR_PREFIX_{itemDetailData.Type}")?.Value ?? ""} {itemDetailData.Notes}").Trim(),
                     RefCode1 = itemDetailData.TransCode,
+                    RefCode2 = itemData.Code,
                     Group = (short)(itemDetailData.TypeAmount == "D" ? 1 : 2),
                     CurrCode = itemDetailData.CurrCode,
                     Period = itemData.Date.ToString("yyyyMMdd"),

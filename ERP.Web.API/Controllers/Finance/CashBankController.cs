@@ -200,6 +200,34 @@ public class CashBankController : ControllerBase
         }
     }
 
+    [HttpGet("sdp")]
+    public IActionResult GetDataDPS(string type, string cbCode, string search, string filters, string sorts, int skip, int take)
+    {
+        switch (type)
+        {
+            // Checking role authorization
+            case "SDP" when !_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.CbTypeSalesDownPayment }).Any():
+                return Ok(new ApiResponse { TableData = new List<dynamic>() });
+            case "RSDP" when !_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.CbTypeSalesDownPaymentReturn }).Any():
+                return Ok(new ApiResponse { TableData = new List<dynamic>() });
+            default:
+                {
+                    var data =
+                        _cb.GetDataDebitMemo(
+                            skip, take,
+                            JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                            JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
+                            search, cbCode, type);
+
+                    return Ok(new ApiResponse
+                    {
+                        RowCount = data.Total,
+                        TableData = data.Data.ToDynamicList()
+                    });
+                }
+        }
+    }
+
     [HttpPost]
     public IActionResult OnPost(CashBankRequest data)
     {

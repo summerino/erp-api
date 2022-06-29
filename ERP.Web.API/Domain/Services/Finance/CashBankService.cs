@@ -195,6 +195,43 @@ public class CashBankService : GeneralService<GeneralCashBankHeader>, ICashBankS
         }
     }
 
+    public DataSourceResult GetDataSDP(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
+        string search, string cbCode, string type)
+    {
+        var transLists = new List<string>();
+        if (!string.IsNullOrWhiteSpace(cbCode))
+        {
+            transLists =
+                Db.GeneralCashBankDetails
+                    .Where(x => x.Code.Equals(cbCode))
+                    .Select(x => x.TransCode).ToList();
+        }
+
+        switch (type)
+        {
+            case "SDP":
+                {
+                    var data = Db.VwCreditMemos.Where(x => x.SrcTrans == 3 && x.Mark == "PP");
+
+                    if (!string.IsNullOrWhiteSpace(cbCode))
+                        data = data.Where(x => !transLists.Contains(x.Code));
+
+                    return data.ToDataSourceResult(skip, take, filters, sorts);
+                }
+            case "RSDP":
+                {
+                    var data = Db.VwCreditMemos.Where(x => x.SrcTrans == 4 && x.Mark == "PP");
+
+                    if (!string.IsNullOrWhiteSpace(cbCode))
+                        data = data.Where(x => !transLists.Contains(x.Code));
+
+                    return data.ToDataSourceResult(skip, take, filters, sorts);
+                }
+            default:
+                return null;
+        }
+    }
+
     public IEnumerable<VwGeneralCashBankDetail> GetDetailData(string code)
     {
         var data = Db.VwGeneralCashBankDetails.Where(x => x.Code.Equals(code));

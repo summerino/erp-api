@@ -270,6 +270,7 @@ builder.Services.AddScoped<IDirectInvoiceService, DirectInvoiceService>();
 builder.Services.AddScoped<IOverlimitApprovalService, OverlimitApprovalService>();
 builder.Services.AddScoped<IPromoService, PromoService>();
 builder.Services.AddScoped<ISalesDeliveryService, SalesDeliveryService>();
+builder.Services.AddScoped<ISalesDownPaymentService, SalesDownPaymentService>();
 builder.Services.AddScoped<ISalesInvoiceService, SalesInvoiceService>();
 builder.Services.AddScoped<ISalesmanGroupService, SalesmanGroupService>();
 builder.Services.AddScoped<ISalesmanService, SalesmanService>();
