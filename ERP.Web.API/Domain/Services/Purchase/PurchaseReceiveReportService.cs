@@ -40,9 +40,9 @@ public class PurchaseReceiveReportService : IPurchaseReceiveReportService
                             FROM Purchasing.PurchaseReceiveDetail rcv_d)
                             SELECT rcv.[Date], rcv.Code, CAST(rcv.SrcTrans AS int) AS SrcTrans,
                             rcv.TransCode, rcv.RefNo, rcv.SupCode, rcv.SupName, rcv.TaxInvoiceNo, rcv.TaxInvoiceDate,
-                            SUM(rcv_d.Qty * rcv_d.UnitPrice) AS GrossAmount, SUM(rcv_d.Qty * (rcv_d.UnitPrice - rcv_d.Disc - rcv_d.FinalDiscHeader)) AS SubTotal,
-                            SUM(rcv_d.Qty * (rcv_d.Disc + rcv_d.FinalDiscHeader)) AS Disc, SUM(rcv_d.Qty * rcv_d.DPP) AS DPP,
-                            SUM(rcv_d.Qty * rcv_d.TaxAmount) AS TaxAmount, SUM(rcv_d.Qty * rcv_d.ExemptTaxAmount) AS ExemptTaxAmount, SUM(rcv_d.Total) AS Total,
+                            COALESCE(SUM(rcv_d.Qty * rcv_d.UnitPrice), 0) AS GrossAmount, COALESCE(SUM(rcv_d.Qty * (rcv_d.UnitPrice - rcv_d.Disc - rcv_d.FinalDiscHeader)), 0) AS SubTotal,
+                            COALESCE(SUM(rcv_d.Qty * (rcv_d.Disc + rcv_d.FinalDiscHeader)), 0) AS Disc, COALESCE(SUM(rcv_d.Qty * rcv_d.DPP), 0) AS DPP,
+                            COALESCE(SUM(rcv_d.Qty * rcv_d.TaxAmount), 0) AS TaxAmount, COALESCE(SUM(rcv_d.Qty * rcv_d.ExemptTaxAmount), 0) AS ExemptTaxAmount, COALESCE(SUM(rcv_d.Total), 0) AS Total,
                             CASE rcv.Mark
 	                            WHEN 'A' THEN 'Aktif'
 	                            WHEN 'V' THEN 'Void'
