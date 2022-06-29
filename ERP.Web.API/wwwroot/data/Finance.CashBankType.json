@@ -1,5 +1,5 @@
 ﻿[{"Code":"AR","Name":"Piutang Dagang","SysParCode":"AR_COA","Seq":1},
-{"Code":"AP","Name":"Hutang Dagang","SysParCode":"AR_COA","Seq":2},
+{"Code":"AP","Name":"Hutang Dagang","SysParCode":"AP_COA","Seq":2},
 {"Code":"EPAP","Name":"Hutang Ekspedisi","SysParCode":"EP_AP_COA","Seq":3},
 {"Code":"TU","Name":"Transaksi Umum","SysParCode":null,"Seq":4},
 {"Code":"DEPC","Name":"Deposit Pelanggan","SysParCode":"DEP_CUST_COA","Seq":5},

@@ -136,6 +136,7 @@ public enum Menu
     AccountReceivableAgingReport = 134,
     AccountReceivableCardReport = 161,
     CreditMemoReport = 138,
+    SalesDownPaymentReport = 164,
     DeliveryPlanReport = 162,
     ReleaseOverlimitReport = 159,
 
