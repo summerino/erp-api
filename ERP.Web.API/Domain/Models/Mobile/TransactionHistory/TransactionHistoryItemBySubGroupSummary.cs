@@ -10,5 +10,7 @@ public class TransactionHistoryItemBySubGroupSummary
     public decimal Discount { get; set; }
     public decimal TaxAmount { get; set; }
     public decimal ExemptTaxAmount { get; set; }
+    public decimal TotalReal { get; set; }
+    public decimal TotalMobile { get; set; }
     public decimal Total { get; set; }
 }
