@@ -25,6 +25,9 @@ public interface ICashBankService : IGeneralService<GeneralCashBankHeader>
     DataSourceResult GetDataDebitMemo(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
         string search, string cbCode, string type);
 
+    DataSourceResult GetDataSDP(int skip, int take, IEnumerable<Filter> filters, IEnumerable<Sort> sorts,
+        string search, string cbCode, string type);
+
     IEnumerable<VwGeneralCashBankDetail> GetDetailData(string code);
 
     SaveResult Insert(CashBankRequest data);
