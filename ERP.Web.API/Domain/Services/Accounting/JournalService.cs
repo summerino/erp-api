@@ -199,9 +199,17 @@ public class JournalService : IJournalService
             if (journalTS != null)
                 tenantCtx.AddRange(journalTS);
 
+            stateData.Step++; //13 /18
+            tenantCtx.PostingStates.Update(stateData);
+            tenantCtx.SaveChanges();
+
+            var journalSDP = ProcessSalesDownPaymentJournal(tenantCtx, systemParam);
+            if (journalSDP != null)
+                tenantCtx.AddRange(journalSDP);
+
             if (data.Date.Month == 12)
             {
-                stateData.Step++; //13 /18
+                stateData.Step++; //14 /19
                 tenantCtx.PostingStates.Update(stateData);
                 tenantCtx.SaveChanges();
 
@@ -209,14 +217,14 @@ public class JournalService : IJournalService
                     "DELETE Accounting.Journal WHERE Code = {0}",
                     "ENDYEAR-" + data.Date.Year.ToString());
 
-                stateData.Step++; //14 /19
+                stateData.Step++; //15 /20
                 tenantCtx.PostingStates.Update(stateData);
                 tenantCtx.SaveChanges();
 
                 ProcessEndYearJournal(tenantCtx, data.Date);
             }
 
-            stateData.Step++; //13 /18 /20
+            stateData.Step++; //14 /29 /21
             tenantCtx.PostingStates.Update(stateData);
             tenantCtx.SaveChanges();
 
@@ -3608,6 +3616,143 @@ public class JournalService : IJournalService
 
         return journals;
     }
+
+    private IEnumerable<Journal> ProcessSalesDownPaymentJournal(TenantContext db, List<SystemParameter> systemParam)
+    {
+        List<Journal> journals = new();
+        var SdpData = db.VwCreditMemos.Where(x => new[] { 3, 4 }.Contains(x.SrcTrans)).ToList();
+
+        foreach (var itemData in SdpData)
+        {
+            if (itemData.SrcTrans == 3)
+            {
+                //Piutang Dagang
+                journals.Add(new Journal
+                {
+                    Code = itemData.Code,
+                    LineNo = 1,
+                    Date = itemData.Date,
+                    CoaCode = systemParam.FirstOrDefault(x => x.Code == "AR_COA")?.Value ?? "",
+                    TypeCode = "AR",
+                    Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_AR")?.Value ?? ""} {itemData.CustInitial}").Trim(),
+                    RefCode1 = itemData.TransCode,
+                    Group = 1,
+                    CurrCode = itemData.CurrCode,
+                    Period = itemData.Date.ToString("yyyyMMdd"),
+                    Type = "D",
+                    Amount = itemData.Amount,
+                    SrcTrans = "DP"
+                });
+
+                //Pajak
+                if (itemData.TaxAmount > 0)
+                {
+                    journals.Add(new Journal
+                    {
+                        Code = itemData.Code,
+                        LineNo = 1,
+                        Date = itemData.Date,
+                        CoaCode = systemParam.FirstOrDefault(x => x.Code == "TAX_OUT_COA")?.Value ?? "",
+                        TypeCode = "PPN",
+                        Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_TAX_OUT")?.Value ?? ""} {itemData.CustInitial}").Trim(),
+                        RefCode1 = itemData.TransCode,
+                        Group = 2,
+                        CurrCode = itemData.CurrCode,
+                        Period = itemData.Date.ToString("yyyyMMdd"),
+                        Type = "C",
+                        Amount = itemData.TaxAmount,
+                        SrcTrans = "DP"
+                    });
+                }
+
+                //Uang Muka
+                journals.Add(new Journal
+                {
+                    Code = itemData.Code,
+                    LineNo = 1,
+                    Date = itemData.Date,
+                    CoaCode = systemParam.FirstOrDefault(x => x.Code == "SLS_DP_COA")?.Value ?? "",
+                    TypeCode = "SDP",
+                    Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_SLS_DP")?.Value ?? ""} {itemData.CustInitial}").Trim(),
+                    RefCode1 = itemData.TransCode,
+                    Group = 3,
+                    CurrCode = itemData.CurrCode,
+                    Period = itemData.Date.ToString("yyyyMMdd"),
+                    Type = "C",
+                    Amount = itemData.Total - itemData.TaxAmount,
+                    SrcTrans = "DP"
+                });
+            }
+            else
+            {
+                var srcData = SdpData.FirstOrDefault(x => x.Code == itemData.TransCode);
+
+                //Piutang Dagang
+                journals.Add(new Journal
+                {
+                    Code = itemData.Code,
+                    LineNo = 1,
+                    Date = itemData.Date,
+                    CoaCode = systemParam.FirstOrDefault(x => x.Code == "AR_COA")?.Value ?? "",
+                    TypeCode = "AR",
+                    Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_AR")?.Value ?? ""} {itemData.CustInitial}").Trim(),
+                    RefCode1 = itemData.TransCode,
+                    RefCode2 = srcData.TransCode,
+                    Group = 3,
+                    CurrCode = itemData.CurrCode,
+                    Period = itemData.Date.ToString("yyyyMMdd"),
+                    Type = "C",
+                    Amount = itemData.Amount,
+                    SrcTrans = "DP"
+                });
+
+                //Pajak
+                if (itemData.TaxAmount > 0)
+                {
+                    journals.Add(new Journal
+                    {
+                        Code = itemData.Code,
+                        LineNo = 1,
+                        Date = itemData.Date,
+                        CoaCode = systemParam.FirstOrDefault(x => x.Code == "TAX_OUT_COA")?.Value ?? "",
+                        TypeCode = "PPN",
+                        Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_TAX_OUT")?.Value ?? ""} {itemData.CustInitial}").Trim(),
+                        RefCode1 = itemData.TransCode,
+                        RefCode2 = srcData.TransCode,
+                        Group = 1,
+                        CurrCode = itemData.CurrCode,
+                        Period = itemData.Date.ToString("yyyyMMdd"),
+                        Type = "D",
+                        Amount = itemData.TaxAmount,
+                        SrcTrans = "DP"
+                    });
+                }
+
+                //Uang Muka
+                journals.Add(new Journal
+                {
+                    Code = itemData.Code,
+                    LineNo = 1,
+                    Date = itemData.Date,
+                    CoaCode = systemParam.FirstOrDefault(x => x.Code == "SLS_DP_COA")?.Value ?? "",
+                    TypeCode = "SDP",
+                    Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_SLS_DP")?.Value ?? ""} {itemData.CustInitial}").Trim(),
+                    RefCode1 = itemData.TransCode,
+                    RefCode2 = srcData.TransCode,
+                    Group = 2,
+                    CurrCode = itemData.CurrCode,
+                    Period = itemData.Date.ToString("yyyyMMdd"),
+                    Type = "D",
+                    Amount = itemData.Total - itemData.TaxAmount,
+                    SrcTrans = "DP"
+                });
+            }
+
+        }
+
+        return journals;
+    }
+
 
     private void CalculateHPP(TenantContext db, IEnumerable<StockMutation> stockMutations, int itemId, long id, string srcCode)
     {
