@@ -339,22 +339,29 @@ COMMIT";
             sql = @"ALTER VIEW [Sales].[vwCreditMemo]
 AS
 	SELECT m.*,
-		m.Amount - m.Used AS Remaining,
-		c.Initial AS CustInitial,
-		c.[Name] AS CustName,
-		CASE m.SrcTrans
-			WHEN 1 THEN 'Deposit'
-			WHEN 2 THEN 'Retur'
-			WHEN 3 THEN 'Uang Muka' END AS SrcTransName,
-		CASE m.Mark
-			WHEN 'A' THEN 'Active'
-			WHEN 'V' THEN 'Void'
-			WHEN 'PP' THEN 'Pending Payment'
-			WHEN 'PU' THEN 'Partial Used'
-			WHEN 'FU' THEN 'Full Used' END AS [Status]
-	FROM Sales.CreditMemo m
-	LEFT JOIN General.Customer c
-		ON c.Code = m.CustCode";
+	m.Amount - m.Used AS Remaining,
+	c.Initial AS CustInitial,
+	c.[Name] AS CustName,
+	u_c.Initial AS CreatedInitial,
+    u_u.Initial AS UpdatedInitial,
+	CASE m.SrcTrans
+		WHEN 1 THEN 'Deposit'
+		WHEN 2 THEN 'Retur'
+		WHEN 3 THEN 'Uang Muka'
+		WHEN 4 THEN 'Retur Uang Muka' END AS SrcTransName,
+	CASE m.Mark
+		WHEN 'A' THEN 'Active'
+		WHEN 'V' THEN 'Void'
+		WHEN 'PP' THEN 'Pending Payment'
+		WHEN 'PU' THEN 'Partial Used'
+		WHEN 'FU' THEN 'Full Used' END AS [Status]
+FROM Sales.CreditMemo m
+LEFT JOIN General.Customer c
+	ON c.Code = m.CustCode
+LEFT JOIN SystemManagement.[User] u_c
+	ON u_c.Id = m.CreatedBy
+LEFT JOIN SystemManagement.[User] u_u
+    ON u_u.Id = m.UpdatedBy";
             migrationBuilder.Sql(sql);
 
             // Disabling constraints foreign key FK_CreditMemo_Tax_TaxId
