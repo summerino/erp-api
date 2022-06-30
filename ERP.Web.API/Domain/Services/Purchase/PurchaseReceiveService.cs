@@ -395,14 +395,14 @@ public class PurchaseReceiveService : GeneralService<PurchaseReceiveHeader>, IPu
                     if (data.IncludeTax)
                     {
                         item.TaxAmount = taxData != null ? (item.UnitPrice - item.Disc - item.FinalDiscHeader) - ((item.UnitPrice - item.Disc - item.FinalDiscHeader) / (1 + (taxData.Rate / 100))) : 0m;
-                        item.ExemptTaxAmount = (item.UnitPrice - item.Disc - item.FinalDiscHeader) - ((item.UnitPrice - item.Disc - item.FinalDiscHeader) / (1 + (taxData.ExemptRate / 100)));
+                        item.ExemptTaxAmount = taxData != null ? (item.UnitPrice - item.Disc - item.FinalDiscHeader) - ((item.UnitPrice - item.Disc - item.FinalDiscHeader) / (1 + (taxData.ExemptRate / 100))) : 0m;
                         item.NettPrice = item.UnitPrice - item.Disc - item.FinalDiscHeader;
                         item.Dpp = item.UnitPrice - item.Disc - item.FinalDiscHeader - item.TaxAmount + item.ExemptTaxAmount;
                     }
                     else
                     {
                         item.TaxAmount = taxData != null ? (item.UnitPrice - item.Disc - item.FinalDiscHeader) * (taxData.Rate / 100) : 0m;
-                        item.ExemptTaxAmount = (item.UnitPrice - item.Disc - item.FinalDiscHeader) * (taxData.ExemptRate / 100);
+                        item.ExemptTaxAmount = taxData != null ? (item.UnitPrice - item.Disc - item.FinalDiscHeader) * (taxData.ExemptRate / 100) : 0m;
                         item.NettPrice = item.UnitPrice - item.Disc - item.FinalDiscHeader + item.TaxAmount - item.ExemptTaxAmount;
                         item.Dpp = item.UnitPrice - item.Disc - item.FinalDiscHeader;
                     }
