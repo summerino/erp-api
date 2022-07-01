@@ -6,6 +6,8 @@ public class ReportByCreditMemo
 {
     public DateTime Date { get; set; }
 
+    public short SrcTrans { get; set; }
+
     public string Code { get; set; }
 
     public string SrcCode { get; set; }

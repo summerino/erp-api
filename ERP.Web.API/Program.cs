@@ -290,6 +290,7 @@ builder.Services.AddScoped<ISalesReturnReportService, SalesReturnReportService>(
 builder.Services.AddScoped<ISalesTargetService, SalesTargetService>();
 builder.Services.AddScoped<ISalesTargetReportService, SalesTargetReportService>();
 builder.Services.AddScoped<IDeliveryPlanReportService, DeliveryPlanReportService>();
+builder.Services.AddScoped<ISalesDownPaymentReportService, SalesDownPaymentReportService>();
 
 
 // System Management services
