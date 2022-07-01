@@ -551,12 +551,31 @@ public class SalesInvoiceService : GeneralService<SalesInvoiceHeader>, ISalesInv
     #region Update & Restore Credit Memo
     private void UpdateCreditMemo(SalesInvoiceRequest data)
     {
-        var listQuery = new List<string>();
         if (data.Memos.Any())
         {
+            var listQuery = new List<string>();
             var listCodeMemo = data.Memos.Select(x => x.CreditMemoCode).ToList();
             var listCreditMemo = GetListCreditMemo(listCodeMemo);
             foreach (var item in data.Memos)
+            {
+                var selectedMemo = listCreditMemo.FirstOrDefault(x => x.Code.Equals(item.CreditMemoCode));
+                if (selectedMemo != null)
+                {
+                    decimal used = selectedMemo.Used + item.CreditMemoAmount;
+                    string status = used == selectedMemo.Amount ? "FU" : "PU";
+                    string query = selectedMemo.Source == "cm" ? $"update Sales.CreditMemo set Mark = '{status}', Used = {used} where code = '{selectedMemo.Code}'" : $"update Accounting.BeginningBalanceCreditMemo set Used = {used} where code = '{selectedMemo.Code}'";
+                    listQuery.Add(query);
+                }
+            }
+            ExecuteQuery(listQuery);
+        }
+
+        if (data.SalesDownPayments.Any())
+        {
+            var listQuery = new List<string>();
+            var listCodeMemo = data.Memos.Select(x => x.CreditMemoCode).ToList();
+            var listCreditMemo = GetListCreditMemo(listCodeMemo);
+            foreach (var item in data.SalesDownPayments)
             {
                 var selectedMemo = listCreditMemo.FirstOrDefault(x => x.Code.Equals(item.CreditMemoCode));
                 if (selectedMemo != null)
