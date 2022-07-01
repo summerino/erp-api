@@ -13,7 +13,10 @@ public interface ISalesInvoiceService : IGeneralService<SalesInvoiceHeader>
     IEnumerable<SalesInvoiceDetail> GetDetailData(string code);
 
     List<dynamic> GetRelatedTransactions(string code);
+
     List<dynamic> GetDataMemo(string code);
+
+    List<dynamic> GetDataSalesDownPayment(string code);
 
     SaveResult Insert(SalesInvoiceRequest data);
 

@@ -81,6 +81,23 @@ public class SalesInvoiceService : GeneralService<SalesInvoiceHeader>, ISalesInv
 
         return data.ToDynamicList();
     }
+    public List<dynamic> GetDataSalesDownPayment(string code)
+    {
+
+        var data = (from h in Db.SalesInvoiceCreditMemos
+                    join d in Db.CreditMemos on h.CreditMemoCode equals d.Code
+                    where h.InvCode == code && d.SrcTrans == 3
+                    select new
+                    {
+                        h.Id,
+                        CreditMemoCode = d.Code,
+                        d.Date,
+                        h.CreditMemoAmount,
+                        h.CreditMemoTaxAmount
+                    });
+
+        return data.ToDynamicList();
+    }
     public SaveResult Insert(SalesInvoiceRequest data)
     {
         var result = new SaveResult(false);
@@ -110,7 +127,7 @@ public class SalesInvoiceService : GeneralService<SalesInvoiceHeader>, ISalesInv
                     
             // Insert header data
             data.Code = newCode;
-            data.PaidAmount = data.Memos.Sum(x => x.CreditMemoAmount);
+            data.PaidAmount = data.Memos.Sum(x => x.CreditMemoAmount) + data.SalesDownPayments.Sum(x => x.CreditMemoAmount);
             Db.SalesInvoiceHeaders.Add(data);
 
             // Decrease CreditUsed
@@ -144,9 +161,25 @@ public class SalesInvoiceService : GeneralService<SalesInvoiceHeader>, ISalesInv
                     InvCode = newCode,
                     InvAmount = data.Total,
                     CreditMemoAmount = item.CreditMemoAmount,
-                    CreditMemoCode = item.CreditMemoCode
+                    CreditMemoCode = item.CreditMemoCode,
+                    Src = item.Src
                 });
             }
+
+            //Insert Sales Down Payment
+            foreach (var item in data.SalesDownPayments)
+            {
+                Db.SalesInvoiceCreditMemos.Add(new SalesInvoiceCreditMemo
+                {
+                    InvCode = newCode,
+                    InvAmount = data.Total,
+                    CreditMemoAmount = item.CreditMemoAmount,
+                    CreditMemoTaxAmount = item.CreditMemoTaxAmount,
+                    CreditMemoCode = item.CreditMemoCode,
+                    Src = item.Src
+                });
+            }
+
             // Save changes
             Db.SaveChanges();
 
@@ -299,7 +332,22 @@ public class SalesInvoiceService : GeneralService<SalesInvoiceHeader>, ISalesInv
                     InvCode = data.Code,
                     InvAmount = data.Total,
                     CreditMemoAmount = item.CreditMemoAmount,
-                    CreditMemoCode = item.CreditMemoCode
+                    CreditMemoCode = item.CreditMemoCode,
+                    Src = item.Src
+                });
+            }
+
+            var newDownPayments = new List<SalesInvoiceCreditMemo>();
+            foreach (var item in data.SalesDownPayments)
+            {
+                newDownPayments.Add(new SalesInvoiceCreditMemo
+                {
+                    InvCode = data.Code,
+                    InvAmount = data.Total,
+                    CreditMemoAmount = item.CreditMemoAmount,
+                    CreditMemoTaxAmount = item.CreditMemoTaxAmount,
+                    CreditMemoCode = item.CreditMemoCode,
+                    Src = item.Src
                 });
             }
 
@@ -311,8 +359,11 @@ public class SalesInvoiceService : GeneralService<SalesInvoiceHeader>, ISalesInv
             if (newMemos.Any())
                 Db.SalesInvoiceCreditMemos.AddRange(newMemos);
 
+            if (newDownPayments.Any())
+                Db.SalesInvoiceCreditMemos.AddRange(newDownPayments);
+
             // Update header data
-            data.PaidAmount = newMemos.Any() ? newMemos.Sum(x => x.CreditMemoAmount) : 0;
+            data.PaidAmount = (newMemos.Any() ? newMemos.Sum(x => x.CreditMemoAmount) : 0) + (newDownPayments.Any() ? newDownPayments.Sum(x => x.CreditMemoAmount) : 0);
             Db.SalesInvoiceHeaders.Update(data);
             Db.Entry(data).Property(e => e.Code).IsModified = false;
             Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;

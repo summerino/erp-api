@@ -112,6 +112,25 @@ public class SalesInvoiceController : ControllerBase
         });
     }
 
+    [HttpGet("sales-down-payment")]
+    public IActionResult GetDataSalesDownPayment(string code)
+    {
+        var data = _inv.GetDataSalesDownPayment(code)
+            .Select(x => new
+            {
+                x.Id,
+                x.CreditMemoCode,
+                x.Date,
+                x.CreditMemoAmount
+            }).ToList<dynamic>();
+
+        return Ok(new ApiResponse
+        {
+            RowCount = data.Count,
+            TableData = data
+        });
+    }
+
     [HttpPost]
     public IActionResult OnPost(SalesInvoiceRequest data)
     {

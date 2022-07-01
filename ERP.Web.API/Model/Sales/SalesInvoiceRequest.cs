@@ -7,6 +7,7 @@ public class SalesInvoiceRequest : SalesInvoiceHeader
 {
     public IEnumerable<SalesInvoiceDetail> Details { get; set; }
     public IEnumerable<SalesInvoiceCreditMemo> Memos { get; set; }
+    public IEnumerable<SalesInvoiceCreditMemo> SalesDownPayments { get; set; }
     public IEnumerable<SalesOrderDetailRequest> ItemDetails { get; set; }
     public IEnumerable<DirectInvoicePromoRequest> ListPromo { get; set; }
 
