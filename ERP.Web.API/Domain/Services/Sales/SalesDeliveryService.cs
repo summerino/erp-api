@@ -155,6 +155,7 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
             List<decimal> totalTax = new();
             List<decimal> totalExemptTax = new();
             List<decimal> totalDpp = new();
+            List<decimal> totalFinalDiscHeader = new();
 
             // Get new code
             var newCode = GetNewCode("DO_NUM_FMT", data.Date);
@@ -186,6 +187,7 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
 
                     item.Total = item.Qty * item.NettPrice;
                     totalDetail.Add(item.Total);
+                    totalFinalDiscHeader.Add(item.Qty * item.FinalDiscHeader);
                     totalTax.Add(item.Qty * item.TaxAmount);
                     totalExemptTax.Add(item.Qty * item.ExemptTaxAmount);
                     totalDpp.Add(item.Qty * item.Dpp);
@@ -257,6 +259,7 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
             if (data.SrcTrans == 1)
             {
                 data.SubTotal = totalDetail.Sum();
+                data.FinalDisc = totalFinalDiscHeader.Sum();
                 data.TaxAmount = totalTax.Sum();
                 data.ExemptTaxAmount = totalExemptTax.Sum();
                 data.Dpp = totalDpp.Sum();
@@ -453,6 +456,7 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
             List<decimal> totalTax = new();
             List<decimal> totalExemptTax = new();
             List<decimal> totalDpp = new();
+            List<decimal> totalFinalDiscHeader = new();
 
             data.ApprovedBy = null;
             data.ApprovedDate = null;
@@ -490,6 +494,7 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
 
                     item.Total = item.Qty * item.NettPrice;
                     totalDetail.Add(item.Total);
+                    totalFinalDiscHeader.Add(item.Qty * item.FinalDiscHeader);
                     totalTax.Add(item.Qty * item.TaxAmount);
                     totalExemptTax.Add(item.Qty * item.ExemptTaxAmount);
                     totalDpp.Add(item.Qty * item.Dpp);
@@ -582,6 +587,7 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
             if (data.SrcTrans == 1)
             {
                 data.SubTotal = totalDetail.Sum();
+                data.FinalDisc = totalFinalDiscHeader.Sum();
                 data.TaxAmount = totalTax.Sum();
                 data.ExemptTaxAmount = totalExemptTax.Sum();
                 data.Dpp = totalDpp.Sum();

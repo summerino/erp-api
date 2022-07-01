@@ -770,9 +770,9 @@ public class JournalService : IJournalService
                         Code = itemData.Dlvheader.Code,
                         LineNo = Ninv,
                         Date = itemData.Dlvheader.Date,
-                        CoaCode = string.IsNullOrWhiteSpace(items.FirstOrDefault(x => x.Id == itemDetail.DlvDetail.ItemId)?.CoaInventory) ? systemParam.FirstOrDefault(x => x.Code == "INVENTORY_COA")?.Value ?? "" : items.FirstOrDefault(x => x.Id == itemDetail.DlvDetail.ItemId)?.CoaInventory,
+                        CoaCode = systemParam.FirstOrDefault(x => x.Code == "SENT_ITEM_COA")?.Value ?? "",
                         TypeCode = "DLV_DT",
-                        Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_INVENTORY")?.Value ?? ""} {itemDetail.Item.Initial}").Trim(),
+                        Notes = ($"Barang Terkirim {itemDetail.Item.Initial}").Trim(),
                         RefCode1 = itemData.Dlvheader.TransCode,
                         RefCode2 = itemDetail.Item.Initial,
                         Group = 2,
@@ -810,25 +810,6 @@ public class JournalService : IJournalService
                             CurrCode = itemData.Dlvheader.CurrCode,
                             Period = itemData.Dlvheader.Date.ToString("yyyyMMdd"),
                             Type = "D",
-                            Amount = resultHpp,
-                            SrcTrans = "DLV"
-                        });
-
-                        journals.Add(new Journal
-                        {
-                            Code = itemData.Dlvheader.Code,
-                            LineNo = ++Nfree,
-                            Date = itemData.Dlvheader.Date,
-                            CoaCode = string.IsNullOrWhiteSpace(items.FirstOrDefault(x => x.Id == itemFreeDetail.ItemId)?.CoaInventory) ? systemParam.FirstOrDefault(x => x.Code == "INVENTORY_COA")?.Value ?? "" : items.FirstOrDefault(x => x.Id == itemFreeDetail.ItemId)?.CoaInventory,
-                            TypeCode = "DLV_DT",
-                            Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_INVENTORY")?.Value ?? ""} {itemFreeDetail.Initial}").Trim(),
-                            RefCode1 = itemData.Dlvheader.TransCode,
-                            RefCode2 = itemFreeDetail.Initial,
-                            RefCode4 = "TEMP",
-                            Group = 10,
-                            CurrCode = itemData.Dlvheader.CurrCode,
-                            Period = itemData.Dlvheader.Date.ToString("yyyyMMdd"),
-                            Type = "C",
                             Amount = resultHpp,
                             SrcTrans = "DLV"
                         });
@@ -1165,22 +1146,22 @@ public class JournalService : IJournalService
                             journals.Add(new Journal
                             {
                                 Code = itemData.InvHeader.Code,
-                                LineNo = itemDo.Type == "D" ? ++id : ++ic,
+                                LineNo = itemDo.Group == 2 ? ++id : ++ic,
                                 Date = itemData.InvHeader.Date,
-                                CoaCode = itemDo.CoaCode,
+                                CoaCode = itemDo.Group == 2 ? itemDo.CoaCode : systemParam.FirstOrDefault(x => x.Code == "COGS_COA")?.Value ?? "",
                                 TypeCode = "AR_DT",
-                                Notes = itemDo.Notes,
+                                Notes = itemDo.Group == 2 ? itemDo.Notes : ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_COGS")?.Value ?? ""} {itemData.Customer.Initial}").Trim(),
                                 RefCode1 = itemData.InvHeader.SoCode,
                                 RefCode2 = itemDo.RefCode2,
-                                Group = itemDo.Type == "D" ? (short)5 : (short)2,
+                                Group = itemDo.Group == 2 ? (short)5 : (short)2,
                                 CurrCode = itemData.InvHeader.CurrCode,
                                 Period = itemData.InvHeader.Date.ToString("yyyyMMdd"),
-                                Type = itemDo.Type == "D" ?  "C" : "D",
+                                Type = itemDo.Group == 2 ?  "C" : "D",
                                 Amount = itemDo.Amount,
                                 SrcTrans = "SI"
                             });
                         }
-                        else
+                        else if (itemDo.Group == 9)
                         {
                             journals.Add(new Journal
                             {
@@ -1188,7 +1169,7 @@ public class JournalService : IJournalService
                                 LineNo = ++ifd,
                                 Date = itemData.InvHeader.Date,
                                 CoaCode = itemDo.CoaCode,
-                                TypeCode = itemDo.Group == 9 ? "COST" : "AR_DT",
+                                TypeCode = itemDo.TypeCode,
                                 Notes = itemDo.Notes,
                                 RefCode1 = itemData.InvHeader.SoCode,
                                 RefCode2 = itemDo.RefCode2,
@@ -1254,7 +1235,7 @@ public class JournalService : IJournalService
                                 Group = 4,
                                 CurrCode = itemDetail.DoData.CurrCode,
                                 Period = itemData.InvHeader.Date.ToString("yyyyMMdd"),
-                                Type = "C",
+                                Type = "D",
                                 Amount = itemDlvDetail.DlvDetail.ExemptTaxAmount * itemDlvDetail.DlvDetail.Qty,
                                 SrcTrans = "SI"
                             });
