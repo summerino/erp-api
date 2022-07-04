@@ -286,7 +286,10 @@ public class JournalService : IJournalService
             {
                 foreach (var itemDetail in RcvDetailData)
                 {
-                    var ivnValue = (itemDetail.RcvDetail.UnitPrice - itemDetail.RcvDetail.Disc - itemDetail.RcvDetail.FinalDiscHeader) * itemDetail.RcvDetail.Qty;
+                    var ivnValue = 
+                        (itemDetail.RcvDetail.UnitPrice - itemDetail.RcvDetail.Disc - itemDetail.RcvDetail.FinalDiscHeader 
+                        - itemDetail.RcvDetail.TaxAmount + itemDetail.RcvDetail.ExemptTaxAmount)
+                        * itemDetail.RcvDetail.Qty;
                     //if (itemData.RcvHeader.TaxAmount > 0)
                     //    if (itemData.RcvHeader.IncludeTax)
                     //        ivnValue -= itemDetail.RcvDetail.TaxAmount * itemDetail.RcvDetail.Qty;
