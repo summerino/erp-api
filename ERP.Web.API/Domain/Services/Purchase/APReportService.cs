@@ -38,10 +38,16 @@ public class APReportService : IAPReportService
 
                 invData = invData.Where(x => x.Date <= Convert.ToDateTime(date)).ToList();
 
+                var invDMData = _db.PurchaseInvoiceDebitMemos.Where(x => invData.Select(y => y.Code).Contains(x.InvCode)).ToList();
+
+                var dmData = _db.DebitMemos.Where(x => x.Mark != "V" && x.Date <= Convert.ToDateTime(date)).ToList();
+
                 foreach (var itemInv in invData)
                 {
                     var totCb = cbDetail.Where(x => x.TransCode == itemInv.Code).Sum(x => x.TransAmount);
-                    itemInv.PaidAmount = totCb;
+                    var dmInvData = invDMData.Where(x => x.InvCode == itemInv.Code).Select(x => x.DebitMemoCode).ToList();
+                    var totDm = dmData.Where(x => dmInvData.Contains(x.Code)).Sum(x => x.Amount);
+                    itemInv.PaidAmount = totDm + totCb;
                     itemInv.RemainderAmount = itemInv.TotalAmount - itemInv.PaidAmount;
                 }
 
@@ -115,11 +121,17 @@ public class APReportService : IAPReportService
 
                 rcvData = rcvData.Where(x => x.Date <= Convert.ToDateTime(date)).ToList();
 
+                var invDMData = _db.PurchaseInvoiceDebitMemos.Where(x => rcvData.Select(y => y.InvCode).Contains(x.InvCode)).ToList();
+
+                var dmData = _db.DebitMemos.Where(x => x.Mark != "V" && x.Date <= Convert.ToDateTime(date)).ToList();
+
                 foreach (var itemRcv in rcvData)
                 {
                     var totInv = rcvData.Where(x => x.InvCode == itemRcv.InvCode).Sum(x => x.TotalAmount);
                     var totCb = cbDetail.Where(x => x.TransCode == itemRcv.InvCode).Sum(x => x.TransAmount);
-                    itemRcv.PaidAmount = totCb * itemRcv.TotalAmount / totInv;
+                    var dmInvData = invDMData.Where(x => x.InvCode == itemRcv.Code).Select(x => x.DebitMemoCode).ToList();
+                    var totDm = dmData.Where(x => dmInvData.Contains(x.Code)).Sum(x => x.Amount);
+                    itemRcv.PaidAmount = (totDm * itemRcv.TotalAmount / totInv) + (totCb * itemRcv.TotalAmount / totInv);
                     itemRcv.RemainderAmount = itemRcv.TotalAmount - itemRcv.PaidAmount;
                 }
 

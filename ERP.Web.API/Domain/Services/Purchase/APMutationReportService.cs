@@ -30,16 +30,21 @@ public class APMutationReportService : IAPMutationReportService
 
         var bbData = _db.VwBeginningBalanceAPs.Where(x => x.IsActive).ToList();
 
+        var invDMData = _db.PurchaseInvoiceDebitMemos.Where(x => invData.Select(y => y.Code).Contains(x.InvCode)).ToList();
+
+        var dmData = _db.DebitMemos.Where(x => x.Mark != "V").ToList();
+
         if (!string.IsNullOrEmpty(endDate))
         {
             invData = invData.Where(x => x.Date <= Convert.ToDateTime(endDate)).ToList();
             cbData = cbData.Where(x => (x.ChequeDate ?? x.Date) <= Convert.ToDateTime(endDate)).ToList();
             bbData = bbData.Where(x => x.Date <= Convert.ToDateTime(endDate)).ToList();
+            dmData = dmData.Where(x => x.Date <= Convert.ToDateTime(endDate)).ToList();
         }
 
         var cbDetail = _db.GeneralCashBankDetails.Where(x => cbData.Select(c => c.Code).Contains(x.Code)).ToList();
 
-
+        // [b] prefix for before - [c] prefix for current
         foreach (var itemInv in invData)
         {
             if (!string.IsNullOrEmpty(startDate))
@@ -49,8 +54,10 @@ public class APMutationReportService : IAPMutationReportService
                     var bcbData = cbData.Where(x => x.Date < Convert.ToDateTime(startDate)).ToList();
                     var totBcb = cbDetail.Where(x => x.TransCode == itemInv.Code && bcbData.Select(y => y.Code).Contains(x.Code)).Sum(x => x.TransAmount);
                     var totCcb = cbDetail.Where(x => x.TransCode == itemInv.Code && !bcbData.Select(y => y.Code).Contains(x.Code)).Sum(x => x.TransAmount);
-                    itemInv.BeginningBalance = itemInv.TransAmount - totBcb;
-                    itemInv.PaidAmount = totCcb;
+                    var totBdm = dmData.Where(x => x.Date < Convert.ToDateTime(startDate) && invDMData.Select(y => y.DebitMemoCode).Contains(x.Code)).Sum(x => x.Amount);
+                    var totCdm = dmData.Where(x => x.Date >= Convert.ToDateTime(startDate) && invDMData.Select(y => y.DebitMemoCode).Contains(x.Code)).Sum(x => x.Amount);
+                    itemInv.BeginningBalance = itemInv.TransAmount - totBcb - totBdm;
+                    itemInv.PaidAmount = totCcb + totCdm;
                     itemInv.EndingBalance = itemInv.BeginningBalance - itemInv.PaidAmount;
                     itemInv.TransAmount = 0;
                 }
@@ -58,14 +65,16 @@ public class APMutationReportService : IAPMutationReportService
                 {
                     var ccbData = cbData.Where(x => x.Date >= Convert.ToDateTime(startDate)).ToList();
                     var totCcb = cbDetail.Where(x => x.TransCode == itemInv.Code && ccbData.Select(y => y.Code).Contains(x.Code)).Sum(x => x.TransAmount);
-                    itemInv.PaidAmount = totCcb;
+                    var totCdm = dmData.Where(x => x.Date >= Convert.ToDateTime(startDate) && invDMData.Select(y => y.DebitMemoCode).Contains(x.Code)).Sum(x => x.Amount);
+                    itemInv.PaidAmount = totCcb + totCdm;
                     itemInv.EndingBalance = itemInv.TransAmount - itemInv.PaidAmount;
                 }
             }
             else
             {
                 var totCcb = cbDetail.Where(x => x.TransCode == itemInv.Code && cbData.Select(y => y.Code).Contains(x.Code)).Sum(x => x.TransAmount);
-                itemInv.PaidAmount = totCcb;
+                var totCdm = dmData.Where(x => invDMData.Select(y => y.DebitMemoCode).Contains(x.Code)).Sum(x => x.Amount);
+                itemInv.PaidAmount = totCcb + totCdm;
                 itemInv.EndingBalance = itemInv.TransAmount - itemInv.PaidAmount;
             }
         }
