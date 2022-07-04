@@ -287,9 +287,9 @@ public class JournalService : IJournalService
                 foreach (var itemDetail in RcvDetailData)
                 {
                     var ivnValue = (itemDetail.RcvDetail.UnitPrice - itemDetail.RcvDetail.Disc - itemDetail.RcvDetail.FinalDiscHeader) * itemDetail.RcvDetail.Qty;
-                    if (itemData.RcvHeader.TaxAmount > 0)
-                        if (itemData.RcvHeader.IncludeTax)
-                            ivnValue -= itemDetail.RcvDetail.TaxAmount * itemDetail.RcvDetail.Qty;
+                    //if (itemData.RcvHeader.TaxAmount > 0)
+                    //    if (itemData.RcvHeader.IncludeTax)
+                    //        ivnValue -= itemDetail.RcvDetail.TaxAmount * itemDetail.RcvDetail.Qty;
 
                     //Inventory
                     journals.Add(new Journal
@@ -548,17 +548,17 @@ public class JournalService : IJournalService
                             //PPN Yang Dibebaskan
                             journals.Add(new Journal
                             {
-                                Code = itemDetail.RcvData.Code,
+                                Code = itemData.InvHeader.Code,
                                 LineNo = ++ix,
-                                Date = itemDetail.RcvData.Date,
+                                Date = itemData.InvHeader.Date,
                                 CoaCode = string.IsNullOrWhiteSpace(taxes.FirstOrDefault(x => x.Id == itemRcvDetail.RcvDetail.TaxId)?.ExemptCoaCode) ? "" : taxes.FirstOrDefault(x => x.Id == itemRcvDetail.RcvDetail.TaxId)?.ExemptCoaCode,
                                 TypeCode = "EPPN",
                                 Notes = "PPN Yang Dibebaskan",
-                                RefCode1 = itemDetail.RcvData.TransCode,
-                                RefCode2 = itemRcvDetail.Item.Initial,
+                                RefCode1 = itemData.InvHeader.PoCode,
+                                //RefCode2 = itemRcvDetail.Item.Initial,
                                 Group = 3,
-                                CurrCode = itemDetail.RcvData.CurrCode,
-                                Period = itemDetail.RcvData.Date.ToString("yyyyMMdd"),
+                                CurrCode = itemData.InvHeader.CurrCode,
+                                Period = itemData.InvHeader.Date.ToString("yyyyMMdd"),
                                 Type = "C",
                                 Amount = itemRcvDetail.RcvDetail.ExemptTaxAmount * itemRcvDetail.RcvDetail.Qty,
                                 SrcTrans = "PI"
@@ -567,17 +567,17 @@ public class JournalService : IJournalService
                             //PPN Yang Dibebaskan
                             journals.Add(new Journal
                             {
-                                Code = itemDetail.RcvData.Code,
+                                Code = itemData.InvHeader.Code,
                                 LineNo = ix,
-                                Date = itemDetail.RcvData.Date,
+                                Date = itemData.InvHeader.Date,
                                 CoaCode = string.IsNullOrWhiteSpace(taxes.FirstOrDefault(x => x.Id == itemRcvDetail.RcvDetail.TaxId)?.ExemptCoaCode) ? "" : taxes.FirstOrDefault(x => x.Id == itemRcvDetail.RcvDetail.TaxId)?.ExemptCoaCode,
                                 TypeCode = "EPPN",
                                 Notes = "PPN Yang Dibebaskan",
-                                RefCode1 = itemDetail.RcvData.TransCode,
-                                RefCode2 = itemRcvDetail.Item.Initial,
+                                RefCode1 = itemData.InvHeader.PoCode,
+                                //RefCode2 = itemRcvDetail.Item.Initial,
                                 Group = 5,
-                                CurrCode = itemDetail.RcvData.CurrCode,
-                                Period = itemDetail.RcvData.Date.ToString("yyyyMMdd"),
+                                CurrCode = itemData.InvHeader.CurrCode,
+                                Period = itemData.InvHeader.Date.ToString("yyyyMMdd"),
                                 Type = "D",
                                 Amount = itemRcvDetail.RcvDetail.ExemptTaxAmount * itemRcvDetail.RcvDetail.Qty,
                                 SrcTrans = "PI"
