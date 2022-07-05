@@ -968,12 +968,12 @@ BEGIN TRY
 				WHERE UomId = uom_c.UomId
 				AND Seq <= uom_c.Seq
 			) END AS BaseQty,
-		pr_d.NettPrice - pr_d.TaxAmount
+		pr_d.NettPrice - pr_d.TaxAmount + pr_d.ExemptTaxAmount
 		AS FinalNettPrice,
 		CASE WHEN uom_c.IsBaseUnit = 1 THEN
-			pr_d.NettPrice - pr_d.TaxAmount
+			pr_d.NettPrice - pr_d.TaxAmount + pr_d.ExemptTaxAmount
 		ELSE
-			(pr_d.NettPrice - pr_d.TaxAmount) / 
+			(pr_d.NettPrice - pr_d.TaxAmount + pr_d.ExemptTaxAmount) / 
 			(
 				SELECT EXP(SUM(LOG(Conversion)))
 				FROM Inventory.UoMConversion
@@ -1099,8 +1099,8 @@ BEGIN TRY
 			END
 			ELSE
 			BEGIN
-				INSERT INTO Inventory.WarehouseQuantity(WarehouseCode, ItemId, QtyOnHand, QtyOnIndent, QtyOnOrder, QtyReorderPoint, QtyOnTransfer, QtyOnTransit, UpdatedDate)
-				VALUES (@WHId, @ItemId, @Qty, 0, 0, 0, 0, 0, dbo.udf_current_local_time())
+				INSERT INTO Inventory.WarehouseQuantity(WarehouseCode, ItemId, QtyOnHand, QtyOnIndent, QtyOnOrder, QtyReorderPoint, QtyOnTransfer, UpdatedDate)
+				VALUES (@WHId, @ItemId, @Qty, 0, 0, 0, 0, dbo.udf_current_local_time())
 				UPDATE Inventory.WarehouseQuantity SET QtyOnIndent -= @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = (SELECT WarehouseCode FROM Inventory.StockMutation WHERE RefCode1 = @transCode AND ItemId = @ItemId AND UnitId = @UnitId) AND ItemId = @ItemId
 			END
 			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId
@@ -1114,7 +1114,7 @@ BEGIN TRY
 
 			IF EXISTS(SELECT *FROM Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId AND RefCode1 = @code)
 			BEGIN
-                IF (@srcTrans = 1)
+				IF (@srcTrans = 1)
 				BEGIN
 					UPDATE Inventory.WarehouseQuantity SET QtyOnHand -= @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
 					UPDATE Inventory.WarehouseQuantity SET QtyOnIndent += @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = (SELECT WarehouseCode FROM Inventory.StockMutation WHERE RefCode1 = @transCode AND ItemId = @ItemId AND UnitId = @UnitId) AND ItemId = @ItemId
