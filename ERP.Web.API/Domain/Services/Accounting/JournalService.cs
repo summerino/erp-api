@@ -286,14 +286,6 @@ public class JournalService : IJournalService
             {
                 foreach (var itemDetail in RcvDetailData)
                 {
-                    var ivnValue = 
-                        (itemDetail.RcvDetail.UnitPrice - itemDetail.RcvDetail.Disc - itemDetail.RcvDetail.FinalDiscHeader 
-                        - itemDetail.RcvDetail.TaxAmount + itemDetail.RcvDetail.ExemptTaxAmount)
-                        * itemDetail.RcvDetail.Qty;
-                    //if (itemData.RcvHeader.TaxAmount > 0)
-                    //    if (itemData.RcvHeader.IncludeTax)
-                    //        ivnValue -= itemDetail.RcvDetail.TaxAmount * itemDetail.RcvDetail.Qty;
-
                     //Inventory
                     journals.Add(new Journal
                     {
@@ -309,7 +301,7 @@ public class JournalService : IJournalService
                         CurrCode = itemData.RcvHeader.CurrCode,
                         Period = itemData.RcvHeader.Date.ToString("yyyyMMdd"),
                         Type = "D",
-                        Amount = itemDetail.RcvDetail.Type == 0 ? ivnValue : 0m,
+                        Amount = itemDetail.RcvDetail.Total,
                         SrcTrans = "RCV"
                     });
                 }
@@ -328,7 +320,7 @@ public class JournalService : IJournalService
                     CurrCode = itemData.RcvHeader.CurrCode,
                     Period = itemData.RcvHeader.Date.ToString("yyyyMMdd"),
                     Type = "C",
-                    Amount = journals.Where(x => x.Code == itemData.RcvHeader.Code && x.Group == 1).Sum(x => x.Amount),
+                    Amount = itemData.RcvHeader.Total,
                     SrcTrans = "RCV"
                 });
             }
@@ -508,8 +500,7 @@ public class JournalService : IJournalService
                                      where invdetail.Code == itemData.InvHeader.Code
                                      select new { InvDetail = invdetail, RcvData = rcvdata }).ToList();
 
-                decimal taxAmount = 0m;
-                //decimal extTaxAmount = 0m;
+                decimal apAmount = 0m;
                 short i = 0;
 
                 foreach (var itemDetail in InvDetailData)
@@ -529,14 +520,32 @@ public class JournalService : IJournalService
                         CurrCode = itemData.InvHeader.CurrCode,
                         Period = itemData.InvHeader.Date.ToString("yyyyMMdd"),
                         Type = "D",
-                        Amount = journals.Where(x => x.Code == itemDetail.RcvData.Code && x.Group == 2).Sum(x => x.Amount),
+                        Amount = journals.Where(x => x.Code == itemDetail.RcvData.Code && x.Group == 2).Sum(x => x.Amount) - itemDetail.RcvData.TaxAmount,
                         SrcTrans = "PI"
                     });
 
+                    //HUTANG
+                    apAmount += itemDetail.RcvData.Total;
+
                     //PPN
-                    taxAmount += itemDetail.RcvData.TaxAmount;
+                    journals.Add(new Journal
+                    {
+                        Code = itemData.InvHeader.Code,
+                        LineNo = i,
+                        Date = itemData.InvHeader.Date,
+                        CoaCode = systemParam.FirstOrDefault(x => x.Code == "TAX_IN_COA")?.Value ?? "",
+                        TypeCode = "PPN",
+                        Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_TAX_IN")?.Value ?? ""} {itemData.Supplier.Initial}").Trim(),
+                        RefCode1 = itemData.InvHeader.PoCode,
+                        Group = 2,
+                        CurrCode = itemData.InvHeader.CurrCode,
+                        Period = itemData.InvHeader.Date.ToString("yyyyMMdd"),
+                        Type = "D",
+                        Amount = itemDetail.RcvData.TaxAmount,
+                        SrcTrans = "PI"
+                    });
+
                     //PPN Yang Dibebaskan
-                    //extTaxAmount += itemDetail.RcvData.ExemptTaxAmount;
                     var RcvDetailData = (from rcvdetail in db.PurchaseReceiveDetails
                                          join item in db.Items on rcvdetail.ItemId equals item.Id
                                          where rcvdetail.Code == itemDetail.RcvData.Code
@@ -547,7 +556,6 @@ public class JournalService : IJournalService
                     {
                         if (itemRcvDetail.RcvDetail.ExemptTaxAmount > 0)
                         {
-                            taxAmount -= itemRcvDetail.RcvDetail.ExemptTaxAmount * itemRcvDetail.RcvDetail.Qty;
                             //PPN Yang Dibebaskan
                             journals.Add(new Journal
                             {
@@ -588,42 +596,6 @@ public class JournalService : IJournalService
                         }
                     }
                 }
-
-                //PPN
-                journals.Add(new Journal
-                {
-                    Code = itemData.InvHeader.Code,
-                    LineNo = 1,
-                    Date = itemData.InvHeader.Date,
-                    CoaCode = systemParam.FirstOrDefault(x => x.Code == "TAX_IN_COA")?.Value ?? "",
-                    TypeCode = "PPN",
-                    Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_TAX_IN")?.Value ?? ""} {itemData.Supplier.Initial}").Trim(),
-                    RefCode1 = itemData.InvHeader.PoCode,
-                    Group = 2,
-                    CurrCode = itemData.InvHeader.CurrCode,
-                    Period = itemData.InvHeader.Date.ToString("yyyyMMdd"),
-                    Type = "D",
-                    Amount = taxAmount,
-                    SrcTrans = "PI"
-                });
-
-                //PPN Yang Dibebaskan
-                //journals.Add(new Journal
-                //{
-                //    Code = itemData.InvHeader.Code,
-                //    LineNo = 1,
-                //    Date = itemData.InvHeader.Date,
-                //    CoaCode = systemParam.FirstOrDefault(x => x.Code == "TAX_OUT_COA")?.Value ?? "",
-                //    TypeCode = "EPPN",
-                //    Notes = "PPN Yang Dibebaskan",
-                //    RefCode1 = itemData.InvHeader.PoCode,
-                //    Group = 3,
-                //    CurrCode = itemData.InvHeader.CurrCode,
-                //    Period = itemData.InvHeader.Date.ToString("yyyyMMdd"),
-                //    Type = "C",
-                //    Amount = extTaxAmount,
-                //    SrcTrans = "PI"
-                //});
 
                 var invMemo = db.PurchaseInvoiceDebitMemos.Where(x => x.InvCode == itemData.InvHeader.Code).ToList();
                 if (invMemo.Any())
@@ -689,7 +661,7 @@ public class JournalService : IJournalService
                     CurrCode = itemData.InvHeader.CurrCode,
                     Period = itemData.InvHeader.Date.ToString("yyyyMMdd"),
                     Type = "C",
-                    Amount = journals.Where(x => x.Code == itemData.InvHeader.Code && new[] { 1, 2 }.Contains(x.Group)).Sum(x => x.Amount) - journals.Where(x => x.Code == itemData.InvHeader.Code && new[] { 3 }.Contains(x.Group)).Sum(x => x.Amount),
+                    Amount = apAmount,
                     SrcTrans = "PI"
                 });
             }
@@ -718,16 +690,7 @@ public class JournalService : IJournalService
             var DlvDetailFreeData = (from fg in db.SalesDeliveryDetailFreeGoods
                                      join item in db.Items on fg.ItemId equals item.Id
                                      where fg.Code == itemData.Dlvheader.Code
-                                     group new { fg, item } by new { fg.Id, fg.Code, fg.CoaCode, fg.ItemId, item.Initial } into grp
-                                     select new
-                                     {
-                                         grp.Key.Id,
-                                         grp.Key.Code,
-                                         grp.Key.CoaCode,
-                                         grp.Key.ItemId,
-                                         grp.Key.Initial,
-                                         UnitPrice = grp.Sum(x => x.fg.UnitPrice * x.fg.Qty)
-                                     }).ToList();
+                                     select new { DlvDetail = fg, Item = item }).ToList();
 
             var discAmount = 0m;
             var taxAmount = 0m;
@@ -792,11 +755,11 @@ public class JournalService : IJournalService
                 {
                     foreach (var itemFreeDetail in DlvDetailFreeData)
                     {
-                        var smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemFreeDetail.Id && x.RefCode1 == itemFreeDetail.Code);
+                        var smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemFreeDetail.DlvDetail.Id && x.RefCode1 == itemFreeDetail.DlvDetail.Code);
                         if (smData == null) continue;
                         var nonVoidSM = RemoveVoidSM(db, db.StockMutations.ToList());
                         CalculateHPP(db, nonVoidSM, smData.ItemId, smData.RefDetailId1, "DOF");
-                        smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemFreeDetail.Id && x.RefCode1 == itemFreeDetail.Code);
+                        smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemFreeDetail.DlvDetail.Id && x.RefCode1 == itemFreeDetail.DlvDetail.Code);
                         var resultHpp = smData.BaseNettPrice > 0 ? smData.BaseNettPrice * smData.BaseQty : 0m;
 
                         journals.Add(new Journal
@@ -804,12 +767,31 @@ public class JournalService : IJournalService
                             Code = itemData.Dlvheader.Code,
                             LineNo = ++Nakun,
                             Date = itemData.Dlvheader.Date,
-                            CoaCode = itemFreeDetail.CoaCode ?? "",
-                            TypeCode = "COST",
-                            Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_PROMO_COST")?.Value ?? ""} {itemFreeDetail.Initial}").Trim(),
+                            CoaCode = string.IsNullOrWhiteSpace(items.FirstOrDefault(x => x.Id == itemFreeDetail.DlvDetail.ItemId)?.CoaInventory) ? systemParam.FirstOrDefault(x => x.Code == "INVENTORY_COA")?.Value ?? "" : items.FirstOrDefault(x => x.Id == itemFreeDetail.DlvDetail.ItemId)?.CoaInventory,
+                            TypeCode = "DLV_DT",
+                            Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_INVENTORY")?.Value ?? ""} {itemFreeDetail.Item.Initial}").Trim(),
                             RefCode1 = itemData.Dlvheader.TransCode,
-                            RefCode4 = "TEMP",
-                            Group = 9,
+                            RefCode2 = itemFreeDetail.Item.Initial,
+                            Group = 1,
+                            CurrCode = itemData.Dlvheader.CurrCode,
+                            Period = itemData.Dlvheader.Date.ToString("yyyyMMdd"),
+                            Type = "C",
+                            Amount = resultHpp,
+                            SrcTrans = "DLV"
+                        });
+
+                        //Barang Terkirim
+                        journals.Add(new Journal
+                        {
+                            Code = itemData.Dlvheader.Code,
+                            LineNo = Nakun,
+                            Date = itemData.Dlvheader.Date,
+                            CoaCode = systemParam.FirstOrDefault(x => x.Code == "SENT_ITEM_COA")?.Value ?? "",
+                            TypeCode = "DLV_DT",
+                            Notes = ($"Barang Terkirim {itemFreeDetail.Item.Initial}").Trim(),
+                            RefCode1 = itemData.Dlvheader.TransCode,
+                            RefCode2 = itemFreeDetail.Item.Initial,
+                            Group = 2,
                             CurrCode = itemData.Dlvheader.CurrCode,
                             Period = itemData.Dlvheader.Date.ToString("yyyyMMdd"),
                             Type = "D",
@@ -1071,11 +1053,11 @@ public class JournalService : IJournalService
                 {
                     foreach (var itemFreeDetail in DlvDetailFreeData)
                     {
-                        var smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemFreeDetail.Id && x.RefCode1 == itemFreeDetail.Code);
+                        var smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemFreeDetail.DlvDetail.Id && x.RefCode1 == itemFreeDetail.DlvDetail.Code);
                         if (smData == null) continue;
                         var nonVoidSM = RemoveVoidSM(db, db.StockMutations.ToList());
                         CalculateHPP(db, nonVoidSM, smData.ItemId, smData.RefDetailId1, "DOF");
-                        smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemFreeDetail.Id && x.RefCode1 == itemFreeDetail.Code);
+                        smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemFreeDetail.DlvDetail.Id && x.RefCode1 == itemFreeDetail.DlvDetail.Code);
                         var resultHpp = smData.BaseNettPrice > 0 ? smData.BaseNettPrice * smData.BaseQty : 0m;
 
                         journals.Add(new Journal
@@ -1083,9 +1065,9 @@ public class JournalService : IJournalService
                             Code = itemData.Dlvheader.Code,
                             LineNo = ++Nakun,
                             Date = itemData.Dlvheader.Date,
-                            CoaCode = itemFreeDetail.CoaCode ?? "",
+                            CoaCode = itemFreeDetail.DlvDetail.CoaCode ?? "",
                             TypeCode = "COST",
-                            Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_PROMO_COST")?.Value ?? ""} {itemFreeDetail.Initial}").Trim(),
+                            Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_PROMO_COST")?.Value ?? ""} {itemFreeDetail.Item.Initial}").Trim(),
                             RefCode1 = itemData.Dlvheader.TransCode,
                             Group = 8,
                             CurrCode = itemData.Dlvheader.CurrCode,
@@ -1100,11 +1082,11 @@ public class JournalService : IJournalService
                             Code = itemData.Dlvheader.Code,
                             LineNo = ++Nfree,
                             Date = itemData.Dlvheader.Date,
-                            CoaCode = string.IsNullOrWhiteSpace(items.FirstOrDefault(x => x.Id == itemFreeDetail.ItemId)?.CoaInventory) ? systemParam.FirstOrDefault(x => x.Code == "INVENTORY_COA")?.Value ?? "" : items.FirstOrDefault(x => x.Id == itemFreeDetail.ItemId)?.CoaInventory,
+                            CoaCode = string.IsNullOrWhiteSpace(items.FirstOrDefault(x => x.Id == itemFreeDetail.DlvDetail.ItemId)?.CoaInventory) ? systemParam.FirstOrDefault(x => x.Code == "INVENTORY_COA")?.Value ?? "" : items.FirstOrDefault(x => x.Id == itemFreeDetail.DlvDetail.ItemId)?.CoaInventory,
                             TypeCode = "DLV_DT",
-                            Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_INVENTORY")?.Value ?? ""} {itemFreeDetail.Initial}").Trim(),
+                            Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_INVENTORY")?.Value ?? ""} {itemFreeDetail.Item.Initial}").Trim(),
                             RefCode1 = itemData.Dlvheader.TransCode,
-                            RefCode2 = itemFreeDetail.Initial,
+                            RefCode2 = itemFreeDetail.Item.Initial,
                             Group = 9,
                             CurrCode = itemData.Dlvheader.CurrCode,
                             Period = itemData.Dlvheader.Date.ToString("yyyyMMdd"),
@@ -1140,7 +1122,6 @@ public class JournalService : IJournalService
                     var doJournal = journals.Where(x => x.Code == itemDetail.InvDetail.DoCode).ToList();
                     short id = 0;
                     short ic = 0;
-                    short ifd = 0;
                     foreach (var itemDo in doJournal)
                     {
                         if (new[] { 1, 2 }.Contains(itemDo.Group))
@@ -1164,26 +1145,6 @@ public class JournalService : IJournalService
                                 SrcTrans = "SI"
                             });
                         }
-                        else if (itemDo.Group == 9)
-                        {
-                            journals.Add(new Journal
-                            {
-                                Code = itemData.InvHeader.Code,
-                                LineNo = ++ifd,
-                                Date = itemData.InvHeader.Date,
-                                CoaCode = itemDo.CoaCode,
-                                TypeCode = itemDo.TypeCode,
-                                Notes = itemDo.Notes,
-                                RefCode1 = itemData.InvHeader.SoCode,
-                                RefCode2 = itemDo.RefCode2,
-                                Group = itemDo.Group,
-                                CurrCode = itemData.InvHeader.CurrCode,
-                                Period = itemData.InvHeader.Date.ToString("yyyyMMdd"),
-                                Type = itemDo.Type,
-                                Amount = itemDo.Amount,
-                                SrcTrans = "SI"
-                            });
-                        }
                     }
 
                     //ar
@@ -1195,6 +1156,11 @@ public class JournalService : IJournalService
                     //PPN Yang Dibebaskan
                     //extTaxAmount += itemDetail.RcvData.ExemptTaxAmount;
                     var DlvDetailData = (from dlvdetail in db.SalesDeliveryDetails
+                                         join item in db.Items on dlvdetail.ItemId equals item.Id
+                                         where dlvdetail.Code == itemDetail.DoData.Code
+                                         select new { DlvDetail = dlvdetail, Item = item }).ToList();
+
+                    var DlvDetailFreeData = (from dlvdetail in db.SalesDeliveryDetailFreeGoods
                                          join item in db.Items on dlvdetail.ItemId equals item.Id
                                          where dlvdetail.Code == itemDetail.DoData.Code
                                          select new { DlvDetail = dlvdetail, Item = item }).ToList();
@@ -1215,7 +1181,7 @@ public class JournalService : IJournalService
                                 TypeCode = "PPN",
                                 Notes = "PPN Yang Dibebaskan",
                                 RefCode1 = itemData.InvHeader.SoCode,
-                                RefCode2 = itemDlvDetail.Item.Initial,
+                                //RefCode2 = itemDlvDetail.Item.Initial,
                                 Group = 7,
                                 CurrCode = itemDetail.DoData.CurrCode,
                                 Period = itemData.InvHeader.Date.ToString("yyyyMMdd"),
@@ -1234,7 +1200,7 @@ public class JournalService : IJournalService
                                 TypeCode = "PPN",
                                 Notes = "PPN Yang Dibebaskan",
                                 RefCode1 = itemData.InvHeader.SoCode,
-                                RefCode2 = itemDlvDetail.Item.Initial,
+                                //RefCode2 = itemDlvDetail.Item.Initial,
                                 Group = 4,
                                 CurrCode = itemDetail.DoData.CurrCode,
                                 Period = itemData.InvHeader.Date.ToString("yyyyMMdd"),
@@ -1243,6 +1209,33 @@ public class JournalService : IJournalService
                                 SrcTrans = "SI"
                             });
                         }
+                    }
+
+                    short idf = 0;
+                    foreach (var itemFreeDetail in DlvDetailFreeData)
+                    {
+                        var smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemFreeDetail.DlvDetail.Id && x.RefCode1 == itemFreeDetail.DlvDetail.Code);
+                        if (smData == null) continue;
+                        var itemFreeHPP = smData == null ? smData.BaseNettPrice * smData.BaseQty : 0m;
+                        journals.Add(new Journal
+                        {
+                            Code = itemData.InvHeader.Code,
+                            LineNo = ++idf,
+                            Date = itemData.InvHeader.Date,
+                            CoaCode = itemFreeDetail.DlvDetail.CoaCode ?? "",
+                            TypeCode = "COST",
+                            Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_PROMO_COST")?.Value ?? ""} {itemFreeDetail.Item.Initial}").Trim(),
+                            RefCode1 = itemData.InvHeader.SoCode,
+                            Group = 3,
+                            CurrCode = itemData.InvHeader.CurrCode,
+                            Period = itemData.InvHeader.Date.ToString("yyyyMMdd"),
+                            Type = "D",
+                            Amount = itemFreeHPP,
+                            SrcTrans = "SI"
+                        });
+
+                        var removedFreeItem = journals.FirstOrDefault(x => x.Code == itemData.InvHeader.Code && x.Group == 2 && x.Amount == itemFreeHPP);
+                        journals.Remove(removedFreeItem);
                     }
                 }
 
@@ -1315,7 +1308,7 @@ public class JournalService : IJournalService
                     CurrCode = itemData.InvHeader.CurrCode,
                     Period = itemData.InvHeader.Date.ToString("yyyyMMdd"),
                     Type = "C",
-                    Amount = arAmount - taxAmount,
+                    Amount = arAmount - taxAmount + discAmount,
                     SrcTrans = "SI"
                 });
 
@@ -1369,8 +1362,6 @@ public class JournalService : IJournalService
                     }
                 }
             }
-
-            journals = journals.Where(x => x.RefCode4 != "TEMP").ToList();
         }
 
         return journals;
