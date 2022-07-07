@@ -279,6 +279,7 @@ builder.Services.AddScoped<ISalesReturnService, SalesReturnService>();
 builder.Services.AddScoped<IVisitOrderService, VisitOrderService>();
 builder.Services.AddScoped<IVisitPlanService, VisitPlanService>();
 builder.Services.AddScoped<IARReportService, ARReportService>();
+builder.Services.AddScoped<IARCardReportService, ARCardReportService>();
 builder.Services.AddScoped<IARMutationReportService, ARMutationReportService>();
 builder.Services.AddScoped<IARAgingReportService, ARAgingReportService>();
 builder.Services.AddScoped<ICreditMemoReportService, CreditMemoReportService>();
