@@ -339,6 +339,7 @@ public class TenantContext : DbContext
     public DbSet<ReportByItemDP> ReportByItemDPs { get; set; }
     public DbSet<ReportByItemCategoryDP> ReportByItemCategoryDPs { get; set; }
     public DbSet<ReportByInvoiceAR> ReportByInvoiceARs { get; set; }
+    public DbSet<ReportByARCard> ReportByARCards { get; set; }
 
     // System Management entities
     public DbSet<SystemManagement.Action> Actions { get; set; }
@@ -2527,6 +2528,10 @@ public class TenantContext : DbContext
         modelBuilder.Entity<ReportByTarget>()
             .HasNoKey()
             .ToTable("ReportByTarget", t => t.ExcludeFromMigrations());
+
+        modelBuilder.Entity<ReportByARCard>()
+            .HasNoKey()
+            .ToTable("ReportByARCard", t => t.ExcludeFromMigrations());
 
         // Visit Order model
         modelBuilder.Entity<VisitOrder>(entity =>
