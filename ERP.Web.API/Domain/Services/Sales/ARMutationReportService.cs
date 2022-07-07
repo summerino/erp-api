@@ -21,8 +21,8 @@ public class ARMutationReportService : IARMutationReportService
                             FROM General.Customer cs
                             LEFT JOIN Sales.SalesDeliveryHeader dlv ON dlv.CustCode = cs.Code
                             LEFT JOIN Sales.SalesInvoiceDetail invD ON invD.DOCode = dlv.Code
-                            LEFT JOIN Sales.SalesInvoiceHeader inv ON inv.Code = invD.Code AND inv.Mark IN('A', 'PP', 'CMP')
-                            WHERE dlv.Mark IN('A', 'INV') AND inv.Total IS NOT NULL GROUP BY cs.Code, cs.Initial, cs.[Name]").ToList();
+                            LEFT JOIN Sales.SalesInvoiceHeader inv ON inv.Code = invD.Code AND inv.Mark <> 'V'
+                            WHERE dlv.Mark <> 'V' AND inv.Total IS NOT NULL GROUP BY cs.Code, cs.Initial, cs.[Name]").ToList();
 
         var query = "";
         var sysData = _db.SystemParameters.FirstOrDefault(x => x.Code == "AR_RECOG_TIME");
@@ -36,7 +36,7 @@ public class ARMutationReportService : IARMutationReportService
                     LEFT JOIN Sales.SalesOrderHeader so ON so.Code = inv.SOCode
                     LEFT JOIN General.Employee sls ON sls.Id = so.SalesBy
                     LEFT JOIN General.Customer sp ON sp.Code = inv.CustCode
-                    WHERE inv.Mark IN('A','INV')";
+                    WHERE inv.Mark <> 'V'";
         }
         else
         {
@@ -49,7 +49,7 @@ public class ARMutationReportService : IARMutationReportService
                     LEFT JOIN General.Customer sp ON sp.Code = dlv.CustCode
                     LEFT JOIN Sales.SalesInvoiceDetail invD ON invD.DOCode = dlv.Code
                     LEFT JOIN Sales.SalesInvoiceHeader inv ON inv.Code = invD.Code AND inv.Mark IN('A','PP','CMP')
-                    WHERE dlv.Mark IN('A','INV')";
+                    WHERE dlv.Mark <> 'V'";
         }
 
 
