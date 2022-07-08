@@ -259,6 +259,13 @@ public class SalesInvoiceService : GeneralService<SalesInvoiceHeader>, ISalesInv
             data.ApprovedBy = null;
             data.ApprovedDate = null;
 
+            foreach (var item in data.Details)
+            {
+                var oldDlvData = Db.SalesDeliveryHeaders.AsNoTracking().FirstOrDefault(x => x.Code == item.DoCode);
+                //Restore stock mutation
+                RestoreWarehouseQty(oldDlvData.Code, oldDlvData.TransCode, oldDlvData.SrcTrans);
+            }
+            
             // Restore CreditUsed
             RestoreCreditUsed(data.Code, data.CustCode);
 
@@ -532,6 +539,23 @@ public class SalesInvoiceService : GeneralService<SalesInvoiceHeader>, ISalesInv
             join d in Db.GeneralCashBankDetails on h.Code equals d.Code
             where h.Mark == "A" && d.TransCode == code
             select h.Code).Any();
+    }
+
+    private void RestoreWarehouseQty(string code, string srcCode, short srcTrans)
+    {
+        var dlvSMData = Db.StockMutations.AsNoTracking().Where(x => x.RefCode1 == code).ToList();
+        var transSMData = Db.StockMutations.AsNoTracking().Where(x => x.RefCode1 == srcCode).ToList();
+        if (srcTrans == 1)
+        {
+            foreach (var itemData in dlvSMData)
+            {
+                var whQtyData = new Entity.Inventory.WarehouseQuantity();
+                whQtyData = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == itemData.WarehouseCode && x.ItemId == itemData.ItemId);
+                whQtyData.QtyOnTransit = whQtyData.QtyOnTransit + itemData.BaseQty;
+                Db.WarehouseQuantities.Update(whQtyData);
+            }
+        }
+        Db.SaveChanges();
     }
 
     #region Credit Used - Limit
