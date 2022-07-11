@@ -56,7 +56,12 @@ namespace ERP.Web.API.Domain.Services.Sales
 							" ORDER BY dt.[Date], dt.Sort")
 							.ToList();
 
-			if (!string.IsNullOrEmpty(startDate))
+			if (!string.IsNullOrEmpty(startDate) && !string.IsNullOrEmpty(endDate))
+			{
+				bbData = cardData.Where(x => x.Date < Convert.ToDateTime(startDate)).ToList();
+				cardData = cardData.Where(x => x.Date >= Convert.ToDateTime(startDate) && x.Date <= Convert.ToDateTime(endDate)).ToList();
+			}
+			else if (!string.IsNullOrEmpty(startDate))
 			{
 				bbData = cardData.Where(x => x.Date < Convert.ToDateTime(startDate)).ToList();
 				cardData = cardData.Where(x => x.Date >= Convert.ToDateTime(startDate)).ToList();
@@ -64,11 +69,6 @@ namespace ERP.Web.API.Domain.Services.Sales
 			else if (!string.IsNullOrEmpty(endDate))
 			{
 				cardData = cardData.Where(x => x.Date <= Convert.ToDateTime(endDate)).ToList();
-			}
-			else if (!string.IsNullOrEmpty(startDate) && !string.IsNullOrEmpty(endDate))
-			{
-				bbData = cardData.Where(x => x.Date < Convert.ToDateTime(startDate)).ToList();
-				cardData = cardData.Where(x => x.Date >= Convert.ToDateTime(startDate) && x.Date <= Convert.ToDateTime(endDate)).ToList();
 			}
 
 			cardListData.Add(new ReportByARCard
