@@ -30,7 +30,7 @@ public class SalesDeliveryReportService : ISalesDeliveryReportService
                             LEFT JOIN Inventory.Warehouse wh ON wh.Code = do.WarehouseCode
                             WHERE do.FromDirectInvoice = 0" +
                             (string.IsNullOrEmpty(status) ? " AND do.Mark <> 'OL'" : status.Replace("'", "''").Equals("NV") ? " AND do.Mark NOT IN ('V', 'OL')" : $" AND do.Mark = '{status.Replace("'", "''")}'") +
-                            " GROUP BY do.[Date], do.Code, do.CustCode, do.CustName, do.SrcTrans, do.TransCode, wh.[Name], do.Mark, do.TaxInvoiceNo, do.TaxInvoiceDate,").ToList();
+                            " GROUP BY do.[Date], do.Code, do.CustCode, do.CustName, do.SrcTrans, do.TransCode, wh.[Name], do.Mark, do.TaxInvoiceNo, do.TaxInvoiceDate").ToList();
 
         var doDetailData = _db.ReportByDetailDOs.FromSqlRaw(@"SELECT do.[Date], do.Code, do.CustCode, do.CustName, do.TaxInvoiceNo, do.TaxInvoiceDate,
                             CAST(do.SrcTrans AS int) AS SrcTrans, do.TransCode, wh.[Name] AS WarehouseName,
