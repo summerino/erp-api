@@ -748,24 +748,27 @@ public class JournalService : IJournalService
                         SrcTrans = "DLV"
                     });
 
-                    //Barang Terkirim
-                    journals.Add(new Journal
+                    if (!itemData.Dlvheader.FromDirectInvoice)
                     {
-                        Code = itemData.Dlvheader.Code,
-                        LineNo = Ninv,
-                        Date = itemData.Dlvheader.Date,
-                        CoaCode = systemParam.FirstOrDefault(x => x.Code == "SENT_ITEM_COA")?.Value ?? "",
-                        TypeCode = "DLV_DT",
-                        Notes = ($"Barang Terkirim {itemDetail.Item.Initial}").Trim(),
-                        RefCode1 = itemData.Dlvheader.TransCode,
-                        RefCode2 = itemDetail.Item.Initial,
-                        Group = 2,
-                        CurrCode = itemData.Dlvheader.CurrCode,
-                        Period = itemData.Dlvheader.Date.ToString("yyyyMMdd"),
-                        Type = "D",
-                        Amount = resultHpp,
-                        SrcTrans = "DLV"
-                    });
+                        //Barang Terkirim
+                        journals.Add(new Journal
+                        {
+                            Code = itemData.Dlvheader.Code,
+                            LineNo = Ninv,
+                            Date = itemData.Dlvheader.Date,
+                            CoaCode = systemParam.FirstOrDefault(x => x.Code == "SENT_ITEM_COA")?.Value ?? "",
+                            TypeCode = "DLV_DT",
+                            Notes = ($"Barang Terkirim {itemDetail.Item.Initial}").Trim(),
+                            RefCode1 = itemData.Dlvheader.TransCode,
+                            RefCode2 = itemDetail.Item.Initial,
+                            Group = 2,
+                            CurrCode = itemData.Dlvheader.CurrCode,
+                            Period = itemData.Dlvheader.Date.ToString("yyyyMMdd"),
+                            Type = "D",
+                            Amount = resultHpp,
+                            SrcTrans = "DLV"
+                        });
+                    }
                 }
 
                 //Promo Free Item
@@ -798,24 +801,27 @@ public class JournalService : IJournalService
                             SrcTrans = "DLV"
                         });
 
-                        //Barang Terkirim
-                        journals.Add(new Journal
+                        if (!itemData.Dlvheader.FromDirectInvoice)
                         {
-                            Code = itemData.Dlvheader.Code,
-                            LineNo = Nakun,
-                            Date = itemData.Dlvheader.Date,
-                            CoaCode = systemParam.FirstOrDefault(x => x.Code == "SENT_ITEM_COA")?.Value ?? "",
-                            TypeCode = "DLV_DT",
-                            Notes = ($"Barang Terkirim {itemFreeDetail.Item.Initial}").Trim(),
-                            RefCode1 = itemData.Dlvheader.TransCode,
-                            RefCode2 = itemFreeDetail.Item.Initial,
-                            Group = 2,
-                            CurrCode = itemData.Dlvheader.CurrCode,
-                            Period = itemData.Dlvheader.Date.ToString("yyyyMMdd"),
-                            Type = "D",
-                            Amount = resultHpp,
-                            SrcTrans = "DLV"
-                        });
+                            //Barang Terkirim
+                            journals.Add(new Journal
+                            {
+                                Code = itemData.Dlvheader.Code,
+                                LineNo = Nakun,
+                                Date = itemData.Dlvheader.Date,
+                                CoaCode = systemParam.FirstOrDefault(x => x.Code == "SENT_ITEM_COA")?.Value ?? "",
+                                TypeCode = "DLV_DT",
+                                Notes = ($"Barang Terkirim {itemFreeDetail.Item.Initial}").Trim(),
+                                RefCode1 = itemData.Dlvheader.TransCode,
+                                RefCode2 = itemFreeDetail.Item.Initial,
+                                Group = 2,
+                                CurrCode = itemData.Dlvheader.CurrCode,
+                                Period = itemData.Dlvheader.Date.ToString("yyyyMMdd"),
+                                Type = "D",
+                                Amount = resultHpp,
+                                SrcTrans = "DLV"
+                            });
+                        }
                     }
                 }
             }
