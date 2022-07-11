@@ -1307,33 +1307,33 @@ BEGIN TRY
 
 	SELECT @srcTrans = SrcTrans FROM Sales.SalesDeliveryHeader WHERE Code = @transCode
 
-	IF EXISTS(SELECT *FROM #tmp_ori_sm)
-	BEGIN
-		WHILE EXISTS(SELECT *FROM #tmp_ori_sm)
-		BEGIN
-			SELECT TOP 1 @OldQty = BaseQty, @OldItemId = ItemId, @OldWhId = WarehouseCode FROM #tmp_ori_sm
+	--IF EXISTS(SELECT *FROM #tmp_ori_sm)
+	--BEGIN
+	--	WHILE EXISTS(SELECT *FROM #tmp_ori_sm)
+	--	BEGIN
+	--		SELECT TOP 1 @OldQty = BaseQty, @OldItemId = ItemId, @OldWhId = WarehouseCode FROM #tmp_ori_sm
 
-			IF (@srcTrans = 1)
-			BEGIN
-				UPDATE Inventory.WarehouseQuantity SET QtyOnTransit += @OldQty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode =  @OldWhId AND ItemId = @OldItemId
-			END
-			DELETE #tmp_ori_sm WHERE WarehouseCode = @OldWhId AND ItemId = @OldItemId
-		END
-	END
+	--		IF (@srcTrans = 1)
+	--		BEGIN
+	--			UPDATE Inventory.WarehouseQuantity SET QtyOnTransit += @OldQty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode =  @OldWhId AND ItemId = @OldItemId
+	--		END
+	--		DELETE #tmp_ori_sm WHERE WarehouseCode = @OldWhId AND ItemId = @OldItemId
+	--	END
+	--END
 
-	IF EXISTS(SELECT *FROM #tmp_ori_sm_free)
-	BEGIN
-		WHILE EXISTS(SELECT *FROM #tmp_ori_sm_free)
-		BEGIN
-			SELECT TOP 1 @OldQty = BaseQty, @OldItemId = ItemId, @OldWhId = WarehouseCode FROM #tmp_ori_sm_free
+	--IF EXISTS(SELECT *FROM #tmp_ori_sm_free)
+	--BEGIN
+	--	WHILE EXISTS(SELECT *FROM #tmp_ori_sm_free)
+	--	BEGIN
+	--		SELECT TOP 1 @OldQty = BaseQty, @OldItemId = ItemId, @OldWhId = WarehouseCode FROM #tmp_ori_sm_free
 
-			IF (@srcTrans = 1)
-			BEGIN
-				UPDATE Inventory.WarehouseQuantity SET QtyOnTransit += @OldQty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode =  @OldWhId AND ItemId = @OldItemId
-			END
-			DELETE #tmp_ori_sm_free WHERE WarehouseCode = @OldWhId AND ItemId = @OldItemId
-		END
-	END
+	--		IF (@srcTrans = 1)
+	--		BEGIN
+	--			UPDATE Inventory.WarehouseQuantity SET QtyOnTransit += @OldQty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode =  @OldWhId AND ItemId = @OldItemId
+	--		END
+	--		DELETE #tmp_ori_sm_free WHERE WarehouseCode = @OldWhId AND ItemId = @OldItemId
+	--	END
+	--END
 
 	IF(@isVoid = 0)
 	BEGIN
