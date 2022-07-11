@@ -1217,7 +1217,7 @@ BEGIN TRY
 
 	-- Insert stock mutation that doesn't have with sales delivery item detail
 	INSERT INTO Inventory.StockMutation
-		SELECT @warehouseCode, @date, ItemId, UomId, UnitId, -Qty, 0, BaseUnit, -BaseQty, 0, @code, Id, @transCode, 'OTS', 'SI'
+		SELECT @warehouseCode, @date, ItemId, UomId, UnitId, Qty, 0, BaseUnit, BaseQty, 0, @code, Id, @transCode, 'OTS', 'SI'
 		FROM #tmp_do do
 		WHERE NOT EXISTS (
 			SELECT Id
@@ -1281,7 +1281,7 @@ BEGIN TRY
 
 	-- Insert stock mutation that doesn't have with sales delivery item detail
 	INSERT INTO Inventory.StockMutation
-		SELECT @warehouseCode, @date, ItemId, UomId, UnitId, -Qty, 0, BaseUnit, -BaseQty, 0, @code, Id, @transCode,'OTS', 'SIF'
+		SELECT @warehouseCode, @date, ItemId, UomId, UnitId, Qty, 0, BaseUnit, BaseQty, 0, @code, Id, @transCode,'OTS', 'SIF'
 		FROM #tmp_do_free do
 		WHERE NOT EXISTS (
 			SELECT Id
