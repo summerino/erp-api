@@ -52,7 +52,7 @@ public class SalesOrderReportService : ISalesOrderReportService
                             LEFT JOIN Sales.vwSalesOrderHeader so ON so.Code = so_d.Code
                             LEFT JOIN Inventory.Item im ON im.Id = so_d.ItemId
                             LEFT JOIN Inventory.ItemCategory ic ON ic.Id = im.CategoryId
-                            WHERE so.FromDirectInvoice = 0" +
+                            WHERE so.FromDirectInvoice = 0 AND so.Mark <> 'OL'" +
                                                             (!itemId.HasValue || itemId <= 0 ? "" : $" AND so_d.ItemId = {itemId}")).ToList();
 
         var itemData = _db.ReportByItemSales.FromSqlRaw(@"SELECT im.Initial, im.[Name], 
