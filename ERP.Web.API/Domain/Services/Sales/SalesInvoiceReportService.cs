@@ -19,7 +19,7 @@ public class SalesInvoiceReportService : ISalesInvoiceReportService
                             inv.SOCode AS OrderCode, inv.CustCode, inv.CustName,
                             SUM(dlv_d.Qty * dlv_d.UnitPrice) AS GrossAmount, SUM(dlv_d.Qty * (dlv_d.UnitPrice - dlv_d.Disc - dlv_d.FinalDiscHeader)) AS SubTotal,
                             SUM(dlv_d.Qty * dlv_d.Disc) AS Disc, SUM(dlv_d.Qty * dlv_d.FinalDiscHeader) AS DiscHeader,
-                            dlv.DPP, dlv.TaxAmount, dlv.ExemptTaxAmount, dlv.Total,
+                            SUM(dlv.DPP) AS DPP, SUM(dlv.TaxAmount) AS TaxAmount, SUM(dlv.ExemptTaxAmount) AS ExemptTaxAmount, SUM(dlv.Total) AS Total,
                             CASE inv.Mark
 	                            WHEN 'A' THEN 'Aktif'
 	                            WHEN 'V' THEN 'Void'
@@ -30,7 +30,7 @@ public class SalesInvoiceReportService : ISalesInvoiceReportService
                             LEFT JOIN Sales.vwSalesDeliveryHeader dlv ON inv_d.DOCode = dlv.Code
                             LEFT JOIN Sales.SalesDeliveryDetail dlv_d ON dlv.Code = dlv_d.Code" +
                                                 (string.IsNullOrEmpty(status) ? "" : status.Replace("'", "''").Equals("A") ? $" WHERE inv.Mark IN('A', 'PP', 'CMP')" : $" WHERE inv.Mark = '{status.Replace("'", "''")}'") +
-                                                @" GROUP BY inv.[Date], inv.DueDate, inv.Code, inv.SOCode, inv.CustCode, inv.CustName, dlv.DPP, dlv.TaxAmount, dlv.ExemptTaxAmount, dlv.Total, inv.Mark)
+                                                @" GROUP BY inv.[Date], inv.DueDate, inv.Code, inv.SOCode, inv.CustCode, inv.CustName, inv.Mark)
                             SELECT ch.[Date], ch.DueDate, ch.Code, 
                             ch.OrderCode, ch.CustCode, ch.CustName,
                             SUM(ch.GrossAmount) AS GrossAmount, SUM(ch.SubTotal) AS SubTotal,
