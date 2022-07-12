@@ -34,10 +34,12 @@ public class CreditMemoReportService : ICreditMemoReportService
 
         cmData = cmData.Where(x => x.Date <= Convert.ToDateTime(date)).ToList();
 
+        var invCMData = _db.SalesInvoiceCreditMemos.Where(x => cmData.Select(y => y.Code).Contains(x.CreditMemoCode)).ToList();
+
         foreach (var itemCm in cmData)
         {
-            var totCb = cbDetail.Where(x => x.TransCode == itemCm.Code).Sum(x => x.TransAmount);
-            itemCm.UsedAmount = totCb;
+            var totCm = invCMData.Where(x => x.CreditMemoCode == itemCm.Code).Sum(x => x.CreditMemoAmount);
+            itemCm.UsedAmount = totCm;
             itemCm.RemainderAmount = itemCm.Amount - itemCm.UsedAmount;
         }
 
