@@ -34,10 +34,12 @@ public class DebitMemoReportService : IDebitMemoReportService
 
         dmData = dmData.Where(x => x.Date <= Convert.ToDateTime(date)).ToList();
 
+        var invDMData = _db.PurchaseInvoiceDebitMemos.Where(x => dmData.Select(y => y.Code).Contains(x.DebitMemoCode)).ToList();
+
         foreach (var itemDm in dmData)
         {
-            var totCb = cbDetail.Where(x => x.TransCode == itemDm.Code).Sum(x => x.TransAmount);
-            itemDm.UsedAmount = totCb;
+            var totDm = invDMData.Where(x => x.DebitMemoCode == itemDm.Code).Sum(x => x.DebitMemoAmount);
+            itemDm.UsedAmount = totDm;
             itemDm.RemainderAmount = itemDm.Amount - itemDm.UsedAmount;
         }
 
