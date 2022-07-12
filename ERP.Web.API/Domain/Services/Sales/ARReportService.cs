@@ -44,10 +44,16 @@ public class ARReportService : IARReportService
 
                 invData = invData.Where(x => x.Date <= Convert.ToDateTime(date)).ToList();
 
+                var invCMData = _db.SalesInvoiceCreditMemos.Where(x => invData.Select(y => y.Code).Contains(x.InvCode)).ToList();
+
+                var cmData = _db.CreditMemos.Where(x => x.Mark != "V" && x.Date <= Convert.ToDateTime(date)).ToList();
+
                 foreach (var itemInv in invData)
                 {
                     var totCb = cbDetail.Where(x => x.TransCode == itemInv.Code).Sum(x => x.TransAmount);
-                    itemInv.PaidAmount = totCb;
+                    var totCm = invCMData.Where(x => x.InvCode == itemInv.Code && cmData.Select(y => y.Code).Contains(x.CreditMemoCode))
+                                    .Sum(x => x.CreditMemoAmount);
+                    itemInv.PaidAmount = totCb + totCm;
                     itemInv.RemainderAmount = itemInv.TotalAmount - itemInv.PaidAmount;
                 }
 
@@ -126,12 +132,18 @@ public class ARReportService : IARReportService
 
                 dlvData = dlvData.Where(x => x.Date <= Convert.ToDateTime(date)).ToList();
 
+                var invCMData = _db.SalesInvoiceCreditMemos.Where(x => dlvData.Select(y => y.InvCode).Contains(x.InvCode)).ToList();
+
+                var cmData = _db.CreditMemos.Where(x => x.Mark != "V" && x.Date <= Convert.ToDateTime(date)).ToList();
+
                 foreach (var itemDlv in dlvData)
                 {
                     var invData = _db.SalesInvoiceCreditMemos.Where(x => x.InvCode == itemDlv.InvCode).ToList();
                     var totDlv = dlvData.Where(x => x.InvCode == itemDlv.InvCode).Sum(x => x.TotalAmount);
                     var totCb = cbDetail.Where(x => x.TransCode == itemDlv.InvCode).Sum(x => x.TransAmount);
-                    itemDlv.PaidAmount = totDlv > 0 ? (totCb * itemDlv.TotalAmount / totDlv) + (invData?.Sum(x => x.CreditMemoAmount) ?? 0) : 0 + (invData?.Sum(x => x.CreditMemoAmount) ?? 0);
+                    var totCm = invCMData.Where(x => x.InvCode == itemDlv.InvCode && cmData.Select(y => y.Code).Contains(x.CreditMemoCode))
+                                    .Sum(x => x.CreditMemoAmount);
+                    itemDlv.PaidAmount = totDlv > 0 ? (totCb * itemDlv.TotalAmount / totDlv) + (totCm * itemDlv.TotalAmount / totDlv) : 0 + (totCm * itemDlv.TotalAmount / totDlv);
                     itemDlv.RemainderAmount = itemDlv.TotalAmount - itemDlv.PaidAmount;
                 }
 
