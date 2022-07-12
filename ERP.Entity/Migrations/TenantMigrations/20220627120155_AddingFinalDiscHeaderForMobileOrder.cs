@@ -601,8 +601,66 @@ BEGIN
 END";
             migrationBuilder.Sql(sql);
 
-            // Alter procedure dbo.sp_get_si_print_data
-            sql = @"ALTER PROCEDURE [dbo].[sp_get_si_print_data]
+			// Alter procedure dbo.sp_get_po_print_data
+			sql = @"ALTER PROCEDURE [dbo].[sp_get_po_print_data]
+	@code varchar(17),
+	@displayType varchar(20) = 'HEADER',
+	@centToWord bit = 0
+AS
+BEGIN
+
+	IF @displayType = 'HEADER'
+	BEGIN
+		SELECT po_h.*,
+			dbo.udf_num_to_words_id(po_h.Total, @centToWord) AS TotalInWord,
+			e_r.Initial AS RequestInitial,
+			s.Initial AS SupInitial, s.[Name] AS SupName, s.Address1 AS SupAddress1, s.Phone AS SupPhone,
+			e_c.Initial AS CreatedInitial
+		FROM (
+			SELECT *
+			FROM Purchasing.PurchaseOrderHeader
+			WHERE Code = @code
+			AND Mark <> 'V'
+		) po_h
+		LEFT JOIN General.Employee e_r
+			ON e_r.Id = po_h.RequestBy
+		LEFT JOIN General.Supplier s
+			ON s.Code = po_h.SupCode
+		LEFT JOIN General.Employee e_c
+			ON e_c.Id = po_h.CreatedBy
+	END
+
+	ELSE IF @displayType = 'DETAIL'
+	BEGIN
+		SELECT po_d.Id, po_d.[LineNo],
+			po_d.Qty, po_d.UnitPrice, po_d.Disc + FinalDiscHeader AS Disc,
+			CASE WHEN po_d.[Type] = 0 THEN po_d.TaxAmount
+				ELSE 0 END AS TaxAmount,
+			CASE WHEN po_d.[Type] = 0 THEN po_d.ExemptTaxAmount
+				ELSE 0 END AS ExemptTaxAmount,
+			CASE WHEN po_d.[Type] = 0 THEN po_d.Total
+				ELSE 0 END AS Total,
+			i.Initial AS ItemInitial, i.[Name] AS ItemName,
+			uom_c.UnitToConvert AS ItemUnitName,
+			po_d.[Type] AS Sort
+		FROM (
+			SELECT Id, Code, [LineNo], ItemId, UnitId, Qty, UnitPrice, Disc, FinalDiscHeader,
+				TaxAmount, ExemptTaxAmount, Total, [Type]
+			FROM Purchasing.PurchaseOrderDetail
+			WHERE Code = @code
+		) po_d
+		LEFT JOIN Inventory.Item i
+			ON i.Id = po_d.ItemId
+		LEFT JOIN Inventory.UoMConversion uom_c
+			ON uom_c.Id = po_d.UnitId
+		ORDER BY Sort, Id, [LineNo]
+	END
+
+END";
+            migrationBuilder.Sql(sql);
+
+			// Alter procedure dbo.sp_get_si_print_data
+			sql = @"ALTER PROCEDURE [dbo].[sp_get_si_print_data]
 	@code varchar(17),
 	@displayType varchar(20) = 'HEADER',
 	@centToWord bit = 0
@@ -688,6 +746,86 @@ BEGIN
 		LEFT JOIN Inventory.UoMConversion uom_c
 			ON uom_c.Id = dlv_d_fg.UnitId
 		ORDER BY Sort, Id, DOCode, DlvDetailId, DlvDetailLineNo
+	END
+
+END";
+            migrationBuilder.Sql(sql);
+
+			// Alter procedure dbo.sp_get_so_print_data
+			sql = @"ALTER PROCEDURE [dbo].[sp_get_so_print_data]
+	@code varchar(17),
+	@displayType varchar(20) = 'HEADER',
+	@centToWord bit = 0
+AS
+BEGIN
+
+	IF @displayType = 'HEADER'
+	BEGIN
+		SELECT so_h.*,
+			dbo.udf_num_to_words_id(so_h.Total, @centToWord) AS TotalInWord,
+			e.Initial AS SalesInitial,
+			c.Initial AS CustInitial, c.[Name] AS CustName,
+			CASE WHEN so_h.BillingAddressId IS NULL THEN ca_d.Address1
+				ELSE ca_b.Address1 END AS CustAddress1,
+			CASE WHEN so_h.BillingAddressId IS NULL THEN ca_d.Phone
+				ELSE ca_b.Phone END AS CustPhone,
+			CASE WHEN so_h.BillingAddressId IS NULL THEN ca_d.ContactPerson
+				ELSE ca_b.ContactPerson END AS CustContactPerson
+		FROM (
+			SELECT *
+			FROM Sales.SalesOrderHeader 
+			WHERE Code = @code
+			AND Mark <> 'V'
+		) so_h
+		LEFT JOIN General.Employee e
+			ON e.Id = so_h.SalesBy
+		LEFT JOIN General.Customer c
+			ON c.Code = so_h.CustCode
+		LEFT JOIN General.CustomerAddress ca_b
+			ON ca_b.Code = so_h.CustCode
+			AND ca_b.Id = so_h.BillingAddressId
+			AND so_h.BillingAddressId IS NOT NULL
+		LEFT JOIN General.CustomerAddress ca_d
+			ON ca_d.Code = so_h.CustCode
+			AND ca_d.IsDefault = 1
+			AND so_h.BillingAddressId IS NULL
+	END
+
+	ELSE IF @displayType = 'DETAIL'
+	BEGIN
+		SELECT si_d.Id, si_d.[LineNo],
+			si_d.Qty, si_d.UnitPrice, si_d.Disc + si_d.FinalDiscHeader AS Disc,
+			si_d.TaxAmount, si_d.ExemptTaxAmount, si_d.Total,
+			i.Initial AS ItemInitial, i.[Name] AS ItemName,
+			uom_c.UnitToConvert AS ItemUnitName,
+			1 AS Sort
+		FROM (
+			SELECT Id, Code, [LineNo], ItemId, UnitId, Qty, UnitPrice, Disc, FinalDiscHeader,
+				TaxAmount, ExemptTaxAmount, Total
+			FROM Sales.SalesOrderDetail
+			WHERE Code = @code
+		) si_d
+		LEFT JOIN Inventory.Item i
+			ON i.Id = si_d.ItemId
+		LEFT JOIN Inventory.UoMConversion uom_c
+			ON uom_c.Id = si_d.UnitId
+		UNION ALL
+		SELECT so_d_fg.Id, so_d_fg.[LineNo],
+			so_d_fg.Qty, so_d_fg.UnitPrice, so_d_fg.UnitPrice,
+			0, 0, 0,
+			i.Initial AS ItemInitial, i.[Name] AS ItemName,
+			uom_c.UnitToConvert AS ItemUnitName,
+			2 AS Sort
+		FROM (
+			SELECT *
+			FROM Sales.SalesOrderDetailFreeGood
+			WHERE Code = @code
+		) so_d_fg
+		LEFT JOIN Inventory.Item i
+			ON i.Id = so_d_fg.ItemId
+		LEFT JOIN Inventory.UoMConversion uom_c
+			ON uom_c.Id = so_d_fg.UnitId
+		ORDER BY Sort, Id, [LineNo]
 	END
 
 END";

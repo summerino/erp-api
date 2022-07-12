@@ -239,6 +239,10 @@ FROM SystemManagement.Company</CommandText>
           <DataField>TaxAmount</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
+        <Field Name="ExemptTaxAmount">
+          <DataField>ExemptTaxAmount</DataField>
+          <rd:UserDefined>true</rd:UserDefined>
+        </Field>
         <Field Name="Total">
           <DataField>Total</DataField>
           <rd:TypeName>System.String</rd:TypeName>
@@ -273,7 +277,7 @@ FROM SystemManagement.Company</CommandText>
                   <Width>0.3755in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>2.83522in</Width>
+                  <Width>1.83318in</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>0.38743in</Width>
@@ -289,6 +293,9 @@ FROM SystemManagement.Company</CommandText>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>0.93712in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1in</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>1.33992in</Width>
@@ -330,6 +337,7 @@ FROM SystemManagement.Company</CommandText>
                             <BottomBorder>
                               <Style>Solid</Style>
                             </BottomBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -368,6 +376,7 @@ FROM SystemManagement.Company</CommandText>
                             <BottomBorder>
                               <Style>Solid</Style>
                             </BottomBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -408,6 +417,7 @@ FROM SystemManagement.Company</CommandText>
                             <BottomBorder>
                               <Style>Solid</Style>
                             </BottomBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -446,6 +456,7 @@ FROM SystemManagement.Company</CommandText>
                             <BottomBorder>
                               <Style>Solid</Style>
                             </BottomBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -486,6 +497,7 @@ FROM SystemManagement.Company</CommandText>
                             <BottomBorder>
                               <Style>Solid</Style>
                             </BottomBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -526,6 +538,7 @@ FROM SystemManagement.Company</CommandText>
                             <BottomBorder>
                               <Style>Solid</Style>
                             </BottomBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -566,6 +579,48 @@ FROM SystemManagement.Company</CommandText>
                             <BottomBorder>
                               <Style>Solid</Style>
                             </BottomBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox7">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Pajak Dibebaskan</Value>
+                                  <Style>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox7</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>None</Style>
+                            </Border>
+                            <TopBorder>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </TopBorder>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -606,6 +661,7 @@ FROM SystemManagement.Company</CommandText>
                             <BottomBorder>
                               <Style>Solid</Style>
                             </BottomBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -682,7 +738,6 @@ FROM SystemManagement.Company</CommandText>
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
                         </Textbox>
-                        <rd:Selected>true</rd:Selected>
                       </CellContents>
                     </TablixCell>
                     <TablixCell>
@@ -857,6 +912,41 @@ FROM SystemManagement.Company</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
+                        <Textbox Name="ExemptTaxAmount">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!ExemptTaxAmount.Value</Value>
+                                  <Style>
+                                    <FontFamily>Courier New</FontFamily>
+                                    <Format>#,##0.00</Format>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>ExemptTaxAmount</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
                         <Textbox Name="Total">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
@@ -904,6 +994,7 @@ FROM SystemManagement.Company</CommandText>
                 <TablixMember />
                 <TablixMember />
                 <TablixMember />
+                <TablixMember />
               </TablixMembers>
             </TablixColumnHierarchy>
             <TablixRowHierarchy>
@@ -921,9 +1012,8 @@ FROM SystemManagement.Company</CommandText>
               </TablixMembers>
             </TablixRowHierarchy>
             <DataSetName>Detail</DataSetName>
-            <Top>0in</Top>
             <Height>0.5in</Height>
-            <Width>8.3in</Width>
+            <Width>8.29796in</Width>
             <Style>
               <Border>
                 <Style>None</Style>
