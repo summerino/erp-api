@@ -48,6 +48,14 @@ namespace ERP.Web.API.Domain.Services.Purchase
 								LEFT JOIN Finance.GeneralCashBankHeader cb_h ON cb_h.Code = cb_d.Code
 								LEFT JOIN Accounting.BeginningBalanceAP ap ON ap.Code = cb_d.TransCode
 								WHERE cb_d.[Type] = 'AP' AND cb_h.Mark <> 'V' AND cb_d.Src = 'BB'
+								UNION
+								SELECT
+									dm.[Date], dm.Code, 'Kd. Faktur: ' + pi_dm.InvCode AS Notes, inv.SupCode,
+									pi_dm.DebitMemoAmount AS DebitAmount, CAST(0 AS decimal(19,8)) AS DebitAmount, 2 AS Sort
+								FROM Purchasing.PurchaseInvoiceDebitMemo pi_dm
+								LEFT JOIN Purchasing.DebitMemo dm ON dm.Code = pi_dm.DebitMemoCode
+								LEFT JOIN Purchasing.PurchaseInvoiceHeader inv ON inv.Code = pi_dm.InvCode
+								WHERE dm.Mark NOT IN ('V', 'PP')
 							) dt
 							WHERE dt.SupCode = '{supCode.Replace("'", "''")}'
 							ORDER BY dt.[Date], dt.Sort")

@@ -25,18 +25,19 @@ namespace ERP.Web.API.Domain.Services.Sales
 							(
 								SELECT 
 									inv.[Date], inv.Code, 'Kd. Order: ' + inv.SOCode AS Notes, inv.CustCode, so.SalesBy AS SalesId,
-									CAST(0 AS decimal(19,8)) AS DebitAmount, inv.Total AS CreditAmount, 1 AS Sort
+									inv.Total AS DebitAmount, CAST(0 AS decimal(19,8)) AS CreditAmount, 1 AS Sort
 								FROM Sales.SalesInvoiceHeader inv
 								LEFT JOIN Sales.SalesOrderHeader so ON so.Code = inv.SOCode
+								WHERE inv.Mark NOT IN ('V', 'OL')
 								UNION
 								SELECT 
 									ar.[Date], ar.Code, 'Saldo Awal Hutang' AS Notes, ar.CustCode, CAST(0 as bigint) AS SalesId, 
-									CAST(0 AS decimal(19,8)) AS DebitAmount, ar.Amount AS CreditAmount, 1 AS Sort
+									ar.Amount AS DebitAmount, CAST(0 AS decimal(19,8)) AS CreditAmount, 1 AS Sort
 								FROM Accounting.BeginningBalanceAR ar
 								UNION
 								SELECT
 									ISNULL(cb_h.ChequeDate, cb_h.[Date]) AS [Date], cb_d.Code, 'Kd. Faktur: ' + cb_d.TransCode AS Notes, inv.CustCode, so.SalesBy AS SalesId,
-									cb_d.TransAmount AS DebitAmount, CAST(0 AS decimal(19,8)) AS CreditAmount, 2 AS Sort
+									CAST(0 AS decimal(19,8)) AS DebitAmount, cb_d.TransAmount AS CreditAmount, 2 AS Sort
 								FROM Finance.GeneralCashBankDetail cb_d
 								LEFT JOIN Finance.GeneralCashBankHeader cb_h ON cb_h.Code = cb_d.Code
 								LEFT JOIN Sales.SalesInvoiceHeader inv ON inv.Code = cb_d.TransCode
@@ -45,11 +46,20 @@ namespace ERP.Web.API.Domain.Services.Sales
 								UNION
 								SELECT
 									ISNULL(cb_h.ChequeDate, cb_h.[Date]) AS [Date], cb_d.Code, 'Kd. Saldo Awal Hutang: ' + cb_d.TransCode AS Notes, ar.CustCode, CAST(0 as bigint) AS SalesId, 
-									cb_d.TransAmount AS DebitAmount, CAST(0 AS decimal(19,8)) AS CreditAmount, 2 AS Sort
+									CAST(0 AS decimal(19,8)) AS DebitAmount, cb_d.TransAmount AS CreditAmount, 2 AS Sort
 								FROM Finance.GeneralCashBankDetail cb_d
 								LEFT JOIN Finance.GeneralCashBankHeader cb_h ON cb_h.Code = cb_d.Code
 								LEFT JOIN Accounting.BeginningBalanceAR ar ON ar.Code = cb_d.TransCode
 								WHERE cb_d.[Type] = 'AR' AND cb_h.Mark <> 'V' AND cb_d.Src = 'BB'
+								UNION
+								SELECT
+									cm.[Date], cm.Code, 'Kd. Faktur: ' + si_cm.InvCode AS Notes, inv.CustCode, so.SalesBy AS SalesId,
+									CAST(0 AS decimal(19,8)) AS DebitAmount, si_cm.CreditMemoAmount AS CreditAmount, 2 AS Sort
+								FROM Sales.SalesInvoiceCreditMemo si_cm
+								LEFT JOIN Sales.CreditMemo cm ON cm.Code = si_cm.CreditMemoCode
+								LEFT JOIN Sales.SalesInvoiceHeader inv ON inv.Code = si_cm.InvCode
+								LEFT JOIN Sales.SalesOrderHeader so ON so.Code = inv.SOCode
+								WHERE cm.Mark NOT IN ('V', 'PP')
 							) dt
 							WHERE dt.CustCode = '{custCode.Replace("'", "''")}'" +
 							(salesId.HasValue ? $" AND dt.SalesId = {salesId.Value}" : "") +
@@ -74,14 +84,14 @@ namespace ERP.Web.API.Domain.Services.Sales
 			cardListData.Add(new ReportByARCard
 			{
 				Code = "Saldo Awal",
-				RemainingAmount = bbData.Count > 0 ? bbData.Sum(x => x.CreditAmount - x.DebitAmount) : 0m,
+				RemainingAmount = bbData.Count > 0 ? bbData.Sum(x => x.DebitAmount - x.CreditAmount) : 0m,
 				IsBold = true
 			});
 
-			var remainAmount = bbData.Count > 0 ? bbData.Sum(x => x.CreditAmount - x.DebitAmount) : 0m;
+			var remainAmount = bbData.Count > 0 ? bbData.Sum(x => x.DebitAmount - x.CreditAmount) : 0m;
 			foreach (var item in cardData)
 			{
-				remainAmount += item.CreditAmount - item.DebitAmount;
+				remainAmount += item.DebitAmount - item.CreditAmount;
 				item.RemainingAmount = remainAmount;
 
 				cardListData.Add(item);

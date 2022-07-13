@@ -21,7 +21,7 @@ public class ARMutationReportService : IARMutationReportService
                             FROM General.Customer cs
                             LEFT JOIN Sales.SalesDeliveryHeader dlv ON dlv.CustCode = cs.Code
                             LEFT JOIN Sales.SalesInvoiceDetail invD ON invD.DOCode = dlv.Code
-                            LEFT JOIN Sales.SalesInvoiceHeader inv ON inv.Code = invD.Code AND inv.Mark <> 'V'
+                            LEFT JOIN Sales.SalesInvoiceHeader inv ON inv.Code = invD.Code AND inv.Mark NOT IN ('V', 'OL')
                             WHERE dlv.Mark <> 'V' AND inv.Total IS NOT NULL GROUP BY cs.Code, cs.Initial, cs.[Name]").ToList();
 
         var query = "";
@@ -36,7 +36,7 @@ public class ARMutationReportService : IARMutationReportService
                     LEFT JOIN Sales.SalesOrderHeader so ON so.Code = inv.SOCode
                     LEFT JOIN General.Employee sls ON sls.Id = so.SalesBy
                     LEFT JOIN General.Customer sp ON sp.Code = inv.CustCode
-                    WHERE inv.Mark <> 'V'";
+                    WHERE inv.Mark NOT IN ('V', 'OL')";
         }
         else
         {
@@ -49,7 +49,7 @@ public class ARMutationReportService : IARMutationReportService
                     LEFT JOIN General.Customer sp ON sp.Code = dlv.CustCode
                     LEFT JOIN Sales.SalesInvoiceDetail invD ON invD.DOCode = dlv.Code
                     LEFT JOIN Sales.SalesInvoiceHeader inv ON inv.Code = invD.Code AND inv.Mark IN('A','PP','CMP')
-                    WHERE dlv.Mark <> 'V'";
+                    WHERE dlv.Mark NOT IN ('V', 'OL')";
         }
 
 
@@ -59,11 +59,16 @@ public class ARMutationReportService : IARMutationReportService
 
         var bbData = _db.VwBeginningBalanceARs.Where(x => x.IsActive).ToList();
 
+        var invCMData = _db.SalesInvoiceCreditMemos.Where(x => dlvData.Select(y => y.Code).Contains(x.InvCode)).ToList();
+
+        var cmData = _db.CreditMemos.Where(x => x.Mark != "V").ToList();
+
         if (!string.IsNullOrEmpty(endDate))
         {
             dlvData = dlvData.Where(x => x.Date <= Convert.ToDateTime(endDate)).ToList();
             cbData = cbData.Where(x => (x.ChequeDate ?? x.Date) <= Convert.ToDateTime(endDate)).ToList();
             bbData = bbData.Where(x => x.Date <= Convert.ToDateTime(endDate)).ToList();
+            cmData = cmData.Where(x => x.Date <= Convert.ToDateTime(endDate)).ToList();
         }
 
         var cbDetail = _db.GeneralCashBankDetails.Where(x => cbData.Select(c => c.Code).Contains(x.Code)).ToList();
@@ -78,8 +83,10 @@ public class ARMutationReportService : IARMutationReportService
                     var bcbData = cbData.Where(x => x.Date < Convert.ToDateTime(startDate)).ToList();
                     var totBcb = cbDetail.Where(x => x.TransCode == item.InvCode && bcbData.Select(y => y.Code).Contains(x.Code)).Sum(x => x.TransAmount);
                     var totCcb = cbDetail.Where(x => x.TransCode == item.InvCode && !bcbData.Select(y => y.Code).Contains(x.Code)).Sum(x => x.TransAmount);
-                    item.BeginningBalance = item.TransAmount - (totDlv > 0 ? (totBcb * item.TransAmount / totDlv) : 0m);
-                    item.PaidAmount = totDlv > 0 ? (totCcb * item.TransAmount / totDlv) : 0m;
+                    var totBcm = invCMData.Where(x => cmData.Where(y => y.Date < Convert.ToDateTime(startDate)).Select(y => y.Code).Contains(x.CreditMemoCode)).Sum(x => x.CreditMemoAmount);
+                    var totCcm = invCMData.Where(x => cmData.Where(y => y.Date >= Convert.ToDateTime(startDate)).Select(y => y.Code).Contains(x.CreditMemoCode)).Sum(x => x.CreditMemoAmount);
+                    item.BeginningBalance = item.TransAmount - (totDlv > 0 ? (totBcb * item.TransAmount / totDlv) + (totBcm * item.TransAmount / totDlv) : 0m);
+                    item.PaidAmount = totDlv > 0 ? (totCcb * item.TransAmount / totDlv) + (totCcm * item.TransAmount / totDlv) : 0m;
                     item.EndingBalance = item.BeginningBalance - item.PaidAmount;
                     item.TransAmount = 0;
                 }
@@ -87,7 +94,8 @@ public class ARMutationReportService : IARMutationReportService
                 {
                     var ccbData = cbData.Where(x => x.Date >= Convert.ToDateTime(startDate)).ToList();
                     var totCcb = cbDetail.Where(x => x.TransCode == item.InvCode && ccbData.Select(y => y.Code).Contains(x.Code)).Sum(x => x.TransAmount);
-                    item.PaidAmount = totDlv > 0 ? (totCcb * item.TransAmount / totDlv) : 0;
+                    var totCcm = invCMData.Where(x => cmData.Where(y => y.Date >= Convert.ToDateTime(startDate)).Select(y => y.Code).Contains(x.CreditMemoCode)).Sum(x => x.CreditMemoAmount);
+                    item.PaidAmount = totDlv > 0 ? (totCcb * item.TransAmount / totDlv) + (totCcm * item.TransAmount / totDlv) : 0;
                     item.EndingBalance = item.TransAmount - item.PaidAmount;
                 }
             }
@@ -95,7 +103,8 @@ public class ARMutationReportService : IARMutationReportService
             {
                 var totDlv = _db.SalesInvoiceHeaders.FirstOrDefault(x => x.Code == item.InvCode)?.Total ?? 0m;
                 var totCcb = cbDetail.Where(x => x.TransCode == item.InvCode && cbData.Select(y => y.Code).Contains(x.Code)).Sum(x => x.TransAmount);
-                item.PaidAmount = totDlv > 0 ? (totCcb * item.TransAmount / totDlv) : 0;
+                var totCcm = invCMData.Where(x => cmData.Select(y => y.Code).Contains(x.CreditMemoCode)).Sum(x => x.CreditMemoAmount);
+                item.PaidAmount = totDlv > 0 ? (totCcb * item.TransAmount / totDlv) + (totCcm * item.TransAmount / totDlv) : 0;
                 item.EndingBalance = item.TransAmount - item.PaidAmount;
             }
         }
