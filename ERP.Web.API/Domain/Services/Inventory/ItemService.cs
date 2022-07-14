@@ -290,8 +290,9 @@ public class ItemService : GeneralService<Item>, IItemService
         result.AddRange(freeOrder);
 
         return result;
+    }
 
-        public IEnumerable<dynamic> GetRelatedIndentTrans(string whid, int itemid)
+    public IEnumerable<dynamic> GetRelatedIndentTrans(string whid, int itemid)
     {
         var stockM = Db.StockMutations.Where(x => x.WarehouseCode == whid && x.ItemId == itemid && x.Type == "OI").ToList();
         var header = Db.VwPurchaseOrderHeaders.Where(s => (new string[] { "A", "PR" }).Contains(s.Mark) && stockM.Select(x => x.RefCode1).Contains(s.Code)).ToList();
