@@ -256,38 +256,42 @@ public class ItemService : GeneralService<Item>, IItemService
         var details = Db.VwSalesOrderDetails.Where(r => header.Select(x => x.Code).Contains(r.Code) && r.ItemId == itemid).ToList();
         var free = Db.SalesOrderDetailFreeGoods.Where(r => header.Select(x => x.Code).Contains(r.Code) && r.ItemId == itemid).ToList();
         var uomConv = Db.UoMConversions.ToList();
-        var result = (from h in header
-            join d in details on h.Code equals d.Code
-            select new
-            {
-                Code = h.Code,
-                Date = h.Date,
-                Type = h.FromDirectInvoice == true ? "Penjualan Langsung" : "Order Penjualan",
-                CustCode = h.CustCode,
-                CustName = h.CustName,
-                Qty = Convert.ToInt32(d.Qty),
-                QtyDlv = Convert.ToInt32(d.QtyDlv),
-                QtyRemain = Convert.ToInt32(d.Qty - d.QtyDlv),
-                UnitName = d.UnitName
-            }).Union(from h in header
-            join f in free on h.Code equals f.Code
-            join d in uomConv on f.UnitId equals d.Id
-            select new
-            {
-                Code = h.Code,
-                Date = h.Date,
-                Type = "Bonus",
-                CustCode = h.CustCode,
-                CustName = h.CustName,
-                Qty = Convert.ToInt32(f.Qty),
-                QtyDlv = Convert.ToInt32(f.QtyClosed),
-                QtyRemain = Convert.ToInt32(f.Qty - f.QtyClosed),
-                UnitName = d.UnitEquivalent
-            }).ToDynamicList();
-        return result;
-    }
 
-    public IEnumerable<dynamic> GetRelatedIndentTrans(string whid, int itemid)
+        var freeOrder = (from h in header
+                         join f in free on h.Code equals f.Code
+                         join d in uomConv on f.UnitId equals d.Id
+                         select new
+                         {
+                             Code = h.Code,
+                             Date = h.Date,
+                             Type = "Bonus",
+                             CustCode = h.CustCode,
+                             CustName = h.CustName,
+                             Qty = Convert.ToInt32(f.Qty),
+                             QtyDlv = Convert.ToInt32(f.QtyClosed),
+                             QtyRemain = Convert.ToInt32(f.Qty - f.QtyClosed),
+                             UnitName = d.UnitEquivalent
+                         }).ToDynamicList();
+        var result = (from h in header
+                      join d in details on h.Code equals d.Code
+                      select new
+                      {
+                          Code = h.Code,
+                          Date = h.Date,
+                          Type = h.FromDirectInvoice == true ? "Penjualan Langsung" : "Order Penjualan",
+                          CustCode = h.CustCode,
+                          CustName = h.CustName,
+                          Qty = Convert.ToInt32(d.Qty),
+                          QtyDlv = Convert.ToInt32(d.QtyDlv),
+                          QtyRemain = Convert.ToInt32(d.Qty - d.QtyDlv),
+                          UnitName = d.UnitName
+                      }).ToDynamicList();
+
+        result.AddRange(freeOrder);
+
+        return result;
+
+        public IEnumerable<dynamic> GetRelatedIndentTrans(string whid, int itemid)
     {
         var stockM = Db.StockMutations.Where(x => x.WarehouseCode == whid && x.ItemId == itemid && x.Type == "OI").ToList();
         var header = Db.VwPurchaseOrderHeaders.Where(s => (new string[] { "A", "PR" }).Contains(s.Mark) && stockM.Select(x => x.RefCode1).Contains(s.Code)).ToList();
