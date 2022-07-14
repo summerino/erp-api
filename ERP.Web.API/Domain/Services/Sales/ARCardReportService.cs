@@ -102,7 +102,7 @@ namespace ERP.Web.API.Domain.Services.Sales
 				Code = "Total",
 				DebitAmount = cardListData.Where(x => !x.IsBold).Sum(x => x.DebitAmount),
 				CreditAmount = cardListData.Where(x => !x.IsBold).Sum(x => x.CreditAmount),
-				RemainingAmount = cardListData.Where(x => !x.IsBold).Sum(x => x.RemainingAmount),
+				RemainingAmount = remainAmount,
 				IsBold = true
 			});
 
