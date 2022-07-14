@@ -801,6 +801,9 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                 return result;
             }
 
+            //Restore stock mutation
+            RestoreWarehouseQty(data.Code);
+
             var taxes = Db.Taxes.ToList();
             var promos = Db.PromoHeaders
                 .Select(x => new
@@ -1773,6 +1776,22 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
         }
 
         return result;
+    }
+
+    private void RestoreWarehouseQty(string code)
+    {
+        var dlvSOData = Db.StockMutations.AsNoTracking().Where(x => x.RefCode1 == code).ToList();
+        foreach (var itemData in dlvSOData)
+        {
+            var whQtyData = new Entity.Inventory.WarehouseQuantity();
+            if (itemData.Type == "OO")
+            {
+                whQtyData = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == itemData.WarehouseCode && x.ItemId == itemData.ItemId);
+                whQtyData.QtyOnOrder = whQtyData.QtyOnOrder + itemData.BaseQty;
+                Db.WarehouseQuantities.Update(whQtyData);
+            }
+        }
+        Db.SaveChanges();
     }
 
     #region Credit Used - Limit
