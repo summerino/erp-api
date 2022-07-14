@@ -637,13 +637,18 @@ public class SalesInvoiceService : GeneralService<SalesInvoiceHeader>, ISalesInv
     }
     private List<dynamic> GetListCreditMemo(List<string> listCodeMemo)
     {
-        return (from cm in Db.CreditMemos
-                where listCodeMemo.Contains(cm.Code)
-                select new { cm.Code, cm.Amount, cm.Used, Source = "cm" })
-            .Union
-            (from cm in Db.BeginningBalanceCreditMemos
-                where listCodeMemo.Contains(cm.Code)
-                select new { cm.Code, cm.Amount, cm.Used, Source = "bb" }).ToList<dynamic>();
+        var result = (from cm in Db.CreditMemos
+                      where listCodeMemo.Contains(cm.Code)
+                      select new { cm.Code, cm.Amount, cm.Used, Source = new[] { 1, 2 }.Contains(cm.SrcTrans) ? "cm" : "dp" })
+                      .ToDynamicList();
+
+        var bbData = (from cm in Db.BeginningBalanceCreditMemos
+                      where listCodeMemo.Contains(cm.Code)
+                      select new { cm.Code, cm.Amount, cm.Used, Source = "bb" }).ToDynamicList();
+
+        result.AddRange(bbData);
+
+        return result;
     }
     private void ExecuteQuery(List<string> listQuery)
     {
