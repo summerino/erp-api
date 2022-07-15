@@ -768,7 +768,8 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                     InvCode = newCode,
                     InvAmount = data.Total,
                     CreditMemoAmount = item.CreditMemoAmount,
-                    CreditMemoCode = item.CreditMemoCode
+                    CreditMemoCode = item.CreditMemoCode,
+                    Src = item.Src
                 });
             }
 
@@ -1653,7 +1654,8 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                     InvCode = data.Code,
                     InvAmount = data.Total,
                     CreditMemoAmount = item.CreditMemoAmount,
-                    CreditMemoCode = item.CreditMemoCode
+                    CreditMemoCode = item.CreditMemoCode,
+                    Src = item.Src
                 });
             }
 
