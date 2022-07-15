@@ -153,6 +153,7 @@ public class MobileOrderService : GeneralService<MobileOrderHeader>, IMobileOrde
                             FinalDiscHeader = itemDetail.FinalDiscHeader,
                             TaxId = itemDetail.TaxId,
                             TaxAmount = itemDetail.TaxAmount,
+                            ExemptTaxAmount = itemDetail.ExemptTaxAmount,
                             NettPrice = itemDetail.NettPrice,
                             Total = itemDetail.Total,
                             Dpp = itemDetail.Dpp,
@@ -270,6 +271,7 @@ public class MobileOrderService : GeneralService<MobileOrderHeader>, IMobileOrde
                             FinalDiscHeader = itemDetail.FinalDiscHeader,
                             TaxId = itemDetail.TaxId,
                             TaxAmount = itemDetail.TaxAmount,
+                            ExemptTaxAmount = itemDetail.ExemptTaxAmount,
                             NettPrice = itemDetail.NettPrice,
                             Total = itemDetail.Total,
                             Dpp = itemDetail.Dpp
