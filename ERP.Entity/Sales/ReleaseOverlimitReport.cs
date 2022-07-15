@@ -10,6 +10,8 @@ namespace ERP.Entity.Sales
 
         public string ReleasedBy { get; set; }
 
+        public string ReleasedReason { get; set; }
+
         public string CustCode { get; set; }
 
         public string CustName { get; set; }

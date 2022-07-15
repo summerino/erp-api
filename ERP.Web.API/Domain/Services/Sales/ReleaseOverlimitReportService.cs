@@ -17,7 +17,7 @@ namespace ERP.Web.API.Domain.Services.Sales
         public DataSourceResult GetData(string startDate, string endDate, string releasedBy, string custCode, IEnumerable<Sort> sorts)
         {
             var data = _db.ReleaseOverlimitReports.FromSqlRaw(@"SELECT Code, OverlimitApprovedDate AS ReleasedDate,
-                        OverlimitApprovedInitial AS ReleasedBy, CustCode, CustName, Total
+                        OverlimitApprovedInitial AS ReleasedBy, OverlimitApprovedReason AS ReleasedReason, CustCode, CustName, Total
                         FROM Sales.VwSalesOrderHeader
                         WHERE OverlimitApprovedBy IS NOT NULL AND OverlimitApprovedDate IS NOT NULL" +
                         (string.IsNullOrEmpty(releasedBy) ? "" : $" AND OverlimitApprovedBy = '{releasedBy.Replace("'", "''")}'") +
