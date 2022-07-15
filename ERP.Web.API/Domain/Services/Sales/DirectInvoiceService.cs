@@ -738,7 +738,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                 TaxInvoiceNo = data.TaxInvoiceNo,
                 TaxInvoiceDate = data.TaxInvoiceDate,
                 Notes = data.Notes,
-                Mark = data.Mark,
+                Mark = data.Memos.Sum(x => x.CreditMemoAmount) > 0 ? data.Total == data.Memos.Sum(x => x.CreditMemoAmount) ? "CMP" : "PP" : "A",
                 PaidAmount = data.Memos.Sum(x => x.CreditMemoAmount),
                 CreatedBy = data.CreatedBy,
                 CreatedDate = data.CreatedDate,
@@ -1666,6 +1666,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
 
             // Update Invoice header data
             data.PaidAmount = newMemos.Any() ? newMemos.Sum(x => x.CreditMemoAmount) : 0;
+            data.Mark = data.PaidAmount > 0 ? data.Total == data.PaidAmount ? "CMP" : "PP" : "A";
             Db.SalesInvoiceHeaders.Update(data);
             Db.Entry(data).Property(e => e.Code).IsModified = false;
             Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
@@ -1676,7 +1677,10 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
 
             // Credit Used
             if (!isOverLimit)
+            {
                 UpdateCreditUsed(data.CustCode, data.Total);
+                Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", data.Code);
+            }
 
             // Execute sp_update_stock_mutation_from_so
             Db.Database.ExecuteSqlRaw(
