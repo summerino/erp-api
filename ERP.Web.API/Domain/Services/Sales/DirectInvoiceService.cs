@@ -121,6 +121,12 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                 return result;
             }
 
+            if (data.Memos.Sum(x => x.CreditMemoAmount) > data.Total)
+            {
+                result.Message = "Data penjualan langsung tidak bisa diubah karena jumlah pembayaran lebih besar dari nilai faktur";
+                return result;
+            }
+
             var taxes = Db.Taxes.ToList();
             var promos = Db.PromoHeaders
                 .Select(x => new
@@ -833,7 +839,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
         using var transaction = Db.Database.BeginTransaction();
         try
         {
-            if (Db.SalesInvoiceHeaders.Any(x => x.Code == data.Code && x.Mark != "A"))
+            if (Db.SalesInvoiceHeaders.Any(x => x.Code == data.Code && x.Mark == "V"))
             {
                 result.Message = "Data penjualan langsung tidak bisa diubah karena status data bukan aktif.";
                 return result;
@@ -861,6 +867,12 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
             if (isDuplicate)
             {
                 result.Message = message;
+                return result;
+            }
+
+            if (data.Memos.Sum(x => x.CreditMemoAmount)> data.Total)
+            {
+                result.Message = "Data penjualan langsung tidak bisa diubah karena jumlah pembayaran lebih besar dari nilai faktur";
                 return result;
             }
 
