@@ -66,7 +66,8 @@ public class SalesInvoiceService : GeneralService<SalesInvoiceHeader>, ISalesInv
                 CreditMemoCode = d.Code,
                 d.Date,
                 Type = d.SrcTrans,
-                CreditMemoAmount = h.CreditMemoAmount
+                CreditMemoAmount = h.CreditMemoAmount,
+                Src = "CM"
             }).Union(from h in Db.SalesInvoiceCreditMemos
             join d in Db.BeginningBalanceCreditMemos on h.CreditMemoCode equals d.Code
             where h.InvCode == code
@@ -76,7 +77,8 @@ public class SalesInvoiceService : GeneralService<SalesInvoiceHeader>, ISalesInv
                 CreditMemoCode = d.Code,
                 d.Date,
                 d.Type,
-                CreditMemoAmount = h.CreditMemoAmount
+                CreditMemoAmount = h.CreditMemoAmount,
+                Src = "CM"
             });
 
         return data.ToDynamicList();
@@ -93,7 +95,8 @@ public class SalesInvoiceService : GeneralService<SalesInvoiceHeader>, ISalesInv
                         CreditMemoCode = d.Code,
                         d.Date,
                         h.CreditMemoAmount,
-                        h.CreditMemoTaxAmount
+                        h.CreditMemoTaxAmount,
+                        Src = "DP"
                     });
 
         return data.ToDynamicList();
@@ -119,6 +122,12 @@ public class SalesInvoiceService : GeneralService<SalesInvoiceHeader>, ISalesInv
                     (d.Mark != "A" || d.Date > data.Date)))
             {
                 result.Message = "Data faktur penjualan tidak bisa disimpan karena status surat jalan bukan aktif atau mempunyai tanggal lebih besar dari faktur.";
+                return result;
+            }
+
+            if (data.Memos.Sum(x => x.CreditMemoAmount) + data.SalesDownPayments.Sum(x => x.CreditMemoAmount) > data.Total)
+            {
+                result.Message = "Data faktur penjualan tidak bisa diubah karena jumlah pembayaran lebih besar dari nilai faktur";
                 return result;
             }
 
@@ -231,9 +240,9 @@ public class SalesInvoiceService : GeneralService<SalesInvoiceHeader>, ISalesInv
         try
         {
             // Checking mark header data
-            if (Db.SalesInvoiceHeaders.Any(x => x.Code == data.Code && x.Mark != "A"))
+            if (Db.SalesInvoiceHeaders.Any(x => x.Code == data.Code && x.Mark == "V"))
             {
-                result.Message = "Data faktur penjualan tidak bisa diubah karena status data bukan aktif.";
+                result.Message = "Data faktur penjualan tidak bisa diubah karena status data void.";
                 return result;
             }
 
@@ -369,6 +378,12 @@ public class SalesInvoiceService : GeneralService<SalesInvoiceHeader>, ISalesInv
 
             if (newDownPayments.Any())
                 Db.SalesInvoiceCreditMemos.AddRange(newDownPayments);
+
+            if ((newMemos.Any() ? newMemos.Sum(x => x.CreditMemoAmount) : 0) + (newDownPayments.Any() ? newDownPayments.Sum(x => x.CreditMemoAmount) : 0) > data.Total)
+            {
+                result.Message = "Data faktur penjualan tidak bisa diubah karena jumlah pembayaran lebih besar dari nilai faktur";
+                return result;
+            }
 
             // Update header data
             data.PaidAmount = (newMemos.Any() ? newMemos.Sum(x => x.CreditMemoAmount) : 0) + (newDownPayments.Any() ? newDownPayments.Sum(x => x.CreditMemoAmount) : 0);
