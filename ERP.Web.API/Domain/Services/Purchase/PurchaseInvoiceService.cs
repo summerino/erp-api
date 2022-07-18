@@ -111,6 +111,7 @@ public class PurchaseInvoiceService : GeneralService<PurchaseInvoiceHeader>, IPu
             // Insert header data
             data.Code = newCode;
             data.PaidAmount = data.Memos.Sum(x => x.DebitMemoAmount);
+            data.Mark = data.PaidAmount > 0 ? data.Total == data.PaidAmount ? "CMP" : "PP" : "A";
             Db.PurchaseInvoiceHeaders.Add(data);
 
             // Insert detail data
@@ -299,6 +300,7 @@ public class PurchaseInvoiceService : GeneralService<PurchaseInvoiceHeader>, IPu
 
             // Update header data
             data.PaidAmount = newMemos.Any() ? newMemos.Sum(x => x.DebitMemoAmount) : 0;
+            data.Mark = data.PaidAmount > 0 ? data.Total == data.PaidAmount ? "CMP" : "PP" : "A";
             Db.PurchaseInvoiceHeaders.Update(data);
             Db.Entry(data).Property(e => e.Code).IsModified = false;
             Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;
