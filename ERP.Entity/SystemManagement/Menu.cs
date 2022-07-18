@@ -39,4 +39,6 @@ public class MenuAction
     public int MenuId { get; set; }
 
     public int ActionId { get; set; }
+
+    public int Seq { get; set; }
 }

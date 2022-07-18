@@ -109,7 +109,7 @@ public class MenuService : GeneralService<Menu>, IMenuService
     {
         var data = Db.MenuActions.Where(x => x.MenuId == id);
 
-        return data.OrderBy(x => x.Id);
+        return data.OrderBy(x => x.Seq).ThenBy(x => x.ActionId);
     }
 
     private static IEnumerable<MenuNavigation> DefineChildNavigation(List<Menu> data, int? parentId = null)

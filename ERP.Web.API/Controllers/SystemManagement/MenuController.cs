@@ -1,6 +1,6 @@
 ﻿using System.Linq.Dynamic.Core;
-using ERP.Common.Models;
 using Microsoft.AspNetCore.Mvc;
+using ERP.Common.Models;
 using ERP.Entity;
 using ERP.Web.API.Domain.Interfaces.SystemManagement;
 using ERP.Web.API.Model;
@@ -58,7 +58,8 @@ public class MenuController : ControllerBase
             {
                 x.Id,
                 x.MenuId,
-                x.ActionId
+                x.ActionId,
+                x.Seq
             })
             .ToList<dynamic>();
 
@@ -78,7 +79,8 @@ public class MenuController : ControllerBase
                 x.Id,
                 x.Name,
                 IsActive = false,
-                IsChecked = false
+                IsChecked = false,
+                Seq = 1
             })
             .ToList<dynamic>();
 
