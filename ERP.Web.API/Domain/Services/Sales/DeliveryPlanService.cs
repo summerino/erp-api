@@ -221,9 +221,26 @@ public class DeliveryPlanService : GeneralService<DeliveryPlanHeader>, IDelivery
 
                             dlvHeader.SubTotal -= (sdDetail.NettPrice * uItem.Qty);
                             dlvHeader.TaxAmount -= (sdDetail.TaxAmount * uItem.Qty);
+                            dlvHeader.ExemptTaxAmount -= (sdDetail.ExemptTaxAmount * uItem.Qty);
                             dlvHeader.Total -= (sdDetail.NettPrice * uItem.Qty);
                             dlvHeader.Dpp -= (sdDetail.Dpp * uItem.Qty);
                             Db.SalesDeliveryHeaders.Update(dlvHeader);
+
+                            if (dlvHeader.FromDirectInvoice)
+                            {
+                                var soDetail = Db.SalesOrderDetails.FirstOrDefault(x => x.Code == item.TransCode && x.ItemId == uItem.ItemId && x.UnitId == uItem.UnitId);
+                                soDetail.Qty -= uItem.Qty;
+                                soDetail.Total -= (soDetail.NettPrice * uItem.Qty);
+                                Db.SalesOrderDetails.Update(soDetail);
+
+                                var soHeader = Db.SalesOrderHeaders.FirstOrDefault(x => x.Code == item.TransCode);
+                                soHeader.SubTotal -= (soDetail.NettPrice * uItem.Qty);
+                                soHeader.TaxAmount -= (soDetail.TaxAmount * uItem.Qty);
+                                soHeader.ExemptTaxAmount -= (soDetail.ExemptTaxAmount * uItem.Qty);
+                                soHeader.Total -= (soDetail.NettPrice * uItem.Qty);
+                                soHeader.Dpp -= (soDetail.Dpp * uItem.Qty);
+                                Db.SalesOrderHeaders.Update(soHeader);
+                            }
 
                             if (dlvHeader.Mark == "INV")
                             {
@@ -254,6 +271,13 @@ public class DeliveryPlanService : GeneralService<DeliveryPlanHeader>, IDelivery
 
                             sdDetail.Qty -= uItem.Qty;
                             Db.SalesDeliveryDetailFreeGoods.Update(sdDetail);
+
+                            if (dlvHeader.FromDirectInvoice)
+                            {
+                                var soDetail = Db.SalesOrderDetailFreeGoods.FirstOrDefault(x => x.Code == item.TransCode && x.ItemId == uItem.ItemId && x.UnitId == uItem.UnitId);
+                                soDetail.Qty -= uItem.Qty;
+                                Db.SalesOrderDetailFreeGoods.Update(soDetail);
+                            }
                         }
                     }
                 }
@@ -456,9 +480,26 @@ public class DeliveryPlanService : GeneralService<DeliveryPlanHeader>, IDelivery
 
                                 sdHeader.SubTotal -= (sdDetail.NettPrice * uItem.Qty);
                                 sdHeader.TaxAmount -= (sdDetail.TaxAmount * uItem.Qty);
+                                sdHeader.ExemptTaxAmount -= (sdDetail.ExemptTaxAmount * uItem.Qty);
                                 sdHeader.Total -= (sdDetail.NettPrice * uItem.Qty);
                                 sdHeader.Dpp -= (sdDetail.Dpp * uItem.Qty);
                                 Db.SalesDeliveryHeaders.Update(sdHeader);
+
+                                if (dlvHeader.FromDirectInvoice)
+                                {
+                                    var soDetail = Db.SalesOrderDetails.FirstOrDefault(x => x.Code == item.TransCode && x.ItemId == uItem.ItemId && x.UnitId == uItem.UnitId);
+                                    soDetail.Qty -= uItem.Qty;
+                                    soDetail.Total -= (soDetail.NettPrice * uItem.Qty);
+                                    Db.SalesOrderDetails.Update(soDetail);
+
+                                    var soHeader = Db.SalesOrderHeaders.FirstOrDefault(x => x.Code == item.TransCode);
+                                    soHeader.SubTotal -= (soDetail.NettPrice * uItem.Qty);
+                                    soHeader.TaxAmount -= (soDetail.TaxAmount * uItem.Qty);
+                                    soHeader.ExemptTaxAmount -= (soDetail.ExemptTaxAmount * uItem.Qty);
+                                    soHeader.Total -= (soDetail.NettPrice * uItem.Qty);
+                                    soHeader.Dpp -= (soDetail.Dpp * uItem.Qty);
+                                    Db.SalesOrderHeaders.Update(soHeader);
+                                }
 
                                 if (sdHeader.Mark == "INV")
                                 {
@@ -489,6 +530,13 @@ public class DeliveryPlanService : GeneralService<DeliveryPlanHeader>, IDelivery
 
                                 sdDetail.Qty -= uItem.Qty;
                                 Db.SalesDeliveryDetailFreeGoods.Update(sdDetail);
+
+                                if (dlvHeader.FromDirectInvoice)
+                                {
+                                    var soDetail = Db.SalesOrderDetailFreeGoods.FirstOrDefault(x => x.Code == item.TransCode && x.ItemId == uItem.ItemId && x.UnitId == uItem.UnitId);
+                                    soDetail.Qty -= uItem.Qty;
+                                    Db.SalesOrderDetailFreeGoods.Update(soDetail);
+                                }
                             }
                         }
                     }
