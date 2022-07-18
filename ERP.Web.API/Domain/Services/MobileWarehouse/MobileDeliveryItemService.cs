@@ -151,6 +151,13 @@ public class MobileDeliveryItemService : GeneralService<MobileDeliveryItemHeader
                                 if (doFreeData == null) continue;
                                 doFreeData.Qty -= qtyFailedtoSend;
                                 Db.SalesDeliveryDetailFreeGoods.Update(doFreeData);
+
+                                if (itemDoData.FromDirectInvoice)
+                                {
+                                    var soDetail = Db.SalesOrderDetailFreeGoods.FirstOrDefault(x => x.Code == itemDoData.TransCode && x.ItemId == itemDetail.ItemId && x.UnitId == itemDetail.UnitId);
+                                    soDetail.Qty -= qtyFailedtoSend;
+                                    Db.SalesOrderDetailFreeGoods.Update(soDetail);
+                                }
                             }
                             else
                             {
@@ -165,6 +172,22 @@ public class MobileDeliveryItemService : GeneralService<MobileDeliveryItemHeader
                                 itemDoData.Total -= (doDetailData.NettPrice * qtyFailedtoSend);
                                 itemDoData.Dpp -= (doDetailData.Dpp * qtyFailedtoSend);
                                 Db.SalesDeliveryHeaders.Update(itemDoData);
+
+                                if (itemDoData.FromDirectInvoice)
+                                {
+                                    var soDetail = Db.SalesOrderDetails.FirstOrDefault(x => x.Code == itemDoData.TransCode && x.ItemId == itemDetail.ItemId && x.UnitId == itemDetail.UnitId);
+                                    soDetail.Qty -= qtyFailedtoSend;
+                                    soDetail.Total -= (soDetail.NettPrice * qtyFailedtoSend);
+                                    Db.SalesOrderDetails.Update(soDetail);
+
+                                    var soHeader = Db.SalesOrderHeaders.FirstOrDefault(x => x.Code == itemDoData.TransCode);
+                                    soHeader.SubTotal -= (soDetail.NettPrice * qtyFailedtoSend);
+                                    soHeader.TaxAmount -= (soDetail.TaxAmount * qtyFailedtoSend);
+                                    soHeader.ExemptTaxAmount -= (soDetail.ExemptTaxAmount * qtyFailedtoSend);
+                                    soHeader.Total -= (soDetail.NettPrice * qtyFailedtoSend);
+                                    soHeader.Dpp -= (soDetail.Dpp * qtyFailedtoSend);
+                                    Db.SalesOrderHeaders.Update(soHeader);
+                                }
 
                                 Db.SaveChanges();
 
