@@ -744,7 +744,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                 TaxInvoiceNo = data.TaxInvoiceNo,
                 TaxInvoiceDate = data.TaxInvoiceDate,
                 Notes = data.Notes,
-                Mark = data.Memos.Sum(x => x.CreditMemoAmount) > 0 ? data.Total == data.Memos.Sum(x => x.CreditMemoAmount) ? "CMP" : "PP" : "A",
+                Mark = data.Mark == "OL" ? "OL" : data.Memos.Sum(x => x.CreditMemoAmount) > 0 ? data.Total == data.Memos.Sum(x => x.CreditMemoAmount) ? "CMP" : "PP" : "A",
                 PaidAmount = data.Memos.Sum(x => x.CreditMemoAmount),
                 CreatedBy = data.CreatedBy,
                 CreatedDate = data.CreatedDate,
@@ -1678,7 +1678,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
 
             // Update Invoice header data
             data.PaidAmount = newMemos.Any() ? newMemos.Sum(x => x.CreditMemoAmount) : 0;
-            data.Mark = data.PaidAmount > 0 ? data.Total == data.PaidAmount ? "CMP" : "PP" : "A";
+            data.Mark = data.Mark == "OL" ? "OL" : data.PaidAmount > 0 ? data.Total == data.PaidAmount ? "CMP" : "PP" : "A";
             Db.SalesInvoiceHeaders.Update(data);
             Db.Entry(data).Property(e => e.Code).IsModified = false;
             Db.Entry(data).Property(e => e.CreatedBy).IsModified = false;

@@ -512,6 +512,20 @@ public class SalesInvoiceService : GeneralService<SalesInvoiceHeader>, ISalesInv
 
                 if (data.FromDirectInvoice)
                 {
+                    var dataDO = Db.SalesDeliveryHeaders.Find(code);
+                    var dataSO = Db.SalesOrderHeaders.Find(code);
+
+                    dataDO.Mark = "V";
+                    dataDO.UpdatedBy = userId;
+                    dataDO.UpdatedDate = DateTime.Now;
+
+                    dataSO.Mark = "V";
+                    dataSO.UpdatedBy = userId;
+                    dataSO.UpdatedDate = DateTime.Now;
+
+                    // Save changes
+                    Db.SaveChanges();
+
                     // Decrease CreditUsed
                     UpdateCreditUsed(data.CustCode, data.Total);
 
