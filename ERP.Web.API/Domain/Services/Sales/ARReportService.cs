@@ -36,7 +36,7 @@ public class ARReportService : IARReportService
                             LEFT JOIN General.Employee e ON e.Id = so.SalesBy  
                             WHERE inv.Mark IN('A', 'PP', 'CMP')" + (slsId > 0 ? $" and so.SalesBy = {slsId} " : " ") + "").ToList();
 
-                var cbData = _db.GeneralCashBankHeaders.Where(x => x.Mark != "V" && (x.ChequeDate ?? x.Date) <= Convert.ToDateTime(date)).ToList();
+                var cbData = _db.GeneralCashBankHeaders.Where(x => !new[] { "V", "REJ" }.Contains(x.Mark) && (x.ChequeDate ?? x.Date) <= Convert.ToDateTime(date)).ToList();
 
                 var bbData = _db.VwBeginningBalanceARs.Where(x => x.IsActive && x.Date <= Convert.ToDateTime(date)).ToList();
 

@@ -42,7 +42,7 @@ namespace ERP.Web.API.Domain.Services.Sales
 								LEFT JOIN Finance.GeneralCashBankHeader cb_h ON cb_h.Code = cb_d.Code
 								LEFT JOIN Sales.SalesInvoiceHeader inv ON inv.Code = cb_d.TransCode
 								LEFT JOIN Sales.SalesOrderHeader so ON so.Code = inv.SOCode
-								WHERE cb_d.[Type] = 'AR' AND cb_h.Mark <> 'V' AND cb_d.Src = 'SI'
+								WHERE cb_d.[Type] = 'AR' AND cb_h.Mark NOT IN ('V', 'REJ') AND cb_d.Src = 'SI'
 								UNION
 								SELECT
 									ISNULL(cb_h.ChequeDate, cb_h.[Date]) AS [Date], cb_d.Code, 'Kd. Saldo Awal Hutang: ' + cb_d.TransCode AS Notes, ar.CustCode, CAST(0 as bigint) AS SalesId, 
@@ -50,7 +50,7 @@ namespace ERP.Web.API.Domain.Services.Sales
 								FROM Finance.GeneralCashBankDetail cb_d
 								LEFT JOIN Finance.GeneralCashBankHeader cb_h ON cb_h.Code = cb_d.Code
 								LEFT JOIN Accounting.BeginningBalanceAR ar ON ar.Code = cb_d.TransCode
-								WHERE cb_d.[Type] = 'AR' AND cb_h.Mark <> 'V' AND cb_d.Src = 'BB'
+								WHERE cb_d.[Type] = 'AR' AND cb_h.Mark NOT IN ('V', 'REJ') AND cb_d.Src = 'BB'
 								UNION
 								SELECT
 									cm.[Date], cm.Code, 'Kd. Faktur: ' + si_cm.InvCode AS Notes, inv.CustCode, so.SalesBy AS SalesId,
