@@ -230,6 +230,7 @@ public class DeliveryPlanService : GeneralService<DeliveryPlanHeader>, IDelivery
                             {
                                 var soDetail = Db.SalesOrderDetails.FirstOrDefault(x => x.Code == item.TransCode && x.ItemId == uItem.ItemId && x.UnitId == uItem.UnitId);
                                 soDetail.Qty -= uItem.Qty;
+                                soDetail.QtyDlv -= uItem.Qty;
                                 soDetail.Total -= (soDetail.NettPrice * uItem.Qty);
                                 Db.SalesOrderDetails.Update(soDetail);
 
@@ -276,6 +277,7 @@ public class DeliveryPlanService : GeneralService<DeliveryPlanHeader>, IDelivery
                             {
                                 var soDetail = Db.SalesOrderDetailFreeGoods.FirstOrDefault(x => x.Code == item.TransCode && x.ItemId == uItem.ItemId && x.UnitId == uItem.UnitId);
                                 soDetail.Qty -= uItem.Qty;
+                                soDetail.QtyClosed -= uItem.Qty;
                                 Db.SalesOrderDetailFreeGoods.Update(soDetail);
                             }
                         }
@@ -489,6 +491,7 @@ public class DeliveryPlanService : GeneralService<DeliveryPlanHeader>, IDelivery
                                 {
                                     var soDetail = Db.SalesOrderDetails.FirstOrDefault(x => x.Code == item.TransCode && x.ItemId == uItem.ItemId && x.UnitId == uItem.UnitId);
                                     soDetail.Qty -= uItem.Qty;
+                                    soDetail.QtyDlv -= uItem.Qty;
                                     soDetail.Total -= (soDetail.NettPrice * uItem.Qty);
                                     Db.SalesOrderDetails.Update(soDetail);
 
@@ -535,6 +538,7 @@ public class DeliveryPlanService : GeneralService<DeliveryPlanHeader>, IDelivery
                                 {
                                     var soDetail = Db.SalesOrderDetailFreeGoods.FirstOrDefault(x => x.Code == item.TransCode && x.ItemId == uItem.ItemId && x.UnitId == uItem.UnitId);
                                     soDetail.Qty -= uItem.Qty;
+                                    soDetail.QtyClosed -= uItem.Qty;
                                     Db.SalesOrderDetailFreeGoods.Update(soDetail);
                                 }
                             }
