@@ -127,7 +127,7 @@ public class SalesInvoiceService : GeneralService<SalesInvoiceHeader>, ISalesInv
 
             if (data.Memos.Sum(x => x.CreditMemoAmount) + data.SalesDownPayments.Sum(x => x.CreditMemoAmount) > data.Total)
             {
-                result.Message = "Data faktur penjualan tidak bisa diubah karena jumlah pembayaran lebih besar dari nilai faktur";
+                result.Message = "Data faktur penjualan tidak bisa disimpan karena jumlah pembayaran lebih besar dari nilai faktur";
                 return result;
             }
 

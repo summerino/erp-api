@@ -89,7 +89,7 @@ public class PurchaseInvoiceService : GeneralService<PurchaseInvoiceHeader>, IPu
         try
         {
             // Checking purchase order mark
-            if (IsPurchaseOrderInvalid(data.PoCode) && data.Mark != "A")
+            if (IsPurchaseOrderInvalid(data.PoCode))
             {
                 result.Message = "Data faktur pembelian tidak bisa disimpan karena status order pembelian bukan diterima sebagian atau selesai.";
                 return result;
@@ -102,6 +102,12 @@ public class PurchaseInvoiceService : GeneralService<PurchaseInvoiceHeader>, IPu
                     (pr.Mark != "A" || pr.Date > data.Date)))
             {
                 result.Message = "Data faktur pembelian tidak bisa disimpan karena status penerimaan pembelian bukan aktif atau mempunyai tanggal lebih besar dari faktur.";
+                return result;
+            }
+
+            if (data.Memos.Sum(x => x.DebitMemoAmount) > data.Total)
+            {
+                result.Message = "Data faktur pembelian tidak bisa disimpan karena jumlah pembayaran lebih besar dari nilai faktur";
                 return result;
             }
 
@@ -186,9 +192,9 @@ public class PurchaseInvoiceService : GeneralService<PurchaseInvoiceHeader>, IPu
         try
         {
             // Checking mark header data
-            if (Db.PurchaseInvoiceHeaders.Any(x => x.Code == data.Code && x.Mark != "A"))
+            if (Db.PurchaseInvoiceHeaders.Any(x => x.Code == data.Code && x.Mark == "V"))
             {
-                result.Message = "Data faktur pembelian tidak bisa diubah karena status data bukan aktif.";
+                result.Message = "Data faktur pembelian tidak bisa diubah karena status data void.";
                 return result;
             }
 
@@ -209,6 +215,12 @@ public class PurchaseInvoiceService : GeneralService<PurchaseInvoiceHeader>, IPu
                      pr.Date > data.Date)))
             {
                 result.Message = "Data faktur pembelian tidak bisa diubah karena status penerimaan pembelian sudah ditandai sebagai void atau mempunyai tanggal lebih besar dari faktur.";
+                return result;
+            }
+
+            if (data.Memos.Sum(x => x.DebitMemoAmount) > data.Total)
+            {
+                result.Message = "Data faktur pembelian tidak bisa diubah karena jumlah pembayaran lebih besar dari nilai faktur";
                 return result;
             }
 
