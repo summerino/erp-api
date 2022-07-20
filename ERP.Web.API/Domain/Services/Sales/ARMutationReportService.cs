@@ -55,7 +55,7 @@ public class ARMutationReportService : IARMutationReportService
 
         var dlvData = _db.ReportByDeliveryARMutations.FromSqlRaw(query + (slsId > 0 ? $" AND so.SalesBy = {slsId} " : " ") + "").ToList();
 
-        var cbData = _db.GeneralCashBankHeaders.Where(x => x.Mark != "V").ToList();
+        var cbData = _db.GeneralCashBankHeaders.Where(x => !new[] { "V", "REJ" }.Contains(x.Mark)).ToList();
 
         var bbData = _db.VwBeginningBalanceARs.Where(x => x.IsActive).ToList();
 
