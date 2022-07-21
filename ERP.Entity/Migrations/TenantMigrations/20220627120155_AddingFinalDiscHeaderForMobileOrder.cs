@@ -413,7 +413,7 @@ BEGIN TRY
 	SELECT WarehouseCode, ItemId, BaseQty, [Type], UnitId
 	INTO #tmp_wq
 	FROM Inventory.StockMutation
-	WHERE RefCode1 = @code
+	WHERE RefCode1 = @code AND Src = 'DO'
 
 	DECLARE @Qty decimal
 	DECLARE @WHId varchar(max)
