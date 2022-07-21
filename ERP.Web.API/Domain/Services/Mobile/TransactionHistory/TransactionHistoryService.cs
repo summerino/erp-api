@@ -25,23 +25,26 @@ public class TransactionHistoryService : ITransactionHistoryService
         var salesId = Db.Users.Where(x => x.Id.Equals(userId)).Select(x => x.EmployeeId).FirstOrDefault();
         string[] SOMarkIn = new string[] { "A", "PS", "CMP" }; // Active, PS, Complete
 
-        var dataMobile = (from so in Db.VwMobileOrderHeaders.Where(x => x.SalesOrderCode.Equals(null) && x.SalesBy.Equals(salesId) && x.Mark != "REJ")
-                          group new { so } by new
+        var dataMobile = (from mo in Db.VwMobileOrderHeaders.Where(x => x.SalesOrderCode.Equals(null) && x.SalesBy.Equals(salesId) && x.Mark != "REJ")
+                          join mod in Db.VwMobileOrderDetails on mo.Code equals mod.Code
+                          group new { mo, mod } by new
                           {
-                              so.CustCode,
-                              so.SalesBy,
-                              so.Date
+                              mo.CustCode,
+                              mo.SalesBy,
+                              mo.Date
                           } into g
                           select new TransactionHistoryByCustomer
                           {
                               SalesId = g.Key.SalesBy,
                               Date = g.Key.Date,
                               CustomerId = g.Key.CustCode,
-                              Total = g.Sum(tl => tl.so.SubTotal)
+                              Total = g.Sum(tl => tl.mod.NettPrice * tl.mod.Qty)
+                              //Total = g.Sum(tl => tl.sod.SubTotal)
                           }).ToList();
 
         var dataOrder = (from so in Db.VwSalesOrderHeaders.Where(x => x.SalesBy.Equals(salesId) && SOMarkIn.Contains(x.Mark))
-                         group new { so } by new
+                         join sod in Db.VwMobileOrderDetails on so.Code equals sod.Code
+                         group new { so, sod } by new
                          {
                              so.CustCode,
                              so.SalesBy,
@@ -52,12 +55,12 @@ public class TransactionHistoryService : ITransactionHistoryService
                              SalesId = g.Key.SalesBy,
                              Date = g.Key.Date,
                              CustomerId = g.Key.CustCode,
-                             Total = g.Sum(tl => tl.so.SubTotal)
+                             Total = g.Sum(tl => tl.sod.NettPrice * tl.sod.Qty)
                          }).ToList();
 
         var dataClose = (from so in Db.VwSalesOrderHeaders.Where(x => x.Mark.Equals("CLS") && x.SalesBy.Equals(salesId))
                          join sod in Db.VwSalesOrderDetails.Where(x => x.QtyDlv > 0) on so.Code equals sod.Code
-                         group new { so } by new
+                         group new { so, sod } by new
                          {
                              so.CustCode,
                              so.SalesBy,
@@ -68,7 +71,7 @@ public class TransactionHistoryService : ITransactionHistoryService
                              SalesId = g.Key.SalesBy,
                              Date = g.Key.Date,
                              CustomerId = g.Key.CustCode,
-                             Total = g.Sum(tl => tl.so.SubTotal)
+                             Total = g.Sum(tl => tl.sod.NettPrice * tl.sod.QtyDlv ?? 0)
                          }).ToList();
 
         var data = (from so in dataOrder.Union(dataMobile).Union(dataClose)
@@ -140,7 +143,8 @@ public class TransactionHistoryService : ITransactionHistoryService
                               Discount = g.Sum(dc => dc.sod.Disc + dc.sod.FinalDiscHeader),
                               TaxAmount = g.Sum(tx => tx.sod.TaxAmount),
                               ExemptTaxAmount = g.Sum(etx => etx.sod.ExemptTaxAmount),
-                              Total = g.Sum(tl => tl.sod.Total)
+                              Total = g.Sum(tl => tl.sod.NettPrice * tl.sod.Qty)
+                              //Total = g.Sum(tl => tl.sod.Total)
                           }).ToList();
 
         var dataOrder = (from so in Db.VwSalesOrderHeaders.Where(x => SOMarkIn.Contains(x.Mark) && x.SalesBy.Equals(salesId))
@@ -171,7 +175,8 @@ public class TransactionHistoryService : ITransactionHistoryService
                              Discount = g.Sum(dc => dc.sod.Disc + dc.sod.FinalDiscHeader),
                              TaxAmount = g.Sum(tx => tx.sod.TaxAmount),
                              ExemptTaxAmount = g.Sum(etx => etx.sod.ExemptTaxAmount),
-                             Total = g.Sum(tl => tl.sod.Total)
+                             Total = g.Sum(tl => tl.sod.NettPrice * tl.sod.Qty)
+                             //Total = g.Sum(tl => tl.sod.Total)
                          }).ToList();
 
         var dataClose = (from so in Db.VwSalesOrderHeaders.Where(x => x.Mark.Equals("CLS") && x.SalesBy.Equals(salesId))
@@ -202,7 +207,8 @@ public class TransactionHistoryService : ITransactionHistoryService
                              Discount = g.Sum(dc => dc.sod.Disc + dc.sod.FinalDiscHeader),
                              TaxAmount = g.Sum(tx => tx.sod.TaxAmount),
                              ExemptTaxAmount = g.Sum(etx => etx.sod.ExemptTaxAmount),
-                             Total = g.Sum(tl => tl.sod.Total)
+                             Total = g.Sum(tl => tl.sod.NettPrice * tl.sod.QtyDlv ?? 0)
+                             //Total = g.Sum(tl => tl.sod.Total)
                          }).ToList();
 
         var data = (from so in dataOrder.Union(dataMobile).Union(dataClose)
@@ -273,7 +279,8 @@ public class TransactionHistoryService : ITransactionHistoryService
                               ItemName = g.Key.ItemName,
                               Quantity = g.Sum(qt => qt.sod.Qty),
                               Unit = g.Key.UnitEquivalent,
-                              Total = g.Sum(tl => tl.sod.Total)
+                              Total = g.Sum(tl => tl.sod.NettPrice * tl.sod.Qty)
+                              //Total = g.Sum(tl => tl.sod.Total)
                           }).ToList();
 
         var dataOrder = (from so in Db.VwSalesOrderHeaders.Where(x => SOMarkIn.Contains(x.Mark) && x.SalesBy.Equals(salesId))
@@ -300,7 +307,8 @@ public class TransactionHistoryService : ITransactionHistoryService
                              ItemName = g.Key.ItemName,
                              Quantity = g.Sum(qt => qt.sod.Qty),
                              Unit = g.Key.UnitEquivalent,
-                             Total = g.Sum(tl => tl.sod.Total)
+                             Total = g.Sum(tl => tl.sod.NettPrice * tl.sod.Qty)
+                             //Total = g.Sum(tl => tl.sod.Total)
                          }).ToList();
 
         var dataClose = (from so in Db.VwSalesOrderHeaders.Where(x => x.Mark.Equals("CLS") && x.SalesBy.Equals(salesId))
@@ -327,7 +335,8 @@ public class TransactionHistoryService : ITransactionHistoryService
                              ItemName = g.Key.ItemName,
                              Quantity = g.Sum(qt => qt.sod.QtyDlv ?? 0),
                              Unit = g.Key.UnitEquivalent,
-                             Total = g.Sum(tl => tl.sod.Total)
+                             Total = g.Sum(tl => tl.sod.NettPrice * tl.sod.QtyDlv ?? 0)
+                             //Total = g.Sum(tl => tl.sod.Total)
                          }).ToList();
 
         var data = (from so in dataOrder.Union(dataMobile).Union(dataClose)
@@ -371,7 +380,8 @@ public class TransactionHistoryService : ITransactionHistoryService
         string[] SOMarkIn = new string[] { "A", "PS", "CMP" }; // Active, PS, Complete
 
         var dataMobile = (from so in Db.MobileOrderHeaders.Where(x => x.SalesOrderCode.Equals(null) && x.SalesBy.Equals(salesId) && x.Mark != "REJ")
-                          group so by new
+                          join sod in Db.MobileOrderDetails on so.Code equals sod.Code
+                          group new { so, sod } by new
                           {
                               so.SalesBy,
                               so.Date
@@ -380,11 +390,13 @@ public class TransactionHistoryService : ITransactionHistoryService
                           {
                               SalesId = g.Key.SalesBy,
                               Date = g.Key.Date,
-                              Total = g.Sum(tl => tl.SubTotal)
+                              Total = g.Sum(tl => tl.sod.NettPrice * tl.sod.Qty)
+                              //Total = g.Sum(tl => tl.SubTotal)
                           }).ToList();
 
         var dataOrder = (from so in Db.SalesOrderHeaders.Where(x => x.SalesBy.Equals(salesId) && SOMarkIn.Contains(x.Mark))
-                         group so by new
+                         join sod in Db.VwSalesOrderDetails on so.Code equals sod.Code
+                         group new { so, sod } by new
                          {
                              so.SalesBy,
                              so.Date
@@ -393,12 +405,13 @@ public class TransactionHistoryService : ITransactionHistoryService
                          {
                              SalesId = g.Key.SalesBy,
                              Date = g.Key.Date,
-                             Total = g.Sum(tl => tl.SubTotal)
+                             Total = g.Sum(tl => tl.sod.NettPrice * tl.sod.Qty)
+                             //Total = g.Sum(tl => tl.SubTotal)
                          }).ToList();
 
         var dataClose = (from so in Db.SalesOrderHeaders.Where(x => x.SalesBy.Equals(salesId) && x.Mark.Equals("CLS"))
                          join sod in Db.VwSalesOrderDetails.Where(x => x.QtyDlv > 0) on so.Code equals sod.Code
-                         group so by new
+                         group new { so, sod } by new
                          {
                              so.SalesBy,
                              so.Date
@@ -407,7 +420,8 @@ public class TransactionHistoryService : ITransactionHistoryService
                          {
                              SalesId = g.Key.SalesBy,
                              Date = g.Key.Date,
-                             Total = g.Sum(tl => tl.SubTotal)
+                             Total = g.Sum(tl => tl.sod.NettPrice * tl.sod.QtyDlv ?? 0)
+                             //Total = g.Sum(tl => tl.SubTotal)
                          }).ToList();
 
 
@@ -535,82 +549,6 @@ public class TransactionHistoryService : ITransactionHistoryService
                               join i in itemData on sod.ItemId equals i.Id
                               join uom in uomData on sod.UnitId equals uom.Id
                               join u in uomBase on uom.UomId equals u.UomId
-                              group new { so, sod, i, uom } by new
-                              {
-                                  so.SalesBy,
-                                  so.Date,
-                                  sod.ItemId,
-                                  i.Initial,
-                                  i.Name,
-                                  sod.UomId,
-                                  uom.Id,
-                                  sod.UnitId,
-                                  uom.UnitEquivalent,
-                                  uom.Seq,
-                                  BaseSeq = u.Seq,
-                                  uom.Conversion,
-                              } into g
-                              select new TransactionHistoryByUnitProduct
-                              {
-                                  SalesId = g.Key.SalesBy,
-                                  Date = g.Key.Date,
-                                  ItemId = g.Key.ItemId,
-                                  ItemInitial = g.Key.Initial,
-                                  ItemName = g.Key.Name,
-                                  Quantity = g.Sum(qt => qt.sod.Qty),
-                                  UomId = g.Key.UomId,
-                                  UomToConvertId = g.Key.Id,
-                                  UnitId = g.Key.UnitId,
-                                  Unit = g.Key.UnitEquivalent,
-                                  CurrentSeq = g.Key.Seq,
-                                  BaseSeq = g.Key.BaseSeq,
-                                  Conversion = g.Key.Conversion,
-                                  Total = g.Sum(tl => tl.sod.Total)
-                              }).ToList();
-
-            var orderData = (from so in Db.SalesOrderHeaders.Where(x => x.SalesBy.Equals(salesId) && SOMarkIn.Contains(x.Mark))
-                             join sod in Db.SalesOrderDetails on so.Code equals sod.Code
-                             join i in itemData on sod.ItemId equals i.Id
-                             join uom in uomData on sod.UnitId equals uom.Id
-                             join u in uomBase on uom.UomId equals u.UomId
-                             group new { so, sod, i, uom } by new
-                             {
-                                 so.SalesBy,
-                                 so.Date,
-                                 sod.ItemId,
-                                 i.Initial,
-                                 i.Name,
-                                 sod.UomId,
-                                 uom.Id,
-                                 sod.UnitId,
-                                 uom.UnitEquivalent,
-                                 uom.Seq,
-                                 BaseSeq = u.Seq,
-                                 uom.Conversion,
-                             } into g
-                             select new TransactionHistoryByUnitProduct
-                             {
-                                 SalesId = g.Key.SalesBy,
-                                 Date = g.Key.Date,
-                                 ItemId = g.Key.ItemId,
-                                 ItemInitial = g.Key.Initial,
-                                 ItemName = g.Key.Name,
-                                 Quantity = g.Sum(qt => qt.sod.Qty),
-                                 UomId = g.Key.UomId,
-                                 UomToConvertId = g.Key.Id,
-                                 UnitId = g.Key.UnitId,
-                                 Unit = g.Key.UnitEquivalent,
-                                 CurrentSeq = g.Key.Seq,
-                                 BaseSeq = g.Key.BaseSeq,
-                                 Conversion = g.Key.Conversion,
-                                 Total = g.Sum(tl => tl.sod.Total)
-                             }).ToList();
-
-            var orderClose = (from so in Db.SalesOrderHeaders.Where(x => x.SalesBy.Equals(salesId) && x.Mark.Equals("CLS"))
-                              join sod in Db.SalesOrderDetails.Where(x => x.QtyDlv > 0) on so.Code equals sod.Code
-                              join i in itemData on sod.ItemId equals i.Id
-                              join uom in uomData on sod.UnitId equals uom.Id
-                              join u in uomBase on uom.UomId equals u.UomId
                               select new TransactionHistoryByUnitProduct
                               {
                                   SalesId = so.SalesBy,
@@ -626,7 +564,56 @@ public class TransactionHistoryService : ITransactionHistoryService
                                   CurrentSeq = uom.Seq,
                                   BaseSeq = u.Seq,
                                   Conversion = uom.Conversion,
-                                  Total = sod.Total
+                                  Total = (sod.NettPrice * sod.Qty)
+                                  //Total = g.Sum(tl => tl.sod.Total)
+                              }).ToList();
+
+            var orderData = (from so in Db.SalesOrderHeaders.Where(x => x.SalesBy.Equals(salesId) && SOMarkIn.Contains(x.Mark))
+                             join sod in Db.SalesOrderDetails on so.Code equals sod.Code
+                             join i in itemData on sod.ItemId equals i.Id
+                             join uom in uomData on sod.UnitId equals uom.Id
+                             join u in uomBase on uom.UomId equals u.UomId
+                             select new TransactionHistoryByUnitProduct
+                             {
+                                 SalesId = so.SalesBy,
+                                 Date = so.Date,
+                                 ItemId = sod.ItemId,
+                                 ItemInitial = i.Initial,
+                                 ItemName = i.Name,
+                                 Quantity = sod.Qty,
+                                 UomId = sod.UomId,
+                                 UomToConvertId = uom.Id,
+                                 UnitId = sod.UnitId,
+                                 Unit = uom.UnitEquivalent,
+                                 CurrentSeq = uom.Seq,
+                                 BaseSeq = u.Seq,
+                                 Conversion = uom.Conversion,
+                                 Total = (sod.NettPrice * sod.Qty)
+                                 //Total = g.Sum(tl => tl.sod.Total)
+                             }).ToList();
+
+            var orderClose = (from so in Db.SalesOrderHeaders.Where(x => x.SalesBy.Equals(salesId) && x.Mark.Equals("CLS"))
+                              join sod in Db.SalesOrderDetails.Where(x => x.QtyDlv > 0) on so.Code equals sod.Code
+                              join i in itemData on sod.ItemId equals i.Id
+                              join uom in uomData on sod.UnitId equals uom.Id
+                              join u in uomBase on uom.UomId equals u.UomId
+                              select new TransactionHistoryByUnitProduct
+                              {
+                                  SalesId = so.SalesBy,
+                                  Date = so.Date,
+                                  ItemId = sod.ItemId,
+                                  ItemInitial = i.Initial,
+                                  ItemName = i.Name,
+                                  Quantity = sod.QtyDlv ?? 0,
+                                  UomId = sod.UomId,
+                                  UomToConvertId = uom.Id,
+                                  UnitId = sod.UnitId,
+                                  Unit = uom.UnitEquivalent,
+                                  CurrentSeq = uom.Seq,
+                                  BaseSeq = u.Seq,
+                                  Conversion = uom.Conversion,
+                                  Total = (sod.NettPrice * sod.QtyDlv ?? 0)
+                                  //Total = sod.Total
                               }).ToList();
 
             var resultData = (from so in orderData.Union(mobileData).Union(orderClose)
@@ -780,7 +767,8 @@ public class TransactionHistoryService : ITransactionHistoryService
                                   CurrentSeq = uom.Seq,
                                   BaseSeq = u.Seq,
                                   Conversion = uom.Conversion,
-                                  Total = sod.Total
+                                  Total = (sod.NettPrice * sod.Qty)
+                                  //Total = sod.Total
                               }).ToList();
 
             var orderData = (from so in Db.SalesOrderHeaders.Where(x => x.SalesBy.Equals(salesId) && SOMarkIn.Contains(x.Mark))
@@ -803,7 +791,8 @@ public class TransactionHistoryService : ITransactionHistoryService
                                  CurrentSeq = uom.Seq,
                                  BaseSeq = u.Seq,
                                  Conversion = uom.Conversion,
-                                 Total = sod.Total
+                                 Total = (sod.NettPrice * sod.Qty)
+                                 //Total = sod.Total
                              }).ToList();
 
             var orderClose = (from so in Db.SalesOrderHeaders.Where(x => x.SalesBy.Equals(salesId) && x.Mark.Equals("CLS"))
@@ -818,7 +807,7 @@ public class TransactionHistoryService : ITransactionHistoryService
                                   ItemId = sod.ItemId,
                                   ItemInitial = i.Initial,
                                   ItemName = i.Name,
-                                  Quantity = sod.Qty,
+                                  Quantity = sod.QtyDlv ?? 0,
                                   UomId = sod.UomId,
                                   UomToConvertId = uom.Id,
                                   UnitId = sod.UnitId,
@@ -826,7 +815,8 @@ public class TransactionHistoryService : ITransactionHistoryService
                                   CurrentSeq = uom.Seq,
                                   BaseSeq = u.Seq,
                                   Conversion = uom.Conversion,
-                                  Total = sod.Total
+                                  Total = (sod.NettPrice * sod.QtyDlv ?? 0)
+                                  //Total = sod.Total
                               }).ToList();
 
             var resultData = (from so in orderData.Union(mobileData).Union(orderClose)
@@ -967,6 +957,21 @@ public class TransactionHistoryService : ITransactionHistoryService
                               join i in itemData on sod.ItemId equals i.Id
                               join uom in uomData on sod.UnitId equals uom.Id
                               join u in uomSell on uom.UomId equals u.UomId
+                              //group new { so, sod, i, uom, u } by new
+                              //{
+                              //    so.SalesBy,
+                              //    so.Date,
+                              //    sod.ItemId,
+                              //    i.Initial,
+                              //    i.Name,
+                              //    sod.UomId,
+                              //    uom.Id,
+                              //    sod.UnitId,
+                              //    uom.UnitEquivalent,
+                              //    uom.Seq,
+                              //    BaseSeq = u.Seq,
+                              //    uom.Conversion,
+                              //} into g
                               select new TransactionHistoryByUnitProduct
                               {
                                   SalesId = so.SalesBy,
@@ -982,7 +987,8 @@ public class TransactionHistoryService : ITransactionHistoryService
                                   CurrentSeq = uom.Seq,
                                   BaseSeq = u.Seq,
                                   Conversion = uom.Conversion,
-                                  Total = sod.Total
+                                  Total = (sod.NettPrice * sod.Qty)
+                                  //Total = sod.Total
                               }).ToList();
 
             var orderData = (from so in Db.SalesOrderHeaders.Where(x => x.SalesBy.Equals(salesId) && SOMarkIn.Contains(x.Mark))
@@ -1005,7 +1011,8 @@ public class TransactionHistoryService : ITransactionHistoryService
                                  CurrentSeq = uom.Seq,
                                  BaseSeq = u.Seq,
                                  Conversion = uom.Conversion,
-                                 Total = sod.Total
+                                 Total = (sod.NettPrice * sod.Qty)
+                                 //Total = sod.Total
                              }).ToList();
 
             var orderClose = (from so in Db.SalesOrderHeaders.Where(x => x.SalesBy.Equals(salesId) && x.Mark.Equals("CLS"))
@@ -1020,7 +1027,7 @@ public class TransactionHistoryService : ITransactionHistoryService
                                   ItemId = sod.ItemId,
                                   ItemInitial = i.Initial,
                                   ItemName = i.Name,
-                                  Quantity = sod.Qty,
+                                  Quantity = sod.QtyDlv ?? 0,
                                   UomId = sod.UomId,
                                   UomToConvertId = uom.Id,
                                   UnitId = sod.UnitId,
@@ -1028,7 +1035,8 @@ public class TransactionHistoryService : ITransactionHistoryService
                                   CurrentSeq = uom.Seq,
                                   BaseSeq = u.Seq,
                                   Conversion = uom.Conversion,
-                                  Total = sod.Total
+                                  Total = (sod.NettPrice * sod.QtyDlv ?? 0)
+                                  //Total = sod.Total
                               }).ToList();
 
             var resultData = (from so in orderData.Union(mobileData).Union(orderClose)
@@ -1165,24 +1173,28 @@ public class TransactionHistoryService : ITransactionHistoryService
                                                                       x.SalesOrderCode.Equals(null) &&
                                                                       x.SalesBy.Equals(salesId) &&
                                                                       x.Mark != "REJ").AsEnumerable()
-                          group so by new { so.Date.Year, so.Date.Month } into g
+                          join sod in Db.MobileOrderDetails on so.Code equals sod.Code
+                          group new { so, sod } by new { so.Date.Year, so.Date.Month } into g
                           select new TransactionCumulative
                           {
                               MonthInt = g.Key.Month,
                               Month = GetMonth(g.Key.Month),
-                              Total = g.Sum(x => x.Total)
+                              Total = g.Sum(tl => tl.sod.NettPrice * tl.sod.Qty)
+                              //Total = g.Sum(x => x.Total)
                           }).OrderBy(x => x.MonthInt).ToList();
 
         var dataOrder = (from so in Db.SalesOrderHeaders.Where(x => x.Date.Year.Equals(year) &&
                                                                     x.CustCode.Equals(custCode) &&
                                                                     x.SalesBy.Equals(salesId) &&
                                                                     SOMarkIn.Contains(x.Mark)).AsEnumerable()
-                         group so by new { so.Date.Year, so.Date.Month } into g
+                         join sod in Db.SalesOrderDetails on so.Code equals sod.Code
+                         group new { so, sod } by new { so.Date.Year, so.Date.Month } into g
                          select new TransactionCumulative
                          {
                              MonthInt = g.Key.Month,
                              Month = GetMonth(g.Key.Month),
-                             Total = g.Sum(x => x.Total)
+                             Total = g.Sum(tl => tl.sod.NettPrice * tl.sod.Qty)
+                             //Total = g.Sum(x => x.Total)
                          }).OrderBy(x => x.MonthInt).ToList();
 
         var dataClose = (from so in Db.SalesOrderHeaders.Where(x => x.Date.Year.Equals(year) &&
@@ -1190,12 +1202,13 @@ public class TransactionHistoryService : ITransactionHistoryService
                                                                     x.SalesBy.Equals(salesId) &&
                                                                     x.Mark.Equals("CLS")).AsEnumerable()
                          join sod in Db.VwSalesOrderDetails.Where(x => x.QtyDlv > 0) on so.Code equals sod.Code
-                         group so by new { so.Date.Year, so.Date.Month } into g
+                         group new { so, sod } by new { so.Date.Year, so.Date.Month } into g
                          select new TransactionCumulative
                          {
                              MonthInt = g.Key.Month,
                              Month = GetMonth(g.Key.Month),
-                             Total = g.Sum(x => x.Total)
+                             Total = g.Sum(tl => tl.sod.NettPrice * tl.sod.QtyDlv ?? 0)
+                             //Total = g.Sum(x => x.Total)
                          }).OrderBy(x => x.MonthInt).ToList();
 
         var data = (from so in dataOrder.Union(dataMobile).Union(dataClose).AsEnumerable()
@@ -1236,26 +1249,30 @@ public class TransactionHistoryService : ITransactionHistoryService
         string[] SOMarkIn = new string[] { "A", "PS", "CMP" }; // Active, PS, Complete
 
         var dataMobile = (from so in Db.MobileOrderHeaders.Where(x => x.SalesBy.Equals(salesId) && x.CustCode.Equals(custCode) && x.SalesOrderCode.Equals(null) && x.Mark != "REJ")
+                          join sod in Db.MobileOrderDetails on so.Code equals sod.Code
                           join log in Db.MobileVisitLogs on so.VisitLogCode equals log.Code
-                          group new { so, log } by new { so.Date, log.StartTime } into g
+                          group new { so, sod, log } by new { so.Date, log.StartTime } into g
                           select new TransactionIndividual
                           {
                               Date = g.Key.Date,
                               Time = g.Key.StartTime,
-                              Total = g.Sum(x => x.so.Total)
+                              Total = g.Sum(tl => tl.sod.NettPrice * tl.sod.Qty)
+                              //Total = g.Sum(x => x.so.Total)
                           }).OrderBy(x => x.Date).ToList();
 
         var dataOrder = (from so in Db.SalesOrderHeaders.Where(x => x.SalesBy.Equals(salesId) && x.CustCode.Equals(custCode) && SOMarkIn.Contains(x.Mark))
+                         join sod in Db.SalesOrderDetails on so.Code equals sod.Code
                          join sm in Db.MobileOrderHeaders on so.Code equals sm.SalesOrderCode into or
                          from p in or.DefaultIfEmpty()
                          join log in Db.MobileVisitLogs on p.VisitLogCode equals log.Code into ot
                          from q in ot.DefaultIfEmpty()
-                         group new { so, p, q } by new { so.Date, Time = q.StartTime ?? null } into g
+                         group new { so, sod, p, q } by new { so.Date, Time = q.StartTime ?? null } into g
                          select new TransactionIndividual
                          {
                              Date = g.Key.Date,
                              Time = g.Key.Time,
-                             Total = g.Sum(x => x.so.Total)
+                             Total = g.Sum(tl => tl.sod.NettPrice * tl.sod.Qty)
+                             //Total = g.Sum(x => x.so.Total)
                          }).OrderBy(x => x.Date).ToList();
 
         var dataClose = (from so in Db.SalesOrderHeaders.Where(x => x.SalesBy.Equals(salesId) && x.CustCode.Equals(custCode) && x.Mark.Equals(x.Mark))
@@ -1264,12 +1281,13 @@ public class TransactionHistoryService : ITransactionHistoryService
                          from p in or.DefaultIfEmpty()
                          join log in Db.MobileVisitLogs on p.VisitLogCode equals log.Code into ot
                          from q in ot.DefaultIfEmpty()
-                         group new { so, p, q } by new { so.Date, Time = q.StartTime ?? null } into g
+                         group new { so, sod, p, q } by new { so.Date, Time = q.StartTime ?? null } into g
                          select new TransactionIndividual
                          {
                              Date = g.Key.Date,
                              Time = g.Key.Time,
-                             Total = g.Sum(x => x.so.Total)
+                             Total = g.Sum(tl => tl.sod.NettPrice * tl.sod.QtyDlv ?? 0)
+                             //Total = g.Sum(x => x.so.Total)
                          }).OrderBy(x => x.Date).ToList();
 
         var data = (from so in dataOrder.Union(dataMobile).Union(dataClose)
