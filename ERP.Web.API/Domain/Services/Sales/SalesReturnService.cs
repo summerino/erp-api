@@ -241,6 +241,9 @@ public class SalesReturnService : GeneralService<SalesReturnHeader>, ISalesRetur
                 return result;
             }
 
+            //Restore stock mutation
+            RestoreWarehouseQty(data.Code);
+
             data.ApprovedBy = null;
             data.ApprovedDate = null;
 
@@ -555,5 +558,21 @@ public class SalesReturnService : GeneralService<SalesReturnHeader>, ISalesRetur
             }
         }
         return result;
+    }
+
+    private void RestoreWarehouseQty(string code)
+    {
+        var SRData = Db.StockMutations.AsNoTracking().Where(x => x.RefCode1 == code).ToList();
+        foreach (var itemData in SRData)
+        {
+            var whQtyData = new Entity.Inventory.WarehouseQuantity();
+            if (itemData.Type == "OH")
+            {
+                whQtyData = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == itemData.WarehouseCode && x.ItemId == itemData.ItemId);
+                whQtyData.QtyOnHand = whQtyData.QtyOnHand - itemData.BaseQty;
+                Db.WarehouseQuantities.Update(whQtyData);
+            }
+        }
+        Db.SaveChanges();
     }
 }

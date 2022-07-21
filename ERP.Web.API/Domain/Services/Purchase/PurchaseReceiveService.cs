@@ -353,6 +353,13 @@ public class PurchaseReceiveService : GeneralService<PurchaseReceiveHeader>, IPu
                 }
             }
 
+            // Checking receive qty is excess or not
+            if (IsQtyExcess(data.SrcTrans, data.TransCode, data.ItemDetails, data.Code))
+            {
+                result.Message = "Data penerimaan pembelian tidak bisa diubah karena qty yg diterima lebih besar dari qty yang tersedia.";
+                return result;
+            }
+
             //update Data if changed TransCode
             var oldRcvData = Db.PurchaseReceiveHeaders.AsNoTracking().FirstOrDefault(x => x.Code == data.Code);
             if (oldRcvData.TransCode != data.TransCode)
@@ -360,12 +367,8 @@ public class PurchaseReceiveService : GeneralService<PurchaseReceiveHeader>, IPu
                 RestorePrevData(oldRcvData.Code, oldRcvData.TransCode, oldRcvData.SrcTrans);
             }
 
-            // Checking receive qty is excess or not
-            if (IsQtyExcess(data.SrcTrans, data.TransCode, data.ItemDetails, data.Code))
-            {
-                result.Message = "Data penerimaan pembelian tidak bisa diubah karena qty yg diterima lebih besar dari qty yang tersedia.";
-                return result;
-            }
+            //Restore stock mutation
+            RestoreWarehouseQty(oldRcvData.Code, oldRcvData.TransCode, oldRcvData.SrcTrans);
 
             data.ApprovedBy = null;
             data.ApprovedDate = null;
@@ -698,6 +701,42 @@ public class PurchaseReceiveService : GeneralService<PurchaseReceiveHeader>, IPu
             Db.PurchaseReturnDetails.UpdateRange(detailPrData);
             PrData.Mark = detailPrData.Sum(x => x.QtyRcv) == 0 ? "A" : detailPrData.Sum(x => x.QtyRcv) == detailPrData.Sum(x => x.Qty) ? "CMP" : "PR";
             Db.PurchaseReturnHeaders.Update(PrData);
+        }
+        Db.SaveChanges();
+    }
+
+    private void RestoreWarehouseQty(string code, string srcCode, short srcTrans)
+    {
+        var rcvSMData = Db.StockMutations.AsNoTracking().Where(x => x.RefCode1 == code).ToList();
+        var transSMData = Db.StockMutations.AsNoTracking().Where(x => x.RefCode1 == srcCode).ToList();
+        if (srcTrans == 1)
+        {
+            foreach (var itemData in rcvSMData)
+            {
+                var whQtyData = new Entity.Inventory.WarehouseQuantity();
+                if (itemData.Type == "OH")
+                {
+                    whQtyData = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == itemData.WarehouseCode && x.ItemId == itemData.ItemId);
+                    whQtyData.QtyOnHand = whQtyData.QtyOnHand - itemData.BaseQty;
+                }
+                else if (itemData.Type == "OI")
+                {
+                    var itemTransSMData = transSMData.FirstOrDefault(x => x.ItemId == itemData.ItemId && x.UnitId == itemData.UnitId);
+                    whQtyData = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == itemTransSMData.WarehouseCode && x.ItemId == itemData.ItemId);
+                    whQtyData.QtyOnIndent = whQtyData.QtyOnIndent + itemData.BaseQty;
+                }
+                Db.WarehouseQuantities.Update(whQtyData);
+            }
+        }
+        else
+        {
+            foreach (var itemData in rcvSMData)
+            {
+                var whQtyData = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == itemData.WarehouseCode && x.ItemId == itemData.ItemId);
+                if (itemData.Type == "OH")
+                    whQtyData.QtyOnHand = whQtyData.QtyOnHand - itemData.BaseQty;
+                Db.WarehouseQuantities.Update(whQtyData);
+            }
         }
         Db.SaveChanges();
     }

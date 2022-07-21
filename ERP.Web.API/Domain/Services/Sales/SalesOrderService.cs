@@ -1787,7 +1787,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
             if (itemData.Type == "OO")
             {
                 whQtyData = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == itemData.WarehouseCode && x.ItemId == itemData.ItemId);
-                whQtyData.QtyOnOrder = whQtyData.QtyOnOrder + itemData.BaseQty;
+                whQtyData.QtyOnOrder = whQtyData.QtyOnOrder - itemData.BaseQty;
                 Db.WarehouseQuantities.Update(whQtyData);
             }
         }
