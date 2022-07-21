@@ -780,7 +780,7 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
         {
             foreach (var item in items)
             {
-                var dataSODetail = Db.SalesOrderDetails.FirstOrDefault(x => x.Code == transCode && x.ItemId == item.ItemId);
+                var dataSODetail = Db.SalesOrderDetails.FirstOrDefault(x => x.Code == transCode && x.ItemId == item.ItemId && x.UnitId == item.UnitId);
                 if (code == null)
                 {
                     var availableStock = dataSODetail.Qty - dataSODetail.QtyDlv;
@@ -791,7 +791,7 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
                 }
                 else if (dataSODetail != null)
                 {
-                    var oldSDD = Db.SalesDeliveryDetails.AsNoTracking().FirstOrDefault(x => x.Code == code && x.ItemId == item.ItemId);
+                    var oldSDD = Db.SalesDeliveryDetails.AsNoTracking().FirstOrDefault(x => x.Code == code && x.ItemId == item.ItemId && x.UnitId == item.UnitId);
                     var availableStock = dataSODetail.Qty - (dataSODetail.QtyDlv - oldSDD?.Qty ?? 0);
                     if (item.Qty > availableStock)
                     {
