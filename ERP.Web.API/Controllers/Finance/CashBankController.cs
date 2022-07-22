@@ -201,7 +201,7 @@ public class CashBankController : ControllerBase
     }
 
     [HttpGet("sdp")]
-    public IActionResult GetDataDPS(string type, string cbCode, string search, string filters, string sorts, int skip, int take)
+    public IActionResult GetDataSDP(string type, string cbCode, string search, string filters, string sorts, int skip, int take)
     {
         switch (type)
         {
@@ -213,7 +213,7 @@ public class CashBankController : ControllerBase
             default:
                 {
                     var data =
-                        _cb.GetDataDebitMemo(
+                        _cb.GetDataSDP(
                             skip, take,
                             JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
                             JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"),
