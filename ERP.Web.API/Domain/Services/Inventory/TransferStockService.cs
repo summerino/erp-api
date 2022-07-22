@@ -187,6 +187,8 @@ public class TransferStockService : GeneralService<TransferStockHeader>, ITransf
                 return result;
             }
 
+            RestoreWarehouseQty(data.Code);
+
             data.ApprovedBy = null;
             data.ApprovedDate = null;
 
@@ -413,5 +415,27 @@ public class TransferStockService : GeneralService<TransferStockHeader>, ITransf
         var itemConverted = (data.QtyOnHand - data.QtyOnOrder) / val;
 
         return itemConverted >= qty;
+    }
+
+    private void RestoreWarehouseQty(string code)
+    {
+        var TSData = Db.StockMutations.AsNoTracking().Where(x => x.RefCode1 == code).ToList();
+        foreach (var itemData in TSData)
+        {
+            var whQtyData = new WarehouseQuantity();
+            if (itemData.Type == "OH" && itemData.BaseQty < 0)
+            {
+                whQtyData = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == itemData.WarehouseCode && x.ItemId == itemData.ItemId);
+                whQtyData.QtyOnHand = whQtyData.QtyOnHand + Math.Abs(itemData.BaseQty);
+                Db.WarehouseQuantities.Update(whQtyData);
+            }
+            else
+            {
+                whQtyData = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == itemData.WarehouseCode && x.ItemId == itemData.ItemId);
+                whQtyData.QtyOnHand = whQtyData.QtyOnHand - itemData.BaseQty;
+                Db.WarehouseQuantities.Update(whQtyData);
+            }
+        }
+        Db.SaveChanges();
     }
 }
