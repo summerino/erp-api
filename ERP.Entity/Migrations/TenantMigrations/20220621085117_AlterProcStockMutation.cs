@@ -1626,6 +1626,7 @@ END CATCH";
     @IsComplete bit
 AS
 BEGIN TRY
+
 	DECLARE @stockType varchar(8)
     DECLARE @whCodeFrom varchar(8)
     DECLARE @whCodeTo varchar(8)
@@ -1660,6 +1661,7 @@ BEGIN TRY
     -- Update WarehouseQty
     DECLARE @itemID AS INT = 0
     DECLARE @qty AS DECIMAL = 0
+	DECLARE @UnitId int
 
     IF (@IsComplete = 0) --Active
     BEGIN
@@ -1709,7 +1711,7 @@ BEGIN TRY
         BEGIN
             WHILE EXISTS(SELECT * FROM #tmp_its)
             BEGIN
-                SELECT TOP 1 @itemID = ItemId, @qty = BaseQty FROM #tmp_its
+                SELECT TOP 1 @itemID = ItemId, @qty = BaseQty, @UnitId = UnitId FROM #tmp_its
 
                 IF EXISTS(SELECT * FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @whCodeFrom AND ItemId = @itemID)
                 BEGIN
@@ -1717,14 +1719,14 @@ BEGIN TRY
                     WHERE WarehouseCode = @whCodeFrom AND ItemId = @ItemId
                 END
 
-                DELETE #tmp_its WHERE ItemId = @ItemId
+                DELETE #tmp_its WHERE ItemId = @ItemId AND UnitId = @UnitId
             END
         END
         ELSE IF (@stockType = 'IN') --InventoryIn
         BEGIN
             WHILE EXISTS(SELECT * FROM #tmp_its)
             BEGIN
-                SELECT TOP 1 @itemID = ItemId, @qty = BaseQty FROM #tmp_its
+                SELECT TOP 1 @itemID = ItemId, @qty = BaseQty, @UnitId = UnitId FROM #tmp_its
 
                 UPDATE Inventory.WarehouseQuantity SET QtyOnTransfer = QtyOnTransfer - @qty, UpdatedDate = dbo.udf_current_local_time() 
                 WHERE WarehouseCode = @whCodeFrom AND ItemId = @ItemId
@@ -1736,11 +1738,11 @@ BEGIN TRY
                 END
                 ELSE
                 BEGIN
-                    INSERT INTO Inventory.WarehouseQuantity(WarehouseCode, ItemId, QtyOnHand, QtyOnIndent, QtyOnOrder, QtyReorderPoint, QtyOnTransfer, QtyOnTransit, UpdatedDate)
-                    VALUES (@whCodeTo, @ItemId, @qty, 0, 0, 0, 0, 0, dbo.udf_current_local_time())
+                    INSERT INTO Inventory.WarehouseQuantity(WarehouseCode, ItemId, QtyOnHand, QtyOnIndent, QtyOnOrder, QtyReorderPoint, QtyOnTransfer, UpdatedDate)
+                    VALUES (@whCodeTo, @ItemId, @qty, 0, 0, 0, 0, dbo.udf_current_local_time())
                 END
 
-                DELETE #tmp_its WHERE ItemId = @ItemId
+                DELETE #tmp_its WHERE ItemId = @ItemId AND UnitId = @UnitId
             END
         END
         ELSE IF (@stockType IN ('DT','C','RC')) --DirectTransfer & Consignee
@@ -1772,7 +1774,7 @@ BEGIN TRY
 
             WHILE EXISTS(SELECT * FROM #tmp_its)
             BEGIN
-                SELECT TOP 1 @itemID = ItemId, @qty = BaseQty FROM #tmp_its
+                SELECT TOP 1 @itemID = ItemId, @qty = BaseQty, @UnitId = UnitId FROM #tmp_its
 
                 IF EXISTS(SELECT * FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @whCodeFrom AND ItemId = @itemID)
                 BEGIN
@@ -1784,12 +1786,12 @@ BEGIN TRY
                     END
                     ELSE
                     BEGIN
-                        INSERT INTO Inventory.WarehouseQuantity(WarehouseCode, ItemId, QtyOnHand, QtyOnIndent, QtyOnOrder, QtyReorderPoint, QtyOnTransfer, QtyOnTransit, UpdatedDate)
-                        VALUES (@whCodeTo, @ItemId, @qty, 0, 0, 0, 0, 0, dbo.udf_current_local_time())
+                        INSERT INTO Inventory.WarehouseQuantity(WarehouseCode, ItemId, QtyOnHand, QtyOnIndent, QtyOnOrder, QtyReorderPoint, QtyOnTransfer, UpdatedDate)
+                        VALUES (@whCodeTo, @ItemId, @qty, 0, 0, 0, 0, dbo.udf_current_local_time())
                     END
                 END
 
-                DELETE #tmp_its WHERE ItemId = @ItemId
+                DELETE #tmp_its WHERE ItemId = @ItemId AND UnitId = @UnitId
             END
         END
     END
@@ -1799,21 +1801,21 @@ BEGIN TRY
         BEGIN
             WHILE EXISTS(SELECT * FROM #tmp_its)
             BEGIN
-                SELECT TOP 1 @itemID = ItemId, @qty = BaseQty FROM #tmp_its
+                SELECT TOP 1 @itemID = ItemId, @qty = BaseQty, @UnitId = UnitId FROM #tmp_its
 
                 IF EXISTS(SELECT * FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @whCodeFrom AND ItemId = @itemID)
                 BEGIN
                     UPDATE Inventory.WarehouseQuantity SET QtyOnHand = QtyOnHand + @qty, QtyOnTransfer = QtyOnTransfer - @qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @whCodeFrom AND ItemId = @ItemId
                 END
 
-                DELETE #tmp_its WHERE ItemId = @ItemId
+                DELETE #tmp_its WHERE ItemId = @ItemId AND UnitId = @UnitId
             END
         END
         ELSE IF (@stockType = 'IN')
         BEGIN
             WHILE EXISTS(SELECT * FROM #tmp_its)
             BEGIN
-                SELECT TOP 1 @itemID = ItemId, @qty = BaseQty FROM #tmp_its
+                SELECT TOP 1 @itemID = ItemId, @qty = BaseQty, @UnitId = UnitId FROM #tmp_its
 
                 IF EXISTS(SELECT * FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @whCodeFrom AND ItemId = @itemID)
                 BEGIN
@@ -1825,14 +1827,14 @@ BEGIN TRY
                     END
                 END
 
-                DELETE #tmp_its WHERE ItemId = @ItemId
+                DELETE #tmp_its WHERE ItemId = @ItemId AND UnitId = @UnitId
             END
         END
         ELSE IF (@stockType IN ('DT','C','RC'))
         BEGIN
             WHILE EXISTS(SELECT * FROM #tmp_its)
             BEGIN
-                SELECT TOP 1 @itemID = ItemId, @qty = BaseQty FROM #tmp_its
+                SELECT TOP 1 @itemID = ItemId, @qty = BaseQty, @UnitId = UnitId FROM #tmp_its
 
                 IF EXISTS(SELECT * FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @whCodeFrom AND ItemId = @itemID)
                 BEGIN
@@ -1844,14 +1846,13 @@ BEGIN TRY
                     END
                 END
 
-                DELETE #tmp_its WHERE ItemId = @ItemId
+                DELETE #tmp_its WHERE ItemId = @ItemId AND UnitId = @UnitId
             END
         END
     END
         
     -- Drop temp tables
     DROP TABLE #tmp_its
- 
 
 END TRY
 BEGIN CATCH
