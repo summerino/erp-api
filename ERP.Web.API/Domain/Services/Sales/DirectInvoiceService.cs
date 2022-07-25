@@ -878,7 +878,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
 
             //Restore stock mutation
             var oldDlvData = Db.SalesDeliveryHeaders.AsNoTracking().FirstOrDefault(x => x.Code == data.Code);
-            RestoreWarehouseQty(oldDlvData.Code, oldDlvData.TransCode, oldDlvData.SrcTrans);
+            RestoreWarehouseQty(oldDlvData.Code, oldDlvData.SrcTrans);
 
             var taxes = Db.Taxes.ToList();
             var promos = Db.PromoHeaders
@@ -1913,7 +1913,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
         return result;
     }
 
-    private void RestoreWarehouseQty(string code, string srcCode, short srcTrans)
+    private void RestoreWarehouseQty(string code, short srcTrans)
     {
         var dlvSMData = Db.StockMutations.Where(x => x.RefCode1 == code).ToList();
         if (srcTrans == 1)
