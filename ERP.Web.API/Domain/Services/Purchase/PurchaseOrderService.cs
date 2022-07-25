@@ -455,6 +455,9 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
                 return result;
             }
 
+            //Restore stock mutation
+            RestoreWarehouseQty(data.Code);
+
             var taxes = Db.Taxes.ToList();
             List<decimal> totalDetail = new();
             List<decimal> totalTax = new();
@@ -945,6 +948,22 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
         }
 
         return (errorList != "", errorList);
+    }
+
+    private void RestoreWarehouseQty(string code)
+    {
+        var POData = Db.StockMutations.AsNoTracking().Where(x => x.RefCode1 == code).ToList();
+        foreach (var itemData in POData)
+        {
+            var whQtyData = new Entity.Inventory.WarehouseQuantity();
+            if (itemData.Type == "OI")
+            {
+                whQtyData = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == itemData.WarehouseCode && x.ItemId == itemData.ItemId);
+                whQtyData.QtyOnIndent = whQtyData.QtyOnIndent - itemData.BaseQty;
+                Db.WarehouseQuantities.Update(whQtyData);
+            }
+        }
+        Db.SaveChanges();
     }
 
     #region Mobile

@@ -364,6 +364,63 @@ LEFT JOIN SystemManagement.[User] u_u
     ON u_u.Id = m.UpdatedBy";
             migrationBuilder.Sql(sql);
 
+            // Alter view Finance.vwCashBankType
+            sql = @"ALTER VIEW [Finance].[vwCashBankType]
+AS
+	SELECT t.*,
+		sp.[Value] AS CoaCode,
+		c.[Name] AS CoaName,
+		CASE t.Code
+			WHEN 'AR' THEN 31
+			WHEN 'AP' THEN 32
+			WHEN 'EPAP' THEN 33
+			WHEN 'TU' THEN 34
+			WHEN 'DEPC' THEN 35
+			WHEN 'RDEPC' THEN 36
+			WHEN 'SDP' THEN 49
+			WHEN 'RSDP' THEN 50
+			WHEN 'DEPS' THEN 37
+			WHEN 'RDEPS' THEN 38
+			WHEN 'SR' THEN 39
+			WHEN 'PR' THEN 40 
+			ELSE 0 END AS ActionId
+	FROM Finance.CashBankType t
+	LEFT JOIN SystemManagement.SystemParameter sp
+		ON sp.Code = t.SysParCode
+	LEFT JOIN Accounting.COA c
+		ON c.Code = sp.[Value]";
+            migrationBuilder.Sql(sql);
+
+            // Alter view Finance.vwGeneralCashBankHeader
+            sql = @"ALTER VIEW [Finance].[vwGeneralCashBankHeader]
+AS
+	SELECT h.*,
+		c.[Name] AS CoaName,
+		u_c.Initial AS CreatedInitial,
+		u_u.Initial AS UpdatedInitial,
+		u_a.Initial AS ApprovedInitial,
+		CASE h.[Type]
+			WHEN 'C' THEN 'Kas Bank Keluar'
+			WHEN 'D' THEN 'Kas Bank Masuk' END AS [TypeName],
+		CASE h.Mark
+			WHEN 'A' THEN 'Active'
+			WHEN 'V' THEN 'Void'
+			WHEN 'REJ' THEN 'Rejected' END AS [Status]
+	FROM (
+		SELECT *
+		FROM Finance.GeneralCashBankHeader
+		WHERE IsInterCashBank = 0
+	) h
+	LEFT JOIN Accounting.COA c 
+		ON c.Code = h.CoaCode
+	LEFT JOIN SystemManagement.[User] u_c
+		ON u_c.Id = h.CreatedBy
+	LEFT JOIN SystemManagement.[User] u_u
+		ON u_u.Id = h.UpdatedBy
+	LEFT JOIN SystemManagement.[User] u_a
+		ON u_a.Id = h.ApprovedBy";
+            migrationBuilder.Sql(sql);
+
             // Disabling constraints foreign key FK_CreditMemo_Tax_TaxId
             sql = @"ALTER TABLE [Sales].[CreditMemo] NOCHECK CONSTRAINT [FK_CreditMemo_Tax_TaxId]";
             migrationBuilder.Sql(sql);
