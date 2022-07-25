@@ -10,6 +10,9 @@ public interface ITransactionHistoryService
     DataSourceResult GetDataByDate(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, DateTime? startDate, DateTime? endDate, int userId);
     DataSourceResult GetDataByProduct(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, DateTime? startDate, DateTime? endDate, string search, int userId);
     IEnumerable<TransactionHistoryByUnitProduct> GetDataByUnitProduct(int filterUnit, DateTime? startDate, DateTime? endDate, int userId);
+    DataSourceResult GetItemByUnitProduct(int filterUnit, DateTime? startDate, DateTime? endDate, int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, int userId);
+    DataSourceResult GetCustomerDetailByUnitProduct(int filterUnit,int itemId, DateTime? startDate, DateTime? endDate, int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, int userId);
+    DataSourceResult GetItemDetailByUnitProduct(int filterUnit, int itemId, string custCode, DateTime? startDate, DateTime? endDate, int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, int userId);
     DataSourceResult GetItemDetail(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, string search, int userId);
     DataSourceResult GetCustomerDetail(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, string search, int userId);
     DataSourceResult GetDataCumulative(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, int year, string custCode, int userId);

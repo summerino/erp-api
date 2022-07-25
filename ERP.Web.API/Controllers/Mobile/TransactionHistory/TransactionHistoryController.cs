@@ -74,10 +74,40 @@ public class TransactionHistoryController : ControllerBase
         });
     }
 
+    //[HttpGet("by-unit-product")]
+    //public IActionResult GetData(int filterUnit, DateTime? startDate, DateTime? endDate)
+    //{
+    //    var result = _transactionHistory.GetDataByUnitProduct(filterUnit, startDate, endDate, _claim.UserId);
+
+    //    return Ok(result);
+    //}
+
     [HttpGet("by-unit-product")]
-    public IActionResult GetData(int filterUnit, DateTime? startDate, DateTime? endDate)
+    public IActionResult GetCustomerByUnit(int filterUnit, DateTime? startDate, DateTime? endDate, string filters, string sorts, int skip, int take)
     {
-        var result = _transactionHistory.GetDataByUnitProduct(filterUnit, startDate, endDate, _claim.UserId);
+        var result = _transactionHistory.GetItemByUnitProduct(filterUnit, startDate, endDate, skip, take,
+            JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"), _claim.UserId);
+
+        return Ok(result);
+    }
+
+    [HttpGet("customer-by-unit-product")]
+    public IActionResult GetCustomerByUnit(int filterUnit,int itemId, DateTime? startDate, DateTime? endDate, string filters, string sorts, int skip, int take)
+    {
+        var result = _transactionHistory.GetCustomerDetailByUnitProduct(filterUnit,itemId, startDate, endDate, skip, take, 
+            JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"), _claim.UserId);
+
+        return Ok(result);
+    }
+
+    [HttpGet("item-by-unit-product")]
+    public IActionResult GetItemByUnit(int filterUnit, int itemId,string custCode, DateTime? startDate, DateTime? endDate, string filters, string sorts, int skip, int take)
+    {
+        var result = _transactionHistory.GetItemDetailByUnitProduct(filterUnit, itemId,custCode, startDate, endDate, skip, take,
+            JsonConvert.DeserializeObject<List<Filter>>(!string.IsNullOrWhiteSpace(filters) ? filters : "[]"),
+                JsonConvert.DeserializeObject<List<Sort>>(!string.IsNullOrWhiteSpace(sorts) ? sorts : "[]"), _claim.UserId);
 
         return Ok(result);
     }

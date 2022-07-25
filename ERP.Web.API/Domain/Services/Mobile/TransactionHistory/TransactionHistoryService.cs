@@ -2060,7 +2060,7 @@ public class TransactionHistoryService : ITransactionHistoryService
 
         var dataUnion = salesData.Union(mobileData);
 
-        var daraResult = (from so in dataUnion
+        var dataResult = (from so in dataUnion
                           group so by new
                           {
                               so.SalesId,
@@ -2083,7 +2083,7 @@ public class TransactionHistoryService : ITransactionHistoryService
                               Total = g.Sum(etx => etx.TotalReal) + g.Sum(etx => etx.TotalMobile)
                           }).AsQueryable();
 
-        DataSourceResult result = daraResult.ToDataSourceResult(skip, take, filter, sort);
+        DataSourceResult result = dataResult.ToDataSourceResult(skip, take, filter, sort);
 
         return result;
     }
@@ -2175,5 +2175,580 @@ public class TransactionHistoryService : ITransactionHistoryService
         var dataCustomer = dataOriginal.Union(dataMobile).OrderBy(x => x.UpdatedDate).AsQueryable();
 
         return dataCustomer;
+    }
+
+    public DataSourceResult GetCustomerDetailByUnitProduct(int filterUnit, int itemId, DateTime? startDate, DateTime? endDate, int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, int userId)
+    {
+        var salesId = Db.Users.Where(x => x.Id.Equals(userId)).Select(x => x.EmployeeId).Single();
+        var filterDate = "";
+        var formatStartDate = startDate.HasValue ? startDate.ToString() : "n/a";
+        var formatEndDate = endDate.HasValue ? endDate.ToString() : "n/a";
+        var destSeq = 0;
+        var destUnitName = "";
+
+        if (startDate != null && startDate.HasValue && endDate != null && endDate.HasValue)
+        {
+            formatStartDate = Convert.ToDateTime(formatStartDate).ToString("yyyy-MM-dd");
+            formatEndDate = Convert.ToDateTime(formatEndDate).ToString("yyyy-MM-dd");
+            filterDate = $" AND Date Between '{formatStartDate}' AND '{formatEndDate}' ";
+        }
+        else if (startDate != null && startDate.HasValue)
+        {
+            formatStartDate = Convert.ToDateTime(formatStartDate).ToString("yyyy-MM-dd");
+            filterDate = $" AND Date>='{formatStartDate}' ";
+        }
+        else if (endDate != null && endDate.HasValue)
+        {
+            formatEndDate = Convert.ToDateTime(formatEndDate).ToString("yyyy-MM-dd");
+            filterDate = $" AND Date<='{formatEndDate}' ";
+        }
+
+        var history = Db.TransactionHistoryDetailCustomerByProductUnits.FromSqlRaw(
+                            @"SELECT CustCode,CustName,ItemId,ItemName,UnitId,Seq,UnitName, SUM(Qty) as Qty,SUM(Total) as Total,UomId,
+                            UnitBuyId,UnitBuyName,UnitBuySeq, UnitSellId,UnitSellName,UnitSellSeq,
+                            UnitMaxId, UnitMaxName,UnitMaxSeq,UnitMinId,UnitMinName,UnitMinSeq,
+                            UnitBaseId,UnitBaseName,UnitBaseSeq,SalesBy 
+                            FROM
+                            (SELECT CustCode,C.Name as CustName,ItemId,I.Name as ItemName,D.UnitId,UReal.UnitEquivalent as UnitName,
+                            UReal.Seq,SUM(Qty) as Qty,SUM(D.NettPrice*D.Qty) as Total,I.UomId,
+                            UomBuyId as UnitBuyId,UBuy.UnitEquivalent as UnitBuyName, UBuy.Seq as UnitBuySeq,
+                            UomSellId as UnitSellId,USell.UnitEquivalent as UnitSellName,USell.Seq as UnitSellSeq,
+                            UMax.Id as UnitMaxId,UMax.UnitEquivalent as UnitMaxName, UMax.Seq as UnitMaxSeq,
+                            UMin.Id as UnitMinId,UMin.UnitEquivalent as UnitMinName,UMin.Seq as UnitMinSeq, 
+                            UBase.Id as UnitBaseId,UBase.UnitEquivalent as UnitBaseName,UBase.Seq as UnitBaseSeq,SalesBy
+                            FROM [ERPTenant].[MobileSales].[MobileOrderHeader] H 
+                            JOIN [MobileSales].[MobileOrderDetail] D on H.Code=D.Code 
+                            JOIN [Inventory].[Item] I on D.ItemId=I.Id
+                            JOIN [Inventory].[UoMConversion] UReal on D.UnitId=UReal.Id
+                            JOIN [Inventory].[UoMConversion] UBuy on I.UomBuyId=UBuy.Id
+                            JOIN [Inventory].[UoMConversion] USell on I.UomSellId=USell.Id
+                            JOIN (SELECT id,UomId,UnitEquivalent,Seq FROM [Inventory].[UoMConversion] WHERE IsBaseUnit=1) UBase on D.UomId=UBase.UomId
+                            JOIN (SELECT id,uomid,UnitEquivalent,Seq FROM [Inventory].[UoMConversion] U
+                            WHERE Seq=(Select max(seq) FROM [Inventory].[UoMConversion] Where UomId=U.UomId group by UomId)) UMax on D.UomId=UMax.UomId
+                            JOIN (SELECT id,uomid,UnitEquivalent,Seq FROM [Inventory].[UoMConversion] U
+                            WHERE Seq=(Select min(seq) FROM [Inventory].[UoMConversion] Where UomId=U.UomId group by UomId)) UMin on D.UomId=UMin.UomId
+                            JOIN (SELECT Code,Name FROM [General].[Customer]
+                            UNION ALL 
+                            SELECT Code,Name FROM [MobileSales].[MobileCustomer] WHERE Mark='A') C on H.CustCode=C.Code
+                            WHERE SalesOrderCode is null AND Mark!='REJ' " + filterDate +
+                            @"GROUP BY CustCode,C.Name,ItemId,I.Name,D.UnitId,UReal.UnitEquivalent,UReal.Seq,I.UomId,UomBuyId,UBuy.UnitEquivalent,
+                            UBuy.Seq,UomSellId,USell.UnitEquivalent,USell.Seq,
+                            UMax.Id,UMax.UnitEquivalent,UMax.Seq,
+                            UMin.Id,UMin.UnitEquivalent,UMin.Seq,
+                            UBase.Id,UBase.UnitEquivalent,UBase.Seq,SalesBy
+                            UNION ALL
+                            SELECT CustCode,C.Name as CustName,ItemId,I.Name as ItemName,D.UnitId,UReal.UnitEquivalent as UnitName,
+                            UReal.Seq,SUM(Qty) as Qty,SUM(D.NettPrice*D.Qty) as Total,I.UomId,
+                            UomBuyId as UnitBuyId,UBuy.UnitEquivalent as UnitBuyName, UBuy.Seq as UnitBuySeq,
+                            UomSellId as UnitSellId,USell.UnitEquivalent as UnitSellName,USell.Seq as UnitSellSeq,
+                            UMax.Id as UnitMaxId,UMax.UnitEquivalent as UnitMaxName, UMax.Seq as UnitMaxSeq,
+                            UMin.Id as UnitMinId,UMin.UnitEquivalent as UnitMinName,UMin.Seq as UnitMinSeq, 
+                            UBase.Id as UnitBaseId,UBase.UnitEquivalent as UnitBaseName,UBase.Seq as UnitBaseSeq,SalesBy
+                            FROM [Sales].[SalesOrderHeader] H 
+                            JOIN [Sales].[SalesOrderDetail] D on H.Code=D.Code 
+                            JOIN [Inventory].[Item] I on D.ItemId=I.Id
+                            JOIN [Inventory].[UoMConversion] UReal on D.UnitId=UReal.Id
+                            JOIN [Inventory].[UoMConversion] UBuy on I.UomBuyId=UBuy.Id
+                            JOIN [Inventory].[UoMConversion] USell on I.UomSellId=USell.Id
+                            JOIN (SELECT id,UomId,UnitEquivalent,Seq FROM [Inventory].[UoMConversion] WHERE IsBaseUnit=1) UBase on D.UomId=UBase.UomId
+                            JOIN (SELECT id,uomid,UnitEquivalent,Seq FROM [Inventory].[UoMConversion] U
+                            WHERE Seq=(Select max(seq) FROM [Inventory].[UoMConversion] Where UomId=U.UomId group by UomId)) UMax on D.UomId=UMax.UomId
+                            JOIN (SELECT id,uomid,UnitEquivalent,Seq FROM [Inventory].[UoMConversion] U
+                            WHERE Seq=(Select min(seq) FROM [Inventory].[UoMConversion] Where UomId=U.UomId group by UomId)) UMin on D.UomId=UMin.UomId
+                            JOIN (SELECT Code,Name FROM [General].[Customer]
+                            UNION ALL 
+                            SELECT Code,Name FROM [MobileSales].[MobileCustomer] WHERE Mark='A') C on H.CustCode=C.Code
+                            WHERE (Mark='A' OR Mark='PP' OR Mark='CMP') OR (Mark='CLS' AND QtyDlv>0) " + filterDate +
+                            @"GROUP BY CustCode,C.Name,ItemId,I.Name,D.UnitId,UReal.UnitEquivalent,UReal.Seq,I.UomId,UomBuyId,UBuy.UnitEquivalent,
+                            UBuy.Seq,UomSellId,USell.UnitEquivalent,USell.Seq,
+                            UMax.Id,UMax.UnitEquivalent,UMax.Seq,
+                            UMin.Id,UMin.UnitEquivalent,UMin.Seq,
+                            UBase.Id,UBase.UnitEquivalent,UBase.Seq,SalesBy) A 
+                            GROUP BY CustCode,CustName,ItemId,ItemName,UnitId,UnitName,Seq, UomId, UnitBuyId,UnitBuyName,UnitBuySeq,
+                            UnitSellId,UnitSellName,UnitSellSeq,
+                            UnitMaxId,UnitMaxName,UnitMaxSeq,UnitMinId,UnitMinName,UnitMinSeq,
+                            UnitBaseId,UnitBaseName,UnitBaseSeq,SalesBy
+                            ").Where(x => x.SalesBy.Equals(salesId) && x.ItemId.Equals(itemId)).ToList();
+
+        List<TransactionCustomerDetailByUnit> resultData = new();
+        foreach (var data in history)
+        {
+            switch (filterUnit)
+            {
+                case 1: //base
+                    destSeq = data.UnitBaseSeq;
+                    destUnitName = data.UnitBaseName;
+                    break;
+                case 2: //biggest
+                    destSeq = data.UnitMaxSeq;
+                    destUnitName = data.UnitMaxName;
+                    break;
+                case 3: //smallest
+                    destSeq = data.UnitMinSeq;
+                    destUnitName = data.UnitMinName;
+                    break;
+                case 4: //buy
+                    destSeq = data.UnitBuySeq;
+                    destUnitName = data.UnitBuyName;
+                    break;
+                case 5: //sell
+                    destSeq = data.UnitSellSeq;
+                    destUnitName = data.UnitSellName;
+                    break;
+            }
+
+            if (data.Seq > destSeq)
+            {
+                var qtyConverted = CalculateUnitToBiggerSeq(data.UomId, data.Seq, destSeq);
+                resultData.Add(new()
+                {
+                    CustCode = data.CustCode,
+                    CustName = data.CustName,
+                    ItemId = data.ItemId,
+                    ItemName = data.ItemName,
+                    Unit = destUnitName,
+                    Quantity = data.Qty * qtyConverted,
+                    Total = data.Total
+
+                });
+            }
+            else if (data.Seq < destSeq)
+            {
+                var qtyConverted = CalculateUnitToSmallerSeq(data.UomId, data.Seq, destSeq);
+                resultData.Add(new()
+                {
+                    CustCode = data.CustCode,
+                    CustName = data.CustName,
+                    ItemId = data.ItemId,
+                    ItemName = data.ItemName,
+                    Unit = destUnitName,
+                    Quantity = data.Qty / qtyConverted,
+                    Total = data.Total
+                });
+            }
+            else
+            {
+                resultData.Add(new()
+                {
+                    CustCode = data.CustCode,
+                    CustName = data.CustName,
+                    ItemId = data.ItemId,
+                    ItemName = data.ItemName,
+                    Unit = destUnitName,
+                    Quantity = data.Qty,
+                    Total = data.Total
+                });
+            }
+        }
+
+        var resultSum = from r in resultData
+                        group r by new { r.CustCode, r.CustName, r.ItemId, r.ItemName, r.Unit } into g
+                        select new
+                        {
+                            CustCode = g.Key.CustCode,
+                            CustName = g.Key.CustName,
+                            ItemId = g.Key.ItemId,
+                            ItemName = g.Key.ItemName,
+                            Unit = g.Key.Unit,
+                            Quantity = g.Sum(tl => tl.Quantity),
+                            Total = g.Sum(tl => tl.Total),
+                        };
+
+
+        DataSourceResult result = resultSum.AsQueryable().ToDataSourceResult(skip, take, filter, sort);
+
+        return result;
+
+    }
+
+    public DataSourceResult GetItemDetailByUnitProduct(int filterUnit, int itemId, string custCode, DateTime? startDate, DateTime? endDate, int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, int userId)
+    {
+        var salesId = Db.Users.Where(x => x.Id.Equals(userId)).Select(x => x.EmployeeId).FirstOrDefault();
+        var filterDate = "";
+        var formatStartDate = startDate.HasValue ? startDate.ToString() : "n/a";
+        var formatEndDate = endDate.HasValue ? endDate.ToString() : "n/a";
+        var destSeq = 0;
+        var destUnitName = "";
+
+        if (startDate != null && startDate.HasValue && endDate != null && endDate.HasValue)
+        {
+            formatStartDate = Convert.ToDateTime(formatStartDate).ToString("yyyy-MM-dd");
+            formatEndDate = Convert.ToDateTime(formatEndDate).ToString("yyyy-MM-dd");
+            filterDate = $" AND Date Between '{formatStartDate}' AND '{formatEndDate}' ";
+        }
+        else if (startDate != null && startDate.HasValue)
+        {
+            formatStartDate = Convert.ToDateTime(formatStartDate).ToString("yyyy-MM-dd");
+            filterDate = $" AND Date>='{formatStartDate}' ";
+        }
+        else if (endDate != null && endDate.HasValue)
+        {
+            formatEndDate = Convert.ToDateTime(formatEndDate).ToString("yyyy-MM-dd");
+            filterDate = $" AND Date<='{formatEndDate}' ";
+        }
+
+        var history = Db.TransactionHistoryDetailItemByProductUnits.FromSqlRaw(
+                        @"SELECT TransCode,Date,CustCode,CustName,ItemId,ItemName,UnitId,Seq,UnitName, SUM(Qty) as Qty,SUM(Total) as Total,UomId,
+                        UnitBuyId,UnitBuyName,UnitBuySeq, UnitSellId,UnitSellName,UnitSellSeq,
+                        UnitMaxId, UnitMaxName,UnitMaxSeq,UnitMinId,UnitMinName,UnitMinSeq,
+                        UnitBaseId,UnitBaseName,UnitBaseSeq,SalesBy 
+                        FROM
+                        (SELECT H.Code as TransCode,Date,CustCode,C.Name as CustName,ItemId,I.Name as ItemName,D.UnitId,UReal.UnitEquivalent as UnitName,
+                        UReal.Seq,SUM(Qty) as Qty,SUM(D.NettPrice*D.Qty) as Total,I.UomId,
+                        UomBuyId as UnitBuyId,UBuy.UnitEquivalent as UnitBuyName, UBuy.Seq as UnitBuySeq,
+                        UomSellId as UnitSellId,USell.UnitEquivalent as UnitSellName,USell.Seq as UnitSellSeq,
+                        UMax.Id as UnitMaxId,UMax.UnitEquivalent as UnitMaxName, UMax.Seq as UnitMaxSeq,
+                        UMin.Id as UnitMinId,UMin.UnitEquivalent as UnitMinName,UMin.Seq as UnitMinSeq, 
+                        UBase.Id as UnitBaseId,UBase.UnitEquivalent as UnitBaseName,UBase.Seq as UnitBaseSeq,SalesBy
+                        FROM [ERPTenant].[MobileSales].[MobileOrderHeader] H 
+                        JOIN [MobileSales].[MobileOrderDetail] D on H.Code=D.Code 
+                        JOIN [Inventory].[Item] I on D.ItemId=I.Id
+                        JOIN [Inventory].[UoMConversion] UReal on D.UnitId=UReal.Id
+                        JOIN [Inventory].[UoMConversion] UBuy on I.UomBuyId=UBuy.Id
+                        JOIN [Inventory].[UoMConversion] USell on I.UomSellId=USell.Id
+                        JOIN (SELECT id,UomId,UnitEquivalent,Seq FROM [Inventory].[UoMConversion] WHERE IsBaseUnit=1) UBase on D.UomId=UBase.UomId
+                        JOIN (SELECT id,uomid,UnitEquivalent,Seq FROM [Inventory].[UoMConversion] U
+                        WHERE Seq=(Select max(seq) FROM [Inventory].[UoMConversion] Where UomId=U.UomId group by UomId)) UMax on D.UomId=UMax.UomId
+                        JOIN (SELECT id,uomid,UnitEquivalent,Seq FROM [Inventory].[UoMConversion] U
+                        WHERE Seq=(Select min(seq) FROM [Inventory].[UoMConversion] Where UomId=U.UomId group by UomId)) UMin on D.UomId=UMin.UomId
+                        JOIN (SELECT Code,Name FROM [General].[Customer]
+                        UNION ALL 
+                        SELECT Code,Name FROM [MobileSales].[MobileCustomer] WHERE Mark='A') C on H.CustCode=C.Code
+                        WHERE SalesOrderCode is null AND Mark!='REJ' " + filterDate +
+                        @"GROUP BY H.Code,Date,CustCode,C.Name,ItemId,I.Name,D.UnitId,UReal.UnitEquivalent,UReal.Seq,I.UomId,UomBuyId,UBuy.UnitEquivalent,
+                        UBuy.Seq,UomSellId,USell.UnitEquivalent,USell.Seq,
+                        UMax.Id,UMax.UnitEquivalent,UMax.Seq,
+                        UMin.Id,UMin.UnitEquivalent,UMin.Seq,
+                        UBase.Id,UBase.UnitEquivalent,UBase.Seq,SalesBy
+                        UNION ALL
+                        SELECT H.Code as TransCode,Date,CustCode,C.Name as CustName,ItemId,I.Name as ItemName,D.UnitId,UReal.UnitEquivalent as UnitName,
+                        UReal.Seq,SUM(Qty) as Qty,SUM(D.NettPrice*D.Qty) as Total,I.UomId,
+                        UomBuyId as UnitBuyId,UBuy.UnitEquivalent as UnitBuyName, UBuy.Seq as UnitBuySeq,
+                        UomSellId as UnitSellId,USell.UnitEquivalent as UnitSellName,USell.Seq as UnitSellSeq,
+                        UMax.Id as UnitMaxId,UMax.UnitEquivalent as UnitMaxName, UMax.Seq as UnitMaxSeq,
+                        UMin.Id as UnitMinId,UMin.UnitEquivalent as UnitMinName,UMin.Seq as UnitMinSeq, 
+                        UBase.Id as UnitBaseId,UBase.UnitEquivalent as UnitBaseName,UBase.Seq as UnitBaseSeq,SalesBy
+                        FROM [Sales].[SalesOrderHeader] H 
+                        JOIN [Sales].[SalesOrderDetail] D on H.Code=D.Code 
+                        JOIN [Inventory].[Item] I on D.ItemId=I.Id
+                        JOIN [Inventory].[UoMConversion] UReal on D.UnitId=UReal.Id
+                        JOIN [Inventory].[UoMConversion] UBuy on I.UomBuyId=UBuy.Id
+                        JOIN [Inventory].[UoMConversion] USell on I.UomSellId=USell.Id
+                        JOIN (SELECT id,UomId,UnitEquivalent,Seq FROM [Inventory].[UoMConversion] WHERE IsBaseUnit=1) UBase on D.UomId=UBase.UomId
+                        JOIN (SELECT id,uomid,UnitEquivalent,Seq FROM [Inventory].[UoMConversion] U
+                        WHERE Seq=(Select max(seq) FROM [Inventory].[UoMConversion] Where UomId=U.UomId group by UomId)) UMax on D.UomId=UMax.UomId
+                        JOIN (SELECT id,uomid,UnitEquivalent,Seq FROM [Inventory].[UoMConversion] U
+                        WHERE Seq=(Select min(seq) FROM [Inventory].[UoMConversion] Where UomId=U.UomId group by UomId)) UMin on D.UomId=UMin.UomId
+                        JOIN (SELECT Code,Name FROM [General].[Customer]
+                        UNION ALL 
+                        SELECT Code,Name FROM [MobileSales].[MobileCustomer] WHERE Mark='A') C on H.CustCode=C.Code
+                        WHERE (Mark='A' OR Mark='PP' OR Mark='CMP') OR (Mark='CLS' AND QtyDlv>0) " + filterDate +
+                        @"GROUP BY H.Code,Date,CustCode,C.Name,ItemId,I.Name,D.UnitId,UReal.UnitEquivalent,UReal.Seq,I.UomId,UomBuyId,UBuy.UnitEquivalent,
+                        UBuy.Seq,UomSellId,USell.UnitEquivalent,USell.Seq,
+                        UMax.Id,UMax.UnitEquivalent,UMax.Seq,
+                        UMin.Id,UMin.UnitEquivalent,UMin.Seq,
+                        UBase.Id,UBase.UnitEquivalent,UBase.Seq,SalesBy) A 
+                        GROUP BY TransCode,Date,CustCode,CustName,ItemId,ItemName,UnitId,UnitName,Seq, UomId, UnitBuyId,UnitBuyName,UnitBuySeq,
+                        UnitSellId,UnitSellName,UnitSellSeq,
+                        UnitMaxId,UnitMaxName,UnitMaxSeq,UnitMinId,UnitMinName,UnitMinSeq,
+                        UnitBaseId,UnitBaseName,UnitBaseSeq,SalesBy
+                        ").Where(x => x.SalesBy.Equals(salesId) && x.ItemId.Equals(itemId) && x.CustCode.Equals(custCode)).ToList();
+
+        List<TransactionItemDetailByUnit> resultData = new();
+        foreach (var data in history)
+        {
+            switch (filterUnit)
+            {
+                case 1: //base
+                    destSeq = data.UnitBaseSeq;
+                    destUnitName = data.UnitBaseName;
+                    break;
+                case 2: //biggest
+                    destSeq = data.UnitMaxSeq;
+                    destUnitName = data.UnitMaxName;
+                    break;
+                case 3: //smallest
+                    destSeq = data.UnitMinSeq;
+                    destUnitName = data.UnitMinName;
+                    break;
+                case 4: //buy
+                    destSeq = data.UnitBuySeq;
+                    destUnitName = data.UnitBuyName;
+                    break;
+                case 5: //sell
+                    destSeq = data.UnitSellSeq;
+                    destUnitName = data.UnitSellName;
+                    break;
+            }
+
+            if (data.Seq > destSeq)
+            {
+                var qtyConverted = CalculateUnitToBiggerSeq(data.UomId, data.Seq, destSeq);
+                resultData.Add(new()
+                {
+                    TransCode = data.TransCode,
+                    Date = data.Date,
+                    ItemId = data.ItemId,
+                    ItemName = data.ItemName,
+                    Unit = destUnitName,
+                    Quantity = data.Qty * qtyConverted,
+                    Total = data.Total
+
+                });
+            }
+            else if (data.Seq < destSeq)
+            {
+                var qtyConverted = CalculateUnitToSmallerSeq(data.UomId, data.Seq, destSeq);
+                resultData.Add(new()
+                {
+                    TransCode = data.TransCode,
+                    Date = data.Date,
+                    ItemId = data.ItemId,
+                    ItemName = data.ItemName,
+                    Unit = destUnitName,
+                    Quantity = data.Qty / qtyConverted,
+                    Total = data.Total
+                });
+            }
+            else
+            {
+                resultData.Add(new()
+                {
+                    TransCode = data.TransCode,
+                    Date = data.Date,
+                    ItemId = data.ItemId,
+                    ItemName = data.ItemName,
+                    Unit = destUnitName,
+                    Quantity = data.Qty,
+                    Total = data.Total
+                });
+            }
+        }
+
+        var resultSum = from r in resultData
+                        group r by new { r.TransCode, r.Date, r.ItemId, r.ItemName, r.Unit } into g
+                        select new
+                        {
+                            TransCode = g.Key.TransCode,
+                            Date = g.Key.Date,
+                            ItemId = g.Key.ItemId,
+                            ItemName = g.Key.ItemName,
+                            Unit = g.Key.Unit,
+                            Quantity = g.Sum(tl => tl.Quantity),
+                            Total = g.Sum(tl => tl.Total),
+                        };
+
+
+        DataSourceResult result = resultSum.AsQueryable().ToDataSourceResult(skip, take, filter, sort);
+
+        return result;
+
+    }
+
+    public DataSourceResult GetItemByUnitProduct(int filterUnit, DateTime? startDate, DateTime? endDate, int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, int userId)
+    {
+        var salesId = Db.Users.Where(x => x.Id.Equals(userId)).Select(x => x.EmployeeId).FirstOrDefault();
+        var filterDate = "";
+        var formatStartDate = startDate.HasValue ? startDate.ToString() : "n/a";
+        var formatEndDate = endDate.HasValue ? endDate.ToString() : "n/a";
+        var destSeq = 0;
+        var destUnitName = "";
+
+        if (startDate != null && startDate.HasValue && endDate != null && endDate.HasValue)
+        {
+            formatStartDate = Convert.ToDateTime(formatStartDate).ToString("yyyy-MM-dd");
+            formatEndDate = Convert.ToDateTime(formatEndDate).ToString("yyyy-MM-dd");
+            filterDate = $" AND Date Between '{formatStartDate}' AND '{formatEndDate}' ";
+        }
+        else if (startDate != null && startDate.HasValue)
+        {
+            formatStartDate = Convert.ToDateTime(formatStartDate).ToString("yyyy-MM-dd");
+            filterDate = $" AND Date>='{formatStartDate}' ";
+        }
+        else if (endDate != null && endDate.HasValue)
+        {
+            formatEndDate = Convert.ToDateTime(formatEndDate).ToString("yyyy-MM-dd");
+            filterDate = $" AND Date<='{formatEndDate}' ";
+        }
+
+        var history = Db.TransactionHistoryByProductUnits.FromSqlRaw(
+                        @"SELECT ItemId,ItemName,UnitId,Seq,UnitName, SUM(Qty) as Qty,SUM(Total) as Total,UomId,
+                        UnitBuyId,UnitBuyName,UnitBuySeq, UnitSellId,UnitSellName,UnitSellSeq,
+                        UnitMaxId, UnitMaxName,UnitMaxSeq,UnitMinId,UnitMinName,UnitMinSeq,
+                        UnitBaseId,UnitBaseName,UnitBaseSeq,SalesBy 
+                        FROM
+                        (SELECT ItemId,I.Name as ItemName,D.UnitId,UReal.UnitEquivalent as UnitName,
+                        UReal.Seq,SUM(Qty) as Qty,SUM(D.NettPrice*D.Qty) as Total,I.UomId,
+                        UomBuyId as UnitBuyId,UBuy.UnitEquivalent as UnitBuyName, UBuy.Seq as UnitBuySeq,
+                        UomSellId as UnitSellId,USell.UnitEquivalent as UnitSellName,USell.Seq as UnitSellSeq,
+                        UMax.Id as UnitMaxId,UMax.UnitEquivalent as UnitMaxName, UMax.Seq as UnitMaxSeq,
+                        UMin.Id as UnitMinId,UMin.UnitEquivalent as UnitMinName,UMin.Seq as UnitMinSeq, 
+                        UBase.Id as UnitBaseId,UBase.UnitEquivalent as UnitBaseName,UBase.Seq as UnitBaseSeq,SalesBy
+                        FROM [ERPTenant].[MobileSales].[MobileOrderHeader] H 
+                        JOIN [MobileSales].[MobileOrderDetail] D on H.Code=D.Code 
+                        JOIN [Inventory].[Item] I on D.ItemId=I.Id
+                        JOIN [Inventory].[UoMConversion] UReal on D.UnitId=UReal.Id
+                        JOIN [Inventory].[UoMConversion] UBuy on I.UomBuyId=UBuy.Id
+                        JOIN [Inventory].[UoMConversion] USell on I.UomSellId=USell.Id
+                        JOIN (SELECT id,UomId,UnitEquivalent,Seq FROM [Inventory].[UoMConversion] WHERE IsBaseUnit=1) UBase on D.UomId=UBase.UomId
+                        JOIN (SELECT id,uomid,UnitEquivalent,Seq FROM [Inventory].[UoMConversion] U
+                        WHERE Seq=(Select max(seq) FROM [Inventory].[UoMConversion] Where UomId=U.UomId group by UomId)) UMax on D.UomId=UMax.UomId
+                        JOIN (SELECT id,uomid,UnitEquivalent,Seq FROM [Inventory].[UoMConversion] U
+                        WHERE Seq=(Select min(seq) FROM [Inventory].[UoMConversion] Where UomId=U.UomId group by UomId)) UMin on D.UomId=UMin.UomId
+                        JOIN (SELECT Code,Name FROM [General].[Customer]
+                        UNION ALL 
+                        SELECT Code,Name FROM [MobileSales].[MobileCustomer] WHERE Mark='A') C on H.CustCode=C.Code
+                        WHERE SalesOrderCode is null AND Mark!='REJ' " + filterDate +
+                        @"GROUP BY ItemId,I.Name,D.UnitId,UReal.UnitEquivalent,UReal.Seq,I.UomId,UomBuyId,UBuy.UnitEquivalent,
+                        UBuy.Seq,UomSellId,USell.UnitEquivalent,USell.Seq,
+                        UMax.Id,UMax.UnitEquivalent,UMax.Seq,
+                        UMin.Id,UMin.UnitEquivalent,UMin.Seq,
+                        UBase.Id,UBase.UnitEquivalent,UBase.Seq,SalesBy
+                        UNION ALL
+                        SELECT ItemId,I.Name as ItemName,D.UnitId,UReal.UnitEquivalent as UnitName,
+                        UReal.Seq,SUM(Qty) as Qty,SUM(D.NettPrice*D.Qty) as Total,I.UomId,
+                        UomBuyId as UnitBuyId,UBuy.UnitEquivalent as UnitBuyName, UBuy.Seq as UnitBuySeq,
+                        UomSellId as UnitSellId,USell.UnitEquivalent as UnitSellName,USell.Seq as UnitSellSeq,
+                        UMax.Id as UnitMaxId,UMax.UnitEquivalent as UnitMaxName, UMax.Seq as UnitMaxSeq,
+                        UMin.Id as UnitMinId,UMin.UnitEquivalent as UnitMinName,UMin.Seq as UnitMinSeq, 
+                        UBase.Id as UnitBaseId,UBase.UnitEquivalent as UnitBaseName,UBase.Seq as UnitBaseSeq,SalesBy
+                        FROM [Sales].[SalesOrderHeader] H 
+                        JOIN [Sales].[SalesOrderDetail] D on H.Code=D.Code 
+                        JOIN [Inventory].[Item] I on D.ItemId=I.Id
+                        JOIN [Inventory].[UoMConversion] UReal on D.UnitId=UReal.Id
+                        JOIN [Inventory].[UoMConversion] UBuy on I.UomBuyId=UBuy.Id
+                        JOIN [Inventory].[UoMConversion] USell on I.UomSellId=USell.Id
+                        JOIN (SELECT id,UomId,UnitEquivalent,Seq FROM [Inventory].[UoMConversion] WHERE IsBaseUnit=1) UBase on D.UomId=UBase.UomId
+                        JOIN (SELECT id,uomid,UnitEquivalent,Seq FROM [Inventory].[UoMConversion] U
+                        WHERE Seq=(Select max(seq) FROM [Inventory].[UoMConversion] Where UomId=U.UomId group by UomId)) UMax on D.UomId=UMax.UomId
+                        JOIN (SELECT id,uomid,UnitEquivalent,Seq FROM [Inventory].[UoMConversion] U
+                        WHERE Seq=(Select min(seq) FROM [Inventory].[UoMConversion] Where UomId=U.UomId group by UomId)) UMin on D.UomId=UMin.UomId
+                        JOIN (SELECT Code,Name FROM [General].[Customer]
+                        UNION ALL 
+                        SELECT Code,Name FROM [MobileSales].[MobileCustomer] WHERE Mark='A') C on H.CustCode=C.Code
+                        WHERE (Mark='A' OR Mark='PP' OR Mark='CMP') OR (Mark='CLS' AND QtyDlv>0) " + filterDate +
+                        @"GROUP BY ItemId,I.Name,D.UnitId,UReal.UnitEquivalent,UReal.Seq,I.UomId,UomBuyId,UBuy.UnitEquivalent,
+                        UBuy.Seq,UomSellId,USell.UnitEquivalent,USell.Seq,
+                        UMax.Id,UMax.UnitEquivalent,UMax.Seq,
+                        UMin.Id,UMin.UnitEquivalent,UMin.Seq,
+                        UBase.Id,UBase.UnitEquivalent,UBase.Seq,SalesBy) A 
+                        GROUP BY ItemId,ItemName,UnitId,UnitName,Seq, UomId, UnitBuyId,UnitBuyName,UnitBuySeq,
+                        UnitSellId,UnitSellName,UnitSellSeq,
+                        UnitMaxId,UnitMaxName,UnitMaxSeq,UnitMinId,UnitMinName,UnitMinSeq,
+                        UnitBaseId,UnitBaseName,UnitBaseSeq,SalesBy
+                        ").Where(x => x.SalesBy.Equals(userId)).ToList();
+
+        List<TransactionHistoryByProductUnit> resultData = new();
+        foreach (var data in history)
+        {
+            switch (filterUnit)
+            {
+                case 1: //base
+                    destSeq = data.UnitBaseSeq;
+                    destUnitName = data.UnitBaseName;
+                    break;
+                case 2: //biggest
+                    destSeq = data.UnitMaxSeq;
+                    destUnitName = data.UnitMaxName;
+                    break;
+                case 3: //smallest
+                    destSeq = data.UnitMinSeq;
+                    destUnitName = data.UnitMinName;
+                    break;
+                case 4: //buy
+                    destSeq = data.UnitBuySeq;
+                    destUnitName = data.UnitBuyName;
+                    break;
+                case 5: //sell
+                    destSeq = data.UnitSellSeq;
+                    destUnitName = data.UnitSellName;
+                    break;
+            }
+
+            if (data.Seq > destSeq)
+            {
+                var qtyConverted = CalculateUnitToBiggerSeq(data.UomId, data.Seq, destSeq);
+                resultData.Add(new()
+                {
+                    ItemId = data.ItemId,
+                    ItemName = data.ItemName,
+                    Unit = destUnitName,
+                    Quantity = data.Qty * qtyConverted,
+                    Total = data.Total
+
+                });
+            }
+            else if (data.Seq < destSeq)
+            {
+                var qtyConverted = CalculateUnitToSmallerSeq(data.UomId, data.Seq, destSeq);
+                resultData.Add(new()
+                {
+                    ItemId = data.ItemId,
+                    ItemName = data.ItemName,
+                    Unit = destUnitName,
+                    Quantity = data.Qty / qtyConverted,
+                    Total = data.Total
+                });
+            }
+            else
+            {
+                resultData.Add(new()
+                {
+                    ItemId = data.ItemId,
+                    ItemName = data.ItemName,
+                    Unit = destUnitName,
+                    Quantity = data.Qty,
+                    Total = data.Total
+                });
+            }
+        }
+
+        var resultSum = from r in resultData
+                        group r by new { r.ItemId, r.ItemName, r.Unit } into g
+                        select new
+                        {
+                            ItemId = g.Key.ItemId,
+                            ItemName = g.Key.ItemName,
+                            Unit = g.Key.Unit,
+                            Quantity = g.Sum(tl => tl.Quantity),
+                            Total = g.Sum(tl => tl.Total),
+                        };
+
+
+        DataSourceResult result = resultSum.AsQueryable().ToDataSourceResult(skip, take, filter, sort);
+
+        return result;
+    }
+
+    private decimal CalculateUnitToSmallerSeq(int uomId, int sourceSeq, int destSeq)
+    {
+        decimal result = 1;
+        List<UoMConversion> conversions = Db.UoMConversions.Where(x => x.UomId.Equals(uomId)).OrderBy(x => x.Seq).ToList();
+
+        for (int i = conversions.Count - 1; i > 0; i--)
+        {
+            if (conversions[i].Seq <= (destSeq) && conversions[i].Seq > sourceSeq)
+            {
+                result *= conversions[i].Conversion;
+            }
+        }
+
+        return result;
+    }
+
+    private decimal CalculateUnitToBiggerSeq(int uomId, int sourceSeq, int destSeq)
+    {
+        decimal result = 1;
+        List<UoMConversion> conversions = Db.UoMConversions.Where(x => x.UomId.Equals(uomId)).OrderBy(x => x.Seq).ToList();
+
+        for (int i = 0; i < conversions.Count; i++)
+        {
+            if (conversions[i].Seq >= (destSeq + 1) && conversions[i].Seq <= sourceSeq)
+            {
+                result *= conversions[i].Conversion;
+            }
+        }
+
+        return result;
     }
 }

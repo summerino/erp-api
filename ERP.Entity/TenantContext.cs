@@ -195,6 +195,10 @@ public class TenantContext : DbContext
     public DbSet<VwMobileVisitLog> VwMobileVisitLogs { get; set; }
     public DbSet<MobileVisitReason> MobileVisitReasons { get; set; }
     public DbSet<MobileVisitPerformanceReport> MobileVisitPerformanceReports { get; set; }
+    public DbSet<HistoryByProductUnit> TransactionHistoryByProductUnits { get; set; }
+    public DbSet<HistoryDetailCustomerByProductUnit> TransactionHistoryDetailCustomerByProductUnits { get; set; }
+    public DbSet<HistoryDetailItemByProductUnit> TransactionHistoryDetailItemByProductUnits { get; set; }
+
 
     // Mobile Warehouse entities
     public DbSet<MobileDeliveryItemHeader> MobileDeliveryItemHeaders { get; set; }
@@ -2764,5 +2768,18 @@ public class TenantContext : DbContext
         modelBuilder.Entity<VwUser>()
             .HasNoKey()
             .ToView("vwUser", Schema.SystemManagement);
+
+        //Transaction History Mobile
+        modelBuilder.Entity<HistoryByProductUnit>()
+            .HasNoKey()
+            .ToTable("TransactionHistoryByProductUnit", t => t.ExcludeFromMigrations());
+
+        modelBuilder.Entity<HistoryDetailItemByProductUnit>()
+            .HasNoKey()
+            .ToTable("HistoryDetailItemByProductUnit", t => t.ExcludeFromMigrations());
+
+        modelBuilder.Entity<HistoryDetailCustomerByProductUnit>()
+            .HasNoKey()
+            .ToTable("HistoryDetailCustomerByProductUnit", t => t.ExcludeFromMigrations());
     }
 }
