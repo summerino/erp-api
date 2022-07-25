@@ -120,7 +120,8 @@ public class MobilePaymentInvoiceService : GeneralService<MobilePaymentInvoice>,
                         Amount = item.Amount,
                         TypeAmount = "C",
                         TransAmount = item.Amount,
-                        Notes = cusData.Name
+                        Notes = cusData.Name,
+                        Src = "SI"
                     };
                     Db.GeneralCashBankDetails.Add(detailCBData);
 

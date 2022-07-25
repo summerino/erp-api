@@ -57,23 +57,26 @@ public class ARReportService : IARReportService
                     itemInv.RemainderAmount = itemInv.TotalAmount - itemInv.PaidAmount;
                 }
 
-                foreach (var itemBB in bbData)
+                if (slsId < 0)
                 {
-                    var totCb = cbDetail.Where(x => x.TransCode == itemBB.Code).Sum(x => x.TransAmount);
-                    invData.Add(new Entity.Sales.ReportByInvoiceAR
+                    foreach (var itemBB in bbData)
                     {
-                        Date = itemBB.Date,
-                        DueDate = itemBB.DueDate,
-                        Code = itemBB.Code,
-                        OrderCode = "",
-                        CustCode = itemBB.CustCode,
-                        CustName = itemBB.CustName,
-                        TotalAmount = itemBB.Amount,
-                        PaidAmount = totCb,
-                        RemainderAmount = itemBB.Amount - totCb
-                    });
+                        var totCb = cbDetail.Where(x => x.TransCode == itemBB.Code).Sum(x => x.TransAmount);
+                        invData.Add(new Entity.Sales.ReportByInvoiceAR
+                        {
+                            Date = itemBB.Date,
+                            DueDate = itemBB.DueDate,
+                            Code = itemBB.Code,
+                            OrderCode = "",
+                            CustCode = itemBB.CustCode,
+                            CustName = itemBB.CustName,
+                            TotalAmount = itemBB.Amount,
+                            PaidAmount = totCb,
+                            RemainderAmount = itemBB.Amount - totCb
+                        });
+                    }
                 }
-
+                
                 invData = invData.Where(x => x.RemainderAmount > 0).ToList();
 
                 foreach (var itemCus in cusData)

@@ -130,8 +130,8 @@ public class ARAgingReportService : IARAgingReportService
                     WHERE dlv.Mark IN('A','INV') AND dlv.SrcTrans = 1";
         }
 
-        var dlvData = _db.ReportByDeliveryARAgings.FromSqlRaw(@"WITH cte_ara_report AS ("+ query + (slsId > 0 ? $" AND so.SalesBy = {slsId} " : " ") + $@"
-					UNION
+        var dlvData = _db.ReportByDeliveryARAgings.FromSqlRaw(@"WITH cte_ara_report AS (" + query + (slsId > 0 ? $" AND so.SalesBy = {slsId} " : " ") +
+                  (slsId > 0 ? "" : $@" UNION
 					SELECT bb.[Date], bb.DueDate, bb.Code, '' AS OrderCode, '' AS SrcCode, '' AS SlsName, bb.CustCode, bb.CustName, bb.Amount - ISNULL(cb.Amount, 0) AS RemainderAmount,
                     CAST (CASE WHEN DATEDIFF(DAY, bb.DueDate, GETDATE()) > 90 THEN
                     bb.Amount - ISNULL(cb.Amount, 0) ELSE 0 END AS decimal(19, 6)) AS Past90,
@@ -163,11 +163,11 @@ public class ARAgingReportService : IARAgingReportService
                     LEFT JOIN ( 
 			                    SELECT cb_d.TransCode AS Code, SUM(cb_d.Amount) AS Amount FROM Finance.GeneralCashBankDetail cb_d
 			                    LEFT JOIN Finance.GeneralCashBankHeader cb_h ON cb_h.Code = cb_d.Code
-			                    WHERE cb_h.Mark NOT IN ('V', 'REJ') AND cb_d.Src = 'BB' AND cb_d.[Type] = 'AR' AND cb_h.Date <= '{date}'
+			                    WHERE cb_h.Mark NOT IN ('V', 'REJ') AND cb_d.[Type] = 'AR' AND cb_h.Date <= '{date}'
 			                    GROUP BY cb_d.TransCode
 			                    ) cb ON cb.Code = bb.Code
-                    WHERE bb.IsActive = 1)" +
-                    @" SELECT * FROM cte_ara_report " + (string.IsNullOrEmpty(duration) ? "" : $"WHERE {duration.Replace("'", "''")} > 0")).ToList();
+                    WHERE bb.IsActive = 1") +
+                  @") SELECT * FROM cte_ara_report " + (string.IsNullOrEmpty(duration) ? "" : $"WHERE {duration.Replace("'", "''")} > 0")).ToList();
 
         dlvData = dlvData.Where(x => x.Date <= Convert.ToDateTime(date)).ToList();
 
