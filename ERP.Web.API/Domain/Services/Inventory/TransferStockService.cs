@@ -340,7 +340,7 @@ public class TransferStockService : GeneralService<TransferStockHeader>, ITransf
             }
 
             // Checking void ordered for type 1 only
-            if (data.Type == "OUT" && !IsInventoryInAlreadyVoid(data.Code))
+            if (data.Type == "OUT" && IsInventoryInAlreadyVoid(data.Code))
             {
                 result.Message = "Data transfer persediaan tidak bisa ditandai sebagai void karena transfer persediaan pada barang masuk masih aktif.";
                 return result;
