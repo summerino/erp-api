@@ -429,10 +429,22 @@ public class TransferStockService : GeneralService<TransferStockHeader>, ITransf
                 whQtyData.QtyOnHand = whQtyData.QtyOnHand + Math.Abs(itemData.BaseQty);
                 Db.WarehouseQuantities.Update(whQtyData);
             }
-            else
+            else if (itemData.Type == "OH" && itemData.BaseQty > 0)
             {
                 whQtyData = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == itemData.WarehouseCode && x.ItemId == itemData.ItemId);
                 whQtyData.QtyOnHand = whQtyData.QtyOnHand - itemData.BaseQty;
+                Db.WarehouseQuantities.Update(whQtyData);
+            }
+            else if (itemData.Type == "OT" && itemData.BaseQty > 0)
+            {
+                whQtyData = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == itemData.WarehouseCode && x.ItemId == itemData.ItemId);
+                whQtyData.QtyOnTransfer = whQtyData.QtyOnTransfer - itemData.BaseQty;
+                Db.WarehouseQuantities.Update(whQtyData);
+            }
+            else if (itemData.Type == "OT" && itemData.BaseQty < 0)
+            {
+                whQtyData = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == itemData.WarehouseCode && x.ItemId == itemData.ItemId);
+                whQtyData.QtyOnTransfer = whQtyData.QtyOnTransfer - itemData.BaseQty;
                 Db.WarehouseQuantities.Update(whQtyData);
             }
         }
