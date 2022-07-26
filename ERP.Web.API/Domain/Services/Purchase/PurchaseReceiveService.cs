@@ -622,7 +622,7 @@ public class PurchaseReceiveService : GeneralService<PurchaseReceiveHeader>, IPu
             {
                 if (item.Type == 0)
                 {
-                    var dataPODetail = Db.PurchaseOrderDetails.FirstOrDefault(x => x.Code == transCode && x.ItemId == item.ItemId && x.Type == 0);
+                    var dataPODetail = Db.PurchaseOrderDetails.FirstOrDefault(x => x.Code == transCode && x.ItemId == item.ItemId && x.UnitId == item.UnitId && x.Type == 0);
                     if (code == null)
                     {
                         var availableStock = dataPODetail.Qty - dataPODetail.QtyRcv;
@@ -633,7 +633,7 @@ public class PurchaseReceiveService : GeneralService<PurchaseReceiveHeader>, IPu
                     }
                     else if (dataPODetail != null)
                     {
-                        var oldPRD = Db.PurchaseReceiveDetails.AsNoTracking().FirstOrDefault(x => x.Code == code && x.ItemId == item.ItemId);
+                        var oldPRD = Db.PurchaseReceiveDetails.AsNoTracking().FirstOrDefault(x => x.Code == code && x.ItemId == item.ItemId && x.UnitId == item.UnitId);
                         var availableStock = dataPODetail.Qty - (dataPODetail.QtyRcv - oldPRD?.Qty ?? 0);
                         if (item.Qty > availableStock)
                         {
@@ -648,21 +648,20 @@ public class PurchaseReceiveService : GeneralService<PurchaseReceiveHeader>, IPu
             foreach (var item in items)
             {
                 var prData = Db.PurchaseReturnHeaders.FirstOrDefault(x => x.Code == transCode);
-                var dataPRDetail = Db.PurchaseReturnDetails.FirstOrDefault(x => x.Code == transCode && x.ItemId == item.ItemId);
-                var dataPRXDetail = Db.PurchaseReturnDetailExchDiffItems.FirstOrDefault(x => x.Code == transCode && x.ItemId == item.ItemId);
+                var dataPRDetail = Db.PurchaseReturnDetails.FirstOrDefault(x => x.Code == transCode && x.ItemId == item.ItemId && x.UnitId == item.UnitId);
 
                 if (code == null)
                 {
-                    var availableStock = prData.Type == 2 ? dataPRDetail.Qty - dataPRDetail.QtyRcv : dataPRXDetail.Qty - dataPRXDetail.QtyRcv;
+                    var availableStock = dataPRDetail.Qty - dataPRDetail.QtyRcv;
                     if (item.Qty > availableStock)
                     {
                         result = true;
                     }
                 }
-                else if (prData.Type == 2 ? dataPRDetail != null : dataPRXDetail != null)
+                else if (dataPRDetail != null)
                 {
-                    var oldPRD = Db.PurchaseReceiveDetails.AsNoTracking().FirstOrDefault(x => x.Code == code && x.ItemId == item.ItemId);
-                    var availableStock = (prData.Type == 2 ? dataPRDetail.Qty : dataPRXDetail.Qty) - ((prData.Type == 2 ? dataPRDetail.QtyRcv : dataPRXDetail.QtyRcv) - oldPRD?.Qty ?? 0);
+                    var oldPRD = Db.PurchaseReceiveDetails.AsNoTracking().FirstOrDefault(x => x.Code == code && x.ItemId == item.ItemId && x.UnitId == item.UnitId);
+                    var availableStock = (dataPRDetail.Qty) - (dataPRDetail.QtyRcv - oldPRD?.Qty ?? 0);
                     if (item.Qty > availableStock)
                     {
                         result = true;
