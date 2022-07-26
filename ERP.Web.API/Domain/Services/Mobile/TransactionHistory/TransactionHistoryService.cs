@@ -43,7 +43,7 @@ public class TransactionHistoryService : ITransactionHistoryService
                           }).ToList();
 
         var dataOrder = (from so in Db.VwSalesOrderHeaders.Where(x => x.SalesBy.Equals(salesId) && SOMarkIn.Contains(x.Mark))
-                         join sod in Db.VwMobileOrderDetails on so.Code equals sod.Code
+                         join sod in Db.VwSalesOrderDetails on so.Code equals sod.Code
                          group new { so, sod } by new
                          {
                              so.CustCode,
