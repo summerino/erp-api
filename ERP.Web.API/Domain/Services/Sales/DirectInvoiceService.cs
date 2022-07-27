@@ -878,27 +878,29 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
 
             Db.SaveChanges();
 
-            var dlvData = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.TransCode == newCode);
-
-            // Execute sp_update_stock_mutation_from_so
-            Db.Database.ExecuteSqlRaw(
-                "EXEC sp_update_stock_mutation_from_so {0}, {1}",
-                newCode, data.Date);
-
-            // Execute sp_update_stock_mutation_from_do
-            Db.Database.ExecuteSqlRaw(
-                "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
-                dlvData?.Code, data.Date, newCode);
-
-            // Execute sp_update_stock_mutation_from_si
-            Db.Database.ExecuteSqlRaw(
-                "EXEC sp_update_stock_mutation_from_si {0}, {1}, {2}",
-                newCode, data.Date, newCode);
-
-            // Execute sp_update_po_rcv_qty
             if (!isOverLimit)
-                Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", newCode);
+            {
+                var dlvData = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.TransCode == newCode);
 
+                // Execute sp_update_stock_mutation_from_so
+                Db.Database.ExecuteSqlRaw(
+                    "EXEC sp_update_stock_mutation_from_so {0}, {1}",
+                    newCode, data.Date);
+
+                // Execute sp_update_stock_mutation_from_do
+                Db.Database.ExecuteSqlRaw(
+                    "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
+                    dlvData?.Code, data.Date, newCode);
+
+                // Execute sp_update_stock_mutation_from_si
+                Db.Database.ExecuteSqlRaw(
+                    "EXEC sp_update_stock_mutation_from_si {0}, {1}, {2}",
+                    newCode, data.Date, newCode);
+
+                // Execute sp_update_po_rcv_qty
+                Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", newCode);
+            }
+            
             // Update sales order to closed if all sales delivery are invoiced
             //if (
             //    !Db.SalesDeliveryHeaders
@@ -1878,23 +1880,24 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
             if (!isOverLimit)
             {
                 UpdateCreditUsed(data.CustCode, data.Total);
+
+                // Execute sp_update_stock_mutation_from_so
+                Db.Database.ExecuteSqlRaw(
+                    "EXEC sp_update_stock_mutation_from_so {0}, {1}",
+                    data.SoCode, data.Date);
+
+                // Execute sp_update_stock_mutation_from_do
+                Db.Database.ExecuteSqlRaw(
+                    "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
+                    InvoiceDetailData.DoCode, data.Date, data.SoCode);
+
+                // Execute sp_update_stock_mutation_from_si
+                Db.Database.ExecuteSqlRaw(
+                    "EXEC sp_update_stock_mutation_from_si {0}, {1}, {2}",
+                    data.Code, data.Date, data.Code);
+
                 Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", data.Code);
             }
-
-            // Execute sp_update_stock_mutation_from_so
-            Db.Database.ExecuteSqlRaw(
-                "EXEC sp_update_stock_mutation_from_so {0}, {1}",
-                data.SoCode, data.Date);
-
-            // Execute sp_update_stock_mutation_from_do
-            Db.Database.ExecuteSqlRaw(
-                "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
-                InvoiceDetailData.DoCode, data.Date, data.SoCode);
-
-            // Execute sp_update_stock_mutation_from_si
-            Db.Database.ExecuteSqlRaw(
-                "EXEC sp_update_stock_mutation_from_si {0}, {1}, {2}",
-                data.Code, data.Date, data.Code);
 
             // Check all sales delivery are invoiced
             //if (
