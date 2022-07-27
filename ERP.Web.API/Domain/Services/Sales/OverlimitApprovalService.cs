@@ -83,6 +83,8 @@ public class OverlimitApprovalService : IOverlimitApprovalService
                     doData.Mark = "INV";
                     _tenantCtx.SalesDeliveryHeaders.Update(doData);
 
+                    _tenantCtx.Database.ExecuteSqlRaw("EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}", doData.Code, doData.Date, doData.TransCode);
+
                     _tenantCtx.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", soData.Code);
 
                     var siData = _tenantCtx.SalesInvoiceHeaders.FirstOrDefault(x => x.Code == item.Code);
@@ -91,6 +93,8 @@ public class OverlimitApprovalService : IOverlimitApprovalService
 
                     siData.Mark = "A";
                     _tenantCtx.SalesInvoiceHeaders.Update(siData);
+
+                    _tenantCtx.Database.ExecuteSqlRaw("EXEC sp_update_stock_mutation_from_si {0}, {1}, {2}", siData.Code, siData.Date, siData.Code);
                 }
                 else
                 {
