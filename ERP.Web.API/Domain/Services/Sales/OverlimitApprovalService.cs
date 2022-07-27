@@ -72,6 +72,8 @@ public class OverlimitApprovalService : IOverlimitApprovalService
                     soData.OverlimitApprovedReason = reason;
                     _tenantCtx.SalesOrderHeaders.Update(soData);
 
+                    _tenantCtx.Database.ExecuteSqlRaw("EXEC sp_update_stock_mutation_from_so {0}, {1}", soData.Code, soData.Date);
+
                     UpdateCreditUsed(soData.CustCode, soData.Total);
 
                     var doData = _tenantCtx.SalesDeliveryHeaders.FirstOrDefault(x => x.Code == item.Code);
@@ -101,6 +103,8 @@ public class OverlimitApprovalService : IOverlimitApprovalService
                     soData.OverlimitApprovedDate = DateTime.Now;
                     soData.OverlimitApprovedReason = reason;
                     _tenantCtx.SalesOrderHeaders.Update(soData);
+
+                    _tenantCtx.Database.ExecuteSqlRaw("EXEC sp_update_stock_mutation_from_so {0}, {1}", soData.Code, soData.Date);
 
                     UpdateCreditUsed(soData.CustCode, soData.Total);
                 }

@@ -818,9 +818,8 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
             Db.SaveChanges();
 
             // Execute sp_update_stock_mutation_from_so
-            Db.Database.ExecuteSqlRaw(
-                "EXEC sp_update_stock_mutation_from_so {0}, {1}",
-                data.Code, data.Date);
+            if (!isOverLimit)
+                Db.Database.ExecuteSqlRaw("EXEC sp_update_stock_mutation_from_so {0}, {1}", data.Code, data.Date);
 
             if ((data.IsSoDlv || data.IsSoInv) && !isOverLimit)
             {
@@ -1723,9 +1722,8 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
             Db.SaveChanges();
 
             // Execute sp_update_stock_mutation_from_so
-            Db.Database.ExecuteSqlRaw(
-                "EXEC sp_update_stock_mutation_from_so {0}, {1}",
-                data.Code, data.Date);
+            if (!isOverLimit)
+                Db.Database.ExecuteSqlRaw("EXEC sp_update_stock_mutation_from_so {0}, {1}", data.Code, data.Date);
 
             if ((data.IsSoDlv || data.IsSoInv) && !isOverLimit)
             {
