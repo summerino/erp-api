@@ -182,6 +182,8 @@ public class ConsigneeService : GeneralService<TransferStockHeader>, IConsigneeS
                 return result;
             }
 
+            RestoreWarehouseQty(data.Code);
+
             data.ApprovedBy = null;
             data.ApprovedDate = null;
 
@@ -400,5 +402,39 @@ public class ConsigneeService : GeneralService<TransferStockHeader>, IConsigneeS
                 return true;
             }
         }
+    }
+
+    private void RestoreWarehouseQty(string code)
+    {
+        var TSData = Db.StockMutations.AsNoTracking().Where(x => x.RefCode1 == code).ToList();
+        foreach (var itemData in TSData)
+        {
+            var whQtyData = new WarehouseQuantity();
+            if (itemData.Type == "OH" && itemData.BaseQty < 0)
+            {
+                whQtyData = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == itemData.WarehouseCode && x.ItemId == itemData.ItemId);
+                whQtyData.QtyOnHand = whQtyData.QtyOnHand + Math.Abs(itemData.BaseQty);
+                Db.WarehouseQuantities.Update(whQtyData);
+            }
+            else if (itemData.Type == "OH" && itemData.BaseQty > 0)
+            {
+                whQtyData = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == itemData.WarehouseCode && x.ItemId == itemData.ItemId);
+                whQtyData.QtyOnHand = whQtyData.QtyOnHand - itemData.BaseQty;
+                Db.WarehouseQuantities.Update(whQtyData);
+            }
+            else if (itemData.Type == "OT" && itemData.BaseQty > 0)
+            {
+                whQtyData = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == itemData.WarehouseCode && x.ItemId == itemData.ItemId);
+                whQtyData.QtyOnTransfer = whQtyData.QtyOnTransfer - itemData.BaseQty;
+                Db.WarehouseQuantities.Update(whQtyData);
+            }
+            else if (itemData.Type == "OT" && itemData.BaseQty < 0)
+            {
+                whQtyData = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == itemData.WarehouseCode && x.ItemId == itemData.ItemId);
+                whQtyData.QtyOnTransfer = whQtyData.QtyOnTransfer - itemData.BaseQty;
+                Db.WarehouseQuantities.Update(whQtyData);
+            }
+        }
+        Db.SaveChanges();
     }
 }
