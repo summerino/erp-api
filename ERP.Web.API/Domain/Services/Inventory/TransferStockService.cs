@@ -389,7 +389,7 @@ public class TransferStockService : GeneralService<TransferStockHeader>, ITransf
 
     private bool IsInventoryInAlreadyVoid(string code)
     {
-        return Db.TransferStockHeaders.Any(x => x.OriginTransferCode == code && x.Mark == "V");
+        return Db.TransferStockHeaders.Any(x => x.OriginTransferCode == code && x.Mark != "V");
     }
 
     private bool IsWarehouseItemQtyExists(string warehouseCode, int itemId, int uomId, int unitId, decimal qty)
