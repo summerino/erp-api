@@ -695,7 +695,7 @@ public class JournalService : IJournalService
 
         var DlvData = (from dlvheader in db.SalesDeliveryHeaders
                        join customer in db.Customers on dlvheader.CustCode equals customer.Code
-                       where dlvheader.Date.Month == dateTime.Month && dlvheader.Date.Year == dateTime.Year && dlvheader.SrcTrans == 1 && dlvheader.Mark != "V"
+                       where dlvheader.Date.Month == dateTime.Month && dlvheader.Date.Year == dateTime.Year && dlvheader.SrcTrans == 1 && !new[] { "OL", "V" }.Contains(dlvheader.Mark)
                        select new { Dlvheader = dlvheader, Customer = customer }).ToList();
 
         foreach (var itemData in DlvData)
@@ -1127,7 +1127,7 @@ public class JournalService : IJournalService
         {
             var InvData = (from invheader in db.SalesInvoiceHeaders
                            join customer in db.Customers on invheader.CustCode equals customer.Code
-                           where invheader.Date.Month == dateTime.Month && invheader.Date.Year == dateTime.Year && invheader.Mark != "V"
+                           where invheader.Date.Month == dateTime.Month && invheader.Date.Year == dateTime.Year && !new[] { "OL", "V" }.Contains(invheader.Mark)
                            select new { InvHeader = invheader, Customer = customer }).ToList();
 
             foreach (var itemData in InvData)

@@ -1815,7 +1815,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
             deliveryData.ExemptTaxAmount = data.ExemptTaxAmount;
             deliveryData.Total = data.Total;
             deliveryData.Dpp = data.Dpp;
-            deliveryData.Mark = "INV";
+            deliveryData.Mark = data.Mark == "OL" ? "OL" : "INV";
             deliveryData.Notes = data.Notes;
             deliveryData.UpdatedBy = data.UpdatedBy;
             deliveryData.UpdatedDate = data.UpdatedDate;
