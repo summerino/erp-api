@@ -676,17 +676,26 @@ public class DeliveryPlanService : GeneralService<DeliveryPlanHeader>, IDelivery
                                     if (sdHeader.FromDirectInvoice)
                                     {
                                         var soDetail = Db.SalesOrderDetails.FirstOrDefault(x => x.Code == item.TransCode && x.ItemId == uItem.ItemId && x.UnitId == uItem.UnitId);
-                                        soDetail.Qty += unItem.Qty;
-                                        soDetail.QtyDlv += unItem.Qty;
-                                        soDetail.Total += (soDetail.NettPrice * unItem.Qty);
+                                        if (dpDetailItem != null)
+                                        {
+                                            soDetail.Qty = dpDetailItem.Qty - uItem.Qty;
+                                            soDetail.QtyDlv = dpDetailItem.Qty - uItem.Qty;
+                                            soDetail.Total = (soDetail.NettPrice * dpDetailItem.Qty) - (soDetail.NettPrice * uItem.Qty);
+                                        }
+                                        else
+                                        {
+                                            soDetail.Qty -= uItem.Qty;
+                                            soDetail.QtyDlv -= uItem.Qty;
+                                            soDetail.Total -= (soDetail.NettPrice * uItem.Qty);
+                                        }
                                         Db.SalesOrderDetails.Update(soDetail);
 
                                         soHeader = Db.SalesOrderHeaders.FirstOrDefault(x => x.Code == item.TransCode);
-                                        soHeader.SubTotal += (soDetail.NettPrice * unItem.Qty);
-                                        soHeader.TaxAmount += (soDetail.TaxAmount * unItem.Qty);
-                                        soHeader.ExemptTaxAmount += (soDetail.ExemptTaxAmount * unItem.Qty);
-                                        soHeader.Total += (soDetail.NettPrice * unItem.Qty);
-                                        soHeader.Dpp += (soDetail.Dpp * unItem.Qty);
+                                        soHeader.SubTotal += (soDetail.NettPrice * lastQty) - (soDetail.NettPrice * uItem.Qty);
+                                        soHeader.TaxAmount += (soDetail.TaxAmount * lastQty) - (soDetail.TaxAmount * uItem.Qty);
+                                        soHeader.ExemptTaxAmount += (soDetail.ExemptTaxAmount * lastQty) - (soDetail.ExemptTaxAmount * uItem.Qty);
+                                        soHeader.Total += (soDetail.NettPrice * lastQty) - (soDetail.NettPrice * uItem.Qty);
+                                        soHeader.Dpp += (soDetail.Dpp * lastQty) - (soDetail.Dpp * uItem.Qty);
                                         Db.SalesOrderHeaders.Update(soHeader);
                                     }
 
@@ -704,6 +713,7 @@ public class DeliveryPlanService : GeneralService<DeliveryPlanHeader>, IDelivery
 
                                     sdHeader.SubTotal += (sdDetail.NettPrice * lastQty) - (sdDetail.NettPrice * uItem.Qty);
                                     sdHeader.TaxAmount += (sdDetail.TaxAmount * lastQty) - (sdDetail.TaxAmount * uItem.Qty);
+                                    sdHeader.ExemptTaxAmount += (sdDetail.ExemptTaxAmount * lastQty) - (sdDetail.ExemptTaxAmount * uItem.Qty);
                                     sdHeader.Total += (sdDetail.NettPrice * lastQty) - (sdDetail.NettPrice * uItem.Qty);
                                     sdHeader.Dpp += (sdDetail.Dpp * lastQty) - (sdDetail.Dpp * uItem.Qty);
                                     Db.SalesDeliveryHeaders.Update(sdHeader);
@@ -964,7 +974,7 @@ public class DeliveryPlanService : GeneralService<DeliveryPlanHeader>, IDelivery
 
     private void RestoreWarehouseQtySO(string code)
     {
-        var dlvSOData = Db.StockMutations.AsNoTracking().Where(x => x.RefCode1 == code).ToList();
+        var dlvSOData = Db.StockMutations.AsNoTracking().Where(x => x.RefCode1 == code && x.Src == "SO").ToList();
         foreach (var itemData in dlvSOData)
         {
             var whQtyData = new Entity.Inventory.WarehouseQuantity();
@@ -980,7 +990,7 @@ public class DeliveryPlanService : GeneralService<DeliveryPlanHeader>, IDelivery
 
     private void RestoreWarehouseQtyDO(string code, string srcCode, short srcTrans)
     {
-        var dlvSMData = Db.StockMutations.AsNoTracking().Where(x => x.RefCode1 == code).ToList();
+        var dlvSMData = Db.StockMutations.AsNoTracking().Where(x => x.RefCode1 == code && x.Src == "DO").ToList();
         var transSMData = Db.StockMutations.AsNoTracking().Where(x => x.RefCode1 == srcCode).ToList();
         if (srcTrans == 1)
         {
@@ -1021,16 +1031,19 @@ public class DeliveryPlanService : GeneralService<DeliveryPlanHeader>, IDelivery
 
     private void RestoreWarehouseQtySI(string code, string srcCode, short srcTrans)
     {
-        var dlvSMData = Db.StockMutations.AsNoTracking().Where(x => x.RefCode1 == code).ToList();
+        var dlvSMData = Db.StockMutations.AsNoTracking().Where(x => x.RefCode1 == code && x.Src == "SI").ToList();
         var transSMData = Db.StockMutations.AsNoTracking().Where(x => x.RefCode1 == srcCode).ToList();
         if (srcTrans == 1)
         {
             foreach (var itemData in dlvSMData)
             {
-                var whQtyData = new Entity.Inventory.WarehouseQuantity();
-                whQtyData = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == itemData.WarehouseCode && x.ItemId == itemData.ItemId);
-                whQtyData.QtyOnTransit = whQtyData.QtyOnTransit + itemData.BaseQty;
-                Db.WarehouseQuantities.Update(whQtyData);
+                if (itemData.Type == "OTS")
+                {
+                    var whQtyData = new Entity.Inventory.WarehouseQuantity();
+                    whQtyData = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == itemData.WarehouseCode && x.ItemId == itemData.ItemId);
+                    whQtyData.QtyOnTransit = whQtyData.QtyOnTransit + itemData.BaseQty;
+                    Db.WarehouseQuantities.Update(whQtyData);
+                }
             }
         }
         Db.SaveChanges();
