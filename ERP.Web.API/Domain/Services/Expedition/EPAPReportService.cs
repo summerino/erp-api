@@ -28,7 +28,7 @@ public class EPAPReportService : IEPAPReportService
                         where ex.Mark != 'V'
                         group by ex.Date, ex.DueDate, ex.Code, ex.SupCode, sp.[Name], ex.Amount").ToList();
 
-        var cbData = _db.GeneralCashBankHeaders.Where(x => x.Mark != "V" && x.Date <= Convert.ToDateTime(date)).ToList();
+        var cbData = _db.GeneralCashBankHeaders.Where(x => !new[] { "V", "REJ" }.Contains(x.Mark) && x.Date <= Convert.ToDateTime(date)).ToList();
 
         var cbDetail = _db.GeneralCashBankDetails.Where(x => cbData.Select(c => c.Code).Contains(x.Code)).ToList();
 
