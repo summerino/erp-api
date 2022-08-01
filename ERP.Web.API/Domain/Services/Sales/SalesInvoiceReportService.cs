@@ -19,7 +19,7 @@ public class SalesInvoiceReportService : ISalesInvoiceReportService
                             inv.SOCode AS OrderCode, inv.CustCode, inv.CustName,
                             SUM(dlv_d.Qty * dlv_d.UnitPrice) AS GrossAmount, SUM(dlv_d.Qty * (dlv_d.UnitPrice - dlv_d.Disc - dlv_d.FinalDiscHeader)) AS SubTotal,
                             SUM(dlv_d.Qty * dlv_d.Disc) AS Disc, SUM(dlv_d.Qty * dlv_d.FinalDiscHeader) AS DiscHeader,
-                            SUM(dlv.DPP) AS DPP, SUM(dlv.TaxAmount) AS TaxAmount, SUM(dlv.ExemptTaxAmount) AS ExemptTaxAmount, SUM(dlv.Total) AS Total,
+                            SUM(dlv_d.Qty * dlv_d.DPP) AS DPP, SUM(dlv_d.Qty * dlv_d.TaxAmount) AS TaxAmount, SUM(dlv_d.Qty * dlv_d.ExemptTaxAmount) AS ExemptTaxAmount, SUM(dlv_d.Qty * dlv_d.NettPrice) AS Total,
                             CASE inv.Mark
 	                            WHEN 'A' THEN 'Aktif'
 	                            WHEN 'V' THEN 'Void'
