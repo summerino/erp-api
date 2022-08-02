@@ -531,7 +531,7 @@ public class PurchaseReturnService : GeneralService<PurchaseReturnHeader>, IPurc
                     {
                         if (uom.IsBaseUnit)
                         {
-                            if (item.Qty > (stock.QtyOnHand + oldStock.BaseQty))
+                            if (item.Qty > (stock.WarehouseCode == oldStock.WarehouseCode ? (stock.QtyOnHand + oldStock.BaseQty) : stock.QtyOnHand))
                             {
                                 result = true;
                             }
@@ -541,7 +541,7 @@ public class PurchaseReturnService : GeneralService<PurchaseReturnHeader>, IPurc
                             var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= uom.Seq).Select(x => x.Conversion).ToList();
                             var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
                             var baseQty = item.Qty * multipliedQty;
-                            if (baseQty > (stock.QtyOnHand + oldStock.BaseQty))
+                            if (baseQty > (stock.WarehouseCode == oldStock.WarehouseCode ? (stock.QtyOnHand + oldStock.BaseQty) : stock.QtyOnHand))
                             {
                                 result = true;
                             }
