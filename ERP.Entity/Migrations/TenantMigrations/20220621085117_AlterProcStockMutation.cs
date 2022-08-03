@@ -1016,7 +1016,14 @@ BEGIN TRY
 				END
 				ELSE
 				BEGIN
-					UPDATE Inventory.WarehouseQuantity SET QtyOnHand += @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
+					IF (@Type = 'OH')
+					BEGIN
+						UPDATE Inventory.WarehouseQuantity SET QtyOnHand += @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
+					END
+					ELSE
+					BEGIN
+						DELETE Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId AND [Type] = @Type AND RefCode1 = @code
+					END
 				END
 			END
 			ELSE
