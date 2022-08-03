@@ -805,8 +805,8 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
             foreach (var item in items)
             {
                 var srData = Db.SalesReturnHeaders.FirstOrDefault(x => x.Code == transCode);
-                var dataSRDetail = Db.SalesReturnDetails.FirstOrDefault(x => x.Code == transCode && x.ItemId == item.ItemId);
-                var dataSRXDetail = Db.SalesReturnDetailExchDiffItems.FirstOrDefault(x => x.Code == transCode && x.ItemId == item.ItemId);
+                var dataSRDetail = Db.SalesReturnDetails.FirstOrDefault(x => x.Code == transCode && x.ItemId == item.ItemId && x.UnitId == item.UnitId);
+                var dataSRXDetail = Db.SalesReturnDetailExchDiffItems.FirstOrDefault(x => x.Code == transCode && x.ItemId == item.ItemId && x.UnitId == item.UnitId);
                 if (code == null)
                 {
                     var availableStock = srData.Type == 2 ? dataSRDetail.Qty - dataSRDetail.QtyDlv : dataSRXDetail.Qty - dataSRXDetail.QtyDlv;
@@ -817,7 +817,7 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
                 }
                 else if (srData.Type == 2 ? dataSRDetail != null : dataSRXDetail != null)
                 {
-                    var oldSDD = Db.SalesDeliveryDetails.AsNoTracking().FirstOrDefault(x => x.Code == code && x.ItemId == item.ItemId);
+                    var oldSDD = Db.SalesDeliveryDetails.AsNoTracking().FirstOrDefault(x => x.Code == code && x.ItemId == item.ItemId && x.UnitId == item.UnitId);
                     var availableStock = (srData.Type == 2 ? dataSRDetail.Qty : dataSRXDetail.Qty) - ((srData.Type == 2 ? dataSRDetail.Qty : dataSRXDetail.Qty) - oldSDD?.Qty ?? 0);
                     if (item.Qty > availableStock)
                     {
