@@ -95,6 +95,7 @@ public class SalesReturnController : ControllerBase
                 OldUnitName = x.ItemUomSellName,
                 OldUnitPrice = x.ItemSellPrice,
                 TotTax = x.Qty * x.TaxAmount,
+                TotExemptTax = x.Qty * x.ExemptTaxAmount,
                 TotDPP = x.Qty * x.Dpp,
                 Units = uomC.Where(u => u.UomId == x.UomId)
                     .Select(u => new
@@ -144,6 +145,7 @@ public class SalesReturnController : ControllerBase
                 Disc = 0m,
                 x.TaxId,
                 x.TaxAmount,
+                x.ExemptTaxAmount,
                 x.NettPrice,
                 x.Total,
                 x.Dpp,
@@ -151,6 +153,7 @@ public class SalesReturnController : ControllerBase
                 OldUnitName = x.ItemUomSellName,
                 OldUnitPrice = x.ItemSellPrice,
                 TotTax = x.Qty * x.TaxAmount,
+                TotExemptTax = x.Qty * x.ExemptTaxAmount,
                 TotDPP = x.Qty * x.Dpp,
                 Units = uomC.Where(u => u.UomId == x.UomId)
                     .Select(u => new
