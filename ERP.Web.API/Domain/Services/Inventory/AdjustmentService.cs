@@ -74,6 +74,12 @@ public class AdjustmentService : GeneralService<AdjustmentHeader>, IAdjustmentSe
         using var transaction = Db.Database.BeginTransaction();
         try
         {
+            if (data.Type == 1 && data.ItemDetails.Any(x => (x.QtyOnHand + x.QtyAdjust) < 0))
+            {
+                result.Message = "Data penyesuaian tidak bisa ditambahkan karena terdapat barang dengan qty minus.";
+                return result;
+            }
+
             // Get new code
             var newCode = GetNewCode("ADJ_NUM_FMT", data.Date);
 
@@ -155,6 +161,12 @@ public class AdjustmentService : GeneralService<AdjustmentHeader>, IAdjustmentSe
             if (Db.AdjustmentHeaders.Any(x => x.Code == data.Code && x.Mark == "V"))
             {
                 result.Message = "Data penyesuaian tidak bisa di ubah karena sudah ditandai sebagai void.";
+                return result;
+            }
+
+            if (data.Type == 1 && data.ItemDetails.Any(x => (x.QtyOnHand + x.QtyAdjust) < 0))
+            {
+                result.Message = "Data penyesuaian tidak bisa ditambahkan karena terdapat barang dengan qty minus.";
                 return result;
             }
 
@@ -254,18 +266,28 @@ public class AdjustmentService : GeneralService<AdjustmentHeader>, IAdjustmentSe
             var data = Db.AdjustmentHeaders.Find(code);
             if (data != null)
             {
-
-                // Execute sp_update_stock_mutation_from_adj
-                Db.Database.ExecuteSqlRaw(
-                    "EXEC sp_restore_stock_mutation_from_adj {0}, {1}",
-                    data.Code, data.Date);
-
                 // Checking mark header data
                 if (data.Mark == "V")
                 {
                     result.Message = "Data penyesuaian tidak bisa di ubah karena sudah ditandai sebagai void.";
                     return result;
                 }
+
+                var itemDetails = Db.AdjustmentDetails.Where(x => x.Code == data.Code).ToList();
+                foreach (var item in itemDetails)
+                {
+                    var whQtyData = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == data.WarehouseCode && x.ItemId == item.ItemId);
+                    if ((whQtyData.QtyOnHand - item.QtyAdjust) < 0)
+                    {
+                        result.Message = "Data penyesuaian tidak bisa divoid karena terdapat barang dengan qty minus.";
+                        return result;
+                    } 
+                }
+
+                // Execute sp_update_stock_mutation_from_adj
+                Db.Database.ExecuteSqlRaw(
+                    "EXEC sp_restore_stock_mutation_from_adj {0}, {1}",
+                    data.Code, data.Date);
 
                 // Update header data
                 data.Mark = "V";
