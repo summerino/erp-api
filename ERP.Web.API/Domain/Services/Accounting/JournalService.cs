@@ -1263,6 +1263,71 @@ public class JournalService : IJournalService
                     }
                 }
 
+                var SDPData = db.CreditMemos.Where(x => x.TransCode == itemData.InvHeader.SoCode && x.SrcTrans == 3 & x.Mark == "A").ToList();
+                foreach (var itemSDP in SDPData)
+                {
+                    //Uang Muka
+                    var usedSDPAmount = journals.Where(x => x.RefCode3 == itemSDP.TransCode && x.RefCode1 == itemSDP.Code && x.Group == 9).Sum(x => x.Amount);
+                    var SDPAmount = usedSDPAmount > 0 ? itemData.InvHeader.Total > (itemSDP.Amount - usedSDPAmount) ? (itemSDP.Amount - usedSDPAmount) : itemSDP.Amount : itemSDP.Amount > itemData.InvHeader.Total ? itemData.InvHeader.Total : itemSDP.Amount;
+                    journals.Add(new Journal
+                    {
+                        Code = itemData.InvHeader.Code,
+                        LineNo = 1,
+                        Date = itemData.InvHeader.Date,
+                        CoaCode = systemParam.FirstOrDefault(x => x.Code == "SLS_DP_COA")?.Value ?? "",
+                        TypeCode = "SDP",
+                        Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_SLS_DP")?.Value ?? ""} {itemData.Customer.Initial}").Trim(),
+                        RefCode1 = itemSDP.Code,
+                        RefCode2 = itemData.InvHeader.Code,
+                        RefCode3 = itemSDP.TransCode,
+                        Group = 9,
+                        CurrCode = itemData.InvHeader.CurrCode,
+                        Period = itemData.InvHeader.Date.ToString("yyyyMMdd"),
+                        Type = "D",
+                        Amount = SDPAmount,
+                        SrcTrans = "SI"
+                    });
+                    //Piutang - AR
+                    journals.Add(new Journal
+                    {
+                        Code = itemData.InvHeader.Code,
+                        LineNo = 1,
+                        Date = itemData.InvHeader.Date,
+                        CoaCode = systemParam.FirstOrDefault(x => x.Code == "AR_COA")?.Value ?? "",
+                        TypeCode = "AR",
+                        Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_AR")?.Value ?? ""} {itemData.Customer.Initial}").Trim(),
+                        RefCode1 = itemData.InvHeader.SoCode,
+                        Group = 1,
+                        CurrCode = itemData.InvHeader.CurrCode,
+                        Period = itemData.InvHeader.Date.ToString("yyyyMMdd"),
+                        Type = "C",
+                        Amount = SDPAmount,
+                        SrcTrans = "SI"
+                    });
+
+                    //PPN Uang Muka
+                    var usedSDPTaxAmount = journals.Where(x => x.RefCode3 == itemSDP.TransCode && x.RefCode1 == itemSDP.Code && x.Group == 6).Sum(x => x.Amount);
+                    var SDPTaxAmount = usedSDPTaxAmount > 0 ? taxAmount > (itemSDP.TaxAmount - usedSDPTaxAmount) ? (itemSDP.TaxAmount - usedSDPTaxAmount) : itemSDP.TaxAmount : itemSDP.TaxAmount > taxAmount ? taxAmount : itemSDP.TaxAmount;
+                    journals.Add(new Journal
+                    {
+                        Code = itemData.InvHeader.Code,
+                        LineNo = 1,
+                        Date = itemData.InvHeader.Date,
+                        CoaCode = systemParam.FirstOrDefault(x => x.Code == "TAX_OUT_COA")?.Value ?? "",
+                        TypeCode = "PPN",
+                        Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_TAX_OUT")?.Value ?? ""} {itemData.Customer.Initial}").Trim(),
+                        RefCode1 = itemSDP.Code,
+                        RefCode2 = itemData.InvHeader.Code,
+                        RefCode3 = itemSDP.TransCode,
+                        Group = 6,
+                        CurrCode = itemData.InvHeader.CurrCode,
+                        Period = itemData.InvHeader.Date.ToString("yyyyMMdd"),
+                        Type = "D",
+                        Amount = SDPTaxAmount,
+                        SrcTrans = "SI"
+                    });
+                }
+
                 //discount
                 journals.Add(new Journal
                 {
@@ -3620,7 +3685,7 @@ public class JournalService : IJournalService
     private IEnumerable<Journal> ProcessSalesDownPaymentJournal(TenantContext db, List<SystemParameter> systemParam)
     {
         List<Journal> journals = new();
-        var SdpData = db.VwCreditMemos.Where(x => new[] { 3, 4 }.Contains(x.SrcTrans)).ToList();
+        var SdpData = db.VwCreditMemos.Where(x => new[] { 3, 4 }.Contains(x.SrcTrans) && x.Mark == "A").ToList();
 
         foreach (var itemData in SdpData)
         {
