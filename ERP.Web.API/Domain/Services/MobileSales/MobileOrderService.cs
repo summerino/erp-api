@@ -303,7 +303,7 @@ public class MobileOrderService : GeneralService<MobileOrderHeader>, IMobileOrde
                                     CoaCode = barangData.CoaSlsDisc ?? sysparamData.FirstOrDefault(x => x.Code == "SLS_DISC_COA")?.Value
                                 });
 
-                                var orderFreeDetail = Db.SalesOrderDetailFreeGoods.FirstOrDefault(x => x.Id == freeItem.Id);
+                                var orderFreeDetail = Db.SalesOrderDetailFreeGoods.FirstOrDefault(x => x.OrderDetailId == deliveryDetail.SoDetailId);
                                 orderFreeDetail.QtyClosed += freeItem.Qty;
                                 Db.SalesOrderDetailFreeGoods.Update(orderFreeDetail);
                             }
