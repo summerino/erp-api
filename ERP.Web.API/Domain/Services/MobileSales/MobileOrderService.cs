@@ -168,15 +168,15 @@ public class MobileOrderService : GeneralService<MobileOrderHeader>, IMobileOrde
                         Db.SalesOrderDetails.Add(orderDetail);
                         idOrderDetail.Add(orderDetail.Id);
 
-                        if (detailDiscData.Any() || detailFreeData.Any())
+                        if (detailDiscData.Any(x=> x.OrderDetailId == itemDetail.Id) || detailFreeData.Any(x => x.OrderDetailId == itemDetail.Id))
                         {
                             Db.SaveChanges();
                         }
 
-                        if (detailDiscData.Any())
+                        if (detailDiscData.Any(x => x.OrderDetailId == itemDetail.Id))
                         {
                             short d = 0;
-                            foreach (var discItem in detailDiscData)
+                            foreach (var discItem in detailDiscData.Where(x => x.OrderDetailId == itemDetail.Id))
                             {
                                 Db.SalesOrderDetailDiscounts.Add(new SalesOrderDetailDiscount
                                 {
@@ -195,10 +195,10 @@ public class MobileOrderService : GeneralService<MobileOrderHeader>, IMobileOrde
                             Db.SaveChanges();
                         }
 
-                        if (detailFreeData.Any())
+                        if (detailFreeData.Any(x => x.OrderDetailId == itemDetail.Id))
                         {
                             short f = 0;
-                            foreach (var freeItem in detailFreeData)
+                            foreach (var freeItem in detailFreeData.Where(x => x.OrderDetailId == itemDetail.Id))
                             {
                                 Db.SalesOrderDetailFreeGoods.Add(new SalesOrderDetailFreeGood
                                 {
@@ -279,15 +279,15 @@ public class MobileOrderService : GeneralService<MobileOrderHeader>, IMobileOrde
 
                         Db.SalesDeliveryDetails.Add(deliveryDetail);
 
-                        if (detailFreeData.Any())
+                        if (detailFreeData.Any(x => x.OrderDetailId == itemDetail.Id))
                         {
                             Db.SaveChanges();
                         }
 
-                        if (detailFreeData.Any())
+                        if (detailFreeData.Any(x => x.OrderDetailId == itemDetail.Id))
                         {
                             short f = 0;
-                            foreach (var freeItem in detailFreeData)
+                            foreach (var freeItem in detailFreeData.Where(x => x.OrderDetailId == itemDetail.Id))
                             {
                                 Db.SalesDeliveryDetailFreeGoods.Add(new SalesDeliveryDetailFreeGood
                                 {
@@ -303,7 +303,7 @@ public class MobileOrderService : GeneralService<MobileOrderHeader>, IMobileOrde
                                     CoaCode = barangData.CoaSlsDisc ?? sysparamData.FirstOrDefault(x => x.Code == "SLS_DISC_COA")?.Value
                                 });
 
-                                var orderFreeDetail = Db.SalesOrderDetailFreeGoods.FirstOrDefault(x => x.Id == freeItem.Id);
+                                var orderFreeDetail = Db.SalesOrderDetailFreeGoods.FirstOrDefault(x => x.OrderDetailId == deliveryDetail.SoDetailId);
                                 orderFreeDetail.QtyClosed += freeItem.Qty;
                                 Db.SalesOrderDetailFreeGoods.Update(orderFreeDetail);
                             }
