@@ -94,16 +94,15 @@ public class AdjustmentService : GeneralService<AdjustmentHeader>, IAdjustmentSe
                 Qty = x.Sum(y => y.QtyAdjust)
             });
 
-            foreach (var itemGroup in groupedDetail)
-            {
-                var whQtyData = Db.VwWarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == data.WarehouseCode && x.ItemId == itemGroup.ItemId);
-                if (whQtyData == null) continue;
-                if ((whQtyData.QtyOnHand + itemGroup.Qty) < 0)
+                foreach (var itemGroup in groupedDetail)
                 {
-                    result.Message = $"Data penyesuaian tidak bisa ditambahkan karena terdapat barang pada gudang {whQtyData.WarehouseInitial} qty tersedia akan menjadi minus.";
-                    return result;
+                    var whQtyData = Db.VwWarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == data.WarehouseCode && x.ItemId == itemGroup.ItemId);
+                    if (whQtyData == null || (whQtyData.QtyOnHand + itemGroup.Qty) < 0)
+                    {
+                        result.Message = $"Data penyesuaian tidak bisa ditambahkan karena terdapat barang pada gudang {whQtyData.WarehouseInitial} qty tersedia akan menjadi minus.";
+                        return result;
+                    }
                 }
-            }
 
             foreach (var item in data.ItemDetails)
             {
