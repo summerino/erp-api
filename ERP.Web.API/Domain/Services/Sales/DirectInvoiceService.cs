@@ -248,8 +248,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                                         break;
                                     case 2:
                                         // Apply to Barang - Promo Method Qty Barang
-                                        var originalQty2 = qtyOriginal[item.Id];
-                                        var tierData = detailTierPromo.FirstOrDefault(x => originalQty2 >= x.FromQty && originalQty2 <= x.ToQty && x.SaleUnit == item.UnitId);
+                                        var tierData = applyTo == 3 ? detailTierPromo.FirstOrDefault(x => item.Qty >= x.FromQty && item.Qty <= x.ToQty) : detailTierPromo.FirstOrDefault(x => item.Qty >= x.FromQty && item.Qty <= x.ToQty && x.SaleUnit == item.UnitId);
                                         if (tierData != null)
                                         {
                                             if (tierData.ApplyToAllUnit)
@@ -295,8 +294,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                                         break;
                                     case 3:
                                         // Apply to Barang - Promo Method Bonus
-                                        var originalQty3 = qtyOriginal[item.Id];
-                                        var tierData3 = detailTierPromo.FirstOrDefault(x => originalQty3 >= x.FromQty && originalQty3 <= x.ToQty && x.SaleUnit == item.UnitId);
+                                        var tierData3 = applyTo == 3 ? detailTierPromo.FirstOrDefault(x => item.Qty >= x.FromQty && item.Qty <= x.ToQty) : detailTierPromo.FirstOrDefault(x => item.Qty >= x.FromQty && item.Qty <= x.ToQty && x.SaleUnit == item.UnitId);
                                         if (tierData3 != null)
                                         {
                                             var freeItem = items.FirstOrDefault(x => x.Id == tierData3.FreeGoodItemId);
@@ -1054,8 +1052,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                                         break;
                                     case 2:
                                         // Apply to Barang - Promo Method Qty Barang
-                                        var originalQty2 = qtyOriginal[item.Id];
-                                        var tierData = detailTierPromo.FirstOrDefault(x => originalQty2 >= x.FromQty && originalQty2 <= x.ToQty && x.SaleUnit == item.UnitId);
+                                        var tierData = applyTo == 3 ? detailTierPromo.FirstOrDefault(x => item.Qty >= x.FromQty && item.Qty <= x.ToQty) : detailTierPromo.FirstOrDefault(x => item.Qty >= x.FromQty && item.Qty <= x.ToQty && x.SaleUnit == item.UnitId);
                                         if (tierData != null)
                                         {
                                             if (tierData.ApplyToAllUnit)
@@ -1101,8 +1098,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                                         break;
                                     case 3:
                                         // Apply to Barang - Promo Method Bonus
-                                        var originalQty3 = qtyOriginal[item.Id];
-                                        var tierData3 = detailTierPromo.FirstOrDefault(x => originalQty3 >= x.FromQty && originalQty3 <= x.ToQty && x.SaleUnit == item.UnitId);
+                                        var tierData3 = applyTo == 3 ? detailTierPromo.FirstOrDefault(x => item.Qty >= x.FromQty && item.Qty <= x.ToQty) : detailTierPromo.FirstOrDefault(x => item.Qty >= x.FromQty && item.Qty <= x.ToQty && x.SaleUnit == item.UnitId);
                                         if (tierData3 != null)
                                         {
                                             var freeItem = items.FirstOrDefault(x => x.Id == tierData3.FreeGoodItemId);
