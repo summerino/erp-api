@@ -1451,8 +1451,8 @@ BEGIN TRY
 			END
 			ELSE
 			BEGIN
-				INSERT INTO Inventory.WarehouseQuantity(WarehouseCode, ItemId, QtyOnHand, QtyOnIndent, QtyOnOrder, QtyReorderPoint, QtyOnTransfer, UpdatedDate)
-				VALUES (@WHId, @ItemId, 0, 0, @Qty, 0, 0, dbo.udf_current_local_time())
+				INSERT INTO Inventory.WarehouseQuantity(WarehouseCode, ItemId, QtyOnHand, QtyOnIndent, QtyOnOrder, QtyReorderPoint, QtyOnTransfer, QtyOnTransit, UpdatedDate)
+				VALUES (@WHId, @ItemId, 0, 0, @Qty, 0, 0, 0, dbo.udf_current_local_time())
 			END
 			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId
 		END
