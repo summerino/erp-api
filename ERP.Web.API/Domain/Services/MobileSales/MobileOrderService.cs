@@ -166,6 +166,7 @@ public class MobileOrderService : GeneralService<MobileOrderHeader>, IMobileOrde
                         };
 
                         Db.SalesOrderDetails.Add(orderDetail);
+                        Db.SaveChanges();
                         idOrderDetail.Add(orderDetail.Id);
 
                         if (detailDiscData.Any(x=> x.OrderDetailId == itemDetail.Id) || detailFreeData.Any(x => x.OrderDetailId == itemDetail.Id))
