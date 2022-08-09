@@ -195,6 +195,8 @@ public class DeliveryPlanService : GeneralService<DeliveryPlanHeader>, IDelivery
                     });
                 }
 
+                Db.SaveChanges();
+
                 short j = 0;
                 if(item.UndeliveredItems.Any() && item.IsFailShipment)
                 {
@@ -625,15 +627,62 @@ public class DeliveryPlanService : GeneralService<DeliveryPlanHeader>, IDelivery
 
                     if (undelivItem.Any() && undelivItem != null)
                     {
+                        var soHeader = new SalesOrderHeader();
+                        var sdHeader = new SalesDeliveryHeader();
+                        var siHeadData = new SalesInvoiceHeader();
+
                         foreach (var deletedItem in undelivItem)
                         {
                             if (deletedItem.Type == 0)
                             {
                                 var dpdItem = Db.DeliveryPlanDetailItems.FirstOrDefault(x => x.Code == deletedItem.Code && x.ItemId == deletedItem.ItemId && x.UnitId == deletedItem.UnitId && x.Type == deletedItem.Type);
                                 var sdDetail = Db.SalesDeliveryDetails.FirstOrDefault(x => x.Code == item.TransCode && x.ItemId == deletedItem.ItemId && x.UnitId == deletedItem.UnitId);
+                                sdHeader = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.Code == item.TransCode);
+                                if (sdHeader.FromDirectInvoice)
+                                {
+                                    var soDetail = Db.SalesOrderDetails.FirstOrDefault(x => x.Code == sdHeader.Code && x.ItemId == deletedItem.ItemId && x.UnitId == deletedItem.UnitId);
+                                    soDetail.Qty = dpdItem.Qty;
+                                    soDetail.QtyDlv = dpdItem.Qty;
+                                    soDetail.Total = (sdDetail.NettPrice * dpdItem.Qty);
+                                    Db.SalesOrderDetails.Update(soDetail);
+
+                                    soHeader = Db.SalesOrderHeaders.FirstOrDefault(x => x.Code == item.TransCode);
+                                    soHeader.SubTotal += (soDetail.NettPrice * deletedItem.Qty);
+                                    soHeader.TaxAmount += (soDetail.TaxAmount * deletedItem.Qty);
+                                    soHeader.ExemptTaxAmount += (soDetail.ExemptTaxAmount * deletedItem.Qty);
+                                    soHeader.Total += (soDetail.NettPrice * deletedItem.Qty);
+                                    soHeader.Dpp += (soDetail.Dpp * deletedItem.Qty);
+                                    Db.SalesOrderHeaders.Update(soHeader);
+                                }
+
                                 sdDetail.Qty = dpdItem.Qty;
                                 sdDetail.Total = (sdDetail.NettPrice * dpdItem.Qty);
                                 Db.SalesDeliveryDetails.Update(sdDetail);
+
+                                sdHeader.SubTotal += (sdDetail.NettPrice * deletedItem.Qty);
+                                sdHeader.TaxAmount += (sdDetail.TaxAmount * deletedItem.Qty);
+                                sdHeader.ExemptTaxAmount += (sdDetail.ExemptTaxAmount * deletedItem.Qty);
+                                sdHeader.Total += (sdDetail.NettPrice * deletedItem.Qty);
+                                sdHeader.Dpp += (sdDetail.Dpp * deletedItem.Qty);
+                                Db.SalesDeliveryHeaders.Update(sdHeader);
+
+                                if (sdHeader.Mark == "INV")
+                                {
+                                    var siDetailData = Db.SalesInvoiceDetails.FirstOrDefault(x => x.DoCode == sdHeader.Code);
+                                    siHeadData = Db.SalesInvoiceHeaders.FirstOrDefault(x => x.Code == siDetailData.Code);
+
+                                    if (siHeadData.Total > 0)
+                                    {
+                                        siDetailData.SubTotal += (sdDetail.NettPrice * deletedItem.Qty);
+                                        siDetailData.TaxAmount += (sdDetail.TaxAmount * deletedItem.Qty);
+                                        siDetailData.Total += (sdDetail.NettPrice * deletedItem.Qty);
+                                        siDetailData.Dpp += (sdDetail.Dpp * deletedItem.Qty);
+                                        Db.SalesInvoiceDetails.Update(siDetailData);
+
+                                        siHeadData.Total += (sdDetail.NettPrice * deletedItem.Qty);
+                                        Db.SalesInvoiceHeaders.Update(siHeadData);
+                                    }
+                                }
                             }
                             else
                             {
@@ -644,10 +693,54 @@ public class DeliveryPlanService : GeneralService<DeliveryPlanHeader>, IDelivery
                             }
                             Db.SaveChanges();
                         }
+
+                        if (sdHeader.FromDirectInvoice)
+                            RestoreWarehouseQtySO(soHeader.Code);
+
+                        RestoreWarehouseQtyDO(sdHeader.Code, sdHeader.TransCode, sdHeader.SrcTrans);
+
+                        if (sdHeader.Mark == "INV")
+                            RestoreWarehouseQtySI(sdHeader.Code, sdHeader.TransCode, sdHeader.SrcTrans);
+
+                        // Save changes
+                        Db.SaveChanges();
+
+                        if (sdHeader.SrcTrans == 1)
+                        {
+                            // Execute sp_update_so_dlv_qty
+                            Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", sdHeader.TransCode);
+                        }
+                        else
+                        {
+                            // Execute sp_update_sr_dlv_qty
+                            Db.Database.ExecuteSqlRaw("EXEC sp_update_sr_dlv_qty {0}", sdHeader.TransCode);
+                        }
+
+                        if (sdHeader.FromDirectInvoice)
+                        {
+                            Db.Database.ExecuteSqlRaw(
+                                        "EXEC sp_update_stock_mutation_from_so {0}, {1}",
+                                        soHeader.Code, soHeader.Date);
+                        }
+
+                        Db.Database.ExecuteSqlRaw(
+                                       "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
+                                       sdHeader.Code, sdHeader.Date, sdHeader.TransCode);
+
+                        if (sdHeader.Mark == "INV")
+                        {
+                            Db.Database.ExecuteSqlRaw(
+                                        "EXEC sp_update_stock_mutation_from_si {0}, {1}, {2}",
+                                        siHeadData.Code, siHeadData.Date, sdHeader.Code);
+                        }
                     }
 
                     if (item.UndeliveredItems.Any() && item.IsFailShipment)
                     {
+                        var soHeader = new SalesOrderHeader();
+                        var sdHeader = new SalesDeliveryHeader();
+                        var siHeadData = new SalesInvoiceHeader();
+
                         short j = 0;
                         foreach (var uItem in item.UndeliveredItems)
                         {
@@ -661,10 +754,6 @@ public class DeliveryPlanService : GeneralService<DeliveryPlanHeader>, IDelivery
 
                                 Db.DeliveryPlanUndeliveredItems.Update(unItem);
                                 Db.Entry(uItem).Property(e => e.Code).IsModified = false;
-
-                                var soHeader = new SalesOrderHeader();
-                                var sdHeader = new SalesDeliveryHeader();
-                                var siHeadData = new SalesInvoiceHeader();
 
                                 if (uItem.Type == 0)
                                 {
@@ -759,46 +848,6 @@ public class DeliveryPlanService : GeneralService<DeliveryPlanHeader>, IDelivery
                                     }
                                     Db.SalesDeliveryDetailFreeGoods.Update(sdDetail);
                                 }
-
-                                if (sdHeader.FromDirectInvoice)
-                                    RestoreWarehouseQtySO(soHeader.Code);
-
-                                RestoreWarehouseQtyDO(sdHeader.Code, sdHeader.TransCode, sdHeader.SrcTrans);
-
-                                if (sdHeader.Mark == "INV")
-                                    RestoreWarehouseQtySI(sdHeader.Code, sdHeader.TransCode, sdHeader.SrcTrans);
-
-                                // Save changes
-                                Db.SaveChanges();
-
-                                if (sdHeader.SrcTrans == 1)
-                                {
-                                    // Execute sp_update_so_dlv_qty
-                                    Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", sdHeader.TransCode);
-                                }
-                                else
-                                {
-                                    // Execute sp_update_sr_dlv_qty
-                                    Db.Database.ExecuteSqlRaw("EXEC sp_update_sr_dlv_qty {0}", sdHeader.TransCode);
-                                }
-
-                                if (sdHeader.FromDirectInvoice)
-                                {
-                                    Db.Database.ExecuteSqlRaw(
-                                                "EXEC sp_update_stock_mutation_from_so {0}, {1}",
-                                                soHeader.Code, soHeader.Date);
-                                }
-
-                                Db.Database.ExecuteSqlRaw(
-                                               "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
-                                               sdHeader.Code, sdHeader.Date, sdHeader.TransCode);
-
-                                if (sdHeader.Mark == "INV")
-                                {
-                                    Db.Database.ExecuteSqlRaw(
-                                                "EXEC sp_update_stock_mutation_from_si {0}, {1}, {2}",
-                                                siHeadData.Code, siHeadData.Date, sdHeader.Code);
-                                }
                             }
                             else
                             {
@@ -814,10 +863,6 @@ public class DeliveryPlanService : GeneralService<DeliveryPlanHeader>, IDelivery
                                     WarehouseCode = uItem.WarehouseCode,
                                     Type = uItem.Type
                                 });
-
-                                var soHeader = new SalesOrderHeader();
-                                var sdHeader = new SalesDeliveryHeader();
-                                var siHeadData = new SalesInvoiceHeader();
 
                                 if (uItem.Type == 0)
                                 {
@@ -885,47 +930,47 @@ public class DeliveryPlanService : GeneralService<DeliveryPlanHeader>, IDelivery
                                     sdDetail.Qty -= uItem.Qty;
                                     Db.SalesDeliveryDetailFreeGoods.Update(sdDetail);
                                 }
-
-                                if (sdHeader.FromDirectInvoice)
-                                    RestoreWarehouseQtySO(soHeader.Code);
-
-                                RestoreWarehouseQtyDO(sdHeader.Code, sdHeader.TransCode, sdHeader.SrcTrans);
-
-                                if (sdHeader.Mark == "INV")
-                                    RestoreWarehouseQtySI(sdHeader.Code, sdHeader.TransCode, sdHeader.SrcTrans);
-
-                                // Save changes
-                                Db.SaveChanges();
-
-                                if (sdHeader.SrcTrans == 1)
-                                {
-                                    // Execute sp_update_so_dlv_qty
-                                    Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", sdHeader.TransCode);
-                                }
-                                else
-                                {
-                                    // Execute sp_update_sr_dlv_qty
-                                    Db.Database.ExecuteSqlRaw("EXEC sp_update_sr_dlv_qty {0}", sdHeader.TransCode);
-                                }
-
-                                if (sdHeader.FromDirectInvoice)
-                                {
-                                    Db.Database.ExecuteSqlRaw(
-                                                "EXEC sp_update_stock_mutation_from_so {0}, {1}",
-                                                soHeader.Code, soHeader.Date);
-                                }
-
-                                Db.Database.ExecuteSqlRaw(
-                                               "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
-                                               sdHeader.Code, sdHeader.Date, sdHeader.TransCode);
-
-                                if (sdHeader.Mark == "INV")
-                                {
-                                    Db.Database.ExecuteSqlRaw(
-                                                "EXEC sp_update_stock_mutation_from_si {0}, {1}, {2}",
-                                                siHeadData.Code, siHeadData.Date, sdHeader.Code);
-                                }
                             }
+                        }
+
+                        if (sdHeader.FromDirectInvoice)
+                            RestoreWarehouseQtySO(soHeader.Code);
+
+                        RestoreWarehouseQtyDO(sdHeader.Code, sdHeader.TransCode, sdHeader.SrcTrans);
+
+                        if (sdHeader.Mark == "INV")
+                            RestoreWarehouseQtySI(sdHeader.Code, sdHeader.TransCode, sdHeader.SrcTrans);
+
+                        // Save changes
+                        Db.SaveChanges();
+
+                        if (sdHeader.SrcTrans == 1)
+                        {
+                            // Execute sp_update_so_dlv_qty
+                            Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", sdHeader.TransCode);
+                        }
+                        else
+                        {
+                            // Execute sp_update_sr_dlv_qty
+                            Db.Database.ExecuteSqlRaw("EXEC sp_update_sr_dlv_qty {0}", sdHeader.TransCode);
+                        }
+
+                        if (sdHeader.FromDirectInvoice)
+                        {
+                            Db.Database.ExecuteSqlRaw(
+                                        "EXEC sp_update_stock_mutation_from_so {0}, {1}",
+                                        soHeader.Code, soHeader.Date);
+                        }
+
+                        Db.Database.ExecuteSqlRaw(
+                                       "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
+                                       sdHeader.Code, sdHeader.Date, sdHeader.TransCode);
+
+                        if (sdHeader.Mark == "INV")
+                        {
+                            Db.Database.ExecuteSqlRaw(
+                                        "EXEC sp_update_stock_mutation_from_si {0}, {1}, {2}",
+                                        siHeadData.Code, siHeadData.Date, sdHeader.Code);
                         }
                     }
                 }
@@ -963,6 +1008,123 @@ public class DeliveryPlanService : GeneralService<DeliveryPlanHeader>, IDelivery
             data.Mark = "V";
             data.UpdatedBy = userId;
             data.UpdatedDate = DateTime.Now;
+
+            var detailData = Db.DeliveryPlanDetails.Where(x => x.Code == code).ToList();
+            foreach (var item in detailData)
+            {
+                var undelivItem = Db.DeliveryPlanUndeliveredItems
+                        .Where(x => x.DlvPlanDetailId == item.Id).ToList();
+
+                if (undelivItem.Any() && undelivItem != null)
+                {
+                    var soHeader = new SalesOrderHeader();
+                    var sdHeader = new SalesDeliveryHeader();
+                    var siHeadData = new SalesInvoiceHeader();
+
+                    foreach (var deletedItem in undelivItem)
+                    {
+                        if (deletedItem.Type == 0)
+                        {
+                            var dpdItem = Db.DeliveryPlanDetailItems.FirstOrDefault(x => x.Code == deletedItem.Code && x.ItemId == deletedItem.ItemId && x.UnitId == deletedItem.UnitId && x.Type == deletedItem.Type);
+                            var sdDetail = Db.SalesDeliveryDetails.FirstOrDefault(x => x.Code == item.TransCode && x.ItemId == deletedItem.ItemId && x.UnitId == deletedItem.UnitId);
+                            sdHeader = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.Code == item.TransCode);
+                            if (sdHeader.FromDirectInvoice)
+                            {
+                                var soDetail = Db.SalesOrderDetails.FirstOrDefault(x => x.Code == sdHeader.Code && x.ItemId == deletedItem.ItemId && x.UnitId == deletedItem.UnitId);
+                                soDetail.Qty = dpdItem.Qty;
+                                soDetail.QtyDlv = dpdItem.Qty;
+                                soDetail.Total = (sdDetail.NettPrice * dpdItem.Qty);
+                                Db.SalesOrderDetails.Update(soDetail);
+
+                                soHeader = Db.SalesOrderHeaders.FirstOrDefault(x => x.Code == item.TransCode);
+                                soHeader.SubTotal += (soDetail.NettPrice * deletedItem.Qty);
+                                soHeader.TaxAmount += (soDetail.TaxAmount * deletedItem.Qty);
+                                soHeader.ExemptTaxAmount += (soDetail.ExemptTaxAmount * deletedItem.Qty);
+                                soHeader.Total += (soDetail.NettPrice * deletedItem.Qty);
+                                soHeader.Dpp += (soDetail.Dpp * deletedItem.Qty);
+                                Db.SalesOrderHeaders.Update(soHeader);
+                            }
+
+                            sdDetail.Qty = dpdItem.Qty;
+                            sdDetail.Total = (sdDetail.NettPrice * dpdItem.Qty);
+                            Db.SalesDeliveryDetails.Update(sdDetail);
+
+                            sdHeader.SubTotal += (sdDetail.NettPrice * deletedItem.Qty);
+                            sdHeader.TaxAmount += (sdDetail.TaxAmount * deletedItem.Qty);
+                            sdHeader.ExemptTaxAmount += (sdDetail.ExemptTaxAmount * deletedItem.Qty);
+                            sdHeader.Total += (sdDetail.NettPrice * deletedItem.Qty);
+                            sdHeader.Dpp += (sdDetail.Dpp * deletedItem.Qty);
+                            Db.SalesDeliveryHeaders.Update(sdHeader);
+
+                            if (sdHeader.Mark == "INV")
+                            {
+                                var siDetailData = Db.SalesInvoiceDetails.FirstOrDefault(x => x.DoCode == sdHeader.Code);
+                                siHeadData = Db.SalesInvoiceHeaders.FirstOrDefault(x => x.Code == siDetailData.Code);
+
+                                if (siHeadData.Total > 0)
+                                {
+                                    siDetailData.SubTotal += (sdDetail.NettPrice * deletedItem.Qty);
+                                    siDetailData.TaxAmount += (sdDetail.TaxAmount * deletedItem.Qty);
+                                    siDetailData.Total += (sdDetail.NettPrice * deletedItem.Qty);
+                                    siDetailData.Dpp += (sdDetail.Dpp * deletedItem.Qty);
+                                    Db.SalesInvoiceDetails.Update(siDetailData);
+
+                                    siHeadData.Total += (sdDetail.NettPrice * deletedItem.Qty);
+                                    Db.SalesInvoiceHeaders.Update(siHeadData);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            var dpdItem = Db.DeliveryPlanDetailItems.FirstOrDefault(x => x.Code == deletedItem.Code && x.ItemId == deletedItem.ItemId && x.UnitId == deletedItem.UnitId && x.Type == deletedItem.Type);
+                            var sdDetail = Db.SalesDeliveryDetailFreeGoods.FirstOrDefault(x => x.Code == item.TransCode && x.ItemId == deletedItem.ItemId && x.UnitId == deletedItem.UnitId);
+                            sdDetail.Qty = dpdItem.Qty;
+                            Db.SalesDeliveryDetailFreeGoods.Update(sdDetail);
+                        }
+                        Db.SaveChanges();
+                    }
+
+                    if (sdHeader.FromDirectInvoice)
+                        RestoreWarehouseQtySO(soHeader.Code);
+
+                    RestoreWarehouseQtyDO(sdHeader.Code, sdHeader.TransCode, sdHeader.SrcTrans);
+
+                    if (sdHeader.Mark == "INV")
+                        RestoreWarehouseQtySI(sdHeader.Code, sdHeader.TransCode, sdHeader.SrcTrans);
+
+                    // Save changes
+                    Db.SaveChanges();
+
+                    if (sdHeader.SrcTrans == 1)
+                    {
+                        // Execute sp_update_so_dlv_qty
+                        Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", sdHeader.TransCode);
+                    }
+                    else
+                    {
+                        // Execute sp_update_sr_dlv_qty
+                        Db.Database.ExecuteSqlRaw("EXEC sp_update_sr_dlv_qty {0}", sdHeader.TransCode);
+                    }
+
+                    if (sdHeader.FromDirectInvoice)
+                    {
+                        Db.Database.ExecuteSqlRaw(
+                                    "EXEC sp_update_stock_mutation_from_so {0}, {1}",
+                                    soHeader.Code, soHeader.Date);
+                    }
+
+                    Db.Database.ExecuteSqlRaw(
+                                   "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
+                                   sdHeader.Code, sdHeader.Date, sdHeader.TransCode);
+
+                    if (sdHeader.Mark == "INV")
+                    {
+                        Db.Database.ExecuteSqlRaw(
+                                    "EXEC sp_update_stock_mutation_from_si {0}, {1}, {2}",
+                                    siHeadData.Code, siHeadData.Date, sdHeader.Code);
+                    }
+                }
+            }
 
             Db.SaveChanges();
         }
