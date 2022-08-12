@@ -244,7 +244,8 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                                         break;
                                     case 2:
                                         // Apply to Barang - Promo Method Qty Barang
-                                        var tierData = applyTo == 3 ? detailTierPromo.FirstOrDefault(x => item.Qty >= x.FromQty && item.Qty <= x.ToQty) : detailTierPromo.FirstOrDefault(x => item.Qty >= x.FromQty && item.Qty <= x.ToQty && x.SaleUnit == item.UnitId);
+                                        var originalQty2 = qtyOriginal[item.Id];
+                                        var tierData = applyTo == 3 ? detailTierPromo.FirstOrDefault(x => item.Qty >= x.FromQty && item.Qty <= x.ToQty) : detailTierPromo.FirstOrDefault(x => originalQty2 >= x.FromQty && originalQty2 <= x.ToQty && x.SaleUnit == item.UnitId);
                                         if (tierData != null)
                                         {
                                             if (tierData.ApplyToAllUnit)
@@ -290,13 +291,35 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                                         break;
                                     case 3:
                                         // Apply to Barang - Promo Method Bonus
-                                        var tierData3 = applyTo == 3 ? detailTierPromo.FirstOrDefault(x => item.Qty >= x.FromQty && item.Qty <= x.ToQty) : detailTierPromo.FirstOrDefault(x => item.Qty >= x.FromQty && item.Qty <= x.ToQty && x.SaleUnit == item.UnitId);
+                                        var originalQty3 = qtyOriginal[item.Id];
+                                        var tierData3 = applyTo == 3 ? detailTierPromo.FirstOrDefault(x => item.Qty >= x.FromQty && item.Qty <= x.ToQty) : detailTierPromo.FirstOrDefault(x => originalQty3 >= x.FromQty && originalQty3 <= x.ToQty && x.SaleUnit == item.UnitId);
                                         if (tierData3 != null)
                                         {
+                                            var sellPrice = 0m;
                                             var freeItem = items.FirstOrDefault(x => x.Id == tierData3.FreeGoodItemId);
+                                            var curUom3 = uomConversions.FirstOrDefault(x => x.Id == Convert.ToInt32(tierData3.UnitFreeGood));
+                                            var itemUom3 = uomConversions.FirstOrDefault(x => x.Id == ctItem.UomSellId);
+                                            if (itemUom3.Seq > curUom3.Seq)
+                                            {
+                                                var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= itemUom3.Seq && x.Seq > curUom3.Seq).Select(x => x.Conversion).ToList();
+                                                var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
+                                                sellPrice = (decimal)freeItem.SellPrice / multipliedQty;
+                                            }
+                                            else if (itemUom3.Seq < curUom3.Seq)
+                                            {
+                                                var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq > itemUom3.Seq && x.Seq <= curUom3.Seq).Select(x => x.Conversion).ToList();
+                                                var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
+                                                sellPrice = (decimal)freeItem.SellPrice * multipliedQty;
+
+                                            }
+                                            else
+                                            {
+                                                sellPrice = (decimal)freeItem.SellPrice;
+                                            }
+
                                             if (tierData3.IsMultiple)
                                             {
-                                                var multipleValue = Math.Floor(item.Qty / tierData3.FromQty);
+                                                var multipleValue = Math.Floor((applyTo == 3 ? item.Qty : originalQty3) / tierData3.FromQty);
                                                 bonusPromo.Add(new SalesOrderDetailFreeGood
                                                 {
                                                     PromoCode = dataPromo.Code,
@@ -305,7 +328,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                                                     UnitId = Convert.ToInt32(tierData3.UnitFreeGood),
                                                     Qty = multipleValue * tierData3.Value,
                                                     QtyClosed = 0m,
-                                                    UnitPrice = (decimal)freeItem.SellPrice,
+                                                    UnitPrice = sellPrice,
                                                     CoaCode = dataPromo.CoaCost
                                                 });
                                             }
@@ -319,7 +342,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                                                     UnitId = Convert.ToInt32(tierData3.UnitFreeGood),
                                                     Qty = tierData3.Value,
                                                     QtyClosed = 0m,
-                                                    UnitPrice = (decimal)freeItem.SellPrice,
+                                                    UnitPrice = sellPrice,
                                                     CoaCode = dataPromo.CoaCost
                                                 });
                                             }
@@ -899,7 +922,9 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
 
                 if (data.ListPromo != null && data.ListPromo.Any())
                 {
-                    listPromo = listPromo.Where(x => data.ListPromo.Where(y => y.UsePromo).Select(y => y.Code).Contains(x.Code)).ToList();
+                    var usedPromo = listPromo.Where(x => data.ListPromo.Where(y => y.UsePromo).Select(y => y.Code).Contains(x.Code)).ToList();
+                    listPromo = listPromo.Where(x => !data.ListPromo.Select(y => y.Code).Contains(x.Code)).ToList();
+                    listPromo.AddRange(usedPromo);
                 }
 
                 List<SalesOrderDetailDiscount> discPromo = new();
@@ -967,7 +992,8 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                                         break;
                                     case 2:
                                         // Apply to Barang - Promo Method Qty Barang
-                                        var tierData = applyTo == 3 ? detailTierPromo.FirstOrDefault(x => item.Qty >= x.FromQty && item.Qty <= x.ToQty) : detailTierPromo.FirstOrDefault(x => item.Qty >= x.FromQty && item.Qty <= x.ToQty && x.SaleUnit == item.UnitId);
+                                        var originalQty2 = qtyOriginal[item.Id];
+                                        var tierData = applyTo == 3 ? detailTierPromo.FirstOrDefault(x => item.Qty >= x.FromQty && item.Qty <= x.ToQty) : detailTierPromo.FirstOrDefault(x => originalQty2 >= x.FromQty && originalQty2 <= x.ToQty && x.SaleUnit == item.UnitId);
                                         if (tierData != null)
                                         {
                                             if (tierData.ApplyToAllUnit)
@@ -1013,13 +1039,35 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                                         break;
                                     case 3:
                                         // Apply to Barang - Promo Method Bonus
-                                        var tierData3 = applyTo == 3 ? detailTierPromo.FirstOrDefault(x => item.Qty >= x.FromQty && item.Qty <= x.ToQty) : detailTierPromo.FirstOrDefault(x => item.Qty >= x.FromQty && item.Qty <= x.ToQty && x.SaleUnit == item.UnitId);
+                                        var originalQty3 = qtyOriginal[item.Id];
+                                        var tierData3 = applyTo == 3 ? detailTierPromo.FirstOrDefault(x => item.Qty >= x.FromQty && item.Qty <= x.ToQty) : detailTierPromo.FirstOrDefault(x => originalQty3 >= x.FromQty && originalQty3 <= x.ToQty && x.SaleUnit == item.UnitId);
                                         if (tierData3 != null)
                                         {
+                                            var sellPrice = 0m;
                                             var freeItem = items.FirstOrDefault(x => x.Id == tierData3.FreeGoodItemId);
+                                            var curUom3 = uomConversions.FirstOrDefault(x => x.Id == Convert.ToInt32(tierData3.UnitFreeGood));
+                                            var itemUom3 = uomConversions.FirstOrDefault(x => x.Id == ctItem.UomSellId);
+                                            if (itemUom3.Seq > curUom3.Seq)
+                                            {
+                                                var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= itemUom3.Seq && x.Seq > curUom3.Seq).Select(x => x.Conversion).ToList();
+                                                var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
+                                                sellPrice = (decimal)freeItem.SellPrice / multipliedQty;
+                                            }
+                                            else if (itemUom3.Seq < curUom3.Seq)
+                                            {
+                                                var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq > itemUom3.Seq && x.Seq <= curUom3.Seq).Select(x => x.Conversion).ToList();
+                                                var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
+                                                sellPrice = (decimal)freeItem.SellPrice * multipliedQty;
+
+                                            }
+                                            else
+                                            {
+                                                sellPrice = (decimal)freeItem.SellPrice;
+                                            }
+
                                             if (tierData3.IsMultiple)
                                             {
-                                                var multipleValue = Math.Floor(item.Qty / tierData3.FromQty);
+                                                var multipleValue = Math.Floor((applyTo == 3 ? item.Qty : originalQty3) / tierData3.FromQty);
                                                 bonusPromo.Add(new SalesOrderDetailFreeGood
                                                 {
                                                     PromoCode = dataPromo.Code,
@@ -1028,7 +1076,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                                                     UnitId = Convert.ToInt32(tierData3.UnitFreeGood),
                                                     Qty = multipleValue * tierData3.Value,
                                                     QtyClosed = 0m,
-                                                    UnitPrice = (decimal)freeItem.SellPrice,
+                                                    UnitPrice = sellPrice,
                                                     CoaCode = dataPromo.CoaCost
                                                 });
                                             }
@@ -1042,7 +1090,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                                                     UnitId = Convert.ToInt32(tierData3.UnitFreeGood),
                                                     Qty = tierData3.Value,
                                                     QtyClosed = 0m,
-                                                    UnitPrice = (decimal)freeItem.SellPrice,
+                                                    UnitPrice = sellPrice,
                                                     CoaCode = dataPromo.CoaCost
                                                 });
                                             }
