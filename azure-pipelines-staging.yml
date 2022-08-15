@@ -21,9 +21,9 @@ steps:
 
 - task: UseDotNet@2
   inputs:
-    version: '6.0.302'
+    version: '6.0.303'
     performMultiLevelLookup: true
-  displayName: 'Install .NET Core SDK 6.0.302'
+  displayName: 'Install .NET Core SDK 6.0.303'
 
 - task: DotNetCoreCLI@2
   inputs:
