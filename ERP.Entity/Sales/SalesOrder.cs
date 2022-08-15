@@ -339,6 +339,24 @@ public class VwSalesOrderDetail
     public string UnitName { get; set; }
 }
 
+[Table("SalesOrderPromo", Schema = Schema.Sales)]
+public class SalesOrderPromo
+{
+    public long Id { get; set; }
+
+    [StringLength(17)]
+    public string Code { get; set; }
+
+    public short LineNo { get; set; }
+
+    [StringLength(17)]
+    public string PromoCode { get; set; }
+
+    public long? PromoDetailId { get; set; }
+
+    public bool IsActive { get; set; }
+}
+
 [Table("SalesOrderDetailDiscount", Schema = Schema.Sales)]
 public class SalesOrderDetailDiscount
 {

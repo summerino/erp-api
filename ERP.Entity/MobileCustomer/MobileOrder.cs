@@ -188,6 +188,27 @@ public class VwMobileOrderDetail
     public string UnitName { get; set; }
 }
 
+[Table("MobileOrderPromo", Schema = Schema.MobileCustomer)]
+[Index(nameof(Code), Name = "IX_MobileCustomer_MobileOrderPromo_Code")]
+[Index(nameof(PromoCode), Name = "IX_MobileCustomer_MobileOrderPromo_PromoCode")]
+[Index(nameof(PromoDetailId), Name = "IX_MobileCustomer_MobileOrderPromo_PromoDetailId")]
+public class MobileOrderPromo
+{
+    public long Id { get; set; }
+
+    [StringLength(17)]
+    public string Code { get; set; }
+
+    public short LineNo { get; set; }
+
+    [StringLength(17)]
+    public string PromoCode { get; set; }
+
+    public long? PromoDetailId { get; set; }
+
+    public bool IsActive { get; set; }
+}
+
 [Table("MobileOrderDetailDiscount", Schema = Schema.MobileCustomer)]
 [Index(nameof(Code), Name = "IX_MobileCustomer_MobileOrderDetailDiscount_Code")]
 [Index(nameof(OrderDetailId), Name = "IX_MobileCustomer_MobileOrderDetailDiscount_OrderDetailId")]

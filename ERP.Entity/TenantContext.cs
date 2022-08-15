@@ -163,6 +163,7 @@ public class TenantContext : DbContext
     public DbSet<MobileCustomer.VwMobileOrderHeader> VwMobileCustomerOrderHeaders { get; set; }
     public DbSet<MobileCustomer.MobileOrderDetail> MobileCustomerOrderDetails { get; set; }
     public DbSet<MobileCustomer.VwMobileOrderDetail> VwMobileCustomerOrderDetails { get; set; }
+    public DbSet<MobileCustomer.MobileOrderPromo> MobileCustomerOrderPromos { get; set; }
     public DbSet<MobileCustomer.MobileOrderDetailDiscount> MobileCustomerOrderDetailDiscounts { get; set; }
     public DbSet<MobileCustomer.MobileOrderDetailFreeGood> MobileCustomerOrderDetailFreeGoods { get; set; }
 
@@ -183,6 +184,7 @@ public class TenantContext : DbContext
     public DbSet<VwMobileOrderHeader> VwMobileOrderHeaders { get; set; }
     public DbSet<MobileOrderDetail> MobileOrderDetails { get; set; }
     public DbSet<VwMobileOrderDetail> VwMobileOrderDetails { get; set; }
+    public DbSet<MobileOrderPromo> MobileOrderPromos { get; set; }
     public DbSet<MobileOrderDetailDiscount> MobileOrderDetailDiscounts { get; set; }
     public DbSet<MobileOrderDetailFreeGood> MobileOrderDetailFreeGoods { get; set; }
     public DbSet<MobilePaymentInvoice> MobilePaymentInvoices { get; set; }
@@ -292,6 +294,7 @@ public class TenantContext : DbContext
     public DbSet<VwSalesOrderHeader> VwSalesOrderHeaders { get; set; }
     public DbSet<SalesOrderDetail> SalesOrderDetails { get; set; }
     public DbSet<VwSalesOrderDetail> VwSalesOrderDetails { get; set; }
+    public DbSet<SalesOrderPromo> SalesOrderPromos { get; set; }
     public DbSet<SalesOrderDetailDiscount> SalesOrderDetailDiscounts { get; set; }
     public DbSet<SalesOrderDetailFreeGood> SalesOrderDetailFreeGoods { get; set; }
     public DbSet<SalesReturnHeader> SalesReturnHeaders { get; set; }
@@ -1274,6 +1277,30 @@ public class TenantContext : DbContext
             .HasNoKey()
             .ToView("vwMobileOrderDetail", Schema.MobileCustomer);
 
+        modelBuilder.Entity<MobileCustomer.MobileOrderPromo>(entity =>
+        {
+            entity.HasKey(e => e.Id)
+                .HasName("PK_MobileCustomer_MobileOrderPromo");
+
+            entity.Property(e => e.Code)
+                .IsRequired();
+
+            entity.HasOne<MobileCustomer.MobileOrderHeader>()
+                .WithMany()
+                .HasForeignKey(d => d.Code)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            entity.HasOne<PromoHeader>()
+                .WithMany()
+                .HasForeignKey(d => d.PromoCode)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            entity.HasOne<PromoDetail>()
+                .WithMany()
+                .HasForeignKey(d => d.PromoDetailId)
+                .OnDelete(DeleteBehavior.NoAction);
+        });
+
         modelBuilder.Entity<MobileCustomer.MobileOrderDetailDiscount>(entity =>
         {
             entity.HasKey(e => e.Id)
@@ -1572,6 +1599,27 @@ public class TenantContext : DbContext
         modelBuilder.Entity<VwMobileOrderDetail>()
             .HasNoKey()
             .ToView("vwMobileOrderDetail", Schema.MobileSales);
+
+        modelBuilder.Entity<MobileOrderPromo>(entity =>
+        {
+            entity.Property(e => e.Code)
+                .IsRequired();
+
+            entity.HasOne<MobileOrderHeader>()
+                .WithMany()
+                .HasForeignKey(d => d.Code)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            entity.HasOne<PromoHeader>()
+                .WithMany()
+                .HasForeignKey(d => d.PromoCode)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            entity.HasOne<PromoDetail>()
+                .WithMany()
+                .HasForeignKey(d => d.PromoDetailId)
+                .OnDelete(DeleteBehavior.NoAction);
+        });
 
         modelBuilder.Entity<MobileOrderDetailDiscount>(entity =>
         {
@@ -2435,6 +2483,27 @@ public class TenantContext : DbContext
         modelBuilder.Entity<VwSalesOrderDetail>()
             .HasNoKey()
             .ToView("vwSalesOrderDetail", Schema.Sales);
+
+        modelBuilder.Entity<SalesOrderPromo>(entity =>
+        {
+            entity.Property(e => e.Code)
+                .IsRequired();
+
+            entity.HasOne<SalesOrderHeader>()
+                .WithMany()
+                .HasForeignKey(d => d.Code)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            entity.HasOne<PromoHeader>()
+                .WithMany()
+                .HasForeignKey(d => d.PromoCode)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            entity.HasOne<PromoDetail>()
+                .WithMany()
+                .HasForeignKey(d => d.PromoDetailId)
+                .OnDelete(DeleteBehavior.NoAction);
+        });
 
         modelBuilder.Entity<SalesOrderDetailDiscount>(entity =>
             entity.Property(e => e.Code)
