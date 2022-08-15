@@ -3685,7 +3685,7 @@ public class JournalService : IJournalService
     private IEnumerable<Journal> ProcessSalesDownPaymentJournal(TenantContext db, List<SystemParameter> systemParam)
     {
         List<Journal> journals = new();
-        var SdpData = db.VwCreditMemos.Where(x => new[] { 3, 4 }.Contains(x.SrcTrans) && x.Mark == "A").ToList();
+        var SdpData = db.VwCreditMemos.Where(x => new[] { 3, 4 }.Contains(x.SrcTrans) && x.Mark != "V").ToList();
 
         foreach (var itemData in SdpData)
         {
