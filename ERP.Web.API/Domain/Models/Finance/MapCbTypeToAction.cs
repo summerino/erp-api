@@ -24,7 +24,9 @@ public class MapCbTypeToAction
             new() { Code = "DEPS", ActionId = (int)Actions.CbTypeDepositSupplier },
             new() { Code = "RDEPS", ActionId = (int)Actions.CbTypeReturnDepositSupplier },
             new() { Code = "SR", ActionId = (int)Actions.CbTypeSalesReturn },
-            new() { Code = "PR", ActionId = (int)Actions.CbTypePurchaseReturn }
+            new() { Code = "PR", ActionId = (int)Actions.CbTypePurchaseReturn },
+            new() { Code = "SDP", ActionId = (int)Actions.CbTypeSalesDownPayment },
+            new() { Code = "RSDP", ActionId = (int)Actions.CbTypeSalesDownPaymentReturn }
         };
     }
 
