@@ -764,6 +764,21 @@ public class CashBankService : GeneralService<GeneralCashBankHeader>, ICashBankS
                     }
                 }
             }
+            else if (item.Type == "DPS" || item.Type == "RDPS")
+            {
+                var memo = Db.CreditMemos.SingleOrDefault(x => x.Code == item.TransCode);
+
+                if (memo == null)
+                    continue;
+
+                if (data.ChequeDate.GetValueOrDefault(data.Date) < memo.Date)
+                    return ($"Tanggal kas bank tidak boleh lebih kecil dari tanggal transaksi {memo.Code}.", false, new List<string>());
+
+                var mark = item.Amount == memo.Amount ? "FU" : "PU";
+
+                queries.Add(
+                    $"UPDATE Sales.CreditMemo SET Used='{item}', Mark='{mark}' WHERE Code='{item.TransCode}';");
+            }
         }
 
         return ("", true, queries);
