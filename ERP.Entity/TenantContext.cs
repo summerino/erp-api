@@ -1294,11 +1294,6 @@ public class TenantContext : DbContext
                 .WithMany()
                 .HasForeignKey(d => d.PromoCode)
                 .OnDelete(DeleteBehavior.NoAction);
-
-            entity.HasOne<PromoDetail>()
-                .WithMany()
-                .HasForeignKey(d => d.PromoDetailId)
-                .OnDelete(DeleteBehavior.NoAction);
         });
 
         modelBuilder.Entity<MobileCustomer.MobileOrderDetailDiscount>(entity =>
@@ -1613,11 +1608,6 @@ public class TenantContext : DbContext
             entity.HasOne<PromoHeader>()
                 .WithMany()
                 .HasForeignKey(d => d.PromoCode)
-                .OnDelete(DeleteBehavior.NoAction);
-
-            entity.HasOne<PromoDetail>()
-                .WithMany()
-                .HasForeignKey(d => d.PromoDetailId)
                 .OnDelete(DeleteBehavior.NoAction);
         });
 
@@ -2497,11 +2487,6 @@ public class TenantContext : DbContext
             entity.HasOne<PromoHeader>()
                 .WithMany()
                 .HasForeignKey(d => d.PromoCode)
-                .OnDelete(DeleteBehavior.NoAction);
-
-            entity.HasOne<PromoDetail>()
-                .WithMany()
-                .HasForeignKey(d => d.PromoDetailId)
                 .OnDelete(DeleteBehavior.NoAction);
         });
 

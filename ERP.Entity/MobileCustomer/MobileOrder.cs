@@ -191,7 +191,6 @@ public class VwMobileOrderDetail
 [Table("MobileOrderPromo", Schema = Schema.MobileCustomer)]
 [Index(nameof(Code), Name = "IX_MobileCustomer_MobileOrderPromo_Code")]
 [Index(nameof(PromoCode), Name = "IX_MobileCustomer_MobileOrderPromo_PromoCode")]
-[Index(nameof(PromoDetailId), Name = "IX_MobileCustomer_MobileOrderPromo_PromoDetailId")]
 public class MobileOrderPromo
 {
     public long Id { get; set; }
@@ -203,8 +202,6 @@ public class MobileOrderPromo
 
     [StringLength(17)]
     public string PromoCode { get; set; }
-
-    public long? PromoDetailId { get; set; }
 
     public bool IsActive { get; set; }
 }
