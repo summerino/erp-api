@@ -269,6 +269,19 @@ public class DeliveryPlanService : GeneralService<DeliveryPlanHeader>, IDelivery
                                     //    result.Message = "Data pengeluaran barang mobile gagal disetujui karena terdapat total faktur lebih kecil dari total pembayaran.";
                                     //    return result;
                                     //}
+                                    if (siHeadData.Total < siHeadData.PaidAmount)
+                                    {
+                                        result.Message = "Data rencana pengiriman tidak bisa ditambahkan karena terdapat surat jalan / penjualan langsung yang total fakturnya lebih kecil dari nilai yang dibayarkan.";
+                                        return result;
+                                    }
+                                    else if (siHeadData.PaidAmount > 0 && siHeadData.Total > siHeadData.PaidAmount)
+                                    {
+                                        siHeadData.Mark = "PP";
+                                    }
+                                    else if (siHeadData.PaidAmount > 0 && siHeadData.Total == siHeadData.PaidAmount)
+                                    {
+                                        siHeadData.Mark = "CMP";
+                                    }
                                     Db.SalesInvoiceHeaders.Update(siHeadData);
                                 }
                             }
@@ -417,6 +430,14 @@ public class DeliveryPlanService : GeneralService<DeliveryPlanHeader>, IDelivery
                                 Db.SalesInvoiceDetails.Update(siDetailData);
 
                                 siHeadData.Total += (sdDetail.NettPrice * deletedItem.Qty) - (sdDetail.NettPrice * lastQty);
+                                if (siHeadData.PaidAmount > 0 && siHeadData.Total > siHeadData.PaidAmount)
+                                {
+                                    siHeadData.Mark = "PP";
+                                }
+                                else if (siHeadData.PaidAmount > 0 && siHeadData.Total == siHeadData.PaidAmount)
+                                {
+                                    siHeadData.Mark = "CMP";
+                                }
                                 Db.SalesInvoiceHeaders.Update(siHeadData);
                             }
                         }
@@ -591,11 +612,19 @@ public class DeliveryPlanService : GeneralService<DeliveryPlanHeader>, IDelivery
                                         Db.SalesInvoiceDetails.Update(siDetailData);
 
                                         siHeadData.Total -= (sdDetail.NettPrice * uItem.Qty);
-                                        //if (siHeadData.Total < siHeadData.PaidAmount)
-                                        //{
-                                        //    result.Message = "Data pengeluaran barang mobile gagal disetujui karena terdapat total faktur lebih kecil dari total pembayaran.";
-                                        //    return result;
-                                        //}
+                                        if (siHeadData.Total < siHeadData.PaidAmount)
+                                        {
+                                            result.Message = "Data rencana pengiriman tidak bisa ditambahkan karena terdapat surat jalan / penjualan langsung yang total fakturnya lebih kecil dari nilai yang dibayarkan.";
+                                            return result;
+                                        }
+                                        else if (siHeadData.PaidAmount > 0 && siHeadData.Total > siHeadData.PaidAmount)
+                                        {
+                                            siHeadData.Mark = "PP";
+                                        }
+                                        else if (siHeadData.PaidAmount > 0 && siHeadData.Total == siHeadData.PaidAmount)
+                                        {
+                                            siHeadData.Mark = "CMP";
+                                        }
                                         Db.SalesInvoiceHeaders.Update(siHeadData);
                                     }
                                 }
@@ -698,6 +727,14 @@ public class DeliveryPlanService : GeneralService<DeliveryPlanHeader>, IDelivery
                                         Db.SalesInvoiceDetails.Update(siDetailData);
 
                                         siHeadData.Total += (sdDetail.NettPrice * deletedItem.Qty);
+                                        if (siHeadData.PaidAmount > 0 && siHeadData.Total > siHeadData.PaidAmount)
+                                        {
+                                            siHeadData.Mark = "PP";
+                                        }
+                                        else if (siHeadData.PaidAmount > 0 && siHeadData.Total == siHeadData.PaidAmount)
+                                        {
+                                            siHeadData.Mark = "CMP";
+                                        }
                                         Db.SalesInvoiceHeaders.Update(siHeadData);
                                     }
                                 }
@@ -816,11 +853,19 @@ public class DeliveryPlanService : GeneralService<DeliveryPlanHeader>, IDelivery
                                             Db.SalesInvoiceDetails.Update(siDetailData);
 
                                             siHeadData.Total += (sdDetail.NettPrice * lastQty) - (sdDetail.NettPrice * uItem.Qty);
-                                            //if (siHeadData.Total < siHeadData.PaidAmount)
-                                            //{
-                                            //    result.Message = "Data pengeluaran barang mobile gagal disetujui karena terdapat total faktur lebih kecil dari total pembayaran.";
-                                            //    return result;
-                                            //}
+                                            if (siHeadData.Total < siHeadData.PaidAmount)
+                                            {
+                                                result.Message = "Data rencana pengiriman tidak bisa ditambahkan karena terdapat surat jalan / penjualan langsung yang total fakturnya lebih kecil dari nilai yang dibayarkan.";
+                                                return result;
+                                            }
+                                            else if (siHeadData.PaidAmount > 0 && siHeadData.Total > siHeadData.PaidAmount)
+                                            {
+                                                siHeadData.Mark = "PP";
+                                            }
+                                            else if (siHeadData.PaidAmount > 0 && siHeadData.Total == siHeadData.PaidAmount)
+                                            {
+                                                siHeadData.Mark = "CMP";
+                                            }
                                             Db.SalesInvoiceHeaders.Update(siHeadData);
                                         }
                                     }
@@ -910,11 +955,19 @@ public class DeliveryPlanService : GeneralService<DeliveryPlanHeader>, IDelivery
                                             Db.SalesInvoiceDetails.Update(siDetailData);
 
                                             siHeadData.Total -= (sdDetail.NettPrice * uItem.Qty);
-                                            //if (siHeadData.Total < siHeadData.PaidAmount)
-                                            //{
-                                            //    result.Message = "Data pengeluaran barang mobile gagal disetujui karena terdapat total faktur lebih kecil dari total pembayaran.";
-                                            //    return result;
-                                            //}
+                                            if (siHeadData.Total < siHeadData.PaidAmount)
+                                            {
+                                                result.Message = "Data rencana pengiriman tidak bisa ditambahkan karena terdapat surat jalan / penjualan langsung yang total fakturnya lebih kecil dari nilai yang dibayarkan.";
+                                                return result;
+                                            }
+                                            else if (siHeadData.PaidAmount > 0 && siHeadData.Total > siHeadData.PaidAmount)
+                                            {
+                                                siHeadData.Mark = "PP";
+                                            }
+                                            else if (siHeadData.PaidAmount > 0 && siHeadData.Total == siHeadData.PaidAmount)
+                                            {
+                                                siHeadData.Mark = "CMP";
+                                            }
                                             Db.SalesInvoiceHeaders.Update(siHeadData);
                                         }
                                     }
@@ -1041,6 +1094,14 @@ public class DeliveryPlanService : GeneralService<DeliveryPlanHeader>, IDelivery
                                     Db.SalesInvoiceDetails.Update(siDetailData);
 
                                     siHeadData.Total += (sdDetail.NettPrice * deletedItem.Qty);
+                                    if (siHeadData.PaidAmount > 0 && siHeadData.Total > siHeadData.PaidAmount)
+                                    {
+                                        siHeadData.Mark = "PP";
+                                    }
+                                    else if (siHeadData.PaidAmount > 0 && siHeadData.Total == siHeadData.PaidAmount)
+                                    {
+                                        siHeadData.Mark = "CMP";
+                                    }
                                     Db.SalesInvoiceHeaders.Update(siHeadData);
                                 }
                             }
