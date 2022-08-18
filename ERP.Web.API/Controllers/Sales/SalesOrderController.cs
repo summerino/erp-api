@@ -138,6 +138,18 @@ public class SalesOrderController : ControllerBase
         });
     }
 
+    [HttpGet("promos")]
+    public IActionResult GetPromos(string code)
+    {
+        var data = _so.GetSalesOrderPromos(code);
+
+        return Ok(new ApiResponse
+        {
+            RowCount = data.Count(),
+            TableData = data.ToDynamicList()
+        });
+    }
+
     [HttpPost]
     public IActionResult OnPost(SalesOrderRequest data)
     {
