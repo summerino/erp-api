@@ -250,8 +250,6 @@ public class MobileOrderPromo
     [StringLength(17)]
     public string PromoCode { get; set; }
 
-    public long? PromoDetailId { get; set; }
-
     public bool IsActive { get; set; }
 }
 

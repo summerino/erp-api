@@ -815,7 +815,7 @@ public class DeliveryPlanService : GeneralService<DeliveryPlanHeader>, IDelivery
                                             siDetailData.Dpp += (sdDetail.Dpp * lastQty) - (sdDetail.Dpp * uItem.Qty);
                                             Db.SalesInvoiceDetails.Update(siDetailData);
 
-                                            siHeadData.Total -= (sdDetail.NettPrice * uItem.Qty);
+                                            siHeadData.Total += (sdDetail.NettPrice * lastQty) - (sdDetail.NettPrice * uItem.Qty);
                                             //if (siHeadData.Total < siHeadData.PaidAmount)
                                             //{
                                             //    result.Message = "Data pengeluaran barang mobile gagal disetujui karena terdapat total faktur lebih kecil dari total pembayaran.";
