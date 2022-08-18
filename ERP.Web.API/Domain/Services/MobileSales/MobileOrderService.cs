@@ -57,6 +57,7 @@ public class MobileOrderService : GeneralService<MobileOrderHeader>, IMobileOrde
                     var detailData = Db.MobileOrderDetails.Where(x => x.Code == itemData.Code).ToList();
                     var detailDiscData = Db.MobileOrderDetailDiscounts.Where(x => x.Code == itemData.Code).ToList();
                     var detailFreeData = Db.MobileOrderDetailFreeGoods.Where(x => x.Code == itemData.Code).ToList();
+                    var detailPromoData = Db.MobileOrderPromos.Where(x => x.Code == itemData.Code).ToList();
                     var memoData = (from h in Db.SalesInvoiceCreditMemos
                         join d in Db.CreditMemos on h.CreditMemoCode equals d.Code
                         where h.InvCode == newCode
@@ -351,6 +352,19 @@ public class MobileOrderService : GeneralService<MobileOrderHeader>, IMobileOrde
                             InvAmount = itemData.Total,
                             CreditMemoAmount = item.CreditMemoAmount,
                             CreditMemoCode = item.CreditMemoCode
+                        });
+                    }
+
+                    // insert promo
+                    short p = 0;
+                    foreach (var item in detailPromoData)
+                    {
+                        Db.SalesOrderPromos.Add(new SalesOrderPromo
+                        {
+                            Code = newCode,
+                            LineNo = ++p,
+                            PromoCode = item.PromoCode,
+                            IsActive = item.IsActive
                         });
                     }
 
@@ -659,6 +673,20 @@ public class MobileOrderService : GeneralService<MobileOrderHeader>, IMobileOrde
         return result;
     }
 
+    public IEnumerable<dynamic> GetOrderPromos(string code)
+    {
+        return Db.MobileOrderPromos.Join(Db.PromoHeaders, soPromo => soPromo.PromoCode, promo => promo.Code, (soPromo, promo) => new { SOPromo = soPromo, Promo = promo })
+            .Where(x => x.SOPromo.Code == code)
+            .Select(x => new
+            {
+                Id = x.SOPromo.Id,
+                Code = x.SOPromo.Code,
+                LineNo = x.SOPromo.LineNo,
+                PromoCode = x.SOPromo.PromoCode,
+                IsActive = x.SOPromo.IsActive,
+                Name = x.Promo.Name
+            }).ToDynamicList();
+    }
     private bool IsQtyExcess(string warehouseCode, IEnumerable<MobileOrderDetail> items)
     {
         var result = false;

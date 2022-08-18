@@ -16,6 +16,8 @@ public interface IMobileOrderService : IGeneralService<MobileOrderHeader>
 
     IEnumerable<MobileOrderDetailDiscount> GetDiscDetailData(string code);
 
+    IEnumerable<dynamic> GetOrderPromos(string code);
+
     SaveResult Approve(List<MobileOrderHeader> data, int userId, bool allowOverlimit, string reason);
 
     SaveResult Reject(List<MobileOrderHeader> data, int userId);

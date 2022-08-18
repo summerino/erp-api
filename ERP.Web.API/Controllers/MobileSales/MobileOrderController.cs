@@ -121,6 +121,18 @@ public class MobileOrderController : ControllerBase
         });
     }
 
+    [HttpGet("promos")]
+    public IActionResult GetPromos(string code)
+    {
+        var data = _mo.GetOrderPromos(code);
+
+        return Ok(new ApiResponse
+        {
+            RowCount = data.Count(),
+            TableData = data.ToDynamicList()
+        });
+    }
+
     [HttpPut("{code}")]
     public IActionResult OnPut(string code, MobileOrderRequest data)
     {
