@@ -20,6 +20,8 @@ public interface ISalesOrderService : IGeneralService<SalesOrderHeader>
 
     IEnumerable<VwSalesOrderHeader> GetInCompleteInvoiceData(string searchBy, string search, string invCode);
 
+    IEnumerable<dynamic> GetSalesOrderPromos(string code);
+
     SaveResult Insert(SalesOrderRequest data);
 
     SaveResult Update(SalesOrderRequest data);

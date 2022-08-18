@@ -6,7 +6,7 @@ public class SalesOrderRequest : SalesOrderHeader
 {
     public IEnumerable<SalesOrderDetailRequest> ItemDetails { get; set; }
 
-    public IEnumerable<SalesOrderPromoRequest> ListPromo { get; set; }
+    public IEnumerable<SalesOrderPromo> ListPromo { get; set; }
 
     public DateTime DlvDate { get; set; }
 
@@ -37,9 +37,4 @@ public class DetailFreeGoodData : SalesOrderDetailFreeGood
     public string Name { get; set; }
 
     public string UnitName { get; set; }
-}
-
-public class SalesOrderPromoRequest : PromoHeader
-{
-    public bool UsePromo { get; set; }
 }

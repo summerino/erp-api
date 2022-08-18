@@ -9,7 +9,7 @@ public class SalesInvoiceRequest : SalesInvoiceHeader
     public IEnumerable<SalesInvoiceCreditMemo> Memos { get; set; }
     public IEnumerable<SalesInvoiceCreditMemo> SalesDownPayments { get; set; }
     public IEnumerable<SalesOrderDetailRequest> ItemDetails { get; set; }
-    public IEnumerable<DirectInvoicePromoRequest> ListPromo { get; set; }
+    public IEnumerable<SalesOrderPromo> ListPromo { get; set; }
 
     // Direct Invoice
     public int? PaymentTermId { get; set; }
@@ -45,9 +45,4 @@ public class SalesInvoiceRequest : SalesInvoiceHeader
 public class DirectInvoiceRequest : DirectInvoiceHeader
 {
     public int? PaymentTermId { get; set; }
-}
-
-public class DirectInvoicePromoRequest : PromoHeader
-{
-    public bool UsePromo { get; set; }
 }
