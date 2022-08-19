@@ -499,22 +499,22 @@ namespace ERP.Entity.Migrations.TenantMigrations
                 schema: "Sales",
                 columns: table => new
                 {
+                    Mark = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
+                    CreatedBy = table.Column<int>(type: "int", nullable: false),
+                    ViewedBy = table.Column<int>(type: "int", nullable: true),
+                    ViewedDate = table.Column<DateTime>(type: "datetime", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
+                    UpdatedBy = table.Column<int>(type: "int", nullable: false),
+                    UpdatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
+                    ApprovedBy = table.Column<int>(type: "int", nullable: true),
+                    ApprovedDate = table.Column<DateTime>(type: "datetime", nullable: true),
                     Code = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
                     Name = table.Column<string>(type: "varchar(50)", unicode: false, maxLength: 50, nullable: false),
                     StartDate = table.Column<DateTime>(type: "date", nullable: false),
                     EndDate = table.Column<DateTime>(type: "date", nullable: false),
                     ApplyTo = table.Column<short>(type: "smallint", nullable: false),
                     CoaCost = table.Column<string>(type: "varchar(6)", unicode: false, maxLength: 6, nullable: false),
-                    Content = table.Column<string>(type: "varchar(max)", unicode: false, nullable: true),
-                    Mark = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
-                    CreatedBy = table.Column<int>(type: "int", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
-                    UpdatedBy = table.Column<int>(type: "int", nullable: false),
-                    UpdatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
-                    ApprovedBy = table.Column<int>(type: "int", nullable: true),
-                    ApprovedDate = table.Column<DateTime>(type: "datetime", nullable: true),
-                    ViewedBy = table.Column<int>(type: "int", nullable: true),
-                    ViewedDate = table.Column<DateTime>(type: "datetime", nullable: true)
+                    Content = table.Column<string>(type: "varchar(max)", unicode: false, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -522,51 +522,19 @@ namespace ERP.Entity.Migrations.TenantMigrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "PurchaseOrderDetail",
-                schema: "Purchasing",
-                columns: table => new
-                {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Code = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
-                    LineNo = table.Column<short>(type: "smallint", nullable: false),
-                    ItemId = table.Column<int>(type: "int", nullable: false),
-                    UomId = table.Column<int>(type: "int", nullable: false),
-                    UnitId = table.Column<int>(type: "int", nullable: false),
-                    Qty = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    Length = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
-                    Width = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
-                    Height = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
-                    Weight = table.Column<decimal>(type: "decimal(18,3)", precision: 18, scale: 3, nullable: true),
-                    DimensionMeasurement = table.Column<string>(type: "varchar(10)", unicode: false, maxLength: 10, nullable: true),
-                    WeightMeasurement = table.Column<string>(type: "varchar(10)", unicode: false, maxLength: 10, nullable: true),
-                    QtyRcv = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
-                    UnitPrice = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
-                    Disc = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
-                    FinalDiscHeader = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
-                    TaxId = table.Column<int>(type: "int", nullable: true),
-                    TaxAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
-                    NettPrice = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
-                    Total = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
-                    DPP = table.Column<decimal>(type: "decimal(19,6)", nullable: false),
-                    Notes = table.Column<string>(type: "varchar(256)", unicode: false, maxLength: 256, nullable: true),
-                    CoaInventory = table.Column<string>(type: "varchar(6)", unicode: false, maxLength: 6, nullable: true),
-                    CoaCOGS = table.Column<string>(type: "varchar(6)", unicode: false, maxLength: 6, nullable: true),
-                    CoaPurc = table.Column<string>(type: "varchar(6)", unicode: false, maxLength: 6, nullable: true),
-                    CoaPurcDisc = table.Column<string>(type: "varchar(6)", unicode: false, maxLength: 6, nullable: true),
-                    CoaPurcReturn = table.Column<string>(type: "varchar(6)", unicode: false, maxLength: 6, nullable: true),
-                    Type = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_PurchaseOrderDetail", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "PurchaseOrderHeader",
                 schema: "Purchasing",
                 columns: table => new
                 {
+                    Mark = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
+                    CreatedBy = table.Column<int>(type: "int", nullable: false),
+                    ViewedBy = table.Column<int>(type: "int", nullable: true),
+                    ViewedDate = table.Column<DateTime>(type: "datetime", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
+                    UpdatedBy = table.Column<int>(type: "int", nullable: false),
+                    UpdatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
+                    ApprovedBy = table.Column<int>(type: "int", nullable: true),
+                    ApprovedDate = table.Column<DateTime>(type: "datetime", nullable: true),
                     Code = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
                     Date = table.Column<DateTime>(type: "date", nullable: false),
                     SupCode = table.Column<string>(type: "varchar(8)", unicode: false, maxLength: 8, nullable: false),
@@ -581,18 +549,10 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     FinalDisc = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     IncludeTax = table.Column<bool>(type: "bit", nullable: false),
                     TaxAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    ExemptTaxAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     Total = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     DPP = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Notes = table.Column<string>(type: "varchar(256)", unicode: false, maxLength: 256, nullable: true),
-                    Mark = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
-                    CreatedBy = table.Column<int>(type: "int", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
-                    UpdatedBy = table.Column<int>(type: "int", nullable: false),
-                    UpdatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
-                    ApprovedBy = table.Column<int>(type: "int", nullable: true),
-                    ApprovedDate = table.Column<DateTime>(type: "datetime", nullable: true),
-                    ViewedBy = table.Column<int>(type: "int", nullable: true),
-                    ViewedDate = table.Column<DateTime>(type: "datetime", nullable: true)
+                    Notes = table.Column<string>(type: "varchar(256)", unicode: false, maxLength: 256, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -600,46 +560,19 @@ namespace ERP.Entity.Migrations.TenantMigrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "PurchaseReceiveDetail",
-                schema: "Purchasing",
-                columns: table => new
-                {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Code = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
-                    LineNo = table.Column<short>(type: "smallint", nullable: false),
-                    TransDetailId = table.Column<long>(type: "bigint", nullable: true),
-                    ItemId = table.Column<int>(type: "int", nullable: false),
-                    Qty = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    UomId = table.Column<int>(type: "int", nullable: false),
-                    UnitId = table.Column<int>(type: "int", nullable: false),
-                    Length = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
-                    Width = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
-                    Height = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
-                    Weight = table.Column<decimal>(type: "decimal(18,3)", precision: 18, scale: 3, nullable: true),
-                    DimensionMeasurement = table.Column<string>(type: "varchar(10)", unicode: false, maxLength: 10, nullable: true),
-                    WeightMeasurement = table.Column<string>(type: "varchar(10)", unicode: false, maxLength: 10, nullable: true),
-                    UnitPrice = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
-                    Disc = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
-                    FinalDiscHeader = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
-                    TaxId = table.Column<int>(type: "int", nullable: true),
-                    TaxAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
-                    NettPrice = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
-                    Total = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
-                    DPP = table.Column<decimal>(type: "decimal(19,6)", nullable: false),
-                    WarehouseCode = table.Column<string>(type: "varchar(8)", unicode: false, maxLength: 8, nullable: false),
-                    Type = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_PurchaseReceiveDetail", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "PurchaseReceiveHeader",
                 schema: "Purchasing",
                 columns: table => new
                 {
+                    Mark = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
+                    CreatedBy = table.Column<int>(type: "int", nullable: false),
+                    ViewedBy = table.Column<int>(type: "int", nullable: true),
+                    ViewedDate = table.Column<DateTime>(type: "datetime", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
+                    UpdatedBy = table.Column<int>(type: "int", nullable: false),
+                    UpdatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
+                    ApprovedBy = table.Column<int>(type: "int", nullable: true),
+                    ApprovedDate = table.Column<DateTime>(type: "datetime", nullable: true),
                     Code = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
                     Date = table.Column<DateTime>(type: "date", nullable: false),
                     TransCode = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
@@ -656,20 +589,12 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     FinalDisc = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     IncludeTax = table.Column<bool>(type: "bit", nullable: false),
                     TaxAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    ExemptTaxAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     Total = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     DPP = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     PaidAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
                     TaxInvoiceNo = table.Column<string>(type: "varchar(50)", unicode: false, maxLength: 50, nullable: true),
-                    TaxInvoiceDate = table.Column<DateTime>(type: "date", nullable: true),
-                    Mark = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
-                    CreatedBy = table.Column<int>(type: "int", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
-                    UpdatedBy = table.Column<int>(type: "int", nullable: false),
-                    UpdatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
-                    ApprovedBy = table.Column<int>(type: "int", nullable: true),
-                    ApprovedDate = table.Column<DateTime>(type: "datetime", nullable: true),
-                    ViewedBy = table.Column<int>(type: "int", nullable: true),
-                    ViewedDate = table.Column<DateTime>(type: "datetime", nullable: true)
+                    TaxInvoiceDate = table.Column<DateTime>(type: "date", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -677,39 +602,45 @@ namespace ERP.Entity.Migrations.TenantMigrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "PurchaseReturnDetail",
+                name: "PurchaseReturnHeader",
                 schema: "Purchasing",
                 columns: table => new
                 {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Mark = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
+                    CreatedBy = table.Column<int>(type: "int", nullable: false),
+                    ViewedBy = table.Column<int>(type: "int", nullable: true),
+                    ViewedDate = table.Column<DateTime>(type: "datetime", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
+                    UpdatedBy = table.Column<int>(type: "int", nullable: false),
+                    UpdatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
+                    ApprovedBy = table.Column<int>(type: "int", nullable: true),
+                    ApprovedDate = table.Column<DateTime>(type: "datetime", nullable: true),
                     Code = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
-                    LineNo = table.Column<short>(type: "smallint", nullable: false),
-                    RcvDetailId = table.Column<long>(type: "bigint", nullable: true),
-                    ItemId = table.Column<int>(type: "int", nullable: false),
-                    UomId = table.Column<int>(type: "int", nullable: false),
-                    UnitId = table.Column<int>(type: "int", nullable: false),
-                    Qty = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    QtyRcv = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    WarehouseCode = table.Column<string>(type: "varchar(8)", unicode: false, maxLength: 8, nullable: false),
-                    WarehouseCodeIn = table.Column<string>(type: "varchar(8)", unicode: false, maxLength: 8, nullable: true),
-                    Length = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
-                    Width = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
-                    Height = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
-                    Weight = table.Column<decimal>(type: "decimal(18,3)", precision: 18, scale: 3, nullable: true),
-                    DimensionMeasurement = table.Column<string>(type: "varchar(10)", unicode: false, maxLength: 10, nullable: true),
-                    WeightMeasurement = table.Column<string>(type: "varchar(10)", unicode: false, maxLength: 10, nullable: true),
-                    UnitPrice = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
-                    Disc = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
-                    TaxId = table.Column<int>(type: "int", nullable: true),
-                    TaxAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
-                    NettPrice = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
-                    Total = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
-                    DPP = table.Column<decimal>(type: "decimal(19,6)", nullable: false)
+                    Date = table.Column<DateTime>(type: "date", nullable: false),
+                    RcvCode = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: true),
+                    RefNo = table.Column<string>(type: "varchar(30)", unicode: false, maxLength: 30, nullable: true),
+                    Type = table.Column<short>(type: "smallint", nullable: false),
+                    SupCode = table.Column<string>(type: "varchar(8)", unicode: false, maxLength: 8, nullable: false),
+                    ShippedBy = table.Column<long>(type: "bigint", nullable: false),
+                    CurrCode = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
+                    Rate = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    ShipmentFee = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    HandlingFee = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    SubTotal = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    FinalDisc = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    NoTax = table.Column<bool>(type: "bit", nullable: false),
+                    IncludeTax = table.Column<bool>(type: "bit", nullable: false),
+                    TaxAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    ExemptTaxAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    Total = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    DPP = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    TaxInvoiceNo = table.Column<string>(type: "varchar(50)", unicode: false, maxLength: 50, nullable: true),
+                    TaxInvoiceDate = table.Column<DateTime>(type: "date", nullable: true),
+                    Notes = table.Column<string>(type: "varchar(256)", unicode: false, maxLength: 256, nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_PurchaseReturnDetail", x => x.Id);
+                    table.PrimaryKey("PK_PurchaseReturnHeader", x => x.Code);
                 });
 
             migrationBuilder.CreateTable(
@@ -730,7 +661,8 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     WarehouseCode = table.Column<string>(type: "varchar(8)", unicode: false, maxLength: 8, nullable: true),
                     UnitPrice = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
                     TaxId = table.Column<int>(type: "int", nullable: true),
-                    TaxAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    TaxAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    ExemptTaxAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
                     NettPrice = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
                     Total = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
                     DPP = table.Column<decimal>(type: "decimal(19,6)", nullable: false)
@@ -738,47 +670,12 @@ namespace ERP.Entity.Migrations.TenantMigrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_PurchaseReturnDetailExchDiffItem", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "PurchaseReturnHeader",
-                schema: "Purchasing",
-                columns: table => new
-                {
-                    Code = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
-                    Date = table.Column<DateTime>(type: "date", nullable: false),
-                    RcvCode = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: true),
-                    RefNo = table.Column<string>(type: "varchar(30)", unicode: false, maxLength: 30, nullable: true),
-                    Type = table.Column<short>(type: "smallint", nullable: false),
-                    SupCode = table.Column<string>(type: "varchar(8)", unicode: false, maxLength: 8, nullable: false),
-                    ShippedBy = table.Column<long>(type: "bigint", nullable: false),
-                    CurrCode = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
-                    Rate = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    ShipmentFee = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    HandlingFee = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    SubTotal = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    FinalDisc = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    NoTax = table.Column<bool>(type: "bit", nullable: false),
-                    IncludeTax = table.Column<bool>(type: "bit", nullable: false),
-                    TaxAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    Total = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    DPP = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    TaxInvoiceNo = table.Column<string>(type: "varchar(50)", unicode: false, maxLength: 50, nullable: true),
-                    TaxInvoiceDate = table.Column<DateTime>(type: "date", nullable: true),
-                    Notes = table.Column<string>(type: "varchar(256)", unicode: false, maxLength: 256, nullable: false),
-                    Mark = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
-                    CreatedBy = table.Column<int>(type: "int", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
-                    UpdatedBy = table.Column<int>(type: "int", nullable: false),
-                    UpdatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
-                    ApprovedBy = table.Column<int>(type: "int", nullable: true),
-                    ApprovedDate = table.Column<DateTime>(type: "datetime", nullable: true),
-                    ViewedBy = table.Column<int>(type: "int", nullable: true),
-                    ViewedDate = table.Column<DateTime>(type: "datetime", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_PurchaseReturnHeader", x => x.Code);
+                    table.ForeignKey(
+                        name: "FK_PurchaseReturnDetailExchDiffItem_PurchaseReturnHeader_Code",
+                        column: x => x.Code,
+                        principalSchema: "Purchasing",
+                        principalTable: "PurchaseReturnHeader",
+                        principalColumn: "Code");
                 });
 
             migrationBuilder.CreateTable(
@@ -802,67 +699,19 @@ namespace ERP.Entity.Migrations.TenantMigrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "SalesDeliveryDetail",
-                schema: "Sales",
-                columns: table => new
-                {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Code = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
-                    LineNo = table.Column<short>(type: "smallint", nullable: false),
-                    SODetailId = table.Column<long>(type: "bigint", nullable: true),
-                    ItemId = table.Column<int>(type: "int", nullable: false),
-                    Qty = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    UomId = table.Column<int>(type: "int", nullable: false),
-                    UnitId = table.Column<int>(type: "int", nullable: false),
-                    Length = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
-                    Width = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
-                    Height = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
-                    Weight = table.Column<decimal>(type: "decimal(18,3)", precision: 18, scale: 3, nullable: true),
-                    DimensionMeasurement = table.Column<string>(type: "varchar(10)", unicode: false, maxLength: 10, nullable: true),
-                    WeightMeasurement = table.Column<string>(type: "varchar(10)", unicode: false, maxLength: 10, nullable: true),
-                    UnitPrice = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
-                    Disc = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
-                    FinalDiscHeader = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
-                    TaxId = table.Column<int>(type: "int", nullable: true),
-                    TaxAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
-                    NettPrice = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
-                    Total = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
-                    DPP = table.Column<decimal>(type: "decimal(19,6)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_SalesDeliveryDetail", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "SalesDeliveryDetailFreeGood",
-                schema: "Sales",
-                columns: table => new
-                {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Code = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
-                    DlvOrderDetailId = table.Column<long>(type: "bigint", nullable: false),
-                    LineNo = table.Column<short>(type: "smallint", nullable: false),
-                    PromoCode = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
-                    ItemId = table.Column<int>(type: "int", nullable: false),
-                    UomId = table.Column<int>(type: "int", nullable: false),
-                    UnitId = table.Column<int>(type: "int", nullable: false),
-                    Qty = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
-                    UnitPrice = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
-                    CoaCode = table.Column<string>(type: "varchar(6)", unicode: false, maxLength: 6, nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_SalesDeliveryDetailFreeGood", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "SalesDeliveryHeader",
                 schema: "Sales",
                 columns: table => new
                 {
+                    Mark = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
+                    CreatedBy = table.Column<int>(type: "int", nullable: false),
+                    ViewedBy = table.Column<int>(type: "int", nullable: true),
+                    ViewedDate = table.Column<DateTime>(type: "datetime", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
+                    UpdatedBy = table.Column<int>(type: "int", nullable: false),
+                    UpdatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
+                    ApprovedBy = table.Column<int>(type: "int", nullable: true),
+                    ApprovedDate = table.Column<DateTime>(type: "datetime", nullable: true),
                     Code = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
                     Date = table.Column<DateTime>(type: "date", nullable: false),
                     SrcTrans = table.Column<short>(type: "smallint", nullable: false),
@@ -879,22 +728,14 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     FinalDisc = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     IncludeTax = table.Column<bool>(type: "bit", nullable: false),
                     TaxAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    ExemptTaxAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     Total = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     DPP = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     PaidAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
                     TaxInvoiceNo = table.Column<string>(type: "varchar(50)", unicode: false, maxLength: 50, nullable: true),
                     TaxInvoiceDate = table.Column<DateTime>(type: "date", nullable: true),
                     Notes = table.Column<string>(type: "varchar(256)", unicode: false, maxLength: 256, nullable: true),
-                    FromDirectInvoice = table.Column<bool>(type: "bit", nullable: false),
-                    Mark = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
-                    CreatedBy = table.Column<int>(type: "int", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
-                    UpdatedBy = table.Column<int>(type: "int", nullable: false),
-                    UpdatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
-                    ApprovedBy = table.Column<int>(type: "int", nullable: true),
-                    ApprovedDate = table.Column<DateTime>(type: "datetime", nullable: true),
-                    ViewedBy = table.Column<int>(type: "int", nullable: true),
-                    ViewedDate = table.Column<DateTime>(type: "datetime", nullable: true)
+                    FromDirectInvoice = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -961,159 +802,19 @@ namespace ERP.Entity.Migrations.TenantMigrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "SalesOrderDetail",
-                schema: "Sales",
-                columns: table => new
-                {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Code = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
-                    LineNo = table.Column<short>(type: "smallint", nullable: false),
-                    ItemId = table.Column<int>(type: "int", nullable: false),
-                    UomId = table.Column<int>(type: "int", nullable: false),
-                    UnitId = table.Column<int>(type: "int", nullable: false),
-                    Qty = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    Length = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
-                    Width = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
-                    Height = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
-                    Weight = table.Column<decimal>(type: "decimal(18,3)", precision: 18, scale: 3, nullable: true),
-                    DimensionMeasurement = table.Column<string>(type: "varchar(10)", unicode: false, maxLength: 10, nullable: true),
-                    WeightMeasurement = table.Column<string>(type: "varchar(10)", unicode: false, maxLength: 10, nullable: true),
-                    QtyDlv = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
-                    UnitPrice = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
-                    Disc = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
-                    FinalDiscHeader = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
-                    TaxId = table.Column<int>(type: "int", nullable: true),
-                    TaxAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
-                    NettPrice = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
-                    Total = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
-                    DPP = table.Column<decimal>(type: "decimal(19,6)", nullable: false),
-                    Notes = table.Column<string>(type: "varchar(256)", unicode: false, maxLength: 256, nullable: true),
-                    CoaInventory = table.Column<string>(type: "varchar(6)", unicode: false, maxLength: 6, nullable: true),
-                    CoaCOGS = table.Column<string>(type: "varchar(6)", unicode: false, maxLength: 6, nullable: true),
-                    CoaSls = table.Column<string>(type: "varchar(6)", unicode: false, maxLength: 6, nullable: true),
-                    CoaSlsDisc = table.Column<string>(type: "varchar(6)", unicode: false, maxLength: 6, nullable: true),
-                    CoaSlsReturn = table.Column<string>(type: "varchar(6)", unicode: false, maxLength: 6, nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_SalesOrderDetail", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "SalesOrderDetailDiscount",
-                schema: "Sales",
-                columns: table => new
-                {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Code = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
-                    OrderDetailId = table.Column<long>(type: "bigint", nullable: false),
-                    LineNo = table.Column<short>(type: "smallint", nullable: false),
-                    PromoCode = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: true),
-                    PromoDetailId = table.Column<long>(type: "bigint", nullable: true),
-                    Name = table.Column<string>(type: "varchar(50)", unicode: false, maxLength: 50, nullable: true),
-                    IsPercentage = table.Column<bool>(type: "bit", nullable: false),
-                    Value = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    Amount = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
-                    CoaCode = table.Column<string>(type: "varchar(6)", unicode: false, maxLength: 6, nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_SalesOrderDetailDiscount", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "SalesOrderDetailFreeGood",
-                schema: "Sales",
-                columns: table => new
-                {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Code = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
-                    OrderDetailId = table.Column<long>(type: "bigint", nullable: false),
-                    LineNo = table.Column<short>(type: "smallint", nullable: false),
-                    PromoCode = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
-                    ItemId = table.Column<int>(type: "int", nullable: false),
-                    UomId = table.Column<int>(type: "int", nullable: false),
-                    UnitId = table.Column<int>(type: "int", nullable: false),
-                    Qty = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
-                    QtyClosed = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
-                    UnitPrice = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
-                    CoaCode = table.Column<string>(type: "varchar(6)", unicode: false, maxLength: 6, nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_SalesOrderDetailFreeGood", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "SalesReturnDetail",
-                schema: "Sales",
-                columns: table => new
-                {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Code = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
-                    LineNo = table.Column<short>(type: "smallint", nullable: false),
-                    TransDetailId = table.Column<long>(type: "bigint", nullable: true),
-                    ItemId = table.Column<int>(type: "int", nullable: false),
-                    UomId = table.Column<int>(type: "int", nullable: false),
-                    UnitId = table.Column<int>(type: "int", nullable: false),
-                    Qty = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    QtyDlv = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    Length = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
-                    Width = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
-                    Height = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
-                    Weight = table.Column<decimal>(type: "decimal(18,3)", precision: 18, scale: 3, nullable: true),
-                    DimensionMeasurement = table.Column<string>(type: "varchar(10)", unicode: false, maxLength: 10, nullable: true),
-                    WeightMeasurement = table.Column<string>(type: "varchar(10)", unicode: false, maxLength: 10, nullable: true),
-                    UnitPrice = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
-                    Disc = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
-                    TaxId = table.Column<int>(type: "int", nullable: true),
-                    TaxAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
-                    NettPrice = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
-                    Total = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
-                    DPP = table.Column<decimal>(type: "decimal(19,6)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_SalesReturnDetail", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "SalesReturnDetailExchDiffItem",
-                schema: "Sales",
-                columns: table => new
-                {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Code = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
-                    LineNo = table.Column<short>(type: "smallint", nullable: false),
-                    ReturnDetailId = table.Column<long>(type: "bigint", nullable: true),
-                    ItemId = table.Column<int>(type: "int", nullable: false),
-                    UomId = table.Column<int>(type: "int", nullable: false),
-                    UnitId = table.Column<int>(type: "int", nullable: false),
-                    Qty = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    QtyDlv = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    WarehouseCode = table.Column<string>(type: "varchar(8)", unicode: false, maxLength: 8, nullable: true),
-                    UnitPrice = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
-                    TaxId = table.Column<int>(type: "int", nullable: true),
-                    TaxAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    NettPrice = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
-                    Total = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
-                    DPP = table.Column<decimal>(type: "decimal(19,6)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_SalesReturnDetailExchDiffItem", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "SalesReturnHeader",
                 schema: "Sales",
                 columns: table => new
                 {
+                    Mark = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
+                    CreatedBy = table.Column<int>(type: "int", nullable: false),
+                    ViewedBy = table.Column<int>(type: "int", nullable: true),
+                    ViewedDate = table.Column<DateTime>(type: "datetime", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
+                    UpdatedBy = table.Column<int>(type: "int", nullable: false),
+                    UpdatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
+                    ApprovedBy = table.Column<int>(type: "int", nullable: true),
+                    ApprovedDate = table.Column<DateTime>(type: "datetime", nullable: true),
                     Code = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
                     Date = table.Column<DateTime>(type: "date", nullable: false),
                     SrcTrans = table.Column<short>(type: "smallint", nullable: false),
@@ -1131,20 +832,12 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     NoTax = table.Column<bool>(type: "bit", nullable: false),
                     IncludeTax = table.Column<bool>(type: "bit", nullable: false),
                     TaxAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    ExemptTaxAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     Total = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     DPP = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     TaxInvoiceNo = table.Column<string>(type: "varchar(50)", unicode: false, maxLength: 50, nullable: true),
                     TaxInvoiceDate = table.Column<DateTime>(type: "date", nullable: true),
-                    Notes = table.Column<string>(type: "varchar(256)", unicode: false, maxLength: 256, nullable: false),
-                    Mark = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
-                    CreatedBy = table.Column<int>(type: "int", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
-                    UpdatedBy = table.Column<int>(type: "int", nullable: false),
-                    UpdatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
-                    ApprovedBy = table.Column<int>(type: "int", nullable: true),
-                    ApprovedDate = table.Column<DateTime>(type: "datetime", nullable: true),
-                    ViewedBy = table.Column<int>(type: "int", nullable: true),
-                    ViewedDate = table.Column<DateTime>(type: "datetime", nullable: true)
+                    Notes = table.Column<string>(type: "varchar(256)", unicode: false, maxLength: 256, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -1236,7 +929,9 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     Name = table.Column<string>(type: "varchar(50)", unicode: false, maxLength: 50, nullable: false),
                     TypeId = table.Column<short>(type: "smallint", nullable: false),
                     Rate = table.Column<decimal>(type: "decimal(5,2)", precision: 5, scale: 2, nullable: false),
+                    ExemptRate = table.Column<decimal>(type: "decimal(5,2)", precision: 5, scale: 2, nullable: false),
                     CoaCode = table.Column<string>(type: "varchar(6)", unicode: false, maxLength: 6, nullable: true),
+                    ExemptCoaCode = table.Column<string>(type: "varchar(6)", unicode: false, maxLength: 6, nullable: true),
                     Seq = table.Column<short>(type: "smallint", nullable: false),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
                     CreatedBy = table.Column<int>(type: "int", nullable: false),
@@ -1295,20 +990,20 @@ namespace ERP.Entity.Migrations.TenantMigrations
                 schema: "Sales",
                 columns: table => new
                 {
-                    Code = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
-                    Date = table.Column<DateTime>(type: "date", nullable: false),
-                    SalesmanId = table.Column<long>(type: "bigint", nullable: false),
-                    VisitPlanCode = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: true),
-                    Notes = table.Column<string>(type: "varchar(256)", unicode: false, maxLength: 256, nullable: true),
                     Mark = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
                     CreatedBy = table.Column<int>(type: "int", nullable: false),
+                    ViewedBy = table.Column<int>(type: "int", nullable: true),
+                    ViewedDate = table.Column<DateTime>(type: "datetime", nullable: true),
                     CreatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
                     UpdatedBy = table.Column<int>(type: "int", nullable: false),
                     UpdatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
                     ApprovedBy = table.Column<int>(type: "int", nullable: true),
                     ApprovedDate = table.Column<DateTime>(type: "datetime", nullable: true),
-                    ViewedBy = table.Column<int>(type: "int", nullable: true),
-                    ViewedDate = table.Column<DateTime>(type: "datetime", nullable: true)
+                    Code = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
+                    Date = table.Column<DateTime>(type: "date", nullable: false),
+                    SalesmanId = table.Column<long>(type: "bigint", nullable: false),
+                    VisitPlanCode = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: true),
+                    Notes = table.Column<string>(type: "varchar(256)", unicode: false, maxLength: 256, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -1385,16 +1080,16 @@ namespace ERP.Entity.Migrations.TenantMigrations
                 schema: "Sales",
                 columns: table => new
                 {
-                    Code = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
-                    Date = table.Column<DateTime>(type: "date", nullable: false),
-                    GroupId = table.Column<int>(type: "int", nullable: false),
                     Mark = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
                     CreatedBy = table.Column<int>(type: "int", nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
                     UpdatedBy = table.Column<int>(type: "int", nullable: false),
                     UpdatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
                     ApprovedBy = table.Column<int>(type: "int", nullable: true),
-                    ApprovedDate = table.Column<DateTime>(type: "datetime", nullable: true)
+                    ApprovedDate = table.Column<DateTime>(type: "datetime", nullable: true),
+                    Code = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
+                    Date = table.Column<DateTime>(type: "date", nullable: false),
+                    GroupId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -1419,7 +1114,9 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     VouCode = table.Column<string>(type: "varchar(4)", unicode: false, maxLength: 4, nullable: true),
                     BsCode = table.Column<string>(type: "varchar(4)", unicode: false, maxLength: 4, nullable: true),
                     IsCode = table.Column<string>(type: "varchar(4)", unicode: false, maxLength: 4, nullable: true),
+                    IsSeq = table.Column<int>(type: "int", nullable: true),
                     IsDetCode = table.Column<string>(type: "varchar(4)", unicode: false, maxLength: 4, nullable: true),
+                    IsDetSeq = table.Column<int>(type: "int", nullable: true),
                     ShowInMobile = table.Column<bool>(type: "bit", nullable: false),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
                     CreatedBy = table.Column<int>(type: "int", nullable: false),
@@ -1449,6 +1146,15 @@ namespace ERP.Entity.Migrations.TenantMigrations
                 schema: "Finance",
                 columns: table => new
                 {
+                    Mark = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
+                    CreatedBy = table.Column<int>(type: "int", nullable: false),
+                    ViewedBy = table.Column<int>(type: "int", nullable: true),
+                    ViewedDate = table.Column<DateTime>(type: "datetime", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
+                    UpdatedBy = table.Column<int>(type: "int", nullable: false),
+                    UpdatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
+                    ApprovedBy = table.Column<int>(type: "int", nullable: true),
+                    ApprovedDate = table.Column<DateTime>(type: "datetime", nullable: true),
                     Code = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
                     VouCode = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: true),
                     Type = table.Column<string>(type: "varchar(1)", unicode: false, maxLength: 1, nullable: false),
@@ -1460,16 +1166,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     ChequeNo = table.Column<string>(type: "varchar(25)", unicode: false, maxLength: 25, nullable: true),
                     ChequeDate = table.Column<DateTime>(type: "date", nullable: true),
                     Notes = table.Column<string>(type: "varchar(256)", unicode: false, maxLength: 256, nullable: true),
-                    IsInterCashBank = table.Column<bool>(type: "bit", nullable: false),
-                    Mark = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
-                    CreatedBy = table.Column<int>(type: "int", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
-                    UpdatedBy = table.Column<int>(type: "int", nullable: false),
-                    UpdatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
-                    ApprovedBy = table.Column<int>(type: "int", nullable: true),
-                    ApprovedDate = table.Column<DateTime>(type: "datetime", nullable: true),
-                    ViewedBy = table.Column<int>(type: "int", nullable: true),
-                    ViewedDate = table.Column<DateTime>(type: "datetime", nullable: true)
+                    IsInterCashBank = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -1487,21 +1184,21 @@ namespace ERP.Entity.Migrations.TenantMigrations
                 schema: "Accounting",
                 columns: table => new
                 {
-                    Code = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
-                    Date = table.Column<DateTime>(type: "date", nullable: false),
-                    CurrCode = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
-                    Rate = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
-                    Total = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    Notes = table.Column<string>(type: "varchar(256)", unicode: false, maxLength: 256, nullable: true),
                     Mark = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
                     CreatedBy = table.Column<int>(type: "int", nullable: false),
+                    ViewedBy = table.Column<int>(type: "int", nullable: true),
+                    ViewedDate = table.Column<DateTime>(type: "datetime", nullable: true),
                     CreatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
                     UpdatedBy = table.Column<int>(type: "int", nullable: false),
                     UpdatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
                     ApprovedBy = table.Column<int>(type: "int", nullable: true),
                     ApprovedDate = table.Column<DateTime>(type: "datetime", nullable: true),
-                    ViewedBy = table.Column<int>(type: "int", nullable: true),
-                    ViewedDate = table.Column<DateTime>(type: "datetime", nullable: true)
+                    Code = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
+                    Date = table.Column<DateTime>(type: "date", nullable: false),
+                    CurrCode = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
+                    Rate = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    Total = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    Notes = table.Column<string>(type: "varchar(256)", unicode: false, maxLength: 256, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -1641,7 +1338,8 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     MenuId = table.Column<int>(type: "int", nullable: false),
-                    ActionId = table.Column<int>(type: "int", nullable: false)
+                    ActionId = table.Column<int>(type: "int", nullable: false),
+                    Seq = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -1759,6 +1457,70 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         principalSchema: "SystemManagement",
                         principalTable: "Role",
                         principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "SalesDeliveryDetailFreeGood",
+                schema: "Sales",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Code = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
+                    DlvOrderDetailId = table.Column<long>(type: "bigint", nullable: false),
+                    LineNo = table.Column<short>(type: "smallint", nullable: false),
+                    PromoCode = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
+                    ItemId = table.Column<int>(type: "int", nullable: false),
+                    UomId = table.Column<int>(type: "int", nullable: false),
+                    UnitId = table.Column<int>(type: "int", nullable: false),
+                    Qty = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    UnitPrice = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    CoaCode = table.Column<string>(type: "varchar(6)", unicode: false, maxLength: 6, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SalesDeliveryDetailFreeGood", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_SalesDeliveryDetailFreeGood_SalesDeliveryHeader_Code",
+                        column: x => x.Code,
+                        principalSchema: "Sales",
+                        principalTable: "SalesDeliveryHeader",
+                        principalColumn: "Code");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "SalesReturnDetailExchDiffItem",
+                schema: "Sales",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Code = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
+                    LineNo = table.Column<short>(type: "smallint", nullable: false),
+                    ReturnDetailId = table.Column<long>(type: "bigint", nullable: true),
+                    ItemId = table.Column<int>(type: "int", nullable: false),
+                    UomId = table.Column<int>(type: "int", nullable: false),
+                    UnitId = table.Column<int>(type: "int", nullable: false),
+                    Qty = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    QtyDlv = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    WarehouseCode = table.Column<string>(type: "varchar(8)", unicode: false, maxLength: 8, nullable: true),
+                    UnitPrice = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    TaxId = table.Column<int>(type: "int", nullable: true),
+                    TaxAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    ExemptTaxAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    NettPrice = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    Total = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    DPP = table.Column<decimal>(type: "decimal(19,6)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SalesReturnDetailExchDiffItem", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_SalesReturnDetailExchDiffItem_SalesReturnHeader_Code",
+                        column: x => x.Code,
+                        principalSchema: "Sales",
+                        principalTable: "SalesReturnHeader",
+                        principalColumn: "Code");
                 });
 
             migrationBuilder.CreateTable(
@@ -2075,6 +1837,15 @@ namespace ERP.Entity.Migrations.TenantMigrations
                 schema: "Expedition",
                 columns: table => new
                 {
+                    Mark = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
+                    CreatedBy = table.Column<int>(type: "int", nullable: false),
+                    ViewedBy = table.Column<int>(type: "int", nullable: true),
+                    ViewedDate = table.Column<DateTime>(type: "datetime", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
+                    UpdatedBy = table.Column<int>(type: "int", nullable: false),
+                    UpdatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
+                    ApprovedBy = table.Column<int>(type: "int", nullable: true),
+                    ApprovedDate = table.Column<DateTime>(type: "datetime", nullable: true),
                     Code = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
                     Date = table.Column<DateTime>(type: "date", nullable: false),
                     DueDate = table.Column<DateTime>(type: "date", nullable: false),
@@ -2085,16 +1856,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     Rate = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     Amount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     PaidAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    Notes = table.Column<string>(type: "varchar(256)", unicode: false, maxLength: 256, nullable: true),
-                    Mark = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
-                    CreatedBy = table.Column<int>(type: "int", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
-                    UpdatedBy = table.Column<int>(type: "int", nullable: false),
-                    UpdatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
-                    ApprovedBy = table.Column<int>(type: "int", nullable: true),
-                    ApprovedDate = table.Column<DateTime>(type: "datetime", nullable: true),
-                    ViewedBy = table.Column<int>(type: "int", nullable: true),
-                    ViewedDate = table.Column<DateTime>(type: "datetime", nullable: true)
+                    Notes = table.Column<string>(type: "varchar(256)", unicode: false, maxLength: 256, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -2112,6 +1874,15 @@ namespace ERP.Entity.Migrations.TenantMigrations
                 schema: "AssetManagement",
                 columns: table => new
                 {
+                    Mark = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
+                    CreatedBy = table.Column<int>(type: "int", nullable: false),
+                    ViewedBy = table.Column<int>(type: "int", nullable: true),
+                    ViewedDate = table.Column<DateTime>(type: "datetime", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
+                    UpdatedBy = table.Column<int>(type: "int", nullable: false),
+                    UpdatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
+                    ApprovedBy = table.Column<int>(type: "int", nullable: true),
+                    ApprovedDate = table.Column<DateTime>(type: "datetime", nullable: true),
                     Code = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
                     Name = table.Column<string>(type: "varchar(50)", unicode: false, maxLength: 50, nullable: false),
                     TypeId = table.Column<int>(type: "int", nullable: false),
@@ -2133,16 +1904,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     InitDepreciationExpense = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     BookValue = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     Notes = table.Column<string>(type: "varchar(256)", unicode: false, maxLength: 256, nullable: true),
-                    CoaExpense = table.Column<string>(type: "varchar(6)", unicode: false, maxLength: 6, nullable: true),
-                    Mark = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
-                    CreatedBy = table.Column<int>(type: "int", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
-                    UpdatedBy = table.Column<int>(type: "int", nullable: false),
-                    UpdatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
-                    ApprovedBy = table.Column<int>(type: "int", nullable: true),
-                    ApprovedDate = table.Column<DateTime>(type: "datetime", nullable: true),
-                    ViewedBy = table.Column<int>(type: "int", nullable: true),
-                    ViewedDate = table.Column<DateTime>(type: "datetime", nullable: true)
+                    CoaExpense = table.Column<string>(type: "varchar(6)", unicode: false, maxLength: 6, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -2155,6 +1917,56 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_FixedAsset_Supplier_SupCode",
+                        column: x => x.SupCode,
+                        principalSchema: "General",
+                        principalTable: "Supplier",
+                        principalColumn: "Code");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PurchaseInvoiceHeader",
+                schema: "Purchasing",
+                columns: table => new
+                {
+                    Mark = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
+                    CreatedBy = table.Column<int>(type: "int", nullable: false),
+                    ViewedBy = table.Column<int>(type: "int", nullable: true),
+                    ViewedDate = table.Column<DateTime>(type: "datetime", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
+                    UpdatedBy = table.Column<int>(type: "int", nullable: false),
+                    UpdatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
+                    ApprovedBy = table.Column<int>(type: "int", nullable: true),
+                    ApprovedDate = table.Column<DateTime>(type: "datetime", nullable: true),
+                    Code = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
+                    Date = table.Column<DateTime>(type: "date", nullable: false),
+                    DueDate = table.Column<DateTime>(type: "date", nullable: false),
+                    POCode = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: true),
+                    RefNo = table.Column<string>(type: "varchar(30)", unicode: false, maxLength: 30, nullable: true),
+                    SupCode = table.Column<string>(type: "varchar(8)", unicode: false, maxLength: 8, nullable: false),
+                    CurrCode = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
+                    PaidAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    Total = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    TaxInvoiceNo = table.Column<string>(type: "varchar(50)", unicode: false, maxLength: 50, nullable: true),
+                    TaxInvoiceDate = table.Column<DateTime>(type: "date", nullable: true),
+                    Notes = table.Column<string>(type: "varchar(256)", unicode: false, maxLength: 256, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PurchaseInvoiceHeader", x => x.Code);
+                    table.ForeignKey(
+                        name: "FK_PurchaseInvoiceHeader_Currency_CurrCode",
+                        column: x => x.CurrCode,
+                        principalSchema: "General",
+                        principalTable: "Currency",
+                        principalColumn: "Code");
+                    table.ForeignKey(
+                        name: "FK_PurchaseInvoiceHeader_PurchaseOrderHeader_POCode",
+                        column: x => x.POCode,
+                        principalSchema: "Purchasing",
+                        principalTable: "PurchaseOrderHeader",
+                        principalColumn: "Code");
+                    table.ForeignKey(
+                        name: "FK_PurchaseInvoiceHeader_Supplier_SupCode",
                         column: x => x.SupCode,
                         principalSchema: "General",
                         principalTable: "Supplier",
@@ -2185,6 +1997,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     SubGroup3 = table.Column<string>(type: "varchar(50)", unicode: false, maxLength: 50, nullable: true),
                     SubGroup4 = table.Column<string>(type: "varchar(50)", unicode: false, maxLength: 50, nullable: true),
                     SubGroup5 = table.Column<string>(type: "varchar(50)", unicode: false, maxLength: 50, nullable: true),
+                    CoaTransit = table.Column<string>(type: "varchar(6)", unicode: false, maxLength: 6, nullable: true),
                     CoaInventory = table.Column<string>(type: "varchar(6)", unicode: false, maxLength: 6, nullable: true),
                     CoaCOGS = table.Column<string>(type: "varchar(6)", unicode: false, maxLength: 6, nullable: true),
                     CoaPurc = table.Column<string>(type: "varchar(6)", unicode: false, maxLength: 6, nullable: true),
@@ -2321,6 +2134,71 @@ namespace ERP.Entity.Migrations.TenantMigrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "PurchaseInvoiceDebitMemo",
+                schema: "Purchasing",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    InvCode = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
+                    DebitMemoCode = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
+                    InvAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    DebitMemoAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PurchaseInvoiceDebitMemo", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PurchaseInvoiceDebitMemo_DebitMemo_DebitMemoCode",
+                        column: x => x.DebitMemoCode,
+                        principalSchema: "Purchasing",
+                        principalTable: "DebitMemo",
+                        principalColumn: "Code");
+                    table.ForeignKey(
+                        name: "FK_PurchaseInvoiceDebitMemo_PurchaseInvoiceHeader_InvCode",
+                        column: x => x.InvCode,
+                        principalSchema: "Purchasing",
+                        principalTable: "PurchaseInvoiceHeader",
+                        principalColumn: "Code");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PurchaseInvoiceDetail",
+                schema: "Purchasing",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Code = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
+                    LineNo = table.Column<short>(type: "smallint", nullable: false),
+                    RcvCode = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
+                    ShipmentFee = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    HandlingFee = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    SubTotal = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    FinalDisc = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    TaxAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    ExemptTaxAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    Total = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    DPP = table.Column<decimal>(type: "decimal(19,6)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PurchaseInvoiceDetail", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PurchaseInvoiceDetail_PurchaseInvoiceHeader_Code",
+                        column: x => x.Code,
+                        principalSchema: "Purchasing",
+                        principalTable: "PurchaseInvoiceHeader",
+                        principalColumn: "Code");
+                    table.ForeignKey(
+                        name: "FK_PurchaseInvoiceDetail_PurchaseReceiveHeader_RcvCode",
+                        column: x => x.RcvCode,
+                        principalSchema: "Purchasing",
+                        principalTable: "PurchaseReceiveHeader",
+                        principalColumn: "Code");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "PromoDetailMultipleItem",
                 schema: "Sales",
                 columns: table => new
@@ -2344,6 +2222,342 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         column: x => x.PromoDetailId,
                         principalSchema: "Sales",
                         principalTable: "PromoDetail",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PurchaseOrderDetail",
+                schema: "Purchasing",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Code = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
+                    LineNo = table.Column<short>(type: "smallint", nullable: false),
+                    ItemId = table.Column<int>(type: "int", nullable: false),
+                    UomId = table.Column<int>(type: "int", nullable: false),
+                    UnitId = table.Column<int>(type: "int", nullable: false),
+                    Qty = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    Length = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
+                    Width = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
+                    Height = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
+                    Weight = table.Column<decimal>(type: "decimal(18,3)", precision: 18, scale: 3, nullable: true),
+                    DimensionMeasurement = table.Column<string>(type: "varchar(10)", unicode: false, maxLength: 10, nullable: true),
+                    WeightMeasurement = table.Column<string>(type: "varchar(10)", unicode: false, maxLength: 10, nullable: true),
+                    QtyRcv = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
+                    UnitPrice = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    Disc = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    FinalDiscHeader = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    TaxId = table.Column<int>(type: "int", nullable: true),
+                    TaxAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    ExemptTaxAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    NettPrice = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    Total = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    DPP = table.Column<decimal>(type: "decimal(19,6)", nullable: false),
+                    Notes = table.Column<string>(type: "varchar(256)", unicode: false, maxLength: 256, nullable: true),
+                    CoaInventory = table.Column<string>(type: "varchar(6)", unicode: false, maxLength: 6, nullable: true),
+                    CoaCOGS = table.Column<string>(type: "varchar(6)", unicode: false, maxLength: 6, nullable: true),
+                    CoaPurc = table.Column<string>(type: "varchar(6)", unicode: false, maxLength: 6, nullable: true),
+                    CoaPurcDisc = table.Column<string>(type: "varchar(6)", unicode: false, maxLength: 6, nullable: true),
+                    CoaPurcReturn = table.Column<string>(type: "varchar(6)", unicode: false, maxLength: 6, nullable: true),
+                    Type = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PurchaseOrderDetail", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PurchaseOrderDetail_Item_ItemId",
+                        column: x => x.ItemId,
+                        principalSchema: "Inventory",
+                        principalTable: "Item",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_PurchaseOrderDetail_PurchaseOrderHeader_Code",
+                        column: x => x.Code,
+                        principalSchema: "Purchasing",
+                        principalTable: "PurchaseOrderHeader",
+                        principalColumn: "Code");
+                    table.ForeignKey(
+                        name: "FK_PurchaseOrderDetail_Tax_TaxId",
+                        column: x => x.TaxId,
+                        principalSchema: "General",
+                        principalTable: "Tax",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_PurchaseOrderDetail_UoM_UomId",
+                        column: x => x.UomId,
+                        principalSchema: "Inventory",
+                        principalTable: "UoM",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_PurchaseOrderDetail_UoMConversion_UnitId",
+                        column: x => x.UnitId,
+                        principalSchema: "Inventory",
+                        principalTable: "UoMConversion",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PurchaseReceiveDetail",
+                schema: "Purchasing",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Code = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
+                    LineNo = table.Column<short>(type: "smallint", nullable: false),
+                    TransDetailId = table.Column<long>(type: "bigint", nullable: true),
+                    ItemId = table.Column<int>(type: "int", nullable: false),
+                    Qty = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    UomId = table.Column<int>(type: "int", nullable: false),
+                    UnitId = table.Column<int>(type: "int", nullable: false),
+                    Length = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
+                    Width = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
+                    Height = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
+                    Weight = table.Column<decimal>(type: "decimal(18,3)", precision: 18, scale: 3, nullable: true),
+                    DimensionMeasurement = table.Column<string>(type: "varchar(10)", unicode: false, maxLength: 10, nullable: true),
+                    WeightMeasurement = table.Column<string>(type: "varchar(10)", unicode: false, maxLength: 10, nullable: true),
+                    UnitPrice = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    Disc = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    FinalDiscHeader = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    TaxId = table.Column<int>(type: "int", nullable: true),
+                    TaxAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    ExemptTaxAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    NettPrice = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    Total = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    DPP = table.Column<decimal>(type: "decimal(19,6)", nullable: false),
+                    WarehouseCode = table.Column<string>(type: "varchar(8)", unicode: false, maxLength: 8, nullable: false),
+                    Type = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PurchaseReceiveDetail", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PurchaseReceiveDetail_Item_ItemId",
+                        column: x => x.ItemId,
+                        principalSchema: "Inventory",
+                        principalTable: "Item",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_PurchaseReceiveDetail_PurchaseReceiveHeader_Code",
+                        column: x => x.Code,
+                        principalSchema: "Purchasing",
+                        principalTable: "PurchaseReceiveHeader",
+                        principalColumn: "Code");
+                    table.ForeignKey(
+                        name: "FK_PurchaseReceiveDetail_Tax_TaxId",
+                        column: x => x.TaxId,
+                        principalSchema: "General",
+                        principalTable: "Tax",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_PurchaseReceiveDetail_UoM_UomId",
+                        column: x => x.UomId,
+                        principalSchema: "Inventory",
+                        principalTable: "UoM",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_PurchaseReceiveDetail_UoMConversion_UnitId",
+                        column: x => x.UnitId,
+                        principalSchema: "Inventory",
+                        principalTable: "UoMConversion",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PurchaseReturnDetail",
+                schema: "Purchasing",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Code = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
+                    LineNo = table.Column<short>(type: "smallint", nullable: false),
+                    RcvDetailId = table.Column<long>(type: "bigint", nullable: true),
+                    ItemId = table.Column<int>(type: "int", nullable: false),
+                    UomId = table.Column<int>(type: "int", nullable: false),
+                    UnitId = table.Column<int>(type: "int", nullable: false),
+                    Qty = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    QtyRcv = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    WarehouseCode = table.Column<string>(type: "varchar(8)", unicode: false, maxLength: 8, nullable: false),
+                    WarehouseCodeIn = table.Column<string>(type: "varchar(8)", unicode: false, maxLength: 8, nullable: true),
+                    Length = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
+                    Width = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
+                    Height = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
+                    Weight = table.Column<decimal>(type: "decimal(18,3)", precision: 18, scale: 3, nullable: true),
+                    DimensionMeasurement = table.Column<string>(type: "varchar(10)", unicode: false, maxLength: 10, nullable: true),
+                    WeightMeasurement = table.Column<string>(type: "varchar(10)", unicode: false, maxLength: 10, nullable: true),
+                    UnitPrice = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    Disc = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    TaxId = table.Column<int>(type: "int", nullable: true),
+                    TaxAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    ExemptTaxAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    NettPrice = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    Total = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    DPP = table.Column<decimal>(type: "decimal(19,6)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PurchaseReturnDetail", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PurchaseReturnDetail_Item_ItemId",
+                        column: x => x.ItemId,
+                        principalSchema: "Inventory",
+                        principalTable: "Item",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_PurchaseReturnDetail_PurchaseReturnHeader_Code",
+                        column: x => x.Code,
+                        principalSchema: "Purchasing",
+                        principalTable: "PurchaseReturnHeader",
+                        principalColumn: "Code");
+                    table.ForeignKey(
+                        name: "FK_PurchaseReturnDetail_Tax_TaxId",
+                        column: x => x.TaxId,
+                        principalSchema: "General",
+                        principalTable: "Tax",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_PurchaseReturnDetail_UoM_UomId",
+                        column: x => x.UomId,
+                        principalSchema: "Inventory",
+                        principalTable: "UoM",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_PurchaseReturnDetail_UoMConversion_UnitId",
+                        column: x => x.UnitId,
+                        principalSchema: "Inventory",
+                        principalTable: "UoMConversion",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "SalesDeliveryDetail",
+                schema: "Sales",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Code = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
+                    LineNo = table.Column<short>(type: "smallint", nullable: false),
+                    SODetailId = table.Column<long>(type: "bigint", nullable: true),
+                    ItemId = table.Column<int>(type: "int", nullable: false),
+                    Qty = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    UomId = table.Column<int>(type: "int", nullable: false),
+                    UnitId = table.Column<int>(type: "int", nullable: false),
+                    Length = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
+                    Width = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
+                    Height = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
+                    Weight = table.Column<decimal>(type: "decimal(18,3)", precision: 18, scale: 3, nullable: true),
+                    DimensionMeasurement = table.Column<string>(type: "varchar(10)", unicode: false, maxLength: 10, nullable: true),
+                    WeightMeasurement = table.Column<string>(type: "varchar(10)", unicode: false, maxLength: 10, nullable: true),
+                    UnitPrice = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    Disc = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    FinalDiscHeader = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    TaxId = table.Column<int>(type: "int", nullable: true),
+                    TaxAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    ExemptTaxAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    NettPrice = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    Total = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    DPP = table.Column<decimal>(type: "decimal(19,6)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SalesDeliveryDetail", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_SalesDeliveryDetail_Item_ItemId",
+                        column: x => x.ItemId,
+                        principalSchema: "Inventory",
+                        principalTable: "Item",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_SalesDeliveryDetail_SalesDeliveryHeader_Code",
+                        column: x => x.Code,
+                        principalSchema: "Sales",
+                        principalTable: "SalesDeliveryHeader",
+                        principalColumn: "Code");
+                    table.ForeignKey(
+                        name: "FK_SalesDeliveryDetail_Tax_TaxId",
+                        column: x => x.TaxId,
+                        principalSchema: "General",
+                        principalTable: "Tax",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_SalesDeliveryDetail_UoM_UomId",
+                        column: x => x.UomId,
+                        principalSchema: "Inventory",
+                        principalTable: "UoM",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_SalesDeliveryDetail_UoMConversion_UnitId",
+                        column: x => x.UnitId,
+                        principalSchema: "Inventory",
+                        principalTable: "UoMConversion",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "SalesReturnDetail",
+                schema: "Sales",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Code = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
+                    LineNo = table.Column<short>(type: "smallint", nullable: false),
+                    TransDetailId = table.Column<long>(type: "bigint", nullable: true),
+                    ItemId = table.Column<int>(type: "int", nullable: false),
+                    UomId = table.Column<int>(type: "int", nullable: false),
+                    UnitId = table.Column<int>(type: "int", nullable: false),
+                    Qty = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    QtyDlv = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    Length = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
+                    Width = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
+                    Height = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
+                    Weight = table.Column<decimal>(type: "decimal(18,3)", precision: 18, scale: 3, nullable: true),
+                    DimensionMeasurement = table.Column<string>(type: "varchar(10)", unicode: false, maxLength: 10, nullable: true),
+                    WeightMeasurement = table.Column<string>(type: "varchar(10)", unicode: false, maxLength: 10, nullable: true),
+                    UnitPrice = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    Disc = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    TaxId = table.Column<int>(type: "int", nullable: true),
+                    TaxAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    ExemptTaxAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    NettPrice = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    Total = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    DPP = table.Column<decimal>(type: "decimal(19,6)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SalesReturnDetail", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_SalesReturnDetail_Item_ItemId",
+                        column: x => x.ItemId,
+                        principalSchema: "Inventory",
+                        principalTable: "Item",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_SalesReturnDetail_SalesReturnHeader_Code",
+                        column: x => x.Code,
+                        principalSchema: "Sales",
+                        principalTable: "SalesReturnHeader",
+                        principalColumn: "Code");
+                    table.ForeignKey(
+                        name: "FK_SalesReturnDetail_Tax_TaxId",
+                        column: x => x.TaxId,
+                        principalSchema: "General",
+                        principalTable: "Tax",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_SalesReturnDetail_UoM_UomId",
+                        column: x => x.UomId,
+                        principalSchema: "Inventory",
+                        principalTable: "UoM",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_SalesReturnDetail_UoMConversion_UnitId",
+                        column: x => x.UnitId,
+                        principalSchema: "Inventory",
+                        principalTable: "UoMConversion",
                         principalColumn: "Id");
                 });
 
@@ -2424,20 +2638,20 @@ namespace ERP.Entity.Migrations.TenantMigrations
                 schema: "Inventory",
                 columns: table => new
                 {
-                    Code = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
-                    Date = table.Column<DateTime>(type: "date", nullable: false),
-                    Type = table.Column<short>(type: "smallint", nullable: false),
-                    WarehouseCode = table.Column<string>(type: "varchar(8)", unicode: false, maxLength: 8, nullable: false),
-                    Notes = table.Column<string>(type: "varchar(256)", unicode: false, maxLength: 256, nullable: true),
                     Mark = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
                     CreatedBy = table.Column<int>(type: "int", nullable: false),
+                    ViewedBy = table.Column<int>(type: "int", nullable: true),
+                    ViewedDate = table.Column<DateTime>(type: "datetime", nullable: true),
                     CreatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
                     UpdatedBy = table.Column<int>(type: "int", nullable: false),
                     UpdatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
                     ApprovedBy = table.Column<int>(type: "int", nullable: true),
                     ApprovedDate = table.Column<DateTime>(type: "datetime", nullable: true),
-                    ViewedBy = table.Column<int>(type: "int", nullable: true),
-                    ViewedDate = table.Column<DateTime>(type: "datetime", nullable: true)
+                    Code = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
+                    Date = table.Column<DateTime>(type: "date", nullable: false),
+                    Type = table.Column<short>(type: "smallint", nullable: false),
+                    WarehouseCode = table.Column<string>(type: "varchar(8)", unicode: false, maxLength: 8, nullable: false),
+                    Notes = table.Column<string>(type: "varchar(256)", unicode: false, maxLength: 256, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -2607,8 +2821,12 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     TransCode = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: true),
                     CurrCode = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
                     Rate = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    Amount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    Used = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    Amount = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    IncludeTax = table.Column<bool>(type: "bit", nullable: false),
+                    TaxId = table.Column<int>(type: "int", nullable: true),
+                    TaxAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    Total = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    Used = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
                     Notes = table.Column<string>(type: "varchar(256)", unicode: false, maxLength: 256, nullable: true),
                     Mark = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
                     CreatedBy = table.Column<int>(type: "int", nullable: false),
@@ -2625,6 +2843,12 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         principalSchema: "General",
                         principalTable: "Currency",
                         principalColumn: "Code");
+                    table.ForeignKey(
+                        name: "FK_CreditMemo_Tax_TaxId",
+                        column: x => x.TaxId,
+                        principalSchema: "General",
+                        principalTable: "Tax",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -2993,6 +3217,15 @@ namespace ERP.Entity.Migrations.TenantMigrations
                 schema: "Inventory",
                 columns: table => new
                 {
+                    Mark = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
+                    CreatedBy = table.Column<int>(type: "int", nullable: false),
+                    ViewedBy = table.Column<int>(type: "int", nullable: true),
+                    ViewedDate = table.Column<DateTime>(type: "datetime", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
+                    UpdatedBy = table.Column<int>(type: "int", nullable: false),
+                    UpdatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
+                    ApprovedBy = table.Column<int>(type: "int", nullable: true),
+                    ApprovedDate = table.Column<DateTime>(type: "datetime", nullable: true),
                     Code = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
                     Date = table.Column<DateTime>(type: "date", nullable: false),
                     Type = table.Column<string>(type: "varchar(5)", unicode: false, maxLength: 5, nullable: false),
@@ -3000,16 +3233,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     WarehouseCodeFrom = table.Column<string>(type: "varchar(8)", unicode: false, maxLength: 8, nullable: true),
                     WarehouseCodeTo = table.Column<string>(type: "varchar(8)", unicode: false, maxLength: 8, nullable: true),
                     Notes = table.Column<string>(type: "varchar(256)", unicode: false, maxLength: 256, nullable: true),
-                    IsConsignee = table.Column<bool>(type: "bit", nullable: false),
-                    Mark = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
-                    CreatedBy = table.Column<int>(type: "int", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
-                    UpdatedBy = table.Column<int>(type: "int", nullable: false),
-                    UpdatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
-                    ApprovedBy = table.Column<int>(type: "int", nullable: true),
-                    ApprovedDate = table.Column<DateTime>(type: "datetime", nullable: true),
-                    ViewedBy = table.Column<int>(type: "int", nullable: true),
-                    ViewedDate = table.Column<DateTime>(type: "datetime", nullable: true)
+                    IsConsignee = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -3042,6 +3266,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     QtyOnIndent = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
                     QtyReorderPoint = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
                     QtyOnTransfer = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    QtyOnTransit = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
                     UpdatedDate = table.Column<DateTime>(type: "datetime", nullable: false)
                 },
                 constraints: table =>
@@ -3155,7 +3380,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     Date = table.Column<DateTime>(type: "date", nullable: false),
                     VisitOrderCode = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: true),
                     SalesmanId = table.Column<long>(type: "bigint", nullable: false),
-                    CustCode = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 8, nullable: false),
+                    CustCode = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
                     Scheduled = table.Column<bool>(type: "bit", nullable: false),
                     Visited = table.Column<bool>(type: "bit", nullable: true),
                     Lat = table.Column<decimal>(type: "decimal(9,6)", precision: 9, scale: 6, nullable: true),
@@ -3213,56 +3438,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "PurchaseInvoiceHeader",
-                schema: "Purchasing",
-                columns: table => new
-                {
-                    Code = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
-                    Date = table.Column<DateTime>(type: "date", nullable: false),
-                    DueDate = table.Column<DateTime>(type: "date", nullable: false),
-                    POCode = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: true),
-                    RefNo = table.Column<string>(type: "varchar(30)", unicode: false, maxLength: 30, nullable: true),
-                    SupCode = table.Column<string>(type: "varchar(8)", unicode: false, maxLength: 8, nullable: false),
-                    CurrCode = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
-                    PaidAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
-                    Total = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    TaxInvoiceNo = table.Column<string>(type: "varchar(50)", unicode: false, maxLength: 50, nullable: true),
-                    TaxInvoiceDate = table.Column<DateTime>(type: "date", nullable: true),
-                    Notes = table.Column<string>(type: "varchar(256)", unicode: false, maxLength: 256, nullable: true),
-                    Mark = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
-                    CreatedBy = table.Column<int>(type: "int", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
-                    UpdatedBy = table.Column<int>(type: "int", nullable: false),
-                    UpdatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
-                    ApprovedBy = table.Column<int>(type: "int", nullable: true),
-                    ApprovedDate = table.Column<DateTime>(type: "datetime", nullable: true),
-                    ViewedBy = table.Column<int>(type: "int", nullable: true),
-                    ViewedDate = table.Column<DateTime>(type: "datetime", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_PurchaseInvoiceHeader", x => x.Code);
-                    table.ForeignKey(
-                        name: "FK_PurchaseInvoiceHeader_Currency_CurrCode",
-                        column: x => x.CurrCode,
-                        principalSchema: "General",
-                        principalTable: "Currency",
-                        principalColumn: "Code");
-                    table.ForeignKey(
-                        name: "FK_PurchaseInvoiceHeader_PurchaseOrderHeader_POCode",
-                        column: x => x.POCode,
-                        principalSchema: "Purchasing",
-                        principalTable: "PurchaseOrderHeader",
-                        principalColumn: "Code");
-                    table.ForeignKey(
-                        name: "FK_PurchaseInvoiceHeader_Supplier_SupCode",
-                        column: x => x.SupCode,
-                        principalSchema: "General",
-                        principalTable: "Supplier",
-                        principalColumn: "Code");
-                });
-
-            migrationBuilder.CreateTable(
                 name: "SalesmanMapTrackingHistory",
                 schema: "Sales",
                 columns: table => new
@@ -3290,6 +3465,18 @@ namespace ERP.Entity.Migrations.TenantMigrations
                 schema: "Sales",
                 columns: table => new
                 {
+                    Mark = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
+                    CreatedBy = table.Column<int>(type: "int", nullable: false),
+                    ViewedBy = table.Column<int>(type: "int", nullable: true),
+                    ViewedDate = table.Column<DateTime>(type: "datetime", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
+                    UpdatedBy = table.Column<int>(type: "int", nullable: false),
+                    UpdatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
+                    ApprovedBy = table.Column<int>(type: "int", nullable: true),
+                    ApprovedDate = table.Column<DateTime>(type: "datetime", nullable: true),
+                    OverlimitApprovedBy = table.Column<int>(type: "int", nullable: true),
+                    OverlimitApprovedDate = table.Column<DateTime>(type: "datetime", nullable: true),
+                    OverlimitApprovedReason = table.Column<string>(type: "varchar(256)", unicode: false, maxLength: 256, nullable: true),
                     Code = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
                     Date = table.Column<DateTime>(type: "date", nullable: false),
                     CustCode = table.Column<string>(type: "varchar(8)", unicode: false, maxLength: 8, nullable: false),
@@ -3306,19 +3493,11 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     FinalDisc = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     IncludeTax = table.Column<bool>(type: "bit", nullable: false),
                     TaxAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    ExemptTaxAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     Total = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     DPP = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     Notes = table.Column<string>(type: "varchar(256)", unicode: false, maxLength: 256, nullable: true),
-                    FromDirectInvoice = table.Column<bool>(type: "bit", nullable: false),
-                    Mark = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
-                    CreatedBy = table.Column<int>(type: "int", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
-                    UpdatedBy = table.Column<int>(type: "int", nullable: false),
-                    UpdatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
-                    ApprovedBy = table.Column<int>(type: "int", nullable: true),
-                    ApprovedDate = table.Column<DateTime>(type: "datetime", nullable: true),
-                    ViewedBy = table.Column<int>(type: "int", nullable: true),
-                    ViewedDate = table.Column<DateTime>(type: "datetime", nullable: true)
+                    FromDirectInvoice = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -3707,7 +3886,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     VisitLogCode = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
                     Date = table.Column<DateTime>(type: "date", nullable: false),
                     SalesmanId = table.Column<long>(type: "bigint", nullable: false),
-                    CustCode = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 8, nullable: false),
+                    CustCode = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
                     CoaCode = table.Column<string>(type: "varchar(6)", unicode: false, maxLength: 6, nullable: false),
                     TransCode = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
                     Amount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
@@ -3768,70 +3947,6 @@ namespace ERP.Entity.Migrations.TenantMigrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "PurchaseInvoiceDebitMemo",
-                schema: "Purchasing",
-                columns: table => new
-                {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    InvCode = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
-                    DebitMemoCode = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
-                    InvAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    DebitMemoAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_PurchaseInvoiceDebitMemo", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_PurchaseInvoiceDebitMemo_DebitMemo_DebitMemoCode",
-                        column: x => x.DebitMemoCode,
-                        principalSchema: "Purchasing",
-                        principalTable: "DebitMemo",
-                        principalColumn: "Code");
-                    table.ForeignKey(
-                        name: "FK_PurchaseInvoiceDebitMemo_PurchaseInvoiceHeader_InvCode",
-                        column: x => x.InvCode,
-                        principalSchema: "Purchasing",
-                        principalTable: "PurchaseInvoiceHeader",
-                        principalColumn: "Code");
-                });
-
-            migrationBuilder.CreateTable(
-                name: "PurchaseInvoiceDetail",
-                schema: "Purchasing",
-                columns: table => new
-                {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Code = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
-                    LineNo = table.Column<short>(type: "smallint", nullable: false),
-                    RcvCode = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
-                    ShipmentFee = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    HandlingFee = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    SubTotal = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    FinalDisc = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    TaxAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    Total = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
-                    DPP = table.Column<decimal>(type: "decimal(19,6)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_PurchaseInvoiceDetail", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_PurchaseInvoiceDetail_PurchaseInvoiceHeader_Code",
-                        column: x => x.Code,
-                        principalSchema: "Purchasing",
-                        principalTable: "PurchaseInvoiceHeader",
-                        principalColumn: "Code");
-                    table.ForeignKey(
-                        name: "FK_PurchaseInvoiceDetail_PurchaseReceiveHeader_RcvCode",
-                        column: x => x.RcvCode,
-                        principalSchema: "Purchasing",
-                        principalTable: "PurchaseReceiveHeader",
-                        principalColumn: "Code");
-                });
-
-            migrationBuilder.CreateTable(
                 name: "MobileOrderHeader",
                 schema: "MobileCustomer",
                 columns: table => new
@@ -3845,6 +3960,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     SubTotal = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     IncludeTax = table.Column<bool>(type: "bit", nullable: false),
                     TaxAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    ExemptTaxAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     Total = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     DPP = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     Mark = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
@@ -3878,7 +3994,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     VisitLogCode = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
                     SalesOrderCode = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: true),
                     Type = table.Column<short>(type: "smallint", nullable: false),
-                    CustCode = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 8, nullable: false),
+                    CustCode = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
                     SalesBy = table.Column<long>(type: "bigint", nullable: false),
                     PaymentTermId = table.Column<int>(type: "int", nullable: true),
                     CurrCode = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
@@ -3888,6 +4004,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     FinalDisc = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     IncludeTax = table.Column<bool>(type: "bit", nullable: false),
                     TaxAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    ExemptTaxAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     Total = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     DPP = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     PaidAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
@@ -3935,6 +4052,15 @@ namespace ERP.Entity.Migrations.TenantMigrations
                 schema: "Sales",
                 columns: table => new
                 {
+                    Mark = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
+                    CreatedBy = table.Column<int>(type: "int", nullable: false),
+                    ViewedBy = table.Column<int>(type: "int", nullable: true),
+                    ViewedDate = table.Column<DateTime>(type: "datetime", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
+                    UpdatedBy = table.Column<int>(type: "int", nullable: false),
+                    UpdatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
+                    ApprovedBy = table.Column<int>(type: "int", nullable: true),
+                    ApprovedDate = table.Column<DateTime>(type: "datetime", nullable: true),
                     Code = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
                     Date = table.Column<DateTime>(type: "date", nullable: false),
                     DueDate = table.Column<DateTime>(type: "date", nullable: false),
@@ -3943,17 +4069,10 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     CurrCode = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
                     PaidAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
                     Total = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    TaxInvoiceNo = table.Column<string>(type: "varchar(50)", unicode: false, maxLength: 50, nullable: true),
+                    TaxInvoiceDate = table.Column<DateTime>(type: "date", nullable: true),
                     Notes = table.Column<string>(type: "varchar(256)", unicode: false, maxLength: 256, nullable: true),
-                    FromDirectInvoice = table.Column<bool>(type: "bit", nullable: false),
-                    Mark = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
-                    CreatedBy = table.Column<int>(type: "int", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
-                    UpdatedBy = table.Column<int>(type: "int", nullable: false),
-                    UpdatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
-                    ApprovedBy = table.Column<int>(type: "int", nullable: true),
-                    ApprovedDate = table.Column<DateTime>(type: "datetime", nullable: true),
-                    ViewedBy = table.Column<int>(type: "int", nullable: true),
-                    ViewedDate = table.Column<DateTime>(type: "datetime", nullable: true)
+                    FromDirectInvoice = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -3979,10 +4098,179 @@ namespace ERP.Entity.Migrations.TenantMigrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "SalesOrderDetail",
+                schema: "Sales",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Code = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
+                    LineNo = table.Column<short>(type: "smallint", nullable: false),
+                    ItemId = table.Column<int>(type: "int", nullable: false),
+                    UomId = table.Column<int>(type: "int", nullable: false),
+                    UnitId = table.Column<int>(type: "int", nullable: false),
+                    Qty = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    Length = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
+                    Width = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
+                    Height = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
+                    Weight = table.Column<decimal>(type: "decimal(18,3)", precision: 18, scale: 3, nullable: true),
+                    DimensionMeasurement = table.Column<string>(type: "varchar(10)", unicode: false, maxLength: 10, nullable: true),
+                    WeightMeasurement = table.Column<string>(type: "varchar(10)", unicode: false, maxLength: 10, nullable: true),
+                    QtyDlv = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
+                    UnitPrice = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    Disc = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    FinalDiscHeader = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    TaxId = table.Column<int>(type: "int", nullable: true),
+                    TaxAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    ExemptTaxAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    NettPrice = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    Total = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    DPP = table.Column<decimal>(type: "decimal(19,6)", nullable: false),
+                    Notes = table.Column<string>(type: "varchar(256)", unicode: false, maxLength: 256, nullable: true),
+                    CoaTransit = table.Column<string>(type: "varchar(6)", unicode: false, maxLength: 6, nullable: true),
+                    CoaInventory = table.Column<string>(type: "varchar(6)", unicode: false, maxLength: 6, nullable: true),
+                    CoaCOGS = table.Column<string>(type: "varchar(6)", unicode: false, maxLength: 6, nullable: true),
+                    CoaSls = table.Column<string>(type: "varchar(6)", unicode: false, maxLength: 6, nullable: true),
+                    CoaSlsDisc = table.Column<string>(type: "varchar(6)", unicode: false, maxLength: 6, nullable: true),
+                    CoaSlsReturn = table.Column<string>(type: "varchar(6)", unicode: false, maxLength: 6, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SalesOrderDetail", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_SalesOrderDetail_Item_ItemId",
+                        column: x => x.ItemId,
+                        principalSchema: "Inventory",
+                        principalTable: "Item",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_SalesOrderDetail_SalesOrderHeader_Code",
+                        column: x => x.Code,
+                        principalSchema: "Sales",
+                        principalTable: "SalesOrderHeader",
+                        principalColumn: "Code");
+                    table.ForeignKey(
+                        name: "FK_SalesOrderDetail_Tax_TaxId",
+                        column: x => x.TaxId,
+                        principalSchema: "General",
+                        principalTable: "Tax",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_SalesOrderDetail_UoM_UomId",
+                        column: x => x.UomId,
+                        principalSchema: "Inventory",
+                        principalTable: "UoM",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_SalesOrderDetail_UoMConversion_UnitId",
+                        column: x => x.UnitId,
+                        principalSchema: "Inventory",
+                        principalTable: "UoMConversion",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "SalesOrderDetailDiscount",
+                schema: "Sales",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Code = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
+                    OrderDetailId = table.Column<long>(type: "bigint", nullable: false),
+                    LineNo = table.Column<short>(type: "smallint", nullable: false),
+                    PromoCode = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: true),
+                    PromoDetailId = table.Column<long>(type: "bigint", nullable: true),
+                    Name = table.Column<string>(type: "varchar(50)", unicode: false, maxLength: 50, nullable: true),
+                    IsPercentage = table.Column<bool>(type: "bit", nullable: false),
+                    Value = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    Amount = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    CoaCode = table.Column<string>(type: "varchar(6)", unicode: false, maxLength: 6, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SalesOrderDetailDiscount", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_SalesOrderDetailDiscount_SalesOrderHeader_Code",
+                        column: x => x.Code,
+                        principalSchema: "Sales",
+                        principalTable: "SalesOrderHeader",
+                        principalColumn: "Code");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "SalesOrderDetailFreeGood",
+                schema: "Sales",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Code = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
+                    OrderDetailId = table.Column<long>(type: "bigint", nullable: false),
+                    LineNo = table.Column<short>(type: "smallint", nullable: false),
+                    PromoCode = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
+                    ItemId = table.Column<int>(type: "int", nullable: false),
+                    UomId = table.Column<int>(type: "int", nullable: false),
+                    UnitId = table.Column<int>(type: "int", nullable: false),
+                    Qty = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    QtyClosed = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    UnitPrice = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    CoaCode = table.Column<string>(type: "varchar(6)", unicode: false, maxLength: 6, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SalesOrderDetailFreeGood", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_SalesOrderDetailFreeGood_SalesOrderHeader_Code",
+                        column: x => x.Code,
+                        principalSchema: "Sales",
+                        principalTable: "SalesOrderHeader",
+                        principalColumn: "Code");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "SalesOrderPromo",
+                schema: "Sales",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Code = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
+                    LineNo = table.Column<short>(type: "smallint", nullable: false),
+                    PromoCode = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SalesOrderPromo", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_SalesOrderPromo_PromoHeader_PromoCode",
+                        column: x => x.PromoCode,
+                        principalSchema: "Sales",
+                        principalTable: "PromoHeader",
+                        principalColumn: "Code");
+                    table.ForeignKey(
+                        name: "FK_SalesOrderPromo_SalesOrderHeader_Code",
+                        column: x => x.Code,
+                        principalSchema: "Sales",
+                        principalTable: "SalesOrderHeader",
+                        principalColumn: "Code");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "DeliveryPlanHeader",
                 schema: "Sales",
                 columns: table => new
                 {
+                    Mark = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
+                    CreatedBy = table.Column<int>(type: "int", nullable: false),
+                    ViewedBy = table.Column<int>(type: "int", nullable: true),
+                    ViewedDate = table.Column<DateTime>(type: "datetime", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
+                    UpdatedBy = table.Column<int>(type: "int", nullable: false),
+                    UpdatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
+                    ApprovedBy = table.Column<int>(type: "int", nullable: true),
+                    ApprovedDate = table.Column<DateTime>(type: "datetime", nullable: true),
                     Code = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
                     Date = table.Column<DateTime>(type: "date", nullable: false),
                     SrcTrans = table.Column<short>(type: "smallint", nullable: false),
@@ -3993,16 +4281,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     TotalWeight = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
                     TotalVehicleVolume = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     TotalVehicleWeight = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    Notes = table.Column<string>(type: "varchar(256)", unicode: false, maxLength: 256, nullable: true),
-                    Mark = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
-                    CreatedBy = table.Column<int>(type: "int", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
-                    UpdatedBy = table.Column<int>(type: "int", nullable: false),
-                    UpdatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
-                    ApprovedBy = table.Column<int>(type: "int", nullable: true),
-                    ApprovedDate = table.Column<DateTime>(type: "datetime", nullable: true),
-                    ViewedBy = table.Column<int>(type: "int", nullable: true),
-                    ViewedDate = table.Column<DateTime>(type: "datetime", nullable: true)
+                    Notes = table.Column<string>(type: "varchar(256)", unicode: false, maxLength: 256, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -4124,6 +4403,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     Disc = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
                     TaxId = table.Column<int>(type: "int", nullable: true),
                     TaxAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    ExemptTaxAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
                     NettPrice = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
                     Total = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
                     DPP = table.Column<decimal>(type: "decimal(19,6)", nullable: false)
@@ -4164,6 +4444,35 @@ namespace ERP.Entity.Migrations.TenantMigrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "MobileOrderPromo",
+                schema: "MobileCustomer",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Code = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
+                    LineNo = table.Column<short>(type: "smallint", nullable: false),
+                    PromoCode = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MobileCustomer_MobileOrderPromo", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_MobileOrderPromo_MobileOrderHeader_Code",
+                        column: x => x.Code,
+                        principalSchema: "MobileCustomer",
+                        principalTable: "MobileOrderHeader",
+                        principalColumn: "Code");
+                    table.ForeignKey(
+                        name: "FK_MobileOrderPromo_PromoHeader_PromoCode",
+                        column: x => x.PromoCode,
+                        principalSchema: "Sales",
+                        principalTable: "PromoHeader",
+                        principalColumn: "Code");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "MobileOrderDetail",
                 schema: "MobileSales",
                 columns: table => new
@@ -4178,8 +4487,10 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     Qty = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     UnitPrice = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
                     Disc = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    FinalDiscHeader = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
                     TaxId = table.Column<int>(type: "int", nullable: true),
                     TaxAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    ExemptTaxAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
                     NettPrice = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
                     Total = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
                     DPP = table.Column<decimal>(type: "decimal(19,6)", nullable: false)
@@ -4220,6 +4531,35 @@ namespace ERP.Entity.Migrations.TenantMigrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "MobileOrderPromo",
+                schema: "MobileSales",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Code = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
+                    LineNo = table.Column<short>(type: "smallint", nullable: false),
+                    PromoCode = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MobileOrderPromo", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_MobileOrderPromo_MobileOrderHeader_Code",
+                        column: x => x.Code,
+                        principalSchema: "MobileSales",
+                        principalTable: "MobileOrderHeader",
+                        principalColumn: "Code");
+                    table.ForeignKey(
+                        name: "FK_MobileOrderPromo_PromoHeader_PromoCode",
+                        column: x => x.PromoCode,
+                        principalSchema: "Sales",
+                        principalTable: "PromoHeader",
+                        principalColumn: "Code");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "SalesInvoiceCreditMemo",
                 schema: "Sales",
                 columns: table => new
@@ -4229,17 +4569,13 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     InvCode = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
                     CreditMemoCode = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
                     InvAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    CreditMemoAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false)
+                    CreditMemoAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    CreditMemoTaxAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
+                    Src = table.Column<string>(type: "varchar(5)", unicode: false, maxLength: 5, nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_SalesInvoiceCreditMemo", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_SalesInvoiceCreditMemo_CreditMemo_CreditMemoCode",
-                        column: x => x.CreditMemoCode,
-                        principalSchema: "Sales",
-                        principalTable: "CreditMemo",
-                        principalColumn: "Code");
                     table.ForeignKey(
                         name: "FK_SalesInvoiceCreditMemo_SalesInvoiceHeader_InvCode",
                         column: x => x.InvCode,
@@ -4263,6 +4599,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     SubTotal = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     FinalDisc = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     TaxAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    ExemptTaxAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     Total = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
                     DPP = table.Column<decimal>(type: "decimal(19,6)", nullable: false)
                 },
@@ -4899,6 +5236,12 @@ namespace ERP.Entity.Migrations.TenantMigrations
                 schema: "Sales",
                 table: "CreditMemo",
                 column: "CustCode");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CreditMemo_TaxId",
+                schema: "Sales",
+                table: "CreditMemo",
+                column: "TaxId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_CreditMemo_TransCode",
@@ -5719,6 +6062,30 @@ namespace ERP.Entity.Migrations.TenantMigrations
                 column: "VisitLogCode");
 
             migrationBuilder.CreateIndex(
+                name: "IX_MobileCustomer_MobileOrderPromo_Code",
+                schema: "MobileCustomer",
+                table: "MobileOrderPromo",
+                column: "Code");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MobileCustomer_MobileOrderPromo_PromoCode",
+                schema: "MobileCustomer",
+                table: "MobileOrderPromo",
+                column: "PromoCode");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MobileOrderPromo_Code",
+                schema: "MobileSales",
+                table: "MobileOrderPromo",
+                column: "Code");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MobileOrderPromo_PromoCode",
+                schema: "MobileSales",
+                table: "MobileOrderPromo",
+                column: "PromoCode");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_MobilePaymentInvoice_CoaCode",
                 schema: "MobileSales",
                 table: "MobilePaymentInvoice",
@@ -5977,10 +6344,106 @@ namespace ERP.Entity.Migrations.TenantMigrations
                 column: "SupCode");
 
             migrationBuilder.CreateIndex(
+                name: "IX_PurchaseOrderDetail_Code",
+                schema: "Purchasing",
+                table: "PurchaseOrderDetail",
+                column: "Code");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PurchaseOrderDetail_ItemId",
+                schema: "Purchasing",
+                table: "PurchaseOrderDetail",
+                column: "ItemId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PurchaseOrderDetail_TaxId",
+                schema: "Purchasing",
+                table: "PurchaseOrderDetail",
+                column: "TaxId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PurchaseOrderDetail_UnitId",
+                schema: "Purchasing",
+                table: "PurchaseOrderDetail",
+                column: "UnitId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PurchaseOrderDetail_UomId",
+                schema: "Purchasing",
+                table: "PurchaseOrderDetail",
+                column: "UomId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PurchaseReceiveDetail_Code",
+                schema: "Purchasing",
+                table: "PurchaseReceiveDetail",
+                column: "Code");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PurchaseReceiveDetail_ItemId",
+                schema: "Purchasing",
+                table: "PurchaseReceiveDetail",
+                column: "ItemId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PurchaseReceiveDetail_TaxId",
+                schema: "Purchasing",
+                table: "PurchaseReceiveDetail",
+                column: "TaxId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PurchaseReceiveDetail_UnitId",
+                schema: "Purchasing",
+                table: "PurchaseReceiveDetail",
+                column: "UnitId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PurchaseReceiveDetail_UomId",
+                schema: "Purchasing",
+                table: "PurchaseReceiveDetail",
+                column: "UomId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_PurchaseReceiveHeader_TransCode",
                 schema: "Purchasing",
                 table: "PurchaseReceiveHeader",
                 column: "TransCode");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PurchaseReturnDetail_Code",
+                schema: "Purchasing",
+                table: "PurchaseReturnDetail",
+                column: "Code");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PurchaseReturnDetail_ItemId",
+                schema: "Purchasing",
+                table: "PurchaseReturnDetail",
+                column: "ItemId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PurchaseReturnDetail_TaxId",
+                schema: "Purchasing",
+                table: "PurchaseReturnDetail",
+                column: "TaxId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PurchaseReturnDetail_UnitId",
+                schema: "Purchasing",
+                table: "PurchaseReturnDetail",
+                column: "UnitId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PurchaseReturnDetail_UomId",
+                schema: "Purchasing",
+                table: "PurchaseReturnDetail",
+                column: "UomId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PurchaseReturnDetailExchDiffItem_Code",
+                schema: "Purchasing",
+                table: "PurchaseReturnDetailExchDiffItem",
+                column: "Code");
 
             migrationBuilder.CreateIndex(
                 name: "IX_RoleMenu_MenuId",
@@ -6013,6 +6476,42 @@ namespace ERP.Entity.Migrations.TenantMigrations
                 table: "RoleMenuAction",
                 columns: new[] { "RoleId", "MenuId", "ActionId" },
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SalesDeliveryDetail_Code",
+                schema: "Sales",
+                table: "SalesDeliveryDetail",
+                column: "Code");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SalesDeliveryDetail_ItemId",
+                schema: "Sales",
+                table: "SalesDeliveryDetail",
+                column: "ItemId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SalesDeliveryDetail_TaxId",
+                schema: "Sales",
+                table: "SalesDeliveryDetail",
+                column: "TaxId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SalesDeliveryDetail_UnitId",
+                schema: "Sales",
+                table: "SalesDeliveryDetail",
+                column: "UnitId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SalesDeliveryDetail_UomId",
+                schema: "Sales",
+                table: "SalesDeliveryDetail",
+                column: "UomId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SalesDeliveryDetailFreeGood_Code",
+                schema: "Sales",
+                table: "SalesDeliveryDetailFreeGood",
+                column: "Code");
 
             migrationBuilder.CreateIndex(
                 name: "IX_SalesDeliveryHeader_TransCode",
@@ -6069,6 +6568,48 @@ namespace ERP.Entity.Migrations.TenantMigrations
                 column: "SalesmanId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_SalesOrderDetail_Code",
+                schema: "Sales",
+                table: "SalesOrderDetail",
+                column: "Code");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SalesOrderDetail_ItemId",
+                schema: "Sales",
+                table: "SalesOrderDetail",
+                column: "ItemId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SalesOrderDetail_TaxId",
+                schema: "Sales",
+                table: "SalesOrderDetail",
+                column: "TaxId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SalesOrderDetail_UnitId",
+                schema: "Sales",
+                table: "SalesOrderDetail",
+                column: "UnitId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SalesOrderDetail_UomId",
+                schema: "Sales",
+                table: "SalesOrderDetail",
+                column: "UomId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SalesOrderDetailDiscount_Code",
+                schema: "Sales",
+                table: "SalesOrderDetailDiscount",
+                column: "Code");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SalesOrderDetailFreeGood_Code",
+                schema: "Sales",
+                table: "SalesOrderDetailFreeGood",
+                column: "Code");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_SalesOrderHeader_CustCode",
                 schema: "Sales",
                 table: "SalesOrderHeader",
@@ -6085,6 +6626,54 @@ namespace ERP.Entity.Migrations.TenantMigrations
                 schema: "Sales",
                 table: "SalesOrderHeader",
                 column: "SalesBy");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SalesOrderPromo_Code",
+                schema: "Sales",
+                table: "SalesOrderPromo",
+                column: "Code");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SalesOrderPromo_PromoCode",
+                schema: "Sales",
+                table: "SalesOrderPromo",
+                column: "PromoCode");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SalesReturnDetail_Code",
+                schema: "Sales",
+                table: "SalesReturnDetail",
+                column: "Code");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SalesReturnDetail_ItemId",
+                schema: "Sales",
+                table: "SalesReturnDetail",
+                column: "ItemId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SalesReturnDetail_TaxId",
+                schema: "Sales",
+                table: "SalesReturnDetail",
+                column: "TaxId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SalesReturnDetail_UnitId",
+                schema: "Sales",
+                table: "SalesReturnDetail",
+                column: "UnitId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SalesReturnDetail_UomId",
+                schema: "Sales",
+                table: "SalesReturnDetail",
+                column: "UomId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SalesReturnDetailExchDiffItem_Code",
+                schema: "Sales",
+                table: "SalesReturnDetailExchDiffItem",
+                column: "Code");
 
             migrationBuilder.CreateIndex(
                 name: "IX_SalesTargetDetail_Code",
@@ -7049,21 +7638,29 @@ AS
             sql = @"CREATE VIEW [Sales].[vwCreditMemo]
 AS
 	SELECT m.*,
-		m.Amount - m.Used AS Remaining,
-		c.Initial AS CustInitial,
-		c.[Name] AS CustName,
-		CASE m.SrcTrans
-			WHEN 1 THEN 'Deposit'
-			WHEN 2 THEN 'Retur' END AS SrcTransName,
-		CASE m.Mark
-			WHEN 'A' THEN 'Active'
-			WHEN 'V' THEN 'Void'
-			WHEN 'PP' THEN 'Pending Payment'
-			WHEN 'PU' THEN 'Partial Used'
-			WHEN 'FU' THEN 'Full Used' END AS [Status]
-	FROM Sales.CreditMemo m
-	LEFT JOIN General.Customer c
-		ON c.Code = m.CustCode";
+	m.Amount - m.Used AS Remaining,
+	c.Initial AS CustInitial,
+	c.[Name] AS CustName,
+	u_c.Initial AS CreatedInitial,
+    u_u.Initial AS UpdatedInitial,
+	CASE m.SrcTrans
+		WHEN 1 THEN 'Deposit'
+		WHEN 2 THEN 'Retur'
+		WHEN 3 THEN 'Uang Muka'
+		WHEN 4 THEN 'Retur Uang Muka' END AS SrcTransName,
+	CASE m.Mark
+		WHEN 'A' THEN 'Active'
+		WHEN 'V' THEN 'Void'
+		WHEN 'PP' THEN 'Pending Payment'
+		WHEN 'PU' THEN 'Partial Used'
+		WHEN 'FU' THEN 'Full Used' END AS [Status]
+FROM Sales.CreditMemo m
+LEFT JOIN General.Customer c
+	ON c.Code = m.CustCode
+LEFT JOIN SystemManagement.[User] u_c
+	ON u_c.Id = m.CreatedBy
+LEFT JOIN SystemManagement.[User] u_u
+    ON u_u.Id = m.UpdatedBy";
             migrationBuilder.Sql(sql);
 
             // Create view Sales.vwPromoHeader
@@ -7309,9 +7906,11 @@ AS
         u_c.Initial AS CreatedInitial,
         u_u.Initial AS UpdatedInitial,
         u_a.Initial AS ApprovedInitial,
+        u_o.Initial AS OverlimitApprovedInitial,
         CASE so_h.Mark
             WHEN 'A' THEN 'Active'
             WHEN 'V' THEN 'Void'
+            WHEN 'OL' THEN 'Overlimit'
             WHEN 'PS' THEN 'Partial Shipped'
             WHEN 'CMP' THEN 'Completed'
             WHEN 'CLS' THEN 'Closed' END AS [Status]
@@ -7325,7 +7924,9 @@ AS
     LEFT JOIN SystemManagement.[User] u_u
         ON u_u.Id = so_h.UpdatedBy
     LEFT JOIN SystemManagement.[User] u_a
-        ON u_a.Id = so_h.ApprovedBy";
+        ON u_a.Id = so_h.ApprovedBy
+    LEFT JOIN SystemManagement.[User] u_o
+        ON u_o.Id = so_h.OverlimitApprovedBy";
             migrationBuilder.Sql(sql);
 
             // Create view Sales.vwSalesOrderDetail
@@ -7623,20 +8224,20 @@ AS
 
             // Create view Finance.vwAR
             sql = @"CREATE VIEW [Finance].[vwAR]
-AS
-	SELECT B.Code, B.CustCode, C.[Name] AS CustName, [Date], CurrCode, Rate AS Rate,
-		Amount, PaidAmount, Amount - PaidAmount AS Remaining, B.Notes, 'BB' AS Src
-	FROM Accounting.BeginningBalanceAR B
-	JOIN General.Customer C
-		ON B.CustCode = C.Code
-	WHERE B.PaidAmount < B.Amount AND B.IsActive = 1
-	UNION ALL
-	SELECT S.Code,S.CustCode, C.[Name] AS CustName, S.[Date], S.CurrCode, 1 AS Rate,
-		Total AS Amount, PaidAmount, Total - PaidAmount AS Remaining, S.Notes, 'SI' AS Src
-	FROM Sales.SalesInvoiceHeader S
-	JOIN General.Customer C
-		ON S.CustCode = C.Code
-	WHERE S.PaidAmount < S.Total AND S.Mark != 'V'";
+AS    
+	SELECT B.Code, B.CustCode, C.[Name] AS CustName, [Date], CurrCode, Rate AS Rate,    
+		Amount, PaidAmount, Amount - PaidAmount AS Remaining, B.Notes, 'BB' AS Src    
+	FROM Accounting.BeginningBalanceAR B    
+	JOIN General.Customer C    
+		ON B.CustCode = C.Code    
+	WHERE B.PaidAmount < B.Amount AND B.IsActive = 1    
+	UNION ALL    
+	SELECT S.Code,S.CustCode, C.[Name] AS CustName, S.[Date], S.CurrCode, 1 AS Rate,    
+		Total AS Amount, PaidAmount, Total - PaidAmount AS Remaining, S.Notes, 'SI' AS Src    
+	FROM Sales.SalesInvoiceHeader S    
+	JOIN General.Customer C    
+		ON S.CustCode = C.Code    
+	WHERE S.PaidAmount < S.Total AND S.Mark NOT IN ('V', 'OL')";
             migrationBuilder.Sql(sql);
 
             // Create view Finance.vwCashBankType
@@ -7652,10 +8253,12 @@ AS
 			WHEN 'TU' THEN 34
 			WHEN 'DEPC' THEN 35
 			WHEN 'RDEPC' THEN 36
+			WHEN 'SDP' THEN 49
+			WHEN 'RSDP' THEN 50
 			WHEN 'DEPS' THEN 37
 			WHEN 'RDEPS' THEN 38
 			WHEN 'SR' THEN 39
-			WHEN 'PR' THEN 40
+			WHEN 'PR' THEN 40 
 			ELSE 0 END AS ActionId
 	FROM Finance.CashBankType t
 	LEFT JOIN SystemManagement.SystemParameter sp
@@ -7693,8 +8296,8 @@ AS
             // Create view Finance.vwGeneralCashBankHeader
             sql = @"CREATE VIEW [Finance].[vwGeneralCashBankHeader]
 AS
-	SELECT h.*, 
-		c.[Name] AS CoaName, 
+	SELECT h.*,
+		c.[Name] AS CoaName,
 		u_c.Initial AS CreatedInitial,
 		u_u.Initial AS UpdatedInitial,
 		u_a.Initial AS ApprovedInitial,
@@ -7704,8 +8307,7 @@ AS
 		CASE h.Mark
 			WHEN 'A' THEN 'Active'
 			WHEN 'V' THEN 'Void'
-			WHEN 'CMP' THEN 'Completed'
-			WHEN 'CLS' THEN 'Closed' END AS [Status]
+			WHEN 'REJ' THEN 'Rejected' END AS [Status]
 	FROM (
 		SELECT *
 		FROM Finance.GeneralCashBankHeader
@@ -9772,9 +10374,11 @@ BEGIN
 	BEGIN
 		SELECT pi_d.Id, pi_d.Code, pi_d.RcvCode,
 			rcv_d.Id AS RcvDetailId, rcv_d.[LineNo] AS RcvDetailLineNo,
-			rcv_d.Qty, rcv_d.UnitPrice, rcv_d.Disc,
+			rcv_d.Qty, rcv_d.UnitPrice, rcv_d.Disc + rcv_d.FinalDiscHeader AS Disc,
 			CASE WHEN rcv_d.[Type] = 0 THEN rcv_d.TaxAmount
 				ELSE 0 END AS TaxAmount,
+			CASE WHEN rcv_d.[Type] = 0 THEN rcv_d.ExemptTaxAmount
+				ELSE 0 END AS ExemptTaxAmount,
 			CASE WHEN rcv_d.[Type] = 0 THEN rcv_d.Total
 				ELSE 0 END AS Total,
 			i.Initial AS ItemInitial, i.[Name] AS ItemName,
@@ -9831,16 +10435,19 @@ BEGIN
 	ELSE IF @displayType = 'DETAIL'
 	BEGIN
 		SELECT po_d.Id, po_d.[LineNo],
-			po_d.Qty, po_d.UnitPrice, po_d.Disc,
+			po_d.Qty, po_d.UnitPrice, po_d.Disc + FinalDiscHeader AS Disc,
 			CASE WHEN po_d.[Type] = 0 THEN po_d.TaxAmount
 				ELSE 0 END AS TaxAmount,
+			CASE WHEN po_d.[Type] = 0 THEN po_d.ExemptTaxAmount
+				ELSE 0 END AS ExemptTaxAmount,
 			CASE WHEN po_d.[Type] = 0 THEN po_d.Total
 				ELSE 0 END AS Total,
 			i.Initial AS ItemInitial, i.[Name] AS ItemName,
 			uom_c.UnitToConvert AS ItemUnitName,
 			po_d.[Type] AS Sort
 		FROM (
-			SELECT Id, Code, [LineNo], ItemId, UnitId, Qty, UnitPrice, Disc, TaxAmount, Total, [Type]
+			SELECT Id, Code, [LineNo], ItemId, UnitId, Qty, UnitPrice, Disc, FinalDiscHeader,
+				TaxAmount, ExemptTaxAmount, Total, [Type]
 			FROM Purchasing.PurchaseOrderDetail
 			WHERE Code = @code
 		) po_d
@@ -10011,7 +10618,7 @@ BEGIN
 				ELSE ca_b.ContactPerson END AS CustContactPerson
 		FROM (
 			SELECT *
-			FROM Sales.SalesInvoiceHeader 
+			FROM Sales.SalesInvoiceHeader
 			WHERE Code = @code
 			AND Mark <> 'V'
 		) si_h
@@ -10035,7 +10642,8 @@ BEGIN
 	BEGIN
 		SELECT si_d.Id, si_d.Code, si_d.DOCode,
 			dlv_d.Id AS DlvDetailId, dlv_d.[LineNo] AS DlvDetailLineNo,
-			dlv_d.Qty, dlv_d.UnitPrice, dlv_d.Disc, dlv_d.TaxAmount, dlv_d.Total,
+			dlv_d.Qty, dlv_d.UnitPrice, dlv_d.Disc + dlv_d.FinalDiscHeader AS Disc,
+			dlv_d.TaxAmount, dlv_d.ExemptTaxAmount, dlv_d.Total,
 			i.Initial AS ItemInitial, i.[Name] AS ItemName,
 			uom_c.UnitToConvert AS ItemUnitName,
 			1 AS Sort
@@ -10055,18 +10663,19 @@ BEGIN
 		UNION ALL
 		SELECT 0, '', dlv_d_fg.Code,
 			dlv_d_fg.DlvOrderDetailId, dlv_d_fg.[LineNo],
-			dlv_d_fg.Qty, dlv_d_fg.UnitPrice, dlv_d_fg.UnitPrice, 0, 0,
+			dlv_d_fg.Qty, dlv_d_fg.UnitPrice, dlv_d_fg.UnitPrice,
+			0, 0, 0,
 			i.Initial AS ItemInitial, i.[Name] AS ItemName,
 			uom_c.UnitToConvert AS ItemUnitName,
 			2 AS Sort
 		FROM (
-			SELECT *
-			FROM Sales.SalesDeliveryDetailFreeGood
+			SELECT dlv_d_fg.*
+			FROM Sales.SalesDeliveryDetailFreeGood dlv_d_fg
 			WHERE EXISTS (
-				SELECT Id,Code,DOCode
-				FROM Sales.SalesInvoiceDetail
-				WHERE Code = @code
-				AND DOCode = Code
+				SELECT si_d.Id, si_d.Code, si_d.DOCode
+				FROM Sales.SalesInvoiceDetail si_d
+				WHERE si_d.Code = @code
+				AND si_d.DOCode = dlv_d_fg.Code
 			)
 		) dlv_d_fg
 		LEFT JOIN Inventory.Item i
@@ -10122,12 +10731,14 @@ BEGIN
 	ELSE IF @displayType = 'DETAIL'
 	BEGIN
 		SELECT si_d.Id, si_d.[LineNo],
-			si_d.Qty, si_d.UnitPrice, si_d.Disc, si_d.TaxAmount, si_d.Total,
+			si_d.Qty, si_d.UnitPrice, si_d.Disc + si_d.FinalDiscHeader AS Disc,
+			si_d.TaxAmount, si_d.ExemptTaxAmount, si_d.Total,
 			i.Initial AS ItemInitial, i.[Name] AS ItemName,
 			uom_c.UnitToConvert AS ItemUnitName,
 			1 AS Sort
 		FROM (
-			SELECT Id, Code, [LineNo], ItemId, UnitId, Qty, UnitPrice, Disc, TaxAmount, Total
+			SELECT Id, Code, [LineNo], ItemId, UnitId, Qty, UnitPrice, Disc, FinalDiscHeader,
+				TaxAmount, ExemptTaxAmount, Total
 			FROM Sales.SalesOrderDetail
 			WHERE Code = @code
 		) si_d
@@ -10137,7 +10748,8 @@ BEGIN
 			ON uom_c.Id = si_d.UnitId
 		UNION ALL
 		SELECT so_d_fg.Id, so_d_fg.[LineNo],
-			so_d_fg.Qty, so_d_fg.UnitPrice, so_d_fg.UnitPrice, 0, 0,
+			so_d_fg.Qty, so_d_fg.UnitPrice, so_d_fg.UnitPrice,
+			0, 0, 0,
 			i.Initial AS ItemInitial, i.[Name] AS ItemName,
 			uom_c.UnitToConvert AS ItemUnitName,
 			2 AS Sort
@@ -11430,8 +12042,8 @@ BEGIN TRY
 			BEGIN
 				SET @BaseQty = (select BaseQty from Inventory.StockMutation where Id = @Id)
 				UPDATE Inventory.WarehouseQuantity SET QtyOnhand = (QtyOnhand + @BaseQty) WHERE ItemId = @ItemId And WarehouseCode = @WarehouseCode
-				INSERT INTO Inventory.WarehouseQuantity (WarehouseCode, ItemId, QtyOnHand, QtyOnOrder, QtyOnIndent, QtyReorderPoint, QtyOnTransfer, UpdatedDate)
-				VALUES (@WarehouseCode, @ItemId, @BaseQty, 0, 0, 0, 0, dbo.udf_current_local_time())
+				INSERT INTO Inventory.WarehouseQuantity (WarehouseCode, ItemId, QtyOnHand, QtyOnOrder, QtyOnIndent, QtyReorderPoint, QtyOnTransfer, QtyOnTransit, UpdatedDate)
+				VALUES (@WarehouseCode, @ItemId, @BaseQty, 0, 0, 0, 0, 0, dbo.udf_current_local_time())
 			END
 		END
 		
@@ -11581,8 +12193,8 @@ BEGIN TRY
 			BEGIN
 				SET @BaseQty = (select BaseQty from Inventory.StockMutation where Id = @Id)
 				UPDATE Inventory.WarehouseQuantity SET QtyOnhand = (QtyOnhand + @BaseQty) WHERE ItemId = @ItemId And WarehouseCode = @WarehouseCode
-				INSERT INTO Inventory.WarehouseQuantity (WarehouseCode, ItemId, QtyOnHand, QtyOnOrder, QtyOnIndent, QtyReorderPoint, QtyOnTransfer, UpdatedDate)
-				VALUES (@WarehouseCode, @ItemId, @BaseQty, 0, 0, 0, 0, dbo.udf_current_local_time())
+				INSERT INTO Inventory.WarehouseQuantity (WarehouseCode, ItemId, QtyOnHand, QtyOnOrder, QtyOnIndent, QtyReorderPoint, QtyOnTransfer, QtyOnTransit, UpdatedDate)
+				VALUES (@WarehouseCode, @ItemId, @BaseQty, 0, 0, 0, 0, 0, dbo.udf_current_local_time())
 			END
 		END
 		
@@ -11637,13 +12249,6 @@ BEGIN TRY
 		AND uom_c.Id = do_d.UnitId
 	WHERE Code = @code
 
-	-- Collect original stock mutation
-	SELECT *
-	INTO #tmp_ori_sm
-	FROM Inventory.StockMutation
-	WHERE RefCode1 = @code
-	AND Src = 'DO'
-
 	-- Delete stock mutation that doesn't have in sales delivery item detail
 	DELETE Inventory.StockMutation
 	WHERE RefCode1 = @code
@@ -11680,9 +12285,34 @@ BEGIN TRY
 			FROM Inventory.StockMutation sm
 			WHERE sm.RefCode1 = do.Code
 			AND sm.RefDetailId1 = do.Id
+			AND sm.[Type] = 'OH'
 			AND sm.Src = 'DO'
 		)
 	
+	INSERT INTO Inventory.StockMutation
+		SELECT @warehouseCode, @date, ItemId, UomId, UnitId, Qty, 0, BaseUnit, BaseQty, 0, Code, Id, @transCode,'OO', 'DO'
+		FROM #tmp_do do
+		WHERE NOT EXISTS (
+			SELECT Id
+			FROM Inventory.StockMutation sm
+			WHERE sm.RefCode1 = do.Code
+			AND sm.RefDetailId1 = do.Id
+			AND sm.[Type] = 'OO'
+			AND sm.Src = 'DO'
+		)
+
+	INSERT INTO Inventory.StockMutation
+		SELECT @warehouseCode, @date, ItemId, UomId, UnitId, Qty, 0, BaseUnit, BaseQty, 0, Code, Id, @transCode,'OTS', 'DO'
+		FROM #tmp_do do
+		WHERE NOT EXISTS (
+			SELECT Id
+			FROM Inventory.StockMutation sm
+			WHERE sm.RefCode1 = do.Code
+			AND sm.RefDetailId1 = do.Id
+			AND sm.[Type] = 'OTS'
+			AND sm.Src = 'DO'
+		)
+
 	-- Free Goods
 	SELECT do_d.*,
 		CASE WHEN uom_c.IsBaseUnit = 1 THEN do_d.UnitId
@@ -11700,13 +12330,6 @@ BEGIN TRY
 		ON uom_c.UomId = do_d.UomId
 		AND uom_c.Id = do_d.UnitId
 	WHERE Code = @code
-
-	-- Collect original stock mutation
-	SELECT *
-	INTO #tmp_ori_sm_free
-	FROM Inventory.StockMutation
-	WHERE RefCode1 = @code
-	AND Src = 'DOF'
 
 	-- Delete stock mutation that doesn't have in sales delivery free item detail
 	DELETE Inventory.StockMutation
@@ -11744,119 +12367,155 @@ BEGIN TRY
 			FROM Inventory.StockMutation sm
 			WHERE sm.RefCode1 = do.Code
 			AND sm.RefDetailId1 = do.Id
+			AND sm.[Type] = 'OH'
 			AND sm.Src = 'DOF'
 		)
 
+	INSERT INTO Inventory.StockMutation
+		SELECT @warehouseCode, @date, ItemId, UomId, UnitId, Qty, 0, BaseUnit, BaseQty, 0, Code, Id, @transCode,'OO', 'DOF'
+		FROM #tmp_do_free do
+		WHERE NOT EXISTS (
+			SELECT Id
+			FROM Inventory.StockMutation sm
+			WHERE sm.RefCode1 = do.Code
+			AND sm.RefDetailId1 = do.Id
+			AND sm.[Type] = 'OO'
+			AND sm.Src = 'DOF'
+		)
+
+	INSERT INTO Inventory.StockMutation
+		SELECT @warehouseCode, @date, ItemId, UomId, UnitId, Qty, 0, BaseUnit, BaseQty, 0, Code, Id, @transCode,'OTS', 'DOF'
+		FROM #tmp_do_free do
+		WHERE NOT EXISTS (
+			SELECT Id
+			FROM Inventory.StockMutation sm
+			WHERE sm.RefCode1 = do.Code
+			AND sm.RefDetailId1 = do.Id
+			AND sm.[Type] = 'OTS'
+			AND sm.Src = 'DOF'
+		)
 	-- Update WarehouseQty
-	SELECT WarehouseCode, ItemId, BaseQty
+	SELECT WarehouseCode, ItemId, BaseQty, [Type], UnitId
 	INTO #tmp_wq
 	FROM Inventory.StockMutation
-	WHERE RefCode1 = @code
+	WHERE RefCode1 = @code AND Src IN ('DO', 'DOF')
 
 	DECLARE @Qty decimal
 	DECLARE @WHId varchar(max)
 	DECLARE @ItemId int
-	DECLARE @OldQty decimal
-	DECLARE @OldItemId int
-	DECLARE @OldWhId varchar(max)
 	DECLARE @srcTrans int
+	DECLARE @Type varchar(max)
+	DECLARE @UnitId int
 
 	SELECT @srcTrans = SrcTrans FROM Sales.SalesDeliveryHeader WHERE Code = @code
 
-	IF EXISTS(SELECT *FROM #tmp_ori_sm)
-	BEGIN
-		WHILE EXISTS(SELECT *FROM #tmp_ori_sm)
-		BEGIN
-			SELECT TOP 1 @OldQty = BaseQty, @OldItemId = ItemId, @OldWhId = WarehouseCode FROM #tmp_ori_sm
-
-			IF (@srcTrans = 1)
-			BEGIN
-				UPDATE Inventory.WarehouseQuantity SET QtyOnHand += @OldQty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @OldWhId AND ItemId = @OldItemId
-				UPDATE Inventory.WarehouseQuantity SET QtyOnOrder += @OldQty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = (SELECT TOP 1 WarehouseCode FROM Inventory.StockMutation WHERE RefCode1 = @transCode AND ItemId = @OldItemId) AND ItemId = @OldItemId
-			END
-			ELSE
-			BEGIN
-				UPDATE Inventory.WarehouseQuantity SET QtyOnHand += @OldQty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @OldWhId AND ItemId = @OldItemId
-			END
-			DELETE #tmp_ori_sm WHERE WarehouseCode = @OldWhId AND ItemId = @OldItemId
-		END
-	END
-
-	IF EXISTS(SELECT *FROM #tmp_ori_sm_free)
-	BEGIN
-		WHILE EXISTS(SELECT *FROM #tmp_ori_sm_free)
-		BEGIN
-			SELECT TOP 1 @OldQty = BaseQty, @OldItemId = ItemId, @OldWhId = WarehouseCode FROM #tmp_ori_sm_free
-
-			IF (@srcTrans = 1)
-			BEGIN
-				UPDATE Inventory.WarehouseQuantity SET QtyOnHand += @OldQty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @OldWhId AND ItemId = @OldItemId
-				UPDATE Inventory.WarehouseQuantity SET QtyOnOrder += @OldQty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = (SELECT TOP 1 WarehouseCode FROM Inventory.StockMutation WHERE RefCode1 = @transCode AND ItemId = @OldItemId) AND ItemId = @OldItemId
-			END
-			ELSE
-			BEGIN
-				UPDATE Inventory.WarehouseQuantity SET QtyOnHand += @OldQty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @OldWhId AND ItemId = @OldItemId
-			END
-			DELETE #tmp_ori_sm_free WHERE WarehouseCode = @OldWhId AND ItemId = @OldItemId
-		END
-	END
-
 	IF(@isVoid = 0)
 	BEGIN
+		--Update WHQ
 		WHILE EXISTS(SELECT * FROM #tmp_wq)
 		BEGIN
-			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty FROM #tmp_wq
+			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty, @UnitId = UnitId, @Type = [Type] FROM #tmp_wq
 
 			IF EXISTS(SELECT *FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @WHId AND ItemId = @ItemId)
 			BEGIN
 				IF (@srcTrans = 1)
 				BEGIN
-					UPDATE Inventory.WarehouseQuantity SET QtyOnHand -= @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
-					UPDATE Inventory.WarehouseQuantity SET QtyOnOrder -= @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = (SELECT TOP 1 WarehouseCode FROM Inventory.StockMutation WHERE RefCode1 = @transCode AND ItemId = @ItemId) AND ItemId = @ItemId
+					IF (@Type = 'OH')
+					BEGIN
+						UPDATE Inventory.WarehouseQuantity SET QtyOnHand = QtyOnHand - @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
+					END
+					ELSE IF (@Type = 'OO')
+					BEGIN
+						UPDATE Inventory.WarehouseQuantity SET QtyOnOrder = QtyOnOrder - @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = (SELECT TOP 1 WarehouseCode FROM Inventory.StockMutation WHERE RefCode1 = @transCode AND ItemId = @ItemId AND UnitId = @UnitId) AND ItemId = @ItemId
+					END
+					ELSE
+					BEGIN
+						UPDATE Inventory.WarehouseQuantity SET QtyOnTransit = QtyOnTransit + @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
+					END
 				END
 				ELSE
 				BEGIN
-					UPDATE Inventory.WarehouseQuantity SET QtyOnHand -= @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
+					IF (@Type = 'OH')
+					BEGIN
+						UPDATE Inventory.WarehouseQuantity SET QtyOnHand = QtyOnHand - @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
+					END
+					ELSE
+					BEGIN
+						DELETE Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId AND [Type] = @Type AND RefCode1 = @code
+					END
 				END
 			END
 			ELSE
 			BEGIN
-				INSERT INTO Inventory.WarehouseQuantity(WarehouseCode, ItemId, QtyOnHand, QtyOnIndent, QtyOnOrder, QtyReorderPoint, QtyOnTransfer, UpdatedDate)
-				VALUES (@WHId, @ItemId, -@Qty, 0, -@Qty, 0, 0, dbo.udf_current_local_time())
-				UPDATE Inventory.WarehouseQuantity SET QtyOnOrder -= @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = (SELECT TOP 1 WarehouseCode FROM Inventory.StockMutation WHERE RefCode1 = @transCode AND ItemId = @ItemId) AND ItemId = @ItemId
+				INSERT INTO Inventory.WarehouseQuantity(WarehouseCode, ItemId, QtyOnHand, QtyOnIndent, QtyOnOrder, QtyReorderPoint, QtyOnTransfer, QtyOnTransit, UpdatedDate)
+				VALUES (@WHId, @ItemId, 0, 0, 0, 0, 0, 0, dbo.udf_current_local_time())
+				IF (@srcTrans = 1)
+				BEGIN
+					IF (@Type = 'OH')
+					BEGIN
+						UPDATE Inventory.WarehouseQuantity SET QtyOnHand = QtyOnHand - @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
+					END
+					ELSE IF (@Type = 'OO')
+					BEGIN
+						UPDATE Inventory.WarehouseQuantity SET QtyOnOrder = QtyOnOrder - @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = (SELECT TOP 1 WarehouseCode FROM Inventory.StockMutation WHERE RefCode1 = @transCode AND ItemId = @ItemId AND UnitId = @UnitId) AND ItemId = @ItemId
+					END
+					ELSE
+					BEGIN
+						UPDATE Inventory.WarehouseQuantity SET QtyOnTransit = QtyOnTransit + @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
+					END
+				END
+				ELSE
+				BEGIN
+					IF (@Type = 'OH')
+					BEGIN
+						UPDATE Inventory.WarehouseQuantity SET QtyOnHand = QtyOnHand - @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
+					END
+					ELSE
+					BEGIN
+						DELETE Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId AND [Type] = @Type AND RefCode1 = @code
+					END
+				END
 			END
-			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId
+			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId AND [Type] = @Type
 		END
 	END
 	ELSE -- If data voided
 	BEGIN
 	WHILE EXISTS(SELECT * FROM #tmp_wq)
 		BEGIN
-			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty FROM #tmp_wq
+			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty, @UnitId = UnitId, @Type = [Type] FROM #tmp_wq
 
-			IF EXISTS(SELECT *FROM Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code)
+			IF EXISTS(SELECT *FROM Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code AND UnitId = @UnitId AND [Type] = @Type)
 			BEGIN
-                IF (@srcTrans = 1)
+				IF (@srcTrans = 1)
 				BEGIN
-					UPDATE Inventory.WarehouseQuantity SET QtyOnHand += @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
-					UPDATE Inventory.WarehouseQuantity SET QtyOnOrder += @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = (SELECT TOP 1 WarehouseCode FROM Inventory.StockMutation WHERE RefCode1 = @transCode AND ItemId = @ItemId) AND ItemId = @ItemId
+					IF (@Type = 'OH')
+					BEGIN
+						UPDATE Inventory.WarehouseQuantity SET QtyOnHand = QtyOnHand + @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
+					END
+					ELSE IF (@Type = 'OO')
+					BEGIN
+						UPDATE Inventory.WarehouseQuantity SET QtyOnOrder = QtyOnOrder + @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = (SELECT TOP 1 WarehouseCode FROM Inventory.StockMutation WHERE RefCode1 = @transCode AND ItemId = @ItemId AND UnitId = @UnitId) AND ItemId = @ItemId
+					END
+					ELSE
+					BEGIN
+						UPDATE Inventory.WarehouseQuantity SET QtyOnTransit = QtyOnTransit - @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
+					END
 				END
 				ELSE
 				BEGIN
-					UPDATE Inventory.WarehouseQuantity SET QtyOnHand += @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
+					UPDATE Inventory.WarehouseQuantity SET QtyOnHand = QtyOnHand + @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
 				END
-				DELETE Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code
+				DELETE Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code AND UnitId = @UnitId AND [Type] = @Type
 			END
-			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId
+			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId AND [Type] = @Type
 		END
 	END
 
 	-- Drop temp tables
 	DROP TABLE #tmp_do
 	DROP TABLE #tmp_wq
-	DROP TABLE #tmp_ori_sm
 	DROP TABLE #tmp_do_free
-	DROP TABLE #tmp_ori_sm_free
 
 END TRY
 BEGIN CATCH
@@ -11865,13 +12524,8 @@ BEGIN CATCH
 		DROP TABLE #tmp_do
 	IF OBJECT_ID('tempdb.dbo.#tmp_wq') IS NOT NULL
 		DROP TABLE #tmp_wq
-	IF OBJECT_ID('tempdb.dbo.#tmp_ori_sm') IS NOT NULL
-		DROP TABLE #tmp_ori_sm
 	IF OBJECT_ID('tempdb.dbo.#tmp_do_free') IS NOT NULL
 		DROP TABLE #tmp_do_free
-	IF OBJECT_ID('tempdb.dbo.#tmp_ori_sm_free') IS NOT NULL
-		DROP TABLE #tmp_ori_sm_free
-
 
 	-- Raise error
 	EXEC dbo.sp_raiseerror
@@ -11885,6 +12539,7 @@ END CATCH";
 	@isVoid bit = 0
 AS
 BEGIN TRY
+
 	DECLARE @warehouseCode varchar(8)
 
 	SELECT @warehouseCode = WarehouseCode
@@ -11907,13 +12562,6 @@ BEGIN TRY
 		ON uom_c.UomId = po_d.UomId
 		AND uom_c.Id = po_d.UnitId
 	WHERE Code = @code
-
-	-- Collect original stock mutation
-	SELECT *
-	INTO #tmp_ori_sm
-	FROM Inventory.StockMutation
-	WHERE RefCode1 = @code
-	AND Src = 'PO'
 
 	-- Delete stock mutation that doesn't have in purchase order item detail
 	DELETE Inventory.StockMutation
@@ -11955,7 +12603,7 @@ BEGIN TRY
 		)
 
 	-- Update WarehouseQty
-	SELECT WarehouseCode, ItemId, BaseQty
+	SELECT WarehouseCode, ItemId, BaseQty, UnitId
 	INTO #tmp_wq
 	FROM Inventory.StockMutation
 	WHERE RefCode1 = @code
@@ -11963,27 +12611,13 @@ BEGIN TRY
 	DECLARE @Qty decimal
 	DECLARE @WHId varchar(max)
 	DECLARE @ItemId int	
-	DECLARE @OldQty decimal
-	DECLARE @OldItemId int
-	DECLARE @OldWhId varchar(max)
-
-	IF EXISTS(SELECT *FROM #tmp_ori_sm)
-	BEGIN
-		WHILE EXISTS(SELECT *FROM #tmp_ori_sm)
-		BEGIN
-			SELECT TOP 1 @OldQty = BaseQty, @OldItemId = ItemId, @OldWhId = WarehouseCode FROM #tmp_ori_sm
-
-			UPDATE Inventory.WarehouseQuantity SET QtyOnIndent -= @OldQty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @OldWhId AND ItemId = @OldItemId
-
-			DELETE #tmp_ori_sm WHERE WarehouseCode = @OldWhId AND ItemId = @OldItemId
-		END
-	END
+	DECLARE @UnitId int
 
 	IF(@isVoid = 0)
 	BEGIN
 		WHILE EXISTS(SELECT * FROM #tmp_wq)
 		BEGIN
-			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty FROM #tmp_wq
+			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty, @UnitId = UnitId FROM #tmp_wq
 
 			IF EXISTS(SELECT *FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @WHId AND ItemId = @ItemId)
 			BEGIN
@@ -11991,32 +12625,31 @@ BEGIN TRY
 			END
 			ELSE
 			BEGIN
-				INSERT INTO Inventory.WarehouseQuantity(WarehouseCode, ItemId, QtyOnHand, QtyOnIndent, QtyOnOrder, QtyReorderPoint, QtyOnTransfer, UpdatedDate)
-				VALUES (@WHId, @ItemId, 0, @Qty, 0, 0, 0, dbo.udf_current_local_time())
+				INSERT INTO Inventory.WarehouseQuantity(WarehouseCode, ItemId, QtyOnHand, QtyOnIndent, QtyOnOrder, QtyReorderPoint, QtyOnTransfer, QtyOnTransit, UpdatedDate)
+				VALUES (@WHId, @ItemId, 0, @Qty, 0, 0, 0, 0, dbo.udf_current_local_time())
 			END
-			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId
+			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId
 		END
 	END
 	ELSE -- If data voided
 	BEGIN
 	WHILE EXISTS(SELECT * FROM #tmp_wq)
 		BEGIN
-			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty FROM #tmp_wq
+			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty, @UnitId = UnitId FROM #tmp_wq
 
 			IF EXISTS(SELECT *FROM Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code)
 			BEGIN
 				UPDATE Inventory.WarehouseQuantity SET QtyOnIndent -= @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
-
-				DELETE Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code
+				
+				DELETE Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId AND RefCode1 = @code
 			END
-			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId
+			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId
 		END
 	END
 	
 	-- Drop temp tables
 	DROP TABLE #tmp_po
 	DROP TABLE #tmp_wq
-	DROP TABLE #tmp_ori_sm
 
 END TRY
 BEGIN CATCH
@@ -12025,8 +12658,6 @@ BEGIN CATCH
 		DROP TABLE #tmp_po 
 	IF OBJECT_ID('tempdb.dbo.#tmp_wq') IS NOT NULL
 		DROP TABLE #tmp_wq
-	IF OBJECT_ID('tempdb.dbo.#tmp_ori_sm') IS NOT NULL
-		DROP TABLE #tmp_ori_sm
 
 	-- Raise error
 	EXEC dbo.sp_raiseerror
@@ -12041,6 +12672,7 @@ END CATCH";
 	@isVoid bit = 0
 AS
 BEGIN TRY
+
 	-- Collect original stock mutation
 	SELECT *
 	INTO #tmp_ori_sm
@@ -12107,7 +12739,7 @@ BEGIN TRY
 		)
 
 	-- Update WarehouseQty
-	SELECT WarehouseCode, ItemId, BaseQty
+	SELECT WarehouseCode, ItemId, BaseQty, UnitId
 	INTO #tmp_wq
 	FROM Inventory.StockMutation
 	WHERE RefCode1 = @code
@@ -12115,27 +12747,13 @@ BEGIN TRY
 	DECLARE @Qty decimal
 	DECLARE @WHId varchar(max)
 	DECLARE @ItemId int
-	DECLARE @OldQty decimal
-	DECLARE @OldItemId int
-	DECLARE @OldWhId varchar(max)
-
-	IF EXISTS(SELECT *FROM #tmp_ori_sm)
-	BEGIN
-		WHILE EXISTS(SELECT *FROM #tmp_ori_sm)
-		BEGIN
-			SELECT TOP 1 @OldQty = BaseQty, @OldItemId = ItemId, @OldWhId = WarehouseCode FROM #tmp_ori_sm		
-			
-			UPDATE Inventory.WarehouseQuantity SET QtyOnHand += @OldQty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @OldWhId AND ItemId = @OldItemId
-
-			DELETE #tmp_ori_sm WHERE WarehouseCode = @OldWhId AND ItemId = @OldItemId
-		END
-	END
+	DECLARE @UnitId int
 
 	IF(@isVoid = 0)
 	BEGIN
 		WHILE EXISTS(SELECT * FROM #tmp_wq)
 		BEGIN
-			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty FROM #tmp_wq
+			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty, @UnitId = UnitId FROM #tmp_wq
 
 			IF EXISTS(SELECT *FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @WHId AND ItemId = @ItemId)
 			BEGIN
@@ -12143,48 +12761,41 @@ BEGIN TRY
 			END
 			ELSE
 			BEGIN
-				INSERT INTO Inventory.WarehouseQuantity(WarehouseCode, ItemId, QtyOnHand, QtyOnIndent, QtyOnOrder, QtyReorderPoint, QtyOnTransfer, UpdatedDate)
-				VALUES (@WHId, @ItemId, -@Qty, 0, 0, 0, 0, dbo.udf_current_local_time())
+				INSERT INTO Inventory.WarehouseQuantity(WarehouseCode, ItemId, QtyOnHand, QtyOnIndent, QtyOnOrder, QtyReorderPoint, QtyOnTransfer, QtyOnTransit, UpdatedDate)
+				VALUES (@WHId, @ItemId, -@Qty, 0, 0, 0, 0, 0, dbo.udf_current_local_time())
 			END
 
-			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId
+			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId
 		END
 	END
 	ELSE -- If data voided
 	BEGIN
 	WHILE EXISTS(SELECT * FROM #tmp_wq)
 		BEGIN
-			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty FROM #tmp_wq
+			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty, @UnitId = UnitId FROM #tmp_wq
 
 			IF EXISTS(SELECT *FROM Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code)
 			BEGIN
 				UPDATE Inventory.WarehouseQuantity SET QtyOnHand += @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
 				
-				DELETE Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code
+				DELETE Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code AND UnitId = @UnitId
 			END
-			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId
+			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId
 		END
 	END
 
 	-- Drop temp tables
 	IF OBJECT_ID('tempdb.dbo.#tmp_pr') IS NOT NULL
 		DROP TABLE #tmp_pr
-	IF OBJECT_ID('tempdb.dbo.#tmp_prx') IS NOT NULL
-		DROP TABLE #tmp_prx
 	DROP TABLE #tmp_wq
-	DROP TABLE #tmp_ori_sm
 
 END TRY
 BEGIN CATCH
 	-- Drop temp tables
 	IF OBJECT_ID('tempdb.dbo.#tmp_pr') IS NOT NULL
 		DROP TABLE #tmp_pr
-	IF OBJECT_ID('tempdb.dbo.#tmp_prx') IS NOT NULL
-		DROP TABLE #tmp_prx
 	IF OBJECT_ID('tempdb.dbo.#tmp_wq') IS NOT NULL
 		DROP TABLE #tmp_wq
-	IF OBJECT_ID('tempdb.dbo.#tmp_ori_sm') IS NOT NULL
-		DROP TABLE #tmp_ori_sm
 
 	-- Raise error
 	EXEC dbo.sp_raiseerror
@@ -12210,12 +12821,12 @@ BEGIN TRY
 				WHERE UomId = uom_c.UomId
 				AND Seq <= uom_c.Seq
 			) END AS BaseQty,
-		pr_d.NettPrice - pr_d.TaxAmount
+		pr_d.NettPrice - pr_d.TaxAmount + pr_d.ExemptTaxAmount
 		AS FinalNettPrice,
 		CASE WHEN uom_c.IsBaseUnit = 1 THEN
-			pr_d.NettPrice - pr_d.TaxAmount
+			pr_d.NettPrice - pr_d.TaxAmount + pr_d.ExemptTaxAmount
 		ELSE
-			(pr_d.NettPrice - pr_d.TaxAmount) / 
+			(pr_d.NettPrice - pr_d.TaxAmount + pr_d.ExemptTaxAmount) / 
 			(
 				SELECT EXP(SUM(LOG(Conversion)))
 				FROM Inventory.UoMConversion
@@ -12231,13 +12842,6 @@ BEGIN TRY
 	LEFT JOIN Purchasing.PurchaseReceiveHeader pr_h
 		ON pr_h.Code = pr_d.Code
 	WHERE pr_d.Code = @code
-
-	-- Collect original stock mutation
-	SELECT *
-	INTO #tmp_ori_sm
-	FROM Inventory.StockMutation
-	WHERE RefCode1 = @code
-	AND Src = 'RCV'
 
 	-- Delete stock mutation that doesn't have in purchase receive item detail
 	DELETE Inventory.StockMutation
@@ -12280,11 +12884,27 @@ BEGIN TRY
 			FROM Inventory.StockMutation sm
 			WHERE sm.RefCode1 = pr.Code
 			AND sm.RefDetailId1 = pr.Id
+			AND sm.[Type] = 'OH'
+			AND sm.Src = 'RCV'
+		)
+
+	INSERT INTO Inventory.StockMutation
+		SELECT WarehouseCode, @date, ItemId, UomId, UnitId, Qty, FinalNettPrice, BaseUnit, BaseQty, BaseNettPrice,
+			Code, Id,
+			CASE WHEN @transCode IS NOT NULL THEN @transCode ELSE NULL END, 'OI',
+			'RCV'
+		FROM #tmp_pr pr
+		WHERE NOT EXISTS (
+			SELECT Id
+			FROM Inventory.StockMutation sm
+			WHERE sm.RefCode1 = pr.Code
+			AND sm.RefDetailId1 = pr.Id
+			AND sm.[Type] = 'OI'
 			AND sm.Src = 'RCV'
 		)
 
 	-- Update WarehouseQty
-	SELECT WarehouseCode, ItemId, BaseQty, UnitId
+	SELECT WarehouseCode, ItemId, BaseQty, UnitId, [Type]
 	INTO #tmp_wq
 	FROM Inventory.StockMutation
 	WHERE RefCode1 = @code
@@ -12292,34 +12912,239 @@ BEGIN TRY
 	DECLARE @Qty decimal
 	DECLARE @WHId varchar(max)
 	DECLARE @ItemId int
-	DECLARE @OldQty decimal
-	DECLARE @OldItemId int
-	DECLARE @OldWhId varchar(max)
 	DECLARE @srcTrans int
 	DECLARE @UnitId int
-	DECLARE @OldUnitId int
-
+	DECLARE @Type varchar(max)
 
 	SELECT @srcTrans = SrcTrans FROM Purchasing.PurchaseReceiveHeader WHERE Code = @code
 
-	IF EXISTS(SELECT *FROM #tmp_ori_sm)
+	IF(@isVoid = 0)
 	BEGIN
-		WHILE EXISTS(SELECT *FROM #tmp_ori_sm)
+		WHILE EXISTS(SELECT * FROM #tmp_wq)
 		BEGIN
-			SELECT TOP 1 @OldQty = BaseQty, @OldItemId = ItemId, @OldWhId = WarehouseCode, @OldUnitId = UnitId FROM #tmp_ori_sm
-			
-			IF (@srcTrans = 1)
+			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty, @UnitId = UnitId, @Type = [Type] FROM #tmp_wq
+
+			IF EXISTS(SELECT *FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @WHId AND ItemId = @ItemId)
 			BEGIN
-				UPDATE Inventory.WarehouseQuantity SET QtyOnHand -= @OldQty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @OldWhId AND ItemId = @OldItemId
-				UPDATE Inventory.WarehouseQuantity SET QtyOnIndent += @OldQty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = (SELECT WarehouseCode FROM Inventory.StockMutation WHERE RefCode1 = @transCode AND ItemId = @OldItemId AND UnitId = @OldUnitId) AND ItemId = @OldItemId
+				IF (@srcTrans = 1)
+				BEGIN
+					IF (@Type = 'OH')
+					BEGIN
+						UPDATE Inventory.WarehouseQuantity SET QtyOnHand += @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
+					END
+					ELSE
+					BEGIN
+						UPDATE Inventory.WarehouseQuantity SET QtyOnIndent -= @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = (SELECT WarehouseCode FROM Inventory.StockMutation WHERE RefCode1 = @transCode AND ItemId = @ItemId AND UnitId = @UnitId) AND ItemId = @ItemId
+					END
+				END
+				ELSE
+				BEGIN
+					IF (@Type = 'OH')
+					BEGIN
+						UPDATE Inventory.WarehouseQuantity SET QtyOnHand += @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
+					END
+					ELSE
+					BEGIN
+						DELETE Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId AND [Type] = @Type AND RefCode1 = @code
+					END
+				END
 			END
 			ELSE
 			BEGIN
-				UPDATE Inventory.WarehouseQuantity SET QtyOnHand -= @OldQty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @OldWhId AND ItemId = @OldItemId
+				INSERT INTO Inventory.WarehouseQuantity(WarehouseCode, ItemId, QtyOnHand, QtyOnIndent, QtyOnOrder, QtyReorderPoint, QtyOnTransfer, QtyOnTransit, UpdatedDate)
+				VALUES (@WHId, @ItemId, @Qty, 0, 0, 0, 0, 0, dbo.udf_current_local_time())
+				UPDATE Inventory.WarehouseQuantity SET QtyOnIndent -= @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = (SELECT WarehouseCode FROM Inventory.StockMutation WHERE RefCode1 = @transCode AND ItemId = @ItemId AND UnitId = @UnitId) AND ItemId = @ItemId
 			END
-			DELETE #tmp_ori_sm WHERE WarehouseCode = @OldWhId AND ItemId = @OldItemId AND UnitId = @OldUnitId
+			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId AND [Type] = @Type
 		END
 	END
+	ELSE -- If data voided
+	BEGIN
+	WHILE EXISTS(SELECT * FROM #tmp_wq)
+		BEGIN
+			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty, @UnitId = UnitId, @Type = [Type] FROM #tmp_wq
+
+			IF EXISTS(SELECT *FROM Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId AND RefCode1 = @code)
+			BEGIN
+				IF (@srcTrans = 1)
+				BEGIN
+					IF (@Type = 'OH')
+					BEGIN
+						UPDATE Inventory.WarehouseQuantity SET QtyOnHand -= @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
+					END
+					ELSE
+					BEGIN
+						UPDATE Inventory.WarehouseQuantity SET QtyOnIndent += @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = (SELECT WarehouseCode FROM Inventory.StockMutation WHERE RefCode1 = @transCode AND ItemId = @ItemId AND UnitId = @UnitId) AND ItemId = @ItemId
+					END
+				END
+				ELSE
+				BEGIN
+					UPDATE Inventory.WarehouseQuantity SET QtyOnHand -= @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
+				END
+				DELETE Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId AND [Type] = @Type AND RefCode1 = @code
+			END
+			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId AND [Type] = @Type
+		END
+	END
+		
+	-- Drop temp tables
+	DROP TABLE #tmp_pr
+	DROP TABLE #tmp_wq
+
+END TRY
+BEGIN CATCH
+	-- Drop temp tables
+	IF OBJECT_ID('tempdb.dbo.#tmp_pr') IS NOT NULL
+		DROP TABLE #tmp_pr
+	IF OBJECT_ID('tempdb.dbo.#tmp_wq') IS NOT NULL
+		DROP TABLE #tmp_wq
+
+	-- Raise error
+	EXEC dbo.sp_raiseerror
+END CATCH";
+            migrationBuilder.Sql(sql);
+
+            // Create procedure dbo.sp_update_stock_mutation_from_si
+            sql = @"CREATE PROCEDURE [dbo].[sp_update_stock_mutation_from_si]
+	@code varchar(17),
+	@date date,
+	@transCode varchar(17),
+	@isVoid bit = 0
+AS
+BEGIN TRY
+
+	DECLARE @warehouseCode varchar(8)
+
+	SELECT @warehouseCode = WarehouseCode
+	FROM Sales.SalesDeliveryHeader
+	WHERE Code = @transCode
+
+	SELECT do_d.*,
+		CASE WHEN uom_c.IsBaseUnit = 1 THEN do_d.UnitId
+			ELSE (SELECT TOP 1 Id FROM Inventory.UoMConversion WHERE UomId = uom_c.UomId AND IsBaseUnit = 1) END AS BaseUnit,
+		CASE WHEN uom_c.IsBaseUnit = 1 THEN do_d.Qty
+			ELSE do_d.Qty * (
+				SELECT EXP(SUM(LOG(Conversion)))
+				FROM Inventory.UoMConversion
+				WHERE UomId = uom_c.UomId
+				AND Seq <= uom_c.Seq
+			) END AS BaseQty
+	INTO #tmp_do
+	FROM Sales.SalesDeliveryDetail do_d
+	LEFT JOIN Inventory.UoMConversion uom_c
+		ON uom_c.UomId = do_d.UomId
+		AND uom_c.Id = do_d.UnitId
+	WHERE Code = @transCode
+
+	-- Delete stock mutation that doesn't have in sales delivery item detail
+	DELETE Inventory.StockMutation
+	WHERE RefCode1 = @code
+	AND Src = 'SI'
+	AND NOT EXISTS (
+		SELECT *
+		FROM #tmp_do
+		WHERE Code = RefCode1
+		AND Id = RefDetailId1
+	)
+
+	-- Update stock mutation that exists in sales delivery item detail
+	UPDATE sm
+	SET sm.WarehouseCode = @warehouseCode,
+		sm.[Date] = @date,
+		sm.ItemId = #tmp_do.ItemId,
+		sm.UomId = #tmp_do.UomId,
+		sm.UnitId = #tmp_do.UnitId,
+		sm.Qty = #tmp_do.Qty,
+		sm.BaseUnit = #tmp_do.BaseUnit,
+		sm.BaseQty = #tmp_do.BaseQty,
+		sm.RefCode2 = @transCode
+	FROM Inventory.StockMutation sm, #tmp_do
+	WHERE sm.RefCode1 = @code
+	AND sm.RefDetailId1 = #tmp_do.Id
+	AND sm.Src = 'SI'
+
+	-- Insert stock mutation that doesn't have with sales delivery item detail
+	INSERT INTO Inventory.StockMutation
+		SELECT @warehouseCode, @date, ItemId, UomId, UnitId, Qty, 0, BaseUnit, BaseQty, 0, @code, Id, @transCode, 'OTS', 'SI'
+		FROM #tmp_do do
+		WHERE NOT EXISTS (
+			SELECT Id
+			FROM Inventory.StockMutation sm
+			WHERE sm.RefCode2 = do.Code
+			AND sm.RefDetailId1 = do.Id
+			AND sm.Src = 'SI'
+		)
+	
+	-- Free Goods
+	SELECT do_d.*,
+		CASE WHEN uom_c.IsBaseUnit = 1 THEN do_d.UnitId
+			ELSE (SELECT TOP 1 Id FROM Inventory.UoMConversion WHERE UomId = uom_c.UomId AND IsBaseUnit = 1) END AS BaseUnit,
+		CASE WHEN uom_c.IsBaseUnit = 1 THEN do_d.Qty
+			ELSE do_d.Qty * (
+				SELECT EXP(SUM(LOG(Conversion)))
+				FROM Inventory.UoMConversion
+				WHERE UomId = uom_c.UomId
+				AND Seq <= uom_c.Seq
+			) END AS BaseQty
+	INTO #tmp_do_free
+	FROM Sales.SalesDeliveryDetailFreeGood do_d
+	LEFT JOIN Inventory.UoMConversion uom_c
+		ON uom_c.UomId = do_d.UomId
+		AND uom_c.Id = do_d.UnitId
+	WHERE Code = @transCode
+
+	-- Delete stock mutation that doesn't have in sales delivery free item detail
+	DELETE Inventory.StockMutation
+	WHERE RefCode1 = @code
+	AND Src = 'SIF'
+	AND NOT EXISTS (
+		SELECT *
+		FROM #tmp_do_free
+		WHERE Code = RefCode1
+		AND Id = RefDetailId1
+	)
+
+	-- Update stock mutation that exists in sales delivery free item detail
+	UPDATE sm
+	SET sm.WarehouseCode = @warehouseCode,
+		sm.[Date] = @date,
+		sm.ItemId = #tmp_do_free.ItemId,
+		sm.UomId = #tmp_do_free.UomId,
+		sm.UnitId = #tmp_do_free.UnitId,
+		sm.Qty = #tmp_do_free.Qty,
+		sm.BaseUnit = #tmp_do_free.BaseUnit,
+		sm.BaseQty = #tmp_do_free.BaseQty,
+		sm.RefCode2 = @transCode
+	FROM Inventory.StockMutation sm, #tmp_do_free
+	WHERE sm.RefCode1 = @code
+	AND sm.RefDetailId1 = #tmp_do_free.Id
+	AND sm.Src = 'DOF'
+
+	-- Insert stock mutation that doesn't have with sales delivery item detail
+	INSERT INTO Inventory.StockMutation
+		SELECT @warehouseCode, @date, ItemId, UomId, UnitId, Qty, 0, BaseUnit, BaseQty, 0, @code, Id, @transCode,'OTS', 'SIF'
+		FROM #tmp_do_free do
+		WHERE NOT EXISTS (
+			SELECT Id
+			FROM Inventory.StockMutation sm
+			WHERE sm.RefCode2 = do.Code
+			AND sm.RefDetailId1 = do.Id
+			AND sm.Src = 'DOF'
+		)
+
+	-- Update WarehouseQty
+	SELECT WarehouseCode, ItemId, BaseQty, UnitId
+	INTO #tmp_wq
+	FROM Inventory.StockMutation
+	WHERE RefCode1 = @code AND Src IN ('SI', 'SIF')
+
+	DECLARE @Qty decimal
+	DECLARE @WHId varchar(max)
+	DECLARE @ItemId int
+	DECLARE @srcTrans int
+	DECLARE @UnitId int
+
+	SELECT @srcTrans = SrcTrans FROM Sales.SalesDeliveryHeader WHERE Code = @transCode
 
 	IF(@isVoid = 0)
 	BEGIN
@@ -12331,19 +13156,14 @@ BEGIN TRY
 			BEGIN
 				IF (@srcTrans = 1)
 				BEGIN
-					UPDATE Inventory.WarehouseQuantity SET QtyOnHand += @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
-					UPDATE Inventory.WarehouseQuantity SET QtyOnIndent -= @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = (SELECT WarehouseCode FROM Inventory.StockMutation WHERE RefCode1 = @transCode AND ItemId = @ItemId AND UnitId = @UnitId) AND ItemId = @ItemId
-				END
-				ELSE
-				BEGIN
-					UPDATE Inventory.WarehouseQuantity SET QtyOnHand += @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
+					UPDATE Inventory.WarehouseQuantity SET QtyOnTransit -= @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode =  @WHId AND ItemId = @ItemId
 				END
 			END
 			ELSE
 			BEGIN
-				INSERT INTO Inventory.WarehouseQuantity(WarehouseCode, ItemId, QtyOnHand, QtyOnIndent, QtyOnOrder, QtyReorderPoint, QtyOnTransfer, UpdatedDate)
-				VALUES (@WHId, @ItemId, @Qty, 0, 0, 0, 0, dbo.udf_current_local_time())
-				UPDATE Inventory.WarehouseQuantity SET QtyOnIndent -= @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = (SELECT WarehouseCode FROM Inventory.StockMutation WHERE RefCode1 = @transCode AND ItemId = @ItemId AND UnitId = @UnitId) AND ItemId = @ItemId
+				INSERT INTO Inventory.WarehouseQuantity(WarehouseCode, ItemId, QtyOnHand, QtyOnIndent, QtyOnOrder, QtyReorderPoint, QtyOnTransfer, QtyOnTransit, UpdatedDate)
+				VALUES (@WHId, @ItemId, 0, 0, 0, 0, 0, 0, dbo.udf_current_local_time())
+				UPDATE Inventory.WarehouseQuantity SET QtyOnTransit -= @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
 			END
 			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId
 		END
@@ -12354,37 +13174,32 @@ BEGIN TRY
 		BEGIN
 			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty, @UnitId = UnitId FROM #tmp_wq
 
-			IF EXISTS(SELECT *FROM Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId AND RefCode1 = @code)
+			IF EXISTS(SELECT *FROM Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code)
 			BEGIN
-                IF (@srcTrans = 1)
+				IF (@srcTrans = 1)
 				BEGIN
-					UPDATE Inventory.WarehouseQuantity SET QtyOnHand -= @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
-					UPDATE Inventory.WarehouseQuantity SET QtyOnIndent += @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = (SELECT WarehouseCode FROM Inventory.StockMutation WHERE RefCode1 = @transCode AND ItemId = @ItemId AND UnitId = @UnitId) AND ItemId = @ItemId
+					UPDATE Inventory.WarehouseQuantity SET QtyOnTransit += @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
 				END
-				ELSE
-				BEGIN
-					UPDATE Inventory.WarehouseQuantity SET QtyOnHand -= @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
-				END
-				DELETE Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId AND RefCode1 = @code
+				DELETE Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code AND UnitId = @UnitId
 			END
 			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId
 		END
 	END
-		
+
 	-- Drop temp tables
-	DROP TABLE #tmp_pr
+	DROP TABLE #tmp_do
 	DROP TABLE #tmp_wq
-	DROP TABLE #tmp_ori_sm
+	DROP TABLE #tmp_do_free
 
 END TRY
 BEGIN CATCH
 	-- Drop temp tables
-	IF OBJECT_ID('tempdb.dbo.#tmp_pr') IS NOT NULL
-		DROP TABLE #tmp_pr
+	IF OBJECT_ID('tempdb.dbo.#tmp_do') IS NOT NULL
+		DROP TABLE #tmp_do
 	IF OBJECT_ID('tempdb.dbo.#tmp_wq') IS NOT NULL
 		DROP TABLE #tmp_wq
-	IF OBJECT_ID('tempdb.dbo.#tmp_ori_sm') IS NOT NULL
-		DROP TABLE #tmp_ori_sm
+	IF OBJECT_ID('tempdb.dbo.#tmp_do_free') IS NOT NULL
+		DROP TABLE #tmp_do_free
 
 	-- Raise error
 	EXEC dbo.sp_raiseerror
@@ -12398,6 +13213,7 @@ END CATCH";
 	@isVoid bit = 0
 AS
 BEGIN TRY
+
 	DECLARE @warehouseCode varchar(8)
 
 	SELECT @warehouseCode = WarehouseCode
@@ -12420,13 +13236,6 @@ BEGIN TRY
 		ON uom_c.UomId = so_d.UomId
 		AND uom_c.Id = so_d.UnitId
 	WHERE Code = @code
-
-	-- Collect original stock mutation
-	SELECT *
-	INTO #tmp_ori_sm
-	FROM Inventory.StockMutation
-	WHERE RefCode1 = @code
-	AND Src = 'SO'
 
 	-- Delete stock mutation that doesn't have in sales order item detail
 	DELETE Inventory.StockMutation
@@ -12487,13 +13296,6 @@ BEGIN TRY
 		AND uom_c.Id = so_d.UnitId
 	WHERE Code = @code 
 
-	-- Collect original stock mutation
-	SELECT *
-	INTO #tmp_ori_sm_free 
-	FROM Inventory.StockMutation
-	WHERE RefCode1 = @code
-	AND Src = 'SOF'
-
 	-- Delete stock mutation that doesn't have in sales order free good item detail
 	DELETE Inventory.StockMutation
 	WHERE RefCode1 = @code
@@ -12536,47 +13338,21 @@ BEGIN TRY
 	)
 
 	-- Update WarehouseQty
-	SELECT WarehouseCode, ItemId, BaseQty
+	SELECT WarehouseCode, ItemId, BaseQty, UnitId
 	INTO #tmp_wq
 	FROM Inventory.StockMutation
-	WHERE RefCode1 = @code
+	WHERE RefCode1 = @code AND Src IN ('SO', 'SOF')
 
 	DECLARE @Qty decimal
 	DECLARE @WHId varchar(max)
 	DECLARE @ItemId int 
-	DECLARE @OldQty decimal
-	DECLARE @OldItemId int
-	DECLARE @OldWhId varchar(max)
-
-	IF EXISTS(SELECT *FROM #tmp_ori_sm)
-	BEGIN
-		WHILE EXISTS(SELECT *FROM #tmp_ori_sm)
-		BEGIN
-			SELECT TOP 1 @OldQty = BaseQty, @OldItemId = ItemId, @OldWhId = WarehouseCode FROM #tmp_ori_sm
-
-			UPDATE Inventory.WarehouseQuantity SET QtyOnOrder -= @OldQty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @OldWhId AND ItemId = @OldItemId
-
-			DELETE #tmp_ori_sm WHERE WarehouseCode = @OldWhId AND ItemId = @OldItemId
-		END
-	END
-
-	IF EXISTS(SELECT *FROM #tmp_ori_sm_free)
-	BEGIN
-		WHILE EXISTS(SELECT *FROM #tmp_ori_sm_free)
-		BEGIN
-			SELECT TOP 1 @OldQty = BaseQty, @OldItemId = ItemId, @OldWhId = WarehouseCode FROM #tmp_ori_sm_free
-
-			UPDATE Inventory.WarehouseQuantity SET QtyOnOrder -= @OldQty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @OldWhId AND ItemId = @OldItemId
-
-			DELETE #tmp_ori_sm_free WHERE WarehouseCode = @OldWhId AND ItemId = @OldItemId
-		END
-	END 
+	DECLARE @UnitId int
 
 	IF(@isVoid = 0)
 	BEGIN
 		WHILE EXISTS(SELECT * FROM #tmp_wq)
 		BEGIN
-			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty FROM #tmp_wq
+			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty, @UnitId = UnitId FROM #tmp_wq
 
 			IF EXISTS(SELECT *FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @WHId AND ItemId = @ItemId)
 			BEGIN
@@ -12584,34 +13360,32 @@ BEGIN TRY
 			END
 			ELSE
 			BEGIN
-				INSERT INTO Inventory.WarehouseQuantity(WarehouseCode, ItemId, QtyOnHand, QtyOnIndent, QtyOnOrder, QtyReorderPoint, QtyOnTransfer, UpdatedDate)
-				VALUES (@WHId, @ItemId, 0, 0, @Qty, 0, 0, dbo.udf_current_local_time())
+				INSERT INTO Inventory.WarehouseQuantity(WarehouseCode, ItemId, QtyOnHand, QtyOnIndent, QtyOnOrder, QtyReorderPoint, QtyOnTransfer, QtyOnTransit, UpdatedDate)
+				VALUES (@WHId, @ItemId, 0, 0, @Qty, 0, 0, 0, dbo.udf_current_local_time())
 			END
-			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId
+			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId
 		END
 	END
 	ELSE -- If data voided
 	BEGIN
 	WHILE EXISTS(SELECT * FROM #tmp_wq)
 		BEGIN
-			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty FROM #tmp_wq
+			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty, @UnitId = UnitId FROM #tmp_wq
 
 			IF EXISTS(SELECT *FROM Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code)
 			BEGIN
 				UPDATE Inventory.WarehouseQuantity SET QtyOnOrder -= @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
 
-				DELETE Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code
+				DELETE Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code AND UnitId = @UnitId
 			END
-			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId
+			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId
 		END
 	END
 
 	-- Drop temp tables
 	DROP TABLE #tmp_so
 	DROP TABLE #tmp_wq
-	DROP TABLE #tmp_ori_sm
 	DROP TABLE #tmp_so_free
-	DROP TABLE #tmp_ori_sm_free
 
 END TRY
 BEGIN CATCH
@@ -12620,12 +13394,8 @@ BEGIN CATCH
 		DROP TABLE #tmp_so
 	IF OBJECT_ID('tempdb.dbo.#tmp_wq') IS NOT NULL
 		DROP TABLE #tmp_wq
-	IF OBJECT_ID('tempdb.dbo.#tmp_ori_sm') IS NOT NULL
-		DROP TABLE #tmp_ori_sm
 	IF OBJECT_ID('tempdb.dbo.#tmp_so_free') IS NOT NULL
 		DROP TABLE #tmp_so_free
-	IF OBJECT_ID('tempdb.dbo.#tmp_ori_sm_free') IS NOT NULL
-		DROP TABLE #tmp_ori_sm_free
 
 	-- Raise error
 	EXEC dbo.sp_raiseerror
@@ -12718,7 +13488,7 @@ BEGIN TRY
 	
 
 	-- Update WarehouseQty
-	SELECT WarehouseCode, ItemId, BaseQty
+	SELECT WarehouseCode, ItemId, BaseQty, UnitId
 	INTO #tmp_wq
 	FROM Inventory.StockMutation
 	WHERE RefCode1 = @code
@@ -12726,27 +13496,13 @@ BEGIN TRY
 	DECLARE @Qty decimal
 	DECLARE @WHId varchar(max)
 	DECLARE @ItemId int
-	DECLARE @OldQty decimal
-	DECLARE @OldItemId int
-	DECLARE @OldWhId varchar(max)
-
-	IF EXISTS(SELECT *FROM #tmp_ori_sm)
-	BEGIN
-		WHILE EXISTS(SELECT *FROM #tmp_ori_sm)
-		BEGIN
-			SELECT TOP 1 @OldQty = BaseQty, @OldItemId = ItemId, @OldWhId = WarehouseCode FROM #tmp_ori_sm
-
-			UPDATE Inventory.WarehouseQuantity SET QtyOnHand -= @OldQty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @OldWhId AND ItemId = @OldItemId
-
-			DELETE #tmp_ori_sm WHERE WarehouseCode = @OldWhId AND ItemId = @OldItemId
-		END
-	END
+	DECLARE @UnitId int
 
 	IF(@isVoid = 0)
 	BEGIN
 		WHILE EXISTS(SELECT * FROM #tmp_wq)
 		BEGIN
-			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty FROM #tmp_wq
+			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty, @UnitId = UnitId FROM #tmp_wq
 
 			IF EXISTS(SELECT *FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @WHId AND ItemId = @ItemId)
 			BEGIN
@@ -12754,48 +13510,41 @@ BEGIN TRY
 			END
 			ELSE
 			BEGIN
-				INSERT INTO Inventory.WarehouseQuantity(WarehouseCode, ItemId, QtyOnHand, QtyOnIndent, QtyOnOrder, QtyReorderPoint, QtyOnTransfer, UpdatedDate)
-				VALUES (@WHId, @ItemId, @Qty, 0, 0, 0, 0, dbo.udf_current_local_time())
+				INSERT INTO Inventory.WarehouseQuantity(WarehouseCode, ItemId, QtyOnHand, QtyOnIndent, QtyOnOrder, QtyReorderPoint, QtyOnTransfer, QtyOnTransit, UpdatedDate)
+				VALUES (@WHId, @ItemId, @Qty, 0, 0, 0, 0, 0, dbo.udf_current_local_time())
 			END
 
-			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId
+			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId
 		END
 	END
 	ELSE -- If data voided
 	BEGIN
 	WHILE EXISTS(SELECT * FROM #tmp_wq)
 		BEGIN
-			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty FROM #tmp_wq
+			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty, @UnitId = UnitId FROM #tmp_wq
 
 			IF EXISTS(SELECT *FROM Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code)
 			BEGIN
 				UPDATE Inventory.WarehouseQuantity SET QtyOnHand -= @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
 
-				DELETE Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code
+				DELETE Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code AND UnitId = @UnitId
 			END
-			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId
+			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId
 		END
 	END
 
 	-- Drop temp tables
 	IF OBJECT_ID('tempdb.dbo.#tmp_sr') IS NOT NULL
 		DROP TABLE #tmp_sr
-	IF OBJECT_ID('tempdb.dbo.#tmp_srx') IS NOT NULL
-		DROP TABLE #tmp_srx
 	DROP TABLE #tmp_wq
-	DROP TABLE #tmp_ori_sm
 
 END TRY
 BEGIN CATCH
 	-- Drop temp tables
 	IF OBJECT_ID('tempdb.dbo.#tmp_sr') IS NOT NULL
 		DROP TABLE #tmp_sr
-	IF OBJECT_ID('tempdb.dbo.#tmp_srx') IS NOT NULL
-		DROP TABLE #tmp_srx
 	IF OBJECT_ID('tempdb.dbo.#tmp_wq') IS NOT NULL
 		DROP TABLE #tmp_wq
-	IF OBJECT_ID('tempdb.dbo.#tmp_ori_sm') IS NOT NULL
-		DROP TABLE #tmp_ori_sm
 
 	-- Raise error
 	EXEC dbo.sp_raiseerror
@@ -12809,6 +13558,7 @@ END CATCH";
     @IsComplete bit
 AS
 BEGIN TRY
+
 	DECLARE @stockType varchar(8)
     DECLARE @whCodeFrom varchar(8)
     DECLARE @whCodeTo varchar(8)
@@ -12843,6 +13593,7 @@ BEGIN TRY
     -- Update WarehouseQty
     DECLARE @itemID AS INT = 0
     DECLARE @qty AS DECIMAL = 0
+	DECLARE @UnitId int
 
     IF (@IsComplete = 0) --Active
     BEGIN
@@ -12892,7 +13643,7 @@ BEGIN TRY
         BEGIN
             WHILE EXISTS(SELECT * FROM #tmp_its)
             BEGIN
-                SELECT TOP 1 @itemID = ItemId, @qty = BaseQty FROM #tmp_its
+                SELECT TOP 1 @itemID = ItemId, @qty = BaseQty, @UnitId = UnitId FROM #tmp_its
 
                 IF EXISTS(SELECT * FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @whCodeFrom AND ItemId = @itemID)
                 BEGIN
@@ -12900,14 +13651,14 @@ BEGIN TRY
                     WHERE WarehouseCode = @whCodeFrom AND ItemId = @ItemId
                 END
 
-                DELETE #tmp_its WHERE ItemId = @ItemId
+                DELETE #tmp_its WHERE ItemId = @ItemId AND UnitId = @UnitId
             END
         END
         ELSE IF (@stockType = 'IN') --InventoryIn
         BEGIN
             WHILE EXISTS(SELECT * FROM #tmp_its)
             BEGIN
-                SELECT TOP 1 @itemID = ItemId, @qty = BaseQty FROM #tmp_its
+                SELECT TOP 1 @itemID = ItemId, @qty = BaseQty, @UnitId = UnitId FROM #tmp_its
 
                 UPDATE Inventory.WarehouseQuantity SET QtyOnTransfer = QtyOnTransfer - @qty, UpdatedDate = dbo.udf_current_local_time() 
                 WHERE WarehouseCode = @whCodeFrom AND ItemId = @ItemId
@@ -12919,11 +13670,11 @@ BEGIN TRY
                 END
                 ELSE
                 BEGIN
-                    INSERT INTO Inventory.WarehouseQuantity(WarehouseCode, ItemId, QtyOnHand, QtyOnIndent, QtyOnOrder, QtyReorderPoint, QtyOnTransfer, UpdatedDate)
-                    VALUES (@whCodeTo, @ItemId, @qty, 0, 0, 0, 0, dbo.udf_current_local_time())
+                    INSERT INTO Inventory.WarehouseQuantity(WarehouseCode, ItemId, QtyOnHand, QtyOnIndent, QtyOnOrder, QtyReorderPoint, QtyOnTransfer, QtyOnTransit, UpdatedDate)
+                    VALUES (@whCodeTo, @ItemId, @qty, 0, 0, 0, 0, 0, dbo.udf_current_local_time())
                 END
 
-                DELETE #tmp_its WHERE ItemId = @ItemId
+                DELETE #tmp_its WHERE ItemId = @ItemId AND UnitId = @UnitId
             END
         END
         ELSE IF (@stockType IN ('DT','C','RC')) --DirectTransfer & Consignee
@@ -12955,7 +13706,7 @@ BEGIN TRY
 
             WHILE EXISTS(SELECT * FROM #tmp_its)
             BEGIN
-                SELECT TOP 1 @itemID = ItemId, @qty = BaseQty FROM #tmp_its
+                SELECT TOP 1 @itemID = ItemId, @qty = BaseQty, @UnitId = UnitId FROM #tmp_its
 
                 IF EXISTS(SELECT * FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @whCodeFrom AND ItemId = @itemID)
                 BEGIN
@@ -12967,12 +13718,12 @@ BEGIN TRY
                     END
                     ELSE
                     BEGIN
-                        INSERT INTO Inventory.WarehouseQuantity(WarehouseCode, ItemId, QtyOnHand, QtyOnIndent, QtyOnOrder, QtyReorderPoint, QtyOnTransfer, UpdatedDate)
-                        VALUES (@whCodeTo, @ItemId, @qty, 0, 0, 0, 0, dbo.udf_current_local_time())
+                        INSERT INTO Inventory.WarehouseQuantity(WarehouseCode, ItemId, QtyOnHand, QtyOnIndent, QtyOnOrder, QtyReorderPoint, QtyOnTransfer, QtyOnTransit, UpdatedDate)
+                        VALUES (@whCodeTo, @ItemId, @qty, 0, 0, 0, 0, 0, dbo.udf_current_local_time())
                     END
                 END
 
-                DELETE #tmp_its WHERE ItemId = @ItemId
+                DELETE #tmp_its WHERE ItemId = @ItemId AND UnitId = @UnitId
             END
         END
     END
@@ -12982,21 +13733,21 @@ BEGIN TRY
         BEGIN
             WHILE EXISTS(SELECT * FROM #tmp_its)
             BEGIN
-                SELECT TOP 1 @itemID = ItemId, @qty = BaseQty FROM #tmp_its
+                SELECT TOP 1 @itemID = ItemId, @qty = BaseQty, @UnitId = UnitId FROM #tmp_its
 
                 IF EXISTS(SELECT * FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @whCodeFrom AND ItemId = @itemID)
                 BEGIN
                     UPDATE Inventory.WarehouseQuantity SET QtyOnHand = QtyOnHand + @qty, QtyOnTransfer = QtyOnTransfer - @qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @whCodeFrom AND ItemId = @ItemId
                 END
 
-                DELETE #tmp_its WHERE ItemId = @ItemId
+                DELETE #tmp_its WHERE ItemId = @ItemId AND UnitId = @UnitId
             END
         END
         ELSE IF (@stockType = 'IN')
         BEGIN
             WHILE EXISTS(SELECT * FROM #tmp_its)
             BEGIN
-                SELECT TOP 1 @itemID = ItemId, @qty = BaseQty FROM #tmp_its
+                SELECT TOP 1 @itemID = ItemId, @qty = BaseQty, @UnitId = UnitId FROM #tmp_its
 
                 IF EXISTS(SELECT * FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @whCodeFrom AND ItemId = @itemID)
                 BEGIN
@@ -13008,14 +13759,14 @@ BEGIN TRY
                     END
                 END
 
-                DELETE #tmp_its WHERE ItemId = @ItemId
+                DELETE #tmp_its WHERE ItemId = @ItemId AND UnitId = @UnitId
             END
         END
         ELSE IF (@stockType IN ('DT','C','RC'))
         BEGIN
             WHILE EXISTS(SELECT * FROM #tmp_its)
             BEGIN
-                SELECT TOP 1 @itemID = ItemId, @qty = BaseQty FROM #tmp_its
+                SELECT TOP 1 @itemID = ItemId, @qty = BaseQty, @UnitId = UnitId FROM #tmp_its
 
                 IF EXISTS(SELECT * FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @whCodeFrom AND ItemId = @itemID)
                 BEGIN
@@ -13027,7 +13778,7 @@ BEGIN TRY
                     END
                 END
 
-                DELETE #tmp_its WHERE ItemId = @ItemId
+                DELETE #tmp_its WHERE ItemId = @ItemId AND UnitId = @UnitId
             END
         END
     END
@@ -13035,7 +13786,6 @@ BEGIN TRY
     -- Drop temp tables
     DROP TABLE #tmp_its
  
-
 END TRY
 BEGIN CATCH
     -- Drop temp tables
@@ -13056,10 +13806,14 @@ BEGIN TRY
 	-- interfering with SELECT statements.  
 	SET NOCOUNT ON;
 	SET ANSI_WARNINGS OFF;
-  
+
 	-- Select Data  
 	WITH cte_on_transfer AS (  
-		SELECT WarehouseCode, ItemId, CAST(SUM(BaseQty) AS decimal(19,8)) AS TotalBaseQty From Inventory.StockMutation WHERE [Type] = 'OT' GROUP BY WarehouseCode, ItemId  
+		SELECT sm.WarehouseCode, sm.ItemId, CAST(SUM(sm.BaseQty) AS decimal(19,8)) AS TotalBaseQty 
+		From Inventory.StockMutation sm 
+		LEFT JOIN Inventory.TransferStockHeader ts ON sm.RefCode1 = ts.Code
+		WHERE sm.[Type] = 'OT' AND ts.[Type] = 'OUT' AND ts.Mark = 'A'
+		GROUP BY sm.WarehouseCode, sm.ItemId    
 	),  
 	cte_on_hand AS (  
 		SELECT WarehouseCode, ItemId, CAST(SUM(BaseQtyValue) AS decimal(19,8)) AS TotalBaseQty FROM 
@@ -13167,7 +13921,7 @@ BEGIN TRY
 		LEFT JOIN Inventory.UoMConversion uom_c
 			ON uom_c.UomId = po_d.UomId
 			AND uom_c.Id = po_d.UnitId
-		WHERE po_h.Code NOT IN ('V', 'CMP')
+		WHERE po_h.Mark NOT IN ('V', 'CLS', 'CMP')
 	),
 	cte_on_indent AS (  
 		SELECT sm.WarehouseCode, sm.ItemId,
@@ -13184,8 +13938,37 @@ BEGIN TRY
 		LEFT JOIN cte_base_qty_indent po_d
 		ON po_d.Id = sm.RefDetailId1
 		GROUP BY sm.WarehouseCode, sm.ItemId
+	),
+	cte_base_qty_transit AS (
+		SELECT do_d.Id,
+		CASE WHEN uom_c.IsBaseUnit = 1 THEN do_d.Qty
+				ELSE do_d.Qty * (
+					SELECT EXP(SUM(LOG(Conversion)))
+					FROM Inventory.UoMConversion
+					WHERE UomId = uom_c.UomId
+					AND Seq <= uom_c.Seq
+				) END AS BaseQty
+		FROM Sales.SalesDeliveryDetail do_d
+		LEFT JOIN Sales.SalesDeliveryHeader do_h
+			ON do_h.Code = do_d.Code
+		LEFT JOIN Inventory.UoMConversion uom_c
+			ON uom_c.UomId = do_d.UomId
+			AND uom_c.Id = do_d.UnitId
+		WHERE do_h.Mark = 'A'
+	),
+	cte_on_transit AS (  
+		SELECT sm.WarehouseCode, sm.ItemId, 
+		ISNULL(SUM(do_d.BaseQty), CAST(0 as decimal(19,8))) AS TotalBaseQty
+		FROM (
+			SELECT *
+			FROM Inventory.StockMutation
+			WHERE [Type] = 'OTS'
+		) sm
+		LEFT JOIN cte_base_qty_transit do_d
+			ON do_d.Id = sm.RefDetailId1 AND sm.Src = 'DO'
+		GROUP BY sm.WarehouseCode, sm.ItemId
 	)  
-  
+
 	SELECT dt.WarehouseCode, dt.ItemId,   
 		CASE  
 			WHEN SUM(oh.TotalBaseQty) IS NOT NULL THEN SUM(oh.TotalBaseQty)  
@@ -13202,18 +13985,23 @@ BEGIN TRY
 		CASE  
 			WHEN SUM(ot.TotalBaseQty) IS NOT NULL THEN SUM(ot.TotalBaseQty)  
 			ELSE CAST(0 AS decimal(19,8))  
-		END AS QtyOnTransfer,  
+		END AS QtyOnTransfer,
+		CASE  
+			WHEN SUM(ots.TotalBaseQty) IS NOT NULL THEN SUM(ots.TotalBaseQty)  
+			ELSE CAST(0 AS decimal(19,8))  
+		END AS QtyOnTransit, 
 		CAST(0 AS decimal(19,8)) AS QtyReorderPoint  
 	INTO #tmp_dt  
 	FROM Inventory.WarehouseQuantity dt  
 	LEFT JOIN cte_on_hand oh ON dt.WarehouseCode = oh.WarehouseCode AND dt.ItemId = oh.ItemId  
 	LEFT JOIN cte_on_indent oi ON dt.WarehouseCode = oi.WarehouseCode AND dt.ItemId = oi.ItemId  
 	LEFT JOIN cte_on_order oo ON dt.WarehouseCode = oo.WarehouseCode AND dt.ItemId = oo.ItemId  
-	LEFT JOIN cte_on_transfer ot ON dt.WarehouseCode = ot.WarehouseCode AND dt.ItemId = ot.ItemId  
+	LEFT JOIN cte_on_transfer ot ON dt.WarehouseCode = ot.WarehouseCode AND dt.ItemId = ot.ItemId 
+	LEFT JOIN cte_on_transit ots ON dt.WarehouseCode = ots.WarehouseCode AND dt.ItemId = ots.ItemId 
 	GROUP BY dt.WarehouseCode, dt.ItemId  
 	ORDER BY dt.WarehouseCode, dt.ItemId  
-  
-  
+
+
 	-- Update Process  
 	DECLARE @WHId varchar(max)  
 	DECLARE @ItemId int  
@@ -13222,25 +14010,26 @@ BEGIN TRY
 	DECLARE @QtyOI decimal(19,8)  
 	DECLARE @QtyOT decimal(19,8)  
 	DECLARE @QtyRP decimal(19,8)  
-  
+	DECLARE @QtyOTS decimal(19,8) 
+
 	IF EXISTS(SELECT *FROM #tmp_dt)  
 	BEGIN  
 		WHILE EXISTS(SELECT *FROM #tmp_dt)  
 		BEGIN  
-			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @QtyOH = QtyOnHand, @QtyOI = QtyOnIndent, @QtyOO = QtyOnOrder, @QtyOT = QtyOnTransfer, @QtyRP = QtyReorderPoint FROM #tmp_dt  
+			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @QtyOH = QtyOnHand, @QtyOI = QtyOnIndent, @QtyOO = QtyOnOrder, @QtyOT = QtyOnTransfer, @QtyRP = QtyReorderPoint, @QtyOTS = QtyOnTransit FROM #tmp_dt  
 			--Update Data  
-			UPDATE Inventory.WarehouseQuantity SET QtyOnHand = @QtyOH, QtyOnIndent = @QtyOI, QtyOnOrder = @QtyOO, QtyOnTransfer = @QtyOT, QtyReorderPoint = @QtyRP, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId  
+			UPDATE Inventory.WarehouseQuantity SET QtyOnHand = @QtyOH, QtyOnIndent = @QtyOI, QtyOnOrder = @QtyOO, QtyOnTransfer = @QtyOT, QtyReorderPoint = @QtyRP, QtyOnTransit = @QtyOTS, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId  
 			DELETE #tmp_dt WHERE WarehouseCode = @WHId AND ItemId = @ItemId  
 		END
 	END  
-  
+
 	PRINT('Proses Selesai')  
 END TRY  
 BEGIN CATCH  
 	-- Drop temp tables  
 	IF OBJECT_ID('tempdb.dbo.#tmp_dt') IS NOT NULL  
 	DROP TABLE #tmp_dt  
-  
+
 	-- Raise error  
 	EXEC dbo.sp_raiseerror  
 END CATCH";
@@ -13258,8 +14047,36 @@ END CATCH";
             sql = @"ALTER TABLE [Finance].[GeneralCashBankDetail] NOCHECK CONSTRAINT [FK_GeneralCashBankDetail_CashBankType_Type]";
             migrationBuilder.Sql(sql);
 
+            // Disabling constraints foreign key FK_PurchaseOrderDetail_Tax_TaxId
+            sql = @"ALTER TABLE [Purchasing].[PurchaseOrderDetail] NOCHECK CONSTRAINT [FK_PurchaseOrderDetail_Tax_TaxId]";
+            migrationBuilder.Sql(sql);
+
+            // Disabling constraints foreign key FK_PurchaseReceiveDetail_Tax_TaxId
+            sql = @"ALTER TABLE [Purchasing].[PurchaseReceiveDetail] NOCHECK CONSTRAINT [FK_PurchaseReceiveDetail_Tax_TaxId]";
+            migrationBuilder.Sql(sql);
+
+            // Disabling constraints foreign key FK_PurchaseReturnDetail_Tax_TaxId
+            sql = @"ALTER TABLE [Purchasing].[PurchaseReturnDetail] NOCHECK CONSTRAINT [FK_PurchaseReturnDetail_Tax_TaxId]";
+            migrationBuilder.Sql(sql);
+
+            // Disabling constraints foreign key FK_CreditMemo_Tax_TaxId
+            sql = @"ALTER TABLE [Sales].[CreditMemo] NOCHECK CONSTRAINT [FK_CreditMemo_Tax_TaxId]";
+            migrationBuilder.Sql(sql);
+
+            // Disabling constraints foreign key FK_SalesDeliveryDetail_Tax_TaxId
+            sql = @"ALTER TABLE [Sales].[SalesDeliveryDetail] NOCHECK CONSTRAINT [FK_SalesDeliveryDetail_Tax_TaxId]";
+            migrationBuilder.Sql(sql);
+
             // Disabling constraints foreign key FK_User_Employee_EmployeeId
             sql = @"ALTER TABLE [Sales].[SalesOrderHeader] NOCHECK CONSTRAINT [FK_SalesOrderHeader_PaymentTerm_PaymentTermId]";
+            migrationBuilder.Sql(sql);
+
+            // Disabling constraints foreign key FK_SalesOrderDetail_Tax_TaxId
+            sql = @"ALTER TABLE [Sales].[SalesOrderDetail] NOCHECK CONSTRAINT [FK_SalesOrderDetail_Tax_TaxId]";
+            migrationBuilder.Sql(sql);
+
+            // Disabling constraints foreign key FK_SalesReturnDetail_Tax_TaxId
+            sql = @"ALTER TABLE [Sales].[SalesReturnDetail] NOCHECK CONSTRAINT [FK_SalesReturnDetail_Tax_TaxId]";
             migrationBuilder.Sql(sql);
 
             // Disabling constraints foreign key FK_User_Employee_EmployeeId
@@ -13313,6 +14130,10 @@ END CATCH";
             migrationBuilder.DropTable(
                 name: "Company",
                 schema: "SystemManagement");
+
+            migrationBuilder.DropTable(
+                name: "CreditMemo",
+                schema: "Sales");
 
             migrationBuilder.DropTable(
                 name: "CurrencyRate",
@@ -13407,6 +14228,14 @@ END CATCH";
                 schema: "MobileSales");
 
             migrationBuilder.DropTable(
+                name: "MobileOrderPromo",
+                schema: "MobileCustomer");
+
+            migrationBuilder.DropTable(
+                name: "MobileOrderPromo",
+                schema: "MobileSales");
+
+            migrationBuilder.DropTable(
                 name: "MobilePaymentInvoice",
                 schema: "MobileSales");
 
@@ -13471,10 +14300,6 @@ END CATCH";
                 schema: "Purchasing");
 
             migrationBuilder.DropTable(
-                name: "PurchaseReturnHeader",
-                schema: "Purchasing");
-
-            migrationBuilder.DropTable(
                 name: "RoleMenu",
                 schema: "SystemManagement");
 
@@ -13523,15 +14348,15 @@ END CATCH";
                 schema: "Sales");
 
             migrationBuilder.DropTable(
+                name: "SalesOrderPromo",
+                schema: "Sales");
+
+            migrationBuilder.DropTable(
                 name: "SalesReturnDetail",
                 schema: "Sales");
 
             migrationBuilder.DropTable(
                 name: "SalesReturnDetailExchDiffItem",
-                schema: "Sales");
-
-            migrationBuilder.DropTable(
-                name: "SalesReturnHeader",
                 schema: "Sales");
 
             migrationBuilder.DropTable(
@@ -13659,6 +14484,10 @@ END CATCH";
                 schema: "Purchasing");
 
             migrationBuilder.DropTable(
+                name: "PurchaseReturnHeader",
+                schema: "Purchasing");
+
+            migrationBuilder.DropTable(
                 name: "Action",
                 schema: "SystemManagement");
 
@@ -13667,15 +14496,15 @@ END CATCH";
                 schema: "SystemManagement");
 
             migrationBuilder.DropTable(
-                name: "CreditMemo",
-                schema: "Sales");
-
-            migrationBuilder.DropTable(
                 name: "SalesDeliveryHeader",
                 schema: "Sales");
 
             migrationBuilder.DropTable(
                 name: "SalesInvoiceHeader",
+                schema: "Sales");
+
+            migrationBuilder.DropTable(
+                name: "SalesReturnHeader",
                 schema: "Sales");
 
             migrationBuilder.DropTable(
@@ -14352,6 +15181,10 @@ END CATCH";
 
             // Drop procedure dbo.sp_update_stock_mutation_from_rcv
             sql = @"DROP PROCEDURE [dbo].[sp_update_stock_mutation_from_rcv]";
+            migrationBuilder.Sql(sql);
+
+            // Drop procedure dbo.sp_update_stock_mutation_from_si
+            sql = @"DROP PROCEDURE [dbo].[sp_update_stock_mutation_from_si]";
             migrationBuilder.Sql(sql);
 
             // Drop procedure dbo.sp_update_stock_mutation_from_so
