@@ -2004,9 +2004,35 @@ public class TenantContext : DbContext
             .ToView("vwPurchaseOrderHeader", Schema.Purchasing);
 
         modelBuilder.Entity<PurchaseOrderDetail>(entity =>
+        {
             entity.Property(e => e.Code)
-                .IsRequired()
-        );
+                .IsRequired();
+
+            entity.HasOne<PurchaseOrderHeader>()
+                .WithMany()
+                .HasForeignKey(d => d.Code)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            entity.HasOne<Item>()
+                .WithMany()
+                .HasForeignKey(d => d.ItemId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            entity.HasOne<UoM>()
+                .WithMany()
+                .HasForeignKey(d => d.UomId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            entity.HasOne<UoMConversion>()
+                .WithMany()
+                .HasForeignKey(d => d.UnitId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            entity.HasOne<Tax>()
+                .WithMany()
+                .HasForeignKey(d => d.TaxId)
+                .OnDelete(DeleteBehavior.NoAction);
+        });
 
         modelBuilder.Entity<VwPurchaseOrderDetail>()
             .HasNoKey()
@@ -2023,9 +2049,35 @@ public class TenantContext : DbContext
             .ToView("vwPurchaseReceiveHeader", Schema.Purchasing);
 
         modelBuilder.Entity<PurchaseReceiveDetail>(entity =>
+        {
             entity.Property(e => e.Code)
-                .IsRequired()
-        );
+                .IsRequired();
+
+            entity.HasOne<PurchaseReceiveHeader>()
+                .WithMany()
+                .HasForeignKey(d => d.Code)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            entity.HasOne<Item>()
+                .WithMany()
+                .HasForeignKey(d => d.ItemId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            entity.HasOne<UoM>()
+                .WithMany()
+                .HasForeignKey(d => d.UomId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            entity.HasOne<UoMConversion>()
+                .WithMany()
+                .HasForeignKey(d => d.UnitId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            entity.HasOne<Tax>()
+                .WithMany()
+                .HasForeignKey(d => d.TaxId)
+                .OnDelete(DeleteBehavior.NoAction);
+        });
 
         modelBuilder.Entity<VwPurchaseReceiveDetail>()
             .HasNoKey()
@@ -2042,18 +2094,50 @@ public class TenantContext : DbContext
             .ToView("vwPurchaseReturnHeader", Schema.Purchasing);
 
         modelBuilder.Entity<PurchaseReturnDetail>(entity =>
+        {
             entity.Property(e => e.Code)
-                .IsRequired()
-        );
+                .IsRequired();
+
+            entity.HasOne<PurchaseReturnHeader>()
+                .WithMany()
+                .HasForeignKey(d => d.Code)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            entity.HasOne<Item>()
+                .WithMany()
+                .HasForeignKey(d => d.ItemId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            entity.HasOne<UoM>()
+                .WithMany()
+                .HasForeignKey(d => d.UomId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            entity.HasOne<UoMConversion>()
+                .WithMany()
+                .HasForeignKey(d => d.UnitId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            entity.HasOne<Tax>()
+                .WithMany()
+                .HasForeignKey(d => d.TaxId)
+                .OnDelete(DeleteBehavior.NoAction);
+        });
 
         modelBuilder.Entity<VwPurchaseReturnDetail>()
             .HasNoKey()
             .ToView("vwPurchaseReturnDetail", Schema.Purchasing);
 
         modelBuilder.Entity<PurchaseReturnDetailExchDiffItem>(entity =>
+        {
             entity.Property(e => e.Code)
-                .IsRequired()
-        );
+                .IsRequired();
+
+            entity.HasOne<PurchaseReturnHeader>()
+                .WithMany()
+                .HasForeignKey(d => d.Code)
+                .OnDelete(DeleteBehavior.NoAction);
+        });
 
         modelBuilder.Entity<VwPurchaseReturnDetailExchDiffItem>()
             .HasNoKey()
@@ -2350,18 +2434,50 @@ public class TenantContext : DbContext
             .ToView("vwSalesDeliveryHeader", Schema.Sales);
 
         modelBuilder.Entity<SalesDeliveryDetail>(entity =>
+        {
             entity.Property(e => e.Code)
-                .IsRequired()
-        );
+                .IsRequired();
+
+            entity.HasOne<SalesDeliveryHeader>()
+                .WithMany()
+                .HasForeignKey(d => d.Code)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            entity.HasOne<Item>()
+                .WithMany()
+                .HasForeignKey(d => d.ItemId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            entity.HasOne<UoM>()
+                .WithMany()
+                .HasForeignKey(d => d.UomId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            entity.HasOne<UoMConversion>()
+                .WithMany()
+                .HasForeignKey(d => d.UnitId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            entity.HasOne<Tax>()
+                .WithMany()
+                .HasForeignKey(d => d.TaxId)
+                .OnDelete(DeleteBehavior.NoAction);
+        });
 
         modelBuilder.Entity<VwSalesDeliveryDetail>()
             .HasNoKey()
             .ToView("vwSalesDeliveryDetail", Schema.Sales);
 
         modelBuilder.Entity<SalesDeliveryDetailFreeGood>(entity =>
+        {
             entity.Property(e => e.Code)
-                .IsRequired()
-        );
+                .IsRequired();
+
+            entity.HasOne<SalesDeliveryHeader>()
+                .WithMany()
+                .HasForeignKey(d => d.Code)
+                .OnDelete(DeleteBehavior.NoAction);
+        });
 
         // Sales Invoice model
         modelBuilder.Entity<SalesInvoiceHeader>(entity =>
@@ -2466,9 +2582,35 @@ public class TenantContext : DbContext
             .ToView("vwSalesOrderHeader", Schema.Sales);
 
         modelBuilder.Entity<SalesOrderDetail>(entity =>
+        {
             entity.Property(e => e.Code)
-                .IsRequired()
-        );
+                .IsRequired();
+
+            entity.HasOne<SalesOrderHeader>()
+                .WithMany()
+                .HasForeignKey(d => d.Code)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            entity.HasOne<Item>()
+                .WithMany()
+                .HasForeignKey(d => d.ItemId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            entity.HasOne<UoM>()
+                .WithMany()
+                .HasForeignKey(d => d.UomId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            entity.HasOne<UoMConversion>()
+                .WithMany()
+                .HasForeignKey(d => d.UnitId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            entity.HasOne<Tax>()
+                .WithMany()
+                .HasForeignKey(d => d.TaxId)
+                .OnDelete(DeleteBehavior.NoAction);
+        });
 
         modelBuilder.Entity<VwSalesOrderDetail>()
             .HasNoKey()
@@ -2491,14 +2633,26 @@ public class TenantContext : DbContext
         });
 
         modelBuilder.Entity<SalesOrderDetailDiscount>(entity =>
+        {
             entity.Property(e => e.Code)
-                .IsRequired()
-        );
+                .IsRequired();
+
+            entity.HasOne<SalesOrderHeader>()
+                .WithMany()
+                .HasForeignKey(d => d.Code)
+                .OnDelete(DeleteBehavior.NoAction);
+        });
 
         modelBuilder.Entity<SalesOrderDetailFreeGood>(entity =>
+        {
             entity.Property(e => e.Code)
-                .IsRequired()
-        );
+                .IsRequired();
+
+            entity.HasOne<SalesOrderHeader>()
+                .WithMany()
+                .HasForeignKey(d => d.Code)
+                .OnDelete(DeleteBehavior.NoAction);
+        });
 
         // Sales Return model
         modelBuilder.Entity<SalesReturnHeader>(entity =>
@@ -2511,18 +2665,50 @@ public class TenantContext : DbContext
             .ToView("vwSalesReturnHeader", Schema.Sales);
 
         modelBuilder.Entity<SalesReturnDetail>(entity =>
+        {
             entity.Property(e => e.Code)
-                .IsRequired()
-        );
+                .IsRequired();
+
+            entity.HasOne<SalesReturnHeader>()
+                .WithMany()
+                .HasForeignKey(d => d.Code)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            entity.HasOne<Item>()
+                .WithMany()
+                .HasForeignKey(d => d.ItemId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            entity.HasOne<UoM>()
+                .WithMany()
+                .HasForeignKey(d => d.UomId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            entity.HasOne<UoMConversion>()
+                .WithMany()
+                .HasForeignKey(d => d.UnitId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            entity.HasOne<Tax>()
+                .WithMany()
+                .HasForeignKey(d => d.TaxId)
+                .OnDelete(DeleteBehavior.NoAction);
+        });
 
         modelBuilder.Entity<VwSalesReturnDetail>()
             .HasNoKey()
             .ToView("vwSalesReturnDetail", Schema.Sales);
 
         modelBuilder.Entity<SalesReturnDetailExchDiffItem>(entity =>
+        {
             entity.Property(e => e.Code)
-                .IsRequired()
-        );
+                .IsRequired();
+
+            entity.HasOne<SalesReturnHeader>()
+                .WithMany()
+                .HasForeignKey(d => d.Code)
+                .OnDelete(DeleteBehavior.NoAction);
+        });
 
         modelBuilder.Entity<VwSalesReturnDetailExchDiffItem>()
             .HasNoKey()

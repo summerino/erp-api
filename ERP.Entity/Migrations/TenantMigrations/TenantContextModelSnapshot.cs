@@ -18,7 +18,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
 #pragma warning disable 612, 618
             modelBuilder
                 .UseCollation("SQL_Latin1_General_CP1_CI_AS")
-                .HasAnnotation("ProductVersion", "6.0.7")
+                .HasAnnotation("ProductVersion", "6.0.8")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
@@ -7603,6 +7603,10 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("decimal(19,6)")
                         .HasColumnName("DPP");
 
+                    b.Property<decimal>("ExemptTaxAmount")
+                        .HasPrecision(19, 6)
+                        .HasColumnType("decimal(19,6)");
+
                     b.Property<int>("ItemId")
                         .HasColumnType("int");
 
@@ -7618,8 +7622,8 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("TaxAmount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
+                        .HasPrecision(19, 6)
+                        .HasColumnType("decimal(19,6)");
 
                     b.Property<int?>("TaxId")
                         .HasColumnType("int");
@@ -7811,6 +7815,10 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("decimal(18,2)")
                         .HasColumnName("DPP");
 
+                    b.Property<decimal>("ExemptTaxAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<bool>("IncludeTax")
                         .HasColumnType("bit");
 
@@ -7863,6 +7871,42 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.ToTable("MobileOrderHeader", "MobileCustomer");
                 });
 
+            modelBuilder.Entity("ERP.Entity.MobileCustomer.MobileOrderPromo", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(17)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(17)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<short>("LineNo")
+                        .HasColumnType("smallint");
+
+                    b.Property<string>("PromoCode")
+                        .IsRequired()
+                        .HasMaxLength(17)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(17)");
+
+                    b.HasKey("Id")
+                        .HasName("PK_MobileCustomer_MobileOrderPromo");
+
+                    b.HasIndex(new[] { "Code" }, "IX_MobileCustomer_MobileOrderPromo_Code");
+
+                    b.HasIndex(new[] { "PromoCode" }, "IX_MobileCustomer_MobileOrderPromo_PromoCode");
+
+                    b.ToTable("MobileOrderPromo", "MobileCustomer");
+                });
+
             modelBuilder.Entity("ERP.Entity.MobileCustomer.VwMobileOrderDetail", b =>
                 {
                     b.Property<string>("Code")
@@ -7874,6 +7918,10 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("decimal(19,6)");
 
                     b.Property<decimal>("Dpp")
+                        .HasPrecision(19, 6)
+                        .HasColumnType("decimal(19,6)");
+
+                    b.Property<decimal>("ExemptTaxAmount")
                         .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
 
@@ -7990,6 +8038,10 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<decimal>("ExemptTaxAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<bool>("IncludeTax")
                         .HasColumnType("bit");
 
@@ -8043,6 +8095,281 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(max)");
 
                     b.ToView("vwMobileOrderHeader", "MobileCustomer");
+                });
+
+            modelBuilder.Entity("ERP.Entity.MobileSales.HistoryByProductUnit", b =>
+                {
+                    b.Property<int>("ItemId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ItemName")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<decimal>("Qty")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<long>("SalesBy")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("Seq")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Total")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("UnitBaseId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UnitBaseName")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<int>("UnitBaseSeq")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UnitBuyId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UnitBuyName")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<int>("UnitBuySeq")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UnitId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UnitMaxId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UnitMaxName")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<int>("UnitMaxSeq")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UnitMinId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UnitMinName")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<int>("UnitMinSeq")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UnitName")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<int>("UnitSellId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UnitSellName")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<int>("UnitSellSeq")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UomId")
+                        .HasColumnType("int");
+
+                    b.ToTable("TransactionHistoryByProductUnit", null, t => t.ExcludeFromMigrations());
+                });
+
+            modelBuilder.Entity("ERP.Entity.MobileSales.HistoryDetailCustomerByProductUnit", b =>
+                {
+                    b.Property<string>("CustCode")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<string>("CustName")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<int>("ItemId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ItemName")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<decimal>("Qty")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<long>("SalesBy")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("Seq")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Total")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("UnitBaseId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UnitBaseName")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<int>("UnitBaseSeq")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UnitBuyId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UnitBuyName")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<int>("UnitBuySeq")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UnitId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UnitMaxId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UnitMaxName")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<int>("UnitMaxSeq")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UnitMinId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UnitMinName")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<int>("UnitMinSeq")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UnitName")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<int>("UnitSellId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UnitSellName")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<int>("UnitSellSeq")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UomId")
+                        .HasColumnType("int");
+
+                    b.ToTable("HistoryDetailCustomerByProductUnit", null, t => t.ExcludeFromMigrations());
+                });
+
+            modelBuilder.Entity("ERP.Entity.MobileSales.HistoryDetailItemByProductUnit", b =>
+                {
+                    b.Property<string>("CustCode")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<string>("CustName")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ItemId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ItemName")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<decimal>("Qty")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<long>("SalesBy")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("Seq")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Total")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("TransCode")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<int>("UnitBaseId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UnitBaseName")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<int>("UnitBaseSeq")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UnitBuyId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UnitBuyName")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<int>("UnitBuySeq")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UnitId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UnitMaxId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UnitMaxName")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<int>("UnitMaxSeq")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UnitMinId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UnitMinName")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<int>("UnitMinSeq")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UnitName")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<int>("UnitSellId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UnitSellName")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<int>("UnitSellSeq")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UomId")
+                        .HasColumnType("int");
+
+                    b.ToTable("HistoryDetailItemByProductUnit", null, t => t.ExcludeFromMigrations());
                 });
 
             modelBuilder.Entity("ERP.Entity.MobileSales.MobileActivityLog", b =>
@@ -8789,6 +9116,41 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.HasIndex("VisitLogCode");
 
                     b.ToTable("MobileOrderHeader", "MobileSales");
+                });
+
+            modelBuilder.Entity("ERP.Entity.MobileSales.MobileOrderPromo", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(17)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(17)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<short>("LineNo")
+                        .HasColumnType("smallint");
+
+                    b.Property<string>("PromoCode")
+                        .IsRequired()
+                        .HasMaxLength(17)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(17)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code");
+
+                    b.HasIndex("PromoCode");
+
+                    b.ToTable("MobileOrderPromo", "MobileSales");
                 });
 
             modelBuilder.Entity("ERP.Entity.MobileSales.MobilePaymentInvoice", b =>
@@ -11265,6 +11627,16 @@ namespace ERP.Entity.Migrations.TenantMigrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Code");
+
+                    b.HasIndex("ItemId");
+
+                    b.HasIndex("TaxId");
+
+                    b.HasIndex("UnitId");
+
+                    b.HasIndex("UomId");
+
                     b.ToTable("PurchaseOrderDetail", "Purchasing");
                 });
 
@@ -11494,6 +11866,16 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Code");
+
+                    b.HasIndex("ItemId");
+
+                    b.HasIndex("TaxId");
+
+                    b.HasIndex("UnitId");
+
+                    b.HasIndex("UomId");
 
                     b.ToTable("PurchaseReceiveDetail", "Purchasing");
                 });
@@ -11745,6 +12127,16 @@ namespace ERP.Entity.Migrations.TenantMigrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Code");
+
+                    b.HasIndex("ItemId");
+
+                    b.HasIndex("TaxId");
+
+                    b.HasIndex("UnitId");
+
+                    b.HasIndex("UomId");
+
                     b.ToTable("PurchaseReturnDetail", "Purchasing");
                 });
 
@@ -11818,6 +12210,8 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(8)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Code");
 
                     b.ToTable("PurchaseReturnDetailExchDiffItem", "Purchasing");
                 });
@@ -16605,6 +16999,16 @@ namespace ERP.Entity.Migrations.TenantMigrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Code");
+
+                    b.HasIndex("ItemId");
+
+                    b.HasIndex("TaxId");
+
+                    b.HasIndex("UnitId");
+
+                    b.HasIndex("UomId");
+
                     b.ToTable("SalesDeliveryDetail", "Sales");
                 });
 
@@ -16657,6 +17061,8 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Code");
 
                     b.ToTable("SalesDeliveryDetailFreeGood", "Sales");
                 });
@@ -17297,6 +17703,16 @@ namespace ERP.Entity.Migrations.TenantMigrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Code");
+
+                    b.HasIndex("ItemId");
+
+                    b.HasIndex("TaxId");
+
+                    b.HasIndex("UnitId");
+
+                    b.HasIndex("UomId");
+
                     b.ToTable("SalesOrderDetail", "Sales");
                 });
 
@@ -17351,6 +17767,8 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Code");
 
                     b.ToTable("SalesOrderDetailDiscount", "Sales");
                 });
@@ -17408,6 +17826,8 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Code");
 
                     b.ToTable("SalesOrderDetailFreeGood", "Sales");
                 });
@@ -17563,6 +17983,41 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.ToTable("SalesOrderHeader", "Sales");
                 });
 
+            modelBuilder.Entity("ERP.Entity.Sales.SalesOrderPromo", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(17)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(17)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<short>("LineNo")
+                        .HasColumnType("smallint");
+
+                    b.Property<string>("PromoCode")
+                        .IsRequired()
+                        .HasMaxLength(17)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(17)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code");
+
+                    b.HasIndex("PromoCode");
+
+                    b.ToTable("SalesOrderPromo", "Sales");
+                });
+
             modelBuilder.Entity("ERP.Entity.Sales.SalesReturnDetail", b =>
                 {
                     b.Property<long>("Id")
@@ -17659,6 +18114,16 @@ namespace ERP.Entity.Migrations.TenantMigrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Code");
+
+                    b.HasIndex("ItemId");
+
+                    b.HasIndex("TaxId");
+
+                    b.HasIndex("UnitId");
+
+                    b.HasIndex("UomId");
+
                     b.ToTable("SalesReturnDetail", "Sales");
                 });
 
@@ -17732,6 +18197,8 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("varchar(8)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Code");
 
                     b.ToTable("SalesReturnDetailExchDiffItem", "Sales");
                 });
@@ -21727,6 +22194,21 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .OnDelete(DeleteBehavior.NoAction);
                 });
 
+            modelBuilder.Entity("ERP.Entity.MobileCustomer.MobileOrderPromo", b =>
+                {
+                    b.HasOne("ERP.Entity.MobileCustomer.MobileOrderHeader", null)
+                        .WithMany()
+                        .HasForeignKey("Code")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("ERP.Entity.Sales.PromoHeader", null)
+                        .WithMany()
+                        .HasForeignKey("PromoCode")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("ERP.Entity.MobileSales.MobileCostDetail", b =>
                 {
                     b.HasOne("ERP.Entity.MobileSales.MobileCostHeader", null)
@@ -21975,6 +22457,21 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.HasOne("ERP.Entity.MobileSales.MobileVisitLog", null)
                         .WithMany()
                         .HasForeignKey("VisitLogCode")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ERP.Entity.MobileSales.MobileOrderPromo", b =>
+                {
+                    b.HasOne("ERP.Entity.MobileSales.MobileOrderHeader", null)
+                        .WithMany()
+                        .HasForeignKey("Code")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("ERP.Entity.Sales.PromoHeader", null)
+                        .WithMany()
+                        .HasForeignKey("PromoCode")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
                 });
@@ -22228,6 +22725,111 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("ERP.Entity.Purchase.PurchaseOrderDetail", b =>
+                {
+                    b.HasOne("ERP.Entity.Purchase.PurchaseOrderHeader", null)
+                        .WithMany()
+                        .HasForeignKey("Code")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("ERP.Entity.Inventory.Item", null)
+                        .WithMany()
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("ERP.Entity.General.Tax", null)
+                        .WithMany()
+                        .HasForeignKey("TaxId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("ERP.Entity.Inventory.UoMConversion", null)
+                        .WithMany()
+                        .HasForeignKey("UnitId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("ERP.Entity.Inventory.UoM", null)
+                        .WithMany()
+                        .HasForeignKey("UomId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ERP.Entity.Purchase.PurchaseReceiveDetail", b =>
+                {
+                    b.HasOne("ERP.Entity.Purchase.PurchaseReceiveHeader", null)
+                        .WithMany()
+                        .HasForeignKey("Code")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("ERP.Entity.Inventory.Item", null)
+                        .WithMany()
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("ERP.Entity.General.Tax", null)
+                        .WithMany()
+                        .HasForeignKey("TaxId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("ERP.Entity.Inventory.UoMConversion", null)
+                        .WithMany()
+                        .HasForeignKey("UnitId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("ERP.Entity.Inventory.UoM", null)
+                        .WithMany()
+                        .HasForeignKey("UomId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ERP.Entity.Purchase.PurchaseReturnDetail", b =>
+                {
+                    b.HasOne("ERP.Entity.Purchase.PurchaseReturnHeader", null)
+                        .WithMany()
+                        .HasForeignKey("Code")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("ERP.Entity.Inventory.Item", null)
+                        .WithMany()
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("ERP.Entity.General.Tax", null)
+                        .WithMany()
+                        .HasForeignKey("TaxId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("ERP.Entity.Inventory.UoMConversion", null)
+                        .WithMany()
+                        .HasForeignKey("UnitId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("ERP.Entity.Inventory.UoM", null)
+                        .WithMany()
+                        .HasForeignKey("UomId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ERP.Entity.Purchase.PurchaseReturnDetailExchDiffItem", b =>
+                {
+                    b.HasOne("ERP.Entity.Purchase.PurchaseReturnHeader", null)
+                        .WithMany()
+                        .HasForeignKey("Code")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("ERP.Entity.Sales.CreditMemo", b =>
                 {
                     b.HasOne("ERP.Entity.General.Currency", null)
@@ -22401,6 +23003,47 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .OnDelete(DeleteBehavior.NoAction);
                 });
 
+            modelBuilder.Entity("ERP.Entity.Sales.SalesDeliveryDetail", b =>
+                {
+                    b.HasOne("ERP.Entity.Sales.SalesDeliveryHeader", null)
+                        .WithMany()
+                        .HasForeignKey("Code")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("ERP.Entity.Inventory.Item", null)
+                        .WithMany()
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("ERP.Entity.General.Tax", null)
+                        .WithMany()
+                        .HasForeignKey("TaxId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("ERP.Entity.Inventory.UoMConversion", null)
+                        .WithMany()
+                        .HasForeignKey("UnitId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("ERP.Entity.Inventory.UoM", null)
+                        .WithMany()
+                        .HasForeignKey("UomId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ERP.Entity.Sales.SalesDeliveryDetailFreeGood", b =>
+                {
+                    b.HasOne("ERP.Entity.Sales.SalesDeliveryHeader", null)
+                        .WithMany()
+                        .HasForeignKey("Code")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("ERP.Entity.Sales.SalesInvoiceCreditMemo", b =>
                 {
                     b.HasOne("ERP.Entity.Sales.SalesInvoiceHeader", null)
@@ -22454,6 +23097,56 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("ERP.Entity.Sales.SalesOrderDetail", b =>
+                {
+                    b.HasOne("ERP.Entity.Sales.SalesOrderHeader", null)
+                        .WithMany()
+                        .HasForeignKey("Code")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("ERP.Entity.Inventory.Item", null)
+                        .WithMany()
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("ERP.Entity.General.Tax", null)
+                        .WithMany()
+                        .HasForeignKey("TaxId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("ERP.Entity.Inventory.UoMConversion", null)
+                        .WithMany()
+                        .HasForeignKey("UnitId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("ERP.Entity.Inventory.UoM", null)
+                        .WithMany()
+                        .HasForeignKey("UomId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ERP.Entity.Sales.SalesOrderDetailDiscount", b =>
+                {
+                    b.HasOne("ERP.Entity.Sales.SalesOrderHeader", null)
+                        .WithMany()
+                        .HasForeignKey("Code")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ERP.Entity.Sales.SalesOrderDetailFreeGood", b =>
+                {
+                    b.HasOne("ERP.Entity.Sales.SalesOrderHeader", null)
+                        .WithMany()
+                        .HasForeignKey("Code")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("ERP.Entity.Sales.SalesOrderHeader", b =>
                 {
                     b.HasOne("ERP.Entity.General.Customer", null)
@@ -22470,6 +23163,62 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.HasOne("ERP.Entity.General.Employee", null)
                         .WithMany()
                         .HasForeignKey("SalesBy")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ERP.Entity.Sales.SalesOrderPromo", b =>
+                {
+                    b.HasOne("ERP.Entity.Sales.SalesOrderHeader", null)
+                        .WithMany()
+                        .HasForeignKey("Code")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("ERP.Entity.Sales.PromoHeader", null)
+                        .WithMany()
+                        .HasForeignKey("PromoCode")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ERP.Entity.Sales.SalesReturnDetail", b =>
+                {
+                    b.HasOne("ERP.Entity.Sales.SalesReturnHeader", null)
+                        .WithMany()
+                        .HasForeignKey("Code")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("ERP.Entity.Inventory.Item", null)
+                        .WithMany()
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("ERP.Entity.General.Tax", null)
+                        .WithMany()
+                        .HasForeignKey("TaxId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("ERP.Entity.Inventory.UoMConversion", null)
+                        .WithMany()
+                        .HasForeignKey("UnitId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("ERP.Entity.Inventory.UoM", null)
+                        .WithMany()
+                        .HasForeignKey("UomId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ERP.Entity.Sales.SalesReturnDetailExchDiffItem", b =>
+                {
+                    b.HasOne("ERP.Entity.Sales.SalesReturnHeader", null)
+                        .WithMany()
+                        .HasForeignKey("Code")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
                 });

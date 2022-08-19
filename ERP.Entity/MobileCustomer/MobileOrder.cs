@@ -40,6 +40,9 @@ public class MobileOrderHeader : BaseEntityWithMarkApprovedAndRejected
     public decimal TaxAmount { get; set; }
 
     [Precision(18, 2)]
+    public decimal ExemptTaxAmount { get; set; }
+
+    [Precision(18, 2)]
     public decimal Total { get; set; }
 
     [Column("DPP", TypeName = "decimal(18, 2)")]
@@ -68,6 +71,9 @@ public class VwMobileOrderHeader : BaseEntityWithMarkApprovedAndRejected
 
     [Precision(18, 2)]
     public decimal TaxAmount { get; set; }
+
+    [Precision(18, 2)]
+    public decimal ExemptTaxAmount { get; set; }
 
     [Precision(18, 2)]
     public decimal Total { get; set; }
@@ -121,8 +127,11 @@ public class MobileOrderDetail
 
     public int? TaxId { get; set; }
 
-    [Precision(18, 2)]
+    [Precision(19, 6)]
     public decimal TaxAmount { get; set; }
+
+    [Precision(19, 6)]
+    public decimal ExemptTaxAmount { get; set; }
 
     [Precision(19, 6)]
     public decimal NettPrice { get; set; }
@@ -163,6 +172,9 @@ public class VwMobileOrderDetail
     public decimal TaxAmount { get; set; }
 
     [Precision(19, 6)]
+    public decimal ExemptTaxAmount { get; set; }
+
+    [Precision(19, 6)]
     public decimal NettPrice { get; set; }
 
     [Precision(19, 6)]
@@ -200,6 +212,7 @@ public class MobileOrderPromo
 
     public short LineNo { get; set; }
 
+    [Required]
     [StringLength(17)]
     public string PromoCode { get; set; }
 

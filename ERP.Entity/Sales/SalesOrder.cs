@@ -349,6 +349,7 @@ public class SalesOrderPromo
 
     public short LineNo { get; set; }
 
+    [Required]
     [StringLength(17)]
     public string PromoCode { get; set; }
 
