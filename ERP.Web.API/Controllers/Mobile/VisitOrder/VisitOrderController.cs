@@ -344,4 +344,25 @@ public class VisitOrderController : ControllerBase
             _visitOrder.GetOrderHeader(code);
         return Ok(data);
     }
+
+    [HttpGet("itemCategory")]
+    public IActionResult GetItemCategories(string lastUpdate)
+    {
+        var data =
+            _visitOrder.GetItemCategories(lastUpdate).Select(x => new
+            {
+                x.Id,
+                x.Initial,
+                x.Name,
+                x.ParentId,
+                x.GroupId,
+                x.Deep,
+                x.Seq,
+                x.Lineage,
+                x.IsActive,
+                x.UpdatedDate
+            });
+
+        return Ok(data);
+    }
 }
