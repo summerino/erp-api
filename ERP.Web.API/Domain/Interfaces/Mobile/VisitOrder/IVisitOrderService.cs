@@ -1,6 +1,7 @@
 ﻿using ERP.Common;
 using ERP.Common.Models;
 using ERP.Entity.General;
+using ERP.Entity.Inventory;
 using ERP.Entity.MobileSales;
 using ERP.Entity.Sales;
 using ERP.Web.API.Domain.Models.Mobile.VisitOrder;
@@ -36,4 +37,5 @@ public interface IVisitOrderService
     VisitLogDetailModel GetDetailVisitLog(string code);
     OrderHeaderModel GetOrderHeader(string visitLogCode);
     IEnumerable<OrderDetailRequestModel> GetOrderDetailRequest(string orderCode);
+    IEnumerable<ItemCategory> GetItemCategories(string lastUpdate);
 }

@@ -3,6 +3,7 @@ using ERP.Common.Extensions;
 using ERP.Common.Models;
 using ERP.Entity;
 using ERP.Entity.General;
+using ERP.Entity.Inventory;
 using ERP.Entity.MobileSales;
 using ERP.Entity.Sales;
 using ERP.Web.API.Domain.Interfaces.Mobile.VisitOrder;
@@ -925,6 +926,19 @@ public class VisitOrderService : GeneralService<MobileVisitLog>, IVisitOrderServ
                             UnitPrice = item.UnitPrice
                         });
                     }
+
+                }
+
+                short l = 0;
+                foreach (var promo in data.Promotions)
+                {
+                    Db.MobileOrderPromos.Add(new MobileOrderPromo
+                    {
+                        Code = newOrderCode,
+                        LineNo = l++,
+                        PromoCode = promo.PromoCode,
+                        IsActive = promo.IsActive,
+                    });
                 }
 
             }
@@ -1159,6 +1173,19 @@ public class VisitOrderService : GeneralService<MobileVisitLog>, IVisitOrderServ
                 Total = oh.Total,
                 UpdatedDate = oh.UpdatedDate
             }).SingleOrDefault();
+
+        return data;
+    }
+
+    public IEnumerable<ItemCategory> GetItemCategories(string lastUpdate)
+    {
+        var data = Db.ItemCategories.AsQueryable();
+
+        if (lastUpdate != null)
+        {
+            lastUpdate = GetLastUpdate(lastUpdate);
+            data = data.Where(x => x.UpdatedDate > DateTime.ParseExact(lastUpdate, "yyyy-MM-ddTHH:mm:ss.ffff", null));
+        }
 
         return data;
     }

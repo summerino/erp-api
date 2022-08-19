@@ -8,4 +8,5 @@ public class VisitRequestModel : MobileVisitLog
     public IEnumerable<PaymentInvoiceRequestModel> Invoices { get; set; }
     public OrderHeaderRequestModel OrderHeader {get; set;}
     public IEnumerable<VisitOrderDetailRequest> OrderDetail { get; set; }
+    public IEnumerable<OrderPromoRequestModel> Promotions { get; set; }
 }
