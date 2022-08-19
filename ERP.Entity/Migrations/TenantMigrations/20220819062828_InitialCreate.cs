@@ -14079,6 +14079,14 @@ END CATCH";
             sql = @"ALTER TABLE [Sales].[SalesOrderDetail] NOCHECK CONSTRAINT [FK_SalesOrderDetail_Tax_TaxId]";
             migrationBuilder.Sql(sql);
 
+            // Disabling constraints foreign key FK_SalesOrderDetailDiscount_SalesOrderHeader_Code
+            sql = @"ALTER TABLE [Sales].[SalesOrderDetailDiscount] NOCHECK CONSTRAINT [FK_SalesOrderDetailDiscount_SalesOrderHeader_Code]";
+            migrationBuilder.Sql(sql);
+
+            // Disabling constraints foreign key FK_SalesOrderDetailFreeGood_SalesOrderHeader_Code
+            sql = @"ALTER TABLE [Sales].[SalesOrderDetailFreeGood] NOCHECK CONSTRAINT [FK_SalesOrderDetailFreeGood_SalesOrderHeader_Code]";
+            migrationBuilder.Sql(sql);
+
             // Disabling constraints foreign key FK_SalesReturnDetail_Tax_TaxId
             sql = @"ALTER TABLE [Sales].[SalesReturnDetail] NOCHECK CONSTRAINT [FK_SalesReturnDetail_Tax_TaxId]";
             migrationBuilder.Sql(sql);
