@@ -542,13 +542,13 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                 Db.SaveChanges();
                 listIdDetail.Add(orderDetail.Id);
 
-                item.Disc = 0m;
+                orderDetail.Disc = 0m;
                 if (discPromo.Any())
                 {
                     short d = 0;
                     foreach (var discItem in discPromo)
                     {
-                        item.Disc += discItem.Amount;
+                        orderDetail.Disc += discItem.Amount;
 
                         Db.SalesOrderDetailDiscounts.Add(new SalesOrderDetailDiscount
                         {
@@ -577,6 +577,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                     }
                     Db.SaveChanges();
                 }
+                Db.SalesOrderDetails.Update(orderDetail);
 
                 if (bonusPromoMulti.Any() && orderDetail.LineNo == 1)
                 {
@@ -1402,6 +1403,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                         }
                     }
                 }
+                Db.SalesOrderDetails.Update(item);
 
                 if (bonusPromoMulti.Any() && item.LineNo == 1)
                 {
