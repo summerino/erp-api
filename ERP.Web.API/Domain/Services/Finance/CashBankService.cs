@@ -764,7 +764,7 @@ public class CashBankService : GeneralService<GeneralCashBankHeader>, ICashBankS
                     }
                 }
             }
-            else if (item.Type == "DPS" || item.Type == "RDPS")
+            else if (item.Type == "SDP" || item.Type == "RSDP")
             {
                 var memo = Db.CreditMemos.SingleOrDefault(x => x.Code == item.TransCode);
 
@@ -777,7 +777,7 @@ public class CashBankService : GeneralService<GeneralCashBankHeader>, ICashBankS
                 var mark = item.Amount == memo.Amount ? "FU" : "PU";
 
                 queries.Add(
-                    $"UPDATE Sales.CreditMemo SET Used='{item}', Mark='{mark}' WHERE Code='{item.TransCode}';");
+                    $"UPDATE Sales.CreditMemo SET Used='{item.Amount}', Mark='{mark}' WHERE Code='{item.TransCode}';");
             }
         }
 
