@@ -10,7 +10,7 @@ public interface IDeliveryPlanService : IGeneralService<DeliveryPlanHeader>
     DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort,
         string search);
 
-    IEnumerable<DeliveryPlanDetail> GetDetailData(string code);
+    IEnumerable<VwDeliveryPlanDetail> GetDetailData(string code);
 
     IEnumerable<DeliveryPlanUndeliveredItem> GetUndeliveredData();
 
