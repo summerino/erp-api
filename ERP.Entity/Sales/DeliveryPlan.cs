@@ -117,6 +117,42 @@ public class DeliveryPlanDetail
     public string NotesFailShipment { get; set; }
 }
 
+public class VwDeliveryPlanDetail
+{
+    public long Id { get; set; }
+
+    [StringLength(17)]
+    public string Code { get; set; }
+
+    public short LineNo { get; set; }
+
+    [StringLength(17)]
+    public string TransCode { get; set; }
+
+    [Precision(19, 6)]
+    public decimal Volume { get; set; }
+
+    [Precision(19, 6)]
+    public decimal Weight { get; set; }
+
+    public short SrcTrans { get; set; }
+
+    public bool IsFailShipment { get; set; }
+
+    public bool FailedSendAll { get; set; }
+
+    [StringLength(256)]
+    public string NotesFailShipment { get; set; }
+
+    public string CustName { get; set; }
+
+    public string CustAddress { get; set; }
+
+    public string CustArea { get; set; }
+
+    public string SalesName { get; set; }
+}
+
 [Table("DeliveryPlanDetailItem", Schema = Schema.Sales)]
 [Index(nameof(TransDetailId))]
 public class DeliveryPlanDetailItem

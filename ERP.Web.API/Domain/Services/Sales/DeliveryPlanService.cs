@@ -33,9 +33,9 @@ public class DeliveryPlanService : GeneralService<DeliveryPlanHeader>, IDelivery
         return data.ToDataSourceResult(skip, take, filter, sort);
     }
 
-    public IEnumerable<DeliveryPlanDetail> GetDetailData(string code)
+    public IEnumerable<VwDeliveryPlanDetail> GetDetailData(string code)
     {
-        return Db.DeliveryPlanDetails.Where(x => x.Code == code).OrderBy(x => x.LineNo);
+        return Db.VwDeliveryPlanDetails.Where(x => x.Code == code).OrderBy(x => x.LineNo);
     }
 
     public IEnumerable<DeliveryPlanUndeliveredItem> GetUndeliveredData()
