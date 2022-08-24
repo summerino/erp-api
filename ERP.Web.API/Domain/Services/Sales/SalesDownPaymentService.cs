@@ -73,6 +73,12 @@ public class SalesDownPaymentService : GeneralService<CreditMemo>, ISalesDownPay
         using var transaction = Db.Database.BeginTransaction();
         try
         {
+            if (data.SrcTrans == 4)
+            {
+                var sdpData = Db.CreditMemos.Find(data.TransCode);
+                sdpData.Mark = "CMP";
+                Db.CreditMemos.Update(sdpData);
+            }
 
             // Get new code
             var newCode = GetNewCode("SLS_DP_NUM_FMT", data.CreatedDate);
@@ -99,6 +105,22 @@ public class SalesDownPaymentService : GeneralService<CreditMemo>, ISalesDownPay
     public override SaveResult Update(CreditMemo data)
     {
         var result = new SaveResult(false);
+
+
+        if (data.SrcTrans == 4)
+        {
+            var rsdpData = Db.CreditMemos.Find(data.Code);
+            if (rsdpData.TransCode != data.TransCode)
+            {
+                var oldSdpData = Db.CreditMemos.Find(rsdpData.TransCode);
+                oldSdpData.Mark = "A";
+                Db.CreditMemos.Update(oldSdpData);
+            }
+
+            var sdpData = Db.CreditMemos.Find(data.TransCode);
+            sdpData.Mark = "CMP";
+            Db.CreditMemos.Update(sdpData);
+        }
 
         // Update data
         Db.CreditMemos.Update(data);
@@ -129,6 +151,13 @@ public class SalesDownPaymentService : GeneralService<CreditMemo>, ISalesDownPay
             {
                 result.Message = "Data uang muka penjualan tidak bisa ditandai sebagai void karena sudah ditandai sebagai void.";
                 return result;
+            }
+
+            if (data.SrcTrans == 4)
+            {
+                var sdpData = Db.CreditMemos.Find(data.TransCode);
+                sdpData.Mark = "A";
+                Db.CreditMemos.Update(sdpData);
             }
 
             // Update header data

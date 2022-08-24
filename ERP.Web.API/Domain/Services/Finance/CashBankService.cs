@@ -774,10 +774,11 @@ public class CashBankService : GeneralService<GeneralCashBankHeader>, ICashBankS
                 if (data.ChequeDate.GetValueOrDefault(data.Date) < memo.Date)
                     return ($"Tanggal kas bank tidak boleh lebih kecil dari tanggal transaksi {memo.Code}.", false, new List<string>());
 
-                var mark = "A";//item.Amount == memo.Amount ? "FU" : "PU";
+                var mark = item.Type == "SDP" ? "A" : "CMP";//item.Amount == memo.Amount ? "FU" : "PU";
 
-                queries.Add(
-                    $"UPDATE Sales.CreditMemo SET Mark='{mark}' WHERE Code='{item.TransCode}';");
+                var query = item.Type == "SDP" ? $"UPDATE Sales.CreditMemo SET Mark='{mark}' WHERE Code='{item.TransCode}';" : $"UPDATE Sales.CreditMemo SET Used ={item.Amount} ,Mark='{mark}' WHERE Code='{item.TransCode}';";
+
+                queries.Add(query);
             }
         }
 
