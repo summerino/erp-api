@@ -303,13 +303,13 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                                             var itemUom3 = uomConversions.FirstOrDefault(x => x.Id == ctItem.UomSellId);
                                             if (itemUom3.Seq > curUom3.Seq)
                                             {
-                                                var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= itemUom3.Seq && x.Seq > curUom3.Seq).Select(x => x.Conversion).ToList();
+                                                var qtyField = Db.UoMConversions.Where(x => x.UomId == freeItem.UomId && x.Seq <= itemUom3.Seq && x.Seq > curUom3.Seq).Select(x => x.Conversion).ToList();
                                                 var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
                                                 sellPrice = (decimal)freeItem.SellPrice / multipliedQty;
                                             }
                                             else if (itemUom3.Seq < curUom3.Seq)
                                             {
-                                                var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq > itemUom3.Seq && x.Seq <= curUom3.Seq).Select(x => x.Conversion).ToList();
+                                                var qtyField = Db.UoMConversions.Where(x => x.UomId == freeItem.UomId && x.Seq > itemUom3.Seq && x.Seq <= curUom3.Seq).Select(x => x.Conversion).ToList();
                                                 var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
                                                 sellPrice = (decimal)freeItem.SellPrice * multipliedQty;
 
@@ -415,7 +415,28 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                                             var tierData3 = detailTierPromo.FirstOrDefault(x => miData3.Sum(x => x.Qty) >= x.FromQty && miData3.Sum(x => x.Qty) <= x.ToQty);
                                             if (tierData3 != null)
                                             {
+                                                var sellPrice = 0m;
                                                 var freeItem = items.FirstOrDefault(x => x.Id == tierData3.FreeGoodItemId);
+                                                var curUom3 = uomConversions.FirstOrDefault(x => x.Id == Convert.ToInt32(tierData3.UnitFreeGood));
+                                                var itemUom3 = uomConversions.FirstOrDefault(x => x.Id == ctItem.UomSellId);
+                                                if (itemUom3.Seq > curUom3.Seq)
+                                                {
+                                                    var qtyField = Db.UoMConversions.Where(x => x.UomId == freeItem.UomId && x.Seq <= itemUom3.Seq && x.Seq > curUom3.Seq).Select(x => x.Conversion).ToList();
+                                                    var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
+                                                    sellPrice = (decimal)freeItem.SellPrice / multipliedQty;
+                                                }
+                                                else if (itemUom3.Seq < curUom3.Seq)
+                                                {
+                                                    var qtyField = Db.UoMConversions.Where(x => x.UomId == freeItem.UomId && x.Seq > itemUom3.Seq && x.Seq <= curUom3.Seq).Select(x => x.Conversion).ToList();
+                                                    var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
+                                                    sellPrice = (decimal)freeItem.SellPrice * multipliedQty;
+
+                                                }
+                                                else
+                                                {
+                                                    sellPrice = (decimal)freeItem.SellPrice;
+                                                }
+
                                                 if (tierData3.IsMultiple)
                                                 {
                                                     var multipleValue = Math.Floor(miData3.Sum(x => x.Qty) / tierData3.FromQty);
@@ -427,7 +448,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                                                         UnitId = Convert.ToInt32(tierData3.UnitFreeGood),
                                                         Qty = multipleValue * tierData3.Value,
                                                         QtyClosed = 0m,
-                                                        UnitPrice = (decimal)freeItem.SellPrice,
+                                                        UnitPrice = sellPrice,
                                                         CoaCode = dataPromo.CoaCost
                                                     });
                                                 }
@@ -441,7 +462,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                                                         UnitId = Convert.ToInt32(tierData3.UnitFreeGood),
                                                         Qty = tierData3.Value,
                                                         QtyClosed = 0m,
-                                                        UnitPrice = (decimal)freeItem.SellPrice,
+                                                        UnitPrice = sellPrice,
                                                         CoaCode = dataPromo.CoaCost
                                                     });
                                                 }
@@ -1076,13 +1097,13 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                                             var itemUom3 = uomConversions.FirstOrDefault(x => x.Id == ctItem.UomSellId);
                                             if (itemUom3.Seq > curUom3.Seq)
                                             {
-                                                var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= itemUom3.Seq && x.Seq > curUom3.Seq).Select(x => x.Conversion).ToList();
+                                                var qtyField = Db.UoMConversions.Where(x => x.UomId == freeItem.UomId && x.Seq <= itemUom3.Seq && x.Seq > curUom3.Seq).Select(x => x.Conversion).ToList();
                                                 var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
                                                 sellPrice = (decimal)freeItem.SellPrice / multipliedQty;
                                             }
                                             else if (itemUom3.Seq < curUom3.Seq)
                                             {
-                                                var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq > itemUom3.Seq && x.Seq <= curUom3.Seq).Select(x => x.Conversion).ToList();
+                                                var qtyField = Db.UoMConversions.Where(x => x.UomId == freeItem.UomId && x.Seq > itemUom3.Seq && x.Seq <= curUom3.Seq).Select(x => x.Conversion).ToList();
                                                 var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
                                                 sellPrice = (decimal)freeItem.SellPrice * multipliedQty;
 
@@ -1188,7 +1209,28 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                                             var tierData3 = detailTierPromo.FirstOrDefault(x => miData3.Sum(x => x.Qty) >= x.FromQty && miData3.Sum(x => x.Qty) <= x.ToQty);
                                             if (tierData3 != null)
                                             {
+                                                var sellPrice = 0m;
                                                 var freeItem = items.FirstOrDefault(x => x.Id == tierData3.FreeGoodItemId);
+                                                var curUom3 = uomConversions.FirstOrDefault(x => x.Id == Convert.ToInt32(tierData3.UnitFreeGood));
+                                                var itemUom3 = uomConversions.FirstOrDefault(x => x.Id == ctItem.UomSellId);
+                                                if (itemUom3.Seq > curUom3.Seq)
+                                                {
+                                                    var qtyField = Db.UoMConversions.Where(x => x.UomId == freeItem.UomId && x.Seq <= itemUom3.Seq && x.Seq > curUom3.Seq).Select(x => x.Conversion).ToList();
+                                                    var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
+                                                    sellPrice = (decimal)freeItem.SellPrice / multipliedQty;
+                                                }
+                                                else if (itemUom3.Seq < curUom3.Seq)
+                                                {
+                                                    var qtyField = Db.UoMConversions.Where(x => x.UomId == freeItem.UomId && x.Seq > itemUom3.Seq && x.Seq <= curUom3.Seq).Select(x => x.Conversion).ToList();
+                                                    var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
+                                                    sellPrice = (decimal)freeItem.SellPrice * multipliedQty;
+
+                                                }
+                                                else
+                                                {
+                                                    sellPrice = (decimal)freeItem.SellPrice;
+                                                }
+
                                                 if (tierData3.IsMultiple)
                                                 {
                                                     var multipleValue = Math.Floor(miData3.Sum(x => x.Qty) / tierData3.FromQty);
@@ -1200,7 +1242,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                                                         UnitId = Convert.ToInt32(tierData3.UnitFreeGood),
                                                         Qty = multipleValue * tierData3.Value,
                                                         QtyClosed = 0m,
-                                                        UnitPrice = (decimal)freeItem.SellPrice,
+                                                        UnitPrice = sellPrice,
                                                         CoaCode = dataPromo.CoaCost
                                                     });
                                                 }
@@ -1214,7 +1256,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                                                         UnitId = Convert.ToInt32(tierData3.UnitFreeGood),
                                                         Qty = tierData3.Value,
                                                         QtyClosed = 0m,
-                                                        UnitPrice = (decimal)freeItem.SellPrice,
+                                                        UnitPrice = sellPrice,
                                                         CoaCode = dataPromo.CoaCost
                                                     });
                                                 }
