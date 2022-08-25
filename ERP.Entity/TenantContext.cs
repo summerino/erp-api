@@ -266,6 +266,7 @@ public class TenantContext : DbContext
     public DbSet<DeliveryPlanHeader> DeliveryPlanHeaders { get; set; }
     public DbSet<VwDeliveryPlanHeader> VwDeliveryPlanHeaders { get; set; }
     public DbSet<DeliveryPlanDetail> DeliveryPlanDetails { get; set; }
+    public DbSet<VwDeliveryPlanDetail> VwDeliveryPlanDetails { get; set; }
     public DbSet<DeliveryPlanDetailItem> DeliveryPlanDetailItems { get; set; }
     public DbSet<DeliveryPlanUndeliveredItem> DeliveryPlanUndeliveredItems { get; set; }
     public DbSet<PromoHeader> PromoHeaders { get; set; }
@@ -2292,6 +2293,10 @@ public class TenantContext : DbContext
                 .HasForeignKey(d => d.Code)
                 .OnDelete(DeleteBehavior.NoAction);
         });
+
+        modelBuilder.Entity<VwDeliveryPlanDetail>()
+            .HasNoKey()
+            .ToView("vwDeliveryPlanDetail", Schema.Sales);
 
         modelBuilder.Entity<DeliveryPlanDetailItem>(entity =>
         {

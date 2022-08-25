@@ -303,13 +303,13 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                                             var itemUom3 = uomConversions.FirstOrDefault(x => x.Id == ctItem.UomSellId);
                                             if (itemUom3.Seq > curUom3.Seq)
                                             {
-                                                var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= itemUom3.Seq && x.Seq > curUom3.Seq).Select(x => x.Conversion).ToList();
+                                                var qtyField = Db.UoMConversions.Where(x => x.UomId == freeItem.UomId && x.Seq <= itemUom3.Seq && x.Seq > curUom3.Seq).Select(x => x.Conversion).ToList();
                                                 var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
                                                 sellPrice = (decimal)freeItem.SellPrice / multipliedQty;
                                             }
                                             else if (itemUom3.Seq < curUom3.Seq)
                                             {
-                                                var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq > itemUom3.Seq && x.Seq <= curUom3.Seq).Select(x => x.Conversion).ToList();
+                                                var qtyField = Db.UoMConversions.Where(x => x.UomId == freeItem.UomId && x.Seq > itemUom3.Seq && x.Seq <= curUom3.Seq).Select(x => x.Conversion).ToList();
                                                 var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
                                                 sellPrice = (decimal)freeItem.SellPrice * multipliedQty;
 
@@ -415,7 +415,28 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                                             var tierData3 = detailTierPromo.FirstOrDefault(x => miData3.Sum(x => x.Qty) >= x.FromQty && miData3.Sum(x => x.Qty) <= x.ToQty);
                                             if (tierData3 != null)
                                             {
+                                                var sellPrice = 0m;
                                                 var freeItem = items.FirstOrDefault(x => x.Id == tierData3.FreeGoodItemId);
+                                                var curUom3 = uomConversions.FirstOrDefault(x => x.Id == Convert.ToInt32(tierData3.UnitFreeGood));
+                                                var itemUom3 = uomConversions.FirstOrDefault(x => x.Id == ctItem.UomSellId);
+                                                if (itemUom3.Seq > curUom3.Seq)
+                                                {
+                                                    var qtyField = Db.UoMConversions.Where(x => x.UomId == freeItem.UomId && x.Seq <= itemUom3.Seq && x.Seq > curUom3.Seq).Select(x => x.Conversion).ToList();
+                                                    var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
+                                                    sellPrice = (decimal)freeItem.SellPrice / multipliedQty;
+                                                }
+                                                else if (itemUom3.Seq < curUom3.Seq)
+                                                {
+                                                    var qtyField = Db.UoMConversions.Where(x => x.UomId == freeItem.UomId && x.Seq > itemUom3.Seq && x.Seq <= curUom3.Seq).Select(x => x.Conversion).ToList();
+                                                    var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
+                                                    sellPrice = (decimal)freeItem.SellPrice * multipliedQty;
+
+                                                }
+                                                else
+                                                {
+                                                    sellPrice = (decimal)freeItem.SellPrice;
+                                                }
+
                                                 if (tierData3.IsMultiple)
                                                 {
                                                     var multipleValue = Math.Floor(miData3.Sum(x => x.Qty) / tierData3.FromQty);
@@ -427,7 +448,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                                                         UnitId = Convert.ToInt32(tierData3.UnitFreeGood),
                                                         Qty = multipleValue * tierData3.Value,
                                                         QtyClosed = 0m,
-                                                        UnitPrice = (decimal)freeItem.SellPrice,
+                                                        UnitPrice = sellPrice,
                                                         CoaCode = dataPromo.CoaCost
                                                     });
                                                 }
@@ -441,13 +462,114 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                                                         UnitId = Convert.ToInt32(tierData3.UnitFreeGood),
                                                         Qty = tierData3.Value,
                                                         QtyClosed = 0m,
-                                                        UnitPrice = (decimal)freeItem.SellPrice,
+                                                        UnitPrice = sellPrice,
                                                         CoaCode = dataPromo.CoaCost
                                                     });
                                                 }
                                             }
                                             break;
                                     }
+                                }
+                            }
+                            else if (applyTo == 2)
+                            {
+                                switch (detailPromo.PromoType)
+                                {
+                                    case 4:
+                                        // Apply to Barang - Promo Method Payment Term
+                                        var tierData = detailTierPromo.FirstOrDefault(x => x.PaymentTermId == data.PaymentTermId);
+                                        if (tierData != null)
+                                        {
+                                            var curUom = uomConversions.FirstOrDefault(x => x.Id == item.UnitId);
+                                            var itemUom = uomConversions.FirstOrDefault(x => x.Id == ctItem.UomSellId);
+                                            var discAmount = 0m;
+                                            if (curUom.Seq > itemUom.Seq)
+                                            {
+                                                var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= curUom.Seq && x.Seq > itemUom.Seq).Select(x => x.Conversion).ToList();
+                                                var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
+                                                discAmount = tierData.IsPercentage ?
+                                                        item.UnitPrice * (tierData.Value / 100) :
+                                                        tierData.Value * multipliedQty;
+                                            }
+                                            else if (curUom.Seq < itemUom.Seq)
+                                            {
+                                                var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq > curUom.Seq && x.Seq <= itemUom.Seq).Select(x => x.Conversion).ToList();
+                                                var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
+                                                discAmount = tierData.IsPercentage ?
+                                                        item.UnitPrice * (tierData.Value / 100) :
+                                                        tierData.Value / multipliedQty;
+                                            }
+                                            else
+                                            {
+                                                discAmount = tierData.IsPercentage ?
+                                                        item.UnitPrice * (tierData.Value / 100) :
+                                                        tierData.Value;
+                                            }
+
+                                            discPromo.Add(new SalesOrderDetailDiscount
+                                            {
+                                                PromoCode = dataPromo.Code,
+                                                PromoDetailId = detailPromo.Id,
+                                                Name = dataPromo.Name,
+                                                //promoMethod: 1,
+                                                Value = tierData.IsPercentage ?
+                                                tierData.Value :
+                                                discAmount,
+                                                //nettPrice: 0,
+                                                CoaCode = dataPromo.CoaCost,
+                                                Amount = discAmount,
+                                                //fromPromo: true,
+                                                IsPercentage = detailPromo.IsPercentage
+                                            });
+                                        }
+                                        break;
+                                    case 5:
+                                        // Apply to Faktur - Promo Method Nilai Trans
+                                        var tierData5 = detailTierPromo.FirstOrDefault(x => data.SubTotal >= x.FromQty && data.SubTotal <= x.ToQty);
+                                        if (tierData5 != null)
+                                        {
+                                            var curUom = uomConversions.FirstOrDefault(x => x.Id == item.UnitId);
+                                            var itemUom = uomConversions.FirstOrDefault(x => x.Id == ctItem.UomSellId);
+                                            var discAmount = 0m;
+                                            if (curUom.Seq > itemUom.Seq)
+                                            {
+                                                var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= curUom.Seq && x.Seq > itemUom.Seq).Select(x => x.Conversion).ToList();
+                                                var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
+                                                discAmount = tierData5.IsPercentage ?
+                                                        item.UnitPrice * (tierData5.Value / 100) :
+                                                        tierData5.Value * multipliedQty;
+                                            }
+                                            else if (curUom.Seq < itemUom.Seq)
+                                            {
+                                                var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq > curUom.Seq && x.Seq <= itemUom.Seq).Select(x => x.Conversion).ToList();
+                                                var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
+                                                discAmount = tierData5.IsPercentage ?
+                                                        item.UnitPrice * (tierData5.Value / 100) :
+                                                        tierData5.Value / multipliedQty;
+                                            }
+                                            else
+                                            {
+                                                discAmount = tierData5.IsPercentage ?
+                                                        item.UnitPrice * (tierData5.Value / 100) :
+                                                        tierData5.Value;
+                                            }
+                                            discPromo.Add(new SalesOrderDetailDiscount
+                                            {
+                                                PromoCode = dataPromo.Code,
+                                                PromoDetailId = detailPromo.Id,
+                                                Name = dataPromo.Name,
+                                                //promoMethod: 1,
+                                                Value = tierData5.IsPercentage ?
+                                                tierData5.Value :
+                                                discAmount,
+                                                //nettPrice: 0,
+                                                CoaCode = dataPromo.CoaCost,
+                                                Amount = discAmount,
+                                                //fromPromo: true,
+                                                IsPercentage = detailPromo.IsPercentage
+                                            });
+                                        }
+                                        break;
                                 }
                             }
                         }
@@ -460,6 +582,8 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                 {
                     discPromo.AddRange(item.DiscountItemDetails);
                 }
+
+                item.Disc = discPromo.Sum(x => x.Amount);
 
                 var taxData = taxes.FirstOrDefault(x => x.Id == item.TaxId);
                 var discHeaderProrate = 0m;
@@ -542,14 +666,11 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                 Db.SaveChanges();
                 listIdDetail.Add(orderDetail.Id);
 
-                item.Disc = 0m;
                 if (discPromo.Any())
                 {
                     short d = 0;
                     foreach (var discItem in discPromo)
                     {
-                        item.Disc += discItem.Amount;
-
                         Db.SalesOrderDetailDiscounts.Add(new SalesOrderDetailDiscount
                         {
                             Code = newCode,
@@ -1075,13 +1196,13 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                                             var itemUom3 = uomConversions.FirstOrDefault(x => x.Id == ctItem.UomSellId);
                                             if (itemUom3.Seq > curUom3.Seq)
                                             {
-                                                var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= itemUom3.Seq && x.Seq > curUom3.Seq).Select(x => x.Conversion).ToList();
+                                                var qtyField = Db.UoMConversions.Where(x => x.UomId == freeItem.UomId && x.Seq <= itemUom3.Seq && x.Seq > curUom3.Seq).Select(x => x.Conversion).ToList();
                                                 var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
                                                 sellPrice = (decimal)freeItem.SellPrice / multipliedQty;
                                             }
                                             else if (itemUom3.Seq < curUom3.Seq)
                                             {
-                                                var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq > itemUom3.Seq && x.Seq <= curUom3.Seq).Select(x => x.Conversion).ToList();
+                                                var qtyField = Db.UoMConversions.Where(x => x.UomId == freeItem.UomId && x.Seq > itemUom3.Seq && x.Seq <= curUom3.Seq).Select(x => x.Conversion).ToList();
                                                 var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
                                                 sellPrice = (decimal)freeItem.SellPrice * multipliedQty;
 
@@ -1187,7 +1308,28 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                                             var tierData3 = detailTierPromo.FirstOrDefault(x => miData3.Sum(x => x.Qty) >= x.FromQty && miData3.Sum(x => x.Qty) <= x.ToQty);
                                             if (tierData3 != null)
                                             {
+                                                var sellPrice = 0m;
                                                 var freeItem = items.FirstOrDefault(x => x.Id == tierData3.FreeGoodItemId);
+                                                var curUom3 = uomConversions.FirstOrDefault(x => x.Id == Convert.ToInt32(tierData3.UnitFreeGood));
+                                                var itemUom3 = uomConversions.FirstOrDefault(x => x.Id == ctItem.UomSellId);
+                                                if (itemUom3.Seq > curUom3.Seq)
+                                                {
+                                                    var qtyField = Db.UoMConversions.Where(x => x.UomId == freeItem.UomId && x.Seq <= itemUom3.Seq && x.Seq > curUom3.Seq).Select(x => x.Conversion).ToList();
+                                                    var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
+                                                    sellPrice = (decimal)freeItem.SellPrice / multipliedQty;
+                                                }
+                                                else if (itemUom3.Seq < curUom3.Seq)
+                                                {
+                                                    var qtyField = Db.UoMConversions.Where(x => x.UomId == freeItem.UomId && x.Seq > itemUom3.Seq && x.Seq <= curUom3.Seq).Select(x => x.Conversion).ToList();
+                                                    var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
+                                                    sellPrice = (decimal)freeItem.SellPrice * multipliedQty;
+
+                                                }
+                                                else
+                                                {
+                                                    sellPrice = (decimal)freeItem.SellPrice;
+                                                }
+
                                                 if (tierData3.IsMultiple)
                                                 {
                                                     var multipleValue = Math.Floor(miData3.Sum(x => x.Qty) / tierData3.FromQty);
@@ -1199,7 +1341,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                                                         UnitId = Convert.ToInt32(tierData3.UnitFreeGood),
                                                         Qty = multipleValue * tierData3.Value,
                                                         QtyClosed = 0m,
-                                                        UnitPrice = (decimal)freeItem.SellPrice,
+                                                        UnitPrice = sellPrice,
                                                         CoaCode = dataPromo.CoaCost
                                                     });
                                                 }
@@ -1213,13 +1355,114 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                                                         UnitId = Convert.ToInt32(tierData3.UnitFreeGood),
                                                         Qty = tierData3.Value,
                                                         QtyClosed = 0m,
-                                                        UnitPrice = (decimal)freeItem.SellPrice,
+                                                        UnitPrice = sellPrice,
                                                         CoaCode = dataPromo.CoaCost
                                                     });
                                                 }
                                             }
                                             break;
                                     }
+                                }
+                            }
+                            else if (applyTo == 2)
+                            {
+                                switch (detailPromo.PromoType)
+                                {
+                                    case 4:
+                                        // Apply to Barang - Promo Method Payment Term
+                                        var tierData = detailTierPromo.FirstOrDefault(x => x.PaymentTermId == data.PaymentTermId);
+                                        if (tierData != null)
+                                        {
+                                            var curUom = uomConversions.FirstOrDefault(x => x.Id == item.UnitId);
+                                            var itemUom = uomConversions.FirstOrDefault(x => x.Id == ctItem.UomSellId);
+                                            var discAmount = 0m;
+                                            if (curUom.Seq > itemUom.Seq)
+                                            {
+                                                var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= curUom.Seq && x.Seq > itemUom.Seq).Select(x => x.Conversion).ToList();
+                                                var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
+                                                discAmount = tierData.IsPercentage ?
+                                                        item.UnitPrice * (tierData.Value / 100) :
+                                                        tierData.Value * multipliedQty;
+                                            }
+                                            else if (curUom.Seq < itemUom.Seq)
+                                            {
+                                                var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq > curUom.Seq && x.Seq <= itemUom.Seq).Select(x => x.Conversion).ToList();
+                                                var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
+                                                discAmount = tierData.IsPercentage ?
+                                                        item.UnitPrice * (tierData.Value / 100) :
+                                                        tierData.Value / multipliedQty;
+                                            }
+                                            else
+                                            {
+                                                discAmount = tierData.IsPercentage ?
+                                                        item.UnitPrice * (tierData.Value / 100) :
+                                                        tierData.Value;
+                                            }
+
+                                            discPromo.Add(new SalesOrderDetailDiscount
+                                            {
+                                                PromoCode = dataPromo.Code,
+                                                PromoDetailId = detailPromo.Id,
+                                                Name = dataPromo.Name,
+                                                //promoMethod: 1,
+                                                Value = tierData.IsPercentage ?
+                                                tierData.Value :
+                                                discAmount,
+                                                //nettPrice: 0,
+                                                CoaCode = dataPromo.CoaCost,
+                                                Amount = discAmount,
+                                                //fromPromo: true,
+                                                IsPercentage = detailPromo.IsPercentage
+                                            });
+                                        }
+                                        break;
+                                    case 5:
+                                        // Apply to Faktur - Promo Method Nilai Trans
+                                        var tierData5 = detailTierPromo.FirstOrDefault(x => data.SubTotal >= x.FromQty && data.SubTotal <= x.ToQty);
+                                        if (tierData5 != null)
+                                        {
+                                            var curUom = uomConversions.FirstOrDefault(x => x.Id == item.UnitId);
+                                            var itemUom = uomConversions.FirstOrDefault(x => x.Id == ctItem.UomSellId);
+                                            var discAmount = 0m;
+                                            if (curUom.Seq > itemUom.Seq)
+                                            {
+                                                var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= curUom.Seq && x.Seq > itemUom.Seq).Select(x => x.Conversion).ToList();
+                                                var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
+                                                discAmount = tierData5.IsPercentage ?
+                                                        item.UnitPrice * (tierData5.Value / 100) :
+                                                        tierData5.Value * multipliedQty;
+                                            }
+                                            else if (curUom.Seq < itemUom.Seq)
+                                            {
+                                                var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq > curUom.Seq && x.Seq <= itemUom.Seq).Select(x => x.Conversion).ToList();
+                                                var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
+                                                discAmount = tierData5.IsPercentage ?
+                                                        item.UnitPrice * (tierData5.Value / 100) :
+                                                        tierData5.Value / multipliedQty;
+                                            }
+                                            else
+                                            {
+                                                discAmount = tierData5.IsPercentage ?
+                                                        item.UnitPrice * (tierData5.Value / 100) :
+                                                        tierData5.Value;
+                                            }
+                                            discPromo.Add(new SalesOrderDetailDiscount
+                                            {
+                                                PromoCode = dataPromo.Code,
+                                                PromoDetailId = detailPromo.Id,
+                                                Name = dataPromo.Name,
+                                                //promoMethod: 1,
+                                                Value = tierData5.IsPercentage ?
+                                                tierData5.Value :
+                                                discAmount,
+                                                //nettPrice: 0,
+                                                CoaCode = dataPromo.CoaCost,
+                                                Amount = discAmount,
+                                                //fromPromo: true,
+                                                IsPercentage = detailPromo.IsPercentage
+                                            });
+                                        }
+                                        break;
                                 }
                             }
                         }
@@ -1234,6 +1477,20 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                     if (item.DiscountItemDetails.Any())
                     {
                         discPromo.AddRange(item.DiscountItemDetails);
+                    }
+                }
+
+                item.Disc = 0m;
+                if (discPromo.Any())
+                {
+                    foreach (var discItem in discPromo)
+                    {
+                        if (!data.ListPromo.Select(x => x.PromoCode).Contains(discItem.PromoCode)
+                            || discItem.PromoCode == null
+                            || data.ListPromo.Where(x => x.IsActive).Select(x => x.PromoCode).Contains(discItem.PromoCode))
+                        {
+                            item.Disc += discItem.Amount;
+                        }
                     }
                 }
 
@@ -1330,7 +1587,6 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                     listIdDetail.Add(item.Id);
                 }
 
-                item.Disc = 0m;
                 if (discPromo != null)
                 {
                     //Remove deleted detail
@@ -1349,7 +1605,6 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                                 || discItem.PromoCode == null
                                 || data.ListPromo.Where(x => x.IsActive).Select(x => x.PromoCode).Contains(discItem.PromoCode))
                             {
-                                item.Disc += discItem.Amount;
                                 if (discItem.Id <= 0)
                                 {
                                     Db.SalesOrderDetailDiscounts.Add(new SalesOrderDetailDiscount

@@ -71,6 +71,10 @@ public class DeliveryPlanController : ControllerBase
                 x.IsFailShipment,
                 x.NotesFailShipment,
                 x.FailedSendAll,
+                x.CustName,
+                x.CustAddress,
+                x.CustArea,
+                x.SalesName,
                 UndeliveredItems = uData.Where(d => d.DlvPlanDetailId == x.Id).OrderBy(d => d.LineNo)
             })
             .ToList<dynamic>();

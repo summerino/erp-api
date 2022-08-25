@@ -18842,6 +18842,65 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.ToView("vwCreditMemo", "Sales");
                 });
 
+            modelBuilder.Entity("ERP.Entity.Sales.VwDeliveryPlanDetail", b =>
+                {
+                    b.Property<string>("Code")
+                        .HasMaxLength(17)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(17)");
+
+                    b.Property<string>("CustAddress")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<string>("CustArea")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<string>("CustName")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<bool>("FailedSendAll")
+                        .HasColumnType("bit");
+
+                    b.Property<long>("Id")
+                        .HasColumnType("bigint");
+
+                    b.Property<bool>("IsFailShipment")
+                        .HasColumnType("bit");
+
+                    b.Property<short>("LineNo")
+                        .HasColumnType("smallint");
+
+                    b.Property<string>("NotesFailShipment")
+                        .HasMaxLength(256)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(256)");
+
+                    b.Property<string>("SalesName")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<short>("SrcTrans")
+                        .HasColumnType("smallint");
+
+                    b.Property<string>("TransCode")
+                        .HasMaxLength(17)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(17)");
+
+                    b.Property<decimal>("Volume")
+                        .HasPrecision(19, 6)
+                        .HasColumnType("decimal(19,6)");
+
+                    b.Property<decimal>("Weight")
+                        .HasPrecision(19, 6)
+                        .HasColumnType("decimal(19,6)");
+
+                    b.ToView("vwDeliveryPlanDetail", "Sales");
+                });
+
             modelBuilder.Entity("ERP.Entity.Sales.VwDeliveryPlanHeader", b =>
                 {
                     b.Property<int?>("ApprovedBy")

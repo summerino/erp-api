@@ -7710,6 +7710,27 @@ AS
 		ON u_a.Id = dp_h.ApprovedBy";
             migrationBuilder.Sql(sql);
 
+            // Create view Sales.vwDeliveryPlanDetail
+            sql = @"CREATE VIEW [Sales].[vwDeliveryPlanDetail]
+AS
+	SELECT dp_d.*,
+		dlv.CustName,
+		dlv.CustAddress,
+		dlv.CustArea,
+		CASE
+			WHEN dlv.SrcTrans = 1 THEN so.SalesName
+			WHEN dlv.SrcTrans = 2 THEN sr.SalesName
+			ELSE NULL
+		END AS SalesName
+	FROM Sales.DeliveryPlanDetail dp_d
+	LEFT JOIN Sales.vwSalesDeliveryHeader dlv
+		ON dp_d.TransCode = dlv.Code
+	LEFT JOIN Sales.vwSalesOrderHeader so
+		ON so.Code = dlv.TransCode
+	LEFT JOIN Sales.vwSalesReturnHeader sr
+		ON sr.Code = dlv.TransCode";
+            migrationBuilder.Sql(sql);
+
             // Create view Sales.vwSalesDeliveryHeader
             sql = @"CREATE VIEW [Sales].[vwSalesDeliveryHeader]
 AS
@@ -14061,6 +14082,10 @@ END CATCH";
 
             // Disabling constraints foreign key FK_CreditMemo_Tax_TaxId
             sql = @"ALTER TABLE [Sales].[CreditMemo] NOCHECK CONSTRAINT [FK_CreditMemo_Tax_TaxId]";
+            migrationBuilder.Sql(sql);
+
+            // Disabling constraints foreign key FK_SalesDeliveryDetail_SalesDeliveryHeader_Code
+            sql = @"ALTER TABLE [Sales].[SalesDeliveryDetail] NOCHECK CONSTRAINT [FK_SalesDeliveryDetail_SalesDeliveryHeader_Code]";
             migrationBuilder.Sql(sql);
 
             // Disabling constraints foreign key FK_SalesDeliveryDetail_Tax_TaxId

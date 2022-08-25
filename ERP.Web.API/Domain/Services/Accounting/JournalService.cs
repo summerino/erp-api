@@ -1173,8 +1173,6 @@ public class JournalService : IJournalService
 
                     //ar
                     arAmount += itemDetail.DoData.Total;
-                    //discount
-                    discAmount += itemDetail.DoData.FinalDisc;
                     //PPN
                     taxAmount += itemDetail.DoData.TaxAmount;
                     //PPN Yang Dibebaskan
@@ -1192,6 +1190,7 @@ public class JournalService : IJournalService
                     short ix = 0;
                     foreach (var itemDlvDetail in DlvDetailData)
                     {
+                        discAmount += itemDlvDetail.DlvDetail.Disc * itemDlvDetail.DlvDetail.Qty;
                         if (itemDlvDetail.DlvDetail.ExemptTaxAmount > 0)
                         {
                             taxAmount -= itemDlvDetail.DlvDetail.ExemptTaxAmount * itemDlvDetail.DlvDetail.Qty;
