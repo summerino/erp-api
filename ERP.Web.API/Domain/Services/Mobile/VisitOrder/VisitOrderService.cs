@@ -680,7 +680,7 @@ public class VisitOrderService : GeneralService<MobileVisitLog>, IVisitOrderServ
                     MobileOrderDetail newDetail = new()
                     {
                         Code = data.OrderHeader.Code,
-                        LineNo = i++,
+                        LineNo = ++i,
                         ItemId = detail.ItemId,
                         UomId = detail.UomId,
                         UnitId = detail.UnitId,
@@ -707,7 +707,7 @@ public class VisitOrderService : GeneralService<MobileVisitLog>, IVisitOrderServ
                         {
                             Code = data.OrderHeader.Code,
                             OrderDetailId = newDetail.Id,
-                            LineNo = j++,
+                            LineNo = ++j,
                             PromoCode = discount.PromoCode,
                             PromoDetailId = discount.PromoDetailId,
                             Name = discount.Name,
@@ -725,7 +725,7 @@ public class VisitOrderService : GeneralService<MobileVisitLog>, IVisitOrderServ
                         {
                             Code = data.OrderHeader.Code,
                             OrderDetailId = newDetail.Id,
-                            LineNo = k++,
+                            LineNo = ++k,
                             PromoCode = item.PromoCode,
                             ItemId = item.ItemId,
                             UomId = item.UomId,
@@ -736,6 +736,18 @@ public class VisitOrderService : GeneralService<MobileVisitLog>, IVisitOrderServ
                     }
                 }
 
+            }
+
+            short l = 0;
+            foreach (var promo in data.Promotions)
+            {
+                Db.MobileOrderPromos.Add(new MobileOrderPromo
+                {
+                    Code = data.OrderHeader.Code,
+                    LineNo = ++l,
+                    PromoCode = promo.PromoCode,
+                    IsActive = promo.IsActive,
+                });
             }
 
             Db.SaveChanges();
@@ -873,7 +885,7 @@ public class VisitOrderService : GeneralService<MobileVisitLog>, IVisitOrderServ
                     MobileOrderDetail newDetail = new()
                     {
                         Code = newOrderCode,
-                        LineNo = i++,
+                        LineNo = ++i,
                         ItemId = detail.ItemId,
                         UomId = detail.UomId,
                         UnitId = detail.UnitId,
@@ -899,7 +911,7 @@ public class VisitOrderService : GeneralService<MobileVisitLog>, IVisitOrderServ
                         {
                             Code = newOrderCode,
                             OrderDetailId = newDetail.Id,
-                            LineNo = j++,
+                            LineNo = ++j,
                             PromoCode = discount.PromoCode,
                             PromoDetailId = discount.PromoDetailId,
                             Name = discount.Name,
@@ -917,7 +929,7 @@ public class VisitOrderService : GeneralService<MobileVisitLog>, IVisitOrderServ
                         {
                             Code = newOrderCode,
                             OrderDetailId = newDetail.Id,
-                            LineNo = k++,
+                            LineNo = ++k,
                             PromoCode = item.PromoCode,
                             ItemId = item.ItemId,
                             UomId = item.UomId,
@@ -935,7 +947,7 @@ public class VisitOrderService : GeneralService<MobileVisitLog>, IVisitOrderServ
                     Db.MobileOrderPromos.Add(new MobileOrderPromo
                     {
                         Code = newOrderCode,
-                        LineNo = l++,
+                        LineNo = ++l,
                         PromoCode = promo.PromoCode,
                         IsActive = promo.IsActive,
                     });
