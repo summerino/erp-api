@@ -50,9 +50,16 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
 
     public List<dynamic> GetRelatedTransactions(string code)
     {
-        var data = from dlv in Db.SalesDeliveryHeaders
+        var data = (from dlv in Db.SalesDeliveryHeaders
             where dlv.TransCode == code && dlv.Mark != "V"
-            select new { dlv.Code, dlv.Date, dlv.Mark };
+            select new { dlv.Code, dlv.Date, dlv.Mark }).ToList();
+
+        var sdpData = (from sdp in Db.CreditMemos
+                       where sdp.TransCode == code && sdp.Mark != "V"
+                       select new { sdp.Code, sdp.Date, sdp.Mark }).ToList();
+
+        if (sdpData.Count > 0)
+            data.AddRange(sdpData);
 
         return data.ToDynamicList();
     }
