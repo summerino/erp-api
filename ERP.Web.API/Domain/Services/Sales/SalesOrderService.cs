@@ -583,6 +583,8 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                     discPromo.AddRange(item.DiscountItemDetails);
                 }
 
+                item.Disc = discPromo.Sum(x => x.Amount);
+
                 var taxData = taxes.FirstOrDefault(x => x.Id == item.TaxId);
                 var discHeaderProrate = 0m;
                 var sumDetail = data.ItemDetails.Sum(x => (x.UnitPrice - x.Disc) * x.Qty);
@@ -664,14 +666,11 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                 Db.SaveChanges();
                 listIdDetail.Add(orderDetail.Id);
 
-                orderDetail.Disc = 0m;
                 if (discPromo.Any())
                 {
                     short d = 0;
                     foreach (var discItem in discPromo)
                     {
-                        orderDetail.Disc += discItem.Amount;
-
                         Db.SalesOrderDetailDiscounts.Add(new SalesOrderDetailDiscount
                         {
                             Code = newCode,
@@ -699,7 +698,6 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                     }
                     Db.SaveChanges();
                 }
-                Db.SalesOrderDetails.Update(orderDetail);
 
                 if (bonusPromoMulti.Any() && orderDetail.LineNo == 1)
                 {
@@ -1482,6 +1480,20 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                     }
                 }
 
+                item.Disc = 0m;
+                if (discPromo.Any())
+                {
+                    foreach (var discItem in discPromo)
+                    {
+                        if (!data.ListPromo.Select(x => x.PromoCode).Contains(discItem.PromoCode)
+                            || discItem.PromoCode == null
+                            || data.ListPromo.Where(x => x.IsActive).Select(x => x.PromoCode).Contains(discItem.PromoCode))
+                        {
+                            item.Disc += discItem.Amount;
+                        }
+                    }
+                }
+
                 var taxData = taxes.FirstOrDefault(x => x.Id == item.TaxId);
                 var discHeaderProrate = 0m;
                 var sumDetail = data.ItemDetails.Sum(x => (x.UnitPrice - x.Disc) * x.Qty);
@@ -1575,7 +1587,6 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                     listIdDetail.Add(item.Id);
                 }
 
-                item.Disc = 0m;
                 if (discPromo != null)
                 {
                     //Remove deleted detail
@@ -1594,7 +1605,6 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                                 || discItem.PromoCode == null
                                 || data.ListPromo.Where(x => x.IsActive).Select(x => x.PromoCode).Contains(discItem.PromoCode))
                             {
-                                item.Disc += discItem.Amount;
                                 if (discItem.Id <= 0)
                                 {
                                     Db.SalesOrderDetailDiscounts.Add(new SalesOrderDetailDiscount
@@ -1647,7 +1657,6 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                         }
                     }
                 }
-                Db.SalesOrderDetails.Update(item);
 
                 if (bonusPromoMulti.Any() && item.LineNo == 1)
                 {

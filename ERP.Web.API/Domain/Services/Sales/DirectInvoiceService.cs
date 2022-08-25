@@ -538,6 +538,8 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                     discPromo.AddRange(item.DiscountItemDetails);
                 }
 
+                item.Disc = discPromo.Sum(x => x.Amount);
+
                 var taxData = taxes.FirstOrDefault(x => x.Id == item.TaxId);
                 var discHeaderProrate = 0m;
                 var sumDetail = data.ItemDetails.Sum(x => (x.UnitPrice - x.Disc) * x.Qty);
@@ -619,14 +621,11 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
 
                 idOrderDetail.Add(orderDetail.Id);
 
-                orderDetail.Disc = 0m;
                 if (discPromo.Any())
                 {
                     short d = 0;
                     foreach (var discItem in discPromo)
                     {
-                        orderDetail.Disc += discItem.Amount;
-
                         Db.SalesOrderDetailDiscounts.Add(new SalesOrderDetailDiscount
                         {
                             Code = newCode,
@@ -654,7 +653,6 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                     }
                     Db.SaveChanges();
                 }
-                Db.SalesOrderDetails.Update(orderDetail);
 
                 if (bonusPromoMulti.Any() && orderDetail.LineNo == 1)
                 {
@@ -1466,6 +1464,20 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                     }
                 }
 
+                item.Disc = 0m;
+                if (discPromo.Any())
+                {
+                    foreach (var discItem in discPromo)
+                    {
+                        if (!data.ListPromo.Select(x => x.PromoCode).Contains(discItem.PromoCode)
+                            || discItem.PromoCode == null
+                            || data.ListPromo.Where(x => x.IsActive).Select(x => x.PromoCode).Contains(discItem.PromoCode))
+                        {
+                            item.Disc += discItem.Amount;
+                        }
+                    }
+                }
+
                 var taxData = taxes.FirstOrDefault(x => x.Id == item.TaxId);
                 var discHeaderProrate = 0m;
                 var sumDetail = data.ItemDetails.Sum(x => (x.UnitPrice - x.Disc) * x.Qty);
@@ -1596,7 +1608,6 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
 
                 Db.SalesOrderDetailDiscounts.RemoveRange(delDiscDetails);
 
-                orderDetail.Disc = 0m;
                 if (discPromo.Any())
                 {
                     short d = 0;
@@ -1606,7 +1617,6 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                                 || discItem.PromoCode == null
                                 || data.ListPromo.Where(x => x.IsActive).Select(x => x.PromoCode).Contains(discItem.PromoCode))
                         {
-                            orderDetail.Disc += discItem.Amount;
                             if (discItem.Id <= 0)
                             {
                                 Db.SalesOrderDetailDiscounts.Add(new SalesOrderDetailDiscount
@@ -1658,7 +1668,6 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                         }
                     }
                 }
-                Db.SalesOrderDetails.Update(orderDetail);
 
                 if (bonusPromoMulti.Any() && item.LineNo == 1)
                 {
