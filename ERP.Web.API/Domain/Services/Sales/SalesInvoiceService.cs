@@ -88,7 +88,7 @@ public class SalesInvoiceService : GeneralService<SalesInvoiceHeader>, ISalesInv
 
         var data = (from h in Db.SalesInvoiceCreditMemos
                     join d in Db.CreditMemos on h.CreditMemoCode equals d.Code
-                    where h.InvCode == code && d.SrcTrans == 3
+                    where h.InvCode == code && d.SrcTrans == 3 && new[] { "A", "PU"}.Contains(d.Mark)
                     select new
                     {
                         h.Id,
