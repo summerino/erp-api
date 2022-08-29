@@ -14068,6 +14068,10 @@ END CATCH";
             sql = @"ALTER TABLE [Finance].[GeneralCashBankDetail] NOCHECK CONSTRAINT [FK_GeneralCashBankDetail_CashBankType_Type]";
             migrationBuilder.Sql(sql);
 
+            // Disabling constraints foreign key FK_PurchaseOrderDetail_PurchaseOrderHeader_Code
+            sql = @"ALTER TABLE [Purchasing].[PurchaseOrderDetail] NOCHECK CONSTRAINT [FK_PurchaseOrderDetail_PurchaseOrderHeader_Code]";
+            migrationBuilder.Sql(sql);
+
             // Disabling constraints foreign key FK_PurchaseOrderDetail_Tax_TaxId
             sql = @"ALTER TABLE [Purchasing].[PurchaseOrderDetail] NOCHECK CONSTRAINT [FK_PurchaseOrderDetail_Tax_TaxId]";
             migrationBuilder.Sql(sql);
