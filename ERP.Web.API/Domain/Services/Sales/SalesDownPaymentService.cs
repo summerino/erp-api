@@ -77,7 +77,7 @@ public class SalesDownPaymentService : GeneralService<CreditMemo>, ISalesDownPay
             {
                 var sdpData = Db.CreditMemos.Find(data.TransCode);
                 sdpData.Used += data.Amount;
-                sdpData.Mark = sdpData.Amount == sdpData.Used ? "CMP" : "A";
+                sdpData.Mark = sdpData.Amount == sdpData.Used ? "CMP" : sdpData.Used > 0 ? "PU" : "A";
                 Db.CreditMemos.Update(sdpData);
             }
 
@@ -115,13 +115,13 @@ public class SalesDownPaymentService : GeneralService<CreditMemo>, ISalesDownPay
             {
                 var oldSdpData = Db.CreditMemos.Find(rsdpData.TransCode);
                 oldSdpData.Used -= rsdpData.Amount;
-                oldSdpData.Mark = oldSdpData.Amount == oldSdpData.Used ? "CMP" : "A";
+                oldSdpData.Mark = oldSdpData.Amount == oldSdpData.Used ? "CMP" : oldSdpData.Used > 0 ? "PU" : "A";
                 Db.CreditMemos.Update(oldSdpData);
             }
 
             var sdpData = Db.CreditMemos.Find(data.TransCode);
             sdpData.Used += data.Amount;
-            sdpData.Mark = sdpData.Amount == sdpData.Used ? "CMP" : "A";
+            sdpData.Mark = sdpData.Amount == sdpData.Used ? "CMP" : sdpData.Used > 0 ? "PU" : "A";
             Db.CreditMemos.Update(sdpData);
         }
 
@@ -160,7 +160,7 @@ public class SalesDownPaymentService : GeneralService<CreditMemo>, ISalesDownPay
             {
                 var sdpData = Db.CreditMemos.Find(data.TransCode);
                 sdpData.Used -= data.Amount;
-                sdpData.Mark = sdpData.Amount == sdpData.Used ? "CMP" : "A";
+                sdpData.Mark = sdpData.Amount == sdpData.Used ? "CMP" : sdpData.Used > 0 ? "PU" : "A";
                 Db.CreditMemos.Update(sdpData);
             }
 
