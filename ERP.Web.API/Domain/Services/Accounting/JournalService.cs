@@ -3807,7 +3807,7 @@ public class JournalService : IJournalService
                     CurrCode = itemData.CurrCode,
                     Period = itemData.Date.ToString("yyyyMMdd"),
                     Type = "D",
-                    Amount = itemData.Total - itemData.TaxAmount,
+                    Amount = itemData.Amount - itemData.TaxAmount,
                     SrcTrans = "DP"
                 });
             }
