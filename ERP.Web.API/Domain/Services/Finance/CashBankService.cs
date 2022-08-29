@@ -430,6 +430,20 @@ public class CashBankService : GeneralService<GeneralCashBankHeader>, ICashBankS
                 return result;
             }
 
+            var detail = Db.GeneralCashBankDetails.Where(x => x.Code == data.Code && new[] {"SDP", "RSDP"}.Contains(x.Type));
+            if (detail.Any())
+            {
+                foreach (var item in detail)
+                {
+                    var cmData = Db.CreditMemos.Find(item.TransCode);
+                    if (new[] {"PU", "CMP" }.Contains(cmData.Mark))
+                    {
+                        result.Message = $"Data kas bank umum tidak bisa ditandai sebagai void karena data {cmData.Code} berstatus PU atau CMP.";
+                        return result;
+                    }
+                }
+            }
+
             // Checking role authorization for item details
             var map = new MapCbTypeToAction();
             var types =
@@ -773,6 +787,9 @@ public class CashBankService : GeneralService<GeneralCashBankHeader>, ICashBankS
 
                 if (data.ChequeDate.GetValueOrDefault(data.Date) < memo.Date)
                     return ($"Tanggal kas bank tidak boleh lebih kecil dari tanggal transaksi {memo.Code}.", false, new List<string>());
+
+                if (new[] {"PU", "CMP"}.Contains(memo.Mark))
+                    return ($"Data Kas bank tidak bisa diubah karena {memo.Code} berstatus PU atau CMP.", false, new List<string>());
 
                 var mark = item.Type == "SDP" ? "A" : "CMP";//item.Amount == memo.Amount ? "FU" : "PU";
 
