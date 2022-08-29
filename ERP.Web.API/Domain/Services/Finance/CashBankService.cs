@@ -546,6 +546,23 @@ public class CashBankService : GeneralService<GeneralCashBankHeader>, ICashBankS
 
         var queries = new List<string>();
 
+        var oldRSDPList = Db.GeneralCashBankDetails.Where(x => !listTransCode.Contains(x.TransCode) && x.Code == data.Code && x.Type == "RSDP");
+        if (oldRSDPList.Any())
+        {
+            foreach (var oldItem in oldRSDPList)
+            {
+                var oldRSDPData = Db.CreditMemos.FirstOrDefault(x => x.Code == oldItem.TransCode);
+                var oldSDPData = Db.CreditMemos.FirstOrDefault(x => x.Code == oldRSDPData.TransCode);
+
+                var usedAmount = oldSDPData.Used - oldItem.TransAmount;
+
+                var oldMark = usedAmount > 0 ? "PU" : "A";
+
+                var oldQuery = $"UPDATE Sales.CreditMemo SET Used = {usedAmount} , Mark='{oldMark}' WHERE Code='{oldSDPData.Code}'; UPDATE Sales.CreditMemo SET Used = 0 , Mark='A' WHERE Code='{oldItem.TransCode}';";
+                queries.Add(oldQuery);
+            }
+        }
+
         foreach (var item in data.ItemDetails)
         {
             if (item.Type == "AR")
