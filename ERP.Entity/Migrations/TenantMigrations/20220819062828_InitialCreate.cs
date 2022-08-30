@@ -11031,7 +11031,7 @@ BEGIN
 	DECLARE @id int
 	DECLARE @type varchar(5), @transCode varchar(17), @src varchar(5)
 	DECLARE @transAmount decimal(18, 2)
-	
+ 
 	DECLARE @idDetail int
 	DECLARE @totalDetail Decimal(18, 2)
 	DECLARE @totalHeader Decimal(18, 2)
@@ -11042,10 +11042,10 @@ BEGIN
 
 	WHILE EXISTS(SELECT * FROM #tmp_cb)
 	BEGIN
-		
+
 		SELECT TOP 1 @id = Id, @type = [Type], @transCode = TransCode, @transAmount = TransAmount, @src = Src
 		FROM #tmp_cb
-		
+
 		IF (@type = 'AR' AND @src = 'BB')
 		BEGIN
 
@@ -11057,13 +11057,13 @@ BEGIN
 		ELSE IF (@type = 'AR')
 		BEGIN
 
-			SELECT @totalHeader = Total, @paidAmount = PaidAmount - @transAmount   
+			SELECT @totalHeader = Total, @paidAmount = PaidAmount - @transAmount 
 			FROM Sales.SalesInvoiceHeader 
 			WHERE Code = @transCode
-				
+
 			SET @mark = 'A'
 			IF (@paidAmount > 0) SET @mark = 'PP'
-			
+ 
 			UPDATE Sales.SalesInvoiceHeader SET PaidAmount = @paidAmount, Mark = @mark WHERE Code = @transCode
 
 			-- Update detail
@@ -11078,9 +11078,9 @@ BEGIN
 			BEGIN
 				SELECT TOP 1 @idDetail = Id, @totalDetail = Total, @doCode = DoCode FROM #tmp_si
 				SET @proRate = @paidAmount * @totalDetail / @totalHeader
-					
+ 
 				UPDATE Sales.SalesDeliveryHeader SET PaidAmount = @proRate WHERE Code = @doCode 
-					
+ 
 				DELETE FROM #tmp_si
 			END
 
@@ -11098,10 +11098,10 @@ BEGIN
 		ELSE IF (@type = 'AP')
 		BEGIN
 
-			SELECT @totalHeader = Total, @paidAmount = PaidAmount - @transAmount   
+			SELECT @totalHeader = Total, @paidAmount = PaidAmount - @transAmount 
 			FROM Purchasing.PurchaseInvoiceHeader 
 			WHERE Code = @transCode
-				
+
 			SET @mark = 'A'
 			IF (@paidAmount > 0) SET @mark = 'PP'
 
@@ -11112,16 +11112,16 @@ BEGIN
 			INTO #tmp_pi
 			FROM Purchasing.PurchaseInvoiceDetail 
 			WHERE Code = @transCode
-				
+
 			DECLARE @rcvCode varchar(17)
 
 			WHILE EXISTS(SELECT * FROM #tmp_pi)
 			BEGIN
 				SELECT TOP 1 @idDetail = Id, @totalDetail = Total, @rcvCode = RcvCode FROM #tmp_pi
 				SET @proRate = @paidAmount * @totalDetail / @totalHeader
-					
+ 
 				UPDATE Purchasing.PurchaseReceiveHeader SET PaidAmount = @proRate WHERE Code = @rcvCode 
-					
+ 
 				DELETE FROM #tmp_pi
 			END
 
@@ -11131,7 +11131,7 @@ BEGIN
 		ELSE IF (@type = 'EPAP')
 		BEGIN
 
-			SELECT @totalHeader = Amount, @paidAmount = PaidAmount - @transAmount   
+			SELECT @totalHeader = Amount, @paidAmount = PaidAmount - @transAmount 
 			FROM Expedition.ExpeditionInvoiceHeader 
 			WHERE Code = @transCode
 
@@ -11189,6 +11189,25 @@ BEGIN
 			SET @mark = 'A'
 			IF (@used > 0) SET @mark = 'PU'
 			UPDATE Purchasing.DebitMemo SET Used = @used, Mark = 'A' WHERE Code = @transCode
+
+		END
+		ELSE IF (@type = 'SDP' OR @type = 'RSDP')
+		BEGIN
+
+			IF @type = 'SDP'
+			BEGIN
+				UPDATE Sales.CreditMemo SET Mark = 'PP' WHERE Code = @transCode 
+			END
+			ELSE IF @type = 'RSDP'
+			BEGIN
+				--UM
+				SET @used = ((SELECT Used FROM Sales.CreditMemo where Code = (SELECT TransCode FROM Sales.CreditMemo WHERE Code = @transCode)) - @transAmount)
+				SET @mark = 'A'
+				IF (@used > 0) SET @mark = 'PU' 
+				UPDATE Sales.CreditMemo SET Used = @used, Mark = @mark WHERE Code = (SELECT TransCode FROM Sales.CreditMemo WHERE Code = @transCode)
+				--Retur UM
+				UPDATE Sales.CreditMemo SET Used = 0, Mark = 'A' WHERE Code = @transCode
+			END
 
 		END
 
@@ -14074,6 +14093,10 @@ END CATCH";
 
             // Disabling constraints foreign key FK_PurchaseOrderDetail_Tax_TaxId
             sql = @"ALTER TABLE [Purchasing].[PurchaseOrderDetail] NOCHECK CONSTRAINT [FK_PurchaseOrderDetail_Tax_TaxId]";
+            migrationBuilder.Sql(sql);
+
+            // Disabling constraints foreign key FK_PurchaseReceiveDetail_PurchaseReceiveHeader_Code
+            sql = @"ALTER TABLE [Purchasing].[PurchaseReceiveDetail] NOCHECK CONSTRAINT [FK_PurchaseReceiveDetail_PurchaseReceiveHeader_Code]";
             migrationBuilder.Sql(sql);
 
             // Disabling constraints foreign key FK_PurchaseReceiveDetail_Tax_TaxId
