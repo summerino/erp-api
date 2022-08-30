@@ -122,7 +122,10 @@ public class SalesInvoiceController : ControllerBase
                 x.Id,
                 x.CreditMemoCode,
                 x.Date,
-                x.CreditMemoAmount
+                x.CreditMemoAmount,
+                x.CreditMemoTaxAmount,
+                x.CreditMemoTotal,
+                x.Src
             }).ToList<dynamic>();
 
         return Ok(new ApiResponse

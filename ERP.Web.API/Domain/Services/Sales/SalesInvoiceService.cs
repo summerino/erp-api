@@ -59,7 +59,7 @@ public class SalesInvoiceService : GeneralService<SalesInvoiceHeader>, ISalesInv
 
         var data = (from h in Db.SalesInvoiceCreditMemos
             join d in Db.CreditMemos on h.CreditMemoCode equals d.Code
-            where h.InvCode == code
+            where h.InvCode == code && h.Src == "CM"
             select new
             {
                 h.Id,
@@ -88,7 +88,7 @@ public class SalesInvoiceService : GeneralService<SalesInvoiceHeader>, ISalesInv
 
         var data = (from h in Db.SalesInvoiceCreditMemos
                     join d in Db.CreditMemos on h.CreditMemoCode equals d.Code
-                    where h.InvCode == code && d.SrcTrans == 3 && new[] { "A", "PU"}.Contains(d.Mark)
+                    where h.InvCode == code && h.Src == "DP"
                     select new
                     {
                         h.Id,
@@ -96,6 +96,7 @@ public class SalesInvoiceService : GeneralService<SalesInvoiceHeader>, ISalesInv
                         d.Date,
                         h.CreditMemoAmount,
                         h.CreditMemoTaxAmount,
+                        CreditMemoTotal = h.CreditMemoAmount + h.CreditMemoTaxAmount,
                         Src = "DP"
                     });
 
@@ -628,16 +629,16 @@ public class SalesInvoiceService : GeneralService<SalesInvoiceHeader>, ISalesInv
         if (data.SalesDownPayments.Any())
         {
             var listQuery = new List<string>();
-            var listCodeMemo = data.Memos.Select(x => x.CreditMemoCode).ToList();
+            var listCodeMemo = data.SalesDownPayments.Select(x => x.CreditMemoCode).ToList();
             var listCreditMemo = GetListCreditMemo(listCodeMemo);
             foreach (var item in data.SalesDownPayments)
             {
                 var selectedMemo = listCreditMemo.FirstOrDefault(x => x.Code.Equals(item.CreditMemoCode));
                 if (selectedMemo != null)
                 {
-                    decimal used = selectedMemo.Used + item.CreditMemoAmount;
-                    string status = used == selectedMemo.Amount ? "FU" : "PU";
-                    string query = selectedMemo.Source == "cm" ? $"update Sales.CreditMemo set Mark = '{status}', Used = {used} where code = '{selectedMemo.Code}'" : $"update Accounting.BeginningBalanceCreditMemo set Used = {used} where code = '{selectedMemo.Code}'";
+                    decimal used = selectedMemo.Used + (item.CreditMemoAmount + item.CreditMemoTaxAmount);
+                    string status = used == selectedMemo.Amount ? "CMP" : "PU";
+                    string query = selectedMemo.Source == "dp" ? $"update Sales.CreditMemo set Mark = '{status}', Used = {used} where code = '{selectedMemo.Code}'" : $"update Accounting.BeginningBalanceCreditMemo set Used = {used} where code = '{selectedMemo.Code}'";
                     listQuery.Add(query);
                 }
             }
@@ -657,9 +658,9 @@ public class SalesInvoiceService : GeneralService<SalesInvoiceHeader>, ISalesInv
                 var selectedMemo = listCreditMemo.FirstOrDefault(x => x.Code.Equals(item.CreditMemoCode));
                 if (selectedMemo != null)
                 {
-                    decimal used = selectedMemo.Used - item.CreditMemoAmount;
+                    decimal used = selectedMemo.Used - (selectedMemo.Source == "dp" ? item.CreditMemoAmount + item.CreditMemoTaxAmount : item.CreditMemoAmount);
                     string status = used > 0 ? "PU" : "A";
-                    string query = selectedMemo.Source == "cm" ? $"update Sales.CreditMemo set Mark = '{status}', Used = {used} where code = '{selectedMemo.Code}'" : $"update Accounting.BeginningBalanceCreditMemo set Used = {used} where code = '{selectedMemo.Code}'";
+                    string query = selectedMemo.Source != "bb" ? $"update Sales.CreditMemo set Mark = '{status}', Used = {used} where code = '{selectedMemo.Code}'" : $"update Accounting.BeginningBalanceCreditMemo set Used = {used} where code = '{selectedMemo.Code}'";
                     listQuery.Add(query);
                 }
             }
