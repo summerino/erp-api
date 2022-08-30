@@ -98,52 +98,52 @@ public class CashBankService : GeneralService<GeneralCashBankHeader>, ICashBankS
         switch (type)
         {
             case "DEPC":
-            {
-                var data = Db.VwCreditMemos.Where(x => x.SrcTrans == 1 && x.Mark == "PP");
+                {
+                    var data = Db.VwCreditMemos.Where(x => x.SrcTrans == 1 && x.Mark == "PP");
 
-                if (!string.IsNullOrWhiteSpace(cbCode))
-                    data = data.Where(x => !transLists.Contains(x.Code));
+                    if (!string.IsNullOrWhiteSpace(cbCode))
+                        data = data.Where(x => !transLists.Contains(x.Code));
 
-                return data.ToDataSourceResult(skip, take, filters, sorts);
-            }
+                    return data.ToDataSourceResult(skip, take, filters, sorts);
+                }
             case "RDEPC":
-            {
-                //var data = (from bb in Db.BeginningBalanceCreditMemos
-                //        join c in Db.Customers on bb.CustCode equals c.Code into cs
-                //        from c in cs.DefaultIfEmpty()
-                //        where bb.Type == 1 && bb.Used < bb.Amount && bb.IsActive
-                //        select new
-                //        {
-                //            bb.Code, bb.Date, bb.CustCode, CustName = c != null ? c.Name : "",
-                //            bb.CurrCode, bb.Rate,
-                //            bb.Amount, bb.Used, Remaining = bb.Amount - bb.Used, bb.Notes, Src = "BB"
-                //        })
-                //    .Union(
-                //        from cm in Db.VwCreditMemos
-                //        where cm.SrcTrans == 1 && cm.Remaining > 0 && new[] { "A", "PU" }.Contains(cm.Mark)
-                //        select new
-                //        {
-                //            cm.Code, cm.Date, cm.CustCode, cm.CustName,
-                //            cm.CurrCode, Rate = 1m,
-                //            cm.Amount, cm.Used, cm.Remaining, cm.Notes, Src = "CM"
-                //        });
+                {
+                    //var data = (from bb in Db.BeginningBalanceCreditMemos
+                    //        join c in Db.Customers on bb.CustCode equals c.Code into cs
+                    //        from c in cs.DefaultIfEmpty()
+                    //        where bb.Type == 1 && bb.Used < bb.Amount && bb.IsActive
+                    //        select new
+                    //        {
+                    //            bb.Code, bb.Date, bb.CustCode, CustName = c != null ? c.Name : "",
+                    //            bb.CurrCode, bb.Rate,
+                    //            bb.Amount, bb.Used, Remaining = bb.Amount - bb.Used, bb.Notes, Src = "BB"
+                    //        })
+                    //    .Union(
+                    //        from cm in Db.VwCreditMemos
+                    //        where cm.SrcTrans == 1 && cm.Remaining > 0 && new[] { "A", "PU" }.Contains(cm.Mark)
+                    //        select new
+                    //        {
+                    //            cm.Code, cm.Date, cm.CustCode, cm.CustName,
+                    //            cm.CurrCode, Rate = 1m,
+                    //            cm.Amount, cm.Used, cm.Remaining, cm.Notes, Src = "CM"
+                    //        });
 
-                var data = Db.VwOutstandingCreditMemos.Where(x => x.Type == 1);
+                    var data = Db.VwOutstandingCreditMemos.Where(x => x.Type == 1);
 
-                if (!string.IsNullOrWhiteSpace(cbCode))
-                    data = data.Where(x => !transLists.Contains(x.Code));
+                    if (!string.IsNullOrWhiteSpace(cbCode))
+                        data = data.Where(x => !transLists.Contains(x.Code));
 
-                return data.ToDataSourceResult(skip, take, filters, sorts);
-            }
+                    return data.ToDataSourceResult(skip, take, filters, sorts);
+                }
             case "SR":
-            {
-                var data = Db.VwOutstandingCreditMemos.Where(x => x.Type == 2);
+                {
+                    var data = Db.VwOutstandingCreditMemos.Where(x => x.Type == 2);
 
-                if (!string.IsNullOrWhiteSpace(cbCode))
-                    data = data.Where(x => !transLists.Contains(x.Code));
+                    if (!string.IsNullOrWhiteSpace(cbCode))
+                        data = data.Where(x => !transLists.Contains(x.Code));
 
-                return data.ToDataSourceResult(skip, take, filters, sorts);
-            }
+                    return data.ToDataSourceResult(skip, take, filters, sorts);
+                }
             default:
                 return null;
         }
@@ -164,32 +164,32 @@ public class CashBankService : GeneralService<GeneralCashBankHeader>, ICashBankS
         switch (type)
         {
             case "DEPS":
-            {
-                var data = Db.VwDebitMemos.Where(x => x.SrcTrans == 1 && x.Mark == "PP");
+                {
+                    var data = Db.VwDebitMemos.Where(x => x.SrcTrans == 1 && x.Mark == "PP");
 
-                if (!string.IsNullOrWhiteSpace(cbCode))
-                    data = data.Where(x => !transLists.Contains(x.Code));
+                    if (!string.IsNullOrWhiteSpace(cbCode))
+                        data = data.Where(x => !transLists.Contains(x.Code));
 
-                return data.ToDataSourceResult(skip, take, filters, sorts);
-            }
+                    return data.ToDataSourceResult(skip, take, filters, sorts);
+                }
             case "RDEPS":
-            {
-                var data = Db.VwOutstandingDebitMemos.Where(x => x.Type == 1);
+                {
+                    var data = Db.VwOutstandingDebitMemos.Where(x => x.Type == 1);
 
-                if (!string.IsNullOrWhiteSpace(cbCode))
-                    data = data.Where(x => !transLists.Contains(x.Code));
+                    if (!string.IsNullOrWhiteSpace(cbCode))
+                        data = data.Where(x => !transLists.Contains(x.Code));
 
-                return data.ToDataSourceResult(skip, take, filters, sorts);
-            }
+                    return data.ToDataSourceResult(skip, take, filters, sorts);
+                }
             case "PR":
-            {
-                var data = Db.VwOutstandingDebitMemos.Where(x => x.Type == 2);
+                {
+                    var data = Db.VwOutstandingDebitMemos.Where(x => x.Type == 2);
 
-                if (!string.IsNullOrWhiteSpace(cbCode))
-                    data = data.Where(x => !transLists.Contains(x.Code));
+                    if (!string.IsNullOrWhiteSpace(cbCode))
+                        data = data.Where(x => !transLists.Contains(x.Code));
 
-                return data.ToDataSourceResult(skip, take, filters, sorts);
-            }
+                    return data.ToDataSourceResult(skip, take, filters, sorts);
+                }
             default:
                 return null;
         }
@@ -430,13 +430,13 @@ public class CashBankService : GeneralService<GeneralCashBankHeader>, ICashBankS
                 return result;
             }
 
-            var detail = Db.GeneralCashBankDetails.Where(x => x.Code == data.Code && new[] {"SDP", "RSDP"}.Contains(x.Type));
+            var detail = Db.GeneralCashBankDetails.Where(x => x.Code == data.Code && new[] { "SDP", "RSDP" }.Contains(x.Type)).ToList();
             if (detail.Any())
             {
                 foreach (var item in detail)
                 {
                     var cmData = Db.CreditMemos.Find(item.TransCode);
-                    if (new[] {"PU", "CMP" }.Contains(cmData.Mark))
+                    if (new[] { "PU", "CMP" }.Contains(cmData.Mark))
                     {
                         result.Message = $"Data kas bank umum tidak bisa ditandai sebagai void karena data {cmData.Code} berstatus PU atau CMP.";
                         return result;
@@ -546,20 +546,33 @@ public class CashBankService : GeneralService<GeneralCashBankHeader>, ICashBankS
 
         var queries = new List<string>();
 
-        var oldRSDPList = Db.GeneralCashBankDetails.Where(x => !listTransCode.Contains(x.TransCode) && x.Code == data.Code && x.Type == "RSDP");
-        if (oldRSDPList.Any())
+        var oldSDPList = Db.GeneralCashBankDetails.Where(x => !listTransCode.Contains(x.TransCode) && x.Code == data.Code && new[] { "SDP", "RSDP" }.Contains(x.Type)).ToList();
+        if (oldSDPList.Any())
         {
-            foreach (var oldItem in oldRSDPList)
+            foreach (var oldItem in oldSDPList)
             {
-                var oldRSDPData = Db.CreditMemos.FirstOrDefault(x => x.Code == oldItem.TransCode);
-                var oldSDPData = Db.CreditMemos.FirstOrDefault(x => x.Code == oldRSDPData.TransCode);
+                if (oldItem.Type == "RSDP")
+                {
+                    var oldRSDPData = Db.CreditMemos.FirstOrDefault(x => x.Code == oldItem.TransCode);
+                    var oldSDPData = Db.CreditMemos.FirstOrDefault(x => x.Code == oldRSDPData.TransCode);
 
-                var usedAmount = oldSDPData.Used - oldItem.TransAmount;
+                    var usedAmount = oldSDPData.Used - oldItem.TransAmount;
 
-                var oldMark = usedAmount > 0 ? "PU" : "A";
+                    var oldMark = usedAmount > 0 ? "PU" : "A";
 
-                var oldQuery = $"UPDATE Sales.CreditMemo SET Used = {usedAmount} , Mark='{oldMark}' WHERE Code='{oldSDPData.Code}'; UPDATE Sales.CreditMemo SET Used = 0 , Mark='A' WHERE Code='{oldItem.TransCode}';";
-                queries.Add(oldQuery);
+                    var oldQuery = $"UPDATE Sales.CreditMemo SET Used = {usedAmount} , Mark='{oldMark}' WHERE Code='{oldSDPData.Code}'; UPDATE Sales.CreditMemo SET Used = 0 , Mark='A' WHERE Code='{oldItem.TransCode}';";
+                    queries.Add(oldQuery);
+                }
+                else
+                {
+                    var memo = Db.CreditMemos.SingleOrDefault(x => x.Code == oldItem.TransCode);
+
+                    if (memo == null)
+                        continue;
+
+                    if (new[] { "PU", "CMP" }.Contains(memo.Mark))
+                        return ($"Data Kas bank tidak bisa diubah karena data {memo.Code} berstatus PU atau CMP.", false, new List<string>());
+                }
             }
         }
 
@@ -639,7 +652,7 @@ public class CashBankService : GeneralService<GeneralCashBankHeader>, ICashBankS
                 else
                 {
                     var header = Db.PurchaseInvoiceHeaders.SingleOrDefault(x => x.Code == item.TransCode);
-                        
+
                     if (header == null)
                         continue;
 
@@ -738,7 +751,7 @@ public class CashBankService : GeneralService<GeneralCashBankHeader>, ICashBankS
                     else
                     {
                         var memo = Db.DebitMemos.SingleOrDefault(x => x.Code == item.TransCode);
-                            
+
                         if (memo == null)
                             continue;
 
@@ -805,9 +818,6 @@ public class CashBankService : GeneralService<GeneralCashBankHeader>, ICashBankS
                 if (data.ChequeDate.GetValueOrDefault(data.Date) < memo.Date)
                     return ($"Tanggal kas bank tidak boleh lebih kecil dari tanggal transaksi {memo.Code}.", false, new List<string>());
 
-                if (new[] {"PU", "CMP"}.Contains(memo.Mark))
-                    return ($"Data Kas bank tidak bisa diubah karena {memo.Code} berstatus PU atau CMP.", false, new List<string>());
-
                 var mark = item.Type == "SDP" ? "A" : "CMP";//item.Amount == memo.Amount ? "FU" : "PU";
 
                 var query = item.Type == "SDP" ? $"UPDATE Sales.CreditMemo SET Mark='{mark}' WHERE Code='{item.TransCode}';" : $"UPDATE Sales.CreditMemo SET Used ={item.Amount} ,Mark='{mark}' WHERE Code='{item.TransCode}';";
@@ -834,10 +844,10 @@ public class CashBankService : GeneralService<GeneralCashBankHeader>, ICashBankS
     private void RestoreCreditUsed(string cashBankCode)
     {
         var listTransactions = (from cd in Db.GeneralCashBankDetails
-            join si in Db.SalesInvoiceHeaders on cd.TransCode equals si.Code
-            join so in Db.SalesOrderHeaders on si.SoCode equals so.Code
-            where cd.Code == cashBankCode
-            select new { so.CustCode , cd.TransAmount }).ToList();
+                                join si in Db.SalesInvoiceHeaders on cd.TransCode equals si.Code
+                                join so in Db.SalesOrderHeaders on si.SoCode equals so.Code
+                                where cd.Code == cashBankCode
+                                select new { so.CustCode, cd.TransAmount }).ToList();
         var listQuery = new List<string>();
         foreach (var item in listTransactions)
         {
@@ -853,22 +863,24 @@ public class CashBankService : GeneralService<GeneralCashBankHeader>, ICashBankS
     {
         var listTransCodeOnly = listTransCodeAndTransAmount.Select(x => x.TransCode).ToList();
         var listTransactions = (from so in Db.SalesOrderHeaders
-            join si in Db.SalesInvoiceHeaders on so.Code equals si.SoCode
-            where listTransCodeOnly.Contains(si.Code)
-            select new { si.Code, so.CustCode }).ToList();
+                                join si in Db.SalesInvoiceHeaders on so.Code equals si.SoCode
+                                where listTransCodeOnly.Contains(si.Code)
+                                select new { si.Code, so.CustCode }).ToList();
 
         var listQuery = new List<string>();
         foreach (var item in listTransCodeAndTransAmount)
         {
             string custCode = listTransactions.SingleOrDefault(x => x.Code.Equals(item.TransCode))?.CustCode;
-            if (custCode != null) {
+            if (custCode != null)
+            {
                 string query = $"update General.Customer set CreditUsed= (CreditUsed - {item.TransAmount}) where code = '{custCode}'";
                 listQuery.Add(query);
             }
-                
+
         }
-        if (listQuery.Any()) { 
-            Db.Database.ExecuteSqlRaw(string.Join(";",listQuery));
+        if (listQuery.Any())
+        {
+            Db.Database.ExecuteSqlRaw(string.Join(";", listQuery));
         }
     }
     #endregion
