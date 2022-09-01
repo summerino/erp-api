@@ -519,14 +519,12 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                                                 PromoDetailId = detailPromo.Id,
                                                 Name = dataPromo.Name,
                                                 //promoMethod: 1,
-                                                Value = tierData.IsPercentage ?
-                                                tierData.Value :
-                                                discAmount,
+                                                Value = discAmount,
                                                 //nettPrice: 0,
                                                 CoaCode = dataPromo.CoaCost,
                                                 Amount = discAmount,
                                                 //fromPromo: true,
-                                                IsPercentage = detailPromo.IsPercentage
+                                                IsPercentage = false
                                             });
                                         }
                                         break;
@@ -566,14 +564,12 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                                                 PromoDetailId = detailPromo.Id,
                                                 Name = dataPromo.Name,
                                                 //promoMethod: 1,
-                                                Value = tierData5.IsPercentage ?
-                                                tierData5.Value :
-                                                discAmount,
+                                                Value = discAmount,
                                                 //nettPrice: 0,
                                                 CoaCode = dataPromo.CoaCost,
                                                 Amount = discAmount,
                                                 //fromPromo: true,
-                                                IsPercentage = detailPromo.IsPercentage
+                                                IsPercentage = false
                                             });
                                         }
                                         break;
@@ -1412,14 +1408,12 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                                                 PromoDetailId = detailPromo.Id,
                                                 Name = dataPromo.Name,
                                                 //promoMethod: 1,
-                                                Value = tierData.IsPercentage ?
-                                                tierData.Value :
-                                                discAmount,
+                                                Value = discAmount,
                                                 //nettPrice: 0,
                                                 CoaCode = dataPromo.CoaCost,
                                                 Amount = discAmount,
                                                 //fromPromo: true,
-                                                IsPercentage = detailPromo.IsPercentage
+                                                IsPercentage = false
                                             });
                                         }
                                         break;
@@ -1459,14 +1453,12 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                                                 PromoDetailId = detailPromo.Id,
                                                 Name = dataPromo.Name,
                                                 //promoMethod: 1,
-                                                Value = tierData5.IsPercentage ?
-                                                tierData5.Value :
-                                                discAmount,
+                                                Value = discAmount,
                                                 //nettPrice: 0,
                                                 CoaCode = dataPromo.CoaCost,
                                                 Amount = discAmount,
                                                 //fromPromo: true,
-                                                IsPercentage = detailPromo.IsPercentage
+                                                IsPercentage = false
                                             });
                                         }
                                         break;
