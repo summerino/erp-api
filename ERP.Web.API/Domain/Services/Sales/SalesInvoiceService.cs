@@ -137,7 +137,7 @@ public class SalesInvoiceService : GeneralService<SalesInvoiceHeader>, ISalesInv
                     
             // Insert header data
             data.Code = newCode;
-            data.PaidAmount = data.Memos.Sum(x => x.CreditMemoAmount) + data.SalesDownPayments.Sum(x => x.CreditMemoAmount);
+            data.PaidAmount = data.Memos.Sum(x => x.CreditMemoAmount) + data.SalesDownPayments.Sum(x => x.CreditMemoAmount + x.CreditMemoTaxAmount);
             data.Mark = data.PaidAmount > 0 ? data.Total == data.PaidAmount ? "CMP" : "PP" : "A";
             Db.SalesInvoiceHeaders.Add(data);
 
@@ -387,7 +387,7 @@ public class SalesInvoiceService : GeneralService<SalesInvoiceHeader>, ISalesInv
             }
 
             // Update header data
-            data.PaidAmount = (newMemos.Any() ? newMemos.Sum(x => x.CreditMemoAmount) : 0) + (newDownPayments.Any() ? newDownPayments.Sum(x => x.CreditMemoAmount) : 0);
+            data.PaidAmount = (newMemos.Any() ? newMemos.Sum(x => x.CreditMemoAmount) : 0) + (newDownPayments.Any() ? newDownPayments.Sum(x => x.CreditMemoAmount + x.CreditMemoTaxAmount) : 0);
             data.Mark = data.PaidAmount > 0 ? data.Total == data.PaidAmount ? "CMP" : "PP" : "A";
             Db.SalesInvoiceHeaders.Update(data);
             Db.Entry(data).Property(e => e.Code).IsModified = false;
@@ -467,6 +467,13 @@ public class SalesInvoiceService : GeneralService<SalesInvoiceHeader>, ISalesInv
             if (data.Mark == "V")
             {
                 result.Message = "Data faktur penjualan tidak bisa ditandai sebagai void karena sudah ditandai sebagai void.";
+                return result;
+            }
+
+            var cmData = Db.SalesInvoiceCreditMemos.Where(x => x.InvCode == code && x.Src == "CM").ToList();
+            if (cmData.Any())
+            {
+                result.Message = "Data faktur penjualan tidak bisa ditandai sebagai void karena terdapat nota kredit.";
                 return result;
             }
 
