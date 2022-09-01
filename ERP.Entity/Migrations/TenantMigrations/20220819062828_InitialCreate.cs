@@ -11206,7 +11206,7 @@ BEGIN
 				IF (@used > 0) SET @mark = 'PU' 
 				UPDATE Sales.CreditMemo SET Used = @used, Mark = @mark WHERE Code = (SELECT TransCode FROM Sales.CreditMemo WHERE Code = @transCode)
 				--Retur UM
-				UPDATE Sales.CreditMemo SET Used = 0, Mark = 'A' WHERE Code = @transCode
+				UPDATE Sales.CreditMemo SET Used = 0, Mark = 'PP' WHERE Code = @transCode
 			END
 
 		END
