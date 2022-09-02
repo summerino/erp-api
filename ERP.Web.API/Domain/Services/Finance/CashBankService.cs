@@ -430,7 +430,7 @@ public class CashBankService : GeneralService<GeneralCashBankHeader>, ICashBankS
                 return result;
             }
 
-            var detail = Db.GeneralCashBankDetails.Where(x => x.Code == data.Code && new[] { "SDP", "RSDP" }.Contains(x.Type)).ToList();
+            var detail = Db.GeneralCashBankDetails.Where(x => x.Code == data.Code && x.Type == "SDP").ToList();
             if (detail.Any())
             {
                 foreach (var item in detail)
@@ -546,33 +546,18 @@ public class CashBankService : GeneralService<GeneralCashBankHeader>, ICashBankS
 
         var queries = new List<string>();
 
-        var oldSDPList = Db.GeneralCashBankDetails.Where(x => !listTransCode.Contains(x.TransCode) && x.Code == data.Code && new[] { "SDP", "RSDP" }.Contains(x.Type)).ToList();
+        var oldSDPList = Db.GeneralCashBankDetails.Where(x => !listTransCode.Contains(x.TransCode) && x.Code == data.Code && x.Type == "SDP").ToList();
         if (oldSDPList.Any())
         {
             foreach (var oldItem in oldSDPList)
             {
-                if (oldItem.Type == "RSDP")
-                {
-                    var oldRSDPData = Db.CreditMemos.FirstOrDefault(x => x.Code == oldItem.TransCode);
-                    var oldSDPData = Db.CreditMemos.FirstOrDefault(x => x.Code == oldRSDPData.TransCode);
+                var memo = Db.CreditMemos.SingleOrDefault(x => x.Code == oldItem.TransCode);
 
-                    var usedAmount = oldSDPData.Used - oldItem.TransAmount;
+                if (memo == null)
+                    continue;
 
-                    var oldMark = usedAmount > 0 ? "PU" : "A";
-
-                    var oldQuery = $"UPDATE Sales.CreditMemo SET Used = {usedAmount} , Mark='{oldMark}' WHERE Code='{oldSDPData.Code}'; UPDATE Sales.CreditMemo SET Used = 0 , Mark='A' WHERE Code='{oldItem.TransCode}';";
-                    queries.Add(oldQuery);
-                }
-                else
-                {
-                    var memo = Db.CreditMemos.SingleOrDefault(x => x.Code == oldItem.TransCode);
-
-                    if (memo == null)
-                        continue;
-
-                    if (new[] { "PU", "CMP" }.Contains(memo.Mark))
-                        return ($"Data Kas bank tidak bisa diubah karena data {memo.Code} berstatus PU atau CMP.", false, new List<string>());
-                }
+                if (new[] { "PU", "CMP" }.Contains(memo.Mark))
+                    return ($"Data Kas bank tidak bisa diubah karena data {memo.Code} berstatus PU atau CMP.", false, new List<string>());
             }
         }
 
