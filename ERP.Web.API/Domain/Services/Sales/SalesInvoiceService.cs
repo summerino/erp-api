@@ -643,7 +643,7 @@ public class SalesInvoiceService : GeneralService<SalesInvoiceHeader>, ISalesInv
                 var selectedMemo = listCreditMemo.FirstOrDefault(x => x.Code.Equals(item.CreditMemoCode));
                 if (selectedMemo != null)
                 {
-                    decimal used = selectedMemo.Used + (item.CreditMemoAmount + item.CreditMemoTaxAmount);
+                    decimal used = Math.Round(selectedMemo.Used) + Math.Round((item.CreditMemoAmount + item.CreditMemoTaxAmount));
                     string status = used == selectedMemo.Amount ? "CMP" : "PU";
                     string query = selectedMemo.Source == "dp" ? $"update Sales.CreditMemo set Mark = '{status}', Used = {used} where code = '{selectedMemo.Code}'" : $"update Accounting.BeginningBalanceCreditMemo set Used = {used} where code = '{selectedMemo.Code}'";
                     listQuery.Add(query);

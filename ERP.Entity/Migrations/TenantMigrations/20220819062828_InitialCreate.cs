@@ -11200,11 +11200,6 @@ BEGIN
 			END
 			ELSE IF @type = 'RSDP'
 			BEGIN
-				--UM
-				SET @used = ((SELECT Used FROM Sales.CreditMemo where Code = (SELECT TransCode FROM Sales.CreditMemo WHERE Code = @transCode)) - @transAmount)
-				SET @mark = 'A'
-				IF (@used > 0) SET @mark = 'PU' 
-				UPDATE Sales.CreditMemo SET Used = @used, Mark = @mark WHERE Code = (SELECT TransCode FROM Sales.CreditMemo WHERE Code = @transCode)
 				--Retur UM
 				UPDATE Sales.CreditMemo SET Used = 0, Mark = 'PP' WHERE Code = @transCode
 			END

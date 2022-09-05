@@ -82,7 +82,7 @@ public class SalesDownPaymentService : GeneralService<CreditMemo>, ISalesDownPay
             }
 
             // Get new code
-            var newCode = GetNewCode("SLS_DP_NUM_FMT", data.CreatedDate);
+            var newCode = GetNewCode("SLS_DP_NUM_FMT", data.Date);
 
             // Insert data
             data.Code = newCode;
