@@ -643,7 +643,7 @@ public class SalesInvoiceService : GeneralService<SalesInvoiceHeader>, ISalesInv
                 var selectedMemo = listCreditMemo.FirstOrDefault(x => x.Code.Equals(item.CreditMemoCode));
                 if (selectedMemo != null)
                 {
-                    decimal used = selectedMemo.Used + (item.CreditMemoAmount + item.CreditMemoTaxAmount);
+                    decimal used = Math.Round(selectedMemo.Used) + Math.Round((item.CreditMemoAmount + item.CreditMemoTaxAmount));
                     string status = used == selectedMemo.Amount ? "CMP" : "PU";
                     string query = selectedMemo.Source == "dp" ? $"update Sales.CreditMemo set Mark = '{status}', Used = {used} where code = '{selectedMemo.Code}'" : $"update Accounting.BeginningBalanceCreditMemo set Used = {used} where code = '{selectedMemo.Code}'";
                     listQuery.Add(query);
@@ -678,7 +678,7 @@ public class SalesInvoiceService : GeneralService<SalesInvoiceHeader>, ISalesInv
     {
         var result = (from cm in Db.CreditMemos
                       where listCodeMemo.Contains(cm.Code)
-                      select new { cm.Code, Amount = cm.Amount + cm.TaxAmount, cm.Used, Source = new[] { 1, 2 }.Contains(cm.SrcTrans) ? "cm" : "dp" })
+                      select new { cm.Code, cm.Amount, cm.Used, Source = new[] { 1, 2 }.Contains(cm.SrcTrans) ? "cm" : "dp" })
                       .ToDynamicList();
 
         var bbData = (from cm in Db.BeginningBalanceCreditMemos
