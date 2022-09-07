@@ -45,7 +45,7 @@ public class SalesDownPaymentService : GeneralService<CreditMemo>, ISalesDownPay
             }).Union(
             from s in Db.SalesInvoiceCreditMemos
             join c in Db.SalesInvoiceHeaders on s.InvCode equals c.Code
-            where s.CreditMemoCode == code
+            where s.CreditMemoCode == code && c.Mark != "V"
             select new
             { 
                 Code = s.InvCode,
