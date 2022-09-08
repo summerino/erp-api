@@ -687,13 +687,16 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
 
                         if (!soPromo.Any(x => x.PromoCode == discItem.PromoCode))
                         {
-                            soPromo.Add(new SalesOrderPromo
+                            if (discItem.PromoCode != null)
                             {
-                                Code = newCode,
-                                LineNo = (short)(soPromo.Count + 1),
-                                PromoCode = discItem.PromoCode,
-                                IsActive = true
-                            });
+                                soPromo.Add(new SalesOrderPromo
+                                {
+                                    Code = newCode,
+                                    LineNo = (short)(soPromo.Count + 1),
+                                    PromoCode = discItem.PromoCode,
+                                    IsActive = true
+                                });
+                            }
                         }
                     }
                     Db.SaveChanges();
@@ -1685,26 +1688,33 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
 
                             if (!soPromo.Any(x => x.PromoCode == discItem.PromoCode))
                             {
-                                soPromo.Add(new SalesOrderPromo
+                                if (discItem.PromoCode != null)
                                 {
-                                    Code = data.Code,
-                                    LineNo = (short)(soPromo.Count + 1),
-                                    PromoCode = discItem.PromoCode,
-                                    IsActive = data.ListPromo.FirstOrDefault(x => x.PromoCode == discItem.PromoCode)?.IsActive ?? true
-                                });
+                                    soPromo.Add(new SalesOrderPromo
+                                    {
+                                        Code = data.Code,
+                                        LineNo = (short)(soPromo.Count + 1),
+                                        PromoCode = discItem.PromoCode,
+                                        IsActive = true
+                                    });
+                                }
                             }
                         }
                         else
                         {
                             if (!soPromo.Any(x => x.PromoCode == discItem.PromoCode))
                             {
-                                soPromo.Add(new SalesOrderPromo
+                                if (discItem.PromoCode != null)
                                 {
-                                    Code = data.Code,
-                                    LineNo = (short)(soPromo.Count + 1),
-                                    PromoCode = discItem.PromoCode,
-                                    IsActive = false
-                                });
+
+                                    soPromo.Add(new SalesOrderPromo
+                                    {
+                                        Code = data.Code,
+                                        LineNo = (short)(soPromo.Count + 1),
+                                        PromoCode = discItem.PromoCode,
+                                        IsActive = false
+                                    });
+                                }
                             }
                         }
                     }
