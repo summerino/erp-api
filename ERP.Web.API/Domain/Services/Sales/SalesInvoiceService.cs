@@ -102,6 +102,26 @@ public class SalesInvoiceService : GeneralService<SalesInvoiceHeader>, ISalesInv
 
         return data.ToDynamicList();
     }
+    public List<dynamic> GetSalesInvoiceSDP(string soCode, string siCode = null)
+    {
+
+        var data = (from h in Db.SalesInvoiceCreditMemos
+                    join i in Db.SalesInvoiceHeaders on h.InvCode equals i.Code
+                    join d in Db.CreditMemos on h.CreditMemoCode equals d.Code
+                    where i.SoCode == soCode && h.Src == "DP" && i.Mark != "V" && i.Code != siCode
+                    select new
+                    {
+                        h.Id,
+                        CreditMemoCode = d.Code,
+                        d.Date,
+                        h.CreditMemoAmount,
+                        h.CreditMemoTaxAmount,
+                        CreditMemoTotal = h.CreditMemoAmount + h.CreditMemoTaxAmount,
+                        Src = "DP"
+                    });
+
+        return data.ToDynamicList();
+    }
     public SaveResult Insert(SalesInvoiceRequest data)
     {
         var result = new SaveResult(false);

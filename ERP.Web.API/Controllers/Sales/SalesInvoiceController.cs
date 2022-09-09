@@ -135,6 +135,28 @@ public class SalesInvoiceController : ControllerBase
         });
     }
 
+    [HttpGet("si-sdp")]
+    public IActionResult GetSalesInvoiceSDP(string soCode, string siCode)
+    {
+        var data = _inv.GetSalesInvoiceSDP(soCode, siCode)
+            .Select(x => new
+            {
+                x.Id,
+                x.CreditMemoCode,
+                x.Date,
+                x.CreditMemoAmount,
+                x.CreditMemoTaxAmount,
+                x.CreditMemoTotal,
+                x.Src
+            }).ToList<dynamic>();
+
+        return Ok(new ApiResponse
+        {
+            RowCount = data.Count,
+            TableData = data
+        });
+    }
+
     [HttpPost]
     public IActionResult OnPost(SalesInvoiceRequest data)
     {
