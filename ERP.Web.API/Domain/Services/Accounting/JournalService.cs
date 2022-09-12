@@ -1174,7 +1174,7 @@ public class JournalService : IJournalService
                     //ar
                     arAmount += itemDetail.DoData.Total;
                     //PPN
-                    taxAmount += itemDetail.DoData.TaxAmount;
+                    taxAmount += itemDetail.DoData.TaxAmount - itemDetail.DoData.ExemptTaxAmount;
                     //PPN Yang Dibebaskan
                     //extTaxAmount += itemDetail.RcvData.ExemptTaxAmount;
                     var DlvDetailData = (from dlvdetail in db.SalesDeliveryDetails
@@ -1193,7 +1193,6 @@ public class JournalService : IJournalService
                         discAmount += itemDlvDetail.DlvDetail.Disc * itemDlvDetail.DlvDetail.Qty;
                         if (itemDlvDetail.DlvDetail.ExemptTaxAmount > 0)
                         {
-                            taxAmount -= itemDlvDetail.DlvDetail.ExemptTaxAmount * itemDlvDetail.DlvDetail.Qty;
                             //PPN Yang Dibebaskan
                             journals.Add(new Journal
                             {
