@@ -7710,27 +7710,6 @@ AS
 		ON u_a.Id = dp_h.ApprovedBy";
             migrationBuilder.Sql(sql);
 
-            // Create view Sales.vwDeliveryPlanDetail
-            sql = @"CREATE VIEW [Sales].[vwDeliveryPlanDetail]
-AS
-	SELECT dp_d.*,
-		dlv.CustName,
-		dlv.CustAddress,
-		dlv.CustArea,
-		CASE
-			WHEN dlv.SrcTrans = 1 THEN so.SalesName
-			WHEN dlv.SrcTrans = 2 THEN sr.SalesName
-			ELSE NULL
-		END AS SalesName
-	FROM Sales.DeliveryPlanDetail dp_d
-	LEFT JOIN Sales.vwSalesDeliveryHeader dlv
-		ON dp_d.TransCode = dlv.Code
-	LEFT JOIN Sales.vwSalesOrderHeader so
-		ON so.Code = dlv.TransCode
-	LEFT JOIN Sales.vwSalesReturnHeader sr
-		ON sr.Code = dlv.TransCode";
-            migrationBuilder.Sql(sql);
-
             // Create view Sales.vwSalesDeliveryHeader
             sql = @"CREATE VIEW [Sales].[vwSalesDeliveryHeader]
 AS
@@ -7756,6 +7735,93 @@ AS
 		ON e.Id = do_h.ShippedBy
 	LEFT JOIN SystemManagement.[User] u
 		ON u.Id = do_h.UpdatedBy";
+            migrationBuilder.Sql(sql);
+
+            // Create view Sales.vwSalesOrderHeader
+            sql = @"CREATE VIEW [Sales].[vwSalesOrderHeader]
+AS
+    SELECT so_h.*,
+        c.[Name] AS CustName,
+        e.Initial AS SalesInitial,
+		e.FirstName AS SalesName,
+        u_c.Initial AS CreatedInitial,
+        u_u.Initial AS UpdatedInitial,
+        u_a.Initial AS ApprovedInitial,
+        u_o.Initial AS OverlimitApprovedInitial,
+        CASE so_h.Mark
+            WHEN 'A' THEN 'Active'
+            WHEN 'V' THEN 'Void'
+            WHEN 'OL' THEN 'Overlimit'
+            WHEN 'PS' THEN 'Partial Shipped'
+            WHEN 'CMP' THEN 'Completed'
+            WHEN 'CLS' THEN 'Closed' END AS [Status]
+    FROM Sales.SalesOrderHeader so_h
+    LEFT JOIN General.Customer c
+        ON c.Code = so_h.CustCode
+    LEFT JOIN General.Employee e
+        ON e.Id = so_h.SalesBy
+    LEFT JOIN SystemManagement.[User] u_c
+        ON u_c.Id = so_h.CreatedBy
+    LEFT JOIN SystemManagement.[User] u_u
+        ON u_u.Id = so_h.UpdatedBy
+    LEFT JOIN SystemManagement.[User] u_a
+        ON u_a.Id = so_h.ApprovedBy
+    LEFT JOIN SystemManagement.[User] u_o
+        ON u_o.Id = so_h.OverlimitApprovedBy";
+            migrationBuilder.Sql(sql);
+
+            // Create view Sales.vwSalesReturnHeader
+            sql = @"CREATE VIEW [Sales].[vwSalesReturnHeader]
+AS
+	SELECT sr_h.*,
+		c.[Name] AS CustName,
+		e.Initial AS SalesInitial,
+        e.FirstName AS SalesName,
+		u_c.Initial AS CreatedInitial,
+		u_u.Initial AS UpdatedInitial,
+		u_a.Initial AS ApprovedInitial,
+		CASE sr_h.[Type]
+			When '1' THEN 'Tukar Memo'
+			When '2' THEN 'Tukar Barang Sama'
+			When '3' THEN 'Tukar Barang Beda' End As TypeName,
+		CASE sr_h.Mark
+			WHEN 'A' THEN 'Active'
+			WHEN 'V' THEN 'Void'
+			WHEN 'PS' THEN 'Partial Shipped'
+			WHEN 'CMP' THEN 'Completed'
+			WHEN 'CLS' THEN 'Closed' END AS [Status]
+	FROM Sales.SalesReturnHeader sr_h
+	LEFT JOIN General.Customer c
+		ON c.Code = sr_h.CustCode
+	LEFT JOIN General.Employee e
+		ON e.Id = sr_h.SalesBy
+	LEFT JOIN SystemManagement.[User] u_c
+		ON u_c.Id = sr_h.CreatedBy
+	LEFT JOIN SystemManagement.[User] u_u
+		ON u_u.Id = sr_h.UpdatedBy
+	LEFT JOIN SystemManagement.[User] u_a
+		ON u_a.Id = sr_h.ApprovedBy";
+            migrationBuilder.Sql(sql);
+
+            // Create view Sales.vwDeliveryPlanDetail
+            sql = @"CREATE VIEW [Sales].[vwDeliveryPlanDetail]
+AS
+	SELECT dp_d.*,
+		dlv.CustName,
+		dlv.CustAddress,
+		dlv.CustArea,
+		CASE
+			WHEN dlv.SrcTrans = 1 THEN so.SalesName
+			WHEN dlv.SrcTrans = 2 THEN sr.SalesName
+			ELSE NULL
+		END AS SalesName
+	FROM Sales.DeliveryPlanDetail dp_d
+	LEFT JOIN Sales.vwSalesDeliveryHeader dlv
+		ON dp_d.TransCode = dlv.Code
+	LEFT JOIN Sales.vwSalesOrderHeader so
+		ON so.Code = dlv.TransCode
+	LEFT JOIN Sales.vwSalesReturnHeader sr
+		ON sr.Code = dlv.TransCode";
             migrationBuilder.Sql(sql);
 
             // Create view Sales.vwSalesDeliveryDetail
@@ -7917,39 +7983,6 @@ AS
 		ON c.BillingAddressId = ca.Id";
             migrationBuilder.Sql(sql);
 
-            // Create view Sales.vwSalesOrderHeader
-            sql = @"CREATE VIEW [Sales].[vwSalesOrderHeader]
-AS
-    SELECT so_h.*,
-        c.[Name] AS CustName,
-        e.Initial AS SalesInitial,
-		e.FirstName AS SalesName,
-        u_c.Initial AS CreatedInitial,
-        u_u.Initial AS UpdatedInitial,
-        u_a.Initial AS ApprovedInitial,
-        u_o.Initial AS OverlimitApprovedInitial,
-        CASE so_h.Mark
-            WHEN 'A' THEN 'Active'
-            WHEN 'V' THEN 'Void'
-            WHEN 'OL' THEN 'Overlimit'
-            WHEN 'PS' THEN 'Partial Shipped'
-            WHEN 'CMP' THEN 'Completed'
-            WHEN 'CLS' THEN 'Closed' END AS [Status]
-    FROM Sales.SalesOrderHeader so_h
-    LEFT JOIN General.Customer c
-        ON c.Code = so_h.CustCode
-    LEFT JOIN General.Employee e
-        ON e.Id = so_h.SalesBy
-    LEFT JOIN SystemManagement.[User] u_c
-        ON u_c.Id = so_h.CreatedBy
-    LEFT JOIN SystemManagement.[User] u_u
-        ON u_u.Id = so_h.UpdatedBy
-    LEFT JOIN SystemManagement.[User] u_a
-        ON u_a.Id = so_h.ApprovedBy
-    LEFT JOIN SystemManagement.[User] u_o
-        ON u_o.Id = so_h.OverlimitApprovedBy";
-            migrationBuilder.Sql(sql);
-
             // Create view Sales.vwSalesOrderDetail
             sql = @"CREATE VIEW [Sales].[vwSalesOrderDetail]
 AS
@@ -7970,39 +8003,6 @@ AS
 		ON uom.Id = so_d.UomId
 	LEFT JOIN Inventory.UoMConversion uom_c
 		ON uom_c.Id = so_d.UnitId";
-            migrationBuilder.Sql(sql);
-
-            // Create view Sales.vwSalesReturnHeader
-            sql = @"CREATE VIEW [Sales].[vwSalesReturnHeader]
-AS
-	SELECT sr_h.*,
-		c.[Name] AS CustName,
-		e.Initial AS SalesInitial,
-        e.FirstName AS SalesName,
-		u_c.Initial AS CreatedInitial,
-		u_u.Initial AS UpdatedInitial,
-		u_a.Initial AS ApprovedInitial,
-		CASE sr_h.[Type]
-			When '1' THEN 'Tukar Memo'
-			When '2' THEN 'Tukar Barang Sama'
-			When '3' THEN 'Tukar Barang Beda' End As TypeName,
-		CASE sr_h.Mark
-			WHEN 'A' THEN 'Active'
-			WHEN 'V' THEN 'Void'
-			WHEN 'PS' THEN 'Partial Shipped'
-			WHEN 'CMP' THEN 'Completed'
-			WHEN 'CLS' THEN 'Closed' END AS [Status]
-	FROM Sales.SalesReturnHeader sr_h
-	LEFT JOIN General.Customer c
-		ON c.Code = sr_h.CustCode
-	LEFT JOIN General.Employee e
-		ON e.Id = sr_h.SalesBy
-	LEFT JOIN SystemManagement.[User] u_c
-		ON u_c.Id = sr_h.CreatedBy
-	LEFT JOIN SystemManagement.[User] u_u
-		ON u_u.Id = sr_h.UpdatedBy
-	LEFT JOIN SystemManagement.[User] u_a
-		ON u_a.Id = sr_h.ApprovedBy";
             migrationBuilder.Sql(sql);
 
             // Create view Sales.vwSalesReturnDetail
