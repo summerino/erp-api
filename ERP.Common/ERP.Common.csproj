@@ -6,12 +6,12 @@
 	  <Company>Sahassa Panca Manunggal</Company>
 	  <Product>Sahassa® ERP</Product>
 	  <Copyright>© Sahassa. All rights reserved.</Copyright>
-	  <Version>22.9.5</Version>
+	  <Version>22.9.14</Version>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.8" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="6.0.8" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.9" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="6.0.9" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="System.Linq.Dynamic.Core" Version="1.2.20" />
     <PackageReference Include="ValueInjecter" Version="3.2.0" />
