@@ -228,7 +228,8 @@ public class CoaService : GeneralService<Coa>, ICoaService
 
         var specialCOA = new[] { "AP_COA", "AP_DFR_COA", "AR_COA", "CHQ_AP_COA", "CHQ_AR_COA",
             "CM_AP_COA", "COGS_COA", "CROSS_COA", "DM_AR_COA", "DEP_CUST_COA",
-            "DEP_SUP_COA", "EP_AP_COA", "INVENTORY_COA", "SENT_ITEM_COA" };
+            "DEP_SUP_COA", "EP_AP_COA", "INVENTORY_COA", "SENT_ITEM_COA",
+            "SLS_COA", "SLS_DISC_COA", "SLS_RTN_COA", "CM_AP_COA"};
 
         var sysParData = Db.SystemParameters.Where(x => specialCOA.Contains(x.Code)).ToList();
 
