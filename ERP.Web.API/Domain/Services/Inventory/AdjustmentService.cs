@@ -94,15 +94,24 @@ public class AdjustmentService : GeneralService<AdjustmentHeader>, IAdjustmentSe
                 Qty = x.Sum(y => y.QtyAdjust)
             });
 
-                foreach (var itemGroup in groupedDetail)
+            foreach (var itemGroup in groupedDetail)
+            {
+                var whData = Db.Warehouses.FirstOrDefault(x => x.Code == data.WarehouseCode);
+                var whQtyData = Db.VwWarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == data.WarehouseCode && x.ItemId == itemGroup.ItemId);
+                if (whQtyData == null)
                 {
-                    var whData = Db.Warehouses.FirstOrDefault(x => x.Code == data.WarehouseCode);
-                    var whQtyData = Db.VwWarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == data.WarehouseCode && x.ItemId == itemGroup.ItemId);
-                    if (whQtyData == null || (whQtyData.QtyOnHand + itemGroup.Qty) < 0)
+                    Db.WarehouseQuantities.Add(new WarehouseQuantity
                     {
-                        result.Message = $"Data penyesuaian tidak bisa ditambahkan karena terdapat barang pada gudang {(whQtyData == null ? whData.Initial : whQtyData.WarehouseInitial)} qty tersedia akan menjadi minus.";
-                        return result;
-                    }
+                        WarehouseCode = data.WarehouseCode,
+                        ItemId = itemGroup.ItemId,
+                        UpdatedDate = DateTime.Now
+                    });
+                }
+                else if ((whQtyData.QtyOnHand + itemGroup.Qty) < 0)
+                {
+                    result.Message = $"Data penyesuaian tidak bisa ditambahkan karena terdapat barang pada gudang {(whQtyData == null ? whData.Initial : whQtyData.WarehouseInitial)} qty tersedia akan menjadi minus.";
+                    return result;
+                }
             }
 
             foreach (var item in data.ItemDetails)
@@ -217,7 +226,16 @@ public class AdjustmentService : GeneralService<AdjustmentHeader>, IAdjustmentSe
             foreach (var itemGroup in groupedDetail)
             {
                 var whQtyData = Db.VwWarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == data.WarehouseCode && x.ItemId == itemGroup.ItemId);
-                if (whQtyData == null || (whQtyData.QtyOnHand + itemGroup.Qty) < 0)
+                if (whQtyData == null)
+                {
+                    Db.WarehouseQuantities.Add(new WarehouseQuantity
+                    {
+                        WarehouseCode = data.WarehouseCode,
+                        ItemId = itemGroup.ItemId,
+                        UpdatedDate = DateTime.Now
+                    });
+                }
+                else if ((whQtyData.QtyOnHand + itemGroup.Qty) < 0)
                 {
                     result.Message = $"Data penyesuaian tidak bisa diubah karena terdapat barang pada gudang {whQtyData.WarehouseInitial} qty tersedia akan menjadi minus.";
                     return result;
