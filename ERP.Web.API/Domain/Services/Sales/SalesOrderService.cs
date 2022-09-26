@@ -107,6 +107,13 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
         using var transaction = Db.Database.BeginTransaction();
         try
         {
+            var (invalid, invalidMessage) = IsSaveAndDateInvalid(data);
+            if (invalid)
+            {
+                result.Message = invalidMessage;
+                return result;
+            }
+
             // Checking order qty is excess or not
             var checkQty = Db.SystemParameters.FirstOrDefault(x => x.Code == "DEF_SLS_ORD_CHECK_QTY")?.Value == "1";
                 
@@ -1106,6 +1113,13 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
         using var transaction = Db.Database.BeginTransaction();
         try
         {
+            var (invalid, invalidMessage) = IsSaveAndDateInvalid(data);
+            if (invalid)
+            {
+                result.Message = invalidMessage;
+                return result;
+            }
+
             // Checking mark header data
             if (Db.SalesOrderHeaders.Any(x => x.Code == data.Code && new[] { "V", "CLS" }.Contains(x.Mark)))
             {
@@ -2546,6 +2560,25 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
         }
 
         return result;
+    }
+
+    private (bool, string) IsSaveAndDateInvalid(SalesOrderRequest data)
+    {
+        var result = false;
+        var message = "";
+
+        if (data.IsSoDlv && data.DlvDate < data.Date)
+        {
+            result = true;
+            message = "Tanggal Surat Jalan tidak boleh lebih kecil dari tanggal Order Penjualan.";
+        }
+        else if (data.IsSoInv && (data.InvDate < data.Date || data.InvDate < data.DlvDate || data.DlvDate < data.Date))
+        {
+            result = true;
+            message = "Tanggal Surat Jalan/Faktur Penjualan tidak boleh lebih kecil dari tanggal Order Penjualan/Surat Jalan & Order Penjualan.";
+        }
+
+        return (result, message);
     }
 
     private void RestoreWarehouseQty(string code)

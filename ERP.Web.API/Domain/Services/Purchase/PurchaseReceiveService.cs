@@ -120,6 +120,12 @@ public class PurchaseReceiveService : GeneralService<PurchaseReceiveHeader>, IPu
                     result.Message = "Data penerimaan pembelian tidak bisa disimpan karena data order pembelian mempunyai tanggal lebih besar.";
                     return result;
                 }
+
+                if (IsSaveAndDateInvalid(data))
+                {
+                    result.Message = "Tanggal Faktur Pembelian tidak boleh lebih kecil dari tanggal Penerimaan Barang.";
+                    return result;
+                }
             }
                 
             // Checking receive qty is excess or not
@@ -349,6 +355,12 @@ public class PurchaseReceiveService : GeneralService<PurchaseReceiveHeader>, IPu
                 if (transData.Date > data.Date)
                 {
                     result.Message = "Data penerimaan pembelian tidak bisa diubah karena data order pembelian mempunyai tanggal lebih besar.";
+                    return result;
+                }
+
+                if (IsSaveAndDateInvalid(data))
+                {
+                    result.Message = "Tanggal Faktur Pembelian tidak boleh lebih kecil dari tanggal Penerimaan Barang.";
                     return result;
                 }
             }
@@ -669,6 +681,16 @@ public class PurchaseReceiveService : GeneralService<PurchaseReceiveHeader>, IPu
                 }
             }
         }
+        return result;
+    }
+
+    private bool IsSaveAndDateInvalid(PurchaseReceiveRequest data)
+    {
+        var result = false;
+
+        if (data.IsPoInv && data.InvDate < data.Date)
+            result = true;
+
         return result;
     }
 

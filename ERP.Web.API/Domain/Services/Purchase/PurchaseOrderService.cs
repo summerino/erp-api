@@ -100,6 +100,13 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
         using var transaction = Db.Database.BeginTransaction();
         try
         {
+            var (invalid, invalidMessage) = IsSaveAndDateInvalid(data);
+            if (invalid)
+            {
+                result.Message = invalidMessage;
+                return result;
+            }
+
             var (isDuplicate, message) = CheckDuplicateDetail(data.ItemDetails);
             if (isDuplicate)
             {
@@ -445,6 +452,13 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
             if (Db.PurchaseOrderHeaders.Any(x => x.Code == data.Code && x.Mark == "V"))
             {
                 result.Message = "Data order pembelian tidak bisa diubah karena sudah ditandai sebagai void.";
+                return result;
+            }
+
+            var (invalid, invalidMessage) = IsSaveAndDateInvalid(data);
+            if (invalid)
+            {
+                result.Message = invalidMessage;
                 return result;
             }
 
@@ -948,6 +962,25 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
         }
 
         return (errorList != "", errorList);
+    }
+
+    private (bool, string) IsSaveAndDateInvalid(PurchaseOrderRequest data)
+    {
+        var result = false;
+        var message = "";
+
+        if (data.IsPoRcv && data.RcvDate < data.Date)
+        {
+            result = true;
+            message = "Tanggal Penerimaan Barang tidak boleh lebih kecil dari tanggal Order Pembelian.";
+        }
+        else if (data.IsPoInv && (data.InvDate < data.Date || data.InvDate < data.RcvDate || data.RcvDate < data.Date))
+        {
+            result = true;
+            message = "Tanggal Penerimaan Barang/Faktur Pembelian tidak boleh lebih kecil dari tanggal Order Pembelian/Penerimaan Barang & Order Pembelian.";
+        }
+
+        return (result, message);
     }
 
     private void RestoreWarehouseQty(string code)
