@@ -10018,7 +10018,7 @@ BEGIN
 			w.Initial AS WarehouseInitial, w.[Name] AS WarehouseName,
 			e_c.Initial AS CreatedInitial,
 			i.Initial AS ItemInitial, i.[Name] AS ItemName,
-			uom_c.UnitToConvert AS ItemUnitName
+			uom_c.UnitEquivalent AS ItemUnitName
 		FROM cte_calc_group cte
 		LEFT JOIN General.Vehicle v
 			ON v.Id = cte.VehicleId
@@ -10032,7 +10032,7 @@ BEGIN
 			ON i.Id = cte.ItemId
 		LEFT JOIN Inventory.UoMConversion uom_c
 			ON uom_c.Id = cte.UnitId
-		ORDER BY i.Initial, i.[Name], uom_c.UnitToConvert
+		ORDER BY i.Initial, i.[Name], uom_c.UnitEquivalent
 	END
 
 	ELSE IF @displayType = 'INVOICE'
@@ -10153,7 +10153,7 @@ BEGIN
 		c.[Name] AS CustName,
 		ca_d.Address1 AS CustAddress1, ca_d.ContactPerson AS CustContactPerson, ca_d.Phone AS CustPhone,
 		i.Initial AS ItemInitial, i.[Name] AS ItemName,
-		uom_c.UnitToConvert AS ItemUnitName
+		uom_c.UnitEquivalent AS ItemUnitName
 	FROM cte_calc_group cte
 	LEFT JOIN General.Vehicle v
 		ON v.Id = cte.VehicleId
@@ -10172,7 +10172,7 @@ BEGIN
 		ON i.Id = cte.ItemId
 	LEFT JOIN Inventory.UoMConversion uom_c
 		ON uom_c.Id = cte.UnitId
-	ORDER BY cte.TransCode, i.Initial, i.[Name], uom_c.UnitToConvert
+	ORDER BY cte.TransCode, i.Initial, i.[Name], uom_c.UnitEquivalent
 
 END";
             migrationBuilder.Sql(sql);
@@ -10278,7 +10278,7 @@ BEGIN
 	BEGIN
 		SELECT do_d.Id, do_d.[LineNo], do_d.Qty,
 			i.Initial AS ItemInitial, i.[Name] AS ItemName,
-			uom_c.UnitToConvert AS ItemUnitName,
+			uom_c.UnitEquivalent AS ItemUnitName,
 			1 AS Sort
 		FROM (
 			SELECT Id, [LineNo], ItemId, Qty, UnitId
@@ -10292,7 +10292,7 @@ BEGIN
 		UNION ALL
 		SELECT do_d_fg.Id, do_d_fg.[LineNo], do_d_fg.Qty,
 			i.Initial AS ItemInitial, i.[Name] AS ItemName,
-			uom_c.UnitToConvert AS ItemUnitName,
+			uom_c.UnitEquivalent AS ItemUnitName,
 			2 AS Sort
 		FROM (
 			SELECT Id, Code, [LineNo], ItemId, UnitId, Qty
@@ -10403,7 +10403,7 @@ BEGIN
 			CASE WHEN rcv_d.[Type] = 0 THEN rcv_d.Total
 				ELSE 0 END AS Total,
 			i.Initial AS ItemInitial, i.[Name] AS ItemName,
-			uom_c.UnitToConvert AS ItemUnitName,
+			uom_c.UnitEquivalent AS ItemUnitName,
 			rcv_d.[Type] AS Sort
 		FROM (
 			SELECT Id, Code, RcvCode
@@ -10464,7 +10464,7 @@ BEGIN
 			CASE WHEN po_d.[Type] = 0 THEN po_d.Total
 				ELSE 0 END AS Total,
 			i.Initial AS ItemInitial, i.[Name] AS ItemName,
-			uom_c.UnitToConvert AS ItemUnitName,
+			uom_c.UnitEquivalent AS ItemUnitName,
 			po_d.[Type] AS Sort
 		FROM (
 			SELECT Id, Code, [LineNo], ItemId, UnitId, Qty, UnitPrice, Disc, FinalDiscHeader,
@@ -10516,7 +10516,7 @@ BEGIN
 		SELECT pr_d.Id, pr_d.[LineNo],
 			pr_d.Qty, pr_d.UnitPrice, pr_d.TaxAmount, pr_d.Total,
 			i.Initial AS ItemInitial, i.[Name] AS ItemName,
-			uom_c.UnitToConvert AS ItemUnitName,
+			uom_c.UnitEquivalent AS ItemUnitName,
 			1 AS Sort
 		FROM (
 			SELECT Id, Code, [LineNo], ItemId, UnitId, Qty, UnitPrice, TaxAmount, Total
@@ -10531,7 +10531,7 @@ BEGIN
 		SELECT pr_d.Id, pr_d.[LineNo],
 			pr_d.Qty, pr_d.UnitPrice, pr_d.TaxAmount, pr_d.Total,
 			i.Initial AS ItemInitial, i.[Name] AS ItemName,
-			uom_c.UnitToConvert AS ItemUnitName,
+			uom_c.UnitEquivalent AS ItemUnitName,
 			2 AS Sort
 		FROM (
 			SELECT Id, Code, [LineNo], ItemId, UnitId, Qty, UnitPrice, TaxAmount, Total
@@ -10599,7 +10599,7 @@ BEGIN
 	BEGIN
 		SELECT rcv_d.Id, rcv_d.[LineNo], rcv_d.Qty,
 			i.Initial AS ItemInitial, i.[Name] AS ItemName,
-			uom_c.UnitToConvert AS ItemUnitName,
+			uom_c.UnitEquivalent AS ItemUnitName,
 			rcv_d.[Type] AS Sort
 		FROM (
 			SELECT Id, [LineNo], ItemId, Qty, UnitId, [Type]
@@ -10666,7 +10666,7 @@ BEGIN
 			dlv_d.Qty, dlv_d.UnitPrice, dlv_d.Disc + dlv_d.FinalDiscHeader AS Disc,
 			dlv_d.TaxAmount, dlv_d.ExemptTaxAmount, dlv_d.Total,
 			i.Initial AS ItemInitial, i.[Name] AS ItemName,
-			uom_c.UnitToConvert AS ItemUnitName,
+			uom_c.UnitEquivalent AS ItemUnitName,
 			1 AS Sort
 		FROM (
 			SELECT Id, Code, DOCode
@@ -10687,7 +10687,7 @@ BEGIN
 			dlv_d_fg.Qty, dlv_d_fg.UnitPrice, dlv_d_fg.UnitPrice,
 			0, 0, 0,
 			i.Initial AS ItemInitial, i.[Name] AS ItemName,
-			uom_c.UnitToConvert AS ItemUnitName,
+			uom_c.UnitEquivalent AS ItemUnitName,
 			2 AS Sort
 		FROM (
 			SELECT dlv_d_fg.*
@@ -10755,7 +10755,7 @@ BEGIN
 			si_d.Qty, si_d.UnitPrice, si_d.Disc + si_d.FinalDiscHeader AS Disc,
 			si_d.TaxAmount, si_d.ExemptTaxAmount, si_d.Total,
 			i.Initial AS ItemInitial, i.[Name] AS ItemName,
-			uom_c.UnitToConvert AS ItemUnitName,
+			uom_c.UnitEquivalent AS ItemUnitName,
 			1 AS Sort
 		FROM (
 			SELECT Id, Code, [LineNo], ItemId, UnitId, Qty, UnitPrice, Disc, FinalDiscHeader,
@@ -10772,7 +10772,7 @@ BEGIN
 			so_d_fg.Qty, so_d_fg.UnitPrice, so_d_fg.UnitPrice,
 			0, 0, 0,
 			i.Initial AS ItemInitial, i.[Name] AS ItemName,
-			uom_c.UnitToConvert AS ItemUnitName,
+			uom_c.UnitEquivalent AS ItemUnitName,
 			2 AS Sort
 		FROM (
 			SELECT *
@@ -10840,7 +10840,7 @@ BEGIN
 		SELECT sr_d.Id, sr_d.[LineNo],
 			sr_d.Qty, sr_d.UnitPrice, sr_d.TaxAmount, sr_d.Total,
 			i.Initial AS ItemInitial, i.[Name] AS ItemName,
-			uom_c.UnitToConvert AS ItemUnitName,
+			uom_c.UnitEquivalent AS ItemUnitName,
 			1 AS Sort
 		FROM (
 			SELECT Id, Code, [LineNo], ItemId, UnitId, Qty, UnitPrice, TaxAmount, Total
@@ -10855,7 +10855,7 @@ BEGIN
 		SELECT sr_d.Id, sr_d.[LineNo],
 			sr_d.Qty, sr_d.UnitPrice, sr_d.TaxAmount, sr_d.Total,
 			i.Initial AS ItemInitial, i.[Name] AS ItemName,
-			uom_c.UnitToConvert AS ItemUnitName,
+			uom_c.UnitEquivalent AS ItemUnitName,
 			2 AS Sort
 		FROM (
 			SELECT Id, Code, [LineNo], ItemId, UnitId, Qty, UnitPrice, TaxAmount, Total
@@ -10953,7 +10953,7 @@ BEGIN
 		END AS TitleCaption,
 		ts_d.Qty,
 		i.Initial AS ItemInitial, i.[Name] AS ItemName,
-		uom_c.UnitToConvert AS ItemUnitName,
+		uom_c.UnitEquivalent AS ItemUnitName,
 		w_f.Initial AS WarehouseFromInitial, w_f.[Name] AS WarehouseFromName,
 		w_t.Initial AS WarehouseToInitial, w_t.[Name] AS WarehouseToName,
 		e.Initial AS CreatedInitial
