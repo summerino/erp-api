@@ -11013,6 +11013,40 @@ BEGIN
 END";
             migrationBuilder.Sql(sql);
 
+            // Create procedure dbo.sp_get_vo_inv_print_data
+            sql = @"CREATE PROCEDURE [dbo].[sp_get_vo_inv_print_data]
+	@code varchar(17)
+AS
+BEGIN
+
+	SELECT vo.Code, vo.[Date], vo.Notes,
+		vo_i.InvCode, si_h.[Date] AS InvDate, si_h.Total AS InvTotal,
+		si_h.CustCode, c.Initial AS CustInitial, c.[Name] AS CustName, a.Initial AS CustArea,
+		e_s.Initial AS SalesInitial, e_s.FirstName AS SalesFirstName, e_s.LastName AS SalesLastName,
+		e_c.Initial AS CreatedInitial
+	FROM (
+		SELECT *
+		FROM Sales.VisitOrder
+		WHERE Code = @code
+		AND Mark <> 'V'
+	) vo
+	LEFT JOIN Sales.VisitOrderInvoice vo_i
+		ON vo_i.Code = vo.Code
+	LEFT JOIN Sales.SalesInvoiceHeader si_h
+		ON si_h.Code = vo_i.InvCode
+	LEFT JOIN General.Customer c
+		ON c.Code = si_h.CustCode
+	LEFT JOIN Sales.Area a
+		ON a.Id = c.AreaId2
+	LEFT JOIN General.Employee e_s
+		ON e_s.Id = vo.SalesmanId
+	LEFT JOIN General.Employee e_c
+		ON e_c.Id = vo.CreatedBy
+	ORDER BY a.Initial, c.[Name], vo_i.InvCode
+	
+END";
+            migrationBuilder.Sql(sql);
+
             // Create procedure dbo.sp_restore_cash_bank_transaction
             sql = @"CREATE PROCEDURE [dbo].[sp_restore_cash_bank_transaction]
 	@code varchar(17)
@@ -15180,6 +15214,10 @@ END CATCH";
 
             // Drop procedure dbo.sp_get_vo_cust_print_data
             sql = @"DROP PROCEDURE [dbo].[sp_get_vo_cust_print_data]";
+            migrationBuilder.Sql(sql);
+
+            // Drop procedure dbo.sp_get_vo_inv_print_data
+            sql = @"DROP PROCEDURE [dbo].[sp_get_vo_inv_print_data]";
             migrationBuilder.Sql(sql);
 
             // Drop procedure dbo.sp_restore_cash_bank_transaction

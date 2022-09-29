@@ -444,7 +444,6 @@ FROM SystemManagement.Company</CommandText>
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
                         </Textbox>
-                        <rd:Selected>true</rd:Selected>
                       </CellContents>
                     </TablixCell>
                   </TablixCells>
@@ -1374,11 +1373,6 @@ FROM SystemManagement.Company</CommandText>
   <ReportParameters>
     <ReportParameter Name="code">
       <DataType>String</DataType>
-      <DefaultValue>
-        <Values>
-          <Value>VO210707-00001</Value>
-        </Values>
-      </DefaultValue>
       <Prompt>code</Prompt>
     </ReportParameter>
   </ReportParameters>
