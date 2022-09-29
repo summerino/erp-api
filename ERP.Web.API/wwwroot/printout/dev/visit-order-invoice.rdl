@@ -120,7 +120,7 @@ FROM SystemManagement.Company</CommandText>
             <TablixBody>
               <TablixColumns>
                 <TablixColumn>
-                  <Width>0.3in</Width>
+                  <Width>0.35in</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>0.65in</Width>
@@ -153,7 +153,7 @@ FROM SystemManagement.Company</CommandText>
                   <Width>0.86135in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>0.87128in</Width>
+                  <Width>0.72332in</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>0.68472in</Width>
@@ -2193,7 +2193,7 @@ FROM SystemManagement.Company</CommandText>
             </TablixRowHierarchy>
             <DataSetName>Data</DataSetName>
             <Height>1.43403in</Height>
-            <Width>12.79796in</Width>
+            <Width>12.7in</Width>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -2210,7 +2210,7 @@ FROM SystemManagement.Company</CommandText>
           <BackgroundColor>White</BackgroundColor>
         </Style>
       </Body>
-      <Width>12.8in</Width>
+      <Width>12.7in</Width>
       <Page>
         <PageHeader>
           <Height>0.95874in</Height>
@@ -2366,7 +2366,7 @@ FROM SystemManagement.Company</CommandText>
                 </Paragraph>
               </Paragraphs>
               <Top>0.06458in</Top>
-              <Left>11.32081in</Left>
+              <Left>11.22081in</Left>
               <Height>0.18694in</Height>
               <Width>1.47715in</Width>
               <ZIndex>5</ZIndex>
@@ -2392,7 +2392,7 @@ FROM SystemManagement.Company</CommandText>
                 </Paragraph>
               </Paragraphs>
               <Top>0.58486in</Top>
-              <Left>10.78238in</Left>
+              <Left>10.68238in</Left>
               <Height>0.18694in</Height>
               <Width>0.6246in</Width>
               <ZIndex>6</ZIndex>
@@ -2420,7 +2420,7 @@ FROM SystemManagement.Company</CommandText>
                 </Paragraph>
               </Paragraphs>
               <Top>0.58486in</Top>
-              <Left>11.49698in</Left>
+              <Left>11.39698in</Left>
               <Height>0.18694in</Height>
               <Width>1.30098in</Width>
               <ZIndex>7</ZIndex>
@@ -2446,7 +2446,7 @@ FROM SystemManagement.Company</CommandText>
                 </Paragraph>
               </Paragraphs>
               <Top>0.7718in</Top>
-              <Left>10.78238in</Left>
+              <Left>10.68238in</Left>
               <Height>0.18694in</Height>
               <Width>0.6246in</Width>
               <ZIndex>8</ZIndex>
@@ -2472,7 +2472,7 @@ FROM SystemManagement.Company</CommandText>
                 </Paragraph>
               </Paragraphs>
               <Top>0.7718in</Top>
-              <Left>11.49698in</Left>
+              <Left>11.39698in</Left>
               <Height>0.18694in</Height>
               <Width>1.30098in</Width>
               <ZIndex>9</ZIndex>
@@ -2524,7 +2524,7 @@ FROM SystemManagement.Company</CommandText>
                 </Paragraph>
               </Paragraphs>
               <Top>0.7718in</Top>
-              <Left>11.40698in</Left>
+              <Left>11.30698in</Left>
               <Height>0.18694in</Height>
               <Width>0.09in</Width>
               <ZIndex>11</ZIndex>
@@ -2550,7 +2550,7 @@ FROM SystemManagement.Company</CommandText>
                 </Paragraph>
               </Paragraphs>
               <Top>0.58486in</Top>
-              <Left>11.40698in</Left>
+              <Left>11.30698in</Left>
               <Height>0.18694in</Height>
               <Width>0.09in</Width>
               <ZIndex>12</ZIndex>
@@ -2593,7 +2593,7 @@ FROM SystemManagement.Company</CommandText>
                 </Paragraph>
               </Paragraphs>
               <Top>0.05556in</Top>
-              <Left>11.3347in</Left>
+              <Left>11.2347in</Left>
               <Height>0.18694in</Height>
               <Width>1.46326in</Width>
               <Style>
@@ -2623,7 +2623,7 @@ FROM SystemManagement.Company</CommandText>
                 </Paragraph>
               </Paragraphs>
               <Top>0.71174in</Top>
-              <Left>11.32081in</Left>
+              <Left>11.22081in</Left>
               <Height>0.18694in</Height>
               <Width>1.47715in</Width>
               <ZIndex>1</ZIndex>
