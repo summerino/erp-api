@@ -68,9 +68,31 @@ public class SalesmanService : GeneralService<SalesmanGroup>, ISalesmanService
     public IEnumerable<VwSalesmanSchedule> GetSalesmanScheduleWithDate(long id, string date)
     {
         var cDate = Convert.ToDateTime(date);
-        var data = Db.VwSalesmanSchedules.Where(x => x.Id == id && x.StartDate <= cDate && x.EndDate >= cDate && x.VisitDay == (byte)cDate.DayOfWeek);
+        var data = Db.VwSalesmanSchedules.Where(x => x.Id == id && x.StartDate <= cDate && x.EndDate >= cDate && x.VisitDay == (byte)cDate.DayOfWeek).ToList();
+        var result = new List<VwSalesmanSchedule>();
 
-        return data.OrderBy(x => x.Id);
+
+        foreach (var item in data)
+        {
+            var startDate = (byte)item.StartDate.Value.DayOfWeek != (byte)cDate.DayOfWeek ? GetDates(item.StartDate.Value.Year, item.StartDate.Value.Month, cDate.DayOfWeek.ToString())
+                .First(x => x.Day > item.StartDate.Value.Day) : item.StartDate.Value ;
+
+            var weeks = (cDate - startDate).TotalDays / 7;
+
+            var isValid = (weeks % item.Recurrence) == 0;
+
+            if (isValid)
+                result.Add(item);
+        }
+
+        return result.OrderBy(x => x.Id);
+    }
+
+    private static List<DateTime> GetDates(int year, int month, string day)
+    {
+        return Enumerable.Range(1, DateTime.DaysInMonth(year, month))
+             .Where(d => new DateTime(year, month, d).ToString("dddd").Equals(day))
+            .Select(d => new DateTime(year, month, d)).ToList();
     }
 
     #region Mobile
