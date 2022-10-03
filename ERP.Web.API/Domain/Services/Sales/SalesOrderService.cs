@@ -622,6 +622,12 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
 
                 if (bonusPromo.Any())
                 {
+                    if (checkQty && IsQtyExcessFree(data.WarehouseCode, bonusPromo, null))
+                    {
+                        result.Message = "Data order penjualan tidak bisa disimpan karena qty bonus yang dipesan lebih besar dari qty yang tersedia.";
+                        return result;
+                    }
+
                     short f = 0;
                     foreach (var freeItem in bonusPromo)
                     {
@@ -932,10 +938,12 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
 
                 Db.SalesDeliveryHeaders.Add(newSdlvData);
 
+                var listSDID = new List<dynamic>();
+
                 short j = 0;
                 foreach (var item in data.ItemDetails)
                 {
-                    Db.SalesDeliveryDetails.Add(new SalesDeliveryDetail
+                    var sdDetail = new SalesDeliveryDetail
                     {
                         Code = newDlvCode,
                         LineNo = ++j,
@@ -958,6 +966,30 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                         NettPrice = item.NettPrice,
                         Total = item.Total,
                         Dpp = item.Dpp
+                    };
+
+                    Db.SalesDeliveryDetails.Add(sdDetail);
+                    Db.SaveChanges();
+
+                    listSDID.Add(new { Id = sdDetail.Id, SoId = sdDetail.SoDetailId });
+                }
+
+                var soFreeList = Db.SalesOrderDetailFreeGoods.Where(x => x.Code == newCode).ToList();
+
+                foreach (var item in soFreeList)
+                {
+                    Db.SalesDeliveryDetailFreeGoods.Add(new SalesDeliveryDetailFreeGood
+                    {
+                        Code = newDlvCode,
+                        DlvOrderDetailId = listSDID.First(x => x.soId == item.OrderDetailId).Id,
+                        LineNo = 1,
+                        PromoCode = item.PromoCode,
+                        ItemId = item.ItemId,
+                        UomId = item.UomId,
+                        UnitId = item.UnitId,
+                        Qty = item.Qty,
+                        UnitPrice = item.UnitPrice,
+                        CoaCode = item.CoaCode
                     });
                 }
             }
@@ -1018,10 +1050,12 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
 
                 Db.SalesInvoiceHeaders.Add(newSinvData);
 
+                var listSDID = new List<dynamic>();
+
                 short j = 0;
                 foreach (var item in data.ItemDetails)
                 {
-                    Db.SalesDeliveryDetails.Add(new SalesDeliveryDetail
+                    var sdDetail = new SalesDeliveryDetail
                     {
                         Code = newDlvCode,
                         LineNo = ++j,
@@ -1044,6 +1078,30 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                         NettPrice = item.NettPrice,
                         Total = item.Total,
                         Dpp = item.Dpp
+                    };
+
+                    Db.SalesDeliveryDetails.Add(sdDetail);
+                    Db.SaveChanges();
+
+                    listSDID.Add(new { Id = sdDetail.Id, SoId = sdDetail.SoDetailId });
+                }
+
+                var soFreeList = Db.SalesOrderDetailFreeGoods.Where(x => x.Code == newCode).ToList();
+
+                foreach (var item in soFreeList)
+                {
+                    Db.SalesDeliveryDetailFreeGoods.Add(new SalesDeliveryDetailFreeGood
+                    {
+                        Code = newDlvCode,
+                        DlvOrderDetailId = listSDID.First(x => x.soId == item.OrderDetailId).Id,
+                        LineNo = 1,
+                        PromoCode = item.PromoCode,
+                        ItemId = item.ItemId,
+                        UomId = item.UomId,
+                        UnitId = item.UnitId,
+                        Qty = item.Qty,
+                        UnitPrice = item.UnitPrice,
+                        CoaCode = item.CoaCode
                     });
                 }
 
@@ -1730,6 +1788,12 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
 
                     if (bonusPromo.Any())
                     {
+                        if (checkQty && IsQtyExcessFree(data.WarehouseCode, bonusPromo, data.Code))
+                        {
+                            result.Message = "Data order penjualan tidak bisa disimpan karena qty bonus yang dipesan lebih besar dari qty yang tersedia.";
+                            return result;
+                        }
+
                         short f = 0;
                         foreach (var freeItem in bonusPromo)
                         {
@@ -2119,10 +2183,12 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
 
                 Db.SalesDeliveryHeaders.Add(newSdlvData);
 
+                var listSDID = new List<dynamic>();
+
                 short j = 0;
                 foreach (var item in data.ItemDetails)
                 {
-                    Db.SalesDeliveryDetails.Add(new SalesDeliveryDetail
+                    var sdDetail = new SalesDeliveryDetail
                     {
                         Code = newDlvCode,
                         LineNo = ++j,
@@ -2145,9 +2211,34 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                         NettPrice = item.NettPrice,
                         Total = item.Total,
                         Dpp = item.Dpp
+                    };
+
+                    Db.SalesDeliveryDetails.Add(sdDetail);
+                    Db.SaveChanges();
+
+                    listSDID.Add(new { Id = sdDetail.Id, SoId = sdDetail.SoDetailId });
+                }
+
+                var soFreeList = Db.SalesOrderDetailFreeGoods.Where(x => x.Code == data.Code).ToList();
+
+                foreach (var item in soFreeList)
+                {
+                    Db.SalesDeliveryDetailFreeGoods.Add(new SalesDeliveryDetailFreeGood
+                    {
+                        Code = newDlvCode,
+                        DlvOrderDetailId = listSDID.First(x => x.soId == item.OrderDetailId).Id,
+                        LineNo = 1,
+                        PromoCode = item.PromoCode,
+                        ItemId = item.ItemId,
+                        UomId = item.UomId,
+                        UnitId = item.UnitId,
+                        Qty = item.Qty,
+                        UnitPrice = item.UnitPrice,
+                        CoaCode = item.CoaCode
                     });
                 }
             }
+
             var newInvCode = "";
             if (data.IsSoInv && !isOverLimit)
             {
@@ -2208,10 +2299,12 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
 
                     Db.SalesInvoiceHeaders.Add(newSinvData);
 
+                    var listSDID = new List<dynamic>();
+
                     short j = 0;
                     foreach (var item in data.ItemDetails)
                     {
-                        Db.SalesDeliveryDetails.Add(new SalesDeliveryDetail
+                        var sdDetail = new SalesDeliveryDetail
                         {
                             Code = newDlvCode,
                             LineNo = ++j,
@@ -2234,6 +2327,30 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                             NettPrice = item.NettPrice,
                             Total = item.Total,
                             Dpp = item.Dpp
+                        };
+
+                        Db.SalesDeliveryDetails.Add(sdDetail);
+                        Db.SaveChanges();
+
+                        listSDID.Add(new { Id = sdDetail.Id, SoId = sdDetail.SoDetailId });
+                    }
+
+                    var soFreeList = Db.SalesOrderDetailFreeGoods.Where(x => x.Code == data.Code).ToList();
+
+                    foreach (var item in soFreeList)
+                    {
+                        Db.SalesDeliveryDetailFreeGoods.Add(new SalesDeliveryDetailFreeGood
+                        {
+                            Code = newDlvCode,
+                            DlvOrderDetailId = listSDID.First(x => x.soId == item.OrderDetailId).Id,
+                            LineNo = 1,
+                            PromoCode = item.PromoCode,
+                            ItemId = item.ItemId,
+                            UomId = item.UomId,
+                            UnitId = item.UnitId,
+                            Qty = item.Qty,
+                            UnitPrice = item.UnitPrice,
+                            CoaCode = item.CoaCode
                         });
                     }
 
@@ -2414,6 +2531,68 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
             if (stock != null)
             {
                 if(code == null)
+                {
+                    if (uom.IsBaseUnit)
+                    {
+                        if (item.Qty > (stock.QtyOnHand - stock.QtyOnOrder))
+                        {
+                            result = true;
+                        }
+                    }
+                    else
+                    {
+                        var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= uom.Seq).Select(x => x.Conversion).ToList();
+                        var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
+                        var baseQty = item.Qty * multipliedQty;
+                        if (baseQty > (stock.QtyOnHand - stock.QtyOnOrder))
+                        {
+                            result = true;
+                        }
+                    }
+                }
+                else
+                {
+                    var oldStock = Db.StockMutations.FirstOrDefault(x => x.ItemId == item.ItemId && x.RefCode1 == code);
+                    if (oldStock != null)
+                    {
+                        if (uom.IsBaseUnit)
+                        {
+                            if (item.Qty > (stock.QtyOnHand - (stock.QtyOnOrder - oldStock.BaseQty)))
+                            {
+                                result = true;
+                            }
+                        }
+                        else
+                        {
+                            var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= uom.Seq).Select(x => x.Conversion).ToList();
+                            var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
+                            var baseQty = item.Qty * multipliedQty;
+                            if (baseQty > (stock.QtyOnHand - (stock.QtyOnOrder - oldStock.BaseQty)))
+                            {
+                                result = true;
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                result = true;
+            }
+        }
+        return result;
+    }
+
+    private bool IsQtyExcessFree(string warehouseCode, IEnumerable<SalesOrderDetailFreeGood> items, string code)
+    {
+        var result = false;
+        foreach (var item in items)
+        {
+            var uom = Db.UoMConversions.FirstOrDefault(x => x.Id == item.UnitId);
+            var stock = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == warehouseCode && x.ItemId == item.ItemId);
+            if (stock != null)
+            {
+                if (code == null)
                 {
                     if (uom.IsBaseUnit)
                     {
