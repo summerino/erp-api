@@ -12464,7 +12464,7 @@ BEGIN TRY
 			AND sm.Src = 'DOF'
 		)
 	-- Update WarehouseQty
-	SELECT WarehouseCode, ItemId, BaseQty, [Type], UnitId
+	SELECT WarehouseCode, ItemId, BaseQty, [Type], UnitId, Src AS SrcName
 	INTO #tmp_wq
 	FROM Inventory.StockMutation
 	WHERE RefCode1 = @code AND Src IN ('DO', 'DOF')
@@ -12475,6 +12475,7 @@ BEGIN TRY
 	DECLARE @srcTrans int
 	DECLARE @Type varchar(max)
 	DECLARE @UnitId int
+	DECLARE @SrcName varchar(10)
 
 	SELECT @srcTrans = SrcTrans FROM Sales.SalesDeliveryHeader WHERE Code = @code
 
@@ -12483,7 +12484,7 @@ BEGIN TRY
 		--Update WHQ
 		WHILE EXISTS(SELECT * FROM #tmp_wq)
 		BEGIN
-			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty, @UnitId = UnitId, @Type = [Type] FROM #tmp_wq
+			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty, @UnitId = UnitId, @Type = [Type], @SrcName = SrcName FROM #tmp_wq
 
 			IF EXISTS(SELECT *FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @WHId AND ItemId = @ItemId)
 			BEGIN
@@ -12541,18 +12542,18 @@ BEGIN TRY
 					END
 					ELSE
 					BEGIN
-						DELETE Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId AND [Type] = @Type AND RefCode1 = @code
+						DELETE Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId AND [Type] = @Type AND RefCode1 = @code AND Src = @SrcName
 					END
 				END
 			END
-			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId AND [Type] = @Type
+			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId AND [Type] = @Type AND SrcName = @SrcName
 		END
 	END
 	ELSE -- If data voided
 	BEGIN
 	WHILE EXISTS(SELECT * FROM #tmp_wq)
 		BEGIN
-			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty, @UnitId = UnitId, @Type = [Type] FROM #tmp_wq
+			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty, @UnitId = UnitId, @Type = [Type], @SrcName = SrcName FROM #tmp_wq
 
 			IF EXISTS(SELECT *FROM Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code AND UnitId = @UnitId AND [Type] = @Type)
 			BEGIN
@@ -12575,9 +12576,9 @@ BEGIN TRY
 				BEGIN
 					UPDATE Inventory.WarehouseQuantity SET QtyOnHand = QtyOnHand + @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
 				END
-				DELETE Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code AND UnitId = @UnitId AND [Type] = @Type
+				DELETE Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code AND UnitId = @UnitId AND [Type] = @Type AND Src = @SrcName
 			END
-			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId AND [Type] = @Type
+			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId AND [Type] = @Type AND SrcName = @SrcName
 		END
 	END
 
@@ -14010,7 +14011,7 @@ BEGIN TRY
 	),
 	cte_base_qty_transit AS (
 		SELECT do_d.Id,
-		CASE WHEN uom_c.IsBaseUnit = 1 THEN do_d.Qty
+			CASE WHEN uom_c.IsBaseUnit = 1 THEN do_d.Qty
 				ELSE do_d.Qty * (
 					SELECT EXP(SUM(LOG(Conversion)))
 					FROM Inventory.UoMConversion
@@ -14025,9 +14026,26 @@ BEGIN TRY
 			AND uom_c.Id = do_d.UnitId
 		WHERE do_h.Mark = 'A'
 	),
+	 cte_base_qty_transit_free AS (  
+		SELECT do_d.Id,  
+			CASE WHEN uom_c.IsBaseUnit = 1 THEN do_d.Qty  
+				ELSE do_d.Qty * (  
+					SELECT EXP(SUM(LOG(Conversion)))  
+					FROM Inventory.UoMConversion  
+					WHERE UomId = uom_c.UomId  
+					AND Seq <= uom_c.Seq  
+				) END AS BaseQty  
+		FROM Sales.SalesDeliveryDetailFreeGood do_d  
+		LEFT JOIN Sales.SalesDeliveryHeader do_h  
+			ON do_h.Code = do_d.Code  
+		LEFT JOIN Inventory.UoMConversion uom_c  
+			ON uom_c.UomId = do_d.UomId  
+		AND uom_c.Id = do_d.UnitId  
+		WHERE do_h.Mark = 'A'  
+	),
 	cte_on_transit AS (  
 		SELECT sm.WarehouseCode, sm.ItemId, 
-		ISNULL(SUM(do_d.BaseQty), CAST(0 as decimal(19,8))) AS TotalBaseQty
+		ISNULL(SUM(do_d.BaseQty), CAST(0 as decimal(19,8))) + ISNULL(SUM(do_df.BaseQty), CAST(0 as decimal(19,8))) AS TotalBaseQty
 		FROM (
 			SELECT *
 			FROM Inventory.StockMutation
@@ -14035,6 +14053,8 @@ BEGIN TRY
 		) sm
 		LEFT JOIN cte_base_qty_transit do_d
 			ON do_d.Id = sm.RefDetailId1 AND sm.Src = 'DO'
+		LEFT JOIN cte_base_qty_transit_free do_df  
+			ON do_df.Id = sm.RefDetailId1 AND sm.Src = 'DOF'
 		GROUP BY sm.WarehouseCode, sm.ItemId
 	)  
 
