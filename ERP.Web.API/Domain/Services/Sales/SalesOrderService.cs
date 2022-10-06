@@ -40,7 +40,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
 
         if (fullReceived.HasValue)
         {
-            data = (bool) fullReceived
+            data = (bool)fullReceived
                 ? data.Where(x => x.Qty <= x.QtyDlv)
                 : data.Where(x => x.Qty > x.QtyDlv);
         }
@@ -51,8 +51,8 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
     public List<dynamic> GetRelatedTransactions(string code)
     {
         var data = (from dlv in Db.SalesDeliveryHeaders
-            where dlv.TransCode == code && dlv.Mark != "V"
-            select new { dlv.Code, dlv.Date, dlv.Mark }).ToList();
+                    where dlv.TransCode == code && dlv.Mark != "V"
+                    select new { dlv.Code, dlv.Date, dlv.Mark }).ToList();
 
         var sdpData = (from sdp in Db.CreditMemos
                        where sdp.TransCode == code && sdp.Mark != "V"
@@ -116,7 +116,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
 
             // Checking order qty is excess or not
             var checkQty = Db.SystemParameters.FirstOrDefault(x => x.Code == "DEF_SLS_ORD_CHECK_QTY")?.Value == "1";
-                
+
             if (checkQty && IsQtyExcess(data.WarehouseCode, data.ItemDetails, null))
             {
                 result.Message = "Data order penjualan tidak bisa disimpan karena qty yang dipesan lebih besar dari qty yang tersedia.";
@@ -598,7 +598,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                             CoaCode = discItem.CoaCode
                         });
 
-                        if(!soPromo.Any(x => x.PromoCode == discItem.PromoCode))
+                        if (!soPromo.Any(x => x.PromoCode == discItem.PromoCode))
                         {
                             if (discItem.PromoCode != null)
                             {
@@ -901,7 +901,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
             Db.SalesOrderHeaders.Add(data);
 
             // Update Credit Used
-            if(!isOverLimit)
+            if (!isOverLimit)
                 UpdateCreditUsed(data.CustCode, data.Total);
 
             if (data.IsSoDlv && !isOverLimit)
@@ -981,7 +981,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                     Db.SalesDeliveryDetailFreeGoods.Add(new SalesDeliveryDetailFreeGood
                     {
                         Code = newDlvCode,
-                        DlvOrderDetailId = listSDID.First(x => x.soId == item.OrderDetailId).Id,
+                        DlvOrderDetailId = listSDID.First(x => x.SoId == item.OrderDetailId).Id,
                         LineNo = 1,
                         PromoCode = item.PromoCode,
                         ItemId = item.ItemId,
@@ -1093,7 +1093,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                     Db.SalesDeliveryDetailFreeGoods.Add(new SalesDeliveryDetailFreeGood
                     {
                         Code = newDlvCode,
-                        DlvOrderDetailId = listSDID.First(x => x.soId == item.OrderDetailId).Id,
+                        DlvOrderDetailId = listSDID.First(x => x.SoId == item.OrderDetailId).Id,
                         LineNo = 1,
                         PromoCode = item.PromoCode,
                         ItemId = item.ItemId,
@@ -1147,7 +1147,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                         newInvCode, data.Date, dlvData?.Code);
                 }
             }
-                
+
             transaction.Commit();
         }
         catch (Exception ex)
@@ -2226,7 +2226,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                     Db.SalesDeliveryDetailFreeGoods.Add(new SalesDeliveryDetailFreeGood
                     {
                         Code = newDlvCode,
-                        DlvOrderDetailId = listSDID.First(x => x.soId == item.OrderDetailId).Id,
+                        DlvOrderDetailId = listSDID.First(x => x.SoId == item.OrderDetailId).Id,
                         LineNo = 1,
                         PromoCode = item.PromoCode,
                         ItemId = item.ItemId,
@@ -2243,7 +2243,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
             if (data.IsSoInv && !isOverLimit)
             {
                 var DlvData = Db.SalesDeliveryHeaders.Where(x => x.TransCode == data.Code).ToList();
-                if(DlvData.Count == 0)
+                if (DlvData.Count == 0)
                 {
                     // Sales Delivery
                     var newDlvCode = GetNewCode("DO_NUM_FMT", data.Date);
@@ -2342,7 +2342,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                         Db.SalesDeliveryDetailFreeGoods.Add(new SalesDeliveryDetailFreeGood
                         {
                             Code = newDlvCode,
-                            DlvOrderDetailId = listSDID.First(x => x.soId == item.OrderDetailId).Id,
+                            DlvOrderDetailId = listSDID.First(x => x.SoId == item.OrderDetailId).Id,
                             LineNo = 1,
                             PromoCode = item.PromoCode,
                             ItemId = item.ItemId,
@@ -2478,7 +2478,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
             // Update header data
             data.Mark = "V";
             data.UpdatedBy = userId;
-            data.UpdatedDate = DateTime.Now;                
+            data.UpdatedDate = DateTime.Now;
 
             Db.SaveChanges();
 
@@ -2530,7 +2530,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
             var stock = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == warehouseCode && x.ItemId == item.ItemId);
             if (stock != null)
             {
-                if(code == null)
+                if (code == null)
                 {
                     if (uom.IsBaseUnit)
                     {
@@ -2648,27 +2648,27 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
     public IEnumerable<DetailFreeGoodData> GetFreeDetailData(string code, bool? fullDlv)
     {
         var result = (from dc in Db.SalesOrderDetailFreeGoods
-            join i in Db.Items on dc.ItemId equals i.Id
-            join u in Db.UoMConversions on dc.UnitId equals u.Id
-            where dc.Code == code
-            select new DetailFreeGoodData
-            {
-                Id = dc.Id,
-                Code = dc.Code,
-                OrderDetailId = dc.OrderDetailId,
-                LineNo = dc.LineNo,
-                PromoCode = dc.PromoCode,
-                ItemId = dc.ItemId,
-                UomId = dc.UomId,
-                UnitId = dc.UnitId,
-                Qty = dc.Qty,
-                QtyClosed = dc.QtyClosed,
-                UnitPrice = dc.UnitPrice,
-                CoaCode = dc.CoaCode,
-                Initial = i.Initial,
-                Name = i.Name,
-                UnitName = u.UnitEquivalent
-            }).ToList();
+                      join i in Db.Items on dc.ItemId equals i.Id
+                      join u in Db.UoMConversions on dc.UnitId equals u.Id
+                      where dc.Code == code
+                      select new DetailFreeGoodData
+                      {
+                          Id = dc.Id,
+                          Code = dc.Code,
+                          OrderDetailId = dc.OrderDetailId,
+                          LineNo = dc.LineNo,
+                          PromoCode = dc.PromoCode,
+                          ItemId = dc.ItemId,
+                          UomId = dc.UomId,
+                          UnitId = dc.UnitId,
+                          Qty = dc.Qty,
+                          QtyClosed = dc.QtyClosed,
+                          UnitPrice = dc.UnitPrice,
+                          CoaCode = dc.CoaCode,
+                          Initial = i.Initial,
+                          Name = i.Name,
+                          UnitName = u.UnitEquivalent
+                      }).ToList();
 
         if (fullDlv.HasValue)
         {
@@ -2691,7 +2691,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
 
     public IEnumerable<dynamic> GetSalesOrderPromos(string code)
     {
-        return Db.SalesOrderPromos.Join(Db.PromoHeaders, soPromo => soPromo.PromoCode, promo => promo.Code, (soPromo, promo) => new { SOPromo = soPromo, Promo = promo})
+        return Db.SalesOrderPromos.Join(Db.PromoHeaders, soPromo => soPromo.PromoCode, promo => promo.Code, (soPromo, promo) => new { SOPromo = soPromo, Promo = promo })
             .Where(x => x.SOPromo.Code == code)
             .Select(x => new
             {
