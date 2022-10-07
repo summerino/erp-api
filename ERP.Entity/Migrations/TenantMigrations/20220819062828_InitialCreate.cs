@@ -13408,7 +13408,7 @@ BEGIN TRY
 	)
 
 	-- Update WarehouseQty
-	SELECT WarehouseCode, ItemId, BaseQty, UnitId
+	SELECT WarehouseCode, ItemId, BaseQty, UnitId, Src AS SrcName
 	INTO #tmp_wq
 	FROM Inventory.StockMutation
 	WHERE RefCode1 = @code AND Src IN ('SO', 'SOF')
@@ -13417,12 +13417,13 @@ BEGIN TRY
 	DECLARE @WHId varchar(max)
 	DECLARE @ItemId int 
 	DECLARE @UnitId int
+	DECLARE @SrcName varchar(10)
 
 	IF(@isVoid = 0)
 	BEGIN
 		WHILE EXISTS(SELECT * FROM #tmp_wq)
 		BEGIN
-			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty, @UnitId = UnitId FROM #tmp_wq
+			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty, @UnitId = UnitId, @SrcName = SrcName FROM #tmp_wq
 
 			IF EXISTS(SELECT *FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @WHId AND ItemId = @ItemId)
 			BEGIN
@@ -13433,22 +13434,23 @@ BEGIN TRY
 				INSERT INTO Inventory.WarehouseQuantity(WarehouseCode, ItemId, QtyOnHand, QtyOnIndent, QtyOnOrder, QtyReorderPoint, QtyOnTransfer, QtyOnTransit, UpdatedDate)
 				VALUES (@WHId, @ItemId, 0, 0, @Qty, 0, 0, 0, dbo.udf_current_local_time())
 			END
-			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId
+			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId AND SrcName = @SrcName
+
 		END
 	END
 	ELSE -- If data voided
 	BEGIN
 	WHILE EXISTS(SELECT * FROM #tmp_wq)
 		BEGIN
-			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty, @UnitId = UnitId FROM #tmp_wq
+			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty, @UnitId = UnitId, @SrcName = SrcName FROM #tmp_wq
 
-			IF EXISTS(SELECT *FROM Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code)
+			IF EXISTS(SELECT *FROM Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code AND UnitId = @UnitId AND Src = @SrcName)
 			BEGIN
 				UPDATE Inventory.WarehouseQuantity SET QtyOnOrder -= @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
 
-				DELETE Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code AND UnitId = @UnitId
+				DELETE Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code AND UnitId = @UnitId AND Src = @SrcName
 			END
-			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId
+			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId AND SrcName = @SrcName
 		END
 	END
 
