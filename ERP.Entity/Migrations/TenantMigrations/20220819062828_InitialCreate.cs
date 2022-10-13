@@ -12486,7 +12486,7 @@ BEGIN TRY
 		BEGIN
 			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty, @UnitId = UnitId, @Type = [Type], @SrcName = SrcName FROM #tmp_wq
 
-			IF EXISTS(SELECT *FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @WHId AND ItemId = @ItemId)
+			IF EXISTS(SELECT * FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @WHId AND ItemId = @ItemId)
 			BEGIN
 				IF (@srcTrans = 1)
 				BEGIN
@@ -12555,7 +12555,7 @@ BEGIN TRY
 		BEGIN
 			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty, @UnitId = UnitId, @Type = [Type], @SrcName = SrcName FROM #tmp_wq
 
-			IF EXISTS(SELECT *FROM Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code AND UnitId = @UnitId AND [Type] = @Type)
+			IF EXISTS(SELECT * FROM Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code AND UnitId = @UnitId AND [Type] = @Type)
 			BEGIN
 				IF (@srcTrans = 1)
 				BEGIN
@@ -12689,7 +12689,7 @@ BEGIN TRY
 		BEGIN
 			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty, @UnitId = UnitId FROM #tmp_wq
 
-			IF EXISTS(SELECT *FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @WHId AND ItemId = @ItemId)
+			IF EXISTS(SELECT * FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @WHId AND ItemId = @ItemId)
 			BEGIN
 				UPDATE Inventory.WarehouseQuantity SET QtyOnIndent += @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
 			END
@@ -12707,7 +12707,7 @@ BEGIN TRY
 		BEGIN
 			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty, @UnitId = UnitId FROM #tmp_wq
 
-			IF EXISTS(SELECT *FROM Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code)
+			IF EXISTS(SELECT * FROM Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code)
 			BEGIN
 				UPDATE Inventory.WarehouseQuantity SET QtyOnIndent -= @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
 				
@@ -12825,7 +12825,7 @@ BEGIN TRY
 		BEGIN
 			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty, @UnitId = UnitId FROM #tmp_wq
 
-			IF EXISTS(SELECT *FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @WHId AND ItemId = @ItemId)
+			IF EXISTS(SELECT * FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @WHId AND ItemId = @ItemId)
 			BEGIN
 				UPDATE Inventory.WarehouseQuantity SET QtyOnHand -= @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
 			END
@@ -12844,7 +12844,7 @@ BEGIN TRY
 		BEGIN
 			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty, @UnitId = UnitId FROM #tmp_wq
 
-			IF EXISTS(SELECT *FROM Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code)
+			IF EXISTS(SELECT * FROM Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code)
 			BEGIN
 				UPDATE Inventory.WarehouseQuantity SET QtyOnHand += @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
 				
@@ -12994,7 +12994,7 @@ BEGIN TRY
 		BEGIN
 			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty, @UnitId = UnitId, @Type = [Type] FROM #tmp_wq
 
-			IF EXISTS(SELECT *FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @WHId AND ItemId = @ItemId)
+			IF EXISTS(SELECT * FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @WHId AND ItemId = @ItemId)
 			BEGIN
 				IF (@srcTrans = 1)
 				BEGIN
@@ -13034,7 +13034,7 @@ BEGIN TRY
 		BEGIN
 			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty, @UnitId = UnitId, @Type = [Type] FROM #tmp_wq
 
-			IF EXISTS(SELECT *FROM Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId AND RefCode1 = @code)
+			IF EXISTS(SELECT * FROM Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId AND RefCode1 = @code)
 			BEGIN
 				IF (@srcTrans = 1)
 				BEGIN
@@ -13222,7 +13222,7 @@ BEGIN TRY
 		BEGIN
 			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty, @UnitId = UnitId FROM #tmp_wq
 
-			IF EXISTS(SELECT *FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @WHId AND ItemId = @ItemId)
+			IF EXISTS(SELECT * FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @WHId AND ItemId = @ItemId)
 			BEGIN
 				IF (@srcTrans = 1)
 				BEGIN
@@ -13244,7 +13244,7 @@ BEGIN TRY
 		BEGIN
 			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty, @UnitId = UnitId FROM #tmp_wq
 
-			IF EXISTS(SELECT *FROM Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code)
+			IF EXISTS(SELECT * FROM Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code)
 			BEGIN
 				IF (@srcTrans = 1)
 				BEGIN
@@ -13425,7 +13425,7 @@ BEGIN TRY
 		BEGIN
 			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty, @UnitId = UnitId, @SrcName = SrcName FROM #tmp_wq
 
-			IF EXISTS(SELECT *FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @WHId AND ItemId = @ItemId)
+			IF EXISTS(SELECT * FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @WHId AND ItemId = @ItemId)
 			BEGIN
 				UPDATE Inventory.WarehouseQuantity SET QtyOnOrder += @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
 			END
@@ -13444,7 +13444,7 @@ BEGIN TRY
 		BEGIN
 			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty, @UnitId = UnitId, @SrcName = SrcName FROM #tmp_wq
 
-			IF EXISTS(SELECT *FROM Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code AND UnitId = @UnitId AND Src = @SrcName)
+			IF EXISTS(SELECT * FROM Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code AND UnitId = @UnitId AND Src = @SrcName)
 			BEGIN
 				UPDATE Inventory.WarehouseQuantity SET QtyOnOrder -= @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
 
@@ -13576,7 +13576,7 @@ BEGIN TRY
 		BEGIN
 			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty, @UnitId = UnitId FROM #tmp_wq
 
-			IF EXISTS(SELECT *FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @WHId AND ItemId = @ItemId)
+			IF EXISTS(SELECT * FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @WHId AND ItemId = @ItemId)
 			BEGIN
 				UPDATE Inventory.WarehouseQuantity SET QtyOnHand += @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
 			END
@@ -13595,7 +13595,7 @@ BEGIN TRY
 		BEGIN
 			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty, @UnitId = UnitId FROM #tmp_wq
 
-			IF EXISTS(SELECT *FROM Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code)
+			IF EXISTS(SELECT * FROM Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code)
 			BEGIN
 				UPDATE Inventory.WarehouseQuantity SET QtyOnHand -= @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
 
@@ -14103,9 +14103,9 @@ BEGIN TRY
 	DECLARE @QtyRP decimal(19,8)  
 	DECLARE @QtyOTS decimal(19,8) 
 
-	IF EXISTS(SELECT *FROM #tmp_dt)  
+	IF EXISTS(SELECT * FROM #tmp_dt)  
 	BEGIN  
-		WHILE EXISTS(SELECT *FROM #tmp_dt)  
+		WHILE EXISTS(SELECT * FROM #tmp_dt)  
 		BEGIN  
 			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @QtyOH = QtyOnHand, @QtyOI = QtyOnIndent, @QtyOO = QtyOnOrder, @QtyOT = QtyOnTransfer, @QtyRP = QtyReorderPoint, @QtyOTS = QtyOnTransit FROM #tmp_dt  
 			--Update Data  

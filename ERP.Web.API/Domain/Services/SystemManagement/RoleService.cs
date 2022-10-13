@@ -136,7 +136,7 @@ public class RoleService : GeneralService<Role>, IRoleService
             Db.RoleMenuActions.RemoveRange(delRoleMenuActions);
 
             // Update detail data 1
-            foreach (var item in data.RoleMenus)
+            foreach (var item in data.RoleMenus.DistinctBy(x => new { x.MenuId , x.IsActive }))
             {
                 Db.RoleMenus.Add(new RoleMenu
                 {
@@ -144,12 +144,12 @@ public class RoleService : GeneralService<Role>, IRoleService
                     MenuId = item.MenuId,
                     IsActive = item.IsActive,
                     UpdatedBy = data.UpdatedBy,
-                    UpdatedDate = item.UpdatedDate
+                    UpdatedDate = data.UpdatedDate
                 });
             }
 
             // Update detail data 2
-            foreach (var item in data.RoleMenuActions)
+            foreach (var item in data.RoleMenuActions.DistinctBy(x => new { x.MenuId, x.ActionId }))
             {
                 if (item.Id < 0)
                 {
@@ -159,7 +159,7 @@ public class RoleService : GeneralService<Role>, IRoleService
                         MenuId = item.MenuId,
                         ActionId = item.ActionId,
                         UpdatedBy = data.UpdatedBy,
-                        UpdatedDate = item.UpdatedDate
+                        UpdatedDate = data.UpdatedDate
                     });
                 }
                 else
