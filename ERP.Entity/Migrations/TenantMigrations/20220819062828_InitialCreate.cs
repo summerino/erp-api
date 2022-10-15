@@ -10230,6 +10230,92 @@ BEGIN
 END";
             migrationBuilder.Sql(sql);
 
+            // Create procedure dbo.sp_get_do_multi_print_data
+            sql = @"CREATE PROCEDURE [dbo].[sp_get_do_multi_print_data]
+	@code varchar(max)
+AS
+BEGIN
+
+	WITH cte_do_src AS (
+		SELECT do_h.*,
+			do_d.Id AS DetailId, do_d.ItemId, do_d.Qty, do_d.UnitId,
+			e_sls.Initial AS SalesInitial,
+			c.Initial AS CustInitial, c.[Name] AS CustName,
+			CASE WHEN c.ShippingAddressId IS NULL THEN ca_d.Address1
+				ELSE ca_b.Address1 END AS CustAddress1,
+			CASE WHEN c.ShippingAddressId IS NULL THEN ca_d.Phone
+				ELSE ca_b.Phone END AS CustPhone,
+			CASE WHEN c.ShippingAddressId IS NULL THEN ca_d.ContactPerson
+				ELSE ca_b.ContactPerson END AS CustContactPerson,
+			e_shp.Initial AS ShippedInitial
+		FROM (
+			SELECT Code, [Date], SrcTrans, TransCode, CustCode, ShippedBy, Notes
+			FROM Sales.SalesDeliveryHeader
+			WHERE Code IN (
+				SELECT [value]
+				FROM dbo.udf_string_split(@code, ',')
+			)
+			AND Mark <> 'V'
+		) do_h
+		LEFT JOIN Sales.SalesDeliveryDetail do_d
+			ON do_d.Code = do_h.Code
+		LEFT JOIN Sales.SalesOrderHeader so_h
+			ON so_h.Code = do_h.TransCode
+			AND do_h.SrcTrans = 1
+		LEFT JOIN General.Employee e_sls
+			ON e_sls.Id = so_h.SalesBy
+		LEFT JOIN General.Customer c
+			ON c.Code = do_h.CustCode
+		LEFT JOIN General.CustomerAddress ca_d
+			ON ca_d.Code = c.Code
+			AND ca_d.IsDefault = 1
+			AND c.BillingAddressId IS NULL
+		LEFT JOIN General.CustomerAddress ca_b
+			ON ca_b.Code = c.Code
+			AND ca_b.Id = c.ShippingAddressId
+			AND c.BillingAddressId IS NOT NULL
+		LEFT JOIN General.Employee e_shp
+			ON e_shp.Id = do_h.ShippedBy
+	)
+	,cte_do_free_src AS (
+		SELECT Id, Code, ItemId, UnitId, Qty
+		FROM Sales.SalesDeliveryDetailFreeGood do_d_fg
+		WHERE EXISTS (
+			SELECT DISTINCT Code
+			FROM cte_do_src cte
+			WHERE cte.Code = do_d_fg.Code
+		)
+	)
+	,cte_union AS (
+		SELECT do.Code, do.[Date], do.SrcTrans, do.TransCode, do.SalesInitial, do.ShippedInitial,
+			do.CustCode, do.CustInitial, do.CustName, do.CustAddress1, do.CustPhone, do.CustContactPerson,
+			do.Notes,
+			do.DetailId, do.ItemId, do.Qty, do.UnitId,
+			1 AS Sort
+		FROM cte_do_src do
+		UNION ALL
+		SELECT do.Code, do.[Date], do.SrcTrans, do.TransCode, do.SalesInitial, do.ShippedInitial,
+			do.CustCode, do.CustInitial, do.CustName, do.CustAddress1, do.CustPhone, do.CustContactPerson,
+			do.Notes,
+			do_f.Id AS DetailId, do_f.ItemId, do_f.Qty, do_f.UnitId,
+			2 AS Sort
+		FROM cte_do_free_src do_f
+		LEFT JOIN cte_do_src do
+			ON do.Code = do_f.Code
+	)
+	SELECT u.*,
+		i.Initial AS ItemInitial, i.[Name] AS ItemName,
+		uom_c.UnitEquivalent AS ItemUnitName
+	FROM cte_union u
+	LEFT JOIN Inventory.Item i
+		ON i.Id = u.ItemId
+	LEFT JOIN Inventory.UoMConversion uom_c
+		ON uom_c.Id = u.UnitId
+	ORDER BY Code, Sort, DetailId
+
+END";
+            migrationBuilder.Sql(sql);
+
             // Create procedure dbo.sp_get_do_print_data
             sql = @"CREATE PROCEDURE [dbo].[sp_get_do_print_data]
 	@code varchar(17),
@@ -10613,6 +10699,99 @@ BEGIN
 		
 		ORDER BY Sort, Id, [LineNo]
 	END
+
+END";
+            migrationBuilder.Sql(sql);
+
+            // Create procedure dbo.sp_get_si_multi_print_data
+            sql = @"CREATE PROCEDURE [dbo].[sp_get_si_multi_print_data]
+	@code varchar(max),
+	@centToWord bit = 0
+AS
+BEGIN
+
+	WITH cte_si_src AS (
+		SELECT si_h.*,
+			si_d.Id AS InvDetailId, si_d.DOCode,
+			dlv_d.Id AS DlvDetailId, dlv_d.[LineNo] AS DlvDetailLineNo,
+			dlv_d.ItemId, dlv_d.Qty, dlv_d.UnitId, dlv_d.UnitPrice, dlv_d.Disc + dlv_d.FinalDiscHeader AS Disc,
+			dlv_d.TaxAmount, dlv_d.ExemptTaxAmount, dlv_d.Total,
+			dbo.udf_num_to_words_id(si_h.TotalHeader, @centToWord) AS TotalHeaderInWord,
+			e.Initial AS SalesInitial,
+			c.Initial AS CustInitial, c.[Name] AS CustName,
+			CASE WHEN so_h.BillingAddressId IS NULL THEN ca_d.Address1
+				ELSE ca_b.Address1 END AS CustAddress1,
+			CASE WHEN so_h.BillingAddressId IS NULL THEN ca_d.Phone
+				ELSE ca_b.Phone END AS CustPhone,
+			CASE WHEN so_h.BillingAddressId IS NULL THEN ca_d.ContactPerson
+				ELSE ca_b.ContactPerson END AS CustContactPerson
+		FROM (
+			SELECT Code, [Date], DueDate, SOCode, CustCode, CurrCode, Total AS TotalHeader, Notes
+			FROM Sales.SalesInvoiceHeader
+			WHERE Code IN (
+				SELECT [value]
+				FROM dbo.udf_string_split(@code, ',')
+			)
+			AND Mark <> 'V'
+		) si_h
+		LEFT JOIN Sales.SalesOrderHeader so_h
+			ON so_h.Code = si_h.SOCode
+		LEFT JOIN Sales.SalesInvoiceDetail si_d
+			ON si_d.Code = si_h.Code
+		LEFT JOIN Sales.SalesDeliveryHeader dlv_h
+			ON dlv_h.Code = si_d.DOCode
+		LEFT JOIN Sales.SalesDeliveryDetail dlv_d
+			ON dlv_d.Code = dlv_h.Code
+		LEFT JOIN General.Employee e
+			ON e.Id = so_h.SalesBy
+		LEFT JOIN General.Customer c
+			ON c.Code = si_h.CustCode
+		LEFT JOIN General.CustomerAddress ca_b
+			ON ca_b.Code = si_h.CustCode
+			AND ca_b.Id = so_h.BillingAddressId
+			AND so_h.BillingAddressId IS NOT NULL
+		LEFT JOIN General.CustomerAddress ca_d
+			ON ca_d.Code = si_h.CustCode
+			AND ca_d.IsDefault = 1
+			AND so_h.BillingAddressId IS NULL
+	)
+	,cte_do_free_src AS (
+		SELECT *
+		FROM Sales.SalesDeliveryDetailFreeGood
+		WHERE EXISTS (
+			SELECT DISTINCT Code, DOCode
+			FROM cte_si_src
+			WHERE DOCode = Code
+		)
+	)
+	,cte_union AS (
+		SELECT si.Code, si.[Date], si.DueDate, si.SalesInitial,
+			si.CustCode, si.CustInitial, si.CustName, si.CustAddress1, si.CustPhone, si.CustContactPerson,
+			si.CurrCode, si.TotalHeader, si.TotalHeaderInWord, si.Notes,
+			si.DOCode, si.DlvDetailId, si.DlvDetailLineNo,
+			si.ItemId, si.Qty, si.UnitId, si.UnitPrice, si.Disc, si.TaxAmount, si.ExemptTaxAmount, si.Total,
+			1 AS Sort
+		FROM cte_si_src si
+		UNION ALL
+		SELECT si.Code, si.[Date], si.DueDate, si.SalesInitial,
+			si.CustCode, si.CustInitial, si.CustName, si.CustAddress1, si.CustPhone, si.CustContactPerson,
+			si.CurrCode, si.TotalHeader, si.TotalHeaderInWord, si.Notes,
+			do_f.Code, do_f.DlvOrderDetailId, do_f.[LineNo],
+			do_f.ItemId, do_f.Qty, do_f.UnitId, do_f.UnitPrice, do_f.UnitPrice, 0, 0, 0,
+			2 AS Sort
+		FROM cte_do_free_src do_f
+		LEFT JOIN cte_si_src si
+			ON si.DOCode = do_f.Code
+	)
+	SELECT u.*,
+		i.Initial AS ItemInitial, i.[Name] AS ItemName,
+		uom_c.UnitEquivalent AS ItemUnitName
+	FROM cte_union u
+	LEFT JOIN Inventory.Item i
+		ON i.Id = u.ItemId
+	LEFT JOIN Inventory.UoMConversion uom_c
+		ON uom_c.Id = u.UnitId
+	ORDER BY Code, Sort, DOCode, DlvDetailId, DlvDetailLineNo
 
 END";
             migrationBuilder.Sql(sql);
@@ -15190,6 +15369,10 @@ END CATCH";
             sql = @"DROP PROCEDURE [dbo].[sp_get_cb_print_data]";
             migrationBuilder.Sql(sql);
 
+            // Drop procedure dbo.sp_get_do_multi_print_data
+            sql = @"DROP PROCEDURE [dbo].[sp_get_do_multi_print_data]";
+            migrationBuilder.Sql(sql);
+
             // Drop procedure dbo.sp_get_do_print_data
             sql = @"DROP PROCEDURE [dbo].[sp_get_do_print_data]";
             migrationBuilder.Sql(sql);
@@ -15212,6 +15395,10 @@ END CATCH";
 
             // Drop procedure dbo.sp_get_rcv_print_data
             sql = @"DROP PROCEDURE [dbo].[sp_get_rcv_print_data]";
+            migrationBuilder.Sql(sql);
+
+            // Drop procedure dbo.sp_get_si_multi_print_data
+            sql = @"DROP PROCEDURE [dbo].[sp_get_si_multi_print_data]";
             migrationBuilder.Sql(sql);
 
             // Drop procedure dbo.sp_get_si_print_data
