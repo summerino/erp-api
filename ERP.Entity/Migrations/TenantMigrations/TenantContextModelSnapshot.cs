@@ -18,7 +18,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
 #pragma warning disable 612, 618
             modelBuilder
                 .UseCollation("SQL_Latin1_General_CP1_CI_AS")
-                .HasAnnotation("ProductVersion", "6.0.8")
+                .HasAnnotation("ProductVersion", "6.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
@@ -10065,6 +10065,10 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .HasColumnType("bigint");
 
                     b.Property<string>("SalesInitial")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<string>("SalesName")
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
 

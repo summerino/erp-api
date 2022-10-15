@@ -9242,6 +9242,7 @@ AS
     SELECT mo_h.*,
         c.[Name] AS CustName,
         e.Initial AS SalesInitial,
+        e.FirstName AS SalesName,
         u_c.Initial AS CreatedInitial,
         u_u.Initial AS UpdatedInitial,
         u_a.Initial AS ApprovedInitial,
@@ -10408,7 +10409,7 @@ BEGIN
 		SELECT ei_h.*,
 			dbo.udf_num_to_words_id(ei_h.Amount, @centToWord) AS AmountInWord,
 			s.Initial AS SupInitial, s.[Name] AS SupName, s.Address1 AS SupAddress1, s.Phone AS SupPhone,
-			e_c.Initial AS CreatedInitial
+			u_c.Initial AS CreatedInitial
 		FROM (
 			SELECT *
 			FROM Expedition.ExpeditionInvoiceHeader
@@ -10417,8 +10418,8 @@ BEGIN
 		) ei_h
 		LEFT JOIN General.Supplier s
 			ON s.Code = ei_h.SupCode
-		LEFT JOIN General.Employee e_c
-			ON e_c.Id = ei_h.CreatedBy
+		LEFT JOIN SystemManagement.[User] u_c
+			ON u_c.Id = ei_h.CreatedBy
 	END
 
 	ELSE IF @displayType = 'DETAIL'
@@ -10524,7 +10525,7 @@ BEGIN
 			dbo.udf_num_to_words_id(po_h.Total, @centToWord) AS TotalInWord,
 			e_r.Initial AS RequestInitial,
 			s.Initial AS SupInitial, s.[Name] AS SupName, s.Address1 AS SupAddress1, s.Phone AS SupPhone,
-			e_c.Initial AS CreatedInitial
+			u_c.Initial AS CreatedInitial
 		FROM (
 			SELECT *
 			FROM Purchasing.PurchaseOrderHeader
@@ -10535,8 +10536,8 @@ BEGIN
 			ON e_r.Id = po_h.RequestBy
 		LEFT JOIN General.Supplier s
 			ON s.Code = po_h.SupCode
-		LEFT JOIN General.Employee e_c
-			ON e_c.Id = po_h.CreatedBy
+		LEFT JOIN SystemManagement.[User] u_c
+			ON u_c.Id = po_h.CreatedBy
 	END
 
 	ELSE IF @displayType = 'DETAIL'
@@ -10582,7 +10583,7 @@ BEGIN
 			dbo.udf_num_to_words_id(pr_h.Total, @centToWord) AS TotalInWord,
 			e_shp.Initial AS ShippedInitial,
 			s.Initial AS SupInitial, s.[Name] AS SupName, s.Address1 AS SupAddress1, s.Phone AS SupPhone,
-			e_cre.Initial AS CreatedInitial
+			u_c.Initial AS CreatedInitial
 		FROM (
 			SELECT *
 			FROM Purchasing.PurchaseReturnHeader
@@ -10593,8 +10594,8 @@ BEGIN
 			ON e_shp.Id = pr_h.ShippedBy
 		LEFT JOIN General.Supplier s
 			ON s.Code = pr_h.SupCode
-		LEFT JOIN General.Employee e_cre
-			ON e_cre.Id = pr_h.CreatedBy
+		LEFT JOIN SystemManagement.[User] u_c
+			ON u_c.Id = pr_h.CreatedBy
 	END
 
 	ELSE IF @displayType = 'DETAIL'
@@ -10661,7 +10662,7 @@ BEGIN
 			e_req.Initial AS RequestInitial,
 			s.Initial AS SupInitial, s.[Name] AS SupName, s.Address1 AS SupAddress1, s.Phone AS SupPhone,
 			e_rcv.Initial AS ReceiveInitial,
-			e_cre.Initial AS CreatedInitial
+			u_c.Initial AS CreatedInitial
 		FROM (
 			SELECT *
 			FROM Purchasing.PurchaseReceiveHeader
@@ -10677,8 +10678,8 @@ BEGIN
 			ON s.Code = rcv_h.SupCode
 		LEFT JOIN General.Employee e_rcv
 			ON e_rcv.Id = rcv_h.ReceiveBy
-		LEFT JOIN General.Employee e_cre
-			ON e_cre.Id = rcv_h.CreatedBy
+		LEFT JOIN SystemManagement.[User] u_c
+			ON u_c.Id = rcv_h.CreatedBy
 	END
 
 	ELSE IF @displayType = 'DETAIL'
@@ -10989,7 +10990,7 @@ BEGIN
 			CASE WHEN c.BillingAddressId IS NULL THEN ca_d.ContactPerson
 				ELSE ca_b.ContactPerson END AS CustContactPerson,
 			w.Initial AS WarehouseInitial,
-			e_cre.Initial AS CreatedInitial
+			u_c.Initial AS CreatedInitial
 		FROM (
 			SELECT *
 			FROM Sales.SalesReturnHeader
@@ -11010,8 +11011,8 @@ BEGIN
 			AND c.BillingAddressId IS NULL
 		LEFT JOIN Inventory.Warehouse w
 			ON w.Code = sr_h.WarehouseCode
-		LEFT JOIN General.Employee e_cre
-			ON e_cre.Id = sr_h.CreatedBy
+		LEFT JOIN SystemManagement.[User] u_c
+			ON u_c.Id = sr_h.CreatedBy
 	END
 
 	ELSE IF @displayType = 'DETAIL'
@@ -11135,7 +11136,7 @@ BEGIN
 		uom_c.UnitEquivalent AS ItemUnitName,
 		w_f.Initial AS WarehouseFromInitial, w_f.[Name] AS WarehouseFromName,
 		w_t.Initial AS WarehouseToInitial, w_t.[Name] AS WarehouseToName,
-		e.Initial AS CreatedInitial
+		u_c.Initial AS CreatedInitial
 	FROM (
 		SELECT *
 		FROM Inventory.TransferStockHeader
@@ -11152,8 +11153,8 @@ BEGIN
 		ON w_f.Code = ts_h.WarehouseCodeFrom
 	LEFT JOIN Inventory.Warehouse w_t
 		ON w_t.Code = ts_h.WarehouseCodeTo
-	LEFT JOIN General.Employee e
-		ON e.Id = ts_h.CreatedBy
+	LEFT JOIN SystemManagement.[User] u_c
+		ON u_c.Id = ts_h.CreatedBy
 	WHERE ts_d.ItemId IS NOT NULL
 	ORDER BY i.Initial
 	
@@ -11170,7 +11171,7 @@ BEGIN
 		vo_c.CustCode, c.Initial AS CustInitial, c.[Name] AS CustName,
 		ca_d.Address1 AS CustAddress1, ca_d.ContactPerson AS CustContactPerson,
 		e_s.Initial AS SalesInitial, e_s.FirstName AS SalesFirstName, e_s.LastName AS SalesLastName,
-		e_c.Initial AS CreatedInitial
+		u_c.Initial AS CreatedInitial
 	FROM (
 		SELECT *
 		FROM Sales.VisitOrder
@@ -11186,8 +11187,8 @@ BEGIN
 		and ca_d.IsDefault = 1
 	LEFT JOIN General.Employee e_s
 		ON e_s.Id = vo.SalesmanId
-	LEFT JOIN General.Employee e_c
-		ON e_c.Id = vo.CreatedBy
+	LEFT JOIN SystemManagement.[User] u_c
+		ON u_c.Id = vo.CreatedBy
 	
 END";
             migrationBuilder.Sql(sql);
@@ -11202,7 +11203,7 @@ BEGIN
 		vo_i.InvCode, si_h.[Date] AS InvDate, si_h.Total AS InvTotal,
 		si_h.CustCode, c.Initial AS CustInitial, c.[Name] AS CustName, a.Initial AS CustArea,
 		e_s.Initial AS SalesInitial, e_s.FirstName AS SalesFirstName, e_s.LastName AS SalesLastName,
-		e_c.Initial AS CreatedInitial
+		u_c.Initial AS CreatedInitial
 	FROM (
 		SELECT *
 		FROM Sales.VisitOrder
@@ -11219,8 +11220,8 @@ BEGIN
 		ON a.Id = c.AreaId2
 	LEFT JOIN General.Employee e_s
 		ON e_s.Id = vo.SalesmanId
-	LEFT JOIN General.Employee e_c
-		ON e_c.Id = vo.CreatedBy
+	LEFT JOIN SystemManagement.[User] u_c
+		ON u_c.Id = vo.CreatedBy
 	ORDER BY a.Initial, c.[Name], vo_i.InvCode
 	
 END";

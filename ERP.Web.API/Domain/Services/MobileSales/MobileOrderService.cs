@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Linq.Dynamic.Core;
+using Microsoft.EntityFrameworkCore;
 using ERP.Common;
 using ERP.Common.Extensions;
 using ERP.Common.Models;
@@ -7,7 +8,6 @@ using ERP.Entity.MobileSales;
 using ERP.Entity.Sales;
 using ERP.Web.API.Domain.Interfaces.MobileSales;
 using ERP.Web.API.Model.MobileSales;
-using System.Linq.Dynamic.Core;
 
 namespace ERP.Web.API.Domain.Services.MobileSales;
 
@@ -423,8 +423,8 @@ public class MobileOrderService : GeneralService<MobileOrderHeader>, IMobileOrde
             data = DateTime.TryParse(search, out var searchDate)
                 ? data.Where(x => x.Date == searchDate)
                 : data.Where(x =>
-                    x.Code.Contains(search) || x.SalesInitial.Contains(search) || x.CustCode.StartsWith(search) ||
-                    x.CustName.Contains(search));
+                    x.Code.Contains(search) || x.SalesInitial.Contains(search) || x.SalesName.Contains(search) ||
+                    x.CustCode.StartsWith(search) || x.CustName.Contains(search));
         }
 
         return data.ToDataSourceResult(skip, take, filters, sorts);
