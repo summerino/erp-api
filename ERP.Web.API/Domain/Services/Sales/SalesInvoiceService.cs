@@ -7,6 +7,7 @@ using ERP.Entity;
 using ERP.Entity.Sales;
 using ERP.Web.API.Domain.Interfaces.Sales;
 using ERP.Web.API.Model.Sales;
+using System.Linq;
 
 namespace ERP.Web.API.Domain.Services.Sales;
 
@@ -122,6 +123,20 @@ public class SalesInvoiceService : GeneralService<SalesInvoiceHeader>, ISalesInv
 
         return data.ToDynamicList();
     }
+
+    public List<dynamic> GetDataDeliveryOrder(List<string> codes)
+    {
+        var siCodes =
+            Db.SalesInvoiceHeaders
+                .Where(h => codes.Contains(h.Code) && h.Mark != "V")
+                .Select(h => h.Code).ToList();
+
+        return Db.SalesInvoiceDetails
+            .Where(x => siCodes.Contains(x.Code))
+            .Select(x => new { x.Code, x.DoCode })
+            .ToDynamicList();
+    }
+
     public SaveResult Insert(SalesInvoiceRequest data)
     {
         var result = new SaveResult(false);
