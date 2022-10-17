@@ -821,7 +821,9 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
                 var dataSRXDetail = Db.SalesReturnDetailExchDiffItems.FirstOrDefault(x => x.Code == transCode && x.ItemId == item.ItemId && x.UnitId == item.UnitId);
                 if (code == null)
                 {
-                    var availableStock = srData.Type == 2 ? dataSRDetail.Qty - dataSRDetail.QtyDlv : dataSRXDetail.Qty - dataSRXDetail.QtyDlv;
+                    var availableStock = srData.Type == 2
+                        ? dataSRDetail.Qty - dataSRDetail.QtyDlv
+                        : dataSRXDetail.Qty - dataSRXDetail.QtyDlv;
                     if (item.Qty > availableStock)
                     {
                         result = true;
