@@ -1498,6 +1498,79 @@ public class JournalService : IJournalService
                     Amount = itemDetailData.Amount,
                     SrcTrans = "CB"
                 });
+
+                if (itemData.ChequeDate.HasValue)
+                {
+                    //Check D
+                    journals.Add(new Journal
+                    {
+                        Code = itemData.Code,
+                        LineNo = 1,
+                        Date = itemData.Date,
+                        CoaCode = systemParam.FirstOrDefault(x => x.Code == $"CHQ_{(itemData.Type == "D" ? "AR" : "AP")}_COA")?.Value ?? "",
+                        TypeCode = "CB",
+                        Notes = $"Terima Cek / Giro, Kode Cek: {(string.IsNullOrEmpty(itemData.ChequeNo) ? "-" : $"{itemData.ChequeNo}")}",
+                        RefCode2 = itemData.Code,
+                        Group = 4,
+                        CurrCode = itemData.CurrCode,
+                        Period = itemData.Date.ToString("yyyyMMdd"),
+                        Type = "D",
+                        Amount = Math.Abs(itemData.Amount),
+                        SrcTrans = "CB"
+                    });
+                    //Check C
+                    journals.Add(new Journal
+                    {
+                        Code = itemData.Code,
+                        LineNo = 1,
+                        Date = itemData.Date,
+                        CoaCode = systemParam.FirstOrDefault(x => x.Code == $"CHQ_{(itemData.Type == "D" ? "AR" : "AP")}_COA")?.Value ?? "",
+                        TypeCode = "CB",
+                        Notes = $"{(itemData.Mark == "A" ? "Kliring" : "Penolakan")} Cek / Giro, Kode Cek: {(string.IsNullOrEmpty(itemData.ChequeNo) ? "-" : $"{itemData.ChequeNo}")}",
+                        RefCode2 = itemData.Code,
+                        Group = 5,
+                        CurrCode = itemData.CurrCode,
+                        Period = itemData.Date.ToString("yyyyMMdd"),
+                        Type = "C",
+                        Amount = Math.Abs(itemData.Amount),
+                        SrcTrans = "CB"
+                    });
+                    if (itemData.Mark == "REJ")
+                    {
+                        journals.Add(new Journal
+                        {
+                            Code = itemData.Code,
+                            LineNo = ++k,
+                            Date = itemData.Date,
+                            CoaCode = itemDetailData.CoaCode ?? systemParam.FirstOrDefault(x => x.Code == $"{itemDetailData.Type}_COA")?.Value ?? "",
+                            TypeCode = $"CB_{itemDetailData.Type}",
+                            Notes = $"Penolakan Cek / Giro, Kode Cek: {(string.IsNullOrEmpty(itemData.ChequeNo) ? "-" : $"{itemData.ChequeNo}")}",
+                            RefCode1 = itemDetailData.TransCode,
+                            Group = (short)(itemDetailData.TypeAmount == "D" ? 2 : 1),
+                            CurrCode = itemDetailData.CurrCode,
+                            Period = itemData.Date.ToString("yyyyMMdd"),
+                            Type = itemDetailData.TypeAmount == "C" ? "D" : "C",
+                            Amount = itemDetailData.Amount,
+                            SrcTrans = "CB"
+                        });
+                        journals.Add(new Journal
+                        {
+                            Code = itemData.Code,
+                            LineNo = ++l,
+                            Date = itemData.Date,
+                            CoaCode = itemData.CoaCode ?? "",
+                            TypeCode = "CB",
+                            Notes = $"Penolakan Cek / Giro, Kode Cek: {(string.IsNullOrEmpty(itemData.ChequeNo) ? "-" : $"{itemData.ChequeNo}")}",
+                            RefCode2 = itemData.Code,
+                            Group = 6,
+                            CurrCode = itemData.CurrCode,
+                            Period = itemData.Date.ToString("yyyyMMdd"),
+                            Type = itemDetailData.TypeAmount,
+                            Amount = itemDetailData.Amount,
+                            SrcTrans = "CB"
+                        });
+                    }
+                }
             }
         }
 
