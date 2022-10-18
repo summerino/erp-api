@@ -1467,7 +1467,7 @@ public class JournalService : IJournalService
                 {
                     Code = itemData.Code,
                     LineNo = ++i,
-                    Date = itemData.Date,
+                    Date = itemData.ChequeDate.HasValue ? itemData.ChequeDate.Value : itemData.Date,
                     CoaCode = itemDetailData.CoaCode ?? systemParam.FirstOrDefault(x => x.Code == $"{itemDetailData.Type}_COA")?.Value ?? "",
                     TypeCode = $"CB_{itemDetailData.Type}",
                     Notes = ($"{systemParam.FirstOrDefault(x => x.Code == $"JR_PREFIX_{itemDetailData.Type}")?.Value ?? ""} {itemDetailData.Notes}").Trim(),
@@ -1486,7 +1486,7 @@ public class JournalService : IJournalService
                 {
                     Code = itemData.Code,
                     LineNo = ++j,
-                    Date = itemData.Date,
+                    Date = itemData.ChequeDate.HasValue ? itemData.ChequeDate.Value : itemData.Date,
                     CoaCode = itemData.CoaCode ?? "",
                     TypeCode = "CB",
                     Notes = "Kas/Bank",
@@ -1535,7 +1535,6 @@ public class JournalService : IJournalService
                         Amount = Math.Abs(itemData.Amount),
                         SrcTrans = "CB"
                     });
-
                     if (itemData.Mark == "REJ")
                     {
                         journals.Add(new Journal
@@ -1554,7 +1553,6 @@ public class JournalService : IJournalService
                             Amount = itemDetailData.Amount,
                             SrcTrans = "CB"
                         });
-
                         journals.Add(new Journal
                         {
                             Code = itemData.Code,
