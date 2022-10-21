@@ -10758,11 +10758,11 @@ BEGIN
 	)
 	,cte_do_free_src AS (
 		SELECT *
-		FROM Sales.SalesDeliveryDetailFreeGood
+		FROM Sales.SalesDeliveryDetailFreeGood dlv_d_fg
 		WHERE EXISTS (
 			SELECT DISTINCT Code, DOCode
-			FROM cte_si_src
-			WHERE DOCode = Code
+			FROM cte_si_src cte
+			WHERE cte.DOCode = dlv_d_fg.Code
 		)
 	)
 	,cte_union AS (
