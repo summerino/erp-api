@@ -1515,7 +1515,7 @@ public class JournalService : IJournalService
                         CurrCode = itemData.CurrCode,
                         Period = itemData.Date.ToString("yyyyMMdd"),
                         Type = "D",
-                        Amount = Math.Abs(itemData.Amount),
+                        Amount = itemDetailData.Amount,
                         SrcTrans = "CB"
                     });
                     //Check C
@@ -1532,7 +1532,7 @@ public class JournalService : IJournalService
                         CurrCode = itemData.CurrCode,
                         Period = itemData.Date.ToString("yyyyMMdd"),
                         Type = "C",
-                        Amount = Math.Abs(itemData.Amount),
+                        Amount = itemDetailData.Amount,
                         SrcTrans = "CB"
                     });
                     if (itemData.Mark == "REJ")
