@@ -1164,7 +1164,7 @@ public class JournalService : IJournalService
                                 Group = itemDo.Group == 2 ? (short)5 : (short)2,
                                 CurrCode = itemData.InvHeader.CurrCode,
                                 Period = itemData.InvHeader.Date.ToString("yyyyMMdd"),
-                                Type = itemDo.Group == 2 ?  "C" : "D",
+                                Type = itemDo.Group == 2 ? "C" : "D",
                                 Amount = itemDo.Amount,
                                 SrcTrans = "SI"
                             });
@@ -1183,9 +1183,9 @@ public class JournalService : IJournalService
                                          select new { DlvDetail = dlvdetail, Item = item }).ToList();
 
                     var DlvDetailFreeData = (from dlvdetail in db.SalesDeliveryDetailFreeGoods
-                                         join item in db.Items on dlvdetail.ItemId equals item.Id
-                                         where dlvdetail.Code == itemDetail.DoData.Code
-                                         select new { DlvDetail = dlvdetail, Item = item }).ToList();
+                                             join item in db.Items on dlvdetail.ItemId equals item.Id
+                                             where dlvdetail.Code == itemDetail.DoData.Code
+                                             select new { DlvDetail = dlvdetail, Item = item }).ToList();
 
                     short ix = 0;
                     foreach (var itemDlvDetail in DlvDetailData)
@@ -1455,6 +1455,10 @@ public class JournalService : IJournalService
         var cashBankData = db.GeneralCashBankHeaders.Where(x => x.Date.Month == dateTime.Month && x.Date.Year == dateTime.Year && x.Mark != "V").ToList();
         foreach (var itemData in cashBankData)
         {
+            var journalData = db.Journals.Where(x => x.Code == itemData.Code);
+            if (journalData.Any())
+                db.Journals.RemoveRange(journalData);
+
             var cashBankDetailData = db.GeneralCashBankDetails.Where(x => x.Code == itemData.Code).ToList();
             short i = 0;
             short j = 0;
@@ -1514,7 +1518,7 @@ public class JournalService : IJournalService
                         Group = 4,
                         CurrCode = itemData.CurrCode,
                         Period = itemData.Date.ToString("yyyyMMdd"),
-                        Type = "D",
+                        Type = itemDetailData.Type == "AR" ? "D" : "C",
                         Amount = itemDetailData.Amount,
                         SrcTrans = "CB"
                     });
@@ -1531,7 +1535,7 @@ public class JournalService : IJournalService
                         Group = 5,
                         CurrCode = itemData.CurrCode,
                         Period = itemData.Date.ToString("yyyyMMdd"),
-                        Type = "C",
+                        Type = itemDetailData.Type == "AR" ? "C" : "D",
                         Amount = itemDetailData.Amount,
                         SrcTrans = "CB"
                     });
