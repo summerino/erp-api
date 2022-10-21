@@ -1506,7 +1506,7 @@ public class JournalService : IJournalService
                     {
                         Code = itemData.Code,
                         LineNo = 1,
-                        Date = itemData.Date,
+                        Date = itemData.ChequeDate.HasValue ? itemData.ChequeDate.Value : itemData.Date,
                         CoaCode = systemParam.FirstOrDefault(x => x.Code == $"CHQ_{(itemData.Type == "D" ? "AR" : "AP")}_COA")?.Value ?? "",
                         TypeCode = "CB",
                         Notes = $"Terima Cek / Giro, Kode Cek: {(string.IsNullOrEmpty(itemData.ChequeNo) ? "-" : $"{itemData.ChequeNo}")}",
@@ -1523,7 +1523,7 @@ public class JournalService : IJournalService
                     {
                         Code = itemData.Code,
                         LineNo = 1,
-                        Date = itemData.Date,
+                        Date = itemData.ChequeDate.HasValue ? itemData.ChequeDate.Value : itemData.Date,
                         CoaCode = systemParam.FirstOrDefault(x => x.Code == $"CHQ_{(itemData.Type == "D" ? "AR" : "AP")}_COA")?.Value ?? "",
                         TypeCode = "CB",
                         Notes = $"{(itemData.Mark == "A" ? "Kliring" : "Penolakan")} Cek / Giro, Kode Cek: {(string.IsNullOrEmpty(itemData.ChequeNo) ? "-" : $"{itemData.ChequeNo}")}",
@@ -1541,7 +1541,7 @@ public class JournalService : IJournalService
                         {
                             Code = itemData.Code,
                             LineNo = ++k,
-                            Date = itemData.Date,
+                            Date = itemData.ChequeDate.HasValue ? itemData.ChequeDate.Value : itemData.Date,
                             CoaCode = itemDetailData.CoaCode ?? systemParam.FirstOrDefault(x => x.Code == $"{itemDetailData.Type}_COA")?.Value ?? "",
                             TypeCode = $"CB_{itemDetailData.Type}",
                             Notes = $"Penolakan Cek / Giro, Kode Cek: {(string.IsNullOrEmpty(itemData.ChequeNo) ? "-" : $"{itemData.ChequeNo}")}",
@@ -1557,7 +1557,7 @@ public class JournalService : IJournalService
                         {
                             Code = itemData.Code,
                             LineNo = ++l,
-                            Date = itemData.Date,
+                            Date = itemData.ChequeDate.HasValue ? itemData.ChequeDate.Value : itemData.Date,
                             CoaCode = itemData.CoaCode ?? "",
                             TypeCode = "CB",
                             Notes = $"Penolakan Cek / Giro, Kode Cek: {(string.IsNullOrEmpty(itemData.ChequeNo) ? "-" : $"{itemData.ChequeNo}")}",
