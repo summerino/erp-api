@@ -31,21 +31,21 @@ public class MobileOrderHeader : BaseEntityWithMarkApprovedAndRejected
     [Precision(18, 2)]
     public decimal Rate { get; set; }
 
-    [Precision(18, 2)]
+    [Precision(19, 6)]
     public decimal SubTotal { get; set; }
 
     public bool IncludeTax { get; set; }
 
-    [Precision(18, 2)]
+    [Precision(19, 6)]
     public decimal TaxAmount { get; set; }
 
-    [Precision(18, 2)]
+    [Precision(19, 6)]
     public decimal ExemptTaxAmount { get; set; }
 
-    [Precision(18, 2)]
+    [Precision(19, 6)]
     public decimal Total { get; set; }
 
-    [Column("DPP", TypeName = "decimal(18, 2)")]
+    [Column("DPP", TypeName = "decimal(19, 6)")]
     public decimal Dpp { get; set; }
 }
 
@@ -61,24 +61,18 @@ public class VwMobileOrderHeader : BaseEntityWithMarkApprovedAndRejected
 
     public string CurrCode { get; set; }
 
-    [Precision(18, 2)]
     public decimal Rate { get; set; }
 
-    [Precision(18, 2)]
     public decimal SubTotal { get; set; }
 
     public bool IncludeTax { get; set; }
 
-    [Precision(18, 2)]
     public decimal TaxAmount { get; set; }
 
-    [Precision(18, 2)]
     public decimal ExemptTaxAmount { get; set; }
 
-    [Precision(18, 2)]
     public decimal Total { get; set; }
 
-    [Precision(18, 2)]
     public decimal Dpp { get; set; }
 
 

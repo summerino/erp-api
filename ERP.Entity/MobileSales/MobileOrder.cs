@@ -41,30 +41,30 @@ public class MobileOrderHeader : BaseEntityWithMarkApprovedAndRejected
     [Precision(18, 2)]
     public decimal Rate { get; set; }
 
-    [Precision(18, 2)]
+    [Precision(19, 6)]
     public decimal SubTotal { get; set; }
 
     [Precision(5, 2)]
     public decimal FinalDiscPercent { get; set; }
 
-    [Precision(18, 2)]
+    [Precision(19, 6)]
     public decimal FinalDisc { get; set; }
 
     public bool IncludeTax { get; set; }
 
-    [Precision(18, 2)]
+    [Precision(19, 6)]
     public decimal TaxAmount { get; set; }
 
-    [Precision(18, 2)]
+    [Precision(19, 6)]
     public decimal ExemptTaxAmount { get; set; }
 
-    [Precision(18, 2)]
+    [Precision(19, 6)]
     public decimal Total { get; set; }
 
-    [Column("DPP", TypeName = "decimal(18, 2)")]
+    [Column("DPP", TypeName = "decimal(19, 6)")]
     public decimal Dpp { get; set; }
 
-    [Precision(18, 2)]
+    [Precision(19, 6)]
     public decimal PaidAmount { get; set; }
 }
 
@@ -88,33 +88,24 @@ public class VwMobileOrderHeader : BaseEntityWithMarkApprovedAndRejected
 
     public string CurrCode { get; set; }
 
-    [Precision(18, 2)]
     public decimal Rate { get; set; }
 
-    [Precision(18, 2)]
     public decimal SubTotal { get; set; }
 
-    [Precision(5, 2)]
     public decimal FinalDiscPercent { get; set; }
 
-    [Precision(18, 2)]
     public decimal FinalDisc { get; set; }
 
     public bool IncludeTax { get; set; }
 
-    [Precision(18, 2)]
     public decimal TaxAmount { get; set; }
 
-    [Precision(18, 2)]
     public decimal ExemptTaxAmount { get; set; }
 
-    [Precision(18, 2)]
     public decimal Total { get; set; }
 
-    [Precision(18, 2)]
     public decimal Dpp { get; set; }
 
-    [Precision(18, 2)]
     public decimal PaidAmount { get; set; }
 
     public string CustName { get; set; }

@@ -147,6 +147,6 @@ public class PurchaseInvoiceDebitMemo
     [Precision(18, 2)]
     public decimal InvAmount { get; set; }
 
-    [Precision(18, 2)]
+    [Precision(19, 6)]
     public decimal DebitMemoAmount { get; set; }
 }
