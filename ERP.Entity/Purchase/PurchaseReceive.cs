@@ -65,7 +65,7 @@ public class PurchaseReceiveHeader : BaseEntityWithMarkApprovedAndViewed
     [Precision(19, 6)]
     public decimal Total { get; set; }
 
-    [Column("DPP", TypeName = "decimal(18, 2)")]
+    [Column("DPP", TypeName = "decimal(19, 6)")]
     public decimal Dpp { get; set; }
 
     [Precision(19, 6)]
