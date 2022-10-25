@@ -10301,7 +10301,12 @@ BEGIN
 			do_f.Id AS DetailId, do_f.ItemId, do_f.Qty, do_f.UnitId,
 			2 AS Sort
 		FROM cte_do_free_src do_f
-		LEFT JOIN cte_do_src do
+		LEFT JOIN (
+			SELECT DISTINCT Code, [Date], SrcTrans, TransCode, SalesInitial, ShippedInitial,
+				CustCode, CustInitial, CustName, CustAddress1, CustPhone, CustContactPerson,
+				Notes
+			FROM cte_do_src
+		) do
 			ON do.Code = do_f.Code
 	)
 	SELECT u.*,
@@ -10781,7 +10786,13 @@ BEGIN
 			do_f.ItemId, do_f.Qty, do_f.UnitId, do_f.UnitPrice, do_f.UnitPrice, 0, 0, 0,
 			2 AS Sort
 		FROM cte_do_free_src do_f
-		LEFT JOIN cte_si_src si
+		LEFT JOIN (
+			SELECT DISTINCT Code, [Date], DueDate, SalesInitial,
+				CustCode, CustInitial, CustName, CustAddress1, CustPhone, CustContactPerson,
+				CurrCode, TotalHeader, TotalHeaderInWord, Notes,
+				DOCode
+			FROM cte_si_src
+		) si
 			ON si.DOCode = do_f.Code
 	)
 	SELECT u.*,
