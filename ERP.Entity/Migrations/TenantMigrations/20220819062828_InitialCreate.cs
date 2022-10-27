@@ -13379,7 +13379,7 @@ BEGIN TRY
 	FROM Inventory.StockMutation sm, #tmp_do_free
 	WHERE sm.RefCode1 = @code
 	AND sm.RefDetailId1 = #tmp_do_free.Id
-	AND sm.Src = 'DOF'
+	AND sm.Src = 'SIF'
 
 	-- Insert stock mutation that doesn't have with sales delivery item detail
 	INSERT INTO Inventory.StockMutation
@@ -13390,11 +13390,11 @@ BEGIN TRY
 			FROM Inventory.StockMutation sm
 			WHERE sm.RefCode2 = do.Code
 			AND sm.RefDetailId1 = do.Id
-			AND sm.Src = 'DOF'
+			AND sm.Src = 'SIF'
 		)
 
 	-- Update WarehouseQty
-	SELECT WarehouseCode, ItemId, BaseQty, UnitId
+	SELECT WarehouseCode, ItemId, BaseQty, UnitId, Src as SrcName
 	INTO #tmp_wq
 	FROM Inventory.StockMutation
 	WHERE RefCode1 = @code AND Src IN ('SI', 'SIF')
@@ -13404,14 +13404,15 @@ BEGIN TRY
 	DECLARE @ItemId int
 	DECLARE @srcTrans int
 	DECLARE @UnitId int
-
+	DECLARE @SrcName varchar(10)
+	
 	SELECT @srcTrans = SrcTrans FROM Sales.SalesDeliveryHeader WHERE Code = @transCode
 
 	IF(@isVoid = 0)
 	BEGIN
 		WHILE EXISTS(SELECT * FROM #tmp_wq)
 		BEGIN
-			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty, @UnitId = UnitId FROM #tmp_wq
+			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty, @UnitId = UnitId, @SrcName = SrcName FROM #tmp_wq
 
 			IF EXISTS(SELECT * FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @WHId AND ItemId = @ItemId)
 			BEGIN
@@ -13426,14 +13427,14 @@ BEGIN TRY
 				VALUES (@WHId, @ItemId, 0, 0, 0, 0, 0, 0, dbo.udf_current_local_time())
 				UPDATE Inventory.WarehouseQuantity SET QtyOnTransit -= @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
 			END
-			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId
+			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId AND SrcName = @SrcName
 		END
 	END
 	ELSE -- If data voided
 	BEGIN
 	WHILE EXISTS(SELECT * FROM #tmp_wq)
 		BEGIN
-			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty, @UnitId = UnitId FROM #tmp_wq
+			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty, @UnitId = UnitId, @SrcName = SrcName FROM #tmp_wq
 
 			IF EXISTS(SELECT * FROM Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code)
 			BEGIN
@@ -13441,9 +13442,9 @@ BEGIN TRY
 				BEGIN
 					UPDATE Inventory.WarehouseQuantity SET QtyOnTransit += @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
 				END
-				DELETE Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code AND UnitId = @UnitId
+				DELETE Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code AND UnitId = @UnitId AND Src = @SrcName
 			END
-			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId
+			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId AND SrcName = @SrcName
 		END
 	END
 
