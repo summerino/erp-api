@@ -1161,8 +1161,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
             }
 
             //Restore stock mutation
-            var oldDlvData = Db.SalesDeliveryHeaders.AsNoTracking().FirstOrDefault(x => x.Code == data.Code);
-            RestoreWarehouseQty(oldDlvData.Code, oldDlvData.SrcTrans);
+            RestoreWarehouseQty(data.Code);
 
             var taxes = Db.Taxes.ToList();
             var promos = Db.PromoHeaders
@@ -2590,24 +2589,47 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
         return result;
     }
 
-    private void RestoreWarehouseQty(string code, short srcTrans)
+    private void RestoreWarehouseQty(string code)
     {
-        var dlvSMData = Db.StockMutations.Where(x => x.RefCode1 == code).ToList();
-        if (srcTrans == 1)
+        var diSMData = Db.StockMutations.Where(x => x.RefCode1 == code).ToList();
+        if (diSMData.Any())
         {
-            foreach (var itemData in dlvSMData)
+            foreach (var itemData in diSMData)
             {
                 var whQtyData = new Entity.Inventory.WarehouseQuantity();
-                if (itemData.Type == "OH" && itemData.Src == "DO")
+                if (itemData.Type == "OH" && new[] { "DO", "DOF" }.Contains(itemData.Src))
                 {
                     whQtyData = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == itemData.WarehouseCode && x.ItemId == itemData.ItemId);
                     whQtyData.QtyOnHand = whQtyData.QtyOnHand + itemData.BaseQty;
                     Db.WarehouseQuantities.Update(whQtyData);
                 }
+                else if (itemData.Type == "OO" && new[] { "DO", "DOF" }.Contains(itemData.Src))
+                {
+                    whQtyData = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == itemData.WarehouseCode && x.ItemId == itemData.ItemId);
+                    whQtyData.QtyOnOrder = whQtyData.QtyOnOrder + itemData.BaseQty;
+                    Db.WarehouseQuantities.Update(whQtyData);
+                }
+                else if (itemData.Type == "OTS" && new[] { "DO", "DOF" }.Contains(itemData.Src))
+                {
+                    whQtyData = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == itemData.WarehouseCode && x.ItemId == itemData.ItemId);
+                    whQtyData.QtyOnTransit = whQtyData.QtyOnTransit - itemData.BaseQty;
+                    Db.WarehouseQuantities.Update(whQtyData);
+                }
+                else if (itemData.Type == "OO" && new[] { "SO", "SOF" }.Contains(itemData.Src))
+                {
+                    whQtyData = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == itemData.WarehouseCode && x.ItemId == itemData.ItemId);
+                    whQtyData.QtyOnOrder = whQtyData.QtyOnOrder - itemData.BaseQty;
+                    Db.WarehouseQuantities.Update(whQtyData);
+                }
+                else if (itemData.Type == "OTS" && new[] { "SI", "SIF" }.Contains(itemData.Src))
+                {
+                    whQtyData = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == itemData.WarehouseCode && x.ItemId == itemData.ItemId);
+                    whQtyData.QtyOnTransit = whQtyData.QtyOnTransit + itemData.BaseQty;
+                    Db.WarehouseQuantities.Update(whQtyData);
+                }
             }
+            Db.SaveChanges();
         }
-        Db.StockMutations.RemoveRange(dlvSMData);
-        Db.SaveChanges();
     }
 
     #region Credit Used - Limit
