@@ -57,12 +57,8 @@ public class SalesmanService : GeneralService<SalesmanGroup>, ISalesmanService
     {
         var data = Db.VwSalesmanScheduleCustomers.AsQueryable();
 
-        if (id?.Any() ?? false)
-        {
-            data = Db.VwSalesmanScheduleCustomers.Where(x => id.Contains(x.SalesmanScheduleId));
-        }
-
-        return data.OrderBy(x => x.SalesmanScheduleId);
+        return id.Any() ? data.Where(x => id.Contains(x.SalesmanScheduleId)).OrderBy(x => x.SalesmanScheduleId) 
+            : new List<VwSalesmanScheduleCustomer>();
     }
 
     public IEnumerable<VwSalesmanSchedule> GetSalesmanScheduleWithDate(long id, string date)
