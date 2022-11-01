@@ -2464,7 +2464,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                     {
                         if (uom.IsBaseUnit)
                         {
-                            if (item.Qty > (stock.QtyOnHand - oldStock.BaseQty))
+                            if (item.Qty > (stock.QtyOnHand + oldStock.BaseQty))
                             {
                                 result = true;
                             }
@@ -2474,7 +2474,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                             var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= uom.Seq).Select(x => x.Conversion).ToList();
                             var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
                             var baseQty = item.Qty * multipliedQty;
-                            if (baseQty > (stock.QtyOnHand - oldStock.BaseQty))
+                            if (baseQty > (stock.QtyOnHand + oldStock.BaseQty))
                             {
                                 result = true;
                             }
