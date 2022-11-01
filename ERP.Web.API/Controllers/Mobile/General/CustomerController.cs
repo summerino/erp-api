@@ -185,6 +185,20 @@ public class CustomerController : ControllerBase
         });
     }
 
+    [HttpGet("address")]
+    public IActionResult GetCustomerAddress()
+    {
+        var data =
+            _customer.GetCustomerAddress()
+                .ToList<dynamic>();
+
+        return Ok(new MobileApiResponse
+        {
+            Count = data.Count,
+            Data = data
+        });
+    }
+
     [HttpGet("{code}")]
     public IActionResult GetDataByCode(string code)
     {
