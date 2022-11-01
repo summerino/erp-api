@@ -5,12 +5,12 @@ using ERP.Common.Models;
 using ERP.Entity;
 using ERP.Web.API.Domain.Interfaces.Accounting;
 using ERP.Web.API.Domain.Interfaces.Auth;
+using ERP.Web.API.Domain.Interfaces.General;
 using ERP.Web.API.Domain.Interfaces.Sales;
 using ERP.Web.API.Domain.Interfaces.SystemManagement;
 using ERP.Web.API.Model;
 using ERP.Web.API.Model.Sales;
 using Newtonsoft.Json;
-using ERP.Web.API.Domain.Interfaces.General;
 
 namespace ERP.Web.API.Controllers.Sales;
 
@@ -24,7 +24,8 @@ public class SalesInvoiceController : ControllerBase
     private readonly IClaimService _claim;
     private readonly IAuthService _auth;
     private readonly IActiveTransactionService _activeTrans;
-    private const int MenuId = (int)Menu.SalesInvoice;
+
+    private const int MenuId = (int) Menu.SalesInvoice;
 
     public SalesInvoiceController(ISalesInvoiceService inv, IClosingMonthService closingMonth,
         ISystemParameterService sysPar, IClaimService claim, IAuthService auth, IActiveTransactionService activeTrans)
@@ -122,7 +123,10 @@ public class SalesInvoiceController : ControllerBase
                 x.Id,
                 x.CreditMemoCode,
                 x.Date,
-                x.CreditMemoAmount
+                x.CreditMemoAmount,
+                x.CreditMemoTaxAmount,
+                x.CreditMemoTotal,
+                x.Src
             }).ToList<dynamic>();
 
         return Ok(new ApiResponse
@@ -132,6 +136,41 @@ public class SalesInvoiceController : ControllerBase
         });
     }
 
+    [HttpGet("si-sdp")]
+    public IActionResult GetSalesInvoiceSDP(string soCode, string siCode)
+    {
+        var data = _inv.GetSalesInvoiceSDP(soCode, siCode)
+            .Select(x => new
+            {
+                x.Id,
+                x.CreditMemoCode,
+                x.Date,
+                x.CreditMemoAmount,
+                x.CreditMemoTaxAmount,
+                x.CreditMemoTotal,
+                x.Src
+            }).ToList<dynamic>();
+
+        return Ok(new ApiResponse
+        {
+            RowCount = data.Count,
+            TableData = data
+        });
+    }
+
+    [HttpGet("delivery-order")]
+    public IActionResult GetDeliveryOrder(string codes)
+    {
+        var data =
+            _inv.GetDataDeliveryOrder(
+                JsonConvert.DeserializeObject<List<string>>(!string.IsNullOrWhiteSpace(codes) ? codes : "[]"));
+
+        return Ok(new ApiResponse
+        {
+            RowCount = data.Count,
+            TableData = data
+        });
+    }
     [HttpPost]
     public IActionResult OnPost(SalesInvoiceRequest data)
     {

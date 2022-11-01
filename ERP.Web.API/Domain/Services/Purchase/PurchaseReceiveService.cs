@@ -7,6 +7,7 @@ using ERP.Entity;
 using ERP.Entity.Purchase;
 using ERP.Web.API.Domain.Interfaces.Purchase;
 using ERP.Web.API.Model.Purchase;
+using System.Xml.Linq;
 
 namespace ERP.Web.API.Domain.Services.Purchase;
 
@@ -118,6 +119,12 @@ public class PurchaseReceiveService : GeneralService<PurchaseReceiveHeader>, IPu
                 if (transData.Date > data.Date)
                 {
                     result.Message = "Data penerimaan pembelian tidak bisa disimpan karena data order pembelian mempunyai tanggal lebih besar.";
+                    return result;
+                }
+
+                if (IsSaveAndDateInvalid(data))
+                {
+                    result.Message = "Tanggal Faktur Pembelian tidak boleh lebih kecil dari tanggal Penerimaan Barang.";
                     return result;
                 }
             }
@@ -349,6 +356,12 @@ public class PurchaseReceiveService : GeneralService<PurchaseReceiveHeader>, IPu
                 if (transData.Date > data.Date)
                 {
                     result.Message = "Data penerimaan pembelian tidak bisa diubah karena data order pembelian mempunyai tanggal lebih besar.";
+                    return result;
+                }
+
+                if (IsSaveAndDateInvalid(data))
+                {
+                    result.Message = "Tanggal Faktur Pembelian tidak boleh lebih kecil dari tanggal Penerimaan Barang.";
                     return result;
                 }
             }
@@ -649,19 +662,22 @@ public class PurchaseReceiveService : GeneralService<PurchaseReceiveHeader>, IPu
             {
                 var prData = Db.PurchaseReturnHeaders.FirstOrDefault(x => x.Code == transCode);
                 var dataPRDetail = Db.PurchaseReturnDetails.FirstOrDefault(x => x.Code == transCode && x.ItemId == item.ItemId && x.UnitId == item.UnitId);
+                var dataPRXDetail = Db.PurchaseReturnDetailExchDiffItems.FirstOrDefault(x => x.Code == transCode && x.ItemId == item.ItemId && x.UnitId == item.UnitId);
 
                 if (code == null)
                 {
-                    var availableStock = dataPRDetail.Qty - dataPRDetail.QtyRcv;
+                    var availableStock = prData.Type == 2
+                        ? dataPRDetail.Qty - dataPRDetail.QtyRcv
+                        : dataPRXDetail.Qty - dataPRXDetail.QtyRcv;
                     if (item.Qty > availableStock)
                     {
                         result = true;
                     }
                 }
-                else if (dataPRDetail != null)
+                else if (prData.Type == 2 ? dataPRDetail != null : dataPRXDetail != null)
                 {
                     var oldPRD = Db.PurchaseReceiveDetails.AsNoTracking().FirstOrDefault(x => x.Code == code && x.ItemId == item.ItemId && x.UnitId == item.UnitId);
-                    var availableStock = (dataPRDetail.Qty) - (dataPRDetail.QtyRcv - oldPRD?.Qty ?? 0);
+                    var availableStock = (prData.Type == 2 ? dataPRDetail.Qty : dataPRXDetail.Qty) - ((prData.Type == 2 ? dataPRDetail.Qty : dataPRXDetail.Qty) - oldPRD?.Qty ?? 0);
                     if (item.Qty > availableStock)
                     {
                         result = true;
@@ -669,6 +685,16 @@ public class PurchaseReceiveService : GeneralService<PurchaseReceiveHeader>, IPu
                 }
             }
         }
+        return result;
+    }
+
+    private bool IsSaveAndDateInvalid(PurchaseReceiveRequest data)
+    {
+        var result = false;
+
+        if (data.IsPoInv && data.InvDate < data.Date)
+            result = true;
+
         return result;
     }
 

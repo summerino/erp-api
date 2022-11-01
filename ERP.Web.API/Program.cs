@@ -23,6 +23,7 @@ using ERP.Web.API.Domain.Interfaces.Mobile.ItemRequest;
 using ERP.Web.API.Domain.Interfaces.Mobile.NetRevenue;
 using ERP.Web.API.Domain.Interfaces.Mobile.Sales;
 using ERP.Web.API.Domain.Interfaces.Mobile.TransactionHistory;
+using ERP.Web.API.Domain.Interfaces.Mobile.Warehouse;
 using ERP.Web.API.Domain.Interfaces.MobileSales;
 using ERP.Web.API.Domain.Interfaces.MobileWarehouse;
 using ERP.Web.API.Domain.Interfaces.Purchase;
@@ -46,6 +47,7 @@ using ERP.Web.API.Domain.Services.Mobile.ItemRequest;
 using ERP.Web.API.Domain.Services.Mobile.NetRevenue;
 using ERP.Web.API.Domain.Services.Mobile.Sales;
 using ERP.Web.API.Domain.Services.Mobile.TransactionHistory;
+using ERP.Web.API.Domain.Services.Mobile.Warehouse;
 using ERP.Web.API.Domain.Services.MobileSales;
 using ERP.Web.API.Domain.Services.MobileWarehouse;
 using ERP.Web.API.Domain.Services.Purchase;
@@ -55,8 +57,6 @@ using ERP.Web.API.Model;
 using ERP.Web.API.Model.Auth;
 using Newtonsoft.Json.Serialization;
 using Swift.Framework;
-using ERP.Web.API.Domain.Interfaces.Mobile.Warehouse;
-using ERP.Web.API.Domain.Services.Mobile.Warehouse;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -160,6 +160,8 @@ builder.Services.AddScoped<IShardingService, ShardingService>();
 builder.Services.AddScoped<IClaimService, ClaimService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IMobileAuthService, MobileAuthService>();
+builder.Services.AddScoped<IFireForgetService, FireForgetService>();
+builder.Services.AddScoped<ILocalReportService, LocalReportService>();
 
 // Accounting services
 builder.Services.AddScoped<IBeginningBalanceAccountPayableService, BeginningBalanceAccountPayableService>();
@@ -293,7 +295,6 @@ builder.Services.AddScoped<ISalesTargetReportService, SalesTargetReportService>(
 builder.Services.AddScoped<IDeliveryPlanReportService, DeliveryPlanReportService>();
 builder.Services.AddScoped<ISalesDownPaymentReportService, SalesDownPaymentReportService>();
 
-
 // System Management services
 builder.Services.AddScoped<IActionService, ActionService>();
 builder.Services.AddScoped<ICompanyProfileService, CompanyProfileService>();
@@ -301,9 +302,6 @@ builder.Services.AddScoped<IMenuService, MenuService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<ISystemParameterService, SystemParameterService>();
 builder.Services.AddScoped<IUserService, UserService>();
-
-//Special services
-builder.Services.AddScoped<IFireForgetService, FireForgetService>();
 
 #region Mobile
 // General services

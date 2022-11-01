@@ -78,13 +78,13 @@ public class ApprovalService : IApprovalService
 
         if (temp != null && isDirectInvoice)
         {
-            query = @"UPDATE Sales.SalesOrderHeader SET ApprovedBy='[USER]', ApprovedDate=GETDATE() WHERE Code='[CODE]';
-                    UPDATE Sales.SalesDeliveryHeader SET ApprovedBy='[USER]', ApprovedDate=GETDATE() WHERE Code='[CODE]';
-                    UPDATE Sales.SalesInvoiceHeader SET ApprovedBy='[USER]', ApprovedDate=GETDATE() WHERE Code='[CODE]'";
+            query = @"UPDATE Sales.SalesOrderHeader SET ApprovedBy='[USER]', ApprovedDate=dbo.udf_current_local_time() WHERE Code='[CODE]';
+                    UPDATE Sales.SalesDeliveryHeader SET ApprovedBy='[USER]', ApprovedDate=dbo.udf_current_local_time() WHERE Code='[CODE]';
+                    UPDATE Sales.SalesInvoiceHeader SET ApprovedBy='[USER]', ApprovedDate=dbo.udf_current_local_time() WHERE Code='[CODE]'";
         }
         else if (temp != null) 
         {
-            query = "UPDATE [TABLE] SET ApprovedBy='[USER]', ApprovedDate=GETDATE() WHERE Code='[CODE]'";
+            query = "UPDATE [TABLE] SET ApprovedBy='[USER]', ApprovedDate=dbo.udf_current_local_time() WHERE Code='[CODE]'";
             tableName = temp.TableName;
         }
 

@@ -46,7 +46,7 @@ public class CustomerTransactionService : ICustomerTransactionService
 
     public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, DateTime? date, string custCode)
     {
-        var data = (from si in Db.VwSalesInvoiceHeaders.Where(x => x.CustCode.Equals(custCode))
+        var data = (from si in Db.VwSalesInvoiceHeaders.Where(x => x.CustCode.Equals(custCode) && x.Status != "Void")
             join so in Db.SalesOrderHeaders on si.SoCode equals so.Code
             select new
             {

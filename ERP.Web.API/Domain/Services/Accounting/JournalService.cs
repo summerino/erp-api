@@ -1164,7 +1164,7 @@ public class JournalService : IJournalService
                                 Group = itemDo.Group == 2 ? (short)5 : (short)2,
                                 CurrCode = itemData.InvHeader.CurrCode,
                                 Period = itemData.InvHeader.Date.ToString("yyyyMMdd"),
-                                Type = itemDo.Group == 2 ?  "C" : "D",
+                                Type = itemDo.Group == 2 ? "C" : "D",
                                 Amount = itemDo.Amount,
                                 SrcTrans = "SI"
                             });
@@ -1174,7 +1174,7 @@ public class JournalService : IJournalService
                     //ar
                     arAmount += itemDetail.DoData.Total;
                     //PPN
-                    taxAmount += itemDetail.DoData.TaxAmount;
+                    taxAmount += itemDetail.DoData.TaxAmount - itemDetail.DoData.ExemptTaxAmount;
                     //PPN Yang Dibebaskan
                     //extTaxAmount += itemDetail.RcvData.ExemptTaxAmount;
                     var DlvDetailData = (from dlvdetail in db.SalesDeliveryDetails
@@ -1183,9 +1183,9 @@ public class JournalService : IJournalService
                                          select new { DlvDetail = dlvdetail, Item = item }).ToList();
 
                     var DlvDetailFreeData = (from dlvdetail in db.SalesDeliveryDetailFreeGoods
-                                         join item in db.Items on dlvdetail.ItemId equals item.Id
-                                         where dlvdetail.Code == itemDetail.DoData.Code
-                                         select new { DlvDetail = dlvdetail, Item = item }).ToList();
+                                             join item in db.Items on dlvdetail.ItemId equals item.Id
+                                             where dlvdetail.Code == itemDetail.DoData.Code
+                                             select new { DlvDetail = dlvdetail, Item = item }).ToList();
 
                     short ix = 0;
                     foreach (var itemDlvDetail in DlvDetailData)
@@ -1193,7 +1193,6 @@ public class JournalService : IJournalService
                         discAmount += itemDlvDetail.DlvDetail.Disc * itemDlvDetail.DlvDetail.Qty;
                         if (itemDlvDetail.DlvDetail.ExemptTaxAmount > 0)
                         {
-                            taxAmount -= itemDlvDetail.DlvDetail.ExemptTaxAmount * itemDlvDetail.DlvDetail.Qty;
                             //PPN Yang Dibebaskan
                             journals.Add(new Journal
                             {
@@ -1262,12 +1261,10 @@ public class JournalService : IJournalService
                     }
                 }
 
-                var SDPData = db.CreditMemos.Where(x => x.TransCode == itemData.InvHeader.SoCode && x.SrcTrans == 3 & x.Mark == "A").ToList();
+                var SDPData = db.SalesInvoiceCreditMemos.Where(x => x.InvCode == itemData.InvHeader.Code && x.Src == "DP").ToList();
                 foreach (var itemSDP in SDPData)
                 {
-                    //Uang Muka
-                    var usedSDPAmount = journals.Where(x => x.RefCode3 == itemSDP.TransCode && x.RefCode1 == itemSDP.Code && x.Group == 9).Sum(x => x.Amount);
-                    var SDPAmount = usedSDPAmount > 0 ? itemData.InvHeader.Total > (itemSDP.Amount - usedSDPAmount) ? (itemSDP.Amount - usedSDPAmount) : itemSDP.Amount : itemSDP.Amount > itemData.InvHeader.Total ? itemData.InvHeader.Total : itemSDP.Amount;
+                    //Uang Muka               
                     journals.Add(new Journal
                     {
                         Code = itemData.InvHeader.Code,
@@ -1276,16 +1273,17 @@ public class JournalService : IJournalService
                         CoaCode = systemParam.FirstOrDefault(x => x.Code == "SLS_DP_COA")?.Value ?? "",
                         TypeCode = "SDP",
                         Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_SLS_DP")?.Value ?? ""} {itemData.Customer.Initial}").Trim(),
-                        RefCode1 = itemSDP.Code,
+                        RefCode1 = itemSDP.CreditMemoCode,
                         RefCode2 = itemData.InvHeader.Code,
-                        RefCode3 = itemSDP.TransCode,
+                        RefCode3 = itemData.InvHeader.SoCode,
                         Group = 9,
                         CurrCode = itemData.InvHeader.CurrCode,
                         Period = itemData.InvHeader.Date.ToString("yyyyMMdd"),
                         Type = "D",
-                        Amount = SDPAmount,
+                        Amount = itemSDP.CreditMemoAmount,
                         SrcTrans = "SI"
                     });
+
                     //Piutang - AR
                     journals.Add(new Journal
                     {
@@ -1300,13 +1298,11 @@ public class JournalService : IJournalService
                         CurrCode = itemData.InvHeader.CurrCode,
                         Period = itemData.InvHeader.Date.ToString("yyyyMMdd"),
                         Type = "C",
-                        Amount = SDPAmount,
+                        Amount = itemSDP.CreditMemoAmount + itemSDP.CreditMemoTaxAmount,
                         SrcTrans = "SI"
                     });
 
                     //PPN Uang Muka
-                    var usedSDPTaxAmount = journals.Where(x => x.RefCode3 == itemSDP.TransCode && x.RefCode1 == itemSDP.Code && x.Group == 6).Sum(x => x.Amount);
-                    var SDPTaxAmount = usedSDPTaxAmount > 0 ? taxAmount > (itemSDP.TaxAmount - usedSDPTaxAmount) ? (itemSDP.TaxAmount - usedSDPTaxAmount) : itemSDP.TaxAmount : itemSDP.TaxAmount > taxAmount ? taxAmount : itemSDP.TaxAmount;
                     journals.Add(new Journal
                     {
                         Code = itemData.InvHeader.Code,
@@ -1315,14 +1311,12 @@ public class JournalService : IJournalService
                         CoaCode = systemParam.FirstOrDefault(x => x.Code == "TAX_OUT_COA")?.Value ?? "",
                         TypeCode = "PPN",
                         Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_TAX_OUT")?.Value ?? ""} {itemData.Customer.Initial}").Trim(),
-                        RefCode1 = itemSDP.Code,
-                        RefCode2 = itemData.InvHeader.Code,
-                        RefCode3 = itemSDP.TransCode,
+                        RefCode1 = itemData.InvHeader.SoCode,
                         Group = 6,
                         CurrCode = itemData.InvHeader.CurrCode,
                         Period = itemData.InvHeader.Date.ToString("yyyyMMdd"),
                         Type = "D",
-                        Amount = SDPTaxAmount,
+                        Amount = itemSDP.CreditMemoTaxAmount,
                         SrcTrans = "SI"
                     });
                 }
@@ -1400,13 +1394,13 @@ public class JournalService : IJournalService
                     SrcTrans = "SI"
                 });
 
-                var invMemo = db.SalesInvoiceCreditMemos.Where(x => x.InvCode == itemData.InvHeader.Code).ToList();
+                var invMemo = db.SalesInvoiceCreditMemos.Where(x => x.InvCode == itemData.InvHeader.Code && x.Src == "CM").ToList();
                 if (invMemo.Any())
                 {
                     short k = 0;
                     foreach (var itemMemo in invMemo)
                     {
-                        var memoData = db.CreditMemos.FirstOrDefault(x => x.Code == itemMemo.CreditMemoCode);
+                        var memoData = db.CreditMemos.FirstOrDefault(x => x.Code == itemMemo.CreditMemoCode && x.SrcTrans == 1);
                         if (memoData != null || memoData.Mark != "V")
                         {
                             journals.Add(new Journal
@@ -1461,6 +1455,10 @@ public class JournalService : IJournalService
         var cashBankData = db.GeneralCashBankHeaders.Where(x => x.Date.Month == dateTime.Month && x.Date.Year == dateTime.Year && x.Mark != "V").ToList();
         foreach (var itemData in cashBankData)
         {
+            var journalData = db.Journals.Where(x => x.Code == itemData.Code);
+            if (journalData.Any())
+                db.Journals.RemoveRange(journalData);
+
             var cashBankDetailData = db.GeneralCashBankDetails.Where(x => x.Code == itemData.Code).ToList();
             short i = 0;
             short j = 0;
@@ -1473,7 +1471,7 @@ public class JournalService : IJournalService
                 {
                     Code = itemData.Code,
                     LineNo = ++i,
-                    Date = itemData.Date,
+                    Date = itemData.ChequeDate.HasValue ? itemData.ChequeDate.Value : itemData.Date,
                     CoaCode = itemDetailData.CoaCode ?? systemParam.FirstOrDefault(x => x.Code == $"{itemDetailData.Type}_COA")?.Value ?? "",
                     TypeCode = $"CB_{itemDetailData.Type}",
                     Notes = ($"{systemParam.FirstOrDefault(x => x.Code == $"JR_PREFIX_{itemDetailData.Type}")?.Value ?? ""} {itemDetailData.Notes}").Trim(),
@@ -1492,7 +1490,7 @@ public class JournalService : IJournalService
                 {
                     Code = itemData.Code,
                     LineNo = ++j,
-                    Date = itemData.Date,
+                    Date = itemData.ChequeDate.HasValue ? itemData.ChequeDate.Value : itemData.Date,
                     CoaCode = itemData.CoaCode ?? "",
                     TypeCode = "CB",
                     Notes = "Kas/Bank",
@@ -1512,7 +1510,7 @@ public class JournalService : IJournalService
                     {
                         Code = itemData.Code,
                         LineNo = 1,
-                        Date = itemData.Date,
+                        Date = itemData.ChequeDate.HasValue ? itemData.ChequeDate.Value : itemData.Date,
                         CoaCode = systemParam.FirstOrDefault(x => x.Code == $"CHQ_{(itemData.Type == "D" ? "AR" : "AP")}_COA")?.Value ?? "",
                         TypeCode = "CB",
                         Notes = $"Terima Cek / Giro, Kode Cek: {(string.IsNullOrEmpty(itemData.ChequeNo) ? "-" : $"{itemData.ChequeNo}")}",
@@ -1520,8 +1518,8 @@ public class JournalService : IJournalService
                         Group = 4,
                         CurrCode = itemData.CurrCode,
                         Period = itemData.Date.ToString("yyyyMMdd"),
-                        Type = "D",
-                        Amount = Math.Abs(itemData.Amount),
+                        Type = itemDetailData.Type == "AR" ? "D" : "C",
+                        Amount = itemDetailData.Amount,
                         SrcTrans = "CB"
                     });
                     //Check C
@@ -1529,7 +1527,7 @@ public class JournalService : IJournalService
                     {
                         Code = itemData.Code,
                         LineNo = 1,
-                        Date = itemData.Date,
+                        Date = itemData.ChequeDate.HasValue ? itemData.ChequeDate.Value : itemData.Date,
                         CoaCode = systemParam.FirstOrDefault(x => x.Code == $"CHQ_{(itemData.Type == "D" ? "AR" : "AP")}_COA")?.Value ?? "",
                         TypeCode = "CB",
                         Notes = $"{(itemData.Mark == "A" ? "Kliring" : "Penolakan")} Cek / Giro, Kode Cek: {(string.IsNullOrEmpty(itemData.ChequeNo) ? "-" : $"{itemData.ChequeNo}")}",
@@ -1537,18 +1535,17 @@ public class JournalService : IJournalService
                         Group = 5,
                         CurrCode = itemData.CurrCode,
                         Period = itemData.Date.ToString("yyyyMMdd"),
-                        Type = "C",
-                        Amount = Math.Abs(itemData.Amount),
+                        Type = itemDetailData.Type == "AR" ? "C" : "D",
+                        Amount = itemDetailData.Amount,
                         SrcTrans = "CB"
                     });
-
                     if (itemData.Mark == "REJ")
                     {
                         journals.Add(new Journal
                         {
                             Code = itemData.Code,
                             LineNo = ++k,
-                            Date = itemData.Date,
+                            Date = itemData.ChequeDate.HasValue ? itemData.ChequeDate.Value : itemData.Date,
                             CoaCode = itemDetailData.CoaCode ?? systemParam.FirstOrDefault(x => x.Code == $"{itemDetailData.Type}_COA")?.Value ?? "",
                             TypeCode = $"CB_{itemDetailData.Type}",
                             Notes = $"Penolakan Cek / Giro, Kode Cek: {(string.IsNullOrEmpty(itemData.ChequeNo) ? "-" : $"{itemData.ChequeNo}")}",
@@ -1560,12 +1557,11 @@ public class JournalService : IJournalService
                             Amount = itemDetailData.Amount,
                             SrcTrans = "CB"
                         });
-
                         journals.Add(new Journal
                         {
                             Code = itemData.Code,
                             LineNo = ++l,
-                            Date = itemData.Date,
+                            Date = itemData.ChequeDate.HasValue ? itemData.ChequeDate.Value : itemData.Date,
                             CoaCode = itemData.CoaCode ?? "",
                             TypeCode = "CB",
                             Notes = $"Penolakan Cek / Giro, Kode Cek: {(string.IsNullOrEmpty(itemData.ChequeNo) ? "-" : $"{itemData.ChequeNo}")}",
@@ -3807,7 +3803,7 @@ public class JournalService : IJournalService
                     CurrCode = itemData.CurrCode,
                     Period = itemData.Date.ToString("yyyyMMdd"),
                     Type = "D",
-                    Amount = itemData.Total - itemData.TaxAmount,
+                    Amount = itemData.Amount - itemData.TaxAmount,
                     SrcTrans = "DP"
                 });
             }

@@ -34,31 +34,31 @@ public class ARAgingReportService : IARAgingReportService
         {
             query = $@"SELECT inv.[Date], inv.DueDate, inv.Code, inv.SOCode AS SrcCode, inv.Code AS InvCode, sls.FirstName AS SlsName,
                     inv.CustCode, sp.[Name] AS CustName, inv.Total - (ISNULL(si_cm.Amount, 0) + ISNULL(cb.Amount, 0)) AS RemainderAmount,
-                    CAST (CASE WHEN DATEDIFF(DAY, inv.DueDate, GETDATE()) > 90 THEN
+                    CAST (CASE WHEN DATEDIFF(DAY, inv.DueDate, dbo.udf_current_local_time()) > 90 THEN
                     inv.Total - (ISNULL(si_cm.Amount, 0) + ISNULL(cb.Amount, 0)) ELSE 0 END AS decimal(19, 6)) AS Past90,
-                    CAST (CASE WHEN DATEDIFF(DAY, inv.DueDate, GETDATE()) > 60 AND DATEDIFF(DAY, inv.DueDate, GETDATE()) <= 90 THEN
+                    CAST (CASE WHEN DATEDIFF(DAY, inv.DueDate, dbo.udf_current_local_time()) > 60 AND DATEDIFF(DAY, inv.DueDate, dbo.udf_current_local_time()) <= 90 THEN
                     inv.Total - (ISNULL(si_cm.Amount, 0) + ISNULL(cb.Amount, 0)) ELSE 0 END AS decimal(19, 6)) AS Past61To90,
-                    CAST (CASE WHEN DATEDIFF(DAY, inv.DueDate, GETDATE()) > 30 AND DATEDIFF(DAY, inv.DueDate, GETDATE()) <= 60 THEN
+                    CAST (CASE WHEN DATEDIFF(DAY, inv.DueDate, dbo.udf_current_local_time()) > 30 AND DATEDIFF(DAY, inv.DueDate, dbo.udf_current_local_time()) <= 60 THEN
                     inv.Total - (ISNULL(si_cm.Amount, 0) + ISNULL(cb.Amount, 0)) ELSE 0 END AS decimal(19, 6)) AS Past31To60,
-                    CAST (CASE WHEN DATEDIFF(DAY, inv.DueDate, GETDATE()) >= 15 AND DATEDIFF(DAY, inv.DueDate, GETDATE()) <= 30 THEN
+                    CAST (CASE WHEN DATEDIFF(DAY, inv.DueDate, dbo.udf_current_local_time()) >= 15 AND DATEDIFF(DAY, inv.DueDate, dbo.udf_current_local_time()) <= 30 THEN
                     inv.Total - (ISNULL(si_cm.Amount, 0) + ISNULL(cb.Amount, 0)) ELSE 0 END AS decimal(19, 6)) AS Past15To30,
-                    CAST (CASE WHEN DATEDIFF(DAY, inv.DueDate, GETDATE()) >= 8 AND DATEDIFF(DAY, inv.DueDate, GETDATE()) <= 14 THEN
+                    CAST (CASE WHEN DATEDIFF(DAY, inv.DueDate, dbo.udf_current_local_time()) >= 8 AND DATEDIFF(DAY, inv.DueDate, dbo.udf_current_local_time()) <= 14 THEN
                     inv.Total - (ISNULL(si_cm.Amount, 0) + ISNULL(cb.Amount, 0)) ELSE 0 END AS decimal(19, 6)) AS Past8To14,
-                    CAST (CASE WHEN DATEDIFF(DAY, inv.DueDate, GETDATE()) >= 1 AND DATEDIFF(DAY, inv.DueDate, GETDATE()) <= 7 THEN
+                    CAST (CASE WHEN DATEDIFF(DAY, inv.DueDate, dbo.udf_current_local_time()) >= 1 AND DATEDIFF(DAY, inv.DueDate, dbo.udf_current_local_time()) <= 7 THEN
                     inv.Total - (ISNULL(si_cm.Amount, 0) + ISNULL(cb.Amount, 0)) ELSE 0 END AS decimal(19, 6)) AS Past1To7,
-                    CAST (CASE WHEN DATEDIFF(DAY, inv.DueDate, GETDATE()) = 0 THEN
+                    CAST (CASE WHEN DATEDIFF(DAY, inv.DueDate, dbo.udf_current_local_time()) = 0 THEN
                     inv.Total - (ISNULL(si_cm.Amount, 0) + ISNULL(cb.Amount, 0)) WHEN inv.DueDate IS NULL THEN inv.Total - (ISNULL(si_cm.Amount, 0) + ISNULL(cb.Amount, 0)) ELSE 0 END AS decimal(19, 6)) AS DueToday,
-                    CAST (CASE WHEN DATEDIFF(DAY, GETDATE(), inv.DueDate) >= 1 AND DATEDIFF(DAY, GETDATE(), inv.DueDate) <= 7 THEN
+                    CAST (CASE WHEN DATEDIFF(DAY, dbo.udf_current_local_time(), inv.DueDate) >= 1 AND DATEDIFF(DAY, dbo.udf_current_local_time(), inv.DueDate) <= 7 THEN
                     inv.Total - (ISNULL(si_cm.Amount, 0) + ISNULL(cb.Amount, 0)) ELSE 0 END AS decimal(19, 6)) AS Due1To7,
-                    CAST (CASE WHEN DATEDIFF(DAY, GETDATE(), inv.DueDate) >= 8 AND DATEDIFF(DAY, GETDATE(), inv.DueDate) <= 14 THEN
+                    CAST (CASE WHEN DATEDIFF(DAY, dbo.udf_current_local_time(), inv.DueDate) >= 8 AND DATEDIFF(DAY, dbo.udf_current_local_time(), inv.DueDate) <= 14 THEN
                     inv.Total - (ISNULL(si_cm.Amount, 0) + ISNULL(cb.Amount, 0)) ELSE 0 END AS decimal(19, 6)) AS Due8To14,
-                    CAST (CASE WHEN DATEDIFF(DAY, GETDATE(), inv.DueDate) >= 15 AND DATEDIFF(DAY, GETDATE(), inv.DueDate) <= 30 THEN
+                    CAST (CASE WHEN DATEDIFF(DAY, dbo.udf_current_local_time(), inv.DueDate) >= 15 AND DATEDIFF(DAY, dbo.udf_current_local_time(), inv.DueDate) <= 30 THEN
                     inv.Total - (ISNULL(si_cm.Amount, 0) + ISNULL(cb.Amount, 0)) ELSE 0 END AS decimal(19, 6)) AS Due15To30,
-                    CAST (CASE WHEN DATEDIFF(DAY, GETDATE(), inv.DueDate) > 30 AND DATEDIFF(DAY, GETDATE(), inv.DueDate) <= 60 THEN
+                    CAST (CASE WHEN DATEDIFF(DAY, dbo.udf_current_local_time(), inv.DueDate) > 30 AND DATEDIFF(DAY, dbo.udf_current_local_time(), inv.DueDate) <= 60 THEN
                     inv.Total - (ISNULL(si_cm.Amount, 0) + ISNULL(cb.Amount, 0)) ELSE 0 END AS decimal(19, 6)) AS Due31To60,
-                    CAST (CASE WHEN DATEDIFF(DAY, GETDATE(), inv.DueDate) > 60 AND DATEDIFF(DAY, GETDATE(), inv.DueDate) <= 90 THEN
+                    CAST (CASE WHEN DATEDIFF(DAY, dbo.udf_current_local_time(), inv.DueDate) > 60 AND DATEDIFF(DAY, dbo.udf_current_local_time(), inv.DueDate) <= 90 THEN
                     inv.Total - (ISNULL(si_cm.Amount, 0) + ISNULL(cb.Amount, 0)) ELSE 0 END AS decimal(19, 6)) AS Due61To90,
-                    CAST (CASE WHEN DATEDIFF(DAY, GETDATE(), inv.DueDate) > 90 THEN
+                    CAST (CASE WHEN DATEDIFF(DAY, dbo.udf_current_local_time(), inv.DueDate) > 90 THEN
                     inv.Total - (ISNULL(si_cm.Amount, 0) + ISNULL(cb.Amount, 0)) ELSE 0 END AS decimal(19, 6)) AS Due90
                     FROM Sales.SalesInvoiceHeader inv
                     LEFT JOIN Sales.SalesOrderHeader so ON so.Code = inv.SOCode
@@ -83,31 +83,31 @@ public class ARAgingReportService : IARAgingReportService
         {
             query = $@"SELECT dlv.[Date], inv.DueDate, dlv.Code, dlv.TransCode AS SrcCode, inv.Code AS InvCode, sls.FirstName AS SlsName,
                     dlv.CustCode, sp.[Name] AS CustName, dlv.Total - (ISNULL(si_cm.Amount, 0) + ISNULL(cb.Amount, 0)) AS RemainderAmount,
-                    CAST (CASE WHEN DATEDIFF(DAY, inv.DueDate, GETDATE()) > 90 THEN
+                    CAST (CASE WHEN DATEDIFF(DAY, inv.DueDate, dbo.udf_current_local_time()) > 90 THEN
                     dlv.Total - (ISNULL(si_cm.Amount, 0) + ISNULL(cb.Amount, 0)) ELSE 0 END AS decimal(19, 6)) AS Past90,
-                    CAST (CASE WHEN DATEDIFF(DAY, inv.DueDate, GETDATE()) > 60 AND DATEDIFF(DAY, inv.DueDate, GETDATE()) <= 90 THEN
+                    CAST (CASE WHEN DATEDIFF(DAY, inv.DueDate, dbo.udf_current_local_time()) > 60 AND DATEDIFF(DAY, inv.DueDate, dbo.udf_current_local_time()) <= 90 THEN
                     dlv.Total - (ISNULL(si_cm.Amount, 0) + ISNULL(cb.Amount, 0)) ELSE 0 END AS decimal(19, 6)) AS Past61To90,
-                    CAST (CASE WHEN DATEDIFF(DAY, inv.DueDate, GETDATE()) > 30 AND DATEDIFF(DAY, inv.DueDate, GETDATE()) <= 60 THEN
+                    CAST (CASE WHEN DATEDIFF(DAY, inv.DueDate, dbo.udf_current_local_time()) > 30 AND DATEDIFF(DAY, inv.DueDate, dbo.udf_current_local_time()) <= 60 THEN
                     dlv.Total - (ISNULL(si_cm.Amount, 0) + ISNULL(cb.Amount, 0)) ELSE 0 END AS decimal(19, 6)) AS Past31To60,
-                    CAST (CASE WHEN DATEDIFF(DAY, inv.DueDate, GETDATE()) >= 15 AND DATEDIFF(DAY, inv.DueDate, GETDATE()) <= 30 THEN
+                    CAST (CASE WHEN DATEDIFF(DAY, inv.DueDate, dbo.udf_current_local_time()) >= 15 AND DATEDIFF(DAY, inv.DueDate, dbo.udf_current_local_time()) <= 30 THEN
                     dlv.Total - (ISNULL(si_cm.Amount, 0) + ISNULL(cb.Amount, 0)) ELSE 0 END AS decimal(19, 6)) AS Past15To30,
-                    CAST (CASE WHEN DATEDIFF(DAY, inv.DueDate, GETDATE()) >= 8 AND DATEDIFF(DAY, inv.DueDate, GETDATE()) <= 14 THEN
+                    CAST (CASE WHEN DATEDIFF(DAY, inv.DueDate, dbo.udf_current_local_time()) >= 8 AND DATEDIFF(DAY, inv.DueDate, dbo.udf_current_local_time()) <= 14 THEN
                     dlv.Total - (ISNULL(si_cm.Amount, 0) + ISNULL(cb.Amount, 0)) ELSE 0 END AS decimal(19, 6)) AS Past8To14,
-                    CAST (CASE WHEN DATEDIFF(DAY, inv.DueDate, GETDATE()) >= 1 AND DATEDIFF(DAY, inv.DueDate, GETDATE()) <= 7 THEN
+                    CAST (CASE WHEN DATEDIFF(DAY, inv.DueDate, dbo.udf_current_local_time()) >= 1 AND DATEDIFF(DAY, inv.DueDate, dbo.udf_current_local_time()) <= 7 THEN
                     dlv.Total - (ISNULL(si_cm.Amount, 0) + ISNULL(cb.Amount, 0)) ELSE 0 END AS decimal(19, 6)) AS Past1To7,
-                    CAST (CASE WHEN DATEDIFF(DAY, inv.DueDate, GETDATE()) = 0 THEN
+                    CAST (CASE WHEN DATEDIFF(DAY, inv.DueDate, dbo.udf_current_local_time()) = 0 THEN
                     dlv.Total - (ISNULL(si_cm.Amount, 0) + ISNULL(cb.Amount, 0)) WHEN inv.DueDate IS NULL THEN dlv.Total - (ISNULL(si_cm.Amount, 0) + ISNULL(cb.Amount, 0)) ELSE 0 END AS decimal(19, 6)) AS DueToday,
-                    CAST (CASE WHEN DATEDIFF(DAY, GETDATE(), inv.DueDate) >= 1 AND DATEDIFF(DAY, GETDATE(), inv.DueDate) <= 7 THEN
+                    CAST (CASE WHEN DATEDIFF(DAY, dbo.udf_current_local_time(), inv.DueDate) >= 1 AND DATEDIFF(DAY, dbo.udf_current_local_time(), inv.DueDate) <= 7 THEN
                     dlv.Total - (ISNULL(si_cm.Amount, 0) + ISNULL(cb.Amount, 0)) ELSE 0 END AS decimal(19, 6)) AS Due1To7,
-                    CAST (CASE WHEN DATEDIFF(DAY, GETDATE(), inv.DueDate) >= 8 AND DATEDIFF(DAY, GETDATE(), inv.DueDate) <= 14 THEN
+                    CAST (CASE WHEN DATEDIFF(DAY, dbo.udf_current_local_time(), inv.DueDate) >= 8 AND DATEDIFF(DAY, dbo.udf_current_local_time(), inv.DueDate) <= 14 THEN
                     dlv.Total - (ISNULL(si_cm.Amount, 0) + ISNULL(cb.Amount, 0)) ELSE 0 END AS decimal(19, 6)) AS Due8To14,
-                    CAST (CASE WHEN DATEDIFF(DAY, GETDATE(), inv.DueDate) >= 15 AND DATEDIFF(DAY, GETDATE(), inv.DueDate) <= 30 THEN
+                    CAST (CASE WHEN DATEDIFF(DAY, dbo.udf_current_local_time(), inv.DueDate) >= 15 AND DATEDIFF(DAY, dbo.udf_current_local_time(), inv.DueDate) <= 30 THEN
                     dlv.Total - (ISNULL(si_cm.Amount, 0) + ISNULL(cb.Amount, 0)) ELSE 0 END AS decimal(19, 6)) AS Due15To30,
-                    CAST (CASE WHEN DATEDIFF(DAY, GETDATE(), inv.DueDate) > 30 AND DATEDIFF(DAY, GETDATE(), inv.DueDate) <= 60 THEN
+                    CAST (CASE WHEN DATEDIFF(DAY, dbo.udf_current_local_time(), inv.DueDate) > 30 AND DATEDIFF(DAY, dbo.udf_current_local_time(), inv.DueDate) <= 60 THEN
                     dlv.Total - (ISNULL(si_cm.Amount, 0) + ISNULL(cb.Amount, 0)) ELSE 0 END AS decimal(19, 6)) AS Due31To60,
-                    CAST (CASE WHEN DATEDIFF(DAY, GETDATE(), inv.DueDate) > 60 AND DATEDIFF(DAY, GETDATE(), inv.DueDate) <= 90 THEN
+                    CAST (CASE WHEN DATEDIFF(DAY, dbo.udf_current_local_time(), inv.DueDate) > 60 AND DATEDIFF(DAY, dbo.udf_current_local_time(), inv.DueDate) <= 90 THEN
                     dlv.Total - (ISNULL(si_cm.Amount, 0) + ISNULL(cb.Amount, 0)) ELSE 0 END AS decimal(19, 6)) AS Due61To90,
-                    CAST (CASE WHEN DATEDIFF(DAY, GETDATE(), inv.DueDate) > 90 THEN
+                    CAST (CASE WHEN DATEDIFF(DAY, dbo.udf_current_local_time(), inv.DueDate) > 90 THEN
                     dlv.Total - (ISNULL(si_cm.Amount, 0) + ISNULL(cb.Amount, 0)) ELSE 0 END AS decimal(19, 6)) AS Due90
                     FROM Sales.SalesDeliveryHeader dlv
                     LEFT JOIN Sales.SalesOrderHeader so ON so.Code = dlv.TransCode
@@ -133,31 +133,31 @@ public class ARAgingReportService : IARAgingReportService
         var dlvData = _db.ReportByDeliveryARAgings.FromSqlRaw(@"WITH cte_ara_report AS (" + query + (slsId > 0 ? $" AND so.SalesBy = {slsId} " : " ") +
                   (slsId > 0 ? "" : $@" UNION
 					SELECT bb.[Date], bb.DueDate, bb.Code, '' AS OrderCode, '' AS SrcCode, '' AS SlsName, bb.CustCode, bb.CustName, bb.Amount - ISNULL(cb.Amount, 0) AS RemainderAmount,
-                    CAST (CASE WHEN DATEDIFF(DAY, bb.DueDate, GETDATE()) > 90 THEN
+                    CAST (CASE WHEN DATEDIFF(DAY, bb.DueDate, dbo.udf_current_local_time()) > 90 THEN
                     bb.Amount - ISNULL(cb.Amount, 0) ELSE 0 END AS decimal(19, 6)) AS Past90,
-                    CAST (CASE WHEN DATEDIFF(DAY, bb.DueDate, GETDATE()) > 60 AND DATEDIFF(DAY, bb.DueDate, GETDATE()) <= 90 THEN
+                    CAST (CASE WHEN DATEDIFF(DAY, bb.DueDate, dbo.udf_current_local_time()) > 60 AND DATEDIFF(DAY, bb.DueDate, dbo.udf_current_local_time()) <= 90 THEN
                     bb.Amount - ISNULL(cb.Amount, 0) ELSE 0 END AS decimal(19, 6)) AS Past61To90,
-                    CAST (CASE WHEN DATEDIFF(DAY, bb.DueDate, GETDATE()) > 30 AND DATEDIFF(DAY, bb.DueDate, GETDATE()) <= 60 THEN
+                    CAST (CASE WHEN DATEDIFF(DAY, bb.DueDate, dbo.udf_current_local_time()) > 30 AND DATEDIFF(DAY, bb.DueDate, dbo.udf_current_local_time()) <= 60 THEN
                     bb.Amount - ISNULL(cb.Amount, 0) ELSE 0 END AS decimal(19, 6)) AS Past31To60,
-                    CAST (CASE WHEN DATEDIFF(DAY, bb.DueDate, GETDATE()) >= 15 AND DATEDIFF(DAY, bb.DueDate, GETDATE()) <= 30 THEN
+                    CAST (CASE WHEN DATEDIFF(DAY, bb.DueDate, dbo.udf_current_local_time()) >= 15 AND DATEDIFF(DAY, bb.DueDate, dbo.udf_current_local_time()) <= 30 THEN
                     bb.Amount - ISNULL(cb.Amount, 0) ELSE 0 END AS decimal(19, 6)) AS Past15To30,
-                    CAST (CASE WHEN DATEDIFF(DAY, bb.DueDate, GETDATE()) >= 8 AND DATEDIFF(DAY, bb.DueDate, GETDATE()) <= 14 THEN
+                    CAST (CASE WHEN DATEDIFF(DAY, bb.DueDate, dbo.udf_current_local_time()) >= 8 AND DATEDIFF(DAY, bb.DueDate, dbo.udf_current_local_time()) <= 14 THEN
                     bb.Amount - ISNULL(cb.Amount, 0) ELSE 0 END AS decimal(19, 6)) AS Past8To14,
-                    CAST (CASE WHEN DATEDIFF(DAY, bb.DueDate, GETDATE()) >= 1 AND DATEDIFF(DAY, bb.DueDate, GETDATE()) <= 7 THEN
+                    CAST (CASE WHEN DATEDIFF(DAY, bb.DueDate, dbo.udf_current_local_time()) >= 1 AND DATEDIFF(DAY, bb.DueDate, dbo.udf_current_local_time()) <= 7 THEN
                     bb.Amount - ISNULL(cb.Amount, 0) ELSE 0 END AS decimal(19, 6)) AS Past1To7,
-                    CAST (CASE WHEN DATEDIFF(DAY, bb.DueDate, GETDATE()) = 0 THEN
+                    CAST (CASE WHEN DATEDIFF(DAY, bb.DueDate, dbo.udf_current_local_time()) = 0 THEN
                     bb.Amount - ISNULL(cb.Amount, 0) WHEN bb.DueDate IS NULL THEN bb.Amount - ISNULL(cb.Amount, 0) ELSE 0 END AS decimal(19, 6)) AS DueToday,
-                    CAST (CASE WHEN DATEDIFF(DAY, GETDATE(), bb.DueDate) >= 1 AND DATEDIFF(DAY, GETDATE(), bb.DueDate) <= 7 THEN
+                    CAST (CASE WHEN DATEDIFF(DAY, dbo.udf_current_local_time(), bb.DueDate) >= 1 AND DATEDIFF(DAY, dbo.udf_current_local_time(), bb.DueDate) <= 7 THEN
                     bb.Amount - ISNULL(cb.Amount, 0) ELSE 0 END AS decimal(19, 6)) AS Due1To7,
-                    CAST (CASE WHEN DATEDIFF(DAY, GETDATE(), bb.DueDate) >= 8 AND DATEDIFF(DAY, GETDATE(), bb.DueDate) <= 14 THEN
+                    CAST (CASE WHEN DATEDIFF(DAY, dbo.udf_current_local_time(), bb.DueDate) >= 8 AND DATEDIFF(DAY, dbo.udf_current_local_time(), bb.DueDate) <= 14 THEN
                     bb.Amount - ISNULL(cb.Amount, 0) ELSE 0 END AS decimal(19, 6)) AS Due8To14,
-                    CAST (CASE WHEN DATEDIFF(DAY, GETDATE(), bb.DueDate) >= 15 AND DATEDIFF(DAY, GETDATE(), bb.DueDate) <= 30 THEN
+                    CAST (CASE WHEN DATEDIFF(DAY, dbo.udf_current_local_time(), bb.DueDate) >= 15 AND DATEDIFF(DAY, dbo.udf_current_local_time(), bb.DueDate) <= 30 THEN
                     bb.Amount - ISNULL(cb.Amount, 0) ELSE 0 END AS decimal(19, 6)) AS Due15To30,
-                    CAST (CASE WHEN DATEDIFF(DAY, GETDATE(), bb.DueDate) > 30 AND DATEDIFF(DAY, GETDATE(), bb.DueDate) <= 60 THEN
+                    CAST (CASE WHEN DATEDIFF(DAY, dbo.udf_current_local_time(), bb.DueDate) > 30 AND DATEDIFF(DAY, dbo.udf_current_local_time(), bb.DueDate) <= 60 THEN
                     bb.Amount - ISNULL(cb.Amount, 0) ELSE 0 END AS decimal(19, 6)) AS Due31To60,
-                    CAST (CASE WHEN DATEDIFF(DAY, GETDATE(), bb.DueDate) > 60 AND DATEDIFF(DAY, GETDATE(), bb.DueDate) <= 90 THEN
+                    CAST (CASE WHEN DATEDIFF(DAY, dbo.udf_current_local_time(), bb.DueDate) > 60 AND DATEDIFF(DAY, dbo.udf_current_local_time(), bb.DueDate) <= 90 THEN
                     bb.Amount - ISNULL(cb.Amount, 0) ELSE 0 END AS decimal(19, 6)) AS Due61To90,
-                    CAST (CASE WHEN DATEDIFF(DAY, GETDATE(), bb.DueDate) > 90 THEN
+                    CAST (CASE WHEN DATEDIFF(DAY, dbo.udf_current_local_time(), bb.DueDate) > 90 THEN
                     bb.Amount - ISNULL(cb.Amount, 0) ELSE 0 END AS decimal(19, 6)) AS Due90
                     FROM Accounting.vwBeginningBalanceAR bb
                     LEFT JOIN ( 

@@ -1,4 +1,6 @@
-﻿using ERP.Common;
+﻿using System.Linq.Dynamic.Core;
+using Microsoft.AspNetCore.Mvc;
+using ERP.Common;
 using ERP.Common.Models;
 using ERP.Entity;
 using ERP.Entity.MobileSales;
@@ -7,9 +9,7 @@ using ERP.Web.API.Domain.Interfaces.Inventory;
 using ERP.Web.API.Domain.Interfaces.MobileSales;
 using ERP.Web.API.Model;
 using ERP.Web.API.Model.MobileSales;
-using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using System.Linq.Dynamic.Core;
 
 namespace ERP.Web.API.Controllers.MobileSales;
 
@@ -21,7 +21,8 @@ public class MobileOrderController : ControllerBase
     private readonly IUnitOfMeasurementService _uom;
     private readonly IClaimService _claim;
     private readonly IAuthService _auth;
-    private const int MenuId = (int)Menu.MobileOrder;
+
+    private const int MenuId = (int) Menu.MobileOrder;
 
     public MobileOrderController(IMobileOrderService mo, IUnitOfMeasurementService uom,
         IClaimService claim, IAuthService auth)

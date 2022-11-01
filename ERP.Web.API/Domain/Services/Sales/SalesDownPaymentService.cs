@@ -45,7 +45,7 @@ public class SalesDownPaymentService : GeneralService<CreditMemo>, ISalesDownPay
             }).Union(
             from s in Db.SalesInvoiceCreditMemos
             join c in Db.SalesInvoiceHeaders on s.InvCode equals c.Code
-            where s.CreditMemoCode == code
+            where s.CreditMemoCode == code && c.Mark != "V"
             select new
             { 
                 Code = s.InvCode,
@@ -76,12 +76,13 @@ public class SalesDownPaymentService : GeneralService<CreditMemo>, ISalesDownPay
             if (data.SrcTrans == 4)
             {
                 var sdpData = Db.CreditMemos.Find(data.TransCode);
-                sdpData.Mark = "CMP";
+                sdpData.Used += data.Amount;
+                sdpData.Mark = sdpData.Amount == sdpData.Used ? "CMP" : sdpData.Used > 0 ? "PU" : "A";
                 Db.CreditMemos.Update(sdpData);
             }
 
             // Get new code
-            var newCode = GetNewCode("SLS_DP_NUM_FMT", data.CreatedDate);
+            var newCode = GetNewCode("SLS_DP_NUM_FMT", data.Date);
 
             // Insert data
             data.Code = newCode;
@@ -113,12 +114,14 @@ public class SalesDownPaymentService : GeneralService<CreditMemo>, ISalesDownPay
             if (rsdpData.TransCode != data.TransCode)
             {
                 var oldSdpData = Db.CreditMemos.Find(rsdpData.TransCode);
-                oldSdpData.Mark = "A";
+                oldSdpData.Used -= rsdpData.Amount;
+                oldSdpData.Mark = oldSdpData.Amount == oldSdpData.Used ? "CMP" : oldSdpData.Used > 0 ? "PU" : "A";
                 Db.CreditMemos.Update(oldSdpData);
             }
 
             var sdpData = Db.CreditMemos.Find(data.TransCode);
-            sdpData.Mark = "CMP";
+            sdpData.Used += data.Amount;
+            sdpData.Mark = sdpData.Amount == sdpData.Used ? "CMP" : sdpData.Used > 0 ? "PU" : "A";
             Db.CreditMemos.Update(sdpData);
         }
 
@@ -156,7 +159,8 @@ public class SalesDownPaymentService : GeneralService<CreditMemo>, ISalesDownPay
             if (data.SrcTrans == 4)
             {
                 var sdpData = Db.CreditMemos.Find(data.TransCode);
-                sdpData.Mark = "A";
+                sdpData.Used -= data.Amount;
+                sdpData.Mark = sdpData.Amount == sdpData.Used ? "CMP" : sdpData.Used > 0 ? "PU" : "A";
                 Db.CreditMemos.Update(sdpData);
             }
 

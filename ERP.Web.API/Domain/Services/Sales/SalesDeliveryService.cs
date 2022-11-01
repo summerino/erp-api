@@ -129,6 +129,12 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
                     result.Message = "Data pengiriman penjualan tidak bisa disimpan karena data order penjualan mempunyai tanggal lebih besar.";
                     return result;
                 }
+
+                if (IsSaveAndDateInvalid(data))
+                {
+                    result.Message = "Tanggal Faktur Penjualan tidak boleh lebih kecil dari tanggal Surat Jalan.";
+                    return result;
+                }
             }
 
             // Checking warehouse qty is item is available or not
@@ -418,6 +424,12 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
                 if (transData.Date > data.Date)
                 {
                     result.Message = "Data pengiriman penjualan tidak bisa disimpan karena data order penjualan mempunyai tanggal lebih besar.";
+                    return result;
+                }
+
+                if (IsSaveAndDateInvalid(data))
+                {
+                    result.Message = "Tanggal Faktur Penjualan tidak boleh lebih kecil dari tanggal Surat Jalan.";
                     return result;
                 }
             }
@@ -809,7 +821,9 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
                 var dataSRXDetail = Db.SalesReturnDetailExchDiffItems.FirstOrDefault(x => x.Code == transCode && x.ItemId == item.ItemId && x.UnitId == item.UnitId);
                 if (code == null)
                 {
-                    var availableStock = srData.Type == 2 ? dataSRDetail.Qty - dataSRDetail.QtyDlv : dataSRXDetail.Qty - dataSRXDetail.QtyDlv;
+                    var availableStock = srData.Type == 2
+                        ? dataSRDetail.Qty - dataSRDetail.QtyDlv
+                        : dataSRXDetail.Qty - dataSRXDetail.QtyDlv;
                     if (item.Qty > availableStock)
                     {
                         result = true;
@@ -919,6 +933,16 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
                 }).ToList();
 
         return result.OrderBy(x => x.LineNo);
+    }
+
+    private bool IsSaveAndDateInvalid(SalesDeliveryRequest data)
+    {
+        var result = false;
+
+        if (data.IsSoInv && data.InvDate < data.Date)
+            result = true;
+
+        return result;
     }
 
     private void RestoreDeliveredQty(string code, string transCode, int srcTrans)

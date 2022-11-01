@@ -18,6 +18,10 @@ public interface ISalesInvoiceService : IGeneralService<SalesInvoiceHeader>
 
     List<dynamic> GetDataSalesDownPayment(string code);
 
+    List<dynamic> GetSalesInvoiceSDP(string soCode, string siCode);
+
+    List<dynamic> GetDataDeliveryOrder(List<string> codes);
+
     SaveResult Insert(SalesInvoiceRequest data);
 
     SaveResult Update(SalesInvoiceRequest data);

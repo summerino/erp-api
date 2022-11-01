@@ -59,6 +59,12 @@ public class TransferStockService : GeneralService<TransferStockHeader>, ITransf
         using var transaction = Db.Database.BeginTransaction();
         try
         {
+            if (IsWarehouseInDateIsInvalid(data))
+            {
+                result.Message = "Tanggal transfer persediaan masuk tidak boleh lebih kecil dari tanggal transfer persediaan keluar.";
+                return result;
+            }
+
             // Get new code
             var newCode = GetNewCode("TS_NUM_FMT", data.Date);
 
@@ -184,6 +190,12 @@ public class TransferStockService : GeneralService<TransferStockHeader>, ITransf
             if (Db.TransferStockHeaders.Any(x => x.Code == data.Code && x.Mark == "V"))
             {
                 result.Message = "Data transfer persediaan tidak bisa diubah karena sudah ditandai sebagai void.";
+                return result;
+            }
+
+            if (IsWarehouseInDateIsInvalid(data))
+            {
+                result.Message = "Tanggal transfer persediaan masuk tidak boleh lebih kecil dari tanggal transfer persediaan keluar.";
                 return result;
             }
 
@@ -415,6 +427,16 @@ public class TransferStockService : GeneralService<TransferStockHeader>, ITransf
         var itemConverted = (data.QtyOnHand - data.QtyOnOrder) / val;
 
         return itemConverted >= qty;
+    }
+
+    private bool IsWarehouseInDateIsInvalid(TransferStockRequest data)
+    {
+        var result = false;
+
+        if (data.Type == "IN" && Db.TransferStockHeaders.FirstOrDefault(x => x.Code == data.OriginTransferCode).Date > data.Date)
+            result = true;
+
+        return result;
     }
 
     private void RestoreWarehouseQty(string code)

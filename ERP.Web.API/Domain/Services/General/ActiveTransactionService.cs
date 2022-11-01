@@ -32,7 +32,7 @@ public class ActiveTransactionService : IActiveTransactionService
                 WHERE Code='{code}'
                 AND ViewedBy <> '{userId}'
                 AND ViewedDate IS NOT NULL
-                AND DATEDIFF(MINUTE, ViewedDate, GETDATE()) < {timeout}";
+                AND DATEDIFF(MINUTE, ViewedDate, dbo.udf_current_local_time()) < {timeout}";
 
         return Convert.ToInt16(_tenantCtx.NewCodes.FromSqlRaw(query).SingleOrDefault()?.Value ?? "0") < 1;
     }
@@ -43,7 +43,7 @@ public class ActiveTransactionService : IActiveTransactionService
 
         if (SeenByOthers(data.Src.ToUpper(), data.Code, userId))
         {
-            var query = GenerateQuery(data.Src.ToUpper(), data.Code, userId, "GETDATE()");
+            var query = GenerateQuery(data.Src.ToUpper(), data.Code, userId, "dbo.udf_current_local_time()");
             try
             {
                 _tenantCtx.Database.ExecuteSqlRaw(query);
@@ -203,7 +203,7 @@ public class ActiveTransactionService : IActiveTransactionService
                 LEFT JOIN SystemManagement.[User] u ON u.Id = t.ViewedBy
                 WHERE t.ViewedBy IS NOT NULL
                 AND t.ViewedDate IS NOT NULL
-                AND DATEDIFF(MINUTE, t.ViewedDate, GETDATE()) < {timeout}" + extraFilter;
+                AND DATEDIFF(MINUTE, t.ViewedDate, dbo.udf_current_local_time()) < {timeout}" + extraFilter;
 
             listQuery.Add(query);
         }

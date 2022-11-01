@@ -542,16 +542,16 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     WarehouseCode = table.Column<string>(type: "varchar(8)", unicode: false, maxLength: 8, nullable: true),
                     CurrCode = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
                     Rate = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    ShipmentFee = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    HandlingFee = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    SubTotal = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    ShipmentFee = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
+                    HandlingFee = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
+                    SubTotal = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
                     FinalDiscPercent = table.Column<decimal>(type: "decimal(5,2)", precision: 5, scale: 2, nullable: false),
-                    FinalDisc = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    FinalDisc = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
                     IncludeTax = table.Column<bool>(type: "bit", nullable: false),
-                    TaxAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    ExemptTaxAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    Total = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    DPP = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    TaxAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
+                    ExemptTaxAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
+                    Total = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
+                    DPP = table.Column<decimal>(type: "decimal(19,6)", nullable: false),
                     Notes = table.Column<string>(type: "varchar(256)", unicode: false, maxLength: 256, nullable: true)
                 },
                 constraints: table =>
@@ -582,16 +582,16 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     ReceiveBy = table.Column<long>(type: "bigint", nullable: false),
                     CurrCode = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
                     Rate = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    ShipmentFee = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    HandlingFee = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    SubTotal = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    ShipmentFee = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
+                    HandlingFee = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
+                    SubTotal = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
                     FinalDiscPercent = table.Column<decimal>(type: "decimal(5,2)", precision: 5, scale: 2, nullable: false),
-                    FinalDisc = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    FinalDisc = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
                     IncludeTax = table.Column<bool>(type: "bit", nullable: false),
-                    TaxAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    ExemptTaxAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    Total = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    DPP = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    TaxAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
+                    ExemptTaxAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
+                    Total = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
+                    DPP = table.Column<decimal>(type: "decimal(19,6)", nullable: false),
                     PaidAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
                     TaxInvoiceNo = table.Column<string>(type: "varchar(50)", unicode: false, maxLength: 50, nullable: true),
                     TaxInvoiceDate = table.Column<DateTime>(type: "date", nullable: true)
@@ -624,16 +624,16 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     ShippedBy = table.Column<long>(type: "bigint", nullable: false),
                     CurrCode = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
                     Rate = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    ShipmentFee = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    HandlingFee = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    SubTotal = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    FinalDisc = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    ShipmentFee = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
+                    HandlingFee = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
+                    SubTotal = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
+                    FinalDisc = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
                     NoTax = table.Column<bool>(type: "bit", nullable: false),
                     IncludeTax = table.Column<bool>(type: "bit", nullable: false),
-                    TaxAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    ExemptTaxAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    Total = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    DPP = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    TaxAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
+                    ExemptTaxAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
+                    Total = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
+                    DPP = table.Column<decimal>(type: "decimal(19,6)", nullable: false),
                     TaxInvoiceNo = table.Column<string>(type: "varchar(50)", unicode: false, maxLength: 50, nullable: true),
                     TaxInvoiceDate = table.Column<DateTime>(type: "date", nullable: true),
                     Notes = table.Column<string>(type: "varchar(256)", unicode: false, maxLength: 256, nullable: false)
@@ -721,16 +721,16 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     ShippedBy = table.Column<long>(type: "bigint", nullable: false),
                     CurrCode = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
                     Rate = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    ShipmentFee = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    HandlingFee = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    SubTotal = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    ShipmentFee = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
+                    HandlingFee = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
+                    SubTotal = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
                     FinalDiscPercent = table.Column<decimal>(type: "decimal(5,2)", precision: 5, scale: 2, nullable: false),
-                    FinalDisc = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    FinalDisc = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
                     IncludeTax = table.Column<bool>(type: "bit", nullable: false),
-                    TaxAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    ExemptTaxAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    Total = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    DPP = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    TaxAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
+                    ExemptTaxAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
+                    Total = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
+                    DPP = table.Column<decimal>(type: "decimal(19,6)", nullable: false),
                     PaidAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
                     TaxInvoiceNo = table.Column<string>(type: "varchar(50)", unicode: false, maxLength: 50, nullable: true),
                     TaxInvoiceDate = table.Column<DateTime>(type: "date", nullable: true),
@@ -825,16 +825,16 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     SalesBy = table.Column<long>(type: "bigint", nullable: false),
                     CurrCode = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
                     Rate = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    ShipmentFee = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    HandlingFee = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    SubTotal = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    FinalDisc = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    ShipmentFee = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
+                    HandlingFee = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
+                    SubTotal = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
+                    FinalDisc = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
                     NoTax = table.Column<bool>(type: "bit", nullable: false),
                     IncludeTax = table.Column<bool>(type: "bit", nullable: false),
-                    TaxAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    ExemptTaxAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    Total = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    DPP = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    TaxAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
+                    ExemptTaxAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
+                    Total = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
+                    DPP = table.Column<decimal>(type: "decimal(19,6)", nullable: false),
                     TaxInvoiceNo = table.Column<string>(type: "varchar(50)", unicode: false, maxLength: 50, nullable: true),
                     TaxInvoiceDate = table.Column<DateTime>(type: "date", nullable: true),
                     Notes = table.Column<string>(type: "varchar(256)", unicode: false, maxLength: 256, nullable: false)
@@ -1806,8 +1806,8 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     TransCode = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: true),
                     CurrCode = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
                     Rate = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    Amount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    Used = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    Amount = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
+                    Used = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
                     Notes = table.Column<string>(type: "varchar(256)", unicode: false, maxLength: 256, nullable: true),
                     Mark = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
                     CreatedBy = table.Column<int>(type: "int", nullable: false),
@@ -2143,7 +2143,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     InvCode = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
                     DebitMemoCode = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
                     InvAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    DebitMemoAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false)
+                    DebitMemoAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -2172,12 +2172,12 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     Code = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
                     LineNo = table.Column<short>(type: "smallint", nullable: false),
                     RcvCode = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
-                    ShipmentFee = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    HandlingFee = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    SubTotal = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    FinalDisc = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    TaxAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    ExemptTaxAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    ShipmentFee = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
+                    HandlingFee = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
+                    SubTotal = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
+                    FinalDisc = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
+                    TaxAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
+                    ExemptTaxAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
                     Total = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
                     DPP = table.Column<decimal>(type: "decimal(19,6)", nullable: false)
                 },
@@ -3486,16 +3486,16 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     WarehouseCode = table.Column<string>(type: "varchar(8)", unicode: false, maxLength: 8, nullable: true),
                     CurrCode = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
                     Rate = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    ShipmentFee = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    HandlingFee = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    SubTotal = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    ShipmentFee = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
+                    HandlingFee = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
+                    SubTotal = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
                     FinalDiscPercent = table.Column<decimal>(type: "decimal(5,2)", precision: 5, scale: 2, nullable: false),
-                    FinalDisc = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    FinalDisc = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
                     IncludeTax = table.Column<bool>(type: "bit", nullable: false),
-                    TaxAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    ExemptTaxAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    Total = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    DPP = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    TaxAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
+                    ExemptTaxAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
+                    Total = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
+                    DPP = table.Column<decimal>(type: "decimal(19,6)", nullable: false),
                     Notes = table.Column<string>(type: "varchar(256)", unicode: false, maxLength: 256, nullable: true),
                     FromDirectInvoice = table.Column<bool>(type: "bit", nullable: false)
                 },
@@ -3957,12 +3957,12 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     CustCode = table.Column<string>(type: "varchar(8)", unicode: false, maxLength: 8, nullable: false),
                     CurrCode = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
                     Rate = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    SubTotal = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    SubTotal = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
                     IncludeTax = table.Column<bool>(type: "bit", nullable: false),
-                    TaxAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    ExemptTaxAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    Total = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    DPP = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    TaxAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
+                    ExemptTaxAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
+                    Total = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
+                    DPP = table.Column<decimal>(type: "decimal(19,6)", nullable: false),
                     Mark = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
                     CreatedBy = table.Column<int>(type: "int", nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
@@ -3999,15 +3999,15 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     PaymentTermId = table.Column<int>(type: "int", nullable: true),
                     CurrCode = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
                     Rate = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    SubTotal = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    SubTotal = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
                     FinalDiscPercent = table.Column<decimal>(type: "decimal(5,2)", precision: 5, scale: 2, nullable: false),
-                    FinalDisc = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    FinalDisc = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
                     IncludeTax = table.Column<bool>(type: "bit", nullable: false),
-                    TaxAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    ExemptTaxAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    Total = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    DPP = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    PaidAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    TaxAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
+                    ExemptTaxAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
+                    Total = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
+                    DPP = table.Column<decimal>(type: "decimal(19,6)", nullable: false),
+                    PaidAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
                     Mark = table.Column<string>(type: "varchar(3)", unicode: false, maxLength: 3, nullable: false),
                     CreatedBy = table.Column<int>(type: "int", nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "datetime", nullable: false),
@@ -4594,12 +4594,12 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     Code = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
                     LineNo = table.Column<short>(type: "smallint", nullable: false),
                     DOCode = table.Column<string>(type: "varchar(17)", unicode: false, maxLength: 17, nullable: false),
-                    ShipmentFee = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    HandlingFee = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    SubTotal = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    FinalDisc = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    TaxAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    ExemptTaxAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    ShipmentFee = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
+                    HandlingFee = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
+                    SubTotal = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
+                    FinalDisc = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
+                    TaxAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
+                    ExemptTaxAmount = table.Column<decimal>(type: "decimal(19,6)", precision: 18, scale: 2, nullable: false),
                     Total = table.Column<decimal>(type: "decimal(19,6)", precision: 19, scale: 6, nullable: false),
                     DPP = table.Column<decimal>(type: "decimal(19,6)", nullable: false)
                 },
@@ -7710,27 +7710,6 @@ AS
 		ON u_a.Id = dp_h.ApprovedBy";
             migrationBuilder.Sql(sql);
 
-            // Create view Sales.vwDeliveryPlanDetail
-            sql = @"CREATE VIEW [Sales].[vwDeliveryPlanDetail]
-AS
-	SELECT dp_d.*,
-		dlv.CustName,
-		dlv.CustAddress,
-		dlv.CustArea,
-		CASE
-			WHEN dlv.SrcTrans = 1 THEN so.SalesName
-			WHEN dlv.SrcTrans = 2 THEN sr.SalesName
-			ELSE NULL
-		END AS SalesName
-	FROM Sales.DeliveryPlanDetail dp_d
-	LEFT JOIN Sales.vwSalesDeliveryHeader dlv
-		ON dp_d.TransCode = dlv.Code
-	LEFT JOIN Sales.vwSalesOrderHeader so
-		ON so.Code = dlv.TransCode
-	LEFT JOIN Sales.vwSalesReturnHeader sr
-		ON sr.Code = dlv.TransCode";
-            migrationBuilder.Sql(sql);
-
             // Create view Sales.vwSalesDeliveryHeader
             sql = @"CREATE VIEW [Sales].[vwSalesDeliveryHeader]
 AS
@@ -7756,6 +7735,93 @@ AS
 		ON e.Id = do_h.ShippedBy
 	LEFT JOIN SystemManagement.[User] u
 		ON u.Id = do_h.UpdatedBy";
+            migrationBuilder.Sql(sql);
+
+            // Create view Sales.vwSalesOrderHeader
+            sql = @"CREATE VIEW [Sales].[vwSalesOrderHeader]
+AS
+    SELECT so_h.*,
+        c.[Name] AS CustName,
+        e.Initial AS SalesInitial,
+		e.FirstName AS SalesName,
+        u_c.Initial AS CreatedInitial,
+        u_u.Initial AS UpdatedInitial,
+        u_a.Initial AS ApprovedInitial,
+        u_o.Initial AS OverlimitApprovedInitial,
+        CASE so_h.Mark
+            WHEN 'A' THEN 'Active'
+            WHEN 'V' THEN 'Void'
+            WHEN 'OL' THEN 'Overlimit'
+            WHEN 'PS' THEN 'Partial Shipped'
+            WHEN 'CMP' THEN 'Completed'
+            WHEN 'CLS' THEN 'Closed' END AS [Status]
+    FROM Sales.SalesOrderHeader so_h
+    LEFT JOIN General.Customer c
+        ON c.Code = so_h.CustCode
+    LEFT JOIN General.Employee e
+        ON e.Id = so_h.SalesBy
+    LEFT JOIN SystemManagement.[User] u_c
+        ON u_c.Id = so_h.CreatedBy
+    LEFT JOIN SystemManagement.[User] u_u
+        ON u_u.Id = so_h.UpdatedBy
+    LEFT JOIN SystemManagement.[User] u_a
+        ON u_a.Id = so_h.ApprovedBy
+    LEFT JOIN SystemManagement.[User] u_o
+        ON u_o.Id = so_h.OverlimitApprovedBy";
+            migrationBuilder.Sql(sql);
+
+            // Create view Sales.vwSalesReturnHeader
+            sql = @"CREATE VIEW [Sales].[vwSalesReturnHeader]
+AS
+	SELECT sr_h.*,
+		c.[Name] AS CustName,
+		e.Initial AS SalesInitial,
+        e.FirstName AS SalesName,
+		u_c.Initial AS CreatedInitial,
+		u_u.Initial AS UpdatedInitial,
+		u_a.Initial AS ApprovedInitial,
+		CASE sr_h.[Type]
+			When '1' THEN 'Tukar Memo'
+			When '2' THEN 'Tukar Barang Sama'
+			When '3' THEN 'Tukar Barang Beda' End As TypeName,
+		CASE sr_h.Mark
+			WHEN 'A' THEN 'Active'
+			WHEN 'V' THEN 'Void'
+			WHEN 'PS' THEN 'Partial Shipped'
+			WHEN 'CMP' THEN 'Completed'
+			WHEN 'CLS' THEN 'Closed' END AS [Status]
+	FROM Sales.SalesReturnHeader sr_h
+	LEFT JOIN General.Customer c
+		ON c.Code = sr_h.CustCode
+	LEFT JOIN General.Employee e
+		ON e.Id = sr_h.SalesBy
+	LEFT JOIN SystemManagement.[User] u_c
+		ON u_c.Id = sr_h.CreatedBy
+	LEFT JOIN SystemManagement.[User] u_u
+		ON u_u.Id = sr_h.UpdatedBy
+	LEFT JOIN SystemManagement.[User] u_a
+		ON u_a.Id = sr_h.ApprovedBy";
+            migrationBuilder.Sql(sql);
+
+            // Create view Sales.vwDeliveryPlanDetail
+            sql = @"CREATE VIEW [Sales].[vwDeliveryPlanDetail]
+AS
+	SELECT dp_d.*,
+		dlv.CustName,
+		dlv.CustAddress,
+		dlv.CustArea,
+		CASE
+			WHEN dlv.SrcTrans = 1 THEN so.SalesName
+			WHEN dlv.SrcTrans = 2 THEN sr.SalesName
+			ELSE NULL
+		END AS SalesName
+	FROM Sales.DeliveryPlanDetail dp_d
+	LEFT JOIN Sales.vwSalesDeliveryHeader dlv
+		ON dp_d.TransCode = dlv.Code
+	LEFT JOIN Sales.vwSalesOrderHeader so
+		ON so.Code = dlv.TransCode
+	LEFT JOIN Sales.vwSalesReturnHeader sr
+		ON sr.Code = dlv.TransCode";
             migrationBuilder.Sql(sql);
 
             // Create view Sales.vwSalesDeliveryDetail
@@ -7917,39 +7983,6 @@ AS
 		ON c.BillingAddressId = ca.Id";
             migrationBuilder.Sql(sql);
 
-            // Create view Sales.vwSalesOrderHeader
-            sql = @"CREATE VIEW [Sales].[vwSalesOrderHeader]
-AS
-    SELECT so_h.*,
-        c.[Name] AS CustName,
-        e.Initial AS SalesInitial,
-		e.FirstName AS SalesName,
-        u_c.Initial AS CreatedInitial,
-        u_u.Initial AS UpdatedInitial,
-        u_a.Initial AS ApprovedInitial,
-        u_o.Initial AS OverlimitApprovedInitial,
-        CASE so_h.Mark
-            WHEN 'A' THEN 'Active'
-            WHEN 'V' THEN 'Void'
-            WHEN 'OL' THEN 'Overlimit'
-            WHEN 'PS' THEN 'Partial Shipped'
-            WHEN 'CMP' THEN 'Completed'
-            WHEN 'CLS' THEN 'Closed' END AS [Status]
-    FROM Sales.SalesOrderHeader so_h
-    LEFT JOIN General.Customer c
-        ON c.Code = so_h.CustCode
-    LEFT JOIN General.Employee e
-        ON e.Id = so_h.SalesBy
-    LEFT JOIN SystemManagement.[User] u_c
-        ON u_c.Id = so_h.CreatedBy
-    LEFT JOIN SystemManagement.[User] u_u
-        ON u_u.Id = so_h.UpdatedBy
-    LEFT JOIN SystemManagement.[User] u_a
-        ON u_a.Id = so_h.ApprovedBy
-    LEFT JOIN SystemManagement.[User] u_o
-        ON u_o.Id = so_h.OverlimitApprovedBy";
-            migrationBuilder.Sql(sql);
-
             // Create view Sales.vwSalesOrderDetail
             sql = @"CREATE VIEW [Sales].[vwSalesOrderDetail]
 AS
@@ -7970,39 +8003,6 @@ AS
 		ON uom.Id = so_d.UomId
 	LEFT JOIN Inventory.UoMConversion uom_c
 		ON uom_c.Id = so_d.UnitId";
-            migrationBuilder.Sql(sql);
-
-            // Create view Sales.vwSalesReturnHeader
-            sql = @"CREATE VIEW [Sales].[vwSalesReturnHeader]
-AS
-	SELECT sr_h.*,
-		c.[Name] AS CustName,
-		e.Initial AS SalesInitial,
-        e.FirstName AS SalesName,
-		u_c.Initial AS CreatedInitial,
-		u_u.Initial AS UpdatedInitial,
-		u_a.Initial AS ApprovedInitial,
-		CASE sr_h.[Type]
-			When '1' THEN 'Tukar Memo'
-			When '2' THEN 'Tukar Barang Sama'
-			When '3' THEN 'Tukar Barang Beda' End As TypeName,
-		CASE sr_h.Mark
-			WHEN 'A' THEN 'Active'
-			WHEN 'V' THEN 'Void'
-			WHEN 'PS' THEN 'Partial Shipped'
-			WHEN 'CMP' THEN 'Completed'
-			WHEN 'CLS' THEN 'Closed' END AS [Status]
-	FROM Sales.SalesReturnHeader sr_h
-	LEFT JOIN General.Customer c
-		ON c.Code = sr_h.CustCode
-	LEFT JOIN General.Employee e
-		ON e.Id = sr_h.SalesBy
-	LEFT JOIN SystemManagement.[User] u_c
-		ON u_c.Id = sr_h.CreatedBy
-	LEFT JOIN SystemManagement.[User] u_u
-		ON u_u.Id = sr_h.UpdatedBy
-	LEFT JOIN SystemManagement.[User] u_a
-		ON u_a.Id = sr_h.ApprovedBy";
             migrationBuilder.Sql(sql);
 
             // Create view Sales.vwSalesReturnDetail
@@ -9242,6 +9242,7 @@ AS
     SELECT mo_h.*,
         c.[Name] AS CustName,
         e.Initial AS SalesInitial,
+        e.FirstName AS SalesName,
         u_c.Initial AS CreatedInitial,
         u_u.Initial AS UpdatedInitial,
         u_a.Initial AS ApprovedInitial,
@@ -10018,7 +10019,7 @@ BEGIN
 			w.Initial AS WarehouseInitial, w.[Name] AS WarehouseName,
 			e_c.Initial AS CreatedInitial,
 			i.Initial AS ItemInitial, i.[Name] AS ItemName,
-			uom_c.UnitToConvert AS ItemUnitName
+			uom_c.UnitEquivalent AS ItemUnitName
 		FROM cte_calc_group cte
 		LEFT JOIN General.Vehicle v
 			ON v.Id = cte.VehicleId
@@ -10032,7 +10033,7 @@ BEGIN
 			ON i.Id = cte.ItemId
 		LEFT JOIN Inventory.UoMConversion uom_c
 			ON uom_c.Id = cte.UnitId
-		ORDER BY i.Initial, i.[Name], uom_c.UnitToConvert
+		ORDER BY i.Initial, i.[Name], uom_c.UnitEquivalent
 	END
 
 	ELSE IF @displayType = 'INVOICE'
@@ -10153,7 +10154,7 @@ BEGIN
 		c.[Name] AS CustName,
 		ca_d.Address1 AS CustAddress1, ca_d.ContactPerson AS CustContactPerson, ca_d.Phone AS CustPhone,
 		i.Initial AS ItemInitial, i.[Name] AS ItemName,
-		uom_c.UnitToConvert AS ItemUnitName
+		uom_c.UnitEquivalent AS ItemUnitName
 	FROM cte_calc_group cte
 	LEFT JOIN General.Vehicle v
 		ON v.Id = cte.VehicleId
@@ -10172,7 +10173,7 @@ BEGIN
 		ON i.Id = cte.ItemId
 	LEFT JOIN Inventory.UoMConversion uom_c
 		ON uom_c.Id = cte.UnitId
-	ORDER BY cte.TransCode, i.Initial, i.[Name], uom_c.UnitToConvert
+	ORDER BY cte.TransCode, i.Initial, i.[Name], uom_c.UnitEquivalent
 
 END";
             migrationBuilder.Sql(sql);
@@ -10230,6 +10231,97 @@ BEGIN
 END";
             migrationBuilder.Sql(sql);
 
+            // Create procedure dbo.sp_get_do_multi_print_data
+            sql = @"CREATE PROCEDURE [dbo].[sp_get_do_multi_print_data]
+	@code varchar(max)
+AS
+BEGIN
+
+	WITH cte_do_src AS (
+		SELECT do_h.*,
+			do_d.Id AS DetailId, do_d.ItemId, do_d.Qty, do_d.UnitId,
+			e_sls.Initial AS SalesInitial,
+			c.Initial AS CustInitial, c.[Name] AS CustName,
+			CASE WHEN c.ShippingAddressId IS NULL THEN ca_d.Address1
+				ELSE ca_b.Address1 END AS CustAddress1,
+			CASE WHEN c.ShippingAddressId IS NULL THEN ca_d.Phone
+				ELSE ca_b.Phone END AS CustPhone,
+			CASE WHEN c.ShippingAddressId IS NULL THEN ca_d.ContactPerson
+				ELSE ca_b.ContactPerson END AS CustContactPerson,
+			e_shp.Initial AS ShippedInitial
+		FROM (
+			SELECT Code, [Date], SrcTrans, TransCode, CustCode, ShippedBy, Notes
+			FROM Sales.SalesDeliveryHeader
+			WHERE Code IN (
+				SELECT [value]
+				FROM dbo.udf_string_split(@code, ',')
+			)
+			AND Mark <> 'V'
+		) do_h
+		LEFT JOIN Sales.SalesDeliveryDetail do_d
+			ON do_d.Code = do_h.Code
+		LEFT JOIN Sales.SalesOrderHeader so_h
+			ON so_h.Code = do_h.TransCode
+			AND do_h.SrcTrans = 1
+		LEFT JOIN General.Employee e_sls
+			ON e_sls.Id = so_h.SalesBy
+		LEFT JOIN General.Customer c
+			ON c.Code = do_h.CustCode
+		LEFT JOIN General.CustomerAddress ca_d
+			ON ca_d.Code = c.Code
+			AND ca_d.IsDefault = 1
+			AND c.BillingAddressId IS NULL
+		LEFT JOIN General.CustomerAddress ca_b
+			ON ca_b.Code = c.Code
+			AND ca_b.Id = c.ShippingAddressId
+			AND c.BillingAddressId IS NOT NULL
+		LEFT JOIN General.Employee e_shp
+			ON e_shp.Id = do_h.ShippedBy
+	)
+	,cte_do_free_src AS (
+		SELECT Id, Code, ItemId, UnitId, Qty
+		FROM Sales.SalesDeliveryDetailFreeGood do_d_fg
+		WHERE EXISTS (
+			SELECT DISTINCT Code
+			FROM cte_do_src cte
+			WHERE cte.Code = do_d_fg.Code
+		)
+	)
+	,cte_union AS (
+		SELECT do.Code, do.[Date], do.SrcTrans, do.TransCode, do.SalesInitial, do.ShippedInitial,
+			do.CustCode, do.CustInitial, do.CustName, do.CustAddress1, do.CustPhone, do.CustContactPerson,
+			do.Notes,
+			do.DetailId, do.ItemId, do.Qty, do.UnitId,
+			1 AS Sort
+		FROM cte_do_src do
+		UNION ALL
+		SELECT do.Code, do.[Date], do.SrcTrans, do.TransCode, do.SalesInitial, do.ShippedInitial,
+			do.CustCode, do.CustInitial, do.CustName, do.CustAddress1, do.CustPhone, do.CustContactPerson,
+			do.Notes,
+			do_f.Id AS DetailId, do_f.ItemId, do_f.Qty, do_f.UnitId,
+			2 AS Sort
+		FROM cte_do_free_src do_f
+		LEFT JOIN (
+			SELECT DISTINCT Code, [Date], SrcTrans, TransCode, SalesInitial, ShippedInitial,
+				CustCode, CustInitial, CustName, CustAddress1, CustPhone, CustContactPerson,
+				Notes
+			FROM cte_do_src
+		) do
+			ON do.Code = do_f.Code
+	)
+	SELECT u.*,
+		i.Initial AS ItemInitial, i.[Name] AS ItemName,
+		uom_c.UnitEquivalent AS ItemUnitName
+	FROM cte_union u
+	LEFT JOIN Inventory.Item i
+		ON i.Id = u.ItemId
+	LEFT JOIN Inventory.UoMConversion uom_c
+		ON uom_c.Id = u.UnitId
+	ORDER BY Code, Sort, DetailId
+
+END";
+            migrationBuilder.Sql(sql);
+
             // Create procedure dbo.sp_get_do_print_data
             sql = @"CREATE PROCEDURE [dbo].[sp_get_do_print_data]
 	@code varchar(17),
@@ -10278,7 +10370,7 @@ BEGIN
 	BEGIN
 		SELECT do_d.Id, do_d.[LineNo], do_d.Qty,
 			i.Initial AS ItemInitial, i.[Name] AS ItemName,
-			uom_c.UnitToConvert AS ItemUnitName,
+			uom_c.UnitEquivalent AS ItemUnitName,
 			1 AS Sort
 		FROM (
 			SELECT Id, [LineNo], ItemId, Qty, UnitId
@@ -10292,7 +10384,7 @@ BEGIN
 		UNION ALL
 		SELECT do_d_fg.Id, do_d_fg.[LineNo], do_d_fg.Qty,
 			i.Initial AS ItemInitial, i.[Name] AS ItemName,
-			uom_c.UnitToConvert AS ItemUnitName,
+			uom_c.UnitEquivalent AS ItemUnitName,
 			2 AS Sort
 		FROM (
 			SELECT Id, Code, [LineNo], ItemId, UnitId, Qty
@@ -10322,7 +10414,7 @@ BEGIN
 		SELECT ei_h.*,
 			dbo.udf_num_to_words_id(ei_h.Amount, @centToWord) AS AmountInWord,
 			s.Initial AS SupInitial, s.[Name] AS SupName, s.Address1 AS SupAddress1, s.Phone AS SupPhone,
-			e_c.Initial AS CreatedInitial
+			u_c.Initial AS CreatedInitial
 		FROM (
 			SELECT *
 			FROM Expedition.ExpeditionInvoiceHeader
@@ -10331,8 +10423,8 @@ BEGIN
 		) ei_h
 		LEFT JOIN General.Supplier s
 			ON s.Code = ei_h.SupCode
-		LEFT JOIN General.Employee e_c
-			ON e_c.Id = ei_h.CreatedBy
+		LEFT JOIN SystemManagement.[User] u_c
+			ON u_c.Id = ei_h.CreatedBy
 	END
 
 	ELSE IF @displayType = 'DETAIL'
@@ -10403,7 +10495,7 @@ BEGIN
 			CASE WHEN rcv_d.[Type] = 0 THEN rcv_d.Total
 				ELSE 0 END AS Total,
 			i.Initial AS ItemInitial, i.[Name] AS ItemName,
-			uom_c.UnitToConvert AS ItemUnitName,
+			uom_c.UnitEquivalent AS ItemUnitName,
 			rcv_d.[Type] AS Sort
 		FROM (
 			SELECT Id, Code, RcvCode
@@ -10438,7 +10530,7 @@ BEGIN
 			dbo.udf_num_to_words_id(po_h.Total, @centToWord) AS TotalInWord,
 			e_r.Initial AS RequestInitial,
 			s.Initial AS SupInitial, s.[Name] AS SupName, s.Address1 AS SupAddress1, s.Phone AS SupPhone,
-			e_c.Initial AS CreatedInitial
+			u_c.Initial AS CreatedInitial
 		FROM (
 			SELECT *
 			FROM Purchasing.PurchaseOrderHeader
@@ -10449,8 +10541,8 @@ BEGIN
 			ON e_r.Id = po_h.RequestBy
 		LEFT JOIN General.Supplier s
 			ON s.Code = po_h.SupCode
-		LEFT JOIN General.Employee e_c
-			ON e_c.Id = po_h.CreatedBy
+		LEFT JOIN SystemManagement.[User] u_c
+			ON u_c.Id = po_h.CreatedBy
 	END
 
 	ELSE IF @displayType = 'DETAIL'
@@ -10464,7 +10556,7 @@ BEGIN
 			CASE WHEN po_d.[Type] = 0 THEN po_d.Total
 				ELSE 0 END AS Total,
 			i.Initial AS ItemInitial, i.[Name] AS ItemName,
-			uom_c.UnitToConvert AS ItemUnitName,
+			uom_c.UnitEquivalent AS ItemUnitName,
 			po_d.[Type] AS Sort
 		FROM (
 			SELECT Id, Code, [LineNo], ItemId, UnitId, Qty, UnitPrice, Disc, FinalDiscHeader,
@@ -10496,7 +10588,7 @@ BEGIN
 			dbo.udf_num_to_words_id(pr_h.Total, @centToWord) AS TotalInWord,
 			e_shp.Initial AS ShippedInitial,
 			s.Initial AS SupInitial, s.[Name] AS SupName, s.Address1 AS SupAddress1, s.Phone AS SupPhone,
-			e_cre.Initial AS CreatedInitial
+			u_c.Initial AS CreatedInitial
 		FROM (
 			SELECT *
 			FROM Purchasing.PurchaseReturnHeader
@@ -10507,8 +10599,8 @@ BEGIN
 			ON e_shp.Id = pr_h.ShippedBy
 		LEFT JOIN General.Supplier s
 			ON s.Code = pr_h.SupCode
-		LEFT JOIN General.Employee e_cre
-			ON e_cre.Id = pr_h.CreatedBy
+		LEFT JOIN SystemManagement.[User] u_c
+			ON u_c.Id = pr_h.CreatedBy
 	END
 
 	ELSE IF @displayType = 'DETAIL'
@@ -10516,7 +10608,7 @@ BEGIN
 		SELECT pr_d.Id, pr_d.[LineNo],
 			pr_d.Qty, pr_d.UnitPrice, pr_d.TaxAmount, pr_d.Total,
 			i.Initial AS ItemInitial, i.[Name] AS ItemName,
-			uom_c.UnitToConvert AS ItemUnitName,
+			uom_c.UnitEquivalent AS ItemUnitName,
 			1 AS Sort
 		FROM (
 			SELECT Id, Code, [LineNo], ItemId, UnitId, Qty, UnitPrice, TaxAmount, Total
@@ -10531,7 +10623,7 @@ BEGIN
 		SELECT pr_d.Id, pr_d.[LineNo],
 			pr_d.Qty, pr_d.UnitPrice, pr_d.TaxAmount, pr_d.Total,
 			i.Initial AS ItemInitial, i.[Name] AS ItemName,
-			uom_c.UnitToConvert AS ItemUnitName,
+			uom_c.UnitEquivalent AS ItemUnitName,
 			2 AS Sort
 		FROM (
 			SELECT Id, Code, [LineNo], ItemId, UnitId, Qty, UnitPrice, TaxAmount, Total
@@ -10575,7 +10667,7 @@ BEGIN
 			e_req.Initial AS RequestInitial,
 			s.Initial AS SupInitial, s.[Name] AS SupName, s.Address1 AS SupAddress1, s.Phone AS SupPhone,
 			e_rcv.Initial AS ReceiveInitial,
-			e_cre.Initial AS CreatedInitial
+			u_c.Initial AS CreatedInitial
 		FROM (
 			SELECT *
 			FROM Purchasing.PurchaseReceiveHeader
@@ -10591,15 +10683,15 @@ BEGIN
 			ON s.Code = rcv_h.SupCode
 		LEFT JOIN General.Employee e_rcv
 			ON e_rcv.Id = rcv_h.ReceiveBy
-		LEFT JOIN General.Employee e_cre
-			ON e_cre.Id = rcv_h.CreatedBy
+		LEFT JOIN SystemManagement.[User] u_c
+			ON u_c.Id = rcv_h.CreatedBy
 	END
 
 	ELSE IF @displayType = 'DETAIL'
 	BEGIN
 		SELECT rcv_d.Id, rcv_d.[LineNo], rcv_d.Qty,
 			i.Initial AS ItemInitial, i.[Name] AS ItemName,
-			uom_c.UnitToConvert AS ItemUnitName,
+			uom_c.UnitEquivalent AS ItemUnitName,
 			rcv_d.[Type] AS Sort
 		FROM (
 			SELECT Id, [LineNo], ItemId, Qty, UnitId, [Type]
@@ -10613,6 +10705,105 @@ BEGIN
 		
 		ORDER BY Sort, Id, [LineNo]
 	END
+
+END";
+            migrationBuilder.Sql(sql);
+
+            // Create procedure dbo.sp_get_si_multi_print_data
+            sql = @"CREATE PROCEDURE [dbo].[sp_get_si_multi_print_data]
+	@code varchar(max),
+	@centToWord bit = 0
+AS
+BEGIN
+
+	WITH cte_si_src AS (
+		SELECT si_h.*,
+			si_d.Id AS InvDetailId, si_d.DOCode,
+			dlv_d.Id AS DlvDetailId, dlv_d.[LineNo] AS DlvDetailLineNo,
+			dlv_d.ItemId, dlv_d.Qty, dlv_d.UnitId, dlv_d.UnitPrice, dlv_d.Disc + dlv_d.FinalDiscHeader AS Disc,
+			dlv_d.TaxAmount, dlv_d.ExemptTaxAmount, dlv_d.Total,
+			dbo.udf_num_to_words_id(si_h.TotalHeader, @centToWord) AS TotalHeaderInWord,
+			e.Initial AS SalesInitial,
+			c.Initial AS CustInitial, c.[Name] AS CustName,
+			CASE WHEN so_h.BillingAddressId IS NULL THEN ca_d.Address1
+				ELSE ca_b.Address1 END AS CustAddress1,
+			CASE WHEN so_h.BillingAddressId IS NULL THEN ca_d.Phone
+				ELSE ca_b.Phone END AS CustPhone,
+			CASE WHEN so_h.BillingAddressId IS NULL THEN ca_d.ContactPerson
+				ELSE ca_b.ContactPerson END AS CustContactPerson
+		FROM (
+			SELECT Code, [Date], DueDate, SOCode, CustCode, CurrCode, Total AS TotalHeader, Notes
+			FROM Sales.SalesInvoiceHeader
+			WHERE Code IN (
+				SELECT [value]
+				FROM dbo.udf_string_split(@code, ',')
+			)
+			AND Mark <> 'V'
+		) si_h
+		LEFT JOIN Sales.SalesOrderHeader so_h
+			ON so_h.Code = si_h.SOCode
+		LEFT JOIN Sales.SalesInvoiceDetail si_d
+			ON si_d.Code = si_h.Code
+		LEFT JOIN Sales.SalesDeliveryHeader dlv_h
+			ON dlv_h.Code = si_d.DOCode
+		LEFT JOIN Sales.SalesDeliveryDetail dlv_d
+			ON dlv_d.Code = dlv_h.Code
+		LEFT JOIN General.Employee e
+			ON e.Id = so_h.SalesBy
+		LEFT JOIN General.Customer c
+			ON c.Code = si_h.CustCode
+		LEFT JOIN General.CustomerAddress ca_b
+			ON ca_b.Code = si_h.CustCode
+			AND ca_b.Id = so_h.BillingAddressId
+			AND so_h.BillingAddressId IS NOT NULL
+		LEFT JOIN General.CustomerAddress ca_d
+			ON ca_d.Code = si_h.CustCode
+			AND ca_d.IsDefault = 1
+			AND so_h.BillingAddressId IS NULL
+	)
+	,cte_do_free_src AS (
+		SELECT *
+		FROM Sales.SalesDeliveryDetailFreeGood dlv_d_fg
+		WHERE EXISTS (
+			SELECT DISTINCT Code, DOCode
+			FROM cte_si_src cte
+			WHERE cte.DOCode = dlv_d_fg.Code
+		)
+	)
+	,cte_union AS (
+		SELECT si.Code, si.[Date], si.DueDate, si.SalesInitial,
+			si.CustCode, si.CustInitial, si.CustName, si.CustAddress1, si.CustPhone, si.CustContactPerson,
+			si.CurrCode, si.TotalHeader, si.TotalHeaderInWord, si.Notes,
+			si.DOCode, si.DlvDetailId, si.DlvDetailLineNo,
+			si.ItemId, si.Qty, si.UnitId, si.UnitPrice, si.Disc, si.TaxAmount, si.ExemptTaxAmount, si.Total,
+			1 AS Sort
+		FROM cte_si_src si
+		UNION ALL
+		SELECT si.Code, si.[Date], si.DueDate, si.SalesInitial,
+			si.CustCode, si.CustInitial, si.CustName, si.CustAddress1, si.CustPhone, si.CustContactPerson,
+			si.CurrCode, si.TotalHeader, si.TotalHeaderInWord, si.Notes,
+			do_f.Code, do_f.DlvOrderDetailId, do_f.[LineNo],
+			do_f.ItemId, do_f.Qty, do_f.UnitId, do_f.UnitPrice, do_f.UnitPrice, 0, 0, 0,
+			2 AS Sort
+		FROM cte_do_free_src do_f
+		LEFT JOIN (
+			SELECT DISTINCT Code, [Date], DueDate, SalesInitial,
+				CustCode, CustInitial, CustName, CustAddress1, CustPhone, CustContactPerson,
+				CurrCode, TotalHeader, TotalHeaderInWord, Notes,
+				DOCode
+			FROM cte_si_src
+		) si
+			ON si.DOCode = do_f.Code
+	)
+	SELECT u.*,
+		i.Initial AS ItemInitial, i.[Name] AS ItemName,
+		uom_c.UnitEquivalent AS ItemUnitName
+	FROM cte_union u
+	LEFT JOIN Inventory.Item i
+		ON i.Id = u.ItemId
+	LEFT JOIN Inventory.UoMConversion uom_c
+		ON uom_c.Id = u.UnitId
+	ORDER BY Code, Sort, DOCode, DlvDetailId, DlvDetailLineNo
 
 END";
             migrationBuilder.Sql(sql);
@@ -10666,7 +10857,7 @@ BEGIN
 			dlv_d.Qty, dlv_d.UnitPrice, dlv_d.Disc + dlv_d.FinalDiscHeader AS Disc,
 			dlv_d.TaxAmount, dlv_d.ExemptTaxAmount, dlv_d.Total,
 			i.Initial AS ItemInitial, i.[Name] AS ItemName,
-			uom_c.UnitToConvert AS ItemUnitName,
+			uom_c.UnitEquivalent AS ItemUnitName,
 			1 AS Sort
 		FROM (
 			SELECT Id, Code, DOCode
@@ -10687,7 +10878,7 @@ BEGIN
 			dlv_d_fg.Qty, dlv_d_fg.UnitPrice, dlv_d_fg.UnitPrice,
 			0, 0, 0,
 			i.Initial AS ItemInitial, i.[Name] AS ItemName,
-			uom_c.UnitToConvert AS ItemUnitName,
+			uom_c.UnitEquivalent AS ItemUnitName,
 			2 AS Sort
 		FROM (
 			SELECT dlv_d_fg.*
@@ -10755,7 +10946,7 @@ BEGIN
 			si_d.Qty, si_d.UnitPrice, si_d.Disc + si_d.FinalDiscHeader AS Disc,
 			si_d.TaxAmount, si_d.ExemptTaxAmount, si_d.Total,
 			i.Initial AS ItemInitial, i.[Name] AS ItemName,
-			uom_c.UnitToConvert AS ItemUnitName,
+			uom_c.UnitEquivalent AS ItemUnitName,
 			1 AS Sort
 		FROM (
 			SELECT Id, Code, [LineNo], ItemId, UnitId, Qty, UnitPrice, Disc, FinalDiscHeader,
@@ -10772,7 +10963,7 @@ BEGIN
 			so_d_fg.Qty, so_d_fg.UnitPrice, so_d_fg.UnitPrice,
 			0, 0, 0,
 			i.Initial AS ItemInitial, i.[Name] AS ItemName,
-			uom_c.UnitToConvert AS ItemUnitName,
+			uom_c.UnitEquivalent AS ItemUnitName,
 			2 AS Sort
 		FROM (
 			SELECT *
@@ -10810,7 +11001,7 @@ BEGIN
 			CASE WHEN c.BillingAddressId IS NULL THEN ca_d.ContactPerson
 				ELSE ca_b.ContactPerson END AS CustContactPerson,
 			w.Initial AS WarehouseInitial,
-			e_cre.Initial AS CreatedInitial
+			u_c.Initial AS CreatedInitial
 		FROM (
 			SELECT *
 			FROM Sales.SalesReturnHeader
@@ -10831,8 +11022,8 @@ BEGIN
 			AND c.BillingAddressId IS NULL
 		LEFT JOIN Inventory.Warehouse w
 			ON w.Code = sr_h.WarehouseCode
-		LEFT JOIN General.Employee e_cre
-			ON e_cre.Id = sr_h.CreatedBy
+		LEFT JOIN SystemManagement.[User] u_c
+			ON u_c.Id = sr_h.CreatedBy
 	END
 
 	ELSE IF @displayType = 'DETAIL'
@@ -10840,7 +11031,7 @@ BEGIN
 		SELECT sr_d.Id, sr_d.[LineNo],
 			sr_d.Qty, sr_d.UnitPrice, sr_d.TaxAmount, sr_d.Total,
 			i.Initial AS ItemInitial, i.[Name] AS ItemName,
-			uom_c.UnitToConvert AS ItemUnitName,
+			uom_c.UnitEquivalent AS ItemUnitName,
 			1 AS Sort
 		FROM (
 			SELECT Id, Code, [LineNo], ItemId, UnitId, Qty, UnitPrice, TaxAmount, Total
@@ -10855,7 +11046,7 @@ BEGIN
 		SELECT sr_d.Id, sr_d.[LineNo],
 			sr_d.Qty, sr_d.UnitPrice, sr_d.TaxAmount, sr_d.Total,
 			i.Initial AS ItemInitial, i.[Name] AS ItemName,
-			uom_c.UnitToConvert AS ItemUnitName,
+			uom_c.UnitEquivalent AS ItemUnitName,
 			2 AS Sort
 		FROM (
 			SELECT Id, Code, [LineNo], ItemId, UnitId, Qty, UnitPrice, TaxAmount, Total
@@ -10953,10 +11144,10 @@ BEGIN
 		END AS TitleCaption,
 		ts_d.Qty,
 		i.Initial AS ItemInitial, i.[Name] AS ItemName,
-		uom_c.UnitToConvert AS ItemUnitName,
+		uom_c.UnitEquivalent AS ItemUnitName,
 		w_f.Initial AS WarehouseFromInitial, w_f.[Name] AS WarehouseFromName,
 		w_t.Initial AS WarehouseToInitial, w_t.[Name] AS WarehouseToName,
-		e.Initial AS CreatedInitial
+		u_c.Initial AS CreatedInitial
 	FROM (
 		SELECT *
 		FROM Inventory.TransferStockHeader
@@ -10973,8 +11164,8 @@ BEGIN
 		ON w_f.Code = ts_h.WarehouseCodeFrom
 	LEFT JOIN Inventory.Warehouse w_t
 		ON w_t.Code = ts_h.WarehouseCodeTo
-	LEFT JOIN General.Employee e
-		ON e.Id = ts_h.CreatedBy
+	LEFT JOIN SystemManagement.[User] u_c
+		ON u_c.Id = ts_h.CreatedBy
 	WHERE ts_d.ItemId IS NOT NULL
 	ORDER BY i.Initial
 	
@@ -10991,7 +11182,7 @@ BEGIN
 		vo_c.CustCode, c.Initial AS CustInitial, c.[Name] AS CustName,
 		ca_d.Address1 AS CustAddress1, ca_d.ContactPerson AS CustContactPerson,
 		e_s.Initial AS SalesInitial, e_s.FirstName AS SalesFirstName, e_s.LastName AS SalesLastName,
-		e_c.Initial AS CreatedInitial
+		u_c.Initial AS CreatedInitial
 	FROM (
 		SELECT *
 		FROM Sales.VisitOrder
@@ -11007,8 +11198,42 @@ BEGIN
 		and ca_d.IsDefault = 1
 	LEFT JOIN General.Employee e_s
 		ON e_s.Id = vo.SalesmanId
-	LEFT JOIN General.Employee e_c
-		ON e_c.Id = vo.CreatedBy
+	LEFT JOIN SystemManagement.[User] u_c
+		ON u_c.Id = vo.CreatedBy
+	
+END";
+            migrationBuilder.Sql(sql);
+
+            // Create procedure dbo.sp_get_vo_inv_print_data
+            sql = @"CREATE PROCEDURE [dbo].[sp_get_vo_inv_print_data]
+	@code varchar(17)
+AS
+BEGIN
+
+	SELECT vo.Code, vo.[Date], vo.Notes,
+		vo_i.InvCode, si_h.[Date] AS InvDate, si_h.Total AS InvTotal,
+		si_h.CustCode, c.Initial AS CustInitial, c.[Name] AS CustName, a.Initial AS CustArea,
+		e_s.Initial AS SalesInitial, e_s.FirstName AS SalesFirstName, e_s.LastName AS SalesLastName,
+		u_c.Initial AS CreatedInitial
+	FROM (
+		SELECT *
+		FROM Sales.VisitOrder
+		WHERE Code = @code
+		AND Mark <> 'V'
+	) vo
+	LEFT JOIN Sales.VisitOrderInvoice vo_i
+		ON vo_i.Code = vo.Code
+	LEFT JOIN Sales.SalesInvoiceHeader si_h
+		ON si_h.Code = vo_i.InvCode
+	LEFT JOIN General.Customer c
+		ON c.Code = si_h.CustCode
+	LEFT JOIN Sales.Area a
+		ON a.Id = c.AreaId2
+	LEFT JOIN General.Employee e_s
+		ON e_s.Id = vo.SalesmanId
+	LEFT JOIN SystemManagement.[User] u_c
+		ON u_c.Id = vo.CreatedBy
+	ORDER BY a.Initial, c.[Name], vo_i.InvCode
 	
 END";
             migrationBuilder.Sql(sql);
@@ -11031,7 +11256,7 @@ BEGIN
 	DECLARE @id int
 	DECLARE @type varchar(5), @transCode varchar(17), @src varchar(5)
 	DECLARE @transAmount decimal(18, 2)
-	
+ 
 	DECLARE @idDetail int
 	DECLARE @totalDetail Decimal(18, 2)
 	DECLARE @totalHeader Decimal(18, 2)
@@ -11042,10 +11267,10 @@ BEGIN
 
 	WHILE EXISTS(SELECT * FROM #tmp_cb)
 	BEGIN
-		
+
 		SELECT TOP 1 @id = Id, @type = [Type], @transCode = TransCode, @transAmount = TransAmount, @src = Src
 		FROM #tmp_cb
-		
+
 		IF (@type = 'AR' AND @src = 'BB')
 		BEGIN
 
@@ -11057,13 +11282,13 @@ BEGIN
 		ELSE IF (@type = 'AR')
 		BEGIN
 
-			SELECT @totalHeader = Total, @paidAmount = PaidAmount - @transAmount   
+			SELECT @totalHeader = Total, @paidAmount = PaidAmount - @transAmount 
 			FROM Sales.SalesInvoiceHeader 
 			WHERE Code = @transCode
-				
+
 			SET @mark = 'A'
 			IF (@paidAmount > 0) SET @mark = 'PP'
-			
+ 
 			UPDATE Sales.SalesInvoiceHeader SET PaidAmount = @paidAmount, Mark = @mark WHERE Code = @transCode
 
 			-- Update detail
@@ -11078,9 +11303,9 @@ BEGIN
 			BEGIN
 				SELECT TOP 1 @idDetail = Id, @totalDetail = Total, @doCode = DoCode FROM #tmp_si
 				SET @proRate = @paidAmount * @totalDetail / @totalHeader
-					
+ 
 				UPDATE Sales.SalesDeliveryHeader SET PaidAmount = @proRate WHERE Code = @doCode 
-					
+ 
 				DELETE FROM #tmp_si
 			END
 
@@ -11098,10 +11323,10 @@ BEGIN
 		ELSE IF (@type = 'AP')
 		BEGIN
 
-			SELECT @totalHeader = Total, @paidAmount = PaidAmount - @transAmount   
+			SELECT @totalHeader = Total, @paidAmount = PaidAmount - @transAmount 
 			FROM Purchasing.PurchaseInvoiceHeader 
 			WHERE Code = @transCode
-				
+
 			SET @mark = 'A'
 			IF (@paidAmount > 0) SET @mark = 'PP'
 
@@ -11112,16 +11337,16 @@ BEGIN
 			INTO #tmp_pi
 			FROM Purchasing.PurchaseInvoiceDetail 
 			WHERE Code = @transCode
-				
+
 			DECLARE @rcvCode varchar(17)
 
 			WHILE EXISTS(SELECT * FROM #tmp_pi)
 			BEGIN
 				SELECT TOP 1 @idDetail = Id, @totalDetail = Total, @rcvCode = RcvCode FROM #tmp_pi
 				SET @proRate = @paidAmount * @totalDetail / @totalHeader
-					
+ 
 				UPDATE Purchasing.PurchaseReceiveHeader SET PaidAmount = @proRate WHERE Code = @rcvCode 
-					
+ 
 				DELETE FROM #tmp_pi
 			END
 
@@ -11131,7 +11356,7 @@ BEGIN
 		ELSE IF (@type = 'EPAP')
 		BEGIN
 
-			SELECT @totalHeader = Amount, @paidAmount = PaidAmount - @transAmount   
+			SELECT @totalHeader = Amount, @paidAmount = PaidAmount - @transAmount 
 			FROM Expedition.ExpeditionInvoiceHeader 
 			WHERE Code = @transCode
 
@@ -11189,6 +11414,20 @@ BEGIN
 			SET @mark = 'A'
 			IF (@used > 0) SET @mark = 'PU'
 			UPDATE Purchasing.DebitMemo SET Used = @used, Mark = 'A' WHERE Code = @transCode
+
+		END
+		ELSE IF (@type = 'SDP' OR @type = 'RSDP')
+		BEGIN
+
+			IF @type = 'SDP'
+			BEGIN
+				UPDATE Sales.CreditMemo SET Mark = 'PP' WHERE Code = @transCode 
+			END
+			ELSE IF @type = 'RSDP'
+			BEGIN
+				--Retur UM
+				UPDATE Sales.CreditMemo SET Used = 0, Mark = 'PP' WHERE Code = @transCode
+			END
 
 		END
 
@@ -12416,7 +12655,7 @@ BEGIN TRY
 			AND sm.Src = 'DOF'
 		)
 	-- Update WarehouseQty
-	SELECT WarehouseCode, ItemId, BaseQty, [Type], UnitId
+	SELECT WarehouseCode, ItemId, BaseQty, [Type], UnitId, Src AS SrcName
 	INTO #tmp_wq
 	FROM Inventory.StockMutation
 	WHERE RefCode1 = @code AND Src IN ('DO', 'DOF')
@@ -12427,6 +12666,7 @@ BEGIN TRY
 	DECLARE @srcTrans int
 	DECLARE @Type varchar(max)
 	DECLARE @UnitId int
+	DECLARE @SrcName varchar(10)
 
 	SELECT @srcTrans = SrcTrans FROM Sales.SalesDeliveryHeader WHERE Code = @code
 
@@ -12435,9 +12675,9 @@ BEGIN TRY
 		--Update WHQ
 		WHILE EXISTS(SELECT * FROM #tmp_wq)
 		BEGIN
-			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty, @UnitId = UnitId, @Type = [Type] FROM #tmp_wq
+			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty, @UnitId = UnitId, @Type = [Type], @SrcName = SrcName FROM #tmp_wq
 
-			IF EXISTS(SELECT *FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @WHId AND ItemId = @ItemId)
+			IF EXISTS(SELECT * FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @WHId AND ItemId = @ItemId)
 			BEGIN
 				IF (@srcTrans = 1)
 				BEGIN
@@ -12493,20 +12733,20 @@ BEGIN TRY
 					END
 					ELSE
 					BEGIN
-						DELETE Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId AND [Type] = @Type AND RefCode1 = @code
+						DELETE Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId AND [Type] = @Type AND RefCode1 = @code AND Src = @SrcName
 					END
 				END
 			END
-			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId AND [Type] = @Type
+			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId AND [Type] = @Type AND SrcName = @SrcName
 		END
 	END
 	ELSE -- If data voided
 	BEGIN
 	WHILE EXISTS(SELECT * FROM #tmp_wq)
 		BEGIN
-			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty, @UnitId = UnitId, @Type = [Type] FROM #tmp_wq
+			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty, @UnitId = UnitId, @Type = [Type], @SrcName = SrcName FROM #tmp_wq
 
-			IF EXISTS(SELECT *FROM Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code AND UnitId = @UnitId AND [Type] = @Type)
+			IF EXISTS(SELECT * FROM Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code AND UnitId = @UnitId AND [Type] = @Type)
 			BEGIN
 				IF (@srcTrans = 1)
 				BEGIN
@@ -12527,9 +12767,9 @@ BEGIN TRY
 				BEGIN
 					UPDATE Inventory.WarehouseQuantity SET QtyOnHand = QtyOnHand + @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
 				END
-				DELETE Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code AND UnitId = @UnitId AND [Type] = @Type
+				DELETE Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code AND UnitId = @UnitId AND [Type] = @Type AND Src = @SrcName
 			END
-			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId AND [Type] = @Type
+			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId AND [Type] = @Type AND SrcName = @SrcName
 		END
 	END
 
@@ -12640,7 +12880,7 @@ BEGIN TRY
 		BEGIN
 			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty, @UnitId = UnitId FROM #tmp_wq
 
-			IF EXISTS(SELECT *FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @WHId AND ItemId = @ItemId)
+			IF EXISTS(SELECT * FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @WHId AND ItemId = @ItemId)
 			BEGIN
 				UPDATE Inventory.WarehouseQuantity SET QtyOnIndent += @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
 			END
@@ -12658,7 +12898,7 @@ BEGIN TRY
 		BEGIN
 			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty, @UnitId = UnitId FROM #tmp_wq
 
-			IF EXISTS(SELECT *FROM Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code)
+			IF EXISTS(SELECT * FROM Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code)
 			BEGIN
 				UPDATE Inventory.WarehouseQuantity SET QtyOnIndent -= @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
 				
@@ -12776,7 +13016,7 @@ BEGIN TRY
 		BEGIN
 			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty, @UnitId = UnitId FROM #tmp_wq
 
-			IF EXISTS(SELECT *FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @WHId AND ItemId = @ItemId)
+			IF EXISTS(SELECT * FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @WHId AND ItemId = @ItemId)
 			BEGIN
 				UPDATE Inventory.WarehouseQuantity SET QtyOnHand -= @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
 			END
@@ -12795,7 +13035,7 @@ BEGIN TRY
 		BEGIN
 			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty, @UnitId = UnitId FROM #tmp_wq
 
-			IF EXISTS(SELECT *FROM Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code)
+			IF EXISTS(SELECT * FROM Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code)
 			BEGIN
 				UPDATE Inventory.WarehouseQuantity SET QtyOnHand += @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
 				
@@ -12945,7 +13185,7 @@ BEGIN TRY
 		BEGIN
 			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty, @UnitId = UnitId, @Type = [Type] FROM #tmp_wq
 
-			IF EXISTS(SELECT *FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @WHId AND ItemId = @ItemId)
+			IF EXISTS(SELECT * FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @WHId AND ItemId = @ItemId)
 			BEGIN
 				IF (@srcTrans = 1)
 				BEGIN
@@ -12985,7 +13225,7 @@ BEGIN TRY
 		BEGIN
 			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty, @UnitId = UnitId, @Type = [Type] FROM #tmp_wq
 
-			IF EXISTS(SELECT *FROM Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId AND RefCode1 = @code)
+			IF EXISTS(SELECT * FROM Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId AND RefCode1 = @code)
 			BEGIN
 				IF (@srcTrans = 1)
 				BEGIN
@@ -13139,7 +13379,7 @@ BEGIN TRY
 	FROM Inventory.StockMutation sm, #tmp_do_free
 	WHERE sm.RefCode1 = @code
 	AND sm.RefDetailId1 = #tmp_do_free.Id
-	AND sm.Src = 'DOF'
+	AND sm.Src = 'SIF'
 
 	-- Insert stock mutation that doesn't have with sales delivery item detail
 	INSERT INTO Inventory.StockMutation
@@ -13150,11 +13390,11 @@ BEGIN TRY
 			FROM Inventory.StockMutation sm
 			WHERE sm.RefCode2 = do.Code
 			AND sm.RefDetailId1 = do.Id
-			AND sm.Src = 'DOF'
+			AND sm.Src = 'SIF'
 		)
 
 	-- Update WarehouseQty
-	SELECT WarehouseCode, ItemId, BaseQty, UnitId
+	SELECT WarehouseCode, ItemId, BaseQty, UnitId, Src as SrcName
 	INTO #tmp_wq
 	FROM Inventory.StockMutation
 	WHERE RefCode1 = @code AND Src IN ('SI', 'SIF')
@@ -13164,16 +13404,17 @@ BEGIN TRY
 	DECLARE @ItemId int
 	DECLARE @srcTrans int
 	DECLARE @UnitId int
-
+	DECLARE @SrcName varchar(10)
+	
 	SELECT @srcTrans = SrcTrans FROM Sales.SalesDeliveryHeader WHERE Code = @transCode
 
 	IF(@isVoid = 0)
 	BEGIN
 		WHILE EXISTS(SELECT * FROM #tmp_wq)
 		BEGIN
-			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty, @UnitId = UnitId FROM #tmp_wq
+			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty, @UnitId = UnitId, @SrcName = SrcName FROM #tmp_wq
 
-			IF EXISTS(SELECT *FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @WHId AND ItemId = @ItemId)
+			IF EXISTS(SELECT * FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @WHId AND ItemId = @ItemId)
 			BEGIN
 				IF (@srcTrans = 1)
 				BEGIN
@@ -13186,24 +13427,24 @@ BEGIN TRY
 				VALUES (@WHId, @ItemId, 0, 0, 0, 0, 0, 0, dbo.udf_current_local_time())
 				UPDATE Inventory.WarehouseQuantity SET QtyOnTransit -= @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
 			END
-			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId
+			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId AND SrcName = @SrcName
 		END
 	END
 	ELSE -- If data voided
 	BEGIN
 	WHILE EXISTS(SELECT * FROM #tmp_wq)
 		BEGIN
-			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty, @UnitId = UnitId FROM #tmp_wq
+			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty, @UnitId = UnitId, @SrcName = SrcName FROM #tmp_wq
 
-			IF EXISTS(SELECT *FROM Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code)
+			IF EXISTS(SELECT * FROM Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code)
 			BEGIN
 				IF (@srcTrans = 1)
 				BEGIN
 					UPDATE Inventory.WarehouseQuantity SET QtyOnTransit += @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
 				END
-				DELETE Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code AND UnitId = @UnitId
+				DELETE Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code AND UnitId = @UnitId AND Src = @SrcName
 			END
-			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId
+			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId AND SrcName = @SrcName
 		END
 	END
 
@@ -13359,7 +13600,7 @@ BEGIN TRY
 	)
 
 	-- Update WarehouseQty
-	SELECT WarehouseCode, ItemId, BaseQty, UnitId
+	SELECT WarehouseCode, ItemId, BaseQty, UnitId, Src AS SrcName
 	INTO #tmp_wq
 	FROM Inventory.StockMutation
 	WHERE RefCode1 = @code AND Src IN ('SO', 'SOF')
@@ -13368,14 +13609,15 @@ BEGIN TRY
 	DECLARE @WHId varchar(max)
 	DECLARE @ItemId int 
 	DECLARE @UnitId int
+	DECLARE @SrcName varchar(10)
 
 	IF(@isVoid = 0)
 	BEGIN
 		WHILE EXISTS(SELECT * FROM #tmp_wq)
 		BEGIN
-			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty, @UnitId = UnitId FROM #tmp_wq
+			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty, @UnitId = UnitId, @SrcName = SrcName FROM #tmp_wq
 
-			IF EXISTS(SELECT *FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @WHId AND ItemId = @ItemId)
+			IF EXISTS(SELECT * FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @WHId AND ItemId = @ItemId)
 			BEGIN
 				UPDATE Inventory.WarehouseQuantity SET QtyOnOrder += @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
 			END
@@ -13384,22 +13626,23 @@ BEGIN TRY
 				INSERT INTO Inventory.WarehouseQuantity(WarehouseCode, ItemId, QtyOnHand, QtyOnIndent, QtyOnOrder, QtyReorderPoint, QtyOnTransfer, QtyOnTransit, UpdatedDate)
 				VALUES (@WHId, @ItemId, 0, 0, @Qty, 0, 0, 0, dbo.udf_current_local_time())
 			END
-			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId
+			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId AND SrcName = @SrcName
+
 		END
 	END
 	ELSE -- If data voided
 	BEGIN
 	WHILE EXISTS(SELECT * FROM #tmp_wq)
 		BEGIN
-			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty, @UnitId = UnitId FROM #tmp_wq
+			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty, @UnitId = UnitId, @SrcName = SrcName FROM #tmp_wq
 
-			IF EXISTS(SELECT *FROM Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code)
+			IF EXISTS(SELECT * FROM Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code AND UnitId = @UnitId AND Src = @SrcName)
 			BEGIN
 				UPDATE Inventory.WarehouseQuantity SET QtyOnOrder -= @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
 
-				DELETE Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code AND UnitId = @UnitId
+				DELETE Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code AND UnitId = @UnitId AND Src = @SrcName
 			END
-			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId
+			DELETE #tmp_wq WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND UnitId = @UnitId AND SrcName = @SrcName
 		END
 	END
 
@@ -13525,7 +13768,7 @@ BEGIN TRY
 		BEGIN
 			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty, @UnitId = UnitId FROM #tmp_wq
 
-			IF EXISTS(SELECT *FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @WHId AND ItemId = @ItemId)
+			IF EXISTS(SELECT * FROM Inventory.WarehouseQuantity WHERE WarehouseCode = @WHId AND ItemId = @ItemId)
 			BEGIN
 				UPDATE Inventory.WarehouseQuantity SET QtyOnHand += @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
 			END
@@ -13544,7 +13787,7 @@ BEGIN TRY
 		BEGIN
 			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @Qty = BaseQty, @UnitId = UnitId FROM #tmp_wq
 
-			IF EXISTS(SELECT *FROM Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code)
+			IF EXISTS(SELECT * FROM Inventory.StockMutation WHERE WarehouseCode = @WHId AND ItemId = @ItemId AND RefCode1 = @code)
 			BEGIN
 				UPDATE Inventory.WarehouseQuantity SET QtyOnHand -= @Qty, UpdatedDate = dbo.udf_current_local_time() WHERE WarehouseCode = @WHId AND ItemId = @ItemId
 
@@ -13962,7 +14205,7 @@ BEGIN TRY
 	),
 	cte_base_qty_transit AS (
 		SELECT do_d.Id,
-		CASE WHEN uom_c.IsBaseUnit = 1 THEN do_d.Qty
+			CASE WHEN uom_c.IsBaseUnit = 1 THEN do_d.Qty
 				ELSE do_d.Qty * (
 					SELECT EXP(SUM(LOG(Conversion)))
 					FROM Inventory.UoMConversion
@@ -13977,9 +14220,26 @@ BEGIN TRY
 			AND uom_c.Id = do_d.UnitId
 		WHERE do_h.Mark = 'A'
 	),
+	 cte_base_qty_transit_free AS (  
+		SELECT do_d.Id,  
+			CASE WHEN uom_c.IsBaseUnit = 1 THEN do_d.Qty  
+				ELSE do_d.Qty * (  
+					SELECT EXP(SUM(LOG(Conversion)))  
+					FROM Inventory.UoMConversion  
+					WHERE UomId = uom_c.UomId  
+					AND Seq <= uom_c.Seq  
+				) END AS BaseQty  
+		FROM Sales.SalesDeliveryDetailFreeGood do_d  
+		LEFT JOIN Sales.SalesDeliveryHeader do_h  
+			ON do_h.Code = do_d.Code  
+		LEFT JOIN Inventory.UoMConversion uom_c  
+			ON uom_c.UomId = do_d.UomId  
+		AND uom_c.Id = do_d.UnitId  
+		WHERE do_h.Mark = 'A'  
+	),
 	cte_on_transit AS (  
 		SELECT sm.WarehouseCode, sm.ItemId, 
-		ISNULL(SUM(do_d.BaseQty), CAST(0 as decimal(19,8))) AS TotalBaseQty
+		ISNULL(SUM(do_d.BaseQty), CAST(0 as decimal(19,8))) + ISNULL(SUM(do_df.BaseQty), CAST(0 as decimal(19,8))) AS TotalBaseQty
 		FROM (
 			SELECT *
 			FROM Inventory.StockMutation
@@ -13987,6 +14247,8 @@ BEGIN TRY
 		) sm
 		LEFT JOIN cte_base_qty_transit do_d
 			ON do_d.Id = sm.RefDetailId1 AND sm.Src = 'DO'
+		LEFT JOIN cte_base_qty_transit_free do_df  
+			ON do_df.Id = sm.RefDetailId1 AND sm.Src = 'DOF'
 		GROUP BY sm.WarehouseCode, sm.ItemId
 	)  
 
@@ -14033,9 +14295,9 @@ BEGIN TRY
 	DECLARE @QtyRP decimal(19,8)  
 	DECLARE @QtyOTS decimal(19,8) 
 
-	IF EXISTS(SELECT *FROM #tmp_dt)  
+	IF EXISTS(SELECT * FROM #tmp_dt)  
 	BEGIN  
-		WHILE EXISTS(SELECT *FROM #tmp_dt)  
+		WHILE EXISTS(SELECT * FROM #tmp_dt)  
 		BEGIN  
 			SELECT TOP 1 @WHId = WarehouseCode, @ItemId = ItemId, @QtyOH = QtyOnHand, @QtyOI = QtyOnIndent, @QtyOO = QtyOnOrder, @QtyOT = QtyOnTransfer, @QtyRP = QtyReorderPoint, @QtyOTS = QtyOnTransit FROM #tmp_dt  
 			--Update Data  
@@ -14068,8 +14330,16 @@ END CATCH";
             sql = @"ALTER TABLE [Finance].[GeneralCashBankDetail] NOCHECK CONSTRAINT [FK_GeneralCashBankDetail_CashBankType_Type]";
             migrationBuilder.Sql(sql);
 
+            // Disabling constraints foreign key FK_PurchaseOrderDetail_PurchaseOrderHeader_Code
+            sql = @"ALTER TABLE [Purchasing].[PurchaseOrderDetail] NOCHECK CONSTRAINT [FK_PurchaseOrderDetail_PurchaseOrderHeader_Code]";
+            migrationBuilder.Sql(sql);
+
             // Disabling constraints foreign key FK_PurchaseOrderDetail_Tax_TaxId
             sql = @"ALTER TABLE [Purchasing].[PurchaseOrderDetail] NOCHECK CONSTRAINT [FK_PurchaseOrderDetail_Tax_TaxId]";
+            migrationBuilder.Sql(sql);
+
+            // Disabling constraints foreign key FK_PurchaseReceiveDetail_PurchaseReceiveHeader_Code
+            sql = @"ALTER TABLE [Purchasing].[PurchaseReceiveDetail] NOCHECK CONSTRAINT [FK_PurchaseReceiveDetail_PurchaseReceiveHeader_Code]";
             migrationBuilder.Sql(sql);
 
             // Disabling constraints foreign key FK_PurchaseReceiveDetail_Tax_TaxId
@@ -15112,6 +15382,10 @@ END CATCH";
             sql = @"DROP PROCEDURE [dbo].[sp_get_cb_print_data]";
             migrationBuilder.Sql(sql);
 
+            // Drop procedure dbo.sp_get_do_multi_print_data
+            sql = @"DROP PROCEDURE [dbo].[sp_get_do_multi_print_data]";
+            migrationBuilder.Sql(sql);
+
             // Drop procedure dbo.sp_get_do_print_data
             sql = @"DROP PROCEDURE [dbo].[sp_get_do_print_data]";
             migrationBuilder.Sql(sql);
@@ -15136,6 +15410,10 @@ END CATCH";
             sql = @"DROP PROCEDURE [dbo].[sp_get_rcv_print_data]";
             migrationBuilder.Sql(sql);
 
+            // Drop procedure dbo.sp_get_si_multi_print_data
+            sql = @"DROP PROCEDURE [dbo].[sp_get_si_multi_print_data]";
+            migrationBuilder.Sql(sql);
+
             // Drop procedure dbo.sp_get_si_print_data
             sql = @"DROP PROCEDURE [dbo].[sp_get_si_print_data]";
             migrationBuilder.Sql(sql);
@@ -15158,6 +15436,10 @@ END CATCH";
 
             // Drop procedure dbo.sp_get_vo_cust_print_data
             sql = @"DROP PROCEDURE [dbo].[sp_get_vo_cust_print_data]";
+            migrationBuilder.Sql(sql);
+
+            // Drop procedure dbo.sp_get_vo_inv_print_data
+            sql = @"DROP PROCEDURE [dbo].[sp_get_vo_inv_print_data]";
             migrationBuilder.Sql(sql);
 
             // Drop procedure dbo.sp_restore_cash_bank_transaction

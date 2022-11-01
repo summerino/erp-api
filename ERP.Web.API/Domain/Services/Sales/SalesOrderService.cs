@@ -40,7 +40,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
 
         if (fullReceived.HasValue)
         {
-            data = (bool) fullReceived
+            data = (bool)fullReceived
                 ? data.Where(x => x.Qty <= x.QtyDlv)
                 : data.Where(x => x.Qty > x.QtyDlv);
         }
@@ -50,16 +50,23 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
 
     public List<dynamic> GetRelatedTransactions(string code)
     {
-        var data = from dlv in Db.SalesDeliveryHeaders
-            where dlv.TransCode == code && dlv.Mark != "V"
-            select new { dlv.Code, dlv.Date, dlv.Mark };
+        var data = (from dlv in Db.SalesDeliveryHeaders
+                    where dlv.TransCode == code && dlv.Mark != "V"
+                    select new { dlv.Code, dlv.Date, dlv.Mark }).ToList();
+
+        var sdpData = (from sdp in Db.CreditMemos
+                       where sdp.TransCode == code && sdp.Mark != "V"
+                       select new { sdp.Code, sdp.Date, sdp.Mark }).ToList();
+
+        if (sdpData.Count > 0)
+            data.AddRange(sdpData);
 
         return data.ToDynamicList();
     }
 
     public IEnumerable<VwSalesOrderHeader> GetInCompleteInvoiceData(string searchBy, string search, string invCode)
     {
-        var data = Db.VwSalesOrderHeaders.Where(x => new[] { "A", "PS" }.Contains(x.Mark));
+        var data = Db.VwSalesOrderHeaders.Where(x => new[] { "A", "PS", "CMP" }.Contains(x.Mark));
 
         if (!string.IsNullOrEmpty(search))
         {
@@ -100,9 +107,16 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
         using var transaction = Db.Database.BeginTransaction();
         try
         {
+            var (invalid, invalidMessage) = IsSaveAndDateInvalid(data);
+            if (invalid)
+            {
+                result.Message = invalidMessage;
+                return result;
+            }
+
             // Checking order qty is excess or not
             var checkQty = Db.SystemParameters.FirstOrDefault(x => x.Code == "DEF_SLS_ORD_CHECK_QTY")?.Value == "1";
-                
+
             if (checkQty && IsQtyExcess(data.WarehouseCode, data.ItemDetails, null))
             {
                 result.Message = "Data order penjualan tidak bisa disimpan karena qty yang dipesan lebih besar dari qty yang tersedia.";
@@ -471,107 +485,6 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                                     }
                                 }
                             }
-                            else if (applyTo == 2)
-                            {
-                                switch (detailPromo.PromoType)
-                                {
-                                    case 4:
-                                        // Apply to Barang - Promo Method Payment Term
-                                        var tierData = detailTierPromo.FirstOrDefault(x => x.PaymentTermId == data.PaymentTermId);
-                                        if (tierData != null)
-                                        {
-                                            var curUom = uomConversions.FirstOrDefault(x => x.Id == item.UnitId);
-                                            var itemUom = uomConversions.FirstOrDefault(x => x.Id == ctItem.UomSellId);
-                                            var discAmount = 0m;
-                                            if (curUom.Seq > itemUom.Seq)
-                                            {
-                                                var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= curUom.Seq && x.Seq > itemUom.Seq).Select(x => x.Conversion).ToList();
-                                                var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
-                                                discAmount = tierData.IsPercentage ?
-                                                        item.UnitPrice * (tierData.Value / 100) :
-                                                        tierData.Value * multipliedQty;
-                                            }
-                                            else if (curUom.Seq < itemUom.Seq)
-                                            {
-                                                var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq > curUom.Seq && x.Seq <= itemUom.Seq).Select(x => x.Conversion).ToList();
-                                                var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
-                                                discAmount = tierData.IsPercentage ?
-                                                        item.UnitPrice * (tierData.Value / 100) :
-                                                        tierData.Value / multipliedQty;
-                                            }
-                                            else
-                                            {
-                                                discAmount = tierData.IsPercentage ?
-                                                        item.UnitPrice * (tierData.Value / 100) :
-                                                        tierData.Value;
-                                            }
-
-                                            discPromo.Add(new SalesOrderDetailDiscount
-                                            {
-                                                PromoCode = dataPromo.Code,
-                                                PromoDetailId = detailPromo.Id,
-                                                Name = dataPromo.Name,
-                                                //promoMethod: 1,
-                                                Value = tierData.IsPercentage ?
-                                                tierData.Value :
-                                                discAmount,
-                                                //nettPrice: 0,
-                                                CoaCode = dataPromo.CoaCost,
-                                                Amount = discAmount,
-                                                //fromPromo: true,
-                                                IsPercentage = detailPromo.IsPercentage
-                                            });
-                                        }
-                                        break;
-                                    case 5:
-                                        // Apply to Faktur - Promo Method Nilai Trans
-                                        var tierData5 = detailTierPromo.FirstOrDefault(x => data.SubTotal >= x.FromQty && data.SubTotal <= x.ToQty);
-                                        if (tierData5 != null)
-                                        {
-                                            var curUom = uomConversions.FirstOrDefault(x => x.Id == item.UnitId);
-                                            var itemUom = uomConversions.FirstOrDefault(x => x.Id == ctItem.UomSellId);
-                                            var discAmount = 0m;
-                                            if (curUom.Seq > itemUom.Seq)
-                                            {
-                                                var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= curUom.Seq && x.Seq > itemUom.Seq).Select(x => x.Conversion).ToList();
-                                                var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
-                                                discAmount = tierData5.IsPercentage ?
-                                                        item.UnitPrice * (tierData5.Value / 100) :
-                                                        tierData5.Value * multipliedQty;
-                                            }
-                                            else if (curUom.Seq < itemUom.Seq)
-                                            {
-                                                var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq > curUom.Seq && x.Seq <= itemUom.Seq).Select(x => x.Conversion).ToList();
-                                                var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
-                                                discAmount = tierData5.IsPercentage ?
-                                                        item.UnitPrice * (tierData5.Value / 100) :
-                                                        tierData5.Value / multipliedQty;
-                                            }
-                                            else
-                                            {
-                                                discAmount = tierData5.IsPercentage ?
-                                                        item.UnitPrice * (tierData5.Value / 100) :
-                                                        tierData5.Value;
-                                            }
-                                            discPromo.Add(new SalesOrderDetailDiscount
-                                            {
-                                                PromoCode = dataPromo.Code,
-                                                PromoDetailId = detailPromo.Id,
-                                                Name = dataPromo.Name,
-                                                //promoMethod: 1,
-                                                Value = tierData5.IsPercentage ?
-                                                tierData5.Value :
-                                                discAmount,
-                                                //nettPrice: 0,
-                                                CoaCode = dataPromo.CoaCost,
-                                                Amount = discAmount,
-                                                //fromPromo: true,
-                                                IsPercentage = detailPromo.IsPercentage
-                                            });
-                                        }
-                                        break;
-                                }
-                            }
                         }
                     }
                 }
@@ -685,15 +598,18 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                             CoaCode = discItem.CoaCode
                         });
 
-                        if(!soPromo.Any(x => x.PromoCode == discItem.PromoCode))
+                        if (!soPromo.Any(x => x.PromoCode == discItem.PromoCode))
                         {
-                            soPromo.Add(new SalesOrderPromo
+                            if (discItem.PromoCode != null)
                             {
-                                Code = newCode,
-                                LineNo = (short)(soPromo.Count + 1),
-                                PromoCode = discItem.PromoCode,
-                                IsActive = true
-                            });
+                                soPromo.Add(new SalesOrderPromo
+                                {
+                                    Code = newCode,
+                                    LineNo = (short)(soPromo.Count + 1),
+                                    PromoCode = discItem.PromoCode,
+                                    IsActive = true
+                                });
+                            }
                         }
                     }
                     Db.SaveChanges();
@@ -706,6 +622,12 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
 
                 if (bonusPromo.Any())
                 {
+                    if (checkQty && IsQtyExcessFree(data.WarehouseCode, bonusPromo, null))
+                    {
+                        result.Message = "Data order penjualan tidak bisa disimpan karena qty bonus yang dipesan lebih besar dari qty yang tersedia.";
+                        return result;
+                    }
+
                     short f = 0;
                     foreach (var freeItem in bonusPromo)
                     {
@@ -739,6 +661,233 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                 }
             }
 
+            if (data.FinalDiscPercent > 0)
+                data.FinalDisc = data.ItemDetails.Sum(x => x.FinalDiscHeader * x.Qty);
+            data.SubTotal = totalDetail.Sum();
+            data.TaxAmount = totalTax.Sum();
+            data.ExemptTaxAmount = totalExemptTax.Sum();
+            data.Dpp = totalDpp.Sum();
+            data.Total = data.SubTotal;
+            foreach (var item in data.ItemDetails)
+            {
+                //Promo
+                var listPromo = promos.Where(x => x.ApplyTo == 1 ||
+                                                  x.Subject.Select(y => y.CustCode).Contains(data.CustCode) ||
+                                                  x.Subject.Select(y => y.CustTypeId).Contains(data.CustTypeId)).ToList();
+
+                List<SalesOrderDetailDiscount> discPromo = new();
+                List<SalesOrderDetailFreeGood> bonusPromo = new();
+                var ctItem = items.FirstOrDefault(j => j.Id == item.ItemId);
+                if (listPromo.Any())
+                {
+                    foreach (var dataPromo in listPromo)
+                    {
+                        var listDetailPromo = Db.PromoDetails.Where(x => x.Code == dataPromo.Code).ToList();
+                        foreach (var detailPromo in listDetailPromo)
+                        {
+                            var detailTierPromo = Db.PromoDetailTiers.Where(x => x.PromoDetailId == detailPromo.Id).ToList();
+                            var applyTo = detailPromo.ApplyTo;
+                            if (applyTo == 2)
+                            {
+                                switch (detailPromo.PromoType)
+                                {
+                                    case 4:
+                                        // Apply to Barang - Promo Method Payment Term
+                                        var tierData = detailTierPromo.FirstOrDefault(x => x.PaymentTermId == data.PaymentTermId);
+                                        if (tierData != null)
+                                        {
+                                            var curUom = uomConversions.FirstOrDefault(x => x.Id == item.UnitId);
+                                            var itemUom = uomConversions.FirstOrDefault(x => x.Id == ctItem.UomSellId);
+                                            var discAmount = tierData.IsPercentage ? data.SubTotal * (tierData.Value / 100) : tierData.Value;
+                                            var prorateDisc = (discAmount / data.SubTotal * (item.Qty * (item.UnitPrice - item.Disc))) / item.Qty;
+
+                                            discPromo.Add(new SalesOrderDetailDiscount
+                                            {
+                                                PromoCode = dataPromo.Code,
+                                                PromoDetailId = detailPromo.Id,
+                                                Name = dataPromo.Name,
+                                                //promoMethod: 1,
+                                                Value = prorateDisc,
+                                                //nettPrice: 0,
+                                                CoaCode = dataPromo.CoaCost,
+                                                Amount = prorateDisc,
+                                                //fromPromo: true,
+                                                IsPercentage = false
+                                            });
+                                        }
+                                        break;
+                                    case 5:
+                                        // Apply to Faktur - Promo Method Nilai Trans
+                                        var tierData5 = detailTierPromo.FirstOrDefault(x => data.SubTotal >= x.FromQty && data.SubTotal <= x.ToQty);
+                                        if (tierData5 != null)
+                                        {
+                                            var curUom = uomConversions.FirstOrDefault(x => x.Id == item.UnitId);
+                                            var itemUom = uomConversions.FirstOrDefault(x => x.Id == ctItem.UomSellId);
+                                            var discAmount = tierData5.IsPercentage ? data.SubTotal * (tierData5.Value / 100) : tierData5.Value;
+                                            var prorateDisc = (discAmount / data.SubTotal * (item.Qty * (item.UnitPrice - item.Disc))) / item.Qty;
+
+                                            discPromo.Add(new SalesOrderDetailDiscount
+                                            {
+                                                PromoCode = dataPromo.Code,
+                                                PromoDetailId = detailPromo.Id,
+                                                Name = dataPromo.Name,
+                                                //promoMethod: 1,
+                                                Value = prorateDisc,
+                                                //nettPrice: 0,
+                                                CoaCode = dataPromo.CoaCost,
+                                                Amount = prorateDisc,
+                                                //fromPromo: true,
+                                                IsPercentage = false
+                                            });
+                                        }
+                                        break;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (discPromo.Any())
+                {
+                    item.Disc += discPromo.Sum(x => x.Amount);
+
+                    var taxData = taxes.FirstOrDefault(x => x.Id == item.TaxId);
+                    var discHeaderProrate = 0m;
+                    var sumDetail = data.ItemDetails.Sum(x => (x.UnitPrice - x.Disc) * x.Qty);
+                    if (data.FinalDiscPercent > 0)
+                    {
+                        var amountPercent = sumDetail * (data.FinalDiscPercent / 100);
+                        discHeaderProrate = amountPercent / sumDetail * (item.Qty * (item.UnitPrice - item.Disc));
+                        discHeaderProrate /= item.Qty;
+                    }
+                    else if (data.FinalDisc > 0)
+                    {
+                        discHeaderProrate = data.FinalDisc / sumDetail * (item.Qty * (item.UnitPrice - item.Disc));
+                        discHeaderProrate /= item.Qty;
+                    }
+
+                    if (data.IncludeTax)
+                    {
+                        item.TaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) - ((item.UnitPrice - item.Disc - discHeaderProrate) / (1 + (taxData.Rate / 100)));
+                        item.ExemptTaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) - ((item.UnitPrice - item.Disc - discHeaderProrate) / (1 + (taxData.ExemptRate / 100)));
+                        item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate;
+                        item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate - item.TaxAmount + item.ExemptTaxAmount;
+                    }
+                    else
+                    {
+                        item.TaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) * (taxData.Rate / 100);
+                        item.ExemptTaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) * (taxData.ExemptRate / 100);
+                        item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate + item.TaxAmount - item.ExemptTaxAmount;
+                        item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate;
+                    }
+
+                    if (item.NettPrice < 0)
+                    {
+                        result.Message = $"Data order penjualan tidak bisa disimpan karena nilai bersih barang {ctItem.Initial} minus.";
+                        return result;
+                    }
+
+                    item.FinalDiscHeader = discHeaderProrate;
+                    item.Total = item.Qty * item.NettPrice;
+                    totalDetail.Add(item.Total);
+                    totalTax.Add(item.Qty * item.TaxAmount);
+                    totalExemptTax.Add(item.Qty * item.ExemptTaxAmount);
+                    totalDpp.Add(item.Qty * item.Dpp);
+
+                    var soDetail = Db.SalesOrderDetails.FirstOrDefault(x => x.Code == newCode && x.ItemId == item.ItemId && x.UnitId == item.UnitId);
+                    var orderDetail = new SalesOrderDetail();
+                    if (soDetail == null)
+                    {
+                        orderDetail = new SalesOrderDetail
+                        {
+                            Code = newCode,
+                            LineNo = ++i,
+                            ItemId = item.ItemId,
+                            UomId = item.UomId,
+                            UnitId = item.UnitId,
+                            Qty = item.Qty,
+                            Length = item.Length,
+                            Width = item.Width,
+                            Height = item.Height,
+                            Weight = item.Weight,
+                            DimensionMeasurement = item.DimensionMeasurement,
+                            WeightMeasurement = item.WeightMeasurement,
+                            QtyDlv = 0,
+                            UnitPrice = item.UnitPrice,
+                            Disc = item.Disc,
+                            FinalDiscHeader = item.FinalDiscHeader,
+                            TaxId = item.TaxId,
+                            TaxAmount = item.TaxAmount,
+                            ExemptTaxAmount = item.ExemptTaxAmount,
+                            NettPrice = item.NettPrice,
+                            Total = item.Total,
+                            Dpp = item.Dpp,
+                            Notes = item.Notes,
+                            CoaInventory = item.CoaInventory,
+                            CoaCogs = item.CoaCogs,
+                            CoaSls = item.CoaSls,
+                            CoaSlsDisc = item.CoaSlsDisc,
+                            CoaSlsReturn = item.CoaSlsReturn,
+                            CoaTransit = string.IsNullOrEmpty(item.CoaTransit) ? Db.SystemParameters.FirstOrDefault(x => x.Code == "TRANSIT_ITEM_COA")?.Value ?? "" : item.CoaTransit
+                        };
+
+                        Db.SalesOrderDetails.Add(orderDetail);
+                    }
+                    else
+                    {
+                        totalDetail.Add(-soDetail.Total);
+                        totalTax.Add(-(soDetail.Qty * soDetail.TaxAmount));
+                        totalExemptTax.Add(-(soDetail.Qty * soDetail.ExemptTaxAmount));
+                        totalDpp.Add(-(soDetail.Qty * soDetail.Dpp));
+
+                        soDetail.Disc = item.Disc;
+                        soDetail.FinalDiscHeader = item.FinalDiscHeader;
+                        soDetail.TaxId = item.TaxId;
+                        soDetail.TaxAmount = item.TaxAmount;
+                        soDetail.ExemptTaxAmount = item.ExemptTaxAmount;
+                        soDetail.NettPrice = item.NettPrice;
+                        soDetail.Total = item.Total;
+                        soDetail.Dpp = item.Dpp;
+
+                        Db.SalesOrderDetails.Update(soDetail);
+                    }
+
+                    Db.SaveChanges();
+                    short d = 0;
+                    foreach (var discItem in discPromo)
+                    {
+                        Db.SalesOrderDetailDiscounts.Add(new SalesOrderDetailDiscount
+                        {
+                            Code = newCode,
+                            OrderDetailId = soDetail == null ? orderDetail.Id : soDetail.Id,
+                            LineNo = ++d,
+                            PromoCode = discItem.PromoCode,
+                            PromoDetailId = discItem.PromoDetailId,
+                            Name = discItem.Name,
+                            IsPercentage = discItem.IsPercentage,
+                            Value = discItem.Value,
+                            Amount = discItem.Amount,
+                            CoaCode = discItem.CoaCode
+                        });
+
+                        if (!soPromo.Any(x => x.PromoCode == discItem.PromoCode))
+                        {
+                            if (discItem.PromoCode != null)
+                            {
+                                soPromo.Add(new SalesOrderPromo
+                                {
+                                    Code = newCode,
+                                    LineNo = (short)(soPromo.Count + 1),
+                                    PromoCode = discItem.PromoCode,
+                                    IsActive = true
+                                });
+                            }
+                        }
+                    }
+                    Db.SaveChanges();
+                }
+            }
+
             if (soPromo.Any())
                 Db.SalesOrderPromos.AddRange(soPromo);
 
@@ -752,7 +901,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
             Db.SalesOrderHeaders.Add(data);
 
             // Update Credit Used
-            if(!isOverLimit)
+            if (!isOverLimit)
                 UpdateCreditUsed(data.CustCode, data.Total);
 
             if (data.IsSoDlv && !isOverLimit)
@@ -789,10 +938,12 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
 
                 Db.SalesDeliveryHeaders.Add(newSdlvData);
 
+                var listSDID = new List<dynamic>();
+
                 short j = 0;
                 foreach (var item in data.ItemDetails)
                 {
-                    Db.SalesDeliveryDetails.Add(new SalesDeliveryDetail
+                    var sdDetail = new SalesDeliveryDetail
                     {
                         Code = newDlvCode,
                         LineNo = ++j,
@@ -815,6 +966,30 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                         NettPrice = item.NettPrice,
                         Total = item.Total,
                         Dpp = item.Dpp
+                    };
+
+                    Db.SalesDeliveryDetails.Add(sdDetail);
+                    Db.SaveChanges();
+
+                    listSDID.Add(new { Id = sdDetail.Id, SoId = sdDetail.SoDetailId });
+                }
+
+                var soFreeList = Db.SalesOrderDetailFreeGoods.Where(x => x.Code == newCode).ToList();
+
+                foreach (var item in soFreeList)
+                {
+                    Db.SalesDeliveryDetailFreeGoods.Add(new SalesDeliveryDetailFreeGood
+                    {
+                        Code = newDlvCode,
+                        DlvOrderDetailId = listSDID.First(x => x.SoId == item.OrderDetailId).Id,
+                        LineNo = 1,
+                        PromoCode = item.PromoCode,
+                        ItemId = item.ItemId,
+                        UomId = item.UomId,
+                        UnitId = item.UnitId,
+                        Qty = item.Qty,
+                        UnitPrice = item.UnitPrice,
+                        CoaCode = item.CoaCode
                     });
                 }
             }
@@ -875,10 +1050,12 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
 
                 Db.SalesInvoiceHeaders.Add(newSinvData);
 
+                var listSDID = new List<dynamic>();
+
                 short j = 0;
                 foreach (var item in data.ItemDetails)
                 {
-                    Db.SalesDeliveryDetails.Add(new SalesDeliveryDetail
+                    var sdDetail = new SalesDeliveryDetail
                     {
                         Code = newDlvCode,
                         LineNo = ++j,
@@ -901,6 +1078,30 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                         NettPrice = item.NettPrice,
                         Total = item.Total,
                         Dpp = item.Dpp
+                    };
+
+                    Db.SalesDeliveryDetails.Add(sdDetail);
+                    Db.SaveChanges();
+
+                    listSDID.Add(new { Id = sdDetail.Id, SoId = sdDetail.SoDetailId });
+                }
+
+                var soFreeList = Db.SalesOrderDetailFreeGoods.Where(x => x.Code == newCode).ToList();
+
+                foreach (var item in soFreeList)
+                {
+                    Db.SalesDeliveryDetailFreeGoods.Add(new SalesDeliveryDetailFreeGood
+                    {
+                        Code = newDlvCode,
+                        DlvOrderDetailId = listSDID.First(x => x.SoId == item.OrderDetailId).Id,
+                        LineNo = 1,
+                        PromoCode = item.PromoCode,
+                        ItemId = item.ItemId,
+                        UomId = item.UomId,
+                        UnitId = item.UnitId,
+                        Qty = item.Qty,
+                        UnitPrice = item.UnitPrice,
+                        CoaCode = item.CoaCode
                     });
                 }
 
@@ -946,7 +1147,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                         newInvCode, data.Date, dlvData?.Code);
                 }
             }
-                
+
             transaction.Commit();
         }
         catch (Exception ex)
@@ -970,6 +1171,13 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
         using var transaction = Db.Database.BeginTransaction();
         try
         {
+            var (invalid, invalidMessage) = IsSaveAndDateInvalid(data);
+            if (invalid)
+            {
+                result.Message = invalidMessage;
+                return result;
+            }
+
             // Checking mark header data
             if (Db.SalesOrderHeaders.Any(x => x.Code == data.Code && new[] { "V", "CLS" }.Contains(x.Mark)))
             {
@@ -1364,107 +1572,6 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                                     }
                                 }
                             }
-                            else if (applyTo == 2)
-                            {
-                                switch (detailPromo.PromoType)
-                                {
-                                    case 4:
-                                        // Apply to Barang - Promo Method Payment Term
-                                        var tierData = detailTierPromo.FirstOrDefault(x => x.PaymentTermId == data.PaymentTermId);
-                                        if (tierData != null)
-                                        {
-                                            var curUom = uomConversions.FirstOrDefault(x => x.Id == item.UnitId);
-                                            var itemUom = uomConversions.FirstOrDefault(x => x.Id == ctItem.UomSellId);
-                                            var discAmount = 0m;
-                                            if (curUom.Seq > itemUom.Seq)
-                                            {
-                                                var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= curUom.Seq && x.Seq > itemUom.Seq).Select(x => x.Conversion).ToList();
-                                                var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
-                                                discAmount = tierData.IsPercentage ?
-                                                        item.UnitPrice * (tierData.Value / 100) :
-                                                        tierData.Value * multipliedQty;
-                                            }
-                                            else if (curUom.Seq < itemUom.Seq)
-                                            {
-                                                var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq > curUom.Seq && x.Seq <= itemUom.Seq).Select(x => x.Conversion).ToList();
-                                                var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
-                                                discAmount = tierData.IsPercentage ?
-                                                        item.UnitPrice * (tierData.Value / 100) :
-                                                        tierData.Value / multipliedQty;
-                                            }
-                                            else
-                                            {
-                                                discAmount = tierData.IsPercentage ?
-                                                        item.UnitPrice * (tierData.Value / 100) :
-                                                        tierData.Value;
-                                            }
-
-                                            discPromo.Add(new SalesOrderDetailDiscount
-                                            {
-                                                PromoCode = dataPromo.Code,
-                                                PromoDetailId = detailPromo.Id,
-                                                Name = dataPromo.Name,
-                                                //promoMethod: 1,
-                                                Value = tierData.IsPercentage ?
-                                                tierData.Value :
-                                                discAmount,
-                                                //nettPrice: 0,
-                                                CoaCode = dataPromo.CoaCost,
-                                                Amount = discAmount,
-                                                //fromPromo: true,
-                                                IsPercentage = detailPromo.IsPercentage
-                                            });
-                                        }
-                                        break;
-                                    case 5:
-                                        // Apply to Faktur - Promo Method Nilai Trans
-                                        var tierData5 = detailTierPromo.FirstOrDefault(x => data.SubTotal >= x.FromQty && data.SubTotal <= x.ToQty);
-                                        if (tierData5 != null)
-                                        {
-                                            var curUom = uomConversions.FirstOrDefault(x => x.Id == item.UnitId);
-                                            var itemUom = uomConversions.FirstOrDefault(x => x.Id == ctItem.UomSellId);
-                                            var discAmount = 0m;
-                                            if (curUom.Seq > itemUom.Seq)
-                                            {
-                                                var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= curUom.Seq && x.Seq > itemUom.Seq).Select(x => x.Conversion).ToList();
-                                                var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
-                                                discAmount = tierData5.IsPercentage ?
-                                                        item.UnitPrice * (tierData5.Value / 100) :
-                                                        tierData5.Value * multipliedQty;
-                                            }
-                                            else if (curUom.Seq < itemUom.Seq)
-                                            {
-                                                var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq > curUom.Seq && x.Seq <= itemUom.Seq).Select(x => x.Conversion).ToList();
-                                                var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
-                                                discAmount = tierData5.IsPercentage ?
-                                                        item.UnitPrice * (tierData5.Value / 100) :
-                                                        tierData5.Value / multipliedQty;
-                                            }
-                                            else
-                                            {
-                                                discAmount = tierData5.IsPercentage ?
-                                                        item.UnitPrice * (tierData5.Value / 100) :
-                                                        tierData5.Value;
-                                            }
-                                            discPromo.Add(new SalesOrderDetailDiscount
-                                            {
-                                                PromoCode = dataPromo.Code,
-                                                PromoDetailId = detailPromo.Id,
-                                                Name = dataPromo.Name,
-                                                //promoMethod: 1,
-                                                Value = tierData5.IsPercentage ?
-                                                tierData5.Value :
-                                                discAmount,
-                                                //nettPrice: 0,
-                                                CoaCode = dataPromo.CoaCost,
-                                                Amount = discAmount,
-                                                //fromPromo: true,
-                                                IsPercentage = detailPromo.IsPercentage
-                                            });
-                                        }
-                                        break;
-                                }
-                            }
                         }
                     }
                 }
@@ -1632,26 +1739,33 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
 
                                 if (!soPromo.Any(x => x.PromoCode == discItem.PromoCode))
                                 {
-                                    soPromo.Add(new SalesOrderPromo
+                                    if (discItem.PromoCode != null)
                                     {
-                                        Code = data.Code,
-                                        LineNo = (short)(soPromo.Count + 1),
-                                        PromoCode = discItem.PromoCode,
-                                        IsActive = true
-                                    });
+                                        soPromo.Add(new SalesOrderPromo
+                                        {
+                                            Code = data.Code,
+                                            LineNo = (short)(soPromo.Count + 1),
+                                            PromoCode = discItem.PromoCode,
+                                            IsActive = true
+                                        });
+                                    }
                                 }
                             }
                             else
                             {
                                 if (!soPromo.Any(x => x.PromoCode == discItem.PromoCode))
                                 {
-                                    soPromo.Add(new SalesOrderPromo
+                                    if (discItem.PromoCode != null)
                                     {
-                                        Code = data.Code,
-                                        LineNo = (short)(soPromo.Count + 1),
-                                        PromoCode = discItem.PromoCode,
-                                        IsActive = false
-                                    });
+
+                                        soPromo.Add(new SalesOrderPromo
+                                        {
+                                            Code = data.Code,
+                                            LineNo = (short)(soPromo.Count + 1),
+                                            PromoCode = discItem.PromoCode,
+                                            IsActive = false
+                                        });
+                                    }
                                 }
                             }
                         }
@@ -1674,6 +1788,12 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
 
                     if (bonusPromo.Any())
                     {
+                        if (checkQty && IsQtyExcessFree(data.WarehouseCode, bonusPromo, data.Code))
+                        {
+                            result.Message = "Data order penjualan tidak bisa disimpan karena qty bonus yang dipesan lebih besar dari qty yang tersedia.";
+                            return result;
+                        }
+
                         short f = 0;
                         foreach (var freeItem in bonusPromo)
                         {
@@ -1735,6 +1855,280 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                 }
             }
 
+            if (data.FinalDiscPercent > 0)
+                data.FinalDisc = data.ItemDetails.Sum(x => x.FinalDiscHeader * x.Qty);
+            data.SubTotal = totalDetail.Sum();
+            data.TaxAmount = totalTax.Sum();
+            data.ExemptTaxAmount = totalExemptTax.Sum();
+            data.Dpp = totalDpp.Sum();
+            data.Total = data.SubTotal;
+
+            foreach (var item in data.ItemDetails)
+            {
+                //Promo
+                var listPromo = promos.Where(x => x.ApplyTo == 1 ||
+                                                  x.Subject.Select(y => y.CustCode).Contains(data.CustCode) ||
+                                                  x.Subject.Select(y => y.CustTypeId).Contains(data.CustTypeId)).ToList();
+
+                List<SalesOrderDetailDiscount> discPromo = new();
+                List<SalesOrderDetailFreeGood> bonusPromo = new();
+                var ctItem = items.FirstOrDefault(j => j.Id == item.ItemId);
+                if (listPromo.Any())
+                {
+                    foreach (var dataPromo in listPromo)
+                    {
+                        var listDetailPromo = Db.PromoDetails.Where(x => x.Code == dataPromo.Code).ToList();
+                        foreach (var detailPromo in listDetailPromo)
+                        {
+                            var detailTierPromo = Db.PromoDetailTiers.Where(x => x.PromoDetailId == detailPromo.Id).ToList();
+                            var applyTo = detailPromo.ApplyTo;
+                            if (applyTo == 2)
+                            {
+                                switch (detailPromo.PromoType)
+                                {
+                                    case 4:
+                                        // Apply to Barang - Promo Method Payment Term
+                                        var tierData = detailTierPromo.FirstOrDefault(x => x.PaymentTermId == data.PaymentTermId);
+                                        if (tierData != null)
+                                        {
+                                            var curUom = uomConversions.FirstOrDefault(x => x.Id == item.UnitId);
+                                            var itemUom = uomConversions.FirstOrDefault(x => x.Id == ctItem.UomSellId);
+                                            var discAmount = tierData.IsPercentage ? data.SubTotal * (tierData.Value / 100) : tierData.Value;
+                                            var prorateDisc = (discAmount / data.SubTotal * (item.Qty * (item.UnitPrice - item.Disc))) / item.Qty;
+
+                                            discPromo.Add(new SalesOrderDetailDiscount
+                                            {
+                                                PromoCode = dataPromo.Code,
+                                                PromoDetailId = detailPromo.Id,
+                                                Name = dataPromo.Name,
+                                                //promoMethod: 1,
+                                                Value = prorateDisc,
+                                                //nettPrice: 0,
+                                                CoaCode = dataPromo.CoaCost,
+                                                Amount = prorateDisc,
+                                                //fromPromo: true,
+                                                IsPercentage = false
+                                            });
+                                        }
+                                        break;
+                                    case 5:
+                                        // Apply to Faktur - Promo Method Nilai Trans
+                                        var tierData5 = detailTierPromo.FirstOrDefault(x => data.SubTotal >= x.FromQty && data.SubTotal <= x.ToQty);
+                                        if (tierData5 != null)
+                                        {
+                                            var curUom = uomConversions.FirstOrDefault(x => x.Id == item.UnitId);
+                                            var itemUom = uomConversions.FirstOrDefault(x => x.Id == ctItem.UomSellId);
+                                            var discAmount = tierData5.IsPercentage ? data.SubTotal * (tierData5.Value / 100) : tierData5.Value;
+                                            var prorateDisc = (discAmount / data.SubTotal * (item.Qty * (item.UnitPrice - item.Disc))) / item.Qty;
+
+                                            discPromo.Add(new SalesOrderDetailDiscount
+                                            {
+                                                PromoCode = dataPromo.Code,
+                                                PromoDetailId = detailPromo.Id,
+                                                Name = dataPromo.Name,
+                                                //promoMethod: 1,
+                                                Value = prorateDisc,
+                                                //nettPrice: 0,
+                                                CoaCode = dataPromo.CoaCost,
+                                                Amount = prorateDisc,
+                                                //fromPromo: true,
+                                                IsPercentage = false
+                                            });
+                                        }
+                                        break;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (discPromo.Any())
+                {
+                    foreach (var discItem in discPromo)
+                    {
+                        if (!data.ListPromo.Select(x => x.PromoCode).Contains(discItem.PromoCode)
+                            || discItem.PromoCode == null
+                            || data.ListPromo.Where(x => x.IsActive).Select(x => x.PromoCode).Contains(discItem.PromoCode))
+                        {
+                            item.Disc += discItem.Amount;
+                        }
+                    }
+
+                    var taxData = taxes.FirstOrDefault(x => x.Id == item.TaxId);
+                    var discHeaderProrate = 0m;
+                    var sumDetail = data.ItemDetails.Sum(x => (x.UnitPrice - x.Disc) * x.Qty);
+                    if (data.FinalDiscPercent > 0)
+                    {
+                        var amountPercent = sumDetail * (data.FinalDiscPercent / 100);
+                        discHeaderProrate = amountPercent / sumDetail * (item.Qty * (item.UnitPrice - item.Disc));
+                        discHeaderProrate /= item.Qty;
+                    }
+                    else if (data.FinalDisc > 0)
+                    {
+                        discHeaderProrate = data.FinalDisc / sumDetail * (item.Qty * (item.UnitPrice - item.Disc));
+                        discHeaderProrate /= item.Qty;
+                    }
+
+                    if (data.IncludeTax)
+                    {
+                        item.TaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) - ((item.UnitPrice - item.Disc - discHeaderProrate) / (1 + (taxData.Rate / 100)));
+                        item.ExemptTaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) - ((item.UnitPrice - item.Disc - discHeaderProrate) / (1 + (taxData.ExemptRate / 100)));
+                        item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate;
+                        item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate - item.TaxAmount + item.ExemptTaxAmount;
+                    }
+                    else
+                    {
+                        item.TaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) * (taxData.Rate / 100);
+                        item.ExemptTaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) * (taxData.ExemptRate / 100);
+                        item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate + item.TaxAmount - item.ExemptTaxAmount;
+                        item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate;
+                    }
+
+                    if (item.NettPrice < 0)
+                    {
+                        result.Message = $"Data order penjualan tidak bisa disimpan karena nilai bersih barang {ctItem.Initial} minus.";
+                        return result;
+                    }
+
+                    item.FinalDiscHeader = discHeaderProrate;
+                    item.Total = item.Qty * item.NettPrice;
+                    totalDetail.Add(item.Total);
+                    totalTax.Add(item.Qty * item.TaxAmount);
+                    totalExemptTax.Add(item.Qty * item.ExemptTaxAmount);
+                    totalDpp.Add(item.Qty * item.Dpp);
+
+                    var soDetail = Db.SalesOrderDetails.FirstOrDefault(x => x.Code == data.Code && x.ItemId == item.ItemId && x.UnitId == item.UnitId);
+                    var orderDetail = new SalesOrderDetail();
+                    if (soDetail == null)
+                    {
+                        orderDetail = new SalesOrderDetail
+                        {
+                            Code = data.Code,
+                            LineNo = ++i,
+                            ItemId = item.ItemId,
+                            UomId = item.UomId,
+                            UnitId = item.UnitId,
+                            Qty = item.Qty,
+                            Length = item.Length,
+                            Width = item.Width,
+                            Height = item.Height,
+                            Weight = item.Weight,
+                            DimensionMeasurement = item.DimensionMeasurement,
+                            WeightMeasurement = item.WeightMeasurement,
+                            QtyDlv = 0,
+                            UnitPrice = item.UnitPrice,
+                            Disc = item.Disc,
+                            FinalDiscHeader = item.FinalDiscHeader,
+                            TaxId = item.TaxId,
+                            TaxAmount = item.TaxAmount,
+                            ExemptTaxAmount = item.ExemptTaxAmount,
+                            NettPrice = item.NettPrice,
+                            Total = item.Total,
+                            Dpp = item.Dpp,
+                            Notes = item.Notes,
+                            CoaInventory = item.CoaInventory,
+                            CoaCogs = item.CoaCogs,
+                            CoaSls = item.CoaSls,
+                            CoaSlsDisc = item.CoaSlsDisc,
+                            CoaSlsReturn = item.CoaSlsReturn,
+                            CoaTransit = string.IsNullOrEmpty(item.CoaTransit) ? Db.SystemParameters.FirstOrDefault(x => x.Code == "TRANSIT_ITEM_COA")?.Value ?? "" : item.CoaTransit
+                        };
+
+                        Db.SalesOrderDetails.Add(orderDetail);
+                    }
+                    else
+                    {
+                        totalDetail.Add(-soDetail.Total);
+                        totalTax.Add(-(soDetail.Qty * soDetail.TaxAmount));
+                        totalExemptTax.Add(-(soDetail.Qty * soDetail.ExemptTaxAmount));
+                        totalDpp.Add(-(soDetail.Qty * soDetail.Dpp));
+
+                        soDetail.Disc = item.Disc;
+                        soDetail.FinalDiscHeader = item.FinalDiscHeader;
+                        soDetail.TaxId = item.TaxId;
+                        soDetail.TaxAmount = item.TaxAmount;
+                        soDetail.ExemptTaxAmount = item.ExemptTaxAmount;
+                        soDetail.NettPrice = item.NettPrice;
+                        soDetail.Total = item.Total;
+                        soDetail.Dpp = item.Dpp;
+
+                        Db.SalesOrderDetails.Update(soDetail);
+                    }
+                }
+                Db.SaveChanges();
+
+                if (discPromo != null)
+                {
+                    if (discPromo.Any())
+                    {
+                        short d = 0;
+                        foreach (var discItem in discPromo)
+                        {
+                            if (!data.ListPromo.Select(x => x.PromoCode).Contains(discItem.PromoCode)
+                                || discItem.PromoCode == null
+                                || data.ListPromo.Where(x => x.IsActive).Select(x => x.PromoCode).Contains(discItem.PromoCode))
+                            {
+                                if (discItem.Id <= 0)
+                                {
+                                    Db.SalesOrderDetailDiscounts.Add(new SalesOrderDetailDiscount
+                                    {
+                                        Code = data.Code,
+                                        OrderDetailId = listIdDetail[i - 1],
+                                        LineNo = ++d,
+                                        PromoCode = discItem.PromoCode,
+                                        PromoDetailId = discItem.PromoDetailId,
+                                        Name = discItem.Name,
+                                        IsPercentage = discItem.IsPercentage,
+                                        Value = discItem.Value,
+                                        Amount = discItem.Amount,
+                                        CoaCode = discItem.CoaCode
+                                    });
+                                }
+                                else
+                                {
+                                    discItem.LineNo = ++d;
+
+                                    Db.SalesOrderDetailDiscounts.Update(discItem);
+                                    Db.Entry(discItem).Property(e => e.Id).IsModified = false;
+                                    Db.Entry(discItem).Property(e => e.Code).IsModified = false;
+                                }
+
+                                if (!soPromo.Any(x => x.PromoCode == discItem.PromoCode))
+                                {
+                                    if (discItem.PromoCode != null)
+                                    {
+                                        soPromo.Add(new SalesOrderPromo
+                                        {
+                                            Code = data.Code,
+                                            LineNo = (short)(soPromo.Count + 1),
+                                            PromoCode = discItem.PromoCode,
+                                            IsActive = true
+                                        });
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                if (!soPromo.Any(x => x.PromoCode == discItem.PromoCode))
+                                {
+                                    if (discItem.PromoCode != null)
+                                    {
+
+                                        soPromo.Add(new SalesOrderPromo
+                                        {
+                                            Code = data.Code,
+                                            LineNo = (short)(soPromo.Count + 1),
+                                            PromoCode = discItem.PromoCode,
+                                            IsActive = false
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
             if (soPromo.Any())
                 Db.SalesOrderPromos.AddRange(soPromo);
 
@@ -1789,10 +2183,12 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
 
                 Db.SalesDeliveryHeaders.Add(newSdlvData);
 
+                var listSDID = new List<dynamic>();
+
                 short j = 0;
                 foreach (var item in data.ItemDetails)
                 {
-                    Db.SalesDeliveryDetails.Add(new SalesDeliveryDetail
+                    var sdDetail = new SalesDeliveryDetail
                     {
                         Code = newDlvCode,
                         LineNo = ++j,
@@ -1815,14 +2211,39 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                         NettPrice = item.NettPrice,
                         Total = item.Total,
                         Dpp = item.Dpp
+                    };
+
+                    Db.SalesDeliveryDetails.Add(sdDetail);
+                    Db.SaveChanges();
+
+                    listSDID.Add(new { Id = sdDetail.Id, SoId = sdDetail.SoDetailId });
+                }
+
+                var soFreeList = Db.SalesOrderDetailFreeGoods.Where(x => x.Code == data.Code).ToList();
+
+                foreach (var item in soFreeList)
+                {
+                    Db.SalesDeliveryDetailFreeGoods.Add(new SalesDeliveryDetailFreeGood
+                    {
+                        Code = newDlvCode,
+                        DlvOrderDetailId = listSDID.First(x => x.SoId == item.OrderDetailId).Id,
+                        LineNo = 1,
+                        PromoCode = item.PromoCode,
+                        ItemId = item.ItemId,
+                        UomId = item.UomId,
+                        UnitId = item.UnitId,
+                        Qty = item.Qty,
+                        UnitPrice = item.UnitPrice,
+                        CoaCode = item.CoaCode
                     });
                 }
             }
+
             var newInvCode = "";
             if (data.IsSoInv && !isOverLimit)
             {
                 var DlvData = Db.SalesDeliveryHeaders.Where(x => x.TransCode == data.Code).ToList();
-                if(DlvData.Count == 0)
+                if (DlvData.Count == 0)
                 {
                     // Sales Delivery
                     var newDlvCode = GetNewCode("DO_NUM_FMT", data.Date);
@@ -1878,10 +2299,12 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
 
                     Db.SalesInvoiceHeaders.Add(newSinvData);
 
+                    var listSDID = new List<dynamic>();
+
                     short j = 0;
                     foreach (var item in data.ItemDetails)
                     {
-                        Db.SalesDeliveryDetails.Add(new SalesDeliveryDetail
+                        var sdDetail = new SalesDeliveryDetail
                         {
                             Code = newDlvCode,
                             LineNo = ++j,
@@ -1904,6 +2327,30 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                             NettPrice = item.NettPrice,
                             Total = item.Total,
                             Dpp = item.Dpp
+                        };
+
+                        Db.SalesDeliveryDetails.Add(sdDetail);
+                        Db.SaveChanges();
+
+                        listSDID.Add(new { Id = sdDetail.Id, SoId = sdDetail.SoDetailId });
+                    }
+
+                    var soFreeList = Db.SalesOrderDetailFreeGoods.Where(x => x.Code == data.Code).ToList();
+
+                    foreach (var item in soFreeList)
+                    {
+                        Db.SalesDeliveryDetailFreeGoods.Add(new SalesDeliveryDetailFreeGood
+                        {
+                            Code = newDlvCode,
+                            DlvOrderDetailId = listSDID.First(x => x.SoId == item.OrderDetailId).Id,
+                            LineNo = 1,
+                            PromoCode = item.PromoCode,
+                            ItemId = item.ItemId,
+                            UomId = item.UomId,
+                            UnitId = item.UnitId,
+                            Qty = item.Qty,
+                            UnitPrice = item.UnitPrice,
+                            CoaCode = item.CoaCode
                         });
                     }
 
@@ -2031,7 +2478,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
             // Update header data
             data.Mark = "V";
             data.UpdatedBy = userId;
-            data.UpdatedDate = DateTime.Now;                
+            data.UpdatedDate = DateTime.Now;
 
             Db.SaveChanges();
 
@@ -2083,7 +2530,69 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
             var stock = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == warehouseCode && x.ItemId == item.ItemId);
             if (stock != null)
             {
-                if(code == null)
+                if (code == null)
+                {
+                    if (uom.IsBaseUnit)
+                    {
+                        if (item.Qty > (stock.QtyOnHand - stock.QtyOnOrder))
+                        {
+                            result = true;
+                        }
+                    }
+                    else
+                    {
+                        var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= uom.Seq).Select(x => x.Conversion).ToList();
+                        var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
+                        var baseQty = item.Qty * multipliedQty;
+                        if (baseQty > (stock.QtyOnHand - stock.QtyOnOrder))
+                        {
+                            result = true;
+                        }
+                    }
+                }
+                else
+                {
+                    var oldStock = Db.StockMutations.FirstOrDefault(x => x.ItemId == item.ItemId && x.RefCode1 == code);
+                    if (oldStock != null)
+                    {
+                        if (uom.IsBaseUnit)
+                        {
+                            if (item.Qty > (stock.QtyOnHand - (stock.QtyOnOrder - oldStock.BaseQty)))
+                            {
+                                result = true;
+                            }
+                        }
+                        else
+                        {
+                            var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= uom.Seq).Select(x => x.Conversion).ToList();
+                            var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
+                            var baseQty = item.Qty * multipliedQty;
+                            if (baseQty > (stock.QtyOnHand - (stock.QtyOnOrder - oldStock.BaseQty)))
+                            {
+                                result = true;
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                result = true;
+            }
+        }
+        return result;
+    }
+
+    private bool IsQtyExcessFree(string warehouseCode, IEnumerable<SalesOrderDetailFreeGood> items, string code)
+    {
+        var result = false;
+        foreach (var item in items)
+        {
+            var uom = Db.UoMConversions.FirstOrDefault(x => x.Id == item.UnitId);
+            var stock = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == warehouseCode && x.ItemId == item.ItemId);
+            if (stock != null)
+            {
+                if (code == null)
                 {
                     if (uom.IsBaseUnit)
                     {
@@ -2139,27 +2648,27 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
     public IEnumerable<DetailFreeGoodData> GetFreeDetailData(string code, bool? fullDlv)
     {
         var result = (from dc in Db.SalesOrderDetailFreeGoods
-            join i in Db.Items on dc.ItemId equals i.Id
-            join u in Db.UoMConversions on dc.UnitId equals u.Id
-            where dc.Code == code
-            select new DetailFreeGoodData
-            {
-                Id = dc.Id,
-                Code = dc.Code,
-                OrderDetailId = dc.OrderDetailId,
-                LineNo = dc.LineNo,
-                PromoCode = dc.PromoCode,
-                ItemId = dc.ItemId,
-                UomId = dc.UomId,
-                UnitId = dc.UnitId,
-                Qty = dc.Qty,
-                QtyClosed = dc.QtyClosed,
-                UnitPrice = dc.UnitPrice,
-                CoaCode = dc.CoaCode,
-                Initial = i.Initial,
-                Name = i.Name,
-                UnitName = u.UnitEquivalent
-            }).ToList();
+                      join i in Db.Items on dc.ItemId equals i.Id
+                      join u in Db.UoMConversions on dc.UnitId equals u.Id
+                      where dc.Code == code
+                      select new DetailFreeGoodData
+                      {
+                          Id = dc.Id,
+                          Code = dc.Code,
+                          OrderDetailId = dc.OrderDetailId,
+                          LineNo = dc.LineNo,
+                          PromoCode = dc.PromoCode,
+                          ItemId = dc.ItemId,
+                          UomId = dc.UomId,
+                          UnitId = dc.UnitId,
+                          Qty = dc.Qty,
+                          QtyClosed = dc.QtyClosed,
+                          UnitPrice = dc.UnitPrice,
+                          CoaCode = dc.CoaCode,
+                          Initial = i.Initial,
+                          Name = i.Name,
+                          UnitName = u.UnitEquivalent
+                      }).ToList();
 
         if (fullDlv.HasValue)
         {
@@ -2182,7 +2691,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
 
     public IEnumerable<dynamic> GetSalesOrderPromos(string code)
     {
-        return Db.SalesOrderPromos.Join(Db.PromoHeaders, soPromo => soPromo.PromoCode, promo => promo.Code, (soPromo, promo) => new { SOPromo = soPromo, Promo = promo})
+        return Db.SalesOrderPromos.Join(Db.PromoHeaders, soPromo => soPromo.PromoCode, promo => promo.Code, (soPromo, promo) => new { SOPromo = soPromo, Promo = promo })
             .Where(x => x.SOPromo.Code == code)
             .Select(x => new
             {
@@ -2230,6 +2739,25 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
         }
 
         return result;
+    }
+
+    private (bool, string) IsSaveAndDateInvalid(SalesOrderRequest data)
+    {
+        var result = false;
+        var message = "";
+
+        if (data.IsSoDlv && data.DlvDate < data.Date)
+        {
+            result = true;
+            message = "Tanggal Surat Jalan tidak boleh lebih kecil dari tanggal Order Penjualan.";
+        }
+        else if (data.IsSoInv && (data.InvDate < data.Date || data.InvDate < data.DlvDate || data.DlvDate < data.Date))
+        {
+            result = true;
+            message = "Tanggal Surat Jalan/Faktur Penjualan tidak boleh lebih kecil dari tanggal Order Penjualan/Surat Jalan & Order Penjualan.";
+        }
+
+        return (result, message);
     }
 
     private void RestoreWarehouseQty(string code)

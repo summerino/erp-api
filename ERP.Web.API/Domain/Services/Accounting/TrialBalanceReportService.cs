@@ -1,8 +1,8 @@
-﻿using ERP.Entity;
+﻿using Microsoft.EntityFrameworkCore;
+using ERP.Entity;
 using ERP.Entity.Accounting;
 using ERP.Entity.SQLQuery;
 using ERP.Web.API.Domain.Interfaces.Accounting;
-using Microsoft.EntityFrameworkCore;
 
 namespace ERP.Web.API.Domain.Services.Accounting;
 
@@ -14,6 +14,7 @@ public class TrialBalanceReportService : ITrialBalanceReportService
     {
         _db = db;
     }
+
     public IEnumerable<TrialBalanceResult> GetTrialBalanceLists(string rptBy, string dateFrom, string dateTo, string currCode)
     {
         string parRptBy = "", parCurrCode = null;

@@ -22,23 +22,12 @@ public class SalesDownPaymentReportService : ISalesDownPaymentReportService
                             FROM General.Customer cs
                             GROUP BY cs.Code, cs.Initial, cs.Name").ToList();
 
-        var cmData = _db.ReportByCreditMemos.FromSqlRaw(@"SELECT cm.Date, cm.SrcTrans, cm.Code, cm.TransCode as SrcCode, cm.CustCode, cm.CustName, cm.Amount, cm.Used AS UsedAmount, CAST (0 AS decimal) AS RemainderAmount, cm.Mark
+        var cmData = _db.ReportByCreditMemos.FromSqlRaw(@"SELECT cm.Date, cm.SrcTrans, cm.Code, cm.TransCode as SrcCode, cm.CustCode, cm.CustName, cm.Amount, cm.Used AS UsedAmount, cm.Amount - cm.Used AS RemainderAmount, cm.Mark
                         FROM Sales.vwCreditMemo cm
                         WHERE cm.Mark != 'V' " +
                         (srcTrans.HasValue ? $"AND cm.SrcTrans = {srcTrans}" : "AND cm.SrcTrans IN (3, 4)")).ToList();
 
-        var cbData = _db.GeneralCashBankHeaders.Where(x => x.Mark != "V" && (x.ChequeDate ?? x.Date) <= Convert.ToDateTime(date)).ToList();
-
-        var cbDetail = _db.GeneralCashBankDetails.Where(x => cbData.Select(c => c.Code).Contains(x.Code)).ToList();
-
         cmData = cmData.Where(x => x.Date <= Convert.ToDateTime(date)).ToList();
-
-        foreach (var itemCm in cmData)
-        {
-            var totCb = cbDetail.Where(x => x.TransCode == itemCm.Code).Sum(x => x.TransAmount);
-            itemCm.UsedAmount = totCb;
-            itemCm.RemainderAmount = itemCm.Amount - itemCm.UsedAmount;
-        }
 
         cmData = cmData.Where(x => x.Amount > 0).ToList();
 
@@ -46,8 +35,8 @@ public class SalesDownPaymentReportService : ISalesDownPaymentReportService
         {
             cmData = status switch
             {
-                "PP" or "A" or "PU" or "FU" => cmData.Where(x => x.Mark == status).ToList(),
-                "OS" => cmData.Where(x => new[] {"A", "PU"}.Contains(x.Mark)).ToList(),
+                "PP" or "A" or "PU" or "CMP" => cmData.Where(x => x.Mark == status).ToList(),
+                "OS" => cmData.Where(x => new[] { "A", "PU" }.Contains(x.Mark)).ToList(),
                 _ => cmData
             };
         }

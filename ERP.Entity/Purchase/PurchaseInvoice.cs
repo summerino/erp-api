@@ -37,7 +37,7 @@ public class PurchaseInvoiceHeader : BaseEntityWithMarkApprovedAndViewed
     [Precision(19, 6)]
     public decimal PaidAmount { get; set; }
 
-    [Precision(18, 2)]
+    [Precision(19, 6)]
     public decimal Total { get; set; }
 
     [StringLength(50)]
@@ -69,7 +69,7 @@ public class VwPurchaseInvoiceHeader : BaseEntityWithMarkApprovedAndViewed
     [Precision(19, 6)]
     public decimal PaidAmount { get; set; }
 
-    [Precision(18, 2)]
+    [Precision(19, 6)]
     public decimal Total { get; set; }
 
     [Precision(23, 6)]
@@ -107,22 +107,22 @@ public class PurchaseInvoiceDetail
     [StringLength(17)]
     public string RcvCode { get; set; }
 
-    [Precision(18, 2)]
+    [Precision(19, 6)]
     public decimal ShipmentFee { get; set; }
 
-    [Precision(18, 2)]
+    [Precision(19, 6)]
     public decimal HandlingFee { get; set; }
 
-    [Precision(18, 2)]
+    [Precision(19, 6)]
     public decimal SubTotal { get; set; }
 
-    [Precision(18, 2)]
+    [Precision(19, 6)]
     public decimal FinalDisc { get; set; }
 
-    [Precision(18, 2)]
+    [Precision(19, 6)]
     public decimal TaxAmount { get; set; }
 
-    [Precision(18, 2)]
+    [Precision(19, 6)]
     public decimal ExemptTaxAmount { get; set; }
 
     [Precision(19, 6)]
@@ -147,6 +147,6 @@ public class PurchaseInvoiceDebitMemo
     [Precision(18, 2)]
     public decimal InvAmount { get; set; }
 
-    [Precision(18, 2)]
+    [Precision(19, 6)]
     public decimal DebitMemoAmount { get; set; }
 }

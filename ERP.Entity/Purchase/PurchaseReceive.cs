@@ -36,36 +36,36 @@ public class PurchaseReceiveHeader : BaseEntityWithMarkApprovedAndViewed
     [StringLength(3)]
     public string CurrCode { get; set; }
         
-    [Precision(18, 2)]
+    [Precision(19, 6)]
     public decimal Rate { get; set; }
 
-    [Precision(18, 2)]
+    [Precision(19, 6)]
     public decimal ShipmentFee { get; set; }
 
-    [Precision(18, 2)]
+    [Precision(19, 6)]
     public decimal HandlingFee { get; set; }
 
-    [Precision(18, 2)]
+    [Precision(19, 6)]
     public decimal SubTotal { get; set; }
 
     [Precision(5, 2)]
     public decimal FinalDiscPercent { get; set; }
 
-    [Precision(18, 2)]
+    [Precision(19, 6)]
     public decimal FinalDisc { get; set; }
 
     public bool IncludeTax { get; set; }
 
-    [Precision(18, 2)]
+    [Precision(19, 6)]
     public decimal TaxAmount { get; set; }
 
-    [Precision(18, 2)]
+    [Precision(19, 6)]
     public decimal ExemptTaxAmount { get; set; }
 
-    [Precision(18, 2)]
+    [Precision(19, 6)]
     public decimal Total { get; set; }
 
-    [Column("DPP", TypeName = "decimal(18, 2)")]
+    [Column("DPP", TypeName = "decimal(19, 6)")]
     public decimal Dpp { get; set; }
 
     [Precision(19, 6)]
@@ -99,33 +99,33 @@ public class VwPurchaseReceiveHeader : BaseEntityWithMarkApprovedAndViewed
     [Precision(18, 2)]
     public decimal Rate { get; set; }
 
-    [Precision(18, 2)]
+    [Precision(19, 6)]
     public decimal ShipmentFee { get; set; }
 
-    [Precision(18, 2)]
+    [Precision(19, 6)]
     public decimal HandlingFee { get; set; }
 
-    [Precision(18, 2)]
+    [Precision(19, 6)]
     public decimal SubTotal { get; set; }
 
     [Precision(5, 2)]
     public decimal FinalDiscPercent { get; set; }
 
-    [Precision(18, 2)]
+    [Precision(19, 6)]
     public decimal FinalDisc { get; set; }
 
     public bool IncludeTax { get; set; }
 
-    [Precision(18, 2)]
+    [Precision(19, 6)]
     public decimal TaxAmount { get; set; }
 
-    [Precision(18, 2)]
+    [Precision(19, 6)]
     public decimal ExemptTaxAmount { get; set; }
 
-    [Precision(18, 2)]
+    [Precision(19, 6)]
     public decimal Total { get; set; }
 
-    [Precision(18, 2)]
+    [Precision(19, 6)]
     public decimal Dpp { get; set; }
 
     [Precision(19, 6)]

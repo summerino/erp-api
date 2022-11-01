@@ -19,6 +19,7 @@ public class NetRevenueService : INetRevenueService
     public DataSourceResult GetData(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, int userId, string date)
     {
         var salesmanId = Db.Users.Where(x => x.Id.Equals(userId)).Select(x => x.EmployeeId).SingleOrDefault();
+
         var payments = Db.MobilePaymentInvoices.Where(x => x.SalesmanId.Equals(salesmanId)).GroupBy(c => c.Date).Select(z => new NetRevenueHeaderModel
         {
             Date = z.Key,
@@ -61,31 +62,25 @@ public class NetRevenueService : INetRevenueService
     }
 
     public IEnumerable<NetRevenueDetailModel> GetRevenueDetail(string date, int userId)
-    {   
-        var customer = getCustomers();
+    {
+        var salesmanId = Db.Users.Where(x => x.Id.Equals(userId)).Select(x => x.EmployeeId).FirstOrDefault();
 
         // Income
-        var data = from payment in Db.MobilePaymentInvoices
-                       //join cu in Db.Customers on payment.CustCode equals cu.Code
-                   join cu in customer on payment.CustCode equals cu.Code
+        var data = from payment in Db.MobilePaymentInvoices.Where(x => x.SalesmanId.Equals(salesmanId)
+                                                                    && x.Date.Equals(DateTime.ParseExact(date, "yyyy-MM-dd", null)))
                    join coa in Db.Coas on payment.CoaCode equals coa.Code
-                   join user in Db.Users on userId equals user.Id
-                   where payment.SalesmanId.Equals(user.EmployeeId) && payment.Date.Equals(DateTime.ParseExact(date, "yyyy-MM-dd", null))
                    group new { payment, coa } by new
                    {
-                       //Code = payment.Code,
                        Date = payment.Date,
                        CoaCode = payment.CoaCode,
                        CoaName = coa.Name,
-                       //Amount = ,
                    } into gRevenue
                    select new NetRevenueDetailModel
                    {
-                       //Code = gRevenue.Key.Code,
                        Date = gRevenue.Key.Date,
                        CoaCode = gRevenue.Key.CoaCode,
                        CoaName = gRevenue.Key.CoaName,
-                       Amount = gRevenue.Sum(x => x.payment.Amount),
+                       Amount = gRevenue.Sum(x => x.payment.Amount)
                    };
 
         data = data.OrderBy(x => x.CoaName);
@@ -95,12 +90,14 @@ public class NetRevenueService : INetRevenueService
 
     public IEnumerable<CostDetailModel> GetCostDetail(string date, int userId)
     {
+        var salesmanId = Db.Users.Where(x => x.Id.Equals(userId)).Select(x => x.EmployeeId).FirstOrDefault();
+
         // Cost in revenue (sub)
         var data = from cost in Db.MobileCostDetails
                    join coa in Db.Coas on cost.CoaCode equals coa.Code
-                   join header in Db.MobileCostHeaders on DateTime.ParseExact(date, "yyyy-MM-dd", null) equals header.Date
-                   join user in Db.Users on userId equals user.Id
-                   where header.SalesmanId.Equals(user.EmployeeId) && cost.Code.Equals(header.Code)
+                   join header in Db.MobileCostHeaders.Where(x => x.SalesmanId.Equals(salesmanId)
+                                                               && x.Date.Equals(DateTime.ParseExact(date, "yyyy-MM-dd", null)))
+                   on cost.Code equals header.Code
                    select new CostDetailModel
                    {
                        Code = cost.Code,
@@ -118,11 +115,12 @@ public class NetRevenueService : INetRevenueService
     public DataSourceResult GetRevenueDetailByCoa(int skip, int take, IEnumerable<Filter> filter, IEnumerable<Sort> sort, string date, string coaCode, int userId)
     {
         var customer = getCustomers();
+        var salesmanId = Db.Users.Where(x => x.Id.Equals(userId)).Select(x => x.EmployeeId).FirstOrDefault();
 
-        var data = from payment in Db.MobilePaymentInvoices
+        var data = from payment in Db.MobilePaymentInvoices.Where(x => x.SalesmanId.Equals(salesmanId)
+                                                                    && x.Date.Equals(DateTime.ParseExact(date, "yyyy-MM-dd", null))
+                                                                    && x.CoaCode.Equals(coaCode))
                    join cust in customer on payment.CustCode equals cust.Code
-                   join user in Db.Users on userId equals user.Id
-                   where payment.Date.Equals(DateTime.ParseExact(date, "yyyy-MM-dd", null)) && payment.CoaCode.Equals(coaCode)
                    select new NetRevenueDetailByCoaModel
                    {
                        Code = payment.Code,
@@ -131,7 +129,7 @@ public class NetRevenueService : INetRevenueService
                        CustName = cust.Name,
                        CoaCode = payment.CoaCode,
                        Amount = payment.Amount,
-                       TransCode = payment.TransCode,
+                       TransCode = payment.TransCode
                    };
 
         return data.ToDataSourceResult(skip, take, filter, sort);
@@ -170,7 +168,7 @@ public class NetRevenueService : INetRevenueService
                                 Fax = cust.Fax,
                                 ContactPerson = cust.ContactPerson,
                                 IsActive = true,
-                                UpdatedDate = cust.UpdatedDate,
+                                UpdatedDate = cust.UpdatedDate
                             });
 
         var dataMobile = (from custMobile in Db.VwMobileCustomers
@@ -204,7 +202,7 @@ public class NetRevenueService : INetRevenueService
                               Fax = custMobile.Fax,
                               ContactPerson = custMobile.ContactPerson,
                               IsActive = true,
-                              UpdatedDate = custMobile.UpdatedDate,
+                              UpdatedDate = custMobile.UpdatedDate
                           });
 
         var dataCustomer = dataOriginal.Union(dataMobile).OrderBy(x => x.UpdatedDate).AsQueryable();

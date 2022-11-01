@@ -34,7 +34,7 @@ public class SalesInvoiceHeader : BaseEntityWithMarkApprovedAndViewed
     [Precision(19, 6)]
     public decimal PaidAmount { get; set; }
 
-    [Precision(18, 2)]
+    [Precision(19, 6)]
     public decimal Total { get; set; }
 
     [StringLength(50)]
@@ -115,22 +115,22 @@ public class SalesInvoiceDetail
     [StringLength(17)]
     public string DoCode { get; set; }
 
-    [Precision(18, 2)]
+    [Precision(19, 6)]
     public decimal ShipmentFee { get; set; }
 
-    [Precision(18, 2)]
+    [Precision(19, 6)]
     public decimal HandlingFee { get; set; }
 
-    [Precision(18, 2)]
+    [Precision(19, 6)]
     public decimal SubTotal { get; set; }
 
-    [Precision(18, 2)]
+    [Precision(19, 6)]
     public decimal FinalDisc { get; set; }
 
-    [Precision(18, 2)]
+    [Precision(19, 6)]
     public decimal TaxAmount { get; set; }
 
-    [Precision(18, 2)]
+    [Precision(19, 6)]
     public decimal ExemptTaxAmount { get; set; }
 
     [Precision(19, 6)]

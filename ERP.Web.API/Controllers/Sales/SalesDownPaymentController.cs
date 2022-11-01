@@ -145,8 +145,8 @@ public class SalesDownPaymentController : ControllerBase
         if (_closingMonth.IsMonthClosed(periods))
             return (false, "Periode sudah ditutup. Silakan hubungi departemen akuntansi.");
 
-        if (data.SrcTrans == 2)
-            return (false, "data tidak dapat disimpan karena sumber transaksi adalah retur.");
+        if (data.Amount < 1)
+            return (false, "data tidak dapat disimpan karena nilai setoran tidak boleh 0.");
 
         // Checking data start date validity
         return !_sysPar.IsStartDateValid(data.Date)
