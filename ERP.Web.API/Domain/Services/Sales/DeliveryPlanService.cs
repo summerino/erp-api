@@ -355,8 +355,6 @@ public class DeliveryPlanService : GeneralService<DeliveryPlanHeader>, IDelivery
                 .Where(d => d.Code == data.Code && !data.ItemDetails.Select(x => x.Id).Contains(d.Id))
                 .ToList();
 
-            Db.DeliveryPlanDetails.RemoveRange(delDetails);
-
             var delUnDetails = Db.DeliveryPlanUndeliveredItems
                 .Where(x => delDetails.Select(d => d.Id).Contains(x.DlvPlanDetailId))
                 .ToList();
@@ -401,7 +399,7 @@ public class DeliveryPlanService : GeneralService<DeliveryPlanHeader>, IDelivery
 
                         if (sdHeadData.FromDirectInvoice)
                         {
-                            var soDetail = Db.SalesOrderDetails.FirstOrDefault(x => x.Id == sdDetail.SoDetailId && x.ItemId == deletedItem.ItemId && x.UnitId == deletedItem.UnitId);
+                            var soDetail = Db.SalesOrderDetails.FirstOrDefault(x => (sdDetail.SoDetailId.HasValue ? x.Id == sdDetail.SoDetailId : x.Code == sdHeadData.TransCode) && x.ItemId == deletedItem.ItemId && x.UnitId == deletedItem.UnitId);
                             soDetail.Qty += deletedItem.Qty - lastQty;
                             soDetail.QtyDlv += deletedItem.Qty - lastQty;
                             soDetail.Total += (soDetail.NettPrice * deletedItem.Qty) + (sdDetail.NettPrice * lastQty); ;
@@ -463,6 +461,8 @@ public class DeliveryPlanService : GeneralService<DeliveryPlanHeader>, IDelivery
             }
                 
             Db.DeliveryPlanDetailItems.RemoveRange(delDetailItem);
+            Db.DeliveryPlanDetails.RemoveRange(delDetails);
+            Db.SaveChanges();
 
             short i = 0;
             foreach (var item in data.ItemDetails)
