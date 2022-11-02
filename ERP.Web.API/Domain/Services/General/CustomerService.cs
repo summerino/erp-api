@@ -620,4 +620,11 @@ public class CustomerService : GeneralService<Customer>, ICustomerService
             }
         }
     }
+
+    public IEnumerable<CustomerAddress> GetCustomerAddress()
+    {
+        var data = Db.CustomerAddress;
+
+        return data.OrderBy(x => x.Id);
+    }
 }

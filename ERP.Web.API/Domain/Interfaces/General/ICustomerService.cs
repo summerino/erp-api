@@ -16,6 +16,8 @@ public interface ICustomerService : IGeneralService<Customer>
 
     IEnumerable<CustomerAddress> GetAddress(string code);
 
+    IEnumerable<CustomerAddress> GetCustomerAddress();
+
     VwCustomer FindByCode(string code);
 
     SaveResult Insert(CustomerRequest data);
