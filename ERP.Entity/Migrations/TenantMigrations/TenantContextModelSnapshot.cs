@@ -976,9 +976,9 @@ namespace ERP.Entity.Migrations.TenantMigrations
 
                     b.Property<string>("Code")
                         .IsRequired()
-                        .HasMaxLength(20)
+                        .HasMaxLength(35)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(20)");
+                        .HasColumnType("varchar(35)");
 
                     b.Property<string>("CurrCode")
                         .IsRequired()
