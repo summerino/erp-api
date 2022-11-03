@@ -26,6 +26,9 @@ public class ItemService : GeneralService<Item>, IItemService
         {
             switch (mobileLastSync.Length)
             {
+                case 19:
+                    mobileLastSync += ".0000";
+                    break;
                 case 21:
                     mobileLastSync += "000";
                     break;
