@@ -87,7 +87,7 @@ public class CustomerService : GeneralService<Customer>, ICustomerService
                                 Phone = cust.Phone,
                                 Fax = cust.Fax,
                                 ContactPerson = cust.ContactPerson,
-                                IsActive = true,
+                                IsActive = cust.IsActive,
                                 UpdatedDate = cust.UpdatedDate,
                             });
 
