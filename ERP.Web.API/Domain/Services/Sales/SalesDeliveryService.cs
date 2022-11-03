@@ -877,7 +877,7 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
                     var oldStock = Db.StockMutations.FirstOrDefault(x => x.ItemId == item.ItemId && x.RefCode1 == code);
                     if (uom.IsBaseUnit)
                     {
-                        if (item.Qty > stock.QtyOnHand - (oldStock?.BaseQty ?? 0))
+                        if (item.Qty > stock.QtyOnHand + (oldStock?.BaseQty ?? 0))
                         {
                             result = 2;
                         }
@@ -887,7 +887,7 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
                         var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= uom.Seq).Select(x => x.Conversion).ToList();
                         var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
                         var baseQty = item.Qty * multipliedQty;
-                        if (baseQty > stock.QtyOnHand - (oldStock?.BaseQty ?? 0))
+                        if (baseQty > stock.QtyOnHand + (oldStock?.BaseQty ?? 0))
                         {
                             result = 2;
                         }
