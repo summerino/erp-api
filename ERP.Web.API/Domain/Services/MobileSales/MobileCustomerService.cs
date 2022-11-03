@@ -152,22 +152,31 @@ public class MobileCustomerService : GeneralService<MobileCustomer>, IMobileCust
             Db.MobileCustomers.Update(mcData);
 
             var mvlData = Db.MobileVisitLogs.FirstOrDefault(x => x.CustCode == item.Code);
-            mvlData.CustCode = custCode;
-            mvlData.UpdatedBy = userId;
-            mvlData.UpdatedDate = DateTime.Now;
-            Db.MobileVisitLogs.Update(mvlData);
+            if (mvlData != null)
+            {
+                mvlData.CustCode = custCode;
+                mvlData.UpdatedBy = userId;
+                mvlData.UpdatedDate = DateTime.Now;
+                Db.MobileVisitLogs.Update(mvlData);
+            }
 
             var moData = Db.MobileOrderHeaders.FirstOrDefault(x => x.CustCode == item.Code);
-            moData.CustCode = custCode;
-            moData.UpdatedBy = userId;
-            moData.UpdatedDate = DateTime.Now;
-            Db.MobileOrderHeaders.Update(moData);
+            if (moData != null)
+            {
+                moData.CustCode = custCode;
+                moData.UpdatedBy = userId;
+                moData.UpdatedDate = DateTime.Now;
+                Db.MobileOrderHeaders.Update(moData);
+            }
 
             var mpiData = Db.MobilePaymentInvoices.FirstOrDefault(x => x.CustCode == item.Code);
-            mpiData.CustCode = custCode;
-            mpiData.UpdatedBy = userId;
-            mpiData.UpdatedDate = DateTime.Now;
-            Db.MobilePaymentInvoices.Update(mpiData);
+            if (mpiData != null)
+            {
+                mpiData.CustCode = custCode;
+                mpiData.UpdatedBy = userId;
+                mpiData.UpdatedDate = DateTime.Now;
+                Db.MobilePaymentInvoices.Update(mpiData);
+            }
         }
 
         Db.SaveChanges();
