@@ -63,7 +63,17 @@ public class CBReportService : ICBReportService
 
             foreach (var item in dataCBHeader.OrderBy(x => x.ChequeDate.GetValueOrDefault(x.Date)))
             {
-                endBalance += item.Amount;
+                if (item.IsInterCashBank)
+                {
+                    if (item.Type == "D")
+                        endBalance += item.Amount;
+                    else
+                        endBalance -= item.Amount;
+                }
+                else
+                {
+                    endBalance += item.Amount;
+                }
 
                 reportA.Add(new ReportByAccount
                 {
