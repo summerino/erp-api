@@ -37,11 +37,11 @@ public class OutstandingChequeReportService : IOutstandingChequeReportService
 							ELSE CAST(0 as decimal) END AS BalanceOut,
 						cb.CoaName AS CoaNameHeader
 						FROM Finance.vwGeneralCashBankDetail cb_d
-						LEFT JOIN Purchasing.vwPurchaseInvoiceHeader pi_h ON pi_h.Code = cb_d.TransCode
-						LEFT JOIN Sales.vwSalesInvoiceHeader si_h ON si_h.Code = cb_d.TransCode
-						LEFT JOIN Expedition.vwExpeditionInvoiceHeader ep_h ON ep_h.Code = cb_d.TransCode
-						LEFT JOIN Purchasing.vwDebitMemo dm ON dm.Code = cb_d.TransCode
-						LEFT JOIN Sales.vwCreditMemo cm ON cm.Code = cb_d.TransCode
+						LEFT JOIN (SELECT Code, SupName FROM Purchasing.vwPurchaseInvoiceHeader UNION SELECT Code, SupName FROM Accounting.vwBeginningBalanceAP) pi_h ON pi_h.Code = cb_d.TransCode
+                        LEFT JOIN (SELECT Code, CustName FROM Sales.vwSalesInvoiceHeader UNION SELECT Code, CustName FROM Accounting.vwBeginningBalanceAR) si_h ON si_h.Code = cb_d.TransCode
+                        LEFT JOIN Expedition.vwExpeditionInvoiceHeader ep_h ON ep_h.Code = cb_d.TransCode
+                        LEFT JOIN (SELECT Code, SupName FROM Purchasing.vwDebitMemo UNION SELECT Code, SupName FROM Accounting.vwBeginningBalanceDebitMemo) dm ON dm.Code = cb_d.TransCode
+                        LEFT JOIN (SELECT Code, CustName FROM Sales.vwCreditMemo UNION SELECT Code, CustName FROM Accounting.vwBeginningBalanceCreditMemo) cm ON cm.Code = cb_d.TransCode
 						LEFT JOIN Finance.vwGeneralCashBankHeader cb ON cb.Code = cb_d.Code
 						WHERE cb.ChequeDate IS NOT NULL AND cb.Mark = 'A'" +
                                                              (string.IsNullOrEmpty(coaCode) ? "" : $" AND cb_d.CoaCode = '{coaCode.Replace("'", "''")}'") +
