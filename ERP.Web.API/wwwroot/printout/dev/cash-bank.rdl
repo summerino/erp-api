@@ -379,6 +379,7 @@ FROM SystemManagement.Company</CommandText>
                     <TablixCell>
                       <CellContents>
                         <Textbox Name="DetailFullCoaName">
+                          <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
@@ -444,6 +445,7 @@ FROM SystemManagement.Company</CommandText>
                     <TablixCell>
                       <CellContents>
                         <Textbox Name="DetailNotes">
+                          <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
@@ -1311,11 +1313,6 @@ FROM SystemManagement.Company</CommandText>
   <ReportParameters>
     <ReportParameter Name="code">
       <DataType>String</DataType>
-      <DefaultValue>
-        <Values>
-          <Value>CB210929-00001</Value>
-        </Values>
-      </DefaultValue>
       <Prompt>code</Prompt>
     </ReportParameter>
   </ReportParameters>

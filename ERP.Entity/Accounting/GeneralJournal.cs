@@ -94,7 +94,7 @@ public class Journal
     public long Id { get; set; }
 
     [Required]
-    [StringLength(20)]
+    [StringLength(35)]
     public string Code { get; set; }
 
     public short LineNo { get; set; }

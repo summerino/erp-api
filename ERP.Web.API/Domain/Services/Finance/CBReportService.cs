@@ -53,7 +53,7 @@ public class CBReportService : ICBReportService
 
         if (type == 1)
         {
-            var endBalance = initCBHeader.Sum(x => x.Amount);
+            var endBalance = initCBHeader.Where(x => !x.IsInterCashBank).Sum(x => x.Amount) + (initCBHeader.Where(x => x.IsInterCashBank && x.Type == "D").Sum(x => x.Amount) - initCBHeader.Where(x => x.IsInterCashBank && x.Type == "C").Sum(x => x.Amount));
             reportA.Add(new ReportByAccount
             {
                 Code = "Saldo Awal",
@@ -63,7 +63,17 @@ public class CBReportService : ICBReportService
 
             foreach (var item in dataCBHeader.OrderBy(x => x.ChequeDate.GetValueOrDefault(x.Date)))
             {
-                endBalance += item.Amount;
+                if (item.IsInterCashBank)
+                {
+                    if (item.Type == "D")
+                        endBalance += item.Amount;
+                    else
+                        endBalance -= item.Amount;
+                }
+                else
+                {
+                    endBalance += item.Amount;
+                }
 
                 reportA.Add(new ReportByAccount
                 {
@@ -90,7 +100,7 @@ public class CBReportService : ICBReportService
         }
         else if (type == 2)
         {
-            var endBalance = initCBHeader.Sum(x => x.Amount);
+            var endBalance = initCBHeader.Where(x => !x.IsInterCashBank).Sum(x => x.Amount) + (initCBHeader.Where(x => x.IsInterCashBank && x.Type == "D").Sum(x => x.Amount) - initCBHeader.Where(x => x.IsInterCashBank && x.Type == "C").Sum(x => x.Amount));
             reportAD.Add(new ReportByAccountDetail
             {
                 Code = "Saldo Awal",

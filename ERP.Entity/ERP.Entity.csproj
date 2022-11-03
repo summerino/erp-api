@@ -6,13 +6,8 @@
 	  <Company>Sahassa Panca Manunggal</Company>
 	  <Product>Sahassa® ERP</Product>
 	  <Copyright>© Sahassa. All rights reserved.</Copyright>
-	  <Version>22.10.27</Version>
+	  <Version>22.11.2</Version>
   </PropertyGroup>
-
-  <ItemGroup>
-    <None Remove="Migrations\TenantMigrations\20220407034736_InitialCreate.cs.bak" />
-    <None Remove="Migrations\TenantMigrations\20220407034736_InitialCreate.Designer.cs.bak" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.10" />

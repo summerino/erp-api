@@ -1218,7 +1218,7 @@ namespace ERP.Entity.Migrations.TenantMigrations
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Code = table.Column<string>(type: "varchar(20)", unicode: false, maxLength: 20, nullable: false),
+                    Code = table.Column<string>(type: "varchar(35)", unicode: false, maxLength: 20, nullable: false),
                     LineNo = table.Column<short>(type: "smallint", nullable: false),
                     Date = table.Column<DateTime>(type: "date", nullable: false),
                     CoaCode = table.Column<string>(type: "varchar(6)", unicode: false, maxLength: 6, nullable: false),
