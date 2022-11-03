@@ -1400,7 +1400,7 @@ public class JournalService : IJournalService
                     short k = 0;
                     foreach (var itemMemo in invMemo)
                     {
-                        var memoData = db.CreditMemos.FirstOrDefault(x => x.Code == itemMemo.CreditMemoCode && x.SrcTrans == 1);
+                        var memoData = db.CreditMemos.FirstOrDefault(x => x.Code == itemMemo.CreditMemoCode);
                         if (memoData != null || memoData.Mark != "V")
                         {
                             journals.Add(new Journal
