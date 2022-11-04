@@ -109,7 +109,7 @@ public class ARMutationReportService : IARMutationReportService
             }
         }
 
-        if (slsId < 0)
+        if (slsId <= 0)
         {
             foreach (var itemBB in bbData)
             {
