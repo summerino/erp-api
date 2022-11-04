@@ -5,6 +5,7 @@ using ERP.Entity.MobileSales;
 using ERP.Web.API.Domain.Interfaces.Auth;
 using ERP.Web.API.Domain.Interfaces.MobileSales;
 using ERP.Web.API.Model;
+using ERP.Web.API.Model.MobileSales;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Linq.Dynamic.Core;
@@ -45,7 +46,7 @@ public class MobilePaymentInvoiceController : ControllerBase
     }
 
     [HttpPut("approve")]
-    public IActionResult Approve(List<MobilePaymentInvoice> data)
+    public IActionResult Approve(MobilePaymentInvoiceApproveRequest data)
     {
         if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Approve }).Any())
         {
