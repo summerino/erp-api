@@ -520,13 +520,76 @@ FROM SystemManagement.Company</CommandText>
                               <Top>0.0375in</Top>
                               <Left>0.67937in</Left>
                               <Height>0.18694in</Height>
-                              <Width>7.61859in</Width>
+                              <Width>5.61442in</Width>
                               <ZIndex>2</ZIndex>
                               <Style>
                                 <Border>
                                   <Style>None</Style>
                                 </Border>
                                 <VerticalAlign>Top</VerticalAlign>
+                              </Style>
+                            </Textbox>
+                            <Textbox Name="Textbox23">
+                              <CanShrink>true</CanShrink>
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>=Sum(Fields!Qty.Value)</Value>
+                                      <Style>
+                                        <FontFamily>Courier New</FontFamily>
+                                        <Format>#,##0</Format>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style>
+                                    <TextAlign>Right</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                              </Paragraphs>
+                              <Top>0.0375in</Top>
+                              <Left>6.82081in</Left>
+                              <Height>0.18694in</Height>
+                              <Width>0.92158in</Width>
+                              <ZIndex>3</ZIndex>
+                              <Style>
+                                <Border>
+                                  <Style>None</Style>
+                                </Border>
+                                <VerticalAlign>Top</VerticalAlign>
+                                <PaddingLeft>2pt</PaddingLeft>
+                                <PaddingRight>2pt</PaddingRight>
+                              </Style>
+                            </Textbox>
+                            <Textbox Name="Textbox24">
+                              <CanShrink>true</CanShrink>
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>KOLI</Value>
+                                      <Style>
+                                        <FontSize>9pt</FontSize>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style />
+                                </Paragraph>
+                              </Paragraphs>
+                              <Top>0.0375in</Top>
+                              <Left>7.74739in</Left>
+                              <Height>0.18694in</Height>
+                              <Width>0.55057in</Width>
+                              <ZIndex>4</ZIndex>
+                              <Style>
+                                <Border>
+                                  <Style>None</Style>
+                                </Border>
+                                <VerticalAlign>Top</VerticalAlign>
+                                <PaddingLeft>2pt</PaddingLeft>
+                                <PaddingRight>2pt</PaddingRight>
                               </Style>
                             </Textbox>
                           </ReportItems>
@@ -593,6 +656,7 @@ FROM SystemManagement.Company</CommandText>
             </TablixRowHierarchy>
             <RepeatRowHeaders>true</RepeatRowHeaders>
             <DataSetName>Data</DataSetName>
+            <Top>0in</Top>
             <Height>0.7562in</Height>
             <Width>8.29796in</Width>
             <Style>
@@ -1323,15 +1387,6 @@ FROM SystemManagement.Company</CommandText>
   <ReportParameters>
     <ReportParameter Name="code">
       <DataType>String</DataType>
-      <DefaultValue>
-        <Values>
-          <Value>DO-221005-A00004</Value>
-          <Value>DO-220822-A00002</Value>
-          <Value>DO-220207-A00001</Value>
-          <Value>DO-220203-A00001</Value>
-          <Value>DO-220214-A00001</Value>
-        </Values>
-      </DefaultValue>
       <Prompt>code</Prompt>
       <MultiValue>true</MultiValue>
     </ReportParameter>
