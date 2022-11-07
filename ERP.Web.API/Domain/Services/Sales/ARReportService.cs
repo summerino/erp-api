@@ -57,7 +57,7 @@ public class ARReportService : IARReportService
                     itemInv.RemainderAmount = itemInv.TotalAmount - itemInv.PaidAmount;
                 }
 
-                if (slsId < 0)
+                if (slsId <= 0)
                 {
                     foreach (var itemBB in bbData)
                     {

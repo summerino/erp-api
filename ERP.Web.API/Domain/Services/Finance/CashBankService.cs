@@ -29,7 +29,7 @@ public class CashBankService : GeneralService<GeneralCashBankHeader>, ICashBankS
                 ? data.Where(x => x.Date == searchDate)
                 : data.Where(x =>
                     x.Code.Contains(search) || x.VouCode.Contains(search) || x.Type.Contains(search) ||
-                    x.CoaCode.StartsWith(search) || x.CoaName.Contains(search));
+                    x.CoaCode.StartsWith(search) || x.CoaName.Contains(search) || x.Notes.Contains(search));
         }
 
         return data.ToDataSourceResult(skip, take, filters, sorts);

@@ -5,6 +5,7 @@ using ERP.Entity;
 using ERP.Entity.Finance;
 using ERP.Entity.MobileSales;
 using ERP.Web.API.Domain.Interfaces.MobileSales;
+using ERP.Web.API.Model.MobileSales;
 using Microsoft.EntityFrameworkCore;
 
 namespace ERP.Web.API.Domain.Services.MobileSales;
@@ -17,20 +18,20 @@ public class MobilePaymentInvoiceService : GeneralService<MobilePaymentInvoice>,
 
     }
 
-    public SaveResult Approve(List<MobilePaymentInvoice> data, int userId)
+    public SaveResult Approve(MobilePaymentInvoiceApproveRequest data, int userId)
     {
         var result = new SaveResult(false);
 
-        if (!data.Any())
+        if (!data.Data.Any())
             return new SaveResult(false, "Tidak ada data yang di proses");
 
-        if (data.Any(x => x.Mark != "A"))
+        if (data.Data.Any(x => x.Mark != "A"))
             return new SaveResult(false, "Tidak dapat menyetujui data yang sudah disetujui atau ditolak");
 
         using var transaction = Db.Database.BeginTransaction();
         try
         {
-            foreach (var item in data)
+            foreach (var item in data.Data)
             {
                 var vlData = Db.MobileVisitLogs.FirstOrDefault(x => x.Code == item.VisitLogCode);
                 if(vlData != null)
@@ -94,7 +95,7 @@ public class MobilePaymentInvoiceService : GeneralService<MobilePaymentInvoice>,
                         CurrCode = "IDR",
                         Rate = 1,
                         Amount = item.Amount,
-                        Notes = $"Terbentuk dari Pembayaran Mobile {item.Code}",
+                        Notes = data.Notes != null ? data.Notes + $" ({item.Code})" : $"Terbentuk dari Pembayaran Mobile {item.Code}",
                         Mark = "A",
                         CreatedBy = userId,
                         CreatedDate = DateTime.Now,
