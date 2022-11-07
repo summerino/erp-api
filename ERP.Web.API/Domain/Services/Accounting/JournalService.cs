@@ -111,7 +111,7 @@ public class JournalService : IJournalService
             tenantCtx.PostingStates.Update(stateData);
             tenantCtx.SaveChanges();
 
-            var journalRCV = ProcessPurchaseJournal(tenantCtx, data.Date, systemParam, items, taxes);
+            var journalRCV = ProcessPurchaseRcvJournal(tenantCtx, data.Date, systemParam, items, taxes);
             if (journalRCV != null)
                 tenantCtx.AddRange(journalRCV);
 
@@ -127,11 +127,27 @@ public class JournalService : IJournalService
             tenantCtx.PostingStates.Update(stateData);
             tenantCtx.SaveChanges();
 
-            var journalDO = ProcessSaleJournal(tenantCtx, data.Date, systemParam, items, taxes);
+            var journalPI = ProcessPurchaseInvJournal(tenantCtx, data.Date, systemParam, items, taxes);
+            if (journalPI != null)
+                tenantCtx.AddRange(journalPI);
+
+            stateData.Step++; //5 /10
+            tenantCtx.PostingStates.Update(stateData);
+            tenantCtx.SaveChanges();
+
+            var journalDO = ProcessSaleDlvJournal(tenantCtx, data.Date, systemParam, items, taxes);
             if (journalDO != null)
                 tenantCtx.AddRange(journalDO);
 
-            stateData.Step++; //5 /10
+            stateData.Step++; //6 /11
+            tenantCtx.PostingStates.Update(stateData);
+            tenantCtx.SaveChanges();
+
+            var journalSI = ProcessSaleInvJournal(tenantCtx, data.Date, systemParam, items, taxes);
+            if (journalDO != null)
+                tenantCtx.AddRange(journalDO);
+
+            stateData.Step++; //7 /12
             tenantCtx.PostingStates.Update(stateData);
             tenantCtx.SaveChanges();
 
@@ -139,7 +155,7 @@ public class JournalService : IJournalService
             if (journalSR != null)
                 tenantCtx.AddRange(journalSR);
 
-            stateData.Step++; //6 /11
+            stateData.Step++; //8 /13
             tenantCtx.PostingStates.Update(stateData);
             tenantCtx.SaveChanges();
 
@@ -147,7 +163,7 @@ public class JournalService : IJournalService
             if (journalCB != null)
                 tenantCtx.AddRange(journalCB);
 
-            stateData.Step++; //7 /12
+            stateData.Step++; //9 /14
             tenantCtx.PostingStates.Update(stateData);
             tenantCtx.SaveChanges();
 
@@ -155,7 +171,7 @@ public class JournalService : IJournalService
             if (journalEXP != null)
                 tenantCtx.AddRange(journalEXP);
 
-            stateData.Step++; //8 /13
+            stateData.Step++; //10 /15
             tenantCtx.PostingStates.Update(stateData);
             tenantCtx.SaveChanges();
 
@@ -163,7 +179,7 @@ public class JournalService : IJournalService
             if (journalFA != null)
                 tenantCtx.AddRange(journalFA);
 
-            stateData.Step++; //9 /14
+            stateData.Step++; //11 /16
             tenantCtx.PostingStates.Update(stateData);
             tenantCtx.SaveChanges();
 
@@ -171,7 +187,7 @@ public class JournalService : IJournalService
             if (journalDFA != null)
                 tenantCtx.AddRange(journalDFA);
 
-            stateData.Step++; //10 /15
+            stateData.Step++; //12 /17
             tenantCtx.PostingStates.Update(stateData);
             tenantCtx.SaveChanges();
 
@@ -183,7 +199,7 @@ public class JournalService : IJournalService
             if (journalADJ != null)
                 tenantCtx.AddRange(journalADJ);
 
-            stateData.Step++; //11 /16
+            stateData.Step++; //13 /18
             tenantCtx.PostingStates.Update(stateData);
             tenantCtx.SaveChanges();
 
@@ -191,7 +207,7 @@ public class JournalService : IJournalService
             if (journalGJ != null)
                 tenantCtx.AddRange(journalGJ);
 
-            stateData.Step++; //12 /17
+            stateData.Step++; //14 /19
             tenantCtx.PostingStates.Update(stateData);
             tenantCtx.SaveChanges();
 
@@ -199,7 +215,7 @@ public class JournalService : IJournalService
             if (journalTS != null)
                 tenantCtx.AddRange(journalTS);
 
-            stateData.Step++; //13 /18
+            stateData.Step++; //15 /20
             tenantCtx.PostingStates.Update(stateData);
             tenantCtx.SaveChanges();
 
@@ -209,7 +225,7 @@ public class JournalService : IJournalService
 
             if (data.Date.Month == 12)
             {
-                stateData.Step++; //14 /19
+                stateData.Step++; //16 /21
                 tenantCtx.PostingStates.Update(stateData);
                 tenantCtx.SaveChanges();
 
@@ -217,14 +233,14 @@ public class JournalService : IJournalService
                     "DELETE Accounting.Journal WHERE Code = {0}",
                     "ENDYEAR-" + data.Date.Year.ToString());
 
-                stateData.Step++; //15 /20
+                stateData.Step++; //17 /22
                 tenantCtx.PostingStates.Update(stateData);
                 tenantCtx.SaveChanges();
 
                 ProcessEndYearJournal(tenantCtx, data.Date);
             }
 
-            stateData.Step++; //14 /29 /21
+            stateData.Step++; //16 /23 /21
             tenantCtx.PostingStates.Update(stateData);
             tenantCtx.SaveChanges();
 
@@ -263,7 +279,7 @@ public class JournalService : IJournalService
         }
     }
 
-    private IEnumerable<Journal> ProcessPurchaseJournal(TenantContext db, DateTime dateTime, List<SystemParameter> systemParam, List<Item> items, List<Tax> taxes)
+    private IEnumerable<Journal> ProcessPurchaseRcvJournal(TenantContext db, DateTime dateTime, List<SystemParameter> systemParam, List<Item> items, List<Tax> taxes)
     {
         List<Journal> journals = new();
         var apRecog = systemParam.FirstOrDefault(x => x.Code == "AP_RECOG_TIME").Value;
@@ -487,6 +503,14 @@ public class JournalService : IJournalService
             }
         }
 
+        return journals;
+    }
+
+    private IEnumerable<Journal> ProcessPurchaseInvJournal(TenantContext db, DateTime dateTime, List<SystemParameter> systemParam, List<Item> items, List<Tax> taxes)
+    {
+        List<Journal> journals = new();
+        var apRecog = systemParam.FirstOrDefault(x => x.Code == "AP_RECOG_TIME").Value;
+
         if (apRecog == "PI")
         {
             var InvData = (from invheader in db.PurchaseInvoiceHeaders
@@ -521,7 +545,7 @@ public class JournalService : IJournalService
                         CurrCode = itemData.InvHeader.CurrCode,
                         Period = itemData.InvHeader.Date.ToString("yyyyMMdd"),
                         Type = "D",
-                        Amount = journals.Where(x => x.Code == itemDetail.RcvData.Code && x.Group == 2).Sum(x => x.Amount),
+                        Amount = itemDetail.RcvData.Total - itemDetail.RcvData.TaxAmount + itemDetail.RcvData.ExemptTaxAmount,
                         SrcTrans = "PI"
                     });
 
@@ -688,7 +712,8 @@ public class JournalService : IJournalService
         return journals;
     }
 
-    private IEnumerable<Journal> ProcessSaleJournal(TenantContext db, DateTime dateTime, List<SystemParameter> systemParam, List<Item> items, List<Tax> taxes)
+
+    private IEnumerable<Journal> ProcessSaleDlvJournal(TenantContext db, DateTime dateTime, List<SystemParameter> systemParam, List<Item> items, List<Tax> taxes)
     {
         List<Journal> journals = new();
         var arRecog = systemParam.FirstOrDefault(x => x.Code == "AR_RECOG_TIME").Value;
@@ -1122,6 +1147,14 @@ public class JournalService : IJournalService
                 }
             }
         }
+
+        return journals;
+    }
+
+    private IEnumerable<Journal> ProcessSaleInvJournal(TenantContext db, DateTime dateTime, List<SystemParameter> systemParam, List<Item> items, List<Tax> taxes)
+    {
+        List<Journal> journals = new();
+        var arRecog = systemParam.FirstOrDefault(x => x.Code == "AR_RECOG_TIME").Value;
 
         if (arRecog == "SI")
         {
