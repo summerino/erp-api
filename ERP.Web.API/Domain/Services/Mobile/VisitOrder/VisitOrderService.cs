@@ -479,6 +479,7 @@ public class VisitOrderService : GeneralService<MobileVisitLog>, IVisitOrderServ
         var data = (from vc in Db.VwVisitOrderCustomers
             join visits in visitOrders on vc.Code equals visits.Code
             join user in Db.Users on visits.SalesmanId equals user.EmployeeId
+            join address in Db.CustomerAddress.Where(x=>x.IsDefault.Equals(true)) on vc.CustCode equals address.Code
             where user.Id == userId && visits.Date >= startFrom
             select new VwVisitOrderCustomer
             {
@@ -489,7 +490,7 @@ public class VisitOrderService : GeneralService<MobileVisitLog>, IVisitOrderServ
                 Visited = vc.Visited,
                 CustomerInitial = vc.CustomerInitial,
                 CustomerName = vc.CustomerName,
-                Address = vc.Address,
+                Address = vc.Address??address.Address1,
                 AreaName1 = vc.AreaName1,
                 AreaName2 = vc.AreaName2,
                 ReplacemanInitial = vc.ReplacemanInitial,
