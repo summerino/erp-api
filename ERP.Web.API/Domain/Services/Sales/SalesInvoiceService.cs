@@ -579,8 +579,6 @@ public class SalesInvoiceService : GeneralService<SalesInvoiceHeader>, ISalesInv
                     // Execute sp_update_so_dlv_qty
                     Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", data.Code);
 
-                    Db.Database.ExecuteSqlRaw("EXEC sp_update_so_free_dlv_qty {0}", data.Code);
-
                     // Execute sp_update_stock_mutation_from_so
                     Db.Database.ExecuteSqlRaw(
                         "EXEC sp_update_stock_mutation_from_so {0}, {1}, {2}",

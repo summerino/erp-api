@@ -87,99 +87,110 @@ public class MobileCustomerService : GeneralService<MobileCustomer>, IMobileCust
         if (!data.Any())
             return new SaveResult(false, "Tidak ada data yang di proses");
 
-        foreach (var item in data)
+        using var transaction = Db.Database.BeginTransaction();
+        try
         {
-            if (IsCustomerInitialExists(item.Initial))
+            foreach (var item in data)
             {
-                result.Message = $"Inisial sudah {item.Initial} terdaftar. Tolong gunakan inisial lain.";
-                return result;
+                if (IsCustomerInitialExists(item.Initial))
+                {
+                    result.Message = $"Inisial sudah {item.Initial} terdaftar. Tolong gunakan inisial lain.";
+                    return result;
+                }
+
+                var custCode = GetNewCode("CUST_NUM_FMT", item.CreatedDate);
+
+                var custData = new Customer
+                {
+                    Code = custCode,
+                    Initial = item.Initial,
+                    Name = item.Name,
+                    TypeId = item.TypeId,
+                    PaymentTermId = 1,
+                    RefNo = item.Code,
+                    AreaId1 = item.AreaId1,
+                    AreaId2 = item.AreaId2,
+                    AreaId3 = item.AreaId3,
+                    AreaId4 = item.AreaId4,
+                    AreaId5 = item.AreaId5,
+                    IsActive = true,
+                    CreatedBy = item.CreatedBy,
+                    CreatedDate = item.CreatedDate,
+                    UpdatedBy = item.UpdatedBy,
+                    UpdatedDate = item.UpdatedDate
+                };
+
+                Db.Customers.Add(custData);
+
+                var custAdd = new CustomerAddress
+                {
+                    Code = custCode,
+                    Initial = item.Initial,
+                    Address1 = item.Address1,
+                    Address2 = item.Address2,
+                    ContactPerson = item.ContactPerson,
+                    Phone = item.Phone,
+                    Fax = item.Fax,
+                    Lat = item.Lat,
+                    Lng = item.Lng,
+                    IsDefault = true
+                };
+
+                Db.CustomerAddress.Add(custAdd);
+
+                Db.SaveChanges();
+
+                custData.BillingAddressId = custAdd.Id;
+                custData.ShippingAddressId = custAdd.Id;
+                Db.Customers.Update(custData);
+
+                var mcData = Db.MobileCustomers.FirstOrDefault(x => x.Code == item.Code);
+
+                mcData.CustCode = custCode;
+                mcData.Mark = "APR";
+                mcData.UpdatedBy = userId;
+                mcData.UpdatedDate = DateTime.Now;
+                mcData.ApprovedBy = userId;
+                mcData.ApprovedDate = mcData.UpdatedDate;
+                Db.MobileCustomers.Update(mcData);
+
+                var mvlData = Db.MobileVisitLogs.FirstOrDefault(x => x.CustCode == item.Code);
+                if (mvlData != null)
+                {
+                    mvlData.CustCode = custCode;
+                    mvlData.UpdatedBy = userId;
+                    mvlData.UpdatedDate = DateTime.Now;
+                    Db.MobileVisitLogs.Update(mvlData);
+                }
+
+                var moData = Db.MobileOrderHeaders.FirstOrDefault(x => x.CustCode == item.Code);
+                if (moData != null)
+                {
+                    moData.CustCode = custCode;
+                    moData.UpdatedBy = userId;
+                    moData.UpdatedDate = DateTime.Now;
+                    Db.MobileOrderHeaders.Update(moData);
+                }
+
+                var mpiData = Db.MobilePaymentInvoices.FirstOrDefault(x => x.CustCode == item.Code);
+                if (mpiData != null)
+                {
+                    mpiData.CustCode = custCode;
+                    mpiData.UpdatedBy = userId;
+                    mpiData.UpdatedDate = DateTime.Now;
+                    Db.MobilePaymentInvoices.Update(mpiData);
+                }
             }
-
-            var custCode = GetNewCode("CUST_NUM_FMT", item.CreatedDate);
-
-            var custData = new Customer
-            {
-                Code = custCode,
-                Initial = item.Initial,
-                Name = item.Name,
-                TypeId = item.TypeId,
-                PaymentTermId = 1,
-                RefNo = item.Code,
-                AreaId1 = item.AreaId1,
-                AreaId2 = item.AreaId2,
-                AreaId3 = item.AreaId3,
-                AreaId4 = item.AreaId4,
-                AreaId5 = item.AreaId5,
-                IsActive = true,
-                CreatedBy = item.CreatedBy,
-                CreatedDate = item.CreatedDate,
-                UpdatedBy = item.UpdatedBy,
-                UpdatedDate = item.UpdatedDate
-            };
-
-            Db.Customers.Add(custData);
-
-            var custAdd = new CustomerAddress
-            {
-                Code = custCode,
-                Initial = item.Initial,
-                Address1 = item.Address1,
-                Address2 = item.Address2,
-                ContactPerson = item.ContactPerson,
-                Phone = item.Phone,
-                Fax = item.Fax,
-                Lat = item.Lat,
-                Lng = item.Lng,
-                IsDefault = true
-            };
-
-            Db.CustomerAddress.Add(custAdd);
 
             Db.SaveChanges();
 
-            custData.BillingAddressId = custAdd.Id;
-            custData.ShippingAddressId = custAdd.Id;
-            Db.Customers.Update(custData);
-
-            var mcData = Db.MobileCustomers.FirstOrDefault(x => x.Code == item.Code);
-
-            mcData.CustCode = custCode;
-            mcData.Mark = "APR";
-            mcData.UpdatedBy = userId;
-            mcData.UpdatedDate = DateTime.Now;
-            mcData.ApprovedBy = userId;
-            mcData.ApprovedDate = mcData.UpdatedDate;
-            Db.MobileCustomers.Update(mcData);
-
-            var mvlData = Db.MobileVisitLogs.FirstOrDefault(x => x.CustCode == item.Code);
-            if (mvlData != null)
-            {
-                mvlData.CustCode = custCode;
-                mvlData.UpdatedBy = userId;
-                mvlData.UpdatedDate = DateTime.Now;
-                Db.MobileVisitLogs.Update(mvlData);
-            }
-
-            var moData = Db.MobileOrderHeaders.FirstOrDefault(x => x.CustCode == item.Code);
-            if (moData != null)
-            {
-                moData.CustCode = custCode;
-                moData.UpdatedBy = userId;
-                moData.UpdatedDate = DateTime.Now;
-                Db.MobileOrderHeaders.Update(moData);
-            }
-
-            var mpiData = Db.MobilePaymentInvoices.FirstOrDefault(x => x.CustCode == item.Code);
-            if (mpiData != null)
-            {
-                mpiData.CustCode = custCode;
-                mpiData.UpdatedBy = userId;
-                mpiData.UpdatedDate = DateTime.Now;
-                Db.MobilePaymentInvoices.Update(mpiData);
-            }
+            transaction.Commit();
         }
-
-        Db.SaveChanges();
+        catch (Exception ex)
+        {
+            result.Message = ex.InnerException?.Message ?? ex.Message;
+            return result;
+        }
 
         result.Success = true;
         result.Message = "Data pelanggan mobile berhasil disetujui.";
@@ -193,22 +204,32 @@ public class MobileCustomerService : GeneralService<MobileCustomer>, IMobileCust
         if (!data.Any())
             return new SaveResult(false, "Tidak ada data yang di proses");
 
-        foreach (var item in data)
+        using var transaction = Db.Database.BeginTransaction();
+        try
         {
-            if (item.Mark == "REJ")
+            foreach (var item in data)
             {
-                result.Message = $"Data pelanggan {item.Name} tidak bisa ditolak karena dalam status ditolak.";
-                return result;
+                if (item.Mark == "REJ")
+                {
+                    result.Message = $"Data pelanggan {item.Name} tidak bisa ditolak karena dalam status ditolak.";
+                    return result;
+                }
+
+                var mcData = Db.MobileCustomers.FirstOrDefault(x => x.Code == item.Code);
+                mcData.RejectedBy = userId;
+                mcData.RejectedDate = DateTime.Now;
+                mcData.Mark = "REJ";
+                Db.MobileCustomers.Update(mcData);
             }
 
-            var mcData = Db.MobileCustomers.FirstOrDefault(x => x.Code == item.Code);
-            mcData.RejectedBy = userId;
-            mcData.RejectedDate = DateTime.Now;
-            mcData.Mark = "REJ";
-            Db.MobileCustomers.Update(mcData);
+            Db.SaveChanges();
+            transaction.Commit();
         }
-
-        Db.SaveChanges();
+        catch (Exception ex)
+        {
+            result.Message = ex.InnerException?.Message ?? ex.Message;
+            return result;
+        }
 
         result.Success = true;
         result.Message = "Data pelanggan mobile berhasil ditolak.";
