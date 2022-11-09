@@ -140,7 +140,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                     x.Content,
                     x.Mark,
                     Subject = Db.PromoSubjects.Where(y => y.Code == x.Code).ToList(),
-                }).Where(x => x.StartDate <= data.Date && data.Date <= x.EndDate).ToList();
+                }).Where(x => x.StartDate <= data.Date && data.Date <= x.EndDate && x.Mark == "A").ToList();
             var items = Db.Items.ToList();
             var uomConversions = Db.UoMConversions.ToList();
             List<decimal> totalDetail = new();
@@ -1176,7 +1176,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                     x.Content,
                     x.Mark,
                     Subject = Db.PromoSubjects.Where(y => y.Code == x.Code).ToList(),
-                }).Where(x => x.StartDate <= data.Date && data.Date <= x.EndDate).ToList();
+                }).Where(x => x.StartDate <= data.Date && data.Date <= x.EndDate && x.Mark == "A").ToList();
             var items = Db.Items.ToList();
             var uomConversions = Db.UoMConversions.ToList();
             List<decimal> totalDetail = new();
