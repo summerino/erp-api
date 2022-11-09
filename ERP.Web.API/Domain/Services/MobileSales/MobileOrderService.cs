@@ -120,7 +120,7 @@ public class MobileOrderService : GeneralService<MobileOrderHeader>, IMobileOrde
 
                     if (checkQty && IsQtyExcess(salesData.WarehouseCode, detailData))
                     {
-                        result.Message = $"Data mobile order {itemData.Code} tidak bisa disetujui karena qty yang dipesan lebih besar dari qty yang tersedia.";
+                        result.Message = $"Data mobile order {itemData.Code} tidak bisa disetujui karena qty barang yang dipesan lebih besar dari qty yang tersedia atau status barang tidak aktif.";
                         return result;
                     }
 
@@ -692,6 +692,10 @@ public class MobileOrderService : GeneralService<MobileOrderHeader>, IMobileOrde
         var result = false;
         foreach (var item in items)
         {
+            //check if item active
+            if (!Db.Items.FirstOrDefault(x => x.Id == item.ItemId).IsActive)
+                result = true;
+
             var uom = Db.UoMConversions.FirstOrDefault(x => x.Id == item.UnitId);
             var stock = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == warehouseCode && x.ItemId == item.ItemId);
             if (stock != null)
