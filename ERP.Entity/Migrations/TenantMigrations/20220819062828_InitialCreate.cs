@@ -11828,7 +11828,11 @@ BEGIN TRY
 	-- Get sales order data
 	SELECT Code, ItemId, UnitId, Qty
 	INTO #tmp_so
-	FROM Sales.SalesOrderDetail so_d
+	FROM (
+		SELECT Code, ItemId, UnitId, Qty FROM Sales.SalesOrderDetail
+		UNION
+		SELECT Code, ItemId, UnitId, Qty FROM Sales.SalesOrderDetailFreeGood
+	) so_d
 	WHERE EXISTS (
 		SELECT Code
 		FROM Sales.SalesOrderHeader so_h
@@ -11847,7 +11851,11 @@ BEGIN TRY
 	-- Get sales delivery data
 	SELECT ItemId, UnitId, SUM(Qty) AS QtyDlv
 	INTO #tmp_do
-	FROM Sales.SalesDeliveryDetail do_d
+	FROM (
+		SELECT Code, ItemId, UnitId, Qty FROM Sales.SalesDeliveryDetail
+		UNION
+		SELECT Code, ItemId, UnitId, Qty FROM Sales.SalesDeliveryDetailFreeGood
+	) do_d
 	WHERE EXISTS (
 		SELECT Code
 		FROM Sales.SalesDeliveryHeader do_h
