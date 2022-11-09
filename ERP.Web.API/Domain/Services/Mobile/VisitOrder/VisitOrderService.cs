@@ -581,11 +581,23 @@ public class VisitOrderService : GeneralService<MobileVisitLog>, IVisitOrderServ
 
     public SaveResult Insert(VisitRequestModel data)
     {
+        var custCode = data.CustCode;
+        var createDate = DateTime.Now;
+        if (data.CustCode.Contains('-'))
+        {
+            var cust = Db.MobileCustomers.Where(x => x.Code.Equals(data.CustCode)).FirstOrDefault();
+            if (cust != null)
+            {
+                custCode = cust.CustCode??cust.Code;
+            }
+        }
+        
         var result = new SaveResult(false);
 
         using var transaction = Db.Database.BeginTransaction();
         try
         {
+            data.CustCode = custCode;
             Db.MobileVisitLogs.Add(data);
 
             //if (data.Visited == true)
@@ -623,16 +635,16 @@ public class VisitOrderService : GeneralService<MobileVisitLog>, IVisitOrderServ
                     VisitLogCode = data.Code,
                     Date = data.Date,
                     SalesmanId = data.SalesmanId,
-                    CustCode = data.CustCode,
+                    CustCode = custCode,
                     CoaCode = invoice.CoaCode,
                     TransCode = transCode,
                     Amount = invoice.Amount,
                     NotesFailCollect = invoice.NotesFailCollect,
                     SrcTrans = invoice.SrcTrans,
                     CreatedBy = data.CreatedBy,
-                    CreatedDate = data.CreatedDate,
+                    CreatedDate = createDate,
                     UpdatedBy = data.CreatedBy,
-                    UpdatedDate = data.CreatedDate,
+                    UpdatedDate = createDate,
                     Mark = "A"
                 });
 
@@ -652,7 +664,7 @@ public class VisitOrderService : GeneralService<MobileVisitLog>, IVisitOrderServ
                     Date = data.Date,
                     VisitLogCode = data.Code,
                     Type = data.OrderHeader.Type,
-                    CustCode = data.CustCode,
+                    CustCode = custCode,
                     SalesBy = data.SalesmanId,
                     PaymentTermId = data.OrderHeader.PaymentTermId,
                     CurrCode = data.OrderHeader.CurrCode,
@@ -667,9 +679,9 @@ public class VisitOrderService : GeneralService<MobileVisitLog>, IVisitOrderServ
                     Dpp = data.OrderHeader.Dpp,
                     PaidAmount = data.OrderHeader.PaidAmount,
                     CreatedBy = data.CreatedBy,
-                    CreatedDate = data.CreatedDate,
+                    CreatedDate = createDate,
                     UpdatedBy = data.CreatedBy,
-                    UpdatedDate = data.CreatedDate,
+                    UpdatedDate = createDate,
                     Mark = "A"
                 });
 

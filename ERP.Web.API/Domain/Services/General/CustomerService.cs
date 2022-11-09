@@ -128,7 +128,7 @@ public class CustomerService : GeneralService<Customer>, ICustomerService
                               UpdatedDate = custMobile.UpdatedDate,
                           });
 
-        var data = dataOriginal.Union(dataMobile).OrderBy(x => x.UpdatedDate).AsQueryable();
+        
 
         if (!string.IsNullOrEmpty(mobileLastSync))
         {
@@ -147,9 +147,11 @@ public class CustomerService : GeneralService<Customer>, ICustomerService
                     mobileLastSync += "0";
                     break;
             }
-            data = data.Where(x => x.UpdatedDate > DateTime.ParseExact(mobileLastSync, "yyyy-MM-ddTHH:mm:ss.ffff", null));
+            dataOriginal = dataOriginal.Where(x => x.UpdatedDate > DateTime.ParseExact(mobileLastSync, "yyyy-MM-ddTHH:mm:ss.ffff", null));
         }
 
+        var data = dataOriginal.Union(dataMobile).OrderBy(x => x.UpdatedDate).AsQueryable();
+        
         if (!string.IsNullOrEmpty(search))
         {
             data = data.Where(x =>
