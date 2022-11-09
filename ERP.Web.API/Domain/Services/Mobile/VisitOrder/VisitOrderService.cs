@@ -582,6 +582,7 @@ public class VisitOrderService : GeneralService<MobileVisitLog>, IVisitOrderServ
     public SaveResult Insert(VisitRequestModel data)
     {
         var custCode = data.CustCode;
+        var createDate = DateTime.Now;
         if (data.CustCode.Contains('-'))
         {
             var cust = Db.MobileCustomers.Where(x => x.Code.Equals(data.CustCode)).FirstOrDefault();
@@ -641,9 +642,9 @@ public class VisitOrderService : GeneralService<MobileVisitLog>, IVisitOrderServ
                     NotesFailCollect = invoice.NotesFailCollect,
                     SrcTrans = invoice.SrcTrans,
                     CreatedBy = data.CreatedBy,
-                    CreatedDate = data.CreatedDate,
+                    CreatedDate = createDate,
                     UpdatedBy = data.CreatedBy,
-                    UpdatedDate = data.CreatedDate,
+                    UpdatedDate = createDate,
                     Mark = "A"
                 });
 
@@ -678,9 +679,9 @@ public class VisitOrderService : GeneralService<MobileVisitLog>, IVisitOrderServ
                     Dpp = data.OrderHeader.Dpp,
                     PaidAmount = data.OrderHeader.PaidAmount,
                     CreatedBy = data.CreatedBy,
-                    CreatedDate = data.CreatedDate,
+                    CreatedDate = createDate,
                     UpdatedBy = data.CreatedBy,
-                    UpdatedDate = data.CreatedDate,
+                    UpdatedDate = createDate,
                     Mark = "A"
                 });
 
