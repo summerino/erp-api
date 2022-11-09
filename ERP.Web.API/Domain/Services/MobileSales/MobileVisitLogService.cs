@@ -231,16 +231,22 @@ public class MobileVisitLogService : GeneralService<MobileVisitLog>, IMobileVisi
         Db.Entry(data).Property(e => e.CreatedDate).IsModified = false;
 
         var moData = Db.MobileOrderHeaders.FirstOrDefault(x => x.VisitLogCode == data.Code);
-        moData.CustCode = data.CustCode;
-        moData.UpdatedBy = data.UpdatedBy;
-        moData.UpdatedDate = DateTime.Now;
-        Db.MobileOrderHeaders.Update(moData);
+        if (moData != null)
+        {
+            moData.CustCode = data.CustCode;
+            moData.UpdatedBy = data.UpdatedBy;
+            moData.UpdatedDate = DateTime.Now;
+            Db.MobileOrderHeaders.Update(moData);
+        }        
 
         var mpiData = Db.MobilePaymentInvoices.FirstOrDefault(x => x.VisitLogCode == data.Code);
-        mpiData.CustCode = data.CustCode;
-        mpiData.UpdatedBy = data.UpdatedBy;
-        mpiData.UpdatedDate = DateTime.Now;
-        Db.MobilePaymentInvoices.Update(mpiData);
+        if (mpiData != null)
+        {
+            mpiData.CustCode = data.CustCode;
+            mpiData.UpdatedBy = data.UpdatedBy;
+            mpiData.UpdatedDate = DateTime.Now;
+            Db.MobilePaymentInvoices.Update(mpiData);
+        }
 
         Db.SaveChanges();
 
