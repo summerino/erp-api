@@ -117,7 +117,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
             // Checking order qty is excess or not
             var checkQty = Db.SystemParameters.FirstOrDefault(x => x.Code == "DEF_SLS_ORD_CHECK_QTY")?.Value == "1";
 
-            if (checkQty && IsQtyExcess(data.WarehouseCode, data.ItemDetails, null))
+            if (((checkQty && (!data.IsSoDlv || !data.IsSoInv)) || data.IsSoDlv || data.IsSoInv) && IsQtyExcess(data.WarehouseCode, data.ItemDetails, null))
             {
                 result.Message = "Data order penjualan tidak bisa disimpan karena qty yang dipesan lebih besar dari qty yang tersedia.";
                 return result;
@@ -622,7 +622,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
 
                 if (bonusPromo.Any())
                 {
-                    if (checkQty && IsQtyExcessFree(data.WarehouseCode, bonusPromo, null))
+                    if (((checkQty && (!data.IsSoDlv || !data.IsSoInv)) || data.IsSoDlv || data.IsSoInv) && IsQtyExcessFree(data.WarehouseCode, bonusPromo, null))
                     {
                         result.Message = "Data order penjualan tidak bisa disimpan karena qty bonus yang dipesan lebih besar dari qty yang tersedia.";
                         return result;
@@ -1193,7 +1193,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
             // Checking order qty is excess or not
             var checkQty = Db.SystemParameters.FirstOrDefault(x => x.Code == "DEF_SLS_ORD_CHECK_QTY")?.Value == "1";
 
-            if (checkQty && IsQtyExcess(data.WarehouseCode, data.ItemDetails, data.Code))
+            if (((checkQty && (!data.IsSoDlv || !data.IsSoInv)) || data.IsSoDlv || data.IsSoInv) && IsQtyExcess(data.WarehouseCode, data.ItemDetails, data.Code))
             {
                 result.Message = "Data order penjualan tidak bisa disimpan karena qty yang dipesan lebih besar dari qty tersedia.";
                 return result;
@@ -1788,7 +1788,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
 
                     if (bonusPromo.Any())
                     {
-                        if (checkQty && IsQtyExcessFree(data.WarehouseCode, bonusPromo, data.Code))
+                        if (((checkQty && (!data.IsSoDlv || !data.IsSoInv)) || data.IsSoDlv || data.IsSoInv) && IsQtyExcessFree(data.WarehouseCode, bonusPromo, data.Code))
                         {
                             result.Message = "Data order penjualan tidak bisa disimpan karena qty bonus yang dipesan lebih besar dari qty yang tersedia.";
                             return result;

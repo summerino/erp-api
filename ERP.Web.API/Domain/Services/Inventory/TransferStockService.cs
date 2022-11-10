@@ -201,7 +201,7 @@ public class TransferStockService : GeneralService<TransferStockHeader>, ITransf
 
             RestoreWarehouseQty(data.Code);
 
-            var oldData = Db.TransferStockHeaders.FirstOrDefault(x => x.Code == data.Code);
+            var oldData = Db.TransferStockHeaders.AsNoTracking().FirstOrDefault(x => x.Code == data.Code);
             if (oldData.Type == "IN" && oldData.Type != data.Type)           
                 RestoreOriginMark(oldData);
 
