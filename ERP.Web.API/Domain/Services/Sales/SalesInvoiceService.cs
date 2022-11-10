@@ -28,7 +28,7 @@ public class SalesInvoiceService : GeneralService<SalesInvoiceHeader>, ISalesInv
                 ? data.Where(x => x.Date == searchDate)
                 : data.Where(x =>
                     x.Code.Contains(search) || x.CustCode.StartsWith(search) || x.CustName.Contains(search) ||
-                    x.SalesInitial.Contains(search) || x.SalesName.Contains(search) || x.SoCode == search);
+                    x.CustAddress.Contains(search) ||x.SalesInitial.Contains(search) || x.SalesName.Contains(search) || x.SoCode == search);
         }
 
         return data.ToDataSourceResult(skip, take, filter, sort);
