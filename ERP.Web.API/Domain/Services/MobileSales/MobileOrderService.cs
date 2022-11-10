@@ -116,9 +116,7 @@ public class MobileOrderService : GeneralService<MobileOrderHeader>, IMobileOrde
                     // Credit Used
                     UpdateCreditUsed(itemData.CustCode, itemData.Total);
 
-                    var checkQty = Db.SystemParameters.FirstOrDefault(x => x.Code == "DEF_SLS_ORD_CHECK_QTY")?.Value == "1";
-
-                    if (checkQty && IsQtyExcess(salesData.WarehouseCode, detailData))
+                    if (IsQtyExcess(salesData.WarehouseCode, detailData))
                     {
                         result.Message = $"Data mobile order {itemData.Code} tidak bisa disetujui karena qty barang yang dipesan lebih besar dari qty yang tersedia atau status barang tidak aktif.";
                         return result;
