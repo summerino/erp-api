@@ -451,7 +451,7 @@ public class DeliveryPlanService : GeneralService<DeliveryPlanHeader>, IDelivery
 
                         if (sdHeadData.FromDirectInvoice)
                         {
-                            var soDetail = Db.SalesOrderDetailFreeGoods.FirstOrDefault(x => x.Id == sdDetail.SoDetailId && x.ItemId == deletedItem.ItemId && x.UnitId == deletedItem.UnitId);
+                            var soDetail = Db.SalesOrderDetailFreeGoods.FirstOrDefault(x => x.Code == transCode && x.ItemId == deletedItem.ItemId && x.UnitId == deletedItem.UnitId);
                             soDetail.Qty += deletedItem.Qty - lastQty;
                             soDetail.QtyClosed += deletedItem.Qty - lastQty;
                             Db.SalesOrderDetailFreeGoods.Update(soDetail);
