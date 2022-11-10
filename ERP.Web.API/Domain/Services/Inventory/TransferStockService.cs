@@ -201,6 +201,10 @@ public class TransferStockService : GeneralService<TransferStockHeader>, ITransf
 
             RestoreWarehouseQty(data.Code);
 
+            var oldData = Db.TransferStockHeaders.FirstOrDefault(x => x.Code == data.Code);
+            if (oldData.Type == "IN" && oldData.Type != data.Type)           
+                RestoreOriginMark(oldData);
+
             data.ApprovedBy = null;
             data.ApprovedDate = null;
 
@@ -470,6 +474,14 @@ public class TransferStockService : GeneralService<TransferStockHeader>, ITransf
                 Db.WarehouseQuantities.Update(whQtyData);
             }
         }
+        Db.SaveChanges();
+    }
+
+    private void RestoreOriginMark(TransferStockHeader data)
+    {
+        var originTSdata = Db.TransferStockHeaders.FirstOrDefault(x => x.Code == data.OriginTransferCode);
+        originTSdata.Mark = "A";
+        Db.TransferStockHeaders.Update(originTSdata);
         Db.SaveChanges();
     }
 }
