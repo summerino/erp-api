@@ -1,6 +1,5 @@
 ﻿using ERP.Common;
 using ERP.Common.Models;
-using ERP.Entity.General;
 using ERP.Entity.HumanResource;
 using ERP.Web.API.Domain.Models.Mobile.HumanResource;
 

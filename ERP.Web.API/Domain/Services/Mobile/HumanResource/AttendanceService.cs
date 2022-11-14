@@ -2,7 +2,6 @@
 using ERP.Common.Extensions;
 using ERP.Common.Models;
 using ERP.Entity;
-using ERP.Entity.General;
 using ERP.Entity.HumanResource;
 using ERP.Web.API.Domain.Interfaces.Mobile.HumanResource;
 using ERP.Web.API.Domain.Models.Mobile.HumanResource;
