@@ -1193,9 +1193,9 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
             // Checking order qty is excess or not
             var checkQty = Db.SystemParameters.FirstOrDefault(x => x.Code == "DEF_SLS_ORD_CHECK_QTY")?.Value == "1";
 
-            if (((checkQty && (!data.IsSoDlv || !data.IsSoInv)) || data.IsSoDlv || data.IsSoInv) && IsQtyExcess(data.WarehouseCode, data.ItemDetails, data.Code))
+            if (((checkQty && (!data.IsSoDlv || !data.IsSoInv)) || data.IsSoDlv || data.IsSoInv) && IsQtyExcess(data.WarehouseCode, data.ItemDetails, data.Code, (data.IsSoInv || data.IsSoDlv)))
             {
-                result.Message = "Data order penjualan tidak bisa disimpan karena qty yang dipesan lebih besar dari qty tersedia.";
+                result.Message = "Data order penjualan tidak bisa disimpan karena qty yang dipesan lebih besar dari qty yang " + ((data.IsSoInv || data.IsSoDlv) ? "dipesan." : "tersedia.");
                 return result;
             }
 
@@ -1788,9 +1788,9 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
 
                     if (bonusPromo.Any())
                     {
-                        if (((checkQty && (!data.IsSoDlv || !data.IsSoInv)) || data.IsSoDlv || data.IsSoInv) && IsQtyExcessFree(data.WarehouseCode, bonusPromo, data.Code))
+                        if (((checkQty && (!data.IsSoDlv || !data.IsSoInv)) || data.IsSoDlv || data.IsSoInv) && IsQtyExcessFree(data.WarehouseCode, bonusPromo, data.Code, (data.IsSoInv || data.IsSoDlv)))
                         {
-                            result.Message = "Data order penjualan tidak bisa disimpan karena qty bonus yang dipesan lebih besar dari qty yang tersedia.";
+                            result.Message = "Data order penjualan tidak bisa disimpan karena qty bonus yang dipesan lebih besar dari qty yang " + ((data.IsSoInv || data.IsSoDlv) ? "dipesan." : "tersedia.");
                             return result;
                         }
 
@@ -2521,7 +2521,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
         return result;
     }
 
-    private bool IsQtyExcess(string warehouseCode, IEnumerable<SalesOrderDetail> items, string code)
+    private bool IsQtyExcess(string warehouseCode, IEnumerable<SalesOrderDetail> items, string code, bool isSaveDO = false)
     {
         var result = false;
         foreach (var item in items)
@@ -2552,12 +2552,12 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                 }
                 else
                 {
-                    var oldStock = Db.StockMutations.FirstOrDefault(x => x.ItemId == item.ItemId && x.RefCode1 == code);
+                    var oldStock = Db.StockMutations.FirstOrDefault(x => x.ItemId == item.ItemId && x.RefDetailId1 == item.Id && x.RefCode1 == code);
                     if (oldStock != null)
                     {
                         if (uom.IsBaseUnit)
                         {
-                            if (item.Qty > (stock.QtyOnHand - (stock.QtyOnOrder - oldStock.BaseQty)))
+                            if (item.Qty > (!isSaveDO ? (stock.QtyOnHand - (stock.QtyOnOrder - oldStock.BaseQty)) : (stock.QtyOnOrder - oldStock.BaseQty)))
                             {
                                 result = true;
                             }
@@ -2567,7 +2567,27 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                             var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= uom.Seq).Select(x => x.Conversion).ToList();
                             var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
                             var baseQty = item.Qty * multipliedQty;
-                            if (baseQty > (stock.QtyOnHand - (stock.QtyOnOrder - oldStock.BaseQty)))
+                            if (baseQty > (!isSaveDO ? (stock.QtyOnHand - (stock.QtyOnOrder - oldStock.BaseQty)) : (stock.QtyOnOrder - oldStock.BaseQty)))
+                            {
+                                result = true;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (uom.IsBaseUnit)
+                        {
+                            if (item.Qty > (stock.QtyOnHand - stock.QtyOnOrder))
+                            {
+                                result = true;
+                            }
+                        }
+                        else
+                        {
+                            var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= uom.Seq).Select(x => x.Conversion).ToList();
+                            var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
+                            var baseQty = item.Qty * multipliedQty;
+                            if (baseQty > (stock.QtyOnHand - stock.QtyOnOrder))
                             {
                                 result = true;
                             }
@@ -2583,7 +2603,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
         return result;
     }
 
-    private bool IsQtyExcessFree(string warehouseCode, IEnumerable<SalesOrderDetailFreeGood> items, string code)
+    private bool IsQtyExcessFree(string warehouseCode, IEnumerable<SalesOrderDetailFreeGood> items, string code, bool isSaveDO = false)
     {
         var result = false;
         foreach (var item in items)
@@ -2614,12 +2634,12 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                 }
                 else
                 {
-                    var oldStock = Db.StockMutations.FirstOrDefault(x => x.ItemId == item.ItemId && x.RefCode1 == code);
+                    var oldStock = Db.StockMutations.FirstOrDefault(x => x.ItemId == item.ItemId && x.RefDetailId1 == item.Id && x.RefCode1 == code);
                     if (oldStock != null)
                     {
                         if (uom.IsBaseUnit)
                         {
-                            if (item.Qty > (stock.QtyOnHand - (stock.QtyOnOrder - oldStock.BaseQty)))
+                            if (item.Qty > (!isSaveDO ? (stock.QtyOnHand - (stock.QtyOnOrder - oldStock.BaseQty)) : (stock.QtyOnOrder - oldStock.BaseQty)))
                             {
                                 result = true;
                             }
@@ -2629,7 +2649,27 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                             var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= uom.Seq).Select(x => x.Conversion).ToList();
                             var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
                             var baseQty = item.Qty * multipliedQty;
-                            if (baseQty > (stock.QtyOnHand - (stock.QtyOnOrder - oldStock.BaseQty)))
+                            if (baseQty > (!isSaveDO ? (stock.QtyOnHand - (stock.QtyOnOrder - oldStock.BaseQty)) : (stock.QtyOnOrder - oldStock.BaseQty)))
+                            {
+                                result = true;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (uom.IsBaseUnit)
+                        {
+                            if (item.Qty > (stock.QtyOnHand - stock.QtyOnOrder))
+                            {
+                                result = true;
+                            }
+                        }
+                        else
+                        {
+                            var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= uom.Seq).Select(x => x.Conversion).ToList();
+                            var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
+                            var baseQty = item.Qty * multipliedQty;
+                            if (baseQty > (stock.QtyOnHand - stock.QtyOnOrder))
                             {
                                 result = true;
                             }
