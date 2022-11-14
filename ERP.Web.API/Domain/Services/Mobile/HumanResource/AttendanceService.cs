@@ -2,7 +2,6 @@
 using ERP.Common.Extensions;
 using ERP.Common.Models;
 using ERP.Entity;
-using ERP.Entity.General;
 using ERP.Entity.HumanResource;
 using ERP.Web.API.Domain.Interfaces.Mobile.HumanResource;
 using ERP.Web.API.Domain.Models.Mobile.HumanResource;
@@ -208,9 +207,11 @@ public class AttendanceService : IAttendanceService
 
     public Attendance GetCurrentAttendance(long userId)
     {
+        var now = DateTime.Now.Date;
+
         var data = (from attend in Db.Attendances
             join user in Db.Users on attend.EmployeeId equals user.EmployeeId
-            where attend.Date == DateTime.Now.Date && user.Id == userId
+            where attend.Date == now && user.Id == userId
             select new Attendance
             {
                 Id = attend.Id,
@@ -258,7 +259,7 @@ public class AttendanceService : IAttendanceService
     public DateTime? GetLastAttendance(int userId)
     {
         var employeeId = Db.Users.Where(x => x.Id.Equals(userId)).Select(x => x.EmployeeId).FirstOrDefault();
-        var data = Db.Attendances.Where(z=>z.EmployeeId.Equals(employeeId)).Select(y=>y.Date).OrderByDescending(i => i.Date).FirstOrDefault();
+        var data = Db.Attendances.Where(z => z.EmployeeId.Equals(employeeId)).Select(y => y.Date).OrderByDescending(i => i.Date).FirstOrDefault();
 
         return data;
     }
