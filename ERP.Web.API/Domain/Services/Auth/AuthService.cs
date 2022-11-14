@@ -68,7 +68,7 @@ public class AuthService : IAuthService
 
         // Configure tenant context db
         var contextOptions = new DbContextOptionsBuilder<TenantContext>()
-            .UseSqlServer($"Server={tenant.ServerName};Database={tenant.DatabaseName};User Id={tenant.ServerUserId};Password={tenant.ServerPassword};Command Timeout=600;Application Name=ERP")
+            .UseSqlServer($"Server={tenant.ServerName};Database={tenant.DatabaseName};User Id={tenant.ServerUserId};Password={tenant.ServerPassword};MultipleActiveResultSets=True;Command Timeout=600;Application Name=ERP")
             .Options;
         var tenantCtx = new TenantContext(contextOptions, _catalogCtx, _claim);
 
