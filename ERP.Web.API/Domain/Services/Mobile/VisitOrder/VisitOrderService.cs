@@ -181,7 +181,7 @@ public class VisitOrderService : GeneralService<MobileVisitLog>, IVisitOrderServ
     {
 
         var startFrom = DateTime.Today.AddMonths(-1);
-        var data = (from oh in Db.MobileOrderHeaders
+        var dataWeb = (from oh in Db.MobileOrderHeaders
             join cu in Db.Customers on oh.CustCode equals cu.Code
             join curr in Db.Currencies on oh.CurrCode equals curr.Code
             join pt in Db.PaymentTerms on oh.PaymentTermId equals pt.Id into py
@@ -214,6 +214,40 @@ public class VisitOrderService : GeneralService<MobileVisitLog>, IVisitOrderServ
                 UpdatedDate = oh.UpdatedDate
             });
 
+        var dataMobile = (from oh in Db.MobileOrderHeaders
+                    join cu in Db.MobileCustomers on oh.CustCode equals cu.Code
+                    join curr in Db.Currencies on oh.CurrCode equals curr.Code
+                    join pt in Db.PaymentTerms on oh.PaymentTermId equals pt.Id into py
+                    from sub in py.DefaultIfEmpty()
+                    join user in Db.Users on oh.SalesBy equals user.EmployeeId
+                    where user.Id == userId && oh.Date >= startFrom
+                    select new OrderHeaderModel
+                    {
+                        Code = oh.Code,
+                        Date = oh.Date,
+                        VisitLogCode = oh.VisitLogCode,
+                        SalesOrderCode = oh.SalesOrderCode,
+                        Type = oh.Type,
+                        CustCode = oh.CustCode,
+                        CustName = cu.Name,
+                        CurrCode = oh.CurrCode,
+                        CurrName = curr.Name,
+                        PaymentTermId = oh.PaymentTermId,
+                        PaymentTermName = sub.Name,
+                        PaidAmount = oh.PaidAmount,
+                        TaxAmount = oh.TaxAmount,
+                        ExemptTaxAmount = oh.ExemptTaxAmount,
+                        Dpp = oh.Dpp,
+                        Rate = oh.Rate,
+                        FinalDisc = oh.FinalDisc,
+                        FinalDiscPercent = oh.FinalDiscPercent,
+                        IncludeTax = oh.IncludeTax,
+                        SubTotal = oh.SubTotal,
+                        Total = oh.Total,
+                        UpdatedDate = oh.UpdatedDate
+                    });
+
+        var data = dataWeb.Union(dataMobile).AsQueryable();
         if (lastUpdate != null)
         {
             lastUpdate = GetLastUpdate(lastUpdate);
@@ -226,7 +260,7 @@ public class VisitOrderService : GeneralService<MobileVisitLog>, IVisitOrderServ
     public IEnumerable<PaymentInvoiceModel> GetMobilePaymentInvoice(int userId, string lastUpdate)
     {
         var startFrom = DateTime.Today.AddMonths(-1);
-        var data = (from mpi in Db.MobilePaymentInvoices
+        var dataWeb = (from mpi in Db.MobilePaymentInvoices
             join cu in Db.Customers on mpi.CustCode equals cu.Code
             join coa in Db.Coas on mpi.CoaCode equals coa.Code
             join user in Db.Users on mpi.SalesmanId equals user.EmployeeId
@@ -246,6 +280,29 @@ public class VisitOrderService : GeneralService<MobileVisitLog>, IVisitOrderServ
                 SrcTrans = mpi.SrcTrans,
                 UpdatedDate = mpi.UpdatedDate
             });
+
+        var dataMobile = (from mpi in Db.MobilePaymentInvoices
+                    join cu in Db.MobileCustomers on mpi.CustCode equals cu.Code
+                    join coa in Db.Coas on mpi.CoaCode equals coa.Code
+                    join user in Db.Users on mpi.SalesmanId equals user.EmployeeId
+                    where user.Id == userId && mpi.Date >= startFrom
+                    select new PaymentInvoiceModel
+                    {
+                        Code = mpi.Code,
+                        VisitLogCode = mpi.VisitLogCode,
+                        Date = mpi.Date,
+                        CustCode = mpi.CustCode,
+                        CustName = cu.Name,
+                        CoaCode = mpi.CoaCode,
+                        CoaName = coa.Name,
+                        TransCode = mpi.TransCode,
+                        Amount = mpi.Amount,
+                        NotesFailCollect = mpi.NotesFailCollect,
+                        SrcTrans = mpi.SrcTrans,
+                        UpdatedDate = mpi.UpdatedDate
+                    });
+
+        var data = dataWeb.Union(dataMobile).AsQueryable();
 
         if (lastUpdate != null)
         {
