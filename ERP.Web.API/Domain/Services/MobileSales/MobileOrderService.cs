@@ -116,9 +116,11 @@ public class MobileOrderService : GeneralService<MobileOrderHeader>, IMobileOrde
                     // Credit Used
                     UpdateCreditUsed(itemData.CustCode, itemData.Total);
 
-                    if (IsQtyExcess(salesData.WarehouseCode, detailData))
+                    var (isExcess, validMessage) = IsQtyExcess(salesData.WarehouseCode, detailData);
+
+                    if (isExcess)
                     {
-                        result.Message = $"Data mobile order {itemData.Code} tidak bisa disetujui karena qty barang yang dipesan lebih besar dari qty yang tersedia atau status barang tidak aktif.";
+                        result.Message = $"Data mobile order {itemData.Code} tidak bisa disetujui karena :" + validMessage;
                         return result;
                     }
 
@@ -685,24 +687,31 @@ public class MobileOrderService : GeneralService<MobileOrderHeader>, IMobileOrde
                 Name = x.Promo.Name
             }).ToDynamicList();
     }
-    private bool IsQtyExcess(string warehouseCode, IEnumerable<MobileOrderDetail> items)
+    private (bool, string) IsQtyExcess(string warehouseCode, IEnumerable<MobileOrderDetail> items)
     {
+        var errorList = "";
+
         var result = false;
         foreach (var item in items)
         {
             //check if item active
-            if (!Db.Items.FirstOrDefault(x => x.Id == item.ItemId).IsActive)
+            var itemData = Db.Items.FirstOrDefault(x => x.Id == item.ItemId);
+            if (!itemData.IsActive)
+            {
                 result = true;
-
+                errorList += $"<br/>&bull; Barang {itemData.Name} tidak aktif.";
+            }
+                
             var uom = Db.UoMConversions.FirstOrDefault(x => x.Id == item.UnitId);
             var stock = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == warehouseCode && x.ItemId == item.ItemId);
             if (stock != null)
             {
                 if (uom.IsBaseUnit)
                 {
-                    if (item.Qty > (stock.QtyOnHand - stock.QtyOnOrder))
+                    if (item.Qty > stock.QtyOnHand)
                     {
                         result = true;
+                        errorList += $"<br/>&bull; Barang {itemData.Name} qty yang dipesan lebih besar dari qty yang tersedia.";
                     }
                 }
                 else
@@ -710,18 +719,20 @@ public class MobileOrderService : GeneralService<MobileOrderHeader>, IMobileOrde
                     var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= uom.Seq).Select(x => x.Conversion).ToList();
                     var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
                     var baseQty = item.Qty * multipliedQty;
-                    if (baseQty > (stock.QtyOnHand - stock.QtyOnOrder))
+                    if (baseQty > stock.QtyOnHand)
                     {
                         result = true;
+                        errorList += $"<br/>&bull; Barang {itemData.Name} qty yang dipesan lebih besar dari qty yang tersedia.";
                     }
                 }
             }
             else
             {
                 result = true;
+                errorList += $"<br/>&bull; Barang {itemData.Name} tidak tersedia pada warehouse {warehouseCode}.";
             }
         }
-        return result;
+        return (result, errorList);
     }
 
     #region Credit Used - Limit
