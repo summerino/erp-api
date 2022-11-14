@@ -28,7 +28,7 @@
     </PackageReference>
     <PackageReference Include="ReportViewerCore.NETCore" Version="15.1.17" />
     <PackageReference Include="Swift.Framework" Version="22.3.28.2" />
-    <PackageReference Include="System.Linq.Dynamic.Core" Version="1.2.22" />
+    <PackageReference Include="System.Linq.Dynamic.Core" Version="1.2.23" />
   </ItemGroup>
 
   <ItemGroup>
