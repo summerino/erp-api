@@ -41,9 +41,9 @@ public class JournalService : IJournalService
 
         var tenantCtx = new TenantContext(optionsBuilder.Options, _catalogCtx, _claim);
 
-        var systemParam = tenantCtx.SystemParameters.ToList();
-        var items = tenantCtx.Items.ToList();
-        var taxes = tenantCtx.Taxes.ToList();
+        var systemParam = tenantCtx.SystemParameters.AsNoTracking().ToList();
+        var items = tenantCtx.Items.AsNoTracking().ToList();
+        var taxes = tenantCtx.Taxes.AsNoTracking().ToList();
 
         try
         {
@@ -63,6 +63,8 @@ public class JournalService : IJournalService
             tenantCtx.Database.ExecuteSqlRaw(
                 "DELETE Accounting.Journal WHERE YEAR([Date]) = {0} AND MONTH([Date]) = {1}",
                 data.Date.Year, data.Date.Month);
+
+            newCalculateHPP(tenantCtx, data.Date);
 
             if (data.Date < Convert.ToDateTime(systemParam.FirstOrDefault(x => x.Code == "DATA_START_DATE").Value))
             {
@@ -143,9 +145,9 @@ public class JournalService : IJournalService
             tenantCtx.PostingStates.Update(stateData);
             tenantCtx.SaveChanges();
 
-            var journalSI = ProcessSaleInvJournal(tenantCtx, data.Date, systemParam, items, taxes);
-            if (journalDO != null)
-                tenantCtx.AddRange(journalDO);
+            var journalSI = ProcessSaleInvJournal(tenantCtx, data.Date, systemParam, items, taxes, journalDO);
+            if (journalSI != null)
+                tenantCtx.AddRange(journalSI);
 
             stateData.Step++; //7 /12
             tenantCtx.PostingStates.Update(stateData);
@@ -287,14 +289,14 @@ public class JournalService : IJournalService
         var RcvData = (from rcvheader in db.PurchaseReceiveHeaders
                        join supplier in db.Suppliers on rcvheader.SupCode equals supplier.Code
                        where rcvheader.Date.Month == dateTime.Month && rcvheader.Date.Year == dateTime.Year && rcvheader.SrcTrans == 1 && rcvheader.Mark != "V"
-                       select new { RcvHeader = rcvheader, Supplier = supplier }).ToList();
+                       select new { RcvHeader = rcvheader, Supplier = supplier }).AsNoTracking().ToList();
 
         foreach (var itemData in RcvData)
         {
             var RcvDetailData = (from rcvdetail in db.PurchaseReceiveDetails
                                  join item in db.Items on rcvdetail.ItemId equals item.Id
                                  where rcvdetail.Code == itemData.RcvHeader.Code
-                                 select new { RcvDetail = rcvdetail, Item = item }).ToList();
+                                 select new { RcvDetail = rcvdetail, Item = item }).AsNoTracking().ToList();
             short i = 0;
             short j = 0;
             short k = 0;
@@ -437,21 +439,21 @@ public class JournalService : IJournalService
                     });
                 }
 
-                var invDetData = db.PurchaseInvoiceDetails.Where(x => x.RcvCode == itemData.RcvHeader.Code).ToList();
+                var invDetData = db.PurchaseInvoiceDetails.AsNoTracking().Where(x => x.RcvCode == itemData.RcvHeader.Code).ToList();
                 if (invDetData.Any())
                 {
                     foreach (var item in invDetData)
                     {
-                        var invData = db.PurchaseInvoiceHeaders.FirstOrDefault(x => x.Code == item.Code);
+                        var invData = db.PurchaseInvoiceHeaders.AsNoTracking().FirstOrDefault(x => x.Code == item.Code);
                         if (invData.Mark != "V")
                         {
-                            var invMemo = db.PurchaseInvoiceDebitMemos.Where(x => x.InvCode == item.Code).ToList();
+                            var invMemo = db.PurchaseInvoiceDebitMemos.AsNoTracking().Where(x => x.InvCode == item.Code).ToList();
                             if (invMemo.Any())
                             {
                                 short l = 0;
                                 foreach (var itemMemo in invMemo)
                                 {
-                                    var memoData = db.DebitMemos.FirstOrDefault(x => x.Code == itemMemo.DebitMemoCode);
+                                    var memoData = db.DebitMemos.AsNoTracking().FirstOrDefault(x => x.Code == itemMemo.DebitMemoCode);
                                     if (memoData != null || memoData.Mark != "V")
                                     {
                                         journals.Add(new Journal
@@ -747,11 +749,11 @@ public class JournalService : IJournalService
             {
                 foreach (var itemDetail in DlvDetailData)
                 {
-                    var smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.DlvDetail.Id && x.RefCode1 == itemDetail.DlvDetail.Code);
+                    var smData = db.StockMutations.AsNoTracking().FirstOrDefault(x => x.RefDetailId1 == itemDetail.DlvDetail.Id && x.RefCode1 == itemDetail.DlvDetail.Code);
                     if (smData == null) continue;
-                    var nonVoidSM = RemoveVoidSM(db, db.StockMutations.ToList());
-                    CalculateHPP(db, nonVoidSM, smData.ItemId, smData.RefDetailId1, "DO");
-                    smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.DlvDetail.Id && x.RefCode1 == itemDetail.DlvDetail.Code);
+                    //var nonVoidSM = RemoveVoidSM(db, db.StockMutations.ToList());
+                    //CalculateHPP(db, nonVoidSM, smData.ItemId, smData.RefDetailId1, "DO");
+                    //smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.DlvDetail.Id && x.RefCode1 == itemDetail.DlvDetail.Code);
                     var resultHpp = smData.BaseNettPrice > 0 ? smData.BaseNettPrice * smData.BaseQty : 0m;
 
                     //Inventory using COGS for Amount
@@ -801,11 +803,11 @@ public class JournalService : IJournalService
                 {
                     foreach (var itemFreeDetail in DlvDetailFreeData)
                     {
-                        var smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemFreeDetail.DlvDetail.Id && x.RefCode1 == itemFreeDetail.DlvDetail.Code);
+                        var smData = db.StockMutations.AsNoTracking().FirstOrDefault(x => x.RefDetailId1 == itemFreeDetail.DlvDetail.Id && x.RefCode1 == itemFreeDetail.DlvDetail.Code);
                         if (smData == null) continue;
-                        var nonVoidSM = RemoveVoidSM(db, db.StockMutations.ToList());
-                        CalculateHPP(db, nonVoidSM, smData.ItemId, smData.RefDetailId1, "DOF");
-                        smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemFreeDetail.DlvDetail.Id && x.RefCode1 == itemFreeDetail.DlvDetail.Code);
+                        //var nonVoidSM = RemoveVoidSM(db, db.StockMutations.ToList());
+                        //CalculateHPP(db, nonVoidSM, smData.ItemId, smData.RefDetailId1, "DOF");
+                        //smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemFreeDetail.DlvDetail.Id && x.RefCode1 == itemFreeDetail.DlvDetail.Code);
                         var resultHpp = smData.BaseNettPrice > 0 ? smData.BaseNettPrice * smData.BaseQty : 0m;
 
                         journals.Add(new Journal
@@ -854,11 +856,11 @@ public class JournalService : IJournalService
             {
                 foreach (var itemDetail in DlvDetailData)
                 {
-                    var smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.DlvDetail.Id && x.RefCode1 == itemDetail.DlvDetail.Code);
+                    var smData = db.StockMutations.AsNoTracking().FirstOrDefault(x => x.RefDetailId1 == itemDetail.DlvDetail.Id && x.RefCode1 == itemDetail.DlvDetail.Code);
                     if (smData == null) continue;
-                    var nonVoidSM = RemoveVoidSM(db, db.StockMutations.ToList());
-                    CalculateHPP(db, nonVoidSM, smData.ItemId, smData.RefDetailId1, "DO");
-                    smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.DlvDetail.Id && x.RefCode1 == itemDetail.DlvDetail.Code);
+                    //var nonVoidSM = RemoveVoidSM(db, db.StockMutations.ToList());
+                    //CalculateHPP(db, nonVoidSM, smData.ItemId, smData.RefDetailId1, "DO");
+                    //smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.DlvDetail.Id && x.RefCode1 == itemDetail.DlvDetail.Code);
                     var resultHpp = smData.BaseNettPrice > 0 ? smData.BaseNettPrice * smData.BaseQty : 0m;
 
                     //Discount - Diskon
@@ -1102,11 +1104,11 @@ public class JournalService : IJournalService
                 {
                     foreach (var itemFreeDetail in DlvDetailFreeData)
                     {
-                        var smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemFreeDetail.DlvDetail.Id && x.RefCode1 == itemFreeDetail.DlvDetail.Code);
+                        var smData = db.StockMutations.AsNoTracking().FirstOrDefault(x => x.RefDetailId1 == itemFreeDetail.DlvDetail.Id && x.RefCode1 == itemFreeDetail.DlvDetail.Code);
                         if (smData == null) continue;
-                        var nonVoidSM = RemoveVoidSM(db, db.StockMutations.ToList());
-                        CalculateHPP(db, nonVoidSM, smData.ItemId, smData.RefDetailId1, "DOF");
-                        smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemFreeDetail.DlvDetail.Id && x.RefCode1 == itemFreeDetail.DlvDetail.Code);
+                        //var nonVoidSM = RemoveVoidSM(db, db.StockMutations.ToList());
+                        //CalculateHPP(db, nonVoidSM, smData.ItemId, smData.RefDetailId1, "DOF");
+                        //smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemFreeDetail.DlvDetail.Id && x.RefCode1 == itemFreeDetail.DlvDetail.Code);
                         var resultHpp = smData.BaseNettPrice > 0 ? smData.BaseNettPrice * smData.BaseQty : 0m;
 
                         journals.Add(new Journal
@@ -1151,7 +1153,7 @@ public class JournalService : IJournalService
         return journals;
     }
 
-    private IEnumerable<Journal> ProcessSaleInvJournal(TenantContext db, DateTime dateTime, List<SystemParameter> systemParam, List<Item> items, List<Tax> taxes)
+    private IEnumerable<Journal> ProcessSaleInvJournal(TenantContext db, DateTime dateTime, List<SystemParameter> systemParam, List<Item> items, List<Tax> taxes, IEnumerable<Journal> journalDOs)
     {
         List<Journal> journals = new();
         var arRecog = systemParam.FirstOrDefault(x => x.Code == "AR_RECOG_TIME").Value;
@@ -1176,7 +1178,7 @@ public class JournalService : IJournalService
 
                 foreach (var itemDetail in InvDetailData)
                 {
-                    var doJournal = journals.Where(x => x.Code == itemDetail.InvDetail.DoCode).ToList();
+                    var doJournal = journalDOs.Where(x => x.Code == itemDetail.InvDetail.DoCode).ToList();
                     short id = 0;
                     short ic = 0;
                     foreach (var itemDo in doJournal)
@@ -1618,10 +1620,10 @@ public class JournalService : IJournalService
     {
         List<Journal> journals = new();
         var startDate = Convert.ToDateTime(systemParam.FirstOrDefault(x => x.Code == "DATA_START_DATE").Value).AddDays(-1);
-        var latestData = db.VwBeginningBalanceAPs.OrderByDescending(x => x.Date).FirstOrDefault();
+        var latestData = db.VwBeginningBalanceAPs.AsNoTracking().OrderByDescending(x => x.Date).FirstOrDefault();
         if (latestData?.Date.Month == startDate.Month && latestData?.Date.Year == startDate.Year)
         {
-            var bbapData = db.VwBeginningBalanceAPs.ToList();
+            var bbapData = db.VwBeginningBalanceAPs.AsNoTracking().ToList();
             short i = 0;
             foreach (var item in bbapData)
             {
@@ -1667,10 +1669,10 @@ public class JournalService : IJournalService
     {
         List<Journal> journals = new();
         var startDate = Convert.ToDateTime(systemParam.FirstOrDefault(x => x.Code == "DATA_START_DATE").Value).AddDays(-1);
-        var latestData = db.VwBeginningBalanceARs.OrderByDescending(x => x.Date).FirstOrDefault();
+        var latestData = db.VwBeginningBalanceARs.AsNoTracking().OrderByDescending(x => x.Date).FirstOrDefault();
         if (latestData?.Date.Month == startDate.Month && latestData?.Date.Year == startDate.Year)
         {
-            var bbapData = db.VwBeginningBalanceARs.ToList();
+            var bbapData = db.VwBeginningBalanceARs.AsNoTracking().ToList();
             short i = 0;
             foreach (var item in bbapData)
             {
@@ -1716,10 +1718,10 @@ public class JournalService : IJournalService
     {
         List<Journal> journals = new();
         var startDate = Convert.ToDateTime(systemParam.FirstOrDefault(x => x.Code == "DATA_START_DATE").Value).AddDays(-1);
-        var latestData = db.VwBeginningBalanceDebitMemos.OrderByDescending(x => x.Date).FirstOrDefault();
+        var latestData = db.VwBeginningBalanceDebitMemos.AsNoTracking().OrderByDescending(x => x.Date).FirstOrDefault();
         if (latestData?.Date.Month == startDate.Month && latestData?.Date.Year == startDate.Year)
         {
-            var bbapData = db.VwBeginningBalanceDebitMemos.ToList();
+            var bbapData = db.VwBeginningBalanceDebitMemos.AsNoTracking().ToList();
             short i = 0;
             foreach (var item in bbapData)
             {
@@ -1782,10 +1784,10 @@ public class JournalService : IJournalService
     {
         List<Journal> journals = new();
         var startDate = Convert.ToDateTime(systemParam.FirstOrDefault(x => x.Code == "DATA_START_DATE").Value).AddDays(-1);
-        var latestData = db.VwBeginningBalanceCreditMemos.OrderByDescending(x => x.Date).FirstOrDefault();
+        var latestData = db.VwBeginningBalanceCreditMemos.AsNoTracking().OrderByDescending(x => x.Date).FirstOrDefault();
         if (latestData?.Date.Month == startDate.Month && latestData?.Date.Year == startDate.Year)
         {
-            var bbapData = db.VwBeginningBalanceCreditMemos.ToList();
+            var bbapData = db.VwBeginningBalanceCreditMemos.AsNoTracking().ToList();
             short i = 0;
             foreach (var item in bbapData)
             {
@@ -1850,7 +1852,7 @@ public class JournalService : IJournalService
         var RtnData = (from rtnheader in db.PurchaseReturnHeaders
                        join supplier in db.Suppliers on rtnheader.SupCode equals supplier.Code
                        where rtnheader.Date.Month == dateTime.Month && rtnheader.Date.Year == dateTime.Year && rtnheader.Mark != "V"
-                       select new { RtnHeader = rtnheader, Supplier = supplier }).ToList();
+                       select new { RtnHeader = rtnheader, Supplier = supplier }).AsNoTracking().ToList();
 
         foreach (var itemData in RtnData)
         {
@@ -1859,8 +1861,8 @@ public class JournalService : IJournalService
                 var RtnDetailData = (from rtndetail in db.PurchaseReturnDetails
                                      join item in db.Items on rtndetail.ItemId equals item.Id
                                      where rtndetail.Code == itemData.RtnHeader.Code
-                                     select new { RtnDetail = rtndetail, Item = item }).ToList();
-                var RtnDetailExData = db.PurchaseReturnDetailExchDiffItems.Where(x => x.Code == itemData.RtnHeader.Code).ToList();
+                                     select new { RtnDetail = rtndetail, Item = item }).AsNoTracking().ToList();
+                var RtnDetailExData = db.PurchaseReturnDetailExchDiffItems.Where(x => x.Code == itemData.RtnHeader.Code).AsNoTracking().ToList();
 
                 var taxAmount = 0m;
                 //var extTaxAmount = 0m;
@@ -1868,11 +1870,11 @@ public class JournalService : IJournalService
                 short ix = 0;
                 foreach (var itemDetail in RtnDetailData)
                 {
-                    var smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.RtnDetail.Id && x.RefCode1 == itemDetail.RtnDetail.Code);
+                    var smData = db.StockMutations.AsNoTracking().FirstOrDefault(x => x.RefDetailId1 == itemDetail.RtnDetail.Id && x.RefCode1 == itemDetail.RtnDetail.Code);
                     if (smData == null) continue;
-                    var nonVoidSM = RemoveVoidSM(db, db.StockMutations.ToList());
-                    CalculateHPP(db, nonVoidSM, smData.ItemId, smData.RefDetailId1, "PR");
-                    smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.RtnDetail.Id && x.RefCode1 == itemDetail.RtnDetail.Code);
+                    //var nonVoidSM = RemoveVoidSM(db, db.StockMutations.ToList());
+                    //CalculateHPP(db, nonVoidSM, smData.ItemId, smData.RefDetailId1, "PR");
+                    //smData = db.StockMutations.AsNoTracking().FirstOrDefault(x => x.RefDetailId1 == itemDetail.RtnDetail.Id && x.RefCode1 == itemDetail.RtnDetail.Code);
                     var resultHpp = smData.BaseNettPrice > 0 ? smData.BaseNettPrice * smData.BaseQty : 0m;
 
                     //Inventory
@@ -2020,7 +2022,7 @@ public class JournalService : IJournalService
                 var RcvData = (from rcvheader in db.PurchaseReceiveHeaders
                                join supplier in db.Suppliers on rcvheader.SupCode equals supplier.Code
                                where rcvheader.TransCode == itemData.RtnHeader.Code && rcvheader.Mark != "V"
-                               select new { RcvHeader = rcvheader, Supplier = supplier }).ToList();
+                               select new { RcvHeader = rcvheader, Supplier = supplier }).AsNoTracking().ToList();
 
                 if (RcvData.Any())
                 {
@@ -2029,16 +2031,16 @@ public class JournalService : IJournalService
                         var RcvDetailData = (from rcvdetail in db.PurchaseReceiveDetails
                                              join item in db.Items on rcvdetail.ItemId equals item.Id
                                              where rcvdetail.Code == itemRcvData.RcvHeader.Code
-                                             select new { RcvDetail = rcvdetail, Item = item }).ToList();
+                                             select new { RcvDetail = rcvdetail, Item = item }).AsNoTracking().ToList();
                         short k = 0;
                         short l = 0;
                         foreach (var itemDetail in RcvDetailData)
                         {
-                            var smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.RcvDetail.Id && x.RefCode1 == itemDetail.RcvDetail.Code);
+                            var smData = db.StockMutations.AsNoTracking().FirstOrDefault(x => x.RefDetailId1 == itemDetail.RcvDetail.Id && x.RefCode1 == itemDetail.RcvDetail.Code);
                             if (smData == null) continue;
-                            var nonVoidSM = RemoveVoidSM(db, db.StockMutations.ToList());
-                            CalculateHPP(db, nonVoidSM, smData.ItemId, smData.RefDetailId1, "RCV");
-                            smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.RcvDetail.Id && x.RefCode1 == itemDetail.RcvDetail.Code);
+                            //var nonVoidSM = RemoveVoidSM(db, db.StockMutations.ToList());
+                            //CalculateHPP(db, nonVoidSM, smData.ItemId, smData.RefDetailId1, "RCV");
+                            //smData = db.StockMutations.AsNoTracking().FirstOrDefault(x => x.RefDetailId1 == itemDetail.RcvDetail.Id && x.RefCode1 == itemDetail.RcvDetail.Code);
                             var resultHpp = smData.BaseNettPrice > 0 ? smData.BaseNettPrice * smData.BaseQty : 0m;
 
                             //Inventory
@@ -2207,7 +2209,7 @@ public class JournalService : IJournalService
                 var RtnDetailData = (from rtndetail in db.PurchaseReturnDetails
                                      join item in db.Items on rtndetail.ItemId equals item.Id
                                      where rtndetail.Code == itemData.RtnHeader.Code
-                                     select new { RtnDetail = rtndetail, Item = item }).ToList();
+                                     select new { RtnDetail = rtndetail, Item = item }).AsNoTracking().ToList();
 
                 var taxAmount = 0m;
                 //var extTaxAmount = 0m;
@@ -2215,11 +2217,11 @@ public class JournalService : IJournalService
                 short ix = 0;
                 foreach (var itemDetail in RtnDetailData)
                 {
-                    var smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.RtnDetail.Id && x.RefCode1 == itemDetail.RtnDetail.Code);
+                    var smData = db.StockMutations.AsNoTracking().FirstOrDefault(x => x.RefDetailId1 == itemDetail.RtnDetail.Id && x.RefCode1 == itemDetail.RtnDetail.Code);
                     if (smData == null) continue;
-                    var nonVoidSM = RemoveVoidSM(db, db.StockMutations.ToList());
-                    CalculateHPP(db, nonVoidSM, smData.ItemId, smData.RefDetailId1, "PR");
-                    smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.RtnDetail.Id && x.RefCode1 == itemDetail.RtnDetail.Code);
+                    //var nonVoidSM = RemoveVoidSM(db, db.StockMutations.ToList());
+                    //CalculateHPP(db, nonVoidSM, smData.ItemId, smData.RefDetailId1, "PR");
+                    //smData = db.StockMutations.AsNoTracking().FirstOrDefault(x => x.RefDetailId1 == itemDetail.RtnDetail.Id && x.RefCode1 == itemDetail.RtnDetail.Code);
                     var resultHpp = smData.BaseNettPrice > 0 ? smData.BaseNettPrice * smData.BaseQty : 0m;
 
                     //Inventory
@@ -2364,7 +2366,7 @@ public class JournalService : IJournalService
         var RtnData = (from rtnheader in db.SalesReturnHeaders
                        join customer in db.Customers on rtnheader.CustCode equals customer.Code
                        where rtnheader.Date.Month == dateTime.Month && rtnheader.Date.Year == dateTime.Year && rtnheader.Mark != "V"
-                       select new { RtnHeader = rtnheader, Customer = customer }).ToList();
+                       select new { RtnHeader = rtnheader, Customer = customer }).AsNoTracking().ToList();
 
         foreach (var itemData in RtnData)
         {
@@ -2373,8 +2375,8 @@ public class JournalService : IJournalService
                 var RtnDetailData = (from rtndetail in db.SalesReturnDetails
                                      join item in db.Items on rtndetail.ItemId equals item.Id
                                      where rtndetail.Code == itemData.RtnHeader.Code
-                                     select new { RtnDetail = rtndetail, Item = item }).ToList();
-                var RtnDetailExData = db.SalesReturnDetailExchDiffItems.Where(x => x.Code == itemData.RtnHeader.Code).ToList();
+                                     select new { RtnDetail = rtndetail, Item = item }).AsNoTracking().ToList();
+                var RtnDetailExData = db.SalesReturnDetailExchDiffItems.AsNoTracking().Where(x => x.Code == itemData.RtnHeader.Code).ToList();
 
                 var taxAmount = 0m;
                 //var extTaxAmount = 0m;
@@ -2384,11 +2386,11 @@ public class JournalService : IJournalService
                 short ix = 0;
                 foreach (var itemDetail in RtnDetailData)
                 {
-                    var smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.RtnDetail.Id && x.RefCode1 == itemDetail.RtnDetail.Code);
+                    var smData = db.StockMutations.AsNoTracking().FirstOrDefault(x => x.RefDetailId1 == itemDetail.RtnDetail.Id && x.RefCode1 == itemDetail.RtnDetail.Code);
                     if (smData == null) continue;
-                    var nonVoidSM = RemoveVoidSM(db, db.StockMutations.ToList());
-                    CalculateHPP(db, nonVoidSM, smData.ItemId, smData.RefDetailId1, "SR");
-                    smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.RtnDetail.Id && x.RefCode1 == itemDetail.RtnDetail.Code);
+                    //var nonVoidSM = RemoveVoidSM(db, db.StockMutations.ToList());
+                    //CalculateHPP(db, nonVoidSM, smData.ItemId, smData.RefDetailId1, "SR");
+                    //smData = db.StockMutations.AsNoTracking().FirstOrDefault(x => x.RefDetailId1 == itemDetail.RtnDetail.Id && x.RefCode1 == itemDetail.RtnDetail.Code);
                     var resultHpp = smData.BaseNettPrice > 0 ? smData.BaseNettPrice * smData.BaseQty : 0m;
 
                     //Inventory using COGS for Amount
@@ -2552,7 +2554,7 @@ public class JournalService : IJournalService
                 var DlvData = (from dlvheader in db.SalesDeliveryHeaders
                                join customer in db.Customers on dlvheader.CustCode equals customer.Code
                                where dlvheader.TransCode == itemData.RtnHeader.Code && dlvheader.Mark != "V"
-                               select new { DlvHeader = dlvheader, Customer = customer }).ToList();
+                               select new { DlvHeader = dlvheader, Customer = customer }).AsNoTracking().ToList();
                 if (DlvData.Any())
                 {
                     foreach (var itemDlvData in DlvData)
@@ -2560,18 +2562,18 @@ public class JournalService : IJournalService
                         var DlvDetailData = (from dlvdetail in db.SalesDeliveryDetails
                                              join item in db.Items on dlvdetail.ItemId equals item.Id
                                              where dlvdetail.Code == itemDlvData.DlvHeader.Code
-                                             select new { DlvDetail = dlvdetail, Item = item }).ToList();
+                                             select new { DlvDetail = dlvdetail, Item = item }).AsNoTracking().ToList();
 
                         short l = 0;
                         short m = 0;
                         short lx = 0;
                         foreach (var itemDetail in DlvDetailData)
                         {
-                            var smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.DlvDetail.Id && x.RefCode1 == itemDetail.DlvDetail.Code);
+                            var smData = db.StockMutations.AsNoTracking().FirstOrDefault(x => x.RefDetailId1 == itemDetail.DlvDetail.Id && x.RefCode1 == itemDetail.DlvDetail.Code);
                             if (smData == null) continue;
-                            var nonVoidSM = RemoveVoidSM(db, db.StockMutations.ToList());
-                            CalculateHPP(db, nonVoidSM, smData.ItemId, smData.RefDetailId1, "DO");
-                            smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.DlvDetail.Id && x.RefCode1 == itemDetail.DlvDetail.Code);
+                            //var nonVoidSM = RemoveVoidSM(db, db.StockMutations.ToList());
+                            //CalculateHPP(db, nonVoidSM, smData.ItemId, smData.RefDetailId1, "DO");
+                            //smData = db.StockMutations.AsNoTracking().FirstOrDefault(x => x.RefDetailId1 == itemDetail.DlvDetail.Id && x.RefCode1 == itemDetail.DlvDetail.Code);
                             var resultHpp = smData.BaseNettPrice > 0 ? smData.BaseNettPrice * smData.BaseQty : 0m;
 
                             //Inventory using COGS for Amount
@@ -2760,7 +2762,7 @@ public class JournalService : IJournalService
                 var RtnDetailData = (from rtndetail in db.SalesReturnDetails
                                      join item in db.Items on rtndetail.ItemId equals item.Id
                                      where rtndetail.Code == itemData.RtnHeader.Code
-                                     select new { RtnDetail = rtndetail, Item = item }).ToList();
+                                     select new { RtnDetail = rtndetail, Item = item }).AsNoTracking().ToList();
 
                 var taxAmount = 0m;
                 //var extTaxAmount = 0m;
@@ -2769,12 +2771,12 @@ public class JournalService : IJournalService
                 short ix = 0;
                 foreach (var itemDetail in RtnDetailData)
                 {
-                    var smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.RtnDetail.Id && x.RefCode1 == itemDetail.RtnDetail.Code);
+                    var smData = db.StockMutations.AsNoTracking().FirstOrDefault(x => x.RefDetailId1 == itemDetail.RtnDetail.Id && x.RefCode1 == itemDetail.RtnDetail.Code);
                     if (smData == null) continue;
 
-                    var nonVoidSM = RemoveVoidSM(db, db.StockMutations.ToList());
-                    CalculateHPP(db, nonVoidSM, smData.ItemId, smData.RefDetailId1, "SR");
-                    smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.RtnDetail.Id && x.RefCode1 == itemDetail.RtnDetail.Code);
+                    //var nonVoidSM = RemoveVoidSM(db, db.StockMutations.ToList());
+                    //CalculateHPP(db, nonVoidSM, smData.ItemId, smData.RefDetailId1, "SR");
+                    //smData = db.StockMutations.AsNoTracking().FirstOrDefault(x => x.RefDetailId1 == itemDetail.RtnDetail.Id && x.RefCode1 == itemDetail.RtnDetail.Code);
                     var resultHpp = smData.BaseNettPrice > 0 ? smData.BaseNettPrice * smData.BaseQty : 0m;
 
                     //Persediaan Barang
@@ -2942,7 +2944,7 @@ public class JournalService : IJournalService
         var expeditionData = (from expheader in db.ExpeditionInvoiceHeaders
                               join supplier in db.Suppliers on expheader.SupCode equals supplier.Code
                               where expheader.Date.Month == dateTime.Month && expheader.Date.Year == dateTime.Year && expheader.Mark != "V"
-                              select new { ExpHeader = expheader, Supplier = supplier }).ToList();
+                              select new { ExpHeader = expheader, Supplier = supplier }).AsNoTracking().ToList();
         short i = 0;
         short j = 0;
         foreach (var itemData in expeditionData)
@@ -2993,7 +2995,7 @@ public class JournalService : IJournalService
                               join supplier in db.Suppliers on fixedAsset.SupCode equals supplier.Code
                               join assetType in db.AssetTypes on fixedAsset.TypeId equals assetType.Id
                               where fixedAsset.PurchaseDate.Month == dateTime.Month && fixedAsset.PurchaseDate.Year == dateTime.Year && fixedAsset.Mark != "V"
-                              select new { FixedAsset = fixedAsset, Supplier = supplier, AssetType = assetType }).ToList();
+                              select new { FixedAsset = fixedAsset, Supplier = supplier, AssetType = assetType }).AsNoTracking().ToList();
         short i = 0;
         foreach (var itemData in fixedAssetData)
         {
@@ -3044,7 +3046,7 @@ public class JournalService : IJournalService
                               join assetType in db.AssetTypes on fixedAsset.TypeId equals assetType.Id
                               where fixedAsset.DepreciationMethod == 2 && fixedAsset.StartDepreciateOn.Month <= dateTime.Month &&
                                     fixedAsset.StartDepreciateOn.Month + fixedAsset.EstimatedLife >= dateTime.Month && fixedAsset.PurchaseDate.Year == dateTime.Year && fixedAsset.Mark != "V"
-                              select new { FixedAsset = fixedAsset, Supplier = supplier, AssetType = assetType }).ToList();
+                              select new { FixedAsset = fixedAsset, Supplier = supplier, AssetType = assetType }).AsNoTracking().ToList();
 
         foreach (var itemData in fixedAssetData)
         {
@@ -3210,13 +3212,13 @@ public class JournalService : IJournalService
     {
         List<Journal> journals = new();
         var startDate = Convert.ToDateTime(systemParam.FirstOrDefault(x => x.Code == "DATA_START_DATE").Value).AddDays(-1);
-        var latestData = db.VwBeginningBalanceStockHeaders.OrderByDescending(x => x.Date).FirstOrDefault();
+        var latestData = db.VwBeginningBalanceStockHeaders.AsNoTracking().OrderByDescending(x => x.Date).FirstOrDefault();
         if (latestData?.Date.Month == startDate.Month && latestData?.Date.Year == startDate.Year)
         {
-            var bbapData = db.VwBeginningBalanceStockHeaders.ToList();
+            var bbapData = db.VwBeginningBalanceStockHeaders.AsNoTracking().ToList();
             foreach (var item in bbapData)
             {
-                var detailData = db.VwBeginningBalanceStockDetails.Where(x => x.Code == item.Code).ToList();
+                var detailData = db.VwBeginningBalanceStockDetails.AsNoTracking().Where(x => x.Code == item.Code).ToList();
 
                 short i = 0;
                 foreach (var itemDetail in detailData)
@@ -3415,7 +3417,7 @@ public class JournalService : IJournalService
     {
         List<Journal> journals = new();
 
-        var adjData = db.AdjustmentHeaders.Where(x => x.Date.Month == dateTime.Month && x.Date.Year == dateTime.Year && x.Mark != "V").ToList();
+        var adjData = db.AdjustmentHeaders.AsNoTracking().Where(x => x.Date.Month == dateTime.Month && x.Date.Year == dateTime.Year && x.Mark != "V").ToList();
 
         short i = 0;
         short j = 0;
@@ -3424,18 +3426,18 @@ public class JournalService : IJournalService
             var adjDetailData = (from adjdetail in db.AdjustmentDetails
                                  join item in db.Items on adjdetail.ItemId equals item.Id
                                  where adjdetail.Code == itemData.Code
-                                 select new { AdjDetail = adjdetail, Item = item }).ToList();
+                                 select new { AdjDetail = adjdetail, Item = item }).AsNoTracking().ToList();
 
             short k = 0;
             short l = 0;
             foreach (var itemDetail in adjDetailData)
             {
-                var smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.AdjDetail.Id && x.RefCode1 == itemDetail.AdjDetail.Code);
+                var smData = db.StockMutations.AsNoTracking().FirstOrDefault(x => x.RefDetailId1 == itemDetail.AdjDetail.Id && x.RefCode1 == itemDetail.AdjDetail.Code);
                 if (smData == null) continue;
 
-                var nonVoidSM = RemoveVoidSM(db, db.StockMutations.ToList());
-                CalculateHPP(db, nonVoidSM, smData.ItemId, smData.RefDetailId1, "ADJ");
-                smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.AdjDetail.Id && x.RefCode1 == itemDetail.AdjDetail.Code);
+                //var nonVoidSM = RemoveVoidSM(db, db.StockMutations.ToList());
+                //CalculateHPP(db, nonVoidSM, smData.ItemId, smData.RefDetailId1, "ADJ");
+                //smData = db.StockMutations.AsNoTracking().FirstOrDefault(x => x.RefDetailId1 == itemDetail.AdjDetail.Id && x.RefCode1 == itemDetail.AdjDetail.Code);
                 var resultHpp = smData.BaseNettPrice > 0 ? smData.BaseNettPrice * smData.BaseQty : 0m;
 
                 if (itemData.Type == 1)
@@ -3548,13 +3550,13 @@ public class JournalService : IJournalService
     {
         List<Journal> journals = new();
 
-        var dataHeader = db.GeneralJournalHeaders
+        var dataHeader = db.GeneralJournalHeaders.AsNoTracking()
             .Where(x => x.Date.Month == dateTime.Month && x.Date.Year == dateTime.Year && x.Mark != "V")
             .ToList();
 
         foreach (var itemData in dataHeader)
         {
-            var dataDetail = db.GeneralJournalDetails.Where(x => x.Code == itemData.Code).ToList();
+            var dataDetail = db.GeneralJournalDetails.AsNoTracking().Where(x => x.Code == itemData.Code).ToList();
 
             short i = 0;
             short j = 0;
@@ -3586,7 +3588,7 @@ public class JournalService : IJournalService
     {
         List<Journal> journals = new();
 
-        var dataHeader = db.TransferStockHeaders
+        var dataHeader = db.TransferStockHeaders.AsNoTracking()
             .Where(x => x.Date.Month == dateTime.Month && x.Date.Year == dateTime.Year && x.Mark != "V")
             .ToList();
 
@@ -3597,22 +3599,22 @@ public class JournalService : IJournalService
             var dataDetail = (from tsdetail in db.TransferStockDetails
                               join item in db.Items on tsdetail.ItemId equals item.Id
                               where tsdetail.Code == itemData.Code
-                              select new { TsDetail = tsdetail, Item = item }).ToList();
+                              select new { TsDetail = tsdetail, Item = item }).AsNoTracking().ToList();
 
             short i = 0;
             short j = 0;
             foreach (var itemDetail in dataDetail)
             {
-                var smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.TsDetail.Id && x.RefCode1 == itemDetail.TsDetail.Code);
+                var smData = db.StockMutations.AsNoTracking().FirstOrDefault(x => x.RefDetailId1 == itemDetail.TsDetail.Id && x.RefCode1 == itemDetail.TsDetail.Code);
                 if (smData == null) continue;
 
-                var nonVoidSM = RemoveVoidSM(db, db.StockMutations.ToList());
+                //var nonVoidSM = RemoveVoidSM(db, db.StockMutations.ToList());
                 var resultHpp = 0m;
                 if (itemData.Type != "IN")
                 {
-                    var srcType = new[] { "OUT", "DT" }.Contains(itemData.Type) ? "TS" : "CNEE";
-                    CalculateHPP(db, nonVoidSM, smData.ItemId, smData.RefDetailId1, srcType);
-                    smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemDetail.TsDetail.Id && x.RefCode1 == itemDetail.TsDetail.Code);
+                    //var srcType = new[] { "OUT", "DT" }.Contains(itemData.Type) ? "TS" : "CNEE";
+                    //CalculateHPP(db, nonVoidSM, smData.ItemId, smData.RefDetailId1, srcType);
+                    //smData = db.StockMutations.AsNoTracking().FirstOrDefault(x => x.RefDetailId1 == itemDetail.TsDetail.Id && x.RefCode1 == itemDetail.TsDetail.Code);
                     resultHpp = smData.BaseNettPrice > 0 ? smData.BaseNettPrice * smData.BaseQty : 0m;
                 }
 
@@ -3713,7 +3715,7 @@ public class JournalService : IJournalService
     private IEnumerable<Journal> ProcessSalesDownPaymentJournal(TenantContext db, List<SystemParameter> systemParam)
     {
         List<Journal> journals = new();
-        var SdpData = db.VwCreditMemos.Where(x => new[] { 3, 4 }.Contains(x.SrcTrans) && x.Mark != "V").ToList();
+        var SdpData = db.VwCreditMemos.AsNoTracking().Where(x => new[] { 3, 4 }.Contains(x.SrcTrans) && x.Mark != "V").ToList();
 
         foreach (var itemData in SdpData)
         {
@@ -4073,5 +4075,174 @@ public class JournalService : IJournalService
                 return false;
         }
         return true;
+    }
+
+    private void newCalculateHPP(TenantContext db, DateTime date)
+    {
+        var postingDate = new DateTime(date.Year, date.Month, 1).AddMonths(1);
+
+        var doData = db.SalesDeliveryHeaders.AsNoTracking().Where(x => x.Date < postingDate && x.Mark != "V").ToList();
+
+        var srData = db.SalesReturnHeaders.AsNoTracking().Where(x => x.Date < postingDate && x.Mark != "V").ToList();
+
+        var rcvData = db.PurchaseReceiveHeaders.AsNoTracking().Where(x => x.Date < postingDate && x.Mark != "V").ToList();
+
+        var tsData = db.TransferStockHeaders.AsNoTracking().Where(x => x.Date < postingDate && x.Mark != "V").ToList();
+
+        var prData = db.PurchaseReturnHeaders.AsNoTracking().Where(x => x.Date < postingDate && x.Mark != "V").ToList();
+
+        var curMonthItem =  db.StockMutations.AsNoTracking().Where(x => x.Date >= postingDate.AddMonths(-1) && x.Date < postingDate).GroupBy(x => x.ItemId).Select(x => x.First()).ToList();
+
+        foreach (var curItem in curMonthItem)
+        {
+            DateTime latestDate = new();
+            decimal latestQty = 0;
+            decimal latestStockValue = 0;
+            decimal hpp = 0;
+
+            var orderQuery = @" ORDER BY sm.Date, CASE
+				WHEN sm.Src = 'BB' THEN 1
+				WHEN sm.Src = 'RCV' AND rcv.SrcTrans = 1 THEN 2
+				WHEN sm.Src = 'RCV' AND rcv.SrcTrans = 2 THEN 3
+				WHEN sm.Src = 'ADJ' AND sm.BaseQty > 0 THEN 3
+				WHEN sm.Src = 'SR' THEN 3
+				WHEN sm.Src IN('TS', 'CNEE') AND sm.[Type] = 'OH' AND sm.BaseQty > 0 THEN 3
+				WHEN sm.Src = 'DO' AND sr.[Type] = 2 THEN 4
+				WHEN sm.Src = 'ADJ' AND sm.BaseQty < 0 THEN 5
+				WHEN sm.Src IN('DO', 'DOF', 'PR') THEN 5
+				WHEN sm.Src IN('TS', 'CNEE') AND sm.[Type] = 'OH' AND sm.BaseQty < 0 THEN 5
+				ELSE 6
+				END, sm.Id";
+
+            var listSM = db.StockMutations.FromSqlRaw(@"SELECT sm.*
+			FROM Inventory.StockMutation sm
+			LEFT JOIN Inventory.Item im on im.Id = sm.ItemId
+			LEFT JOIN Sales.SalesDeliveryHeader do ON do.Code = sm.RefCode1
+			LEFT JOIN Sales.SalesReturnHeader sr ON sr.Code = do.TransCode
+            LEFT JOIN Purchasing.PurchaseReceiveHeader rcv ON rcv.Code = sm.RefCode1
+			WHERE sm.Src IN ('RCV','DO','TS','ADJ','BB','PR','CNEE','DOF','SR') AND sm.[Type] = 'OH' " +
+            $@" AND sm.RefCode1 NOT IN (SELECT Code FROM Purchasing.PurchaseReceiveHeader WHERE Mark = 'V' AND [Date] < '{postingDate}'
+            UNION
+            SELECT Code FROM Sales.SalesDeliveryHeader WHERE Mark = 'V' AND [Date] < '{postingDate}'
+            UNION
+            SELECT Code FROM Inventory.AdjustmentHeader WHERE Mark = 'V' AND [Date] < '{postingDate}'
+            UNION
+            SELECT Code FROM Inventory.TransferStockHeader WHERE Mark = 'V' AND [Date] < '{postingDate}'
+            UNION
+            SELECT Code FROM Purchasing.PurchaseReturnHeader WHERE Mark = 'V' AND [Date] < '{postingDate}'
+            UNION
+            SELECT Code FROM Sales.SalesReturnHeader WHERE Mark = 'V' AND [Date] < '{postingDate}')" +
+            $" AND sm.ItemId = {curItem.ItemId} AND sm.Date < '{postingDate}'" + orderQuery).ToList();
+
+            //latestDate = listSM.First().Date;
+
+            foreach (var item in listSM)
+            {
+                if (new[] { "RCV", "BB", "SR" }.Contains(item.Src))
+                {
+                    var rcvFromPRSI =
+                        item.Src == "RCV" &&
+                        (rcvData.FirstOrDefault(x => x.Code == item.RefCode1)?.SrcTrans ?? 0) == 2 &&
+                        (prData.FirstOrDefault(x => x.Code == item.RefCode2)?.Type ?? 0) == 2;
+                    if (rcvFromPRSI) // same item
+                    {
+                        item.BaseNettPrice = listSM.FirstOrDefault(x => x.RefCode1 == item.RefCode2)?.BaseNettPrice ?? 0m;
+                        item.NettPrice = listSM.FirstOrDefault(x => x.RefCode1 == item.RefCode2)?.NettPrice ?? 0m;
+                        latestStockValue += item.BaseNettPrice * item.BaseQty;
+                        latestQty += item.BaseQty;
+                        db.StockMutations.Update(item);
+                    }
+                    else
+                    {
+                        var rcvFromPRDI = (item.Src == "RCV" && (prData.FirstOrDefault(z => z.Code == (rcvData.FirstOrDefault(y => y.Code == item.RefCode1)?.TransCode ?? ""))?.Type ?? 0) == 3);
+                        if (item.Src == "SR" || rcvFromPRDI)
+                        {
+                            item.BaseNettPrice = hpp;
+                            item.NettPrice = hpp * item.BaseQty / item.Qty;
+                            db.StockMutations.Update(item);
+                        }
+                        latestStockValue += item.BaseNettPrice * item.BaseQty;
+                        latestQty += item.BaseQty;
+                        if (item.Src == "BB" || item.Src == "RCV" && (rcvData.FirstOrDefault(x => x.Code == item.RefCode1)?.SrcTrans ?? 0) == 1)
+                        {
+                            if (latestStockValue > 0 && latestQty > 0)
+                                hpp = latestStockValue / latestQty;
+                        }
+                    }
+                }
+                else if (new[] { "ADJ", "TS", "CNEE" }.Contains(item.Src))
+                {
+                    if (item.Src == "TS" && (tsData.FirstOrDefault(x => x.Code == item.RefCode1)?.Type ?? "") == "OUT")
+                    {
+                        if (latestDate != item.Date)
+                        {
+                            if (latestStockValue > 0 && latestQty > 0)
+                                hpp = latestStockValue / latestQty;
+                        }
+
+                        item.BaseNettPrice = hpp;
+                        item.NettPrice = hpp * item.BaseQty / item.Qty;
+                    }
+                    else if (item.Src == "TS" && (tsData.FirstOrDefault(x => x.Code == item.RefCode1)?.Type ?? "") == "IN")
+                    {
+                        item.BaseNettPrice = listSM.FirstOrDefault(x => x.RefCode1 == item.RefCode2)?.BaseNettPrice ?? 0m;
+                        item.NettPrice = listSM.FirstOrDefault(x => x.RefCode1 == item.RefCode2)?.NettPrice ?? 0m;
+                    }
+                    else
+                    {
+                        if (latestDate != item.Date)
+                        {
+                            if (latestStockValue > 0 && latestQty > 0)
+                                hpp = latestStockValue / latestQty;
+                        }
+
+                        item.BaseNettPrice = hpp;
+                        item.NettPrice = hpp * item.BaseQty / item.Qty;
+                    }
+
+                    latestStockValue += item.BaseNettPrice * item.BaseQty;
+                    latestQty += item.BaseQty;
+                    db.StockMutations.Update(item);
+                }
+                else
+                {
+                    if (latestDate != item.Date)
+                    {
+                        if (latestStockValue > 0 && latestQty > 0)
+                            hpp = latestStockValue / latestQty;
+                    }
+
+                    var dofromPR = item.Src == "DO" && (srData.FirstOrDefault(z => z.Code == (doData.FirstOrDefault(y => y.Code == item.RefCode1)?.TransCode ?? ""))?.Type ?? 0) == 2;
+                    if (dofromPR) // same item
+                    {
+                        item.BaseNettPrice = listSM.FirstOrDefault(x => x.RefCode1 == item.RefCode2)?.BaseNettPrice ?? 0m;
+                        item.NettPrice = listSM.FirstOrDefault(x => x.RefCode1 == item.RefCode2)?.NettPrice ?? 0m;
+                        latestStockValue -= item.BaseNettPrice * item.BaseQty;
+                        latestQty -= item.BaseQty;
+                        db.StockMutations.Update(item);
+                    }
+                    else
+                    {
+                        if (item.Src == "DO" && (srData.FirstOrDefault(z => z.Code == (doData.FirstOrDefault(y => y.Code == item.RefCode1)?.TransCode ?? ""))?.Type ?? 0) == 3)
+                        {
+                            item.BaseNettPrice = hpp;
+                            item.NettPrice = hpp * item.BaseQty / item.Qty;
+                        }
+                        else
+                        {
+                            item.BaseNettPrice = hpp;
+                            item.NettPrice = hpp * item.BaseQty / item.Qty;
+                        }
+                        latestStockValue -= item.BaseNettPrice * item.BaseQty;
+                        latestQty -= item.BaseQty;
+                        db.StockMutations.Update(item);
+                    }
+                }
+
+                latestDate = item.Date;
+            }
+
+            db.SaveChanges();
+        }
     }
 }
