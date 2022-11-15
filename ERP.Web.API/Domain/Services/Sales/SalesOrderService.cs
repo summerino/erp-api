@@ -2242,7 +2242,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
             var newInvCode = "";
             if (data.IsSoInv && !isOverLimit)
             {
-                var DlvData = Db.SalesDeliveryHeaders.Where(x => x.TransCode == data.Code).ToList();
+                var DlvData = Db.SalesDeliveryHeaders.Where(x => x.TransCode == data.Code && x.Mark != "V").ToList();
                 if (DlvData.Count == 0)
                 {
                     // Sales Delivery
