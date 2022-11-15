@@ -421,14 +421,14 @@ public class TransferStockService : GeneralService<TransferStockHeader>, ITransf
 
         if (unit.IsBaseUnit)
         {
-            return data.QtyOnHand - data.QtyOnOrder >= qty;
+            return data.QtyOnHand >= qty;
         }
 
         var val = 
             m.Where(x => x.Seq <= unit.Seq)
                 .Aggregate<UoMConversion, decimal>(1, (current, x) => current * x.Conversion);
 
-        var itemConverted = (data.QtyOnHand - data.QtyOnOrder) / val;
+        var itemConverted = data.QtyOnHand / val;
 
         return itemConverted >= qty;
     }
