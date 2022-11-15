@@ -358,7 +358,7 @@ public class ConsigneeService : GeneralService<TransferStockHeader>, IConsigneeS
         {
             if (data.Count > 0)
             {
-                decimal qtyAvailable = data[0].QtyOnHand - data[0].QtyOnOrder;
+                decimal qtyAvailable = data[0].QtyOnHand;
                 if (qtyAvailable < qty)
                 {
                     return false;
@@ -385,7 +385,7 @@ public class ConsigneeService : GeneralService<TransferStockHeader>, IConsigneeS
 
             if (data.Count > 0)
             {
-                decimal qtyAvailable = data[0].QtyOnHand - data[0].QtyOnOrder;
+                decimal qtyAvailable = data[0].QtyOnHand;
                 decimal itemConverted = qtyAvailable / val;
 
                 if (itemConverted < qty)
