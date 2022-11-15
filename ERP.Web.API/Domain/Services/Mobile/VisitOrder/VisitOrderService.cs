@@ -1055,7 +1055,7 @@ public class VisitOrderService : GeneralService<MobileVisitLog>, IVisitOrderServ
         var salesId = Db.Users.Where(x => x.Id.Equals(userId)).Select(y => y.EmployeeId).First();
         var dataVisit = Db.MobileVisitLogs.Where(x => x.Date.Equals(date) && x.SalesmanId.Equals(salesId));
 
-        var data = (from dv in dataVisit
+        var dataOriginal = (from dv in dataVisit
             join cu in Db.VwCustomers on dv.CustCode equals cu.Code
             select new VisitLogByDateModel
             {
@@ -1081,6 +1081,33 @@ public class VisitOrderService : GeneralService<MobileVisitLog>, IVisitOrderServ
                 AreaName5 = cu.AreaName5,
             });
 
+        var dataMobile = (from dv in dataVisit
+                    join cu in Db.VwMobileCustomers on dv.CustCode equals cu.Code
+                    select new VisitLogByDateModel
+                    {
+                        Code = dv.Code,
+                        Date = dv.Date,
+                        CustCode = dv.CustCode,
+                        CustInitial = cu.Initial,
+                        CustName = cu.Name,
+                        StartTime = dv.StartTime,
+                        EndTime = dv.EndTime,
+                        Visited = dv.Visited,
+                        Scheduled = dv.Scheduled,
+                        UnscheduledVisitReasonId = dv.UnscheduledVisitReasonId,
+                        AreaId1 = cu.AreaId1,
+                        AreaId2 = cu.AreaId2,
+                        AreaId3 = cu.AreaId3,
+                        AreaId4 = cu.AreaId4,
+                        AreaId5 = cu.AreaId5,
+                        AreaName1 = cu.AreaName1,
+                        AreaName2 = cu.AreaName2,
+                        AreaName3 = cu.AreaName3,
+                        AreaName4 = cu.AreaName4,
+                        AreaName5 = cu.AreaName5,
+                    });
+
+        var data = dataOriginal.Union(dataMobile);
         return data;
     }
 
