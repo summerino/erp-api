@@ -350,28 +350,6 @@ public class AdjustmentService : GeneralService<AdjustmentHeader>, IAdjustmentSe
                     return result;
                 }
 
-                var itemDetails = Db.AdjustmentDetails.Where(x => x.Code == data.Code).ToList();
-                foreach (var item in itemDetails)
-                {
-                    var whQtyData = Db.VwWarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == data.WarehouseCode && x.ItemId == item.ItemId);
-                    if (whQtyData == null) continue;
-
-                    var uom = Db.UoMConversions.FirstOrDefault(x => x.Id == item.UnitId);
-                    var baseQty = item.QtyAdjust;
-                    if (!uom.IsBaseUnit)
-                    {
-                        var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= uom.Seq).Select(x => x.Conversion).ToList();
-                        var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
-                        baseQty *= multipliedQty;
-                    }
-
-                    if ((whQtyData.QtyOnHand + baseQty) < 0)
-                    {
-                        result.Message = $"Data penyesuaian tidak bisa divoid karena terdapat barang pada gudang {whQtyData.WarehouseInitial} qty tersedia akan menjadi minus.";
-                        return result;
-                    }
-                }
-
                 // Execute sp_update_stock_mutation_from_adj
                 Db.Database.ExecuteSqlRaw(
                     "EXEC sp_restore_stock_mutation_from_adj {0}, {1}",
