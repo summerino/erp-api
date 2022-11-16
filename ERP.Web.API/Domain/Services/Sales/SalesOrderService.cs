@@ -2428,7 +2428,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
 
             if ((data.IsSoDlv || data.IsSoInv) && !isOverLimit)
             {
-                var dlvData = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.TransCode == data.Code);
+                var dlvData = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.TransCode == data.Code && x.Mark != "V");
 
                 // Execute sp_update_stock_mutation_from_rcv
                 Db.Database.ExecuteSqlRaw(
