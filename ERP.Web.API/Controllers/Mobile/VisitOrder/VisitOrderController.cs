@@ -190,6 +190,7 @@ public class VisitOrderController : ControllerBase
                 x.EndDate,
                 x.ApplyTo,
                 x.CoaCost,
+                x.Mark,
                 x.UpdatedDate
             }); ;
 

@@ -28,7 +28,7 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
             data = DateTime.TryParse(search, out var searchDate)
                 ? data.Where(x => x.Date == searchDate)
                 : data.Where(x =>
-                    x.Code.Contains(search) || x.RequestInitial.Contains(search) || x.SupName.Contains(search));
+                    x.Code.Contains(search) || x.RequestInitial.Contains(search) || x.SupName.Contains(search) || x.Notes.Contains(search));
         }
 
         return data.ToDataSourceResult(skip, take, filter, sort);
