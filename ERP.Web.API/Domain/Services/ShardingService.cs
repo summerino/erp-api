@@ -36,7 +36,7 @@ public class ShardingService : IShardingService
             {
                 var optionsBuilder = new DbContextOptionsBuilder<TenantContext>();
                 optionsBuilder.UseSqlServer(
-                    $"Server={tenant.ServerName};Database={tenant.DatabaseName};User Id={tenant.ServerUserId};Password={tenant.ServerPassword};Command Timeout=600");
+                    $"Server={tenant.ServerName};Database={tenant.DatabaseName};User Id={tenant.ServerUserId};Password={tenant.ServerPassword};MultipleActiveResultSets=True;Command Timeout=600;Application Name=ERP");
 
                 var tenantCtx = new TenantContext(optionsBuilder.Options, _catalogCtx, _claim);
                 await tenantCtx.Database.MigrateAsync();

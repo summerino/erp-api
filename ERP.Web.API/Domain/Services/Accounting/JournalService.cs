@@ -37,7 +37,7 @@ public class JournalService : IJournalService
 
         var optionsBuilder = new DbContextOptionsBuilder<TenantContext>();
         optionsBuilder.UseSqlServer(
-            $"Server={tenant.ServerName};Database={tenant.DatabaseName};User Id={tenant.ServerUserId};Password={tenant.ServerPassword};Command Timeout=600");
+            $"Server={tenant.ServerName};Database={tenant.DatabaseName};User Id={tenant.ServerUserId};Password={tenant.ServerPassword};MultipleActiveResultSets=True;Command Timeout=600;Application Name=ERP");
 
         var tenantCtx = new TenantContext(optionsBuilder.Options, _catalogCtx, _claim);
 
@@ -721,19 +721,19 @@ public class JournalService : IJournalService
         var DlvData = (from dlvheader in db.SalesDeliveryHeaders
                        join customer in db.Customers on dlvheader.CustCode equals customer.Code
                        where dlvheader.Date.Month == dateTime.Month && dlvheader.Date.Year == dateTime.Year && dlvheader.SrcTrans == 1 && !new[] { "OL", "V" }.Contains(dlvheader.Mark)
-                       select new { Dlvheader = dlvheader, Customer = customer }).ToList();
+                       select new { Dlvheader = dlvheader, Customer = customer }).AsNoTracking().ToList();
 
         foreach (var itemData in DlvData)
         {
             var DlvDetailData = (from dlvdetail in db.SalesDeliveryDetails
                                  join item in db.Items on dlvdetail.ItemId equals item.Id
                                  where dlvdetail.Code == itemData.Dlvheader.Code
-                                 select new { DlvDetail = dlvdetail, Item = item }).ToList();
+                                 select new { DlvDetail = dlvdetail, Item = item }).AsNoTracking().ToList();
 
             var DlvDetailFreeData = (from fg in db.SalesDeliveryDetailFreeGoods
                                      join item in db.Items on fg.ItemId equals item.Id
                                      where fg.Code == itemData.Dlvheader.Code
-                                     select new { DlvDetail = fg, Item = item }).ToList();
+                                     select new { DlvDetail = fg, Item = item }).AsNoTracking().ToList();
 
             var discAmount = 0m;
             var taxAmount = 0m;
