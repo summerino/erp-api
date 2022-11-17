@@ -514,6 +514,7 @@ public class MobileOrderService : GeneralService<MobileOrderHeader>, IMobileOrde
             Db.MobileOrderDetails.RemoveRange(delOrderDetails);
 
             short i = 0;
+            long lastOrderIdForDisc = 0;
             foreach (var item in data.ItemDetails)
             {
                 if (item.Id == 0)
@@ -541,7 +542,7 @@ public class MobileOrderService : GeneralService<MobileOrderHeader>, IMobileOrde
                     if (item.FreeItemDetails.Any() || item.DiscountItemDetails.Any())
                     {
                         Db.SaveChanges();
-                        listOrderIdDetail.Add(orderDetail.Id);
+                        lastOrderIdForDisc = orderDetail.Id;
                     }
                 }
                 else
@@ -553,7 +554,7 @@ public class MobileOrderService : GeneralService<MobileOrderHeader>, IMobileOrde
 
                     if (item.FreeItemDetails.Any() || item.DiscountItemDetails.Any())
                     {
-                        listOrderIdDetail.Add(item.Id);
+                        lastOrderIdForDisc = item.Id;
                     }
                 }
 
@@ -573,7 +574,7 @@ public class MobileOrderService : GeneralService<MobileOrderHeader>, IMobileOrde
                             Db.MobileOrderDetailDiscounts.Add(new MobileOrderDetailDiscount
                             {
                                 Code = data.Code,
-                                OrderDetailId = listOrderIdDetail[i - 1],
+                                OrderDetailId = lastOrderIdForDisc,
                                 LineNo = ++d,
                                 PromoCode = discItem.PromoCode,
                                 PromoDetailId = discItem.PromoDetailId,
@@ -610,7 +611,7 @@ public class MobileOrderService : GeneralService<MobileOrderHeader>, IMobileOrde
                             Db.MobileOrderDetailFreeGoods.Add(new MobileOrderDetailFreeGood
                             {
                                 Code = data.Code,
-                                OrderDetailId = listOrderIdDetail[i - 1],
+                                OrderDetailId = lastOrderIdForDisc,
                                 LineNo = ++f,
                                 PromoCode = freeItem.PromoCode,
                                 ItemId = freeItem.ItemId,
