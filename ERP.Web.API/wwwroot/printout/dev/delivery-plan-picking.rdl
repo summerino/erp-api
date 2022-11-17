@@ -244,6 +244,7 @@ FROM SystemManagement.Company</CommandText>
                           <Style>
                             <Border>
                               <Style>None</Style>
+                              <Width>2pt</Width>
                             </Border>
                             <TopBorder>
                               <Style>Solid</Style>
@@ -281,6 +282,7 @@ FROM SystemManagement.Company</CommandText>
                           <Style>
                             <Border>
                               <Style>None</Style>
+                              <Width>2pt</Width>
                             </Border>
                             <TopBorder>
                               <Style>Solid</Style>
@@ -320,6 +322,7 @@ FROM SystemManagement.Company</CommandText>
                           <Style>
                             <Border>
                               <Style>None</Style>
+                              <Width>2pt</Width>
                             </Border>
                             <TopBorder>
                               <Style>Solid</Style>
@@ -359,6 +362,7 @@ FROM SystemManagement.Company</CommandText>
                           <Style>
                             <Border>
                               <Style>None</Style>
+                              <Width>2pt</Width>
                             </Border>
                             <TopBorder>
                               <Style>Solid</Style>
@@ -396,6 +400,7 @@ FROM SystemManagement.Company</CommandText>
                           <Style>
                             <Border>
                               <Style>None</Style>
+                              <Width>2pt</Width>
                             </Border>
                             <TopBorder>
                               <Style>Solid</Style>
@@ -441,6 +446,9 @@ FROM SystemManagement.Company</CommandText>
                             <Border>
                               <Style>None</Style>
                             </Border>
+                            <TopBorder>
+                              <Style>Solid</Style>
+                            </TopBorder>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -471,6 +479,9 @@ FROM SystemManagement.Company</CommandText>
                             <Border>
                               <Style>None</Style>
                             </Border>
+                            <TopBorder>
+                              <Style>Solid</Style>
+                            </TopBorder>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -504,6 +515,9 @@ FROM SystemManagement.Company</CommandText>
                             <Border>
                               <Style>None</Style>
                             </Border>
+                            <TopBorder>
+                              <Style>Solid</Style>
+                            </TopBorder>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -535,6 +549,9 @@ FROM SystemManagement.Company</CommandText>
                             <Border>
                               <Style>None</Style>
                             </Border>
+                            <TopBorder>
+                              <Style>Solid</Style>
+                            </TopBorder>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -567,6 +584,9 @@ FROM SystemManagement.Company</CommandText>
                             <Border>
                               <Style>None</Style>
                             </Border>
+                            <TopBorder>
+                              <Style>Solid</Style>
+                            </TopBorder>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -656,6 +676,7 @@ FROM SystemManagement.Company</CommandText>
                           <Style>
                             <Border>
                               <Style>None</Style>
+                              <Width>2pt</Width>
                             </Border>
                             <TopBorder>
                               <Style>Solid</Style>
@@ -693,6 +714,7 @@ FROM SystemManagement.Company</CommandText>
                           <Style>
                             <Border>
                               <Style>None</Style>
+                              <Width>2pt</Width>
                             </Border>
                             <TopBorder>
                               <Style>Solid</Style>
@@ -730,6 +752,7 @@ FROM SystemManagement.Company</CommandText>
                           <Style>
                             <Border>
                               <Style>None</Style>
+                              <Width>2pt</Width>
                             </Border>
                             <TopBorder>
                               <Style>Solid</Style>
@@ -767,6 +790,7 @@ FROM SystemManagement.Company</CommandText>
                           <Style>
                             <Border>
                               <Style>None</Style>
+                              <Width>2pt</Width>
                             </Border>
                             <TopBorder>
                               <Style>Solid</Style>
@@ -939,7 +963,7 @@ FROM SystemManagement.Company</CommandText>
               </TablixMembers>
             </TablixRowHierarchy>
             <DataSetName>Invoice</DataSetName>
-            <Top>0.5in</Top>
+            <Top>0.5875in</Top>
             <Height>0.5in</Height>
             <Width>8.29796in</Width>
             <ZIndex>1</ZIndex>
@@ -951,7 +975,7 @@ FROM SystemManagement.Company</CommandText>
             </Style>
           </Tablix>
         </ReportItems>
-        <Height>1in</Height>
+        <Height>1.0875in</Height>
         <Style>
           <Border>
             <Style>None</Style>
@@ -1652,11 +1676,6 @@ FROM SystemManagement.Company</CommandText>
   <ReportParameters>
     <ReportParameter Name="code">
       <DataType>String</DataType>
-      <DefaultValue>
-        <Values>
-          <Value>SJ-210623-A00001</Value>
-        </Values>
-      </DefaultValue>
       <Prompt>code</Prompt>
     </ReportParameter>
   </ReportParameters>
