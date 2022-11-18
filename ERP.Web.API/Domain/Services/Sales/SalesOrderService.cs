@@ -27,8 +27,8 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
             data = DateTime.TryParse(search, out var searchDate)
                 ? data.Where(x => x.Date == searchDate)
                 : data.Where(x =>
-                    x.Code.Contains(search) || x.SalesInitial.Contains(search) || x.CustCode.StartsWith(search) ||
-                    x.CustName.Contains(search));
+                    x.Code.Contains(search) || x.SalesInitial.Contains(search) || x.SalesName.Contains(search) ||
+                    x.CustCode.StartsWith(search) || x.CustName.Contains(search));
         }
 
         return data.ToDataSourceResult(skip, take, filter, sort);
