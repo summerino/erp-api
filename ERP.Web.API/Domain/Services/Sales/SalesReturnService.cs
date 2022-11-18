@@ -27,7 +27,7 @@ public class SalesReturnService : GeneralService<SalesReturnHeader>, ISalesRetur
                 ? data.Where(x => x.Date == searchDate)
                 : data.Where(x =>
                     x.Code.Contains(search) || x.CustCode.StartsWith(search) || x.CustName.Contains(search) ||
-                    x.TransCode == search || x.SalesInitial.Contains(search));
+                    x.TransCode == search || x.SalesInitial.Contains(search) || x.SalesName.Contains(search));
         }
 
         return data.ToDataSourceResult(skip, take, filter, sort);
