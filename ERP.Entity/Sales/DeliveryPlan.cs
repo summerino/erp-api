@@ -75,6 +75,8 @@ public class VwDeliveryPlanHeader : BaseEntityWithMarkApprovedAndViewed
 
     public string DriverInitial { get; set; }
 
+    public string DriverName { get; set; }
+
     public string WarehouseInitial { get; set; }
 
     public string CreatedInitial { get; set; }

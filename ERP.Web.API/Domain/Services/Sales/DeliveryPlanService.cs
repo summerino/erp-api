@@ -27,7 +27,7 @@ public class DeliveryPlanService : GeneralService<DeliveryPlanHeader>, IDelivery
                 ? data.Where(x => x.Date == searchDate)
                 : data.Where(x =>
                     x.Code.Contains(search) || x.VehicleNo.Contains(search) || x.DriverInitial.Contains(search) ||
-                    x.WarehouseInitial.Contains(search));
+                    x.DriverName.Contains(search) ||x.WarehouseInitial.Contains(search));
         }
 
         return data.ToDataSourceResult(skip, take, filter, sort);
