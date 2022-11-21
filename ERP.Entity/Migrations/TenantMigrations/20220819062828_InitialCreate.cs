@@ -8128,7 +8128,9 @@ AS
 		sih.[Date] AS TransactionDate,
 		sih.DueDate AS InvoiceDueDate,
 		e.FirstName + ' ' + e.LastName AS SalesName,
-		sih.Total
+		sih.Total,
+        sih.PaidAmount,
+        sih.Total - sih.PaidAmount AS Remaining
 	FROM Sales.VisitOrderInvoice voi
 	LEFT JOIN Sales.SalesInvoiceHeader sih
 		ON voi.InvCode = sih.Code
