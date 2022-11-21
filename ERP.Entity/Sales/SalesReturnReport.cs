@@ -10,6 +10,10 @@ public class ReportBySR
 
     public string TypeName { get; set; }
 
+    public string SalesInitial { get; set; }
+
+    public string SalesName { get; set; }
+
     public string CustCode { get; set; }
 
     public string CustName { get; set; }
@@ -34,6 +38,10 @@ public class ReportByDetailSR
     public string Code { get; set; }
 
     public string TypeName { get; set; }
+
+    public string SalesInitial { get; set; }
+
+    public string SalesName { get; set; }
 
     public string CustCode { get; set; }
 
