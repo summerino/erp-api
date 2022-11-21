@@ -10037,51 +10037,35 @@ BEGIN
 		ORDER BY i.Initial, i.[Name], uom_c.UnitEquivalent
 	END
 
-	ELSE IF @displayType = 'INVOICE'
+	ELSE IF @displayType = 'DOC'
 	BEGIN
-		WITH cte_dlv_plan_src AS (
-			SELECT dlv_plan_h.Code,
-				dlv_plan_d.TransCode,
-				CASE WHEN ISNULL(si_d_do.Code, '') = '' THEN si_d_di.Code
-					ELSE si_d_do.Code END AS InvCode
-			FROM (
-				SELECT *
-				FROM Sales.DeliveryPlanHeader
-				WHERE Code = @code
-				AND Mark <> 'V'
-			) dlv_plan_h
-			LEFT JOIN Sales.DeliveryPlanDetail dlv_plan_d
-				ON dlv_plan_d.Code = dlv_plan_h.Code
-			LEFT JOIN Sales.SalesInvoiceDetail si_d_do
-				ON si_d_do.DOCode = dlv_plan_d.TransCode
-			LEFT JOIN Sales.SalesInvoiceDetail si_d_di
-				ON si_d_di.Code = dlv_plan_d.TransCode
-		)
-		,cte_src_with_cust AS (
-			SELECT cte.*,
-				si_h.CustCode,
-				c.Initial AS CustInitial, c.[Name] AS CustName,
-				CASE WHEN so_h.BillingAddressId IS NULL THEN ca_d.Address1
-					ELSE ca_b.Address1 END AS CustAddress1
-			FROM cte_dlv_plan_src cte
-			INNER JOIN Sales.SalesInvoiceHeader si_h
-				ON si_h.Code = cte.InvCode
-			LEFT JOIN Sales.SalesOrderHeader so_h
-				ON so_h.Code = si_h.SOCode
-			LEFT JOIN General.Customer c
-				ON c.Code = si_h.CustCode
-			LEFT JOIN General.CustomerAddress ca_b
-				ON ca_b.Code = si_h.CustCode
-				AND ca_b.Id = so_h.BillingAddressId
-				AND so_h.BillingAddressId IS NOT NULL
-			LEFT JOIN General.CustomerAddress ca_d
-				ON ca_d.Code = si_h.CustCode
-				AND ca_d.IsDefault = 1
-				AND so_h.BillingAddressId IS NULL
-		)
-		SELECT *
-		FROM cte_src_with_cust
-		ORDER BY InvCode
+		SELECT dlv_plan_h.Code,
+			dlv_plan_d.TransCode,
+			do_h.CustCode,
+			c.Initial AS CustInitial, c.[Name] AS CustName,
+			CASE WHEN c.BillingAddressId IS NULL THEN ca_d.Address1
+				ELSE ca_b.Address1 END AS CustAddress1
+		FROM (
+			SELECT *
+			FROM Sales.DeliveryPlanHeader
+			WHERE Code = @code
+			AND Mark <> 'V'
+		) dlv_plan_h
+		LEFT JOIN Sales.DeliveryPlanDetail dlv_plan_d
+			ON dlv_plan_d.Code = dlv_plan_h.Code
+		LEFT JOIN Sales.SalesDeliveryHeader do_h
+			ON do_h.Code = dlv_plan_d.TransCode
+		LEFT JOIN General.Customer c
+			ON c.Code = do_h.CustCode
+		LEFT JOIN General.CustomerAddress ca_b
+			ON ca_b.Code = do_h.CustCode
+			AND ca_b.Id = c.BillingAddressId
+			AND c.BillingAddressId IS NOT NULL
+		LEFT JOIN General.CustomerAddress ca_d
+			ON ca_d.Code = do_h.CustCode
+			AND ca_d.IsDefault = 1
+			AND c.BillingAddressId IS NULL
+		ORDER BY dlv_plan_d.TransCode
 	END
 
 END";
