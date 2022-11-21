@@ -14,9 +14,18 @@ public class SalesDeliveryReportService : ISalesDeliveryReportService
         _db = db;
     }
 
-    public DataSourceResult GetData(int type, int? srcTrans, string startDate, string endDate, string custCode, string status, int? itemId, string code, bool isDetail, int? unitId, int? categoryId)
+    public DataSourceResult GetData(int type, int? srcTrans, string startDate, string endDate, int? salesId, string custCode, string status, int? itemId, string code, bool isDetail, int? unitId, int? categoryId)
     {
-        var doData = _db.ReportByDOs.FromSqlRaw(@"SELECT do.[Date], do.Code, do.CustCode, do.CustName, do.TaxInvoiceNo, do.TaxInvoiceDate,
+        var doData = _db.ReportByDOs.FromSqlRaw(@"SELECT do.[Date], do.Code,
+                            CASE 
+	                            WHEN do.SrcTrans = 1 THEN so.SalesInitial
+	                            ELSE sr.SalesInitial
+                            END AS SalesInitial,
+                            CASE 
+	                            WHEN do.SrcTrans = 1 THEN so.SalesName
+	                            ELSE sr.SalesName
+                            END AS SalesName,  
+                            do.CustCode, do.CustName, do.TaxInvoiceNo, do.TaxInvoiceDate,
                             CAST(do.SrcTrans AS int) AS SrcTrans, do.TransCode, wh.[Name] AS WarehouseName,
                             SUM(do_d.Qty * do_d.UnitPrice) AS GrossAmount, SUM(do_d.Qty * (do_d.UnitPrice - do_d.Disc - do_d.FinalDiscHeader)) AS SubTotal,
                             SUM(do_d.Qty * do_d.Disc) AS Disc, SUM(do_d.Qty * do_d.FinalDiscHeader) AS DiscHeader,
@@ -27,12 +36,28 @@ public class SalesDeliveryReportService : ISalesDeliveryReportService
 	                            WHEN 'INV' THEN 'Difakturkan' END AS [Status]
                             FROM Sales.vwSalesDeliveryHeader do
                             LEFT JOIN Sales.vwSalesDeliveryDetail do_d ON do_d.Code = do.Code
+                            LEFT JOIN Sales.vwSalesOrderHeader so ON so.Code = do.TransCode
+                            LEFT JOIN Sales.vwSalesReturnHeader sr ON sr.Code = do.TransCode
                             LEFT JOIN Inventory.Warehouse wh ON wh.Code = do.WarehouseCode
                             WHERE do.FromDirectInvoice = 0" +
+                            (salesId.HasValue ? $@" AND CASE WHEN do.SrcTrans = 1 AND so.SalesBy = {salesId.Value} THEN 1
+                            WHEN do.SrcTrans = 2 AND sr.SalesBy = {salesId.Value} THEN 1 ELSE 0 END = 1" : "") +
                             (string.IsNullOrEmpty(status) ? " AND do.Mark <> 'OL'" : status.Replace("'", "''").Equals("NV") ? " AND do.Mark NOT IN ('V', 'OL')" : $" AND do.Mark = '{status.Replace("'", "''")}'") +
-                            " GROUP BY do.[Date], do.Code, do.CustCode, do.CustName, do.SrcTrans, do.TransCode, wh.[Name], do.Mark, do.TaxInvoiceNo, do.TaxInvoiceDate").ToList();
+                            @" GROUP BY do.[Date], do.Code,
+                            CASE WHEN do.SrcTrans = 1 THEN so.SalesInitial ELSE sr.SalesInitial END,
+                            CASE WHEN do.SrcTrans = 1 THEN so.SalesName ELSE sr.SalesName END,
+                            do.CustCode, do.CustName, do.SrcTrans, do.TransCode, wh.[Name], do.Mark, do.TaxInvoiceNo, do.TaxInvoiceDate").ToList();
 
-        var doDetailData = _db.ReportByDetailDOs.FromSqlRaw(@"SELECT do.[Date], do.Code, do.CustCode, do.CustName, do.TaxInvoiceNo, do.TaxInvoiceDate,
+        var doDetailData = _db.ReportByDetailDOs.FromSqlRaw(@"SELECT do.[Date], do.Code,
+                            CASE 
+	                            WHEN do.SrcTrans = 1 THEN so.SalesInitial
+	                            ELSE sr.SalesInitial
+                            END AS SalesInitial,
+                            CASE 
+	                            WHEN do.SrcTrans = 1 THEN so.SalesName
+	                            ELSE sr.SalesName
+                            END AS SalesName,
+                            do.CustCode, do.CustName, do.TaxInvoiceNo, do.TaxInvoiceDate,
                             CAST(do.SrcTrans AS int) AS SrcTrans, do.TransCode, wh.[Name] AS WarehouseName,
                             im.Initial AS ItemInitial, im.[Name] AS ItemName, do_d.Qty,
                             do_d.UnitId, do_d.UnitName, do_d.UnitPrice AS GrossAmount,
@@ -49,11 +74,16 @@ public class SalesDeliveryReportService : ISalesDeliveryReportService
                             ic.Id AS CategoryId, ic.Initial AS CategoryInitial
                             FROM Sales.vwSalesDeliveryDetail do_d
                             LEFT JOIN Sales.vwSalesDeliveryHeader do ON do.Code = do_d.Code
+                            LEFT JOIN Sales.vwSalesOrderHeader so ON so.Code = do.TransCode
+                            LEFT JOIN Sales.vwSalesReturnHeader sr ON sr.Code = do.TransCode
                             LEFT JOIN Inventory.Item im ON im.Id = do_d.ItemId
                             LEFT JOIN Inventory.ItemCategory ic ON ic.Id = im.CategoryId
                             LEFT JOIN Inventory.Warehouse wh ON wh.Code = do.WarehouseCode
                             WHERE do.FromDirectInvoice = 0" +
-                                                            (!itemId.HasValue || itemId <= 0 ? "" : $" AND do_d.ItemId = {itemId}")).ToList();
+                            (salesId.HasValue ? $@" AND CASE WHEN do.SrcTrans = 1 AND so.SalesBy = {salesId.Value} THEN 1
+                            WHEN do.SrcTrans = 2 AND sr.SalesBy = {salesId.Value} THEN 1 ELSE 0 END = 1" : "") +
+                            (string.IsNullOrEmpty(status) ? " AND do.Mark <> 'OL'" : status.Replace("'", "''").Equals("NV") ? " AND do.Mark NOT IN ('V', 'OL')" : $" AND do.Mark = '{status.Replace("'", "''")}'") +
+                            (!itemId.HasValue || itemId <= 0 ? "" : $" AND do_d.ItemId = {itemId}")).ToList();
 
         var itemData = _db.ReportByItemSales.FromSqlRaw(@"SELECT im.Initial, im.[Name], 
                             ic.Id AS CategoryId, ic.Initial AS CategoryInitial,
@@ -156,11 +186,6 @@ public class SalesDeliveryReportService : ISalesDeliveryReportService
             }
             else if (type == 2)
             {
-                if (!string.IsNullOrEmpty(status))
-                {
-                    doDetailData = doDetailData.Where(x => doData.Select(y => y.Code).Contains(x.Code)).ToList();
-                }
-
                 if (!string.IsNullOrWhiteSpace(custCode))
                 {
                     custData = custData.Where(x => x.Code == custCode).ToList();
@@ -204,11 +229,6 @@ public class SalesDeliveryReportService : ISalesDeliveryReportService
             }
             else if (type == 3)
             {
-                if (!string.IsNullOrEmpty(status))
-                {
-                    doDetailData = doDetailData.Where(x => doData.Select(y => y.Code).Contains(x.Code)).ToList();
-                }
-
                 if (!string.IsNullOrWhiteSpace(custCode))
                 {
                     doDetailData = doDetailData.Where(x => x.CustCode == custCode).ToList();
@@ -254,11 +274,6 @@ public class SalesDeliveryReportService : ISalesDeliveryReportService
             }
             else if (type == 4)
             {
-                if (!string.IsNullOrEmpty(status))
-                {
-                    doDetailData = doDetailData.Where(x => doData.Select(y => y.Code).Contains(x.Code)).ToList();
-                }
-
                 if (!string.IsNullOrWhiteSpace(custCode))
                 {
                     doDetailData = doDetailData.Where(x => x.CustCode == custCode).ToList();
@@ -299,11 +314,6 @@ public class SalesDeliveryReportService : ISalesDeliveryReportService
             }
             else
             {
-                if (!string.IsNullOrEmpty(status))
-                {
-                    doDetailData = doDetailData.Where(x => doData.Select(y => y.Code).Contains(x.Code)).ToList();
-                }
-
                 if (!string.IsNullOrWhiteSpace(custCode))
                 {
                     doDetailData = doDetailData.Where(x => x.CustCode == custCode).ToList();
@@ -367,11 +377,6 @@ public class SalesDeliveryReportService : ISalesDeliveryReportService
             }
             else
             {
-                if (!string.IsNullOrEmpty(status))
-                {
-                    doDetailData = doDetailData.Where(x => doData.Select(y => y.Code).Contains(x.Code)).ToList();
-                }
-
                 if (!string.IsNullOrWhiteSpace(custCode))
                 {
                     doDetailData = doDetailData.Where(x => x.CustCode == custCode).ToList();
