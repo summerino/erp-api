@@ -144,4 +144,10 @@ public class VwVisitOrderInvoice
 
     [Precision(18, 2)]
     public decimal Total { get; set; }
+
+    [Precision(19, 6)]
+    public decimal PaidAmount { get; set; }
+
+    [Precision(23, 6)]
+    public decimal Remaining { get; set; }
 }
