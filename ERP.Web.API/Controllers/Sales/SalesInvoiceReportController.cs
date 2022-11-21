@@ -18,13 +18,13 @@ public class SalesInvoiceReportController : ControllerBase
 
     [HttpGet]
     public IActionResult GetData(int type, string startDate, string endDate,
-        string custCode, string status, int? itemId,
+        int? salesId, string custCode, string status, int? itemId,
         string code, bool isDetail, int? unitId,
         int? categoryId)
     {
         var result =
             _sir.GetData(type, startDate, endDate,
-                custCode, status, itemId,
+                salesId, custCode, status, itemId,
                 code, isDetail, unitId,
                 categoryId);
 

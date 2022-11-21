@@ -12,6 +12,10 @@ public class ReportBySI
 
     public string OrderCode { get; set; }
 
+    public string SalesInitial { get; set; }
+
+    public string SalesName { get; set; }
+
     public string CustCode { get; set; }
 
     public string CustName { get; set; }
@@ -48,6 +52,10 @@ public class ReportByDetailSI
     public string TaxInvoiceNo { get; set; }
 
     public DateTime? TaxInvoiceDate { get; set; }
+
+    public string SalesInitial { get; set; }
+
+    public string SalesName { get; set; }
 
     public string CustCode { get; set; }
 

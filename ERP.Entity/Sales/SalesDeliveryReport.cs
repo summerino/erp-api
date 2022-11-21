@@ -12,6 +12,10 @@ public class ReportByDO
 
     public string TransCode { get; set; }
 
+    public string SalesInitial { get; set; }
+
+    public string SalesName { get; set; }
+
     public string CustCode { get; set; }
 
     public string CustName { get; set; }
@@ -50,6 +54,10 @@ public class ReportByDetailDO
     public int SrcTrans { get; set; }
 
     public string TransCode { get; set; }
+
+    public string SalesInitial { get; set; }
+
+    public string SalesName { get; set; }
 
     public string CustCode { get; set; }
 
