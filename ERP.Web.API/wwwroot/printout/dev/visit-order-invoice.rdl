@@ -81,8 +81,8 @@ FROM SystemManagement.Company</CommandText>
           <DataField>CustInitial</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="InvTotal">
-          <DataField>InvTotal</DataField>
+        <Field Name="InvRemaining">
+          <DataField>InvRemaining</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
         <Field Name="CustName">
@@ -1772,7 +1772,7 @@ FROM SystemManagement.Company</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!InvTotal.Value</Value>
+                                  <Value>=Fields!InvRemaining.Value</Value>
                                   <Style>
                                     <Format>#,##0.00</Format>
                                   </Style>
@@ -2105,7 +2105,7 @@ FROM SystemManagement.Company</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>="Total Faktur :   " &amp; Format(Sum(Fields!InvTotal.Value), "#,##0.00")</Value>
+                                  <Value>="Total Faktur :   " &amp; Format(Sum(Fields!InvRemaining.Value), "#,##0.00")</Value>
                                   <Style>
                                     <FontSize>9pt</FontSize>
                                     <FontWeight>Bold</FontWeight>

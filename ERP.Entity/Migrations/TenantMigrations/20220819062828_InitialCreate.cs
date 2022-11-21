@@ -11211,7 +11211,7 @@ AS
 BEGIN
 
 	SELECT vo.Code, vo.[Date], vo.Notes,
-		vo_i.InvCode, si_h.[Date] AS InvDate, si_h.Total AS InvTotal,
+		vo_i.InvCode, si_h.[Date] AS InvDate, si_h.Total - si_h.PaidAmount AS InvRemaining,
 		si_h.CustCode, c.Initial AS CustInitial, c.[Name] AS CustName, a.Initial AS CustArea,
 		e_s.Initial AS SalesInitial, e_s.FirstName AS SalesFirstName, e_s.LastName AS SalesLastName,
 		u_c.Initial AS CreatedInitial
