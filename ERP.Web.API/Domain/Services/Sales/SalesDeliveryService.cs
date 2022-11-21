@@ -28,6 +28,7 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
                 ? data.Where(x => x.Date == searchDate)
                 : data.Where(x =>
                     x.Code.Contains(search) || x.CustCode.StartsWith(search) || x.CustName.Contains(search) ||
+                    x.SalesInitial.Contains(search) || x.SalesName.Contains(search) ||
                     x.TransCode == search || x.ShippedInitial.Contains(search));
         }
 
