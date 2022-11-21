@@ -25,7 +25,9 @@ public class VisitOrderService : GeneralService<VisitOrder>, IVisitOrderService
             data = DateTime.TryParse(search, out var searchDate)
                 ? data.Where(x => x.Date == searchDate)
                 : data.Where(x =>
-                    x.Code.Contains(search) || x.VisitPlanCode.Contains(search));
+                    x.Code.Contains(search) || x.VisitPlanCode.Contains(search) || x.SalesmanInitial.Contains(search)||
+                    x.SalesmanName.Contains(search) || x.GroupInitial.Contains(search) || x.GroupName.Contains(search) ||
+                    x.SourceTransaction.Contains(search));
         }
 
         return data.ToDataSourceResult(skip, take, filter, sort);

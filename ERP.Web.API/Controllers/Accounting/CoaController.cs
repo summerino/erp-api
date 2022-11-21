@@ -122,6 +122,7 @@ public class CoaController : ControllerBase
                     x.Code,
                     x.Name
                 })
+                .OrderBy(x => x.Code)
                 .ToList<dynamic>();
 
         return Ok(new ApiResponse

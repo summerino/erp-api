@@ -42,8 +42,8 @@ public class OverlimitApprovalService : IOverlimitApprovalService
             data = DateTime.TryParse(search, out var searchDate)
                 ? data.Where(x => x.Date == searchDate)
                 : data.Where(x =>
-                    x.Code.Contains(search) || x.SalesInitial.Contains(search) || x.CustCode.StartsWith(search) ||
-                    x.CustName.Contains(search) || x.SourceTrans.Contains(search));
+                    x.Code.Contains(search) || x.SalesInitial.Contains(search) || x.SalesName.Contains(search) ||
+                    x.CustCode.StartsWith(search) || x.CustName.Contains(search) || x.SourceTrans.Contains(search));
         }
 
         return data.ToDataSourceResult(skip, take, filters, sorts);

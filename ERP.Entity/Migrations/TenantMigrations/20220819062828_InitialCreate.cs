@@ -7688,6 +7688,7 @@ AS
 	SELECT dp_h.*,
 		v.VehicleNo,
 		e.Initial AS DriverInitial,
+        e.FirstName AS DriverName,
 		w.Initial AS WarehouseInitial,
 		u_c.Initial AS CreatedInitial,
 		u_u.Initial AS UpdatedInitial,
