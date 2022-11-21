@@ -8,6 +8,10 @@ public class ReportBySO
 
     public string Code { get; set; }
 
+    public string SalesInitial { get; set; }
+
+    public string SalesName { get; set; }
+
     public string CustCode { get; set; }
 
     public string CustName { get; set; }
@@ -36,6 +40,10 @@ public class ReportByDetailSO
     public DateTime? Date { get; set; }
 
     public string Code { get; set; }
+
+    public string SalesInitial { get; set; }
+
+    public string SalesName { get; set; }
 
     public string CustCode { get; set; }
 
