@@ -13,9 +13,9 @@ public class SalesReturnReportService : ISalesReturnReportService
     {
         _db = db;
     }
-    public DataSourceResult GetData(int type, string startDate, string endDate, string custCode, string status, int? itemId, string code, bool isDetail, int? unitId, int? categoryId)
+    public DataSourceResult GetData(int type, string startDate, string endDate, int? salesId, string custCode, string status, int? itemId, string code, bool isDetail, int? unitId, int? categoryId)
     {
-        var srData = _db.ReportBySRs.FromSqlRaw(@"SELECT sr.[Date], sr.Code, sr.CustCode, sr.CustName,
+        var srData = _db.ReportBySRs.FromSqlRaw(@"SELECT sr.[Date], sr.Code, sr.SalesInitial, sr.SalesName, sr.CustCode, sr.CustName,
                             SUM(sr_d.Qty * (sr_d.UnitPrice - sr_d.Disc)) AS SubTotal, SUM(sr_d.Qty * sr_d.DPP) AS DPP,
                             SUM(sr_d.Qty * sr_d.TaxAmount) AS TaxAmount, SUM(sr_d.Qty * sr_d.ExemptTaxAmount) AS ExemptTaxAmount, SUM(sr_d.Qty * sr_d.NettPrice) AS Total,
                             CASE sr.[Type]
@@ -30,10 +30,12 @@ public class SalesReturnReportService : ISalesReturnReportService
                                 WHEN 'CLS' THEN 'Ditutup' END AS [Status]
                             FROM Sales.vwSalesReturnHeader sr
                             LEFT JOIN Sales.vwSalesReturnDetail sr_d ON sr_d.Code = sr.Code" +
-                                                (string.IsNullOrEmpty(status) ? "" : status.Replace("'", "''").Equals("NV") ? " WHERE sr.Mark != 'V'" : $" WHERE sr.Mark = '{status.Replace("'", "''")}'") +
-                                                " GROUP BY sr.[Date], sr.Code, sr.CustCode, sr.CustName, sr.Mark, sr.[Type]").ToList();
+                            (string.IsNullOrEmpty(status) ? "" : status.Replace("'", "''").Equals("NV") ? " WHERE sr.Mark != 'V'" : $" WHERE sr.Mark = '{status.Replace("'", "''")}'") +
+                            (salesId.HasValue ? string.IsNullOrEmpty(status) ? $" WHERE sr.SalesBy = {salesId.Value}" : $" AND sr.SalesBy = {salesId.Value}" : "") +
+                            " GROUP BY sr.[Date], sr.Code, sr.SalesInitial, sr.SalesName, sr.CustCode, sr.CustName, sr.Mark, sr.[Type]").ToList();
 
-        var srDetailData = _db.ReportByDetailSRs.FromSqlRaw(@"SELECT sr.[Date], sr.Code, sr.CustCode,sr.CustName,
+        var srDetailData = _db.ReportByDetailSRs.FromSqlRaw(@"SELECT sr.[Date], sr.Code,
+                            sr.SalesInitial, sr.SalesName, sr.CustCode,sr.CustName,
                             im.Initial AS ItemInitial, im.[Name] AS ItemName, sr_d.Qty,
                             sr_d.UnitId, sr_d.UnitName, sr_d.UnitPrice AS GrossAmount,
                             sr_d.DPP, sr_d.TaxAmount, sr_d.ExemptTaxAmount, sr_d.NettPrice,
@@ -56,7 +58,9 @@ public class SalesReturnReportService : ISalesReturnReportService
                             LEFT JOIN Inventory.Item im ON im.Id = sr_d.ItemId
                             LEFT JOIN Inventory.ItemCategory ic ON ic.Id = im.CategoryId
                             LEFT JOIN Inventory.Warehouse wh ON wh.Code = sr.WarehouseCode" +
-                                                            (!itemId.HasValue || itemId <= 0 ? "" : $" WHERE sr_d.ItemId = {itemId}")).ToList();
+                            (string.IsNullOrEmpty(status) ? "" : status.Replace("'", "''").Equals("NV") ? " WHERE sr.Mark != 'V'" : $" WHERE sr.Mark = '{status.Replace("'", "''")}'") +
+                            (!itemId.HasValue || itemId <= 0 ? "" : string.IsNullOrEmpty(status) ? $" WHERE sr_d.ItemId = {itemId}" : $" AND sr_d.ItemId = {itemId}") +
+                            (salesId.HasValue ? string.IsNullOrEmpty(status) && (!itemId.HasValue || itemId <= 0) ? $" WHERE sr.SalesBy = {salesId.Value}" : $" AND sr.SalesBy = {salesId.Value}" : "")).ToList();
 
         var itemData = _db.ReportByItemSales.FromSqlRaw(@"SELECT im.Initial, im.[Name], 
                             ic.Id AS CategoryId, ic.Initial AS CategoryInitial,
@@ -145,11 +149,6 @@ public class SalesReturnReportService : ISalesReturnReportService
             }
             else if (type == 2)
             {
-                if (!string.IsNullOrEmpty(status))
-                {
-                    srDetailData = srDetailData.Where(x => srData.Select(y => y.Code).Contains(x.Code)).ToList();
-                }
-
                 if (!string.IsNullOrWhiteSpace(custCode))
                 {
                     custData = custData.Where(x => x.Code == custCode).ToList();
@@ -187,11 +186,6 @@ public class SalesReturnReportService : ISalesReturnReportService
             }
             else if (type == 3)
             {
-                if (!string.IsNullOrEmpty(status))
-                {
-                    srDetailData = srDetailData.Where(x => srData.Select(y => y.Code).Contains(x.Code)).ToList();
-                }
-
                 if (!string.IsNullOrWhiteSpace(custCode))
                 {
                     srDetailData = srDetailData.Where(x => x.CustCode == custCode).ToList();
@@ -231,11 +225,6 @@ public class SalesReturnReportService : ISalesReturnReportService
             }
             else if (type == 4)
             {
-                if (!string.IsNullOrEmpty(status))
-                {
-                    srDetailData = srDetailData.Where(x => srData.Select(y => y.Code).Contains(x.Code)).ToList();
-                }
-
                 if (!string.IsNullOrWhiteSpace(custCode))
                 {
                     srDetailData = srDetailData.Where(x => x.CustCode == custCode).ToList();
@@ -270,11 +259,6 @@ public class SalesReturnReportService : ISalesReturnReportService
             }
             else
             {
-                if (!string.IsNullOrEmpty(status))
-                {
-                    srDetailData = srDetailData.Where(x => srData.Select(y => y.Code).Contains(x.Code)).ToList();
-                }
-
                 if (!string.IsNullOrWhiteSpace(custCode))
                 {
                     srDetailData = srDetailData.Where(x => x.CustCode == custCode).ToList();
@@ -332,11 +316,6 @@ public class SalesReturnReportService : ISalesReturnReportService
             }
             else
             {
-                if (!string.IsNullOrEmpty(status))
-                {
-                    srDetailData = srDetailData.Where(x => srData.Select(y => y.Code).Contains(x.Code)).ToList();
-                }
-
                 if (!string.IsNullOrWhiteSpace(custCode))
                 {
                     srDetailData = srDetailData.Where(x => x.CustCode == custCode).ToList();
