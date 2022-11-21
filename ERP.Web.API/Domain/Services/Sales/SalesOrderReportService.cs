@@ -14,9 +14,9 @@ public class SalesOrderReportService : ISalesOrderReportService
         _db = db;
     }
 
-    public DataSourceResult GetData(int type, string startDate, string endDate, string custCode, string status, int? itemId, string code, bool isDetail, int? unitId, int? categoryId)
+    public DataSourceResult GetData(int type, string startDate, string endDate, int? salesId, string custCode, string status, int? itemId, string code, bool isDetail, int? unitId, int? categoryId)
     {
-        var soData = _db.ReportBySOs.FromSqlRaw(@"SELECT so.[Date], so.Code, so.CustCode, so.CustName,
+        var soData = _db.ReportBySOs.FromSqlRaw(@"SELECT so.[Date], so.Code, so.SalesInitial, so.SalesName, so.CustCode, so.CustName,
                             SUM(so_d.Qty * so_d.UnitPrice) AS GrossAmount, SUM(so_d.Qty * (so_d.UnitPrice - so_d.Disc - so_d.FinalDiscHeader)) AS SubTotal,
                             SUM(so_d.Qty * so_d.Disc) AS Disc, SUM(so_d.Qty * so_d.FinalDiscHeader) AS DiscHeader,
                             SUM(so_d.DPP * so_d.Qty) AS DPP, SUM(so_d.TaxAmount * so_d.Qty) AS TaxAmount, SUM(so_d.ExemptTaxAmount * so_d.Qty) AS ExemptTaxAmount, SUM(so_d.NettPrice * so_d.Qty) AS Total,
@@ -29,10 +29,12 @@ public class SalesOrderReportService : ISalesOrderReportService
                             FROM Sales.vwSalesOrderHeader so
                             LEFT JOIN Sales.vwSalesOrderDetail so_d ON so_d.Code = so.Code
                             WHERE so.FromDirectInvoice = 0" +
-                                                (string.IsNullOrEmpty(status) ? " AND so.Mark <> 'OL'" : status.Replace("'", "''").Equals("NV") ? " AND so.Mark NOT IN ('V', 'OL')" : $" AND so.Mark = '{status.Replace("'", "''")}'") +
-                                                " GROUP BY so.[Date], so.Code, so.CustCode, so.CustName, so.Mark").ToList();
+                            (salesId.HasValue ? $" AND so.SalesBy = {salesId.Value}" : "") +
+                            (string.IsNullOrEmpty(status) ? " AND so.Mark <> 'OL'" : status.Replace("'", "''").Equals("NV") ? " AND so.Mark NOT IN ('V', 'OL')" : $" AND so.Mark = '{status.Replace("'", "''")}'") +
+                            " GROUP BY so.[Date], so.Code, so.SalesInitial, so.SalesName, so.CustCode, so.CustName, so.Mark").ToList();
 
-        var soDetailData = _db.ReportByDetailSOs.FromSqlRaw(@"SELECT so.[Date], so.Code, so.CustCode,so.CustName,
+        var soDetailData = _db.ReportByDetailSOs.FromSqlRaw(@"SELECT so.[Date], so.Code, 
+                            so.SalesInitial, so.SalesName, so.CustCode, so.CustName,
                             im.Initial AS ItemInitial, im.[Name] AS ItemName, so_d.Qty,
                             so_d.UnitId, so_d.UnitName, so_d.UnitPrice AS GrossAmount,
                             so_d.Disc AS Disc, so_d.FinalDiscHeader AS DiscHeader,
@@ -52,8 +54,10 @@ public class SalesOrderReportService : ISalesOrderReportService
                             LEFT JOIN Sales.vwSalesOrderHeader so ON so.Code = so_d.Code
                             LEFT JOIN Inventory.Item im ON im.Id = so_d.ItemId
                             LEFT JOIN Inventory.ItemCategory ic ON ic.Id = im.CategoryId
-                            WHERE so.FromDirectInvoice = 0 AND so.Mark <> 'OL'" +
-                                                            (!itemId.HasValue || itemId <= 0 ? "" : $" AND so_d.ItemId = {itemId}")).ToList();
+                            WHERE so.FromDirectInvoice = 0" +
+                            (string.IsNullOrEmpty(status) ? " AND so.Mark <> 'OL'" : status.Replace("'", "''").Equals("NV") ? " AND so.Mark NOT IN ('V', 'OL')" : $" AND so.Mark = '{status.Replace("'", "''")}'") +
+                            (salesId.HasValue ? $" AND so.SalesBy = {salesId.Value}" : "") +
+                            (!itemId.HasValue || itemId <= 0 ? "" : $" AND so_d.ItemId = {itemId}")).ToList();
 
         var itemData = _db.ReportByItemSales.FromSqlRaw(@"SELECT im.Initial, im.[Name], 
                             ic.Id AS CategoryId, ic.Initial AS CategoryInitial,
@@ -147,11 +151,6 @@ public class SalesOrderReportService : ISalesOrderReportService
             }
             else if (type == 2)
             {
-                if (!string.IsNullOrEmpty(status))
-                {
-                    soDetailData = soDetailData.Where(x => soData.Select(y => y.Code).Contains(x.Code)).ToList();
-                }
-
                 if (!string.IsNullOrWhiteSpace(custCode))
                 {
                     custData = custData.Where(x => x.Code == custCode).ToList();
@@ -195,11 +194,6 @@ public class SalesOrderReportService : ISalesOrderReportService
             }
             else if (type == 3)
             {
-                if (!string.IsNullOrEmpty(status))
-                {
-                    soDetailData = soDetailData.Where(x => soData.Select(y => y.Code).Contains(x.Code)).ToList();
-                }
-
                 if (!string.IsNullOrWhiteSpace(custCode))
                 {
                     soDetailData = soDetailData.Where(x => x.CustCode == custCode).ToList();
@@ -245,11 +239,6 @@ public class SalesOrderReportService : ISalesOrderReportService
             }
             else if (type == 4)
             {
-                if (!string.IsNullOrEmpty(status))
-                {
-                    soDetailData = soDetailData.Where(x => soData.Select(y => y.Code).Contains(x.Code)).ToList();
-                }
-
                 if (!string.IsNullOrWhiteSpace(custCode))
                 {
                     soDetailData = soDetailData.Where(x => x.CustCode == custCode).ToList();
@@ -358,10 +347,6 @@ public class SalesOrderReportService : ISalesOrderReportService
             }
             else
             {
-                if (!string.IsNullOrEmpty(status))
-                {
-                    soDetailData = soDetailData.Where(x => soData.Select(y => y.Code).Contains(x.Code)).ToList();
-                }
 
                 if (!string.IsNullOrWhiteSpace(custCode))
                 {
