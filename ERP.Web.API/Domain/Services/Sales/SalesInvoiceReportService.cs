@@ -173,7 +173,7 @@ public class SalesInvoiceReportService : ISalesInvoiceReportService
 
                 foreach (var itemCust in custData)
                 {
-                    itemCust.TotalTrans = siDetailData.Count(x => x.CustCode == itemCust.Code);
+                    itemCust.TotalTrans = siDetailData.DistinctBy(x => x.Code).Count(x => x.CustCode == itemCust.Code);
                     itemCust.GrossAmount = siDetailData.Where(x => x.CustCode == itemCust.Code).Sum(x => x.TotalGrossAmount);
                     itemCust.Disc = siDetailData.Where(x => x.CustCode == itemCust.Code).Sum(x => x.TotalDisc);
                     itemCust.DiscHeader = siDetailData.Where(x => x.CustCode == itemCust.Code).Sum(x => x.TotalDiscHeader);

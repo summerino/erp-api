@@ -161,7 +161,7 @@ public class SalesReturnReportService : ISalesReturnReportService
 
                 foreach (var itemCust in custData)
                 {
-                    itemCust.TotalTrans = srDetailData.Count(x => x.CustCode == itemCust.Code);
+                    itemCust.TotalTrans = srDetailData.DistinctBy(x => x.Code).Count(x => x.CustCode == itemCust.Code);
                     itemCust.SubTotal = srDetailData.Where(x => x.CustCode == itemCust.Code).Sum(x => x.TotalGrossAmount);
                     itemCust.Dpp = srDetailData.Where(x => x.CustCode == itemCust.Code).Sum(x => x.TotalDpp);
                     itemCust.TaxAmount = srDetailData.Where(x => x.CustCode == itemCust.Code).Sum(x => x.TotalTaxAmount);
