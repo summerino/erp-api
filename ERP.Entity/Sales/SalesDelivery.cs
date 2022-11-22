@@ -145,6 +145,9 @@ public class VwSalesDeliveryHeader : BaseEntityWithMarkApprovedAndViewed
 
     public bool FromDirectInvoice { get; set; }
 
+    public string SalesInitial { get; set; }
+
+    public string SalesName { get; set; }
 
     public string CustName { get; set; }
 
