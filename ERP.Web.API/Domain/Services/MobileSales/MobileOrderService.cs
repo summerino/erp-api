@@ -116,7 +116,7 @@ public class MobileOrderService : GeneralService<MobileOrderHeader>, IMobileOrde
                     // Credit Used
                     UpdateCreditUsed(itemData.CustCode, itemData.Total);
 
-                    var (isExcess, validMessage) = IsQtyExcess(salesData.WarehouseCode, detailData);
+                    var (isExcess, validMessage) = IsQtyExcess(salesData.WarehouseCode, detailData, detailFreeData);
 
                     if (isExcess)
                     {
@@ -738,12 +738,28 @@ public class MobileOrderService : GeneralService<MobileOrderHeader>, IMobileOrde
                 Name = x.Promo.Name
             }).ToDynamicList();
     }
-    private (bool, string) IsQtyExcess(string warehouseCode, IEnumerable<MobileOrderDetail> items)
+    private (bool, string) IsQtyExcess(string warehouseCode, IEnumerable<MobileOrderDetail> items, IEnumerable<MobileOrderDetailFreeGood> freeItems)
     {
         var errorList = "";
 
+        var listItems = items.Select(x => new
+        {
+            x.Id,
+            x.ItemId,
+            x.UnitId,
+            x.UomId,
+            x.Qty
+        }).Union(freeItems.Select(y => new
+        {
+            y.Id,
+            y.ItemId,
+            y.UnitId,
+            y.UomId,
+            y.Qty
+        })).ToList();
+
         var result = false;
-        foreach (var item in items)
+        foreach (var item in listItems)
         {
             //check if item active
             var itemData = Db.Items.FirstOrDefault(x => x.Id == item.ItemId);
