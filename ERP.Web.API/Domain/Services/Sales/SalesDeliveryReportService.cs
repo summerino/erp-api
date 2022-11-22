@@ -198,7 +198,7 @@ public class SalesDeliveryReportService : ISalesDeliveryReportService
 
                 foreach (var itemCust in custData)
                 {
-                    itemCust.TotalTrans = doDetailData.Count(x => x.CustCode == itemCust.Code);
+                    itemCust.TotalTrans = doDetailData.DistinctBy(x => x.Code).Count(x => x.CustCode == itemCust.Code);
                     itemCust.GrossAmount = doDetailData.Where(x => x.CustCode == itemCust.Code).Sum(x => x.TotalGrossAmount);
                     itemCust.Disc = doDetailData.Where(x => x.CustCode == itemCust.Code).Sum(x => x.TotalDisc);
                     itemCust.DiscHeader = doDetailData.Where(x => x.CustCode == itemCust.Code).Sum(x => x.TotalDiscHeader);
