@@ -138,6 +138,13 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
                 }
             }
 
+            var (isDuplicate, message) = CheckDuplicateDetail(data.ItemDetails);
+            if (isDuplicate)
+            {
+                result.Message = message;
+                return result;
+            }
+
             // Checking warehouse qty is item is available or not
             var isQtyAvailable = IsQtyAvailable(null, data.WarehouseCode, data.ItemDetails);
             switch (isQtyAvailable)
@@ -157,7 +164,7 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
                 return result;
             }
 
-            var taxes = Db.Taxes.ToList();
+            var taxes = Db.Taxes.AsNoTracking().ToList();
             List<decimal> totalDetail = new();
             List<decimal> totalTax = new();
             List<decimal> totalExemptTax = new();
@@ -435,6 +442,13 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
                 }
             }
 
+            var (isDuplicate, message) = CheckDuplicateDetail(data.ItemDetails);
+            if (isDuplicate)
+            {
+                result.Message = message;
+                return result;
+            }
+
             // Checking warehouse qty is item is available or not
             var isQtyAvailable = IsQtyAvailable(data.Code, data.WarehouseCode, data.ItemDetails);
             switch (isQtyAvailable)
@@ -464,7 +478,7 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
             //Restore stock mutation
             RestoreWarehouseQty(oldDlvData.Code, oldDlvData.TransCode, oldDlvData.SrcTrans);
 
-            var taxes = Db.Taxes.ToList();
+            var taxes = Db.Taxes.AsNoTracking().ToList();
             List<decimal> totalDetail = new();
             List<decimal> totalTax = new();
             List<decimal> totalExemptTax = new();
@@ -1055,5 +1069,19 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
             }
         }
         Db.SaveChanges();
+    }
+
+    private (bool, string) CheckDuplicateDetail(IEnumerable<SalesDeliveryDetail> data)
+    {
+        var tData = data.GroupBy(x => new { x.ItemId, x.UnitId }).Where(y => y.Count() > 1);
+        var errorList = "";
+        foreach (var itemData in tData)
+        {
+            var item = Db.Items.FirstOrDefault(x => x.Id == itemData.Key.ItemId);
+            var uom = Db.UoMConversions.FirstOrDefault(x => x.Id == itemData.Key.UnitId);
+            errorList += $"&bull; Barang {item.Initial} dengan satuan {uom.UnitEquivalent} tidak dapat duplikat.<br/>";
+        }
+
+        return (errorList != "", errorList);
     }
 }
