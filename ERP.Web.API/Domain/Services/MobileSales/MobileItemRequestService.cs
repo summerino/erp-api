@@ -53,7 +53,7 @@ public class MobileItemRequestService : GeneralService<MobileItemRequestHeader>,
                 {
                     Code = newCode,
                     Date = vDate,
-                    Type = "DT",
+                    Type = Db.SystemParameters.FirstOrDefault(x => x.Code == "MOB_IR_TS_TYPE")?.Value ?? "OUT",
                     WarehouseCodeFrom = whCode,
                     WarehouseCodeTo = empData.WarehouseCode,
                     Notes = notes,

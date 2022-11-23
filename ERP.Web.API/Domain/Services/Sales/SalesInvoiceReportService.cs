@@ -256,7 +256,7 @@ public class SalesInvoiceReportService : ISalesInvoiceReportService
 
                 foreach (var item in itemCategoryData)
                 {
-                    item.TotalTrans = siDetailData.Count(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId);
+                    item.TotalTrans = siDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).DistinctBy(x => x.Code).Count();
                     item.Qty = siDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).Sum(x => x.Qty);
                     item.GrossAmount = siDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).Sum(x => x.TotalGrossAmount);
                     item.Disc = siDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).Sum(x => x.TotalDisc);

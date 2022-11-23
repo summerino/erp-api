@@ -738,59 +738,31 @@ public class MobileOrderService : GeneralService<MobileOrderHeader>, IMobileOrde
                 Name = x.Promo.Name
             }).ToDynamicList();
     }
+
     private (bool, string) IsQtyExcess(string warehouseCode, IEnumerable<MobileOrderDetail> items, IEnumerable<MobileOrderDetailFreeGood> freeItems)
     {
         var errorList = "";
 
-        var listItems = items.Select(x => new
-        {
-            x.Id,
-            x.ItemId,
-            x.UnitId,
-            x.UomId,
-            x.Qty
-        }).Union(freeItems.Select(y => new
-        {
-            y.Id,
-            y.ItemId,
-            y.UnitId,
-            y.UomId,
-            y.Qty
-        })).ToList();
+        var listItems = GroupAndConvertItemBaseUnit(items, freeItems);
 
         var result = false;
         foreach (var item in listItems)
         {
             //check if item active
-            var itemData = Db.Items.FirstOrDefault(x => x.Id == item.ItemId);
+            var itemData = Db.Items.FirstOrDefault(x => x.Id == item.Key);
             if (!itemData.IsActive)
             {
                 result = true;
                 errorList += $"<br/>&bull; Barang {itemData.Name} tidak aktif.";
             }
                 
-            var uom = Db.UoMConversions.FirstOrDefault(x => x.Id == item.UnitId);
-            var stock = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == warehouseCode && x.ItemId == item.ItemId);
+            var stock = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == warehouseCode && x.ItemId == item.Key);
             if (stock != null)
             {
-                if (uom.IsBaseUnit)
+                if (item.Value > stock.QtyOnHand)
                 {
-                    if (item.Qty > stock.QtyOnHand)
-                    {
-                        result = true;
-                        errorList += $"<br/>&bull; Barang {itemData.Name} qty yang dipesan lebih besar dari qty yang tersedia.";
-                    }
-                }
-                else
-                {
-                    var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= uom.Seq).Select(x => x.Conversion).ToList();
-                    var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
-                    var baseQty = item.Qty * multipliedQty;
-                    if (baseQty > stock.QtyOnHand)
-                    {
-                        result = true;
-                        errorList += $"<br/>&bull; Barang {itemData.Name} qty yang dipesan lebih besar dari qty yang tersedia.";
-                    }
+                    result = true;
+                    errorList += $"<br/>&bull; Barang {itemData.Name} qty yang dipesan lebih besar dari qty yang tersedia.";
                 }
             }
             else
@@ -800,6 +772,49 @@ public class MobileOrderService : GeneralService<MobileOrderHeader>, IMobileOrde
             }
         }
         return (result, errorList);
+    }
+
+    private Dictionary<int, decimal> GroupAndConvertItemBaseUnit(IEnumerable<MobileOrderDetail> detailData, IEnumerable<MobileOrderDetailFreeGood> detailDataFree)
+    {
+        var result = new Dictionary<int, decimal>();
+
+        var listItems = detailData.Select(x => new
+        {
+            x.Id,
+            x.ItemId,
+            x.UnitId,
+            x.UomId,
+            x.Qty
+        }).Union(detailDataFree.Select(y => new
+        {
+            y.Id,
+            y.ItemId,
+            y.UnitId,
+            y.UomId,
+            y.Qty
+        })).ToList();
+
+        foreach (var item in listItems)
+        {
+            if (!result.ContainsKey(item.ItemId))
+                result.Add(item.ItemId, 0m);
+
+            var uom = Db.UoMConversions.AsNoTracking().FirstOrDefault(x => x.Id == item.UnitId);
+            if (uom.IsBaseUnit)
+            {
+                result[item.ItemId] += item.Qty;
+            }
+            else
+            {
+                var qtyField = Db.UoMConversions.AsNoTracking().Where(x => x.UomId == item.UomId && x.Seq <= uom.Seq).Select(x => x.Conversion).ToList();
+                var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
+                var baseQty = item.Qty * multipliedQty;
+                result[item.ItemId] += baseQty;
+
+            }
+        }
+
+        return result;
     }
 
     #region Credit Used - Limit

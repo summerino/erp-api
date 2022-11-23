@@ -281,7 +281,7 @@ public class SalesDeliveryReportService : ISalesDeliveryReportService
 
                 foreach (var item in itemCategoryData)
                 {
-                    item.TotalTrans = doDetailData.Count(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId);
+                    item.TotalTrans = doDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).DistinctBy(x => x.Code).Count();
                     item.Qty = doDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).Sum(x => x.Qty);
                     item.GrossAmount = doDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).Sum(x => x.TotalGrossAmount);
                     item.Disc = doDetailData.Where(x => x.CategoryId == item.CategoryId && x.UnitId == item.UnitId).Sum(x => x.TotalDisc);
