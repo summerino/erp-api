@@ -782,7 +782,7 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
         return result;
     }
         
-    private bool IsQtyExcess(string code, int srcTrans, string transCode, IEnumerable<SalesDeliveryDetail> items)
+    private bool IsQtyExcess(string code, int srcTrans, string transCode, IEnumerable<SalesDeliveryDetailRequest> items)
     {
         var result = false;
         if (srcTrans == 1) // Sales Order
@@ -805,6 +805,31 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
                     if (item.Qty > availableStock)
                     {
                         result = true;
+                    }
+                }
+
+                if (item.FreeItemDetails.Any())
+                {
+                    foreach (var itemFree in item.FreeItemDetails)
+                    {
+                        var dataSOFDetail = Db.SalesOrderDetailFreeGoods.FirstOrDefault(x => x.Code == transCode && x.ItemId == itemFree.ItemId && x.UnitId == itemFree.UnitId);
+                        if (code == null)
+                        {
+                            var availableStock = dataSOFDetail.Qty - dataSOFDetail.QtyClosed;
+                            if (itemFree.Qty > availableStock)
+                            {
+                                result = true;
+                            }
+                        }
+                        else if (dataSOFDetail != null)
+                        {
+                            var oldSDDF = Db.SalesDeliveryDetailFreeGoods.AsNoTracking().FirstOrDefault(x => x.Code == code && x.ItemId == itemFree.ItemId && x.UnitId == itemFree.UnitId);
+                            var availableStock = dataSOFDetail.Qty - (dataSOFDetail.QtyClosed - oldSDDF?.Qty ?? 0);
+                            if (itemFree.Qty > availableStock)
+                            {
+                                result = true;
+                            }
+                        }
                     }
                 }
             }
