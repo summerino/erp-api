@@ -101,6 +101,13 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
             if (isOverLimit)
                 data.Mark = "OL";
 
+            var (isDuplicate, message) = CheckDuplicateDetail(data.ItemDetails);
+            if (isDuplicate)
+            {
+                result.Message = message;
+                return result;
+            }
+
             // Checking deliver qty is excess or not
             if (IsQtyExcess(data.WarehouseCode, data.ItemDetails, null))
             {
@@ -111,13 +118,6 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
             if (data.FinalDisc > data.SubTotal)
             {
                 result.Message = "Data penjualan langsung tidak bisa disimpan karena nilai diskon final lebih besar dari nilai total.";
-                return result;
-            }
-
-            var (isDuplicate, message) = CheckDuplicateDetail(data.ItemDetails);
-            if (isDuplicate)
-            {
-                result.Message = message;
                 return result;
             }
 
@@ -1129,6 +1129,13 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                 return result;
             }
 
+            var (isDuplicate, message) = CheckDuplicateDetail(data.ItemDetails);
+            if (isDuplicate)
+            {
+                result.Message = message;
+                return result;
+            }
+
             // Checking deliver qty is excess or not
             if (IsQtyExcess(data.WarehouseCode, data.ItemDetails, data.Code))
             {
@@ -1146,13 +1153,6 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
             var isOverLimit = !CheckCreditLimit(data.CustCode, data.Total);
             if (isOverLimit)
                 data.Mark = "OL";
-
-            var (isDuplicate, message) = CheckDuplicateDetail(data.ItemDetails);
-            if (isDuplicate)
-            {
-                result.Message = message;
-                return result;
-            }
 
             if (data.Memos.Sum(x => x.CreditMemoAmount) > data.Total)
             {

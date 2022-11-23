@@ -114,6 +114,13 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                 return result;
             }
 
+            var (isDuplicate, message) = CheckDuplicateDetail(data.ItemDetails);
+            if (isDuplicate)
+            {
+                result.Message = message;
+                return result;
+            }
+
             // Checking order qty is excess or not
             var checkQty = Db.SystemParameters.FirstOrDefault(x => x.Code == "DEF_SLS_ORD_CHECK_QTY")?.Value == "1";
 
@@ -128,15 +135,8 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
             if (isOverLimit)
                 data.Mark = "OL";
 
-            var (isDuplicate, message) = CheckDuplicateDetail(data.ItemDetails);
-            if (isDuplicate)
-            {
-                result.Message = message;
-                return result;
-            }
-
-            var taxes = Db.Taxes.ToList();
-            var promos = Db.PromoHeaders
+            var taxes = Db.Taxes.AsNoTracking().ToList();
+            var promos = Db.PromoHeaders.AsNoTracking()
                 .Select(x => new
                 {
                     x.Code,
@@ -147,10 +147,10 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                     x.CoaCost,
                     x.Content,
                     x.Mark,
-                    Subject = Db.PromoSubjects.Where(y => y.Code == x.Code).ToList(),
+                    Subject = Db.PromoSubjects.AsNoTracking().Where(y => y.Code == x.Code).ToList(),
                 }).Where(x => x.StartDate <= data.Date && data.Date <= x.EndDate && x.Mark == "A").ToList();
             var items = Db.Items.ToList();
-            var uomConversions = Db.UoMConversions.ToList();
+            var uomConversions = Db.UoMConversions.AsNoTracking().ToList();
             List<decimal> totalDetail = new();
             List<decimal> totalTax = new();
             List<decimal> totalExemptTax = new();
@@ -1185,6 +1185,13 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                 return result;
             }
 
+            var (isDuplicate, message) = CheckDuplicateDetail(data.ItemDetails);
+            if (isDuplicate)
+            {
+                result.Message = message;
+                return result;
+            }
+
             // Check & assign overlimit
             var isOverLimit = !CheckCreditLimit(data.CustCode, data.Total);
             if (isOverLimit)
@@ -1199,18 +1206,11 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                 return result;
             }
 
-            var (isDuplicate, message) = CheckDuplicateDetail(data.ItemDetails);
-            if (isDuplicate)
-            {
-                result.Message = message;
-                return result;
-            }
-
             //Restore stock mutation
             RestoreWarehouseQty(data.Code);
 
-            var taxes = Db.Taxes.ToList();
-            var promos = Db.PromoHeaders
+            var taxes = Db.Taxes.AsNoTracking().ToList();
+            var promos = Db.PromoHeaders.AsNoTracking()
                 .Select(x => new
                 {
                     x.Code,
@@ -1223,8 +1223,8 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                     x.Mark,
                     Subject = Db.PromoSubjects.Where(y => y.Code == x.Code).ToList(),
                 }).Where(x => x.StartDate <= data.Date && data.Date <= x.EndDate && x.Mark == "A").ToList();
-            var items = Db.Items.ToList();
-            var uomConversions = Db.UoMConversions.ToList();
+            var items = Db.Items.AsNoTracking().ToList();
+            var uomConversions = Db.UoMConversions.AsNoTracking().ToList();
             List<decimal> totalDetail = new();
             List<decimal> totalTax = new();
             List<decimal> totalExemptTax = new();

@@ -50,6 +50,13 @@ public class ConsigneeService : GeneralService<TransferStockHeader>, IConsigneeS
         using var transaction = Db.Database.BeginTransaction();
         try
         {
+            var (isDuplicate, message) = CheckDuplicateDetail(data.ItemDetails);
+            if (isDuplicate)
+            {
+                result.Message = message;
+                return result;
+            }
+
             // Get new code
             var newCode = GetNewCode("CNEE_NUM_FMT", data.Date);
 
@@ -179,6 +186,13 @@ public class ConsigneeService : GeneralService<TransferStockHeader>, IConsigneeS
             if (Db.TransferStockHeaders.Any(x => x.Code == data.Code && x.Mark == "V"))
             {
                 result.Message = "Data konsinyasi tidak bisa diubah karena sudah ditandai sebagai void.";
+                return result;
+            }
+
+            var (isDuplicate, message) = CheckDuplicateDetail(data.ItemDetails);
+            if (isDuplicate)
+            {
+                result.Message = message;
                 return result;
             }
 
@@ -436,5 +450,19 @@ public class ConsigneeService : GeneralService<TransferStockHeader>, IConsigneeS
             }
         }
         Db.SaveChanges();
+    }
+
+    private (bool, string) CheckDuplicateDetail(IEnumerable<TransferStockDetail> data)
+    {
+        var tData = data.GroupBy(x => new { x.ItemId, x.UnitId }).Where(y => y.Count() > 1);
+        var errorList = "";
+        foreach (var itemData in tData)
+        {
+            var item = Db.Items.FirstOrDefault(x => x.Id == itemData.Key.ItemId);
+            var uom = Db.UoMConversions.FirstOrDefault(x => x.Id == itemData.Key.UnitId);
+            errorList += $"&bull; Barang {item.Initial} dengan satuan {uom.UnitEquivalent} tidak dapat duplikat.<br/>";
+        }
+
+        return (errorList != "", errorList);
     }
 }

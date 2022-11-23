@@ -65,6 +65,13 @@ public class TransferStockService : GeneralService<TransferStockHeader>, ITransf
                 return result;
             }
 
+            var (isDuplicate, message) = CheckDuplicateDetail(data.ItemDetails);
+            if (isDuplicate)
+            {
+                result.Message = message;
+                return result;
+            }
+
             // Get new code
             var newCode = GetNewCode("TS_NUM_FMT", data.Date);
 
@@ -196,6 +203,13 @@ public class TransferStockService : GeneralService<TransferStockHeader>, ITransf
             if (IsWarehouseInDateIsInvalid(data))
             {
                 result.Message = "Tanggal transfer persediaan masuk tidak boleh lebih kecil dari tanggal transfer persediaan keluar.";
+                return result;
+            }
+
+            var (isDuplicate, message) = CheckDuplicateDetail(data.ItemDetails);
+            if (isDuplicate)
+            {
+                result.Message = message;
                 return result;
             }
 
@@ -483,5 +497,19 @@ public class TransferStockService : GeneralService<TransferStockHeader>, ITransf
         originTSdata.Mark = "A";
         Db.TransferStockHeaders.Update(originTSdata);
         Db.SaveChanges();
+    }
+
+    private (bool, string) CheckDuplicateDetail(IEnumerable<TransferStockDetail> data)
+    {
+        var tData = data.GroupBy(x => new { x.ItemId, x.UnitId }).Where(y => y.Count() > 1);
+        var errorList = "";
+        foreach (var itemData in tData)
+        {
+            var item = Db.Items.FirstOrDefault(x => x.Id == itemData.Key.ItemId);
+            var uom = Db.UoMConversions.FirstOrDefault(x => x.Id == itemData.Key.UnitId);
+            errorList += $"&bull; Barang {item.Initial} dengan satuan {uom.UnitEquivalent} tidak dapat duplikat.<br/>";
+        }
+
+        return (errorList != "", errorList);
     }
 }
