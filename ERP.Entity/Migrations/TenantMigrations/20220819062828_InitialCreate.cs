@@ -7711,45 +7711,6 @@ AS
 		ON u_a.Id = dp_h.ApprovedBy";
             migrationBuilder.Sql(sql);
 
-            // Create view Sales.vwSalesDeliveryHeader
-            sql = @"CREATE VIEW [Sales].[vwSalesDeliveryHeader]
-AS
-	SELECT do_h.*,
-        CASE 
-	        WHEN do_h.SrcTrans = 1 THEN so.SalesInitial
-	        ELSE sr.SalesInitial
-        END AS SalesInitial,
-        CASE 
-            WHEN do_h.SrcTrans = 1 THEN so.SalesName
-            ELSE sr.SalesName
-        END AS SalesName,
-		c.[Name] AS CustName,
-		ca.Address1 AS CustAddress,
-		sa.[Name] AS CustArea,
-		e.Initial AS ShippedInitial,
-		u.Initial AS UpdatedInitial,
-		CASE do_h.Mark
-			WHEN 'A' THEN 'Active'
-			WHEN 'V' THEN 'Void'
-			WHEN 'INV' THEN 'Invoiced' END AS [Status]
-	FROM Sales.SalesDeliveryHeader do_h
-	LEFT JOIN General.Customer c
-		ON c.Code = do_h.CustCode
-	LEFT JOIN General.CustomerAddress ca
-		ON ca.Code = c.Code
-		AND ca.IsDefault = 1
-	LEFT JOIN Sales.Area sa
-		ON sa.Id = c.AreaId1
-	LEFT JOIN General.Employee e
-		ON e.Id = do_h.ShippedBy
-	LEFT JOIN SystemManagement.[User] u
-		ON u.Id = do_h.UpdatedBy
-    LEFT JOIN Sales.vwSalesOrderHeader so 
-        ON so.Code = do_h.TransCode
-    LEFT JOIN Sales.vwSalesReturnHeader sr 
-        ON sr.Code = do_h.TransCode";
-            migrationBuilder.Sql(sql);
-
             // Create view Sales.vwSalesOrderHeader
             sql = @"CREATE VIEW [Sales].[vwSalesOrderHeader]
 AS
@@ -7814,6 +7775,45 @@ AS
 		ON u_u.Id = sr_h.UpdatedBy
 	LEFT JOIN SystemManagement.[User] u_a
 		ON u_a.Id = sr_h.ApprovedBy";
+            migrationBuilder.Sql(sql);
+
+            // Create view Sales.vwSalesDeliveryHeader
+            sql = @"CREATE VIEW [Sales].[vwSalesDeliveryHeader]
+AS
+	SELECT do_h.*,
+        CASE 
+	        WHEN do_h.SrcTrans = 1 THEN so.SalesInitial
+	        ELSE sr.SalesInitial
+        END AS SalesInitial,
+        CASE 
+            WHEN do_h.SrcTrans = 1 THEN so.SalesName
+            ELSE sr.SalesName
+        END AS SalesName,
+		c.[Name] AS CustName,
+		ca.Address1 AS CustAddress,
+		sa.[Name] AS CustArea,
+		e.Initial AS ShippedInitial,
+		u.Initial AS UpdatedInitial,
+		CASE do_h.Mark
+			WHEN 'A' THEN 'Active'
+			WHEN 'V' THEN 'Void'
+			WHEN 'INV' THEN 'Invoiced' END AS [Status]
+	FROM Sales.SalesDeliveryHeader do_h
+    LEFT JOIN Sales.vwSalesOrderHeader so 
+        ON so.Code = do_h.TransCode
+    LEFT JOIN Sales.vwSalesReturnHeader sr 
+        ON sr.Code = do_h.TransCode
+	LEFT JOIN General.Customer c
+		ON c.Code = do_h.CustCode
+	LEFT JOIN General.CustomerAddress ca
+		ON ca.Code = c.Code
+		AND ca.IsDefault = 1
+	LEFT JOIN Sales.Area sa
+		ON sa.Id = c.AreaId1
+	LEFT JOIN General.Employee e
+		ON e.Id = do_h.ShippedBy
+	LEFT JOIN SystemManagement.[User] u
+		ON u.Id = do_h.UpdatedBy";
             migrationBuilder.Sql(sql);
 
             // Create view Sales.vwDeliveryPlanDetail
