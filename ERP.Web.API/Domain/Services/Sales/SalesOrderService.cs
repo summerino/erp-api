@@ -2540,7 +2540,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                 {
                     var oldStock = Db.StockMutations.AsNoTracking().Where(x => x.ItemId == item.Key && x.RefCode1 == code && x.Type == "OO" && x.Src == "SO").Sum(x => x.BaseQty);
 
-                    if (item.Value > (!isSaveDO ? (stock.QtyOnHand - (stock.QtyOnOrder - oldStock)) : (stock.QtyOnOrder - oldStock)))
+                    if (item.Value > (!isSaveDO ? (stock.QtyOnHand - (stock.QtyOnOrder - oldStock)) : stock.QtyOnHand))
                         result = true;
                 }
             }
@@ -2570,7 +2570,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                 {
                     var oldStock = Db.StockMutations.AsNoTracking().Where(x => x.ItemId == item.Key && x.RefCode1 == code && x.Type == "OO" && new[] {"SO", "SOF"}.Contains(x.Src)).Sum(x => x.BaseQty);
 
-                    if (item.Value > (!isSaveDO ? (stock.QtyOnHand - (stock.QtyOnOrder - oldStock)) : (stock.QtyOnOrder - oldStock)))
+                    if (item.Value > (!isSaveDO ? (stock.QtyOnHand - (stock.QtyOnOrder - oldStock)) : stock.QtyOnHand))
                         result = true;
                 }
             }

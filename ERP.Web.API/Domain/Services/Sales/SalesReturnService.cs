@@ -86,6 +86,13 @@ public class SalesReturnService : GeneralService<SalesReturnHeader>, ISalesRetur
         using var transaction = Db.Database.BeginTransaction();
         try
         {
+            var (isDuplicate, message) = CheckDuplicateDetail(data.ItemDetails);
+            if (isDuplicate)
+            {
+                result.Message = message;
+                return result;
+            }
+
             // Checking receive qty is excess or not
             if (IsQtyExcess(data.WarehouseCode,data.DiffItemDetails, null))
             {
@@ -231,6 +238,13 @@ public class SalesReturnService : GeneralService<SalesReturnHeader>, ISalesRetur
             if (Db.SalesReturnHeaders.Any(x => x.Code == data.Code && x.Mark == "CMP"))
             {
                 result.Message = "Data pengiriman penjualan tidak bisa diubah karena status data sudah CMP.";
+                return result;
+            }
+
+            var (isDuplicate, message) = CheckDuplicateDetail(data.ItemDetails);
+            if (isDuplicate)
+            {
+                result.Message = message;
                 return result;
             }
 
@@ -574,5 +588,19 @@ public class SalesReturnService : GeneralService<SalesReturnHeader>, ISalesRetur
             }
         }
         Db.SaveChanges();
+    }
+
+    private (bool, string) CheckDuplicateDetail(IEnumerable<SalesReturnDetail> data)
+    {
+        var tData = data.GroupBy(x => new { x.ItemId, x.UnitId }).Where(y => y.Count() > 1);
+        var errorList = "";
+        foreach (var itemData in tData)
+        {
+            var item = Db.Items.FirstOrDefault(x => x.Id == itemData.Key.ItemId);
+            var uom = Db.UoMConversions.FirstOrDefault(x => x.Id == itemData.Key.UnitId);
+            errorList += $"&bull; Barang {item.Initial} dengan satuan {uom.UnitEquivalent} tidak dapat duplikat.<br/>";
+        }
+
+        return (errorList != "", errorList);
     }
 }

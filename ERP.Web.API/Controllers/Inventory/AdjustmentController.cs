@@ -213,8 +213,8 @@ public class AdjustmentController : ControllerBase
             if (!data.ItemDetails.Any())
                 return (false, "Detail tidak boleh kosong.");
 
-            if (data.ItemDetails.GroupBy(x => new { x.ItemId, x.UnitId }).Any(x => x.Count() > 1))
-                return (false, "Terdapat barang dengan satuan yang sama pada bagian detail.");
+            //if (data.ItemDetails.GroupBy(x => new { x.ItemId, x.UnitId }).Any(x => x.Count() > 1))
+            //    return (false, "Terdapat barang dengan satuan yang sama pada bagian detail.");
         }
 
         // Checking is data seen by others

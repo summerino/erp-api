@@ -75,6 +75,14 @@ public class AdjustmentService : GeneralService<AdjustmentHeader>, IAdjustmentSe
         try
         {
             var detailData = data.ItemDetails.ToList();
+
+            var (isDuplicate, message) = CheckDuplicateDetail(detailData);
+            if (isDuplicate)
+            {
+                result.Message = message;
+                return result;
+            }
+
             var originalQty = new Dictionary<long, decimal>();
             foreach (var itemDetail in detailData)
             {
@@ -204,6 +212,14 @@ public class AdjustmentService : GeneralService<AdjustmentHeader>, IAdjustmentSe
             }
 
             var detailData = data.ItemDetails.ToList();
+
+            var (isDuplicate, message) = CheckDuplicateDetail(detailData);
+            if (isDuplicate)
+            {
+                result.Message = message;
+                return result;
+            }
+
             var originalQty = new Dictionary<long, decimal>();
             foreach (var itemDetail in detailData)
             {
@@ -408,6 +424,19 @@ public class AdjustmentService : GeneralService<AdjustmentHeader>, IAdjustmentSe
             Db.StockMutations.Add(stockMutation);
         }
     }
-      
-        
+
+    private (bool, string) CheckDuplicateDetail(IEnumerable<AdjustmentDetail> data)
+    {
+        var tData = data.GroupBy(x => new { x.ItemId, x.UnitId }).Where(y => y.Count() > 1);
+        var errorList = "";
+        foreach (var itemData in tData)
+        {
+            var item = Db.Items.FirstOrDefault(x => x.Id == itemData.Key.ItemId);
+            var uom = Db.UoMConversions.FirstOrDefault(x => x.Id == itemData.Key.UnitId);
+            errorList += $"&bull; Barang {item.Initial} dengan satuan {uom.UnitEquivalent} tidak dapat duplikat.<br/>";
+        }
+
+        return (errorList != "", errorList);
+    }
+
 }

@@ -146,7 +146,7 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
             }
 
             // Checking warehouse qty is item is available or not
-            var isQtyAvailable = IsQtyAvailable(null, data.WarehouseCode, data.ItemDetails);
+            var isQtyAvailable = IsQtyAvailable(null, data.WarehouseCode, data.ItemDetails, data.ItemDetails.SelectMany(x => x.FreeItemDetails));
             switch (isQtyAvailable)
             {
                 case 1:
@@ -450,7 +450,7 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
             }
 
             // Checking warehouse qty is item is available or not
-            var isQtyAvailable = IsQtyAvailable(data.Code, data.WarehouseCode, data.ItemDetails);
+            var isQtyAvailable = IsQtyAvailable(data.Code, data.WarehouseCode, data.ItemDetails, data.ItemDetails.SelectMany(x => x.FreeItemDetails));
             switch (isQtyAvailable)
             {
                 case 1:
@@ -879,54 +879,28 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
         return result;
     }
 
-    private int IsQtyAvailable(string code, string warehouseCode, IEnumerable<SalesDeliveryDetail> items)
+    private int IsQtyAvailable(string code, string warehouseCode, IEnumerable<SalesDeliveryDetail> items, IEnumerable<SalesDeliveryDetailFreeGood> itemFrees)
     {
+        var groupedItems = GroupAndConvertItemBaseUnit(items, itemFrees);
         var result = 0;
-        foreach (var item in items)
+        foreach (var item in groupedItems)
         {
-            var uom = Db.UoMConversions.FirstOrDefault(x => x.Id == item.UnitId);
-            var stock = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == warehouseCode && x.ItemId == item.ItemId);
+            var stock = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == warehouseCode && x.ItemId == item.Key);
             if (stock != null)
             {
                 if (code == null)
                 {
-                    if (uom.IsBaseUnit)
+                    if (item.Value > stock.QtyOnHand)
                     {
-                        if (item.Qty > stock.QtyOnHand)
-                        {
-                            result = 2;
-                        }
-                    }
-                    else
-                    {
-                        var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= uom.Seq).Select(x => x.Conversion).ToList();
-                        var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
-                        var baseQty = item.Qty * multipliedQty;
-                        if (baseQty > stock.QtyOnHand)
-                        {
-                            result = 2;
-                        }
+                        result = 2;
                     }
                 }
                 else
                 {
-                    var oldStock = Db.StockMutations.FirstOrDefault(x => x.ItemId == item.ItemId && x.RefCode1 == code);
-                    if (uom.IsBaseUnit)
+                    var oldStock = Db.StockMutations.Where(x => x.ItemId == item.Key && x.RefCode1 == code && x.Type == "OH" && x.Src == "DO").Sum(x => x.BaseQty);
+                    if (item.Value > stock.QtyOnHand + oldStock)
                     {
-                        if (item.Qty > stock.QtyOnHand + (oldStock?.BaseQty ?? 0))
-                        {
-                            result = 2;
-                        }
-                    }
-                    else
-                    {
-                        var qtyField = Db.UoMConversions.Where(x => x.UomId == item.UomId && x.Seq <= uom.Seq).Select(x => x.Conversion).ToList();
-                        var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
-                        var baseQty = item.Qty * multipliedQty;
-                        if (baseQty > stock.QtyOnHand + (oldStock?.BaseQty ?? 0))
-                        {
-                            result = 2;
-                        }
+                        result = 2;
                     }
                 }
             }
@@ -1083,5 +1057,47 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
         }
 
         return (errorList != "", errorList);
+    }
+
+    private Dictionary<int, decimal> GroupAndConvertItemBaseUnit(IEnumerable<SalesDeliveryDetail> detailData, IEnumerable<SalesDeliveryDetailFreeGood> detailDataFree)
+    {
+        var result = new Dictionary<int, decimal>();
+
+        var listItems = detailData.Select(x => new
+        {
+            x.Id,
+            x.ItemId,
+            x.UnitId,
+            x.UomId,
+            x.Qty
+        }).Union(detailDataFree.Select(x => new
+        {
+            x.Id,
+            x.ItemId,
+            x.UnitId,
+            x.UomId,
+            x.Qty
+        })).ToList();
+
+        foreach (var item in listItems)
+        {
+            if (!result.ContainsKey(item.ItemId))
+                result.Add(item.ItemId, 0m);
+
+            var uom = Db.UoMConversions.AsNoTracking().FirstOrDefault(x => x.Id == item.UnitId);
+            if (uom.IsBaseUnit)
+            {
+                result[item.ItemId] += item.Qty;
+            }
+            else
+            {
+                var qtyField = Db.UoMConversions.AsNoTracking().Where(x => x.UomId == item.UomId && x.Seq <= uom.Seq).Select(x => x.Conversion).ToList();
+                var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
+                var baseQty = item.Qty * multipliedQty;
+                result[item.ItemId] += baseQty;
+            }
+        }
+
+        return result;
     }
 }
