@@ -522,7 +522,7 @@ public class MobileOrderService : GeneralService<MobileOrderHeader>, IMobileOrde
             long lastOrderIdForDisc = 0;
             foreach (var item in data.ItemDetails)
             {
-                if (item.Id == 0)
+                if (item.Id < 0)
                 {
                     var orderDetail = new MobileOrderDetail
                     {
@@ -544,7 +544,7 @@ public class MobileOrderService : GeneralService<MobileOrderHeader>, IMobileOrde
 
                     Db.MobileOrderDetails.Add(orderDetail);
 
-                    if (item.FreeItemDetails.Any() || item.DiscountItemDetails.Any())
+                    if ((item.FreeItemDetails != null && item.FreeItemDetails.Any()) || (item.DiscountItemDetails != null && item.DiscountItemDetails.Any()))
                     {
                         Db.SaveChanges();
                         lastOrderIdForDisc = orderDetail.Id;
@@ -557,20 +557,20 @@ public class MobileOrderService : GeneralService<MobileOrderHeader>, IMobileOrde
                     Db.MobileOrderDetails.Update(item);
                     Db.Entry(item).Property(e => e.Code).IsModified = false;
 
-                    if (item.FreeItemDetails.Any() || item.DiscountItemDetails.Any())
+                    if ((item.FreeItemDetails != null && item.FreeItemDetails.Any()) || (item.DiscountItemDetails != null && item.DiscountItemDetails.Any()))
                     {
                         lastOrderIdForDisc = item.Id;
                     }
                 }
 
-                var delDiscDetails = Db.MobileOrderDetailDiscounts
+                if (item.DiscountItemDetails != null && item.DiscountItemDetails.Any())
+                {
+                    var delDiscDetails = Db.MobileOrderDetailDiscounts
                     .Where(d => d.Code == data.Code && d.OrderDetailId == item.Id && !item.DiscountItemDetails.Select(x => x.Id).Contains(d.Id))
                     .ToList();
 
-                Db.MobileOrderDetailDiscounts.RemoveRange(delDiscDetails);
+                    Db.MobileOrderDetailDiscounts.RemoveRange(delDiscDetails);
 
-                if (item.DiscountItemDetails.Any())
-                {
                     short d = 0;
                     foreach (var discItem in item.DiscountItemDetails)
                     {
@@ -600,14 +600,14 @@ public class MobileOrderService : GeneralService<MobileOrderHeader>, IMobileOrde
                     }
                 }
 
-                var delFreeDetails = Db.MobileOrderDetailFreeGoods
-                    .Where(d => d.Code == data.Code && d.OrderDetailId == item.Id && !item.FreeItemDetails.Select(x => x.Id).Contains(d.Id))
-                    .ToList();
-
-                Db.MobileOrderDetailFreeGoods.RemoveRange(delFreeDetails);
-
-                if (item.FreeItemDetails.Any())
+                if (item.FreeItemDetails != null && item.FreeItemDetails.Any())
                 {
+                    var delFreeDetails = Db.MobileOrderDetailFreeGoods
+                   .Where(d => d.Code == data.Code && d.OrderDetailId == item.Id && !item.FreeItemDetails.Select(x => x.Id).Contains(d.Id))
+                   .ToList();
+
+                    Db.MobileOrderDetailFreeGoods.RemoveRange(delFreeDetails);
+
                     short f = 0;
                     foreach (var freeItem in item.FreeItemDetails)
                     {
