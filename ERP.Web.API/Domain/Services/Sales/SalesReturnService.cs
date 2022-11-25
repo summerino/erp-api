@@ -93,6 +93,16 @@ public class SalesReturnService : GeneralService<SalesReturnHeader>, ISalesRetur
                 return result;
             }
 
+            if (data.Type == 3)
+            {
+                var (isDuplicateDiff, messageDiff) = CheckDuplicateDetail(data.DiffItemDetails);
+                if (isDuplicateDiff)
+                {
+                    result.Message = messageDiff;
+                    return result;
+                }
+            }
+
             // Checking receive qty is excess or not
             if (IsQtyExcess(data.WarehouseCode,data.DiffItemDetails, null))
             {
@@ -181,7 +191,7 @@ public class SalesReturnService : GeneralService<SalesReturnHeader>, ISalesRetur
                     {
                         Code = newCode,
                         LineNo = ++j,
-                        ReturnDetailId = listItemDetail[j-1].Id,
+                        ReturnDetailId = listItemDetail[0].Id,
                         ItemId = item.ItemId,
                         UomId = item.UomId,
                         UnitId = item.UnitId,
@@ -246,6 +256,16 @@ public class SalesReturnService : GeneralService<SalesReturnHeader>, ISalesRetur
             {
                 result.Message = message;
                 return result;
+            }
+
+            if (data.Type == 3)
+            {
+                var (isDuplicateDiff, messageDiff) = CheckDuplicateDetail(data.DiffItemDetails);
+                if (isDuplicateDiff)
+                {
+                    result.Message = messageDiff;
+                    return result;
+                }
             }
 
             // Checking receive qty is excess or not
@@ -591,6 +611,20 @@ public class SalesReturnService : GeneralService<SalesReturnHeader>, ISalesRetur
     }
 
     private (bool, string) CheckDuplicateDetail(IEnumerable<SalesReturnDetail> data)
+    {
+        var tData = data.GroupBy(x => new { x.ItemId, x.UnitId }).Where(y => y.Count() > 1);
+        var errorList = "";
+        foreach (var itemData in tData)
+        {
+            var item = Db.Items.FirstOrDefault(x => x.Id == itemData.Key.ItemId);
+            var uom = Db.UoMConversions.FirstOrDefault(x => x.Id == itemData.Key.UnitId);
+            errorList += $"&bull; Barang {item.Initial} dengan satuan {uom.UnitEquivalent} tidak dapat duplikat.<br/>";
+        }
+
+        return (errorList != "", errorList);
+    }
+
+    private (bool, string) CheckDuplicateDetail(IEnumerable<SalesReturnDetailExchDiffItem> data)
     {
         var tData = data.GroupBy(x => new { x.ItemId, x.UnitId }).Where(y => y.Count() > 1);
         var errorList = "";
