@@ -165,7 +165,16 @@ public class UnitOfMeasurementService : GeneralService<UoM>, IUnitOfMeasurementS
                 }
                 else
                 {
-                    Db.UoMConversions.Update(item);
+                    var uomConversion = Db.UoMConversions.FirstOrDefault(x => x.Id == item.Id);
+
+                    uomConversion.UomId = data.Id;
+                    uomConversion.Conversion = item.Conversion;
+                    uomConversion.IsBaseUnit = item.IsBaseUnit;
+                    uomConversion.Seq = item.Seq;
+                    uomConversion.UnitEquivalent = item.UnitEquivalent;
+                    uomConversion.UnitToConvert = item.UnitToConvert;
+
+                    Db.UoMConversions.Update(uomConversion);
                     Db.Entry(item).Property(e => e.Id).IsModified = false;
                     Db.Entry(item).Property(e => e.UomId).IsModified = false;
                 }
