@@ -175,8 +175,8 @@ public class UnitOfMeasurementService : GeneralService<UoM>, IUnitOfMeasurementS
                     uomConversion.UnitToConvert = item.UnitToConvert;
 
                     Db.UoMConversions.Update(uomConversion);
-                    Db.Entry(item).Property(e => e.Id).IsModified = false;
-                    Db.Entry(item).Property(e => e.UomId).IsModified = false;
+                    Db.Entry(uomConversion).Property(e => e.Id).IsModified = false;
+                    Db.Entry(uomConversion).Property(e => e.UomId).IsModified = false;
                 }
             }
 
