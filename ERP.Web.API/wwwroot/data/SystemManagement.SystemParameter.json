@@ -106,4 +106,4 @@
 {"Id":106,"ModuleId":19,"Code":"JR_PREFIX_PURC_DP","Value":"Uang Muka Pembelian","DataType":"string","Description":"","Seq":1,"IsActive":false},
 {"Id":107,"ModuleId":14,"Code":"SLS_DP_NUM_FMT","Value":"SDP-{Y}{M}{D}-{5}","DataType":"string","Description":"Uang Muka Penjualan (Maks. 17 Karakter)","Seq":9,"IsActive":true},
 {"Id":108,"ModuleId":12,"Code":"PURC_DP_NUM_FMT","Value":"PDP-{Y}{M}{D}-{5}","DataType":"string","Description":"Uang Muka Pembelian (Maks. 17 Karakter)","Seq":6,"IsActive":false},
-{"Id":109,"ModuleId":32,"Code":"MOB_IR_TS_TYPE","Value":"DT","DataType":"string","Description":"Tipe Transfer Persediaan Pada Saat Disetujui","Seq":1,"IsActive":false}]
+{"Id":109,"ModuleId":32,"Code":"MOB_IR_TS_TYPE","Value":"OUT","DataType":"string","Description":"Tipe Transfer Persediaan Pada Saat Disetujui","Seq":1,"IsActive":false}]
