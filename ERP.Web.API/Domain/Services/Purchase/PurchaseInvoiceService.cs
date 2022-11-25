@@ -489,13 +489,16 @@ public class PurchaseInvoiceService : GeneralService<PurchaseInvoiceHeader>, IPu
     }
     private List<dynamic> GetListDebitMemo(List<string> listCodeMemo)
     {
-        return (from cm in Db.DebitMemos
-                where listCodeMemo.Contains(cm.Code)
-                select new { cm.Code, cm.Amount, cm.Used, Source = "dm" })
-            .Union
-            (from cm in Db.BeginningBalanceDebitMemos
-                where listCodeMemo.Contains(cm.Code)
-                select new { cm.Code, cm.Amount, cm.Used, Source = "bb" }).ToList<dynamic>();
+        var dmData = (from cm in Db.DebitMemos
+                      where listCodeMemo.Contains(cm.Code)
+                      select new { cm.Code, cm.Amount, cm.Used, Source = "dm" }).ToList();
+
+        var bbData = (from cm in Db.BeginningBalanceDebitMemos
+                      where listCodeMemo.Contains(cm.Code)
+                      select new { cm.Code, cm.Amount, cm.Used, Source = "bb" }).ToList();
+
+
+        return dmData.Union(bbData).ToDynamicList();
     }
     private void ExecuteQuery(List<string> listQuery)
     {
