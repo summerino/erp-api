@@ -449,8 +449,9 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
                 return result;
             }
 
+            var oldDlvData = Db.SalesDeliveryHeaders.AsNoTracking().FirstOrDefault(x => x.Code == data.Code);
             // Checking warehouse qty is item is available or not
-            var isQtyAvailable = IsQtyAvailable(data.Code, data.WarehouseCode, data.ItemDetails, data.ItemDetails.SelectMany(x => x.FreeItemDetails));
+            var isQtyAvailable = IsQtyAvailable(data.Code, data.WarehouseCode, data.ItemDetails, data.ItemDetails.SelectMany(x => x.FreeItemDetails), data.WarehouseCode != oldDlvData.WarehouseCode);
             switch (isQtyAvailable)
             {
                 case 1:
@@ -469,7 +470,6 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
             }
 
             //update Data if changed TransCode
-            var oldDlvData = Db.SalesDeliveryHeaders.AsNoTracking().FirstOrDefault(x => x.Code == data.Code);
             if (oldDlvData.TransCode != data.TransCode)
             {
                 RestoreDeliveredQty(oldDlvData.Code, oldDlvData.TransCode, oldDlvData.SrcTrans);
@@ -879,7 +879,7 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
         return result;
     }
 
-    private int IsQtyAvailable(string code, string warehouseCode, IEnumerable<SalesDeliveryDetail> items, IEnumerable<SalesDeliveryDetailFreeGood> itemFrees)
+    private int IsQtyAvailable(string code, string warehouseCode, IEnumerable<SalesDeliveryDetail> items, IEnumerable<SalesDeliveryDetailFreeGood> itemFrees, bool isDiffWH = false)
     {
         var groupedItems = GroupAndConvertItemBaseUnit(items, itemFrees);
         var result = 0;
@@ -898,7 +898,7 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
                 else
                 {
                     var oldStock = Db.StockMutations.Where(x => x.ItemId == item.Key && x.RefCode1 == code && x.Type == "OH" && x.Src == "DO").Sum(x => x.BaseQty);
-                    if (item.Value > stock.QtyOnHand + oldStock)
+                    if (item.Value > stock.QtyOnHand + (isDiffWH ? 0 : oldStock))
                     {
                         result = 2;
                     }
