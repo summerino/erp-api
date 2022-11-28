@@ -10723,6 +10723,7 @@ BEGIN
 			dlv_d.TaxAmount, dlv_d.ExemptTaxAmount, dlv_d.Total,
 			dbo.udf_num_to_words_id(si_h.TotalHeader, @centToWord) AS TotalHeaderInWord,
 			e.Initial AS SalesInitial,
+			e.FirstName AS SalesFirstName,
 			c.Initial AS CustInitial, c.[Name] AS CustName,
 			CASE WHEN so_h.BillingAddressId IS NULL THEN ca_d.Address1
 				ELSE ca_b.Address1 END AS CustAddress1,
@@ -10770,7 +10771,7 @@ BEGIN
 		)
 	)
 	,cte_union AS (
-		SELECT si.Code, si.[Date], si.DueDate, si.SalesInitial,
+		SELECT si.Code, si.[Date], si.DueDate, si.SalesInitial, si.SalesFirstName,
 			si.CustCode, si.CustInitial, si.CustName, si.CustAddress1, si.CustPhone, si.CustContactPerson,
 			si.CurrCode, si.TotalHeader, si.TotalHeaderInWord, si.Notes,
 			si.DOCode, si.DlvDetailId, si.DlvDetailLineNo,
@@ -10778,7 +10779,7 @@ BEGIN
 			1 AS Sort
 		FROM cte_si_src si
 		UNION ALL
-		SELECT si.Code, si.[Date], si.DueDate, si.SalesInitial,
+		SELECT si.Code, si.[Date], si.DueDate, si.SalesInitial, si.SalesFirstName,
 			si.CustCode, si.CustInitial, si.CustName, si.CustAddress1, si.CustPhone, si.CustContactPerson,
 			si.CurrCode, si.TotalHeader, si.TotalHeaderInWord, si.Notes,
 			do_f.Code, do_f.DlvOrderDetailId, do_f.[LineNo],
@@ -10786,7 +10787,7 @@ BEGIN
 			2 AS Sort
 		FROM cte_do_free_src do_f
 		LEFT JOIN (
-			SELECT DISTINCT Code, [Date], DueDate, SalesInitial,
+			SELECT DISTINCT Code, [Date], DueDate, SalesInitial, SalesFirstName,
 				CustCode, CustInitial, CustName, CustAddress1, CustPhone, CustContactPerson,
 				CurrCode, TotalHeader, TotalHeaderInWord, Notes,
 				DOCode
@@ -10820,6 +10821,7 @@ BEGIN
 		SELECT si_h.*,
 			dbo.udf_num_to_words_id(si_h.Total, @centToWord) AS TotalInWord,
 			e.Initial AS SalesInitial,
+			e.FirstName AS SalesFirstName,
 			c.Initial AS CustInitial, c.[Name] AS CustName,
 			CASE WHEN so_h.BillingAddressId IS NULL THEN ca_d.Address1
 				ELSE ca_b.Address1 END AS CustAddress1,
