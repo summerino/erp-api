@@ -77,7 +77,7 @@ public class DebitMemoReportService : IDebitMemoReportService
 
         foreach (var itemSup in supData)
         {
-            itemSup.TotalTrans = dmData.Count(x => x.SupCode == itemSup.Code);
+            itemSup.TotalTrans = dmData.DistinctBy(x => x.Code).Count(x => x.SupCode == itemSup.Code);
             itemSup.TotalAmount = dmData.Where(x => x.SupCode == itemSup.Code).Sum(x => x.Amount);
             itemSup.PaidAmount = dmData.Where(x => x.SupCode == itemSup.Code).Sum(x => x.UsedAmount);
             itemSup.RemainderAmount = dmData.Where(x => x.SupCode == itemSup.Code).Sum(x => x.RemainderAmount);
@@ -99,7 +99,7 @@ public class DebitMemoReportService : IDebitMemoReportService
             {
                 supData = supData.Where(x => x.Code == supCode).ToList();
             }
-            return supData.AsQueryable().ToDataSourceResult(0, supData.Count, null, sorts);
+            return supData.AsQueryable().ToDataSourceResult(0, supData.Count, null, null);
         }
     }
 }
