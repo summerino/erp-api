@@ -14359,6 +14359,10 @@ END CATCH";
             sql = @"ALTER TABLE [Purchasing].[PurchaseReturnDetail] NOCHECK CONSTRAINT [FK_PurchaseReturnDetail_Tax_TaxId]";
             migrationBuilder.Sql(sql);
 
+            // Disabling constraints foreign key FK_PurchaseInvoiceDebitMemo_DebitMemo_DebitMemoCode
+            sql = @"ALTER TABLE [Purchasing].[PurchaseInvoiceDebitMemo] NOCHECK CONSTRAINT [FK_PurchaseInvoiceDebitMemo_DebitMemo_DebitMemoCode]";
+            migrationBuilder.Sql(sql);
+
             // Disabling constraints foreign key FK_CreditMemo_Tax_TaxId
             sql = @"ALTER TABLE [Sales].[CreditMemo] NOCHECK CONSTRAINT [FK_CreditMemo_Tax_TaxId]";
             migrationBuilder.Sql(sql);
