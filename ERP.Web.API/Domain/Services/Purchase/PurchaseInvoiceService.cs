@@ -458,7 +458,7 @@ public class PurchaseInvoiceService : GeneralService<PurchaseInvoiceHeader>, IPu
                 {
                     decimal used = selectedMemo.Used + item.DebitMemoAmount;
                     string status = used == selectedMemo.Amount ? "FU" : "PU";
-                    string query = selectedMemo.Source == "dm" ? $"update Purchasing.DebitMemo set Mark = '{status}', Used = {used} where code = '{selectedMemo.Code}'" : $"update Accounting.BeginningBalanceDebitMemo set Mark = '{status}', Used = {used} where code = '{selectedMemo.Code}'";
+                    string query = selectedMemo.Source == "dm" ? $"update Purchasing.DebitMemo set Mark = '{status}', Used = {used} where code = '{selectedMemo.Code}'" : $"update Accounting.BeginningBalanceDebitMemo set Used = {used} where code = '{selectedMemo.Code}'";
                     listQuery.Add(query);
                 }
             }
@@ -480,7 +480,7 @@ public class PurchaseInvoiceService : GeneralService<PurchaseInvoiceHeader>, IPu
                 {
                     decimal used = selectedMemo.Used - item.DebitMemoAmount;
                     string status = used > 0 ? "PU" : "A";
-                    string query = selectedMemo.Source == "dm" ? $"update Purchasing.DebitMemo set Mark = '{status}', Used = {used} where code = '{selectedMemo.Code}'" : $"update Accounting.BeginningBalanceDebitMemo set Mark = '{status}', Used = {used} where code = '{selectedMemo.Code}'";
+                    string query = selectedMemo.Source == "dm" ? $"update Purchasing.DebitMemo set Mark = '{status}', Used = {used} where code = '{selectedMemo.Code}'" : $"update Accounting.BeginningBalanceDebitMemo set Used = {used} where code = '{selectedMemo.Code}'";
                     listQuery.Add(query);
                 }
             }
