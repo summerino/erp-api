@@ -146,7 +146,7 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
             }
 
             // Checking warehouse qty is item is available or not
-            var isQtyAvailable = IsQtyAvailable(null, data.WarehouseCode, data.ItemDetails, data.ItemDetails.SelectMany(x => x.FreeItemDetails));
+            var isQtyAvailable = IsQtyAvailable(null, data.WarehouseCode, data.ItemDetails, data.ItemDetails.Where(x => x.FreeItemDetails != null).SelectMany(x => x.FreeItemDetails));
             switch (isQtyAvailable)
             {
                 case 1:
@@ -822,7 +822,7 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
                     }
                 }
 
-                if (item.FreeItemDetails.Any())
+                if (item.FreeItemDetails != null && item.FreeItemDetails.Any())
                 {
                     foreach (var itemFree in item.FreeItemDetails)
                     {
@@ -1063,7 +1063,7 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
     {
         var result = new Dictionary<int, decimal>();
 
-        var listItems = detailData.Select(x => new
+        var listItems = detailDataFree != null ? detailData.Select(x => new
         {
             x.Id,
             x.ItemId,
@@ -1077,7 +1077,14 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
             x.UnitId,
             x.UomId,
             x.Qty
-        })).ToList();
+        })).ToList() : detailData.Select(x => new
+        {
+            x.Id,
+            x.ItemId,
+            x.UnitId,
+            x.UomId,
+            x.Qty
+        }).ToList();
 
         foreach (var item in listItems)
         {
