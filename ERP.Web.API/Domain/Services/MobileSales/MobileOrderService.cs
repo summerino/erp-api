@@ -8,6 +8,7 @@ using ERP.Entity.MobileSales;
 using ERP.Entity.Sales;
 using ERP.Web.API.Domain.Interfaces.MobileSales;
 using ERP.Web.API.Model.MobileSales;
+using ERP.Entity.Inventory;
 
 namespace ERP.Web.API.Domain.Services.MobileSales;
 
@@ -511,6 +512,18 @@ public class MobileOrderService : GeneralService<MobileOrderHeader>, IMobileOrde
                 .Where(d => d.Code == data.Code && !data.ItemDetails.Select(x => x.Id).Contains(d.Id))
                 .ToList();
 
+            var delFreeDetails = Db.MobileOrderDetailFreeGoods
+            .Where(d => d.Code == data.Code && delOrderDetails.Select(x => x.Id).Contains(d.OrderDetailId))
+            .ToList();
+
+            Db.MobileOrderDetailFreeGoods.RemoveRange(delFreeDetails);
+
+            var delDiscDetails = Db.MobileOrderDetailDiscounts
+            .Where(d => d.Code == data.Code && delOrderDetails.Select(x => x.Id).Contains(d.OrderDetailId))
+            .ToList();
+
+            Db.MobileOrderDetailDiscounts.RemoveRange(delDiscDetails);
+
             Db.MobileOrderDetails.RemoveRange(delOrderDetails);
 
             List<decimal> totalDetail = new();
@@ -565,7 +578,7 @@ public class MobileOrderService : GeneralService<MobileOrderHeader>, IMobileOrde
 
                 if (item.DiscountItemDetails != null && item.DiscountItemDetails.Any())
                 {
-                    var delDiscDetails = Db.MobileOrderDetailDiscounts
+                    delDiscDetails = Db.MobileOrderDetailDiscounts
                     .Where(d => d.Code == data.Code && d.OrderDetailId == item.Id && !item.DiscountItemDetails.Select(x => x.Id).Contains(d.Id))
                     .ToList();
 
@@ -602,7 +615,7 @@ public class MobileOrderService : GeneralService<MobileOrderHeader>, IMobileOrde
 
                 if (item.FreeItemDetails != null && item.FreeItemDetails.Any())
                 {
-                    var delFreeDetails = Db.MobileOrderDetailFreeGoods
+                    delFreeDetails = Db.MobileOrderDetailFreeGoods
                    .Where(d => d.Code == data.Code && d.OrderDetailId == item.Id && !item.FreeItemDetails.Select(x => x.Id).Contains(d.Id))
                    .ToList();
 
