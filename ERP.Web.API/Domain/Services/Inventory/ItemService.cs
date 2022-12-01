@@ -274,7 +274,7 @@ public class ItemService : GeneralService<Item>, IItemService
                              QtyDlv = Convert.ToInt32(f.QtyClosed),
                              QtyRemain = Convert.ToInt32(f.Qty - f.QtyClosed),
                              UnitName = d.UnitEquivalent
-                         }).ToDynamicList();
+                         }).Where(x => x.QtyRemain > 0).ToDynamicList();
         var result = (from h in header
                       join d in details on h.Code equals d.Code
                       select new
@@ -288,7 +288,7 @@ public class ItemService : GeneralService<Item>, IItemService
                           QtyDlv = Convert.ToInt32(d.QtyDlv),
                           QtyRemain = Convert.ToInt32(d.Qty - d.QtyDlv),
                           UnitName = d.UnitName
-                      }).ToDynamicList();
+                      }).Where(x => x.QtyRemain > 0).ToDynamicList();
 
         result.AddRange(freeOrder);
 
@@ -311,7 +311,7 @@ public class ItemService : GeneralService<Item>, IItemService
                 QtyDlv = Convert.ToInt32(d.QtyRcv),
                 QtyRemain = Convert.ToInt32(d.Qty - d.QtyRcv),
                 UnitName = d.UnitName
-            }).ToDynamicList();
+            }).Where(x => x.QtyRemain > 0).ToDynamicList();
 
         return result;
 
