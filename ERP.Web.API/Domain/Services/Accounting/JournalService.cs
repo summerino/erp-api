@@ -648,7 +648,8 @@ public class JournalService : IJournalService
                     foreach (var itemMemo in invMemo)
                     {
                         var memoData = db.DebitMemos.FirstOrDefault(x => x.Code == itemMemo.DebitMemoCode);
-                        if (memoData != null || memoData.Mark != "V")
+                        var bbmemoData = db.BeginningBalanceDebitMemos.FirstOrDefault(x => x.Code == itemMemo.DebitMemoCode);
+                        if (memoData != null)
                         {
                             journals.Add(new Journal
                             {
@@ -658,6 +659,46 @@ public class JournalService : IJournalService
                                 CoaCode = memoData.SrcTrans == 1 ? systemParam.FirstOrDefault(x => x.Code == "DEP_SUP_COA")?.Value ?? "" : systemParam.FirstOrDefault(x => x.Code == "DM_AR_COA")?.Value ?? "",
                                 TypeCode = "DM_AR",
                                 Notes = ($"{(memoData.SrcTrans == 1 ? systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_DEP_SUP")?.Value ?? "" : systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_DM_AR")?.Value ?? "")} {itemData.Supplier.Initial}").Trim(),
+                                RefCode1 = itemData.InvHeader.Code,
+                                RefCode2 = itemData.InvHeader.PoCode,
+                                RefCode3 = itemMemo.DebitMemoCode,
+                                Group = 2,
+                                CurrCode = itemData.InvHeader.CurrCode,
+                                Period = itemData.InvHeader.Date.ToString("yyyyMMdd"),
+                                Type = "C",
+                                Amount = itemMemo.DebitMemoAmount,
+                                SrcTrans = "PI"
+                            });
+
+                            journals.Add(new Journal
+                            {
+                                Code = itemData.InvHeader.Code + "-DM",
+                                LineNo = k,
+                                Date = itemData.InvHeader.Date,
+                                CoaCode = systemParam.FirstOrDefault(x => x.Code == "AP_COA")?.Value ?? "",
+                                TypeCode = "AP",
+                                Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_AP")?.Value ?? ""} {itemData.Supplier.Initial}").Trim(),
+                                RefCode1 = itemMemo.DebitMemoCode,
+                                RefCode2 = itemData.InvHeader.Code,
+                                RefCode3 = itemData.InvHeader.PoCode,
+                                Group = 1,
+                                CurrCode = itemData.InvHeader.CurrCode,
+                                Period = itemData.InvHeader.Date.ToString("yyyyMMdd"),
+                                Type = "D",
+                                Amount = itemMemo.DebitMemoAmount,
+                                SrcTrans = "PI"
+                            });
+                        }
+                        else if (bbmemoData != null)
+                        {
+                            journals.Add(new Journal
+                            {
+                                Code = itemData.InvHeader.Code + "-DM",
+                                LineNo = ++k,
+                                Date = itemData.InvHeader.Date,
+                                CoaCode = bbmemoData.Type == 1 ? systemParam.FirstOrDefault(x => x.Code == "DEP_SUP_COA")?.Value ?? "" : systemParam.FirstOrDefault(x => x.Code == "DM_AR_COA")?.Value ?? "",
+                                TypeCode = "DM_AR",
+                                Notes = ($"{(bbmemoData.Type == 1 ? systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_DEP_SUP")?.Value ?? "" : systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_DM_AR")?.Value ?? "")} {itemData.Supplier.Initial}").Trim(),
                                 RefCode1 = itemData.InvHeader.Code,
                                 RefCode2 = itemData.InvHeader.PoCode,
                                 RefCode3 = itemMemo.DebitMemoCode,
