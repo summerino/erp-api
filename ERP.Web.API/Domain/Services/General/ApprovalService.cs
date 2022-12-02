@@ -88,14 +88,7 @@ public class ApprovalService : IApprovalService
             tableName = temp.TableName;
         }
 
-        if (isDirectInvoice)
-        {
-            query = query.Replace("[TABLE]", tableName).Replace("[CODE]", code).Replace("[USER]", user.ToString());
-        }
-        else
-        {
-            query = query.Replace("[CODE]", code).Replace("[USER]", user.ToString());
-        }
+        query = query.Replace("[TABLE]", tableName).Replace("[CODE]", code).Replace("[USER]", user.ToString());
 
         return query;
     }
