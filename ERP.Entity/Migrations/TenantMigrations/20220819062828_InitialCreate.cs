@@ -10183,7 +10183,8 @@ END";
 AS
 BEGIN
 
-	SELECT cb_h.Code, cb_h.VouCode, cb_h.[Type], cb_h.[Date], cb_h.CurrCode, ABS(cb_h.Amount) AS Amount, cb_h.ChequeNo, cb_h.Notes,
+	SELECT cb_h.Code, cb_h.VouCode, cb_h.[Type], cb_h.[Date], cb_h.CurrCode, ABS(cb_h.Amount) AS Amount,
+		cb_h.ChequeNo, cb_h.ChequeDate, cb_h.Notes,
 		CONCAT(cb_h.CoaCode, ' - ', c_1.[Name]) AS FullCoaName,
 		CASE c_1.CBType
 			WHEN 'C' THEN
