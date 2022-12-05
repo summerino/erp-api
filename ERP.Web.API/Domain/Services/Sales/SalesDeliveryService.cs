@@ -381,9 +381,15 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
         try
         {
             // Checking mark header data
-            if (Db.SalesDeliveryHeaders.Any(x => x.Code == data.Code && x.Mark == "V"))
+            var oldDlvData = Db.SalesDeliveryHeaders.AsNoTracking().FirstOrDefault(x => x.Code == data.Code);
+            if (data.Mark == "V")
             {
                 result.Message = "Data pengiriman penjualan tidak bisa diubah karena data sudah ditandai sebagai void.";
+                return result;
+            }
+            else if (oldDlvData.Mark != data.Mark)
+            {
+                result.Message = "Data pengiriman penjualan tidak bisa diubah karena status data tidak sesuai.";
                 return result;
             }
 
@@ -449,7 +455,6 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
                 return result;
             }
 
-            var oldDlvData = Db.SalesDeliveryHeaders.AsNoTracking().FirstOrDefault(x => x.Code == data.Code);
             // Checking warehouse qty is item is available or not
             var isQtyAvailable = IsQtyAvailable(data.Code, data.WarehouseCode, data.ItemDetails, data.ItemDetails.SelectMany(x => x.FreeItemDetails), data.WarehouseCode != oldDlvData.WarehouseCode);
             switch (isQtyAvailable)

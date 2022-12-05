@@ -305,9 +305,15 @@ public class PurchaseReceiveService : GeneralService<PurchaseReceiveHeader>, IPu
         try
         {
             // Checking mark header data
-            if (Db.PurchaseReceiveHeaders.Any(x => x.Code == data.Code && x.Mark == "V"))
+            var oldRcvData = Db.PurchaseReceiveHeaders.AsNoTracking().FirstOrDefault(x => x.Code == data.Code);
+            if (data.Mark == "V")
             {
                 result.Message = "Data penerimaan pembelian tidak bisa diubah karena data sudah ditandai sebagai void.";
+                return result;
+            }
+            else if (oldRcvData.Mark != data.Mark)
+            {
+                result.Message = "Data penerimaan pembelian tidak bisa diubah karena status data tidak sesuai.";
                 return result;
             }
 
@@ -374,7 +380,6 @@ public class PurchaseReceiveService : GeneralService<PurchaseReceiveHeader>, IPu
             }
 
             //update Data if changed TransCode
-            var oldRcvData = Db.PurchaseReceiveHeaders.AsNoTracking().FirstOrDefault(x => x.Code == data.Code);
             if (oldRcvData.TransCode != data.TransCode)
             {
                 RestorePrevData(oldRcvData.Code, oldRcvData.TransCode, oldRcvData.SrcTrans);
