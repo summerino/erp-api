@@ -476,7 +476,7 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
             }
 
             //Restore stock mutation
-            RestoreWarehouseQty(oldDlvData.Code, oldDlvData.TransCode, oldDlvData.SrcTrans);
+            RestoreWarehouseQty(oldDlvData.Code, oldDlvData.TransCode, oldDlvData.SrcTrans, data.Mark);
 
             var taxes = Db.Taxes.AsNoTracking().ToList();
             List<decimal> totalDetail = new();
@@ -1004,7 +1004,7 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
         Db.SaveChanges();
     }
 
-    private void RestoreWarehouseQty(string code, string srcCode, short srcTrans)
+    private void RestoreWarehouseQty(string code, string srcCode, short srcTrans, string mark = null)
     {
         var dlvSMData = Db.StockMutations.AsNoTracking().Where(x => x.RefCode1 == code).ToList();
         var transSMData = Db.StockMutations.AsNoTracking().Where(x => x.RefCode1 == srcCode).ToList();
@@ -1024,7 +1024,7 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
                     whQtyData = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == itemTransSMData.WarehouseCode && x.ItemId == itemData.ItemId);
                     whQtyData.QtyOnOrder = whQtyData.QtyOnOrder + itemData.BaseQty;
                 }
-                else
+                else if (mark != "INV")
                 {
                     whQtyData = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == itemData.WarehouseCode && x.ItemId == itemData.ItemId);
                     whQtyData.QtyOnTransit = whQtyData.QtyOnTransit - itemData.BaseQty;

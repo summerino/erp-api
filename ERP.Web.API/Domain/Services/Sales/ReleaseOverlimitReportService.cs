@@ -16,12 +16,14 @@ namespace ERP.Web.API.Domain.Services.Sales
 
         public DataSourceResult GetData(string startDate, string endDate, string releasedBy, string custCode, IEnumerable<Sort> sorts)
         {
-            var data = _db.ReleaseOverlimitReports.FromSqlRaw(@"SELECT Code, OverlimitApprovedDate AS ReleasedDate,
-                        OverlimitApprovedInitial AS ReleasedBy, OverlimitApprovedReason AS ReleasedReason, CustCode, CustName, Total
-                        FROM Sales.VwSalesOrderHeader
-                        WHERE OverlimitApprovedBy IS NOT NULL AND OverlimitApprovedDate IS NOT NULL" +
-                        (string.IsNullOrEmpty(releasedBy) ? "" : $" AND OverlimitApprovedBy = '{releasedBy.Replace("'", "''")}'") +
-                        (string.IsNullOrEmpty(custCode) ? "" : $" AND CustCode = '{custCode.Replace("'", "''")}'")).ToList();
+            var data = _db.ReleaseOverlimitReports.FromSqlRaw(@"SELECT so.Code, so.OverlimitApprovedDate AS ReleasedDate,
+                        emp.FirstName AS ReleasedBy, so.OverlimitApprovedReason AS ReleasedReason, so.CustCode, so.CustName, so.Total
+                        FROM Sales.VwSalesOrderHeader so
+                        LEFT JOIN SystemManagement.[User] sy ON sy.Id = so.OverlimitApprovedBy
+                        LEFT JOIN General.Employee emp ON emp.Id = sy.EmployeeId
+                        WHERE so.OverlimitApprovedBy IS NOT NULL AND so.OverlimitApprovedDate IS NOT NULL" +
+                        (string.IsNullOrEmpty(releasedBy) ? "" : $" AND sy.EmployeeId = '{releasedBy.Replace("'", "''")}'") +
+                        (string.IsNullOrEmpty(custCode) ? "" : $" AND so.CustCode = '{custCode.Replace("'", "''")}'")).ToList();
 
             if (!string.IsNullOrEmpty(startDate) && !string.IsNullOrEmpty(endDate))
             {
