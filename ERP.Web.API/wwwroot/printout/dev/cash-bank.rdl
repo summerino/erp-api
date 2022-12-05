@@ -81,6 +81,10 @@ FROM SystemManagement.Company</CommandText>
           <DataField>ChequeNo</DataField>
           <rd:UserDefined>true</rd:UserDefined>
         </Field>
+        <Field Name="ChequeDate">
+          <DataField>ChequeDate</DataField>
+          <rd:UserDefined>true</rd:UserDefined>
+        </Field>
         <Field Name="Notes">
           <DataField>Notes</DataField>
           <rd:UserDefined>true</rd:UserDefined>
@@ -406,7 +410,6 @@ FROM SystemManagement.Company</CommandText>
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
                         </Textbox>
-                        <rd:Selected>true</rd:Selected>
                       </CellContents>
                     </TablixCell>
                     <TablixCell>
@@ -812,9 +815,9 @@ FROM SystemManagement.Company</CommandText>
                 </Paragraph>
               </Paragraphs>
               <Top>0.58486in</Top>
-              <Left>6.28238in</Left>
+              <Left>6.15391in</Left>
               <Height>0.18694in</Height>
-              <Width>0.6246in</Width>
+              <Width>0.75307in</Width>
               <ZIndex>6</ZIndex>
               <Style>
                 <Border>
@@ -866,9 +869,9 @@ FROM SystemManagement.Company</CommandText>
                 </Paragraph>
               </Paragraphs>
               <Top>0.7718in</Top>
-              <Left>6.28238in</Left>
+              <Left>6.15391in</Left>
               <Height>0.18694in</Height>
-              <Width>0.6246in</Width>
+              <Width>0.75307in</Width>
               <ZIndex>8</ZIndex>
               <Style>
                 <Border>
@@ -1025,6 +1028,84 @@ FROM SystemManagement.Company</CommandText>
               <Height>0.18694in</Height>
               <Width>0.09in</Width>
               <ZIndex>14</ZIndex>
+              <Style>
+                <Border>
+                  <Style>None</Style>
+                </Border>
+                <VerticalAlign>Top</VerticalAlign>
+              </Style>
+            </Textbox>
+            <Textbox Name="Textbox16">
+              <CanShrink>true</CanShrink>
+              <KeepTogether>true</KeepTogether>
+              <Paragraphs>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>=IIf(IsNothing(First(Fields!ChequeDate.Value, "Data")), "", "Tgl. Kliring")</Value>
+                      <Style />
+                    </TextRun>
+                  </TextRuns>
+                  <Style />
+                </Paragraph>
+              </Paragraphs>
+              <Top>0.95874in</Top>
+              <Left>6.15391in</Left>
+              <Height>0.18694in</Height>
+              <Width>0.75307in</Width>
+              <ZIndex>15</ZIndex>
+              <Style>
+                <Border>
+                  <Style>None</Style>
+                </Border>
+                <VerticalAlign>Top</VerticalAlign>
+              </Style>
+            </Textbox>
+            <Textbox Name="Textbox17">
+              <CanShrink>true</CanShrink>
+              <KeepTogether>true</KeepTogether>
+              <Paragraphs>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>=IIf(IsNothing(First(Fields!ChequeDate.Value, "Data")), "", Format(First(Fields!ChequeDate.Value, "Data"), "dd-MMM-yyyy"))</Value>
+                      <Style />
+                    </TextRun>
+                  </TextRuns>
+                  <Style />
+                </Paragraph>
+              </Paragraphs>
+              <Top>0.95874in</Top>
+              <Left>6.99698in</Left>
+              <Height>0.18694in</Height>
+              <Width>1.30098in</Width>
+              <ZIndex>16</ZIndex>
+              <Style>
+                <Border>
+                  <Style>None</Style>
+                </Border>
+                <VerticalAlign>Top</VerticalAlign>
+              </Style>
+            </Textbox>
+            <Textbox Name="Textbox18">
+              <CanShrink>true</CanShrink>
+              <KeepTogether>true</KeepTogether>
+              <Paragraphs>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>=IIf(IsNothing(First(Fields!ChequeDate.Value, "Data")), "", ":")</Value>
+                      <Style />
+                    </TextRun>
+                  </TextRuns>
+                  <Style />
+                </Paragraph>
+              </Paragraphs>
+              <Top>0.95874in</Top>
+              <Left>6.90698in</Left>
+              <Height>0.18694in</Height>
+              <Width>0.09in</Width>
+              <ZIndex>17</ZIndex>
               <Style>
                 <Border>
                   <Style>None</Style>
