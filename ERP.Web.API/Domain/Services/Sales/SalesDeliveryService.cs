@@ -382,7 +382,7 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
         {
             // Checking mark header data
             var oldDlvData = Db.SalesDeliveryHeaders.AsNoTracking().FirstOrDefault(x => x.Code == data.Code);
-            if (data.Mark == "V")
+            if (oldDlvData.Mark == "V")
             {
                 result.Message = "Data pengiriman penjualan tidak bisa diubah karena data sudah ditandai sebagai void.";
                 return result;
