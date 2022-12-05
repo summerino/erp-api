@@ -4179,6 +4179,9 @@ public class JournalService : IJournalService
 
             foreach (var item in listSM)
             {
+                if (item.Qty == 0 || item.BaseQty == 0)
+                    continue;
+
                 if (new[] { "RCV", "BB", "SR" }.Contains(item.Src))
                 {
                     var rcvFromPRSI =
