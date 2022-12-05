@@ -36,7 +36,7 @@ public class CustomerFirebaseTokenService : ICustomerFirebaseTokenService
 
             //// Configure tenant context db
             //var contextOptions = new DbContextOptionsBuilder<TenantContext>()
-            //    .UseSqlServer($"Server={tenant.ServerName};Database={tenant.DatabaseName};User Id={tenant.ServerUserId};Password={tenant.ServerPassword}")
+            //    .UseSqlServer($"Server={tenant.ServerName};Database={tenant.DatabaseName};User Id={tenant.ServerUserId};Password={tenant.ServerPassword};MultipleActiveResultSets=True;TrustServerCertificate=True;Command Timeout=600;Application Name=ERP")
             //    .Options;
             //var tenantCtx = new TenantContext(contextOptions, _catalogCtx, _claim);
             //var tenantCustomer = tenantCtx.Customers.FirstOrDefault(x => x.CatalogUserId == catalogUser.Id && x.MobileSignIn && x.IsActive);

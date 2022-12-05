@@ -37,7 +37,7 @@ public class JournalService : IJournalService
 
         var optionsBuilder = new DbContextOptionsBuilder<TenantContext>();
         optionsBuilder.UseSqlServer(
-            $"Server={tenant.ServerName};Database={tenant.DatabaseName};User Id={tenant.ServerUserId};Password={tenant.ServerPassword};MultipleActiveResultSets=True;Command Timeout=600;Application Name=ERP");
+            $"Server={tenant.ServerName};Database={tenant.DatabaseName};User Id={tenant.ServerUserId};Password={tenant.ServerPassword};MultipleActiveResultSets=True;TrustServerCertificate=True;Command Timeout=600;Application Name=ERP");
 
         var tenantCtx = new TenantContext(optionsBuilder.Options, _catalogCtx, _claim);
 
