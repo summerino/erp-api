@@ -306,7 +306,7 @@ public class PurchaseReceiveService : GeneralService<PurchaseReceiveHeader>, IPu
         {
             // Checking mark header data
             var oldRcvData = Db.PurchaseReceiveHeaders.AsNoTracking().FirstOrDefault(x => x.Code == data.Code);
-            if (data.Mark == "V")
+            if (oldRcvData.Mark == "V")
             {
                 result.Message = "Data penerimaan pembelian tidak bisa diubah karena data sudah ditandai sebagai void.";
                 return result;
