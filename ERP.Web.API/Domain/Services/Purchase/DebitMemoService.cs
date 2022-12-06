@@ -5,6 +5,7 @@ using ERP.Common.Models;
 using ERP.Entity;
 using ERP.Entity.Purchase;
 using ERP.Web.API.Domain.Interfaces.Purchase;
+using Microsoft.EntityFrameworkCore;
 
 namespace ERP.Web.API.Domain.Services.Purchase;
 
@@ -101,7 +102,19 @@ public class DebitMemoService : GeneralService<DebitMemo>, IDebitMemoService
 
     public override SaveResult Update(DebitMemo data)
     {
-        var result = new SaveResult(false);           
+        var result = new SaveResult(false);
+
+        var oldDMData = Db.DebitMemos.AsNoTracking().FirstOrDefault(x => x.Code == data.Code);
+        if (oldDMData.Mark == "V")
+        {
+            result.Message = "Data nota debit tidak bisa diubah karena sudah ditandai sebagai void.";
+            return result;
+        }
+        else if (oldDMData.Mark != data.Mark)
+        {
+            result.Message = "Data nota debit tidak bisa diubah karena status data tidak sesuai.";
+            return result;
+        }
 
         // Update data
         Db.DebitMemos.Update(data);

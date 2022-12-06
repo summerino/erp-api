@@ -5,6 +5,7 @@ using ERP.Common.Models;
 using ERP.Entity;
 using ERP.Entity.Sales;
 using ERP.Web.API.Domain.Interfaces.Sales;
+using Microsoft.EntityFrameworkCore;
 
 namespace ERP.Web.API.Domain.Services.Sales;
 
@@ -110,6 +111,18 @@ public class CreditMemoService : GeneralService<CreditMemo>, ICreditMemoService
     public override SaveResult Update(CreditMemo data)
     {
         var result = new SaveResult(false);
+
+        var oldCMData = Db.CreditMemos.AsNoTracking().FirstOrDefault(x => x.Code == data.Code);
+        if (oldCMData.Mark == "V")
+        {
+            result.Message = "Data nota kredit tidak bisa diubah karena sudah ditandai sebagai void.";
+            return result;
+        }
+        else if (oldCMData.Mark != data.Mark)
+        {
+            result.Message = "Data nota kredit tidak bisa diubah karena status data tidak sesuai.";
+            return result;
+        }
 
         // Update data
         Db.CreditMemos.Update(data);

@@ -449,9 +449,15 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
         try
         {
             // Checking mark header data
-            if (Db.PurchaseOrderHeaders.Any(x => x.Code == data.Code && x.Mark == "V"))
+            var oldPOData = Db.PurchaseOrderHeaders.AsNoTracking().FirstOrDefault(x => x.Code == data.Code);
+            if (oldPOData.Mark == "V")
             {
                 result.Message = "Data order pembelian tidak bisa diubah karena sudah ditandai sebagai void.";
+                return result;
+            }
+            else if (oldPOData.Mark != data.Mark)
+            {
+                result.Message = "Data order pembelian tidak bisa diubah karena status data tidak sesuai.";
                 return result;
             }
 
