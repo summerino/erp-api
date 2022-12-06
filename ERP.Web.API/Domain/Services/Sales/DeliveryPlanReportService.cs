@@ -250,6 +250,11 @@ namespace ERP.Web.API.Domain.Services.Sales
                         dpDetailData = dpDetailData.Where(x => x.Code == code).ToList();
                     }
 
+                    if (!string.IsNullOrWhiteSpace(custCode))
+                    {
+                        dpDetailData = dpDetailData.Where(x => x.CustCode == custCode).ToList();
+                    }
+
                     dpDetailData = dpDetailData.OrderBy(x => x.Date).ToList();
 
                     return dpDetailData.AsQueryable().ToDataSourceResult(0, dpDetailData.Count, null, null);
