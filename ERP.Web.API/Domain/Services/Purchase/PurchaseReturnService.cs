@@ -230,9 +230,15 @@ public class PurchaseReturnService : GeneralService<PurchaseReturnHeader>, IPurc
         try
         {
             // Checking mark header data
-            if (Db.PurchaseReturnHeaders.Any(x => x.Code == data.Code && x.Mark == "V"))
+            var oldPRData = Db.PurchaseReturnHeaders.AsNoTracking().FirstOrDefault(x => x.Code == data.Code);
+            if (oldPRData.Mark == "V")
             {
                 result.Message = "Data pengembalian pembelian tidak bisa diubah karena data sudah ditandai sebagai void.";
+                return result;
+            }
+            else if (oldPRData.Mark != data.Mark)
+            {
+                result.Message = "Data pengembalian pembelian tidak bisa diubah karena status data tidak sesuai.";
                 return result;
             }
 

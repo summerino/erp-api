@@ -1017,24 +1017,27 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
         {
             foreach (var itemData in dlvSMData)
             {
-                var whQtyData = new Entity.Inventory.WarehouseQuantity();
+                //var whQtyData = new Entity.Inventory.WarehouseQuantity();
                 if (itemData.Type == "OH")
                 {
-                    whQtyData = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == itemData.WarehouseCode && x.ItemId == itemData.ItemId);
+                    var whQtyData = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == itemData.WarehouseCode && x.ItemId == itemData.ItemId);
                     whQtyData.QtyOnHand = whQtyData.QtyOnHand + itemData.BaseQty;
+                    Db.WarehouseQuantities.Update(whQtyData);
                 }
                 else if (itemData.Type == "OO")
                 {
                     var itemTransSMData = transSMData.FirstOrDefault(x => x.ItemId == itemData.ItemId && x.UnitId == itemData.UnitId);
-                    whQtyData = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == itemTransSMData.WarehouseCode && x.ItemId == itemData.ItemId);
+                    var whQtyData = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == itemTransSMData.WarehouseCode && x.ItemId == itemData.ItemId);
                     whQtyData.QtyOnOrder = whQtyData.QtyOnOrder + itemData.BaseQty;
+                    Db.WarehouseQuantities.Update(whQtyData);
+
                 }
                 else if (mark != "INV")
                 {
-                    whQtyData = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == itemData.WarehouseCode && x.ItemId == itemData.ItemId);
+                    var whQtyData = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == itemData.WarehouseCode && x.ItemId == itemData.ItemId);
                     whQtyData.QtyOnTransit = whQtyData.QtyOnTransit - itemData.BaseQty;
+                    Db.WarehouseQuantities.Update(whQtyData);
                 }
-                Db.WarehouseQuantities.Update(whQtyData);
             }
         }
         else

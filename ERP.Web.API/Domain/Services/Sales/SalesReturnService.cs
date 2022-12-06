@@ -238,9 +238,15 @@ public class SalesReturnService : GeneralService<SalesReturnHeader>, ISalesRetur
         try
         {
             // Checking mark header data
-            if (Db.SalesReturnHeaders.Any(x => x.Code == data.Code && x.Mark == "V"))
+            var oldSRData = Db.SalesReturnHeaders.AsNoTracking().FirstOrDefault(x => x.Code == data.Code);
+            if (oldSRData.Mark == "V")
             {
                 result.Message = "Data pengembalian penjualan tidak bisa diubah karena data sudah ditandai sebagai void.";
+                return result;
+            }
+            else if (oldSRData.Mark != data.Mark)
+            {
+                result.Message = "Data pengembalian penjualan tidak bisa diubah karena status data tidak sesuai.";
                 return result;
             }
 

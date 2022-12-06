@@ -1179,9 +1179,15 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
             }
 
             // Checking mark header data
-            if (Db.SalesOrderHeaders.Any(x => x.Code == data.Code && new[] { "V", "CLS" }.Contains(x.Mark)))
+            var oldSOData = Db.SalesOrderHeaders.AsNoTracking().FirstOrDefault(x => x.Code == data.Code);
+            if (new[] { "V", "CLS" }.Contains(oldSOData.Mark))
             {
                 result.Message = "Data order penjualan tidak bisa diubah karena sudah ditandai sebagai void atau closed.";
+                return result;
+            }
+            else if (oldSOData.Mark != data.Mark)
+            {
+                result.Message = "Data order penjualan tidak bisa diubah karena status data tidak sesuai.";
                 return result;
             }
 
