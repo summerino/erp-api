@@ -135,7 +135,7 @@ namespace ERP.Web.API.Domain.Services.Sales
 
                     if (itemId.HasValue || itemId > 0)
                     {
-                        dpData = dpData.Where(x => dpDetailData.Select(y => y.Code).Contains(x.Code)).ToList();
+                        dpData = dpData.Where(x => dpDetailData.Select(y => y.ItemInitial).Contains(x.ItemInitial)).ToList();
                     }
 
                     if (!string.IsNullOrWhiteSpace(custCode))

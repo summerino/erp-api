@@ -481,7 +481,10 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
             }
 
             //Restore stock mutation
-            RestoreWarehouseQty(oldDlvData.Code, oldDlvData.TransCode, oldDlvData.SrcTrans, data.Mark);
+            if (oldDlvData.WarehouseCode != data.WarehouseCode)
+                RestoreWarehouseQty(oldDlvData.Code, oldDlvData.TransCode, oldDlvData.SrcTrans, data.Mark, true, data.WarehouseCode);
+            else
+                RestoreWarehouseQty(oldDlvData.Code, oldDlvData.TransCode, oldDlvData.SrcTrans, data.Mark);
 
             var taxes = Db.Taxes.AsNoTracking().ToList();
             List<decimal> totalDetail = new();
@@ -1009,7 +1012,7 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
         Db.SaveChanges();
     }
 
-    private void RestoreWarehouseQty(string code, string srcCode, short srcTrans, string mark = null)
+    private void RestoreWarehouseQty(string code, string srcCode, short srcTrans, string mark = null, bool isChangeWH = false, string curWHCode = null)
     {
         var dlvSMData = Db.StockMutations.AsNoTracking().Where(x => x.RefCode1 == code).ToList();
         var transSMData = Db.StockMutations.AsNoTracking().Where(x => x.RefCode1 == srcCode).ToList();
@@ -1033,6 +1036,18 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
 
                 }
                 else if (mark != "INV")
+                {
+                    var whQtyData = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == itemData.WarehouseCode && x.ItemId == itemData.ItemId);
+                    whQtyData.QtyOnTransit = whQtyData.QtyOnTransit - itemData.BaseQty;
+                    Db.WarehouseQuantities.Update(whQtyData);
+                }
+                else if (mark == "INV" && isChangeWH)
+                {
+                    var curWHQtyData = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == curWHCode && x.ItemId == itemData.ItemId);
+                    curWHQtyData.QtyOnTransit = curWHQtyData.QtyOnTransit - itemData.BaseQty;
+                    Db.WarehouseQuantities.Update(curWHQtyData);
+                }
+                else if (mark == "INV" && !isChangeWH)
                 {
                     var whQtyData = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == itemData.WarehouseCode && x.ItemId == itemData.ItemId);
                     whQtyData.QtyOnTransit = whQtyData.QtyOnTransit - itemData.BaseQty;
