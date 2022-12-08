@@ -50,7 +50,7 @@ EXEC sp_get_do_multi_print_data '{string.Join(",", codes)}';",
 
         // Populate DataSet
         var ds = new DataSet();
-        using var cn = new SqlConnection($"Server={tenant.ServerName};Database={tenant.DatabaseName};User Id={tenant.ServerUserId};Password={tenant.ServerPassword};MultipleActiveResultSets=True;TrustServerCertificate=True;Command Timeout=600;Application Name=ERP");
+        using var cn = new SqlConnection($"Server={tenant.ServerName};Database={tenant.DatabaseName};User Id={tenant.ServerUserId};Password={tenant.ServerPassword};MultipleActiveResultSets=True;TrustServerCertificate=True;Application Name=ERP");
         cn.Open();
 
         using var da = new SqlDataAdapter(query, cn);
