@@ -39,11 +39,11 @@ public class MobileCustomerService : GeneralService<MobileCustomer>, IMobileCust
         try
         {
             // Checking initial already exists or not
-            if (IsInitialExists(data.Initial, data.Code))
-            {
-                result.Message = "Inisial sudah terdaftar. Tolong gunakan inisial lain.";
-                return result;
-            }
+            //if (IsInitialExists(data.Initial, data.Code))
+            //{
+            //    result.Message = "Inisial sudah terdaftar. Tolong gunakan inisial lain.";
+            //    return result;
+            //}
 
             Db.MobileCustomers.Add(data);
             Db.SaveChanges();
