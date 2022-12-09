@@ -245,6 +245,11 @@ namespace ERP.Web.API.Domain.Services.Sales
             {
                 if (type == 1)
                 {
+                    if (categoryId.HasValue || categoryId > 0)
+                    {
+                        dpDetailData = dpDetailData.Where(x => itemCategoryData.Select(y => y.CategoryId).Contains(x.ItemCategoryId.Value)).ToList();
+                    }
+
                     if (!string.IsNullOrWhiteSpace(code))
                     {
                         dpDetailData = dpDetailData.Where(x => x.Code == code).ToList();
