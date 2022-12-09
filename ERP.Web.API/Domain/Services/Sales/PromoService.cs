@@ -264,7 +264,7 @@ public class PromoService : GeneralService<PromoHeader>, IPromoService
                 }
 
                 var delMultiItemData = Db.PromoDetailMultipleItems
-                    .Where(d => d.PromoDetailId == item.Id && !item.MultipleItem.Select(x => x.Id).Contains(d.Id))
+                    .Where(d => d.PromoDetailId == item.Id)
                     .ToList();
 
                 Db.PromoDetailMultipleItems.RemoveRange(delMultiItemData);
