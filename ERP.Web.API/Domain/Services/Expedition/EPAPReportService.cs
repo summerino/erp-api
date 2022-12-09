@@ -22,11 +22,11 @@ public class EPAPReportService : IEPAPReportService
                         Group by sp.Code, sp.Initial, sp.Name
                         ").ToList();
 
-        var invData = _db.ReportByExpeditionInvoices.FromSqlRaw(@"select ex.Date, ex.DueDate, ex.Code, ex.SupCode, sp.[Name] as SupName, ex.Amount as TotalAmount, CAST (0 as decimal) as PaidAmount, CAST (0 as decimal) as RemainderAmount
+        var invData = _db.ReportByExpeditionInvoices.FromSqlRaw(@"select ex.Date, ex.DueDate, ex.Code, ex.SupCode, sp.[Name] as SupName, ex.Amount as TotalAmount, CAST (0 as decimal) as PaidAmount, CAST (0 as decimal) as RemainderAmount, ex.Notes
                         from Expedition.ExpeditionInvoiceHeader ex
                         left join General.Supplier sp on sp.Code = ex.SupCode
                         where ex.Mark != 'V'
-                        group by ex.Date, ex.DueDate, ex.Code, ex.SupCode, sp.[Name], ex.Amount").ToList();
+                        group by ex.Date, ex.DueDate, ex.Code, ex.SupCode, sp.[Name], ex.Amount, ex.Notes").ToList();
 
         var cbData = _db.GeneralCashBankHeaders.Where(x => !new[] { "V", "REJ" }.Contains(x.Mark) && x.Date <= Convert.ToDateTime(date)).ToList();
 
