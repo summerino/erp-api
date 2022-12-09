@@ -36,4 +36,6 @@ public class ReportByExpeditionInvoice
     public decimal PaidAmount { get; set; }
 
     public decimal RemainderAmount { get; set; }
+
+    public string Notes { get; set; }
 }

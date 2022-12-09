@@ -26,7 +26,7 @@ public class ExpeditionInvoiceService : GeneralService<ExpeditionInvoiceHeader>,
             data = DateTime.TryParse(search, out var searchDate)
                 ? data.Where(x => x.Date == searchDate)
                 : data.Where(x =>
-                    x.Code.Contains(search) || x.RefNo.Contains(search) || x.SupInitial.Contains(search));
+                    x.Code.Contains(search) || x.RefNo.Contains(search) || x.SupInitial.Contains(search) || x.Notes.Contains(search));
         }
 
         return data.ToDataSourceResult(skip, take, filter, sort);

@@ -130,7 +130,7 @@ namespace ERP.Web.API.Domain.Services.Sales
                     {
                         dpDetailData = dpDetailData.Where(x => itemCategoryData.Select(y => y.CategoryId).Contains(x.ItemCategoryId.Value)).ToList();
                         if (!itemId.HasValue || itemId <= 0)
-                            dpData = dpData.Where(x => dpDetailData.Select(y => y.Code).Contains(x.Code)).ToList();
+                            dpData = dpData.Where(x => dpDetailData.Select(y => y.ItemCategoryInitial).Contains(x.ItemCategoryInitial)).ToList();
                     }
 
                     if (itemId.HasValue || itemId > 0)
@@ -245,6 +245,11 @@ namespace ERP.Web.API.Domain.Services.Sales
             {
                 if (type == 1)
                 {
+                    if (categoryId.HasValue || categoryId > 0)
+                    {
+                        dpDetailData = dpDetailData.Where(x => itemCategoryData.Select(y => y.CategoryId).Contains(x.ItemCategoryId.Value)).ToList();
+                    }
+
                     if (!string.IsNullOrWhiteSpace(code))
                     {
                         dpDetailData = dpDetailData.Where(x => x.Code == code).ToList();

@@ -36,6 +36,7 @@ public class VisitOrderController : ControllerBase
             x.Date,
             x.Status,
             x.Notes,
+            x.Mark,
             x.UpdatedDate
         }).ToList<dynamic>();
         return Ok(new MobileApiResponse
