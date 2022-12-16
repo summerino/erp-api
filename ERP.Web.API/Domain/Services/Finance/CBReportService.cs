@@ -156,7 +156,7 @@ public class CBReportService : ICBReportService
         {
             foreach (var item in dataCOA)
             {
-                var bBalance = initCBHeader.Where(x => x.CoaCode == item.Code).Sum(x => x.Amount);
+                var bBalance = initCBHeader.Where(x => x.CoaCode == item.Code && x.Type == "D").Sum(x => x.Amount) - Math.Abs(initCBHeader.Where(x => x.CoaCode == item.Code && x.Type == "C").Sum(x => x.Amount));
                 var iBalance = dataCBHeader.Where(x => x.CoaCode == item.Code && x.Type == "D").Sum(x => x.Amount);
                 var oBalance = Math.Abs(dataCBHeader.Where(x => x.CoaCode == item.Code && x.Type == "C").Sum(x => x.Amount));
                 var eBalance = (bBalance + iBalance) - oBalance;
