@@ -65,18 +65,18 @@ public class ReportViewerController : ControllerBase, IReportController
                 var datasources = ReportHelper.GetDataSources(_jsonArray, this, _cache, true);
                 foreach (DataSourceInfo item in datasources)
                 {
-                    var DataSourceCredentials = new DataSourceCredentials
+                    var dataSourceCredentials = new DataSourceCredentials
                     {
                         Name = item.DataSourceName,
                         UserId = tenant.ServerUserId,
                         Password = tenant.ServerPassword,
-                        ConnectionString = $"Data Source={tenant.ServerName};Initial Catalog={tenant.DatabaseName}",
+                        ConnectionString = $"Data Source={tenant.ServerName};Initial Catalog={tenant.DatabaseName};TrustServerCertificate=True;Application Name=ERP",
                         IntegratedSecurity = false
                     };
 
                     reportOption.ReportModel.DataSourceCredentials = new List<DataSourceCredentials>
                     {
-                        DataSourceCredentials
+                        dataSourceCredentials
                     };
                 }
             }
