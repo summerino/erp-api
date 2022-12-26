@@ -2,6 +2,7 @@
 using ERP.Common.Models;
 using ERP.Entity;
 using ERP.Entity.Finance;
+using ERP.Entity.Inventory;
 using ERP.Web.API.Domain.Interfaces.Finance;
 using Microsoft.EntityFrameworkCore;
 
@@ -30,6 +31,7 @@ public class CBReportService : ICBReportService
 
         var dataCBHeader = _db.GeneralCashBankHeaders.Where(x => x.Mark == "A").ToList();
         var dataCBDetail = _db.GeneralCashBankDetails.ToList();
+        var initCBDetail = dataCBDetail;
 
         var initCBHeader = dataCBHeader.Where(x => x.ChequeDate.GetValueOrDefault(x.Date) < Convert.ToDateTime(startDate)).ToList();
 
@@ -46,14 +48,15 @@ public class CBReportService : ICBReportService
         {
             dataCOA = dataCOA.Where(x => x.Code == coaCode).ToList();
             dataCBHeader = dataCBHeader.Where(x => x.CoaCode == coaCode).ToList();
-            dataCBDetail = dataCBDetail.Where(x => dataCBHeader.Select(h => h.Code).Contains(x.Code)).ToList();
             initCBHeader = initCBHeader.Where(x => x.CoaCode == coaCode).ToList();
+            initCBDetail = initCBDetail.Where(x => initCBHeader.Select(h => h.Code).Contains(x.Code)).ToList();
+            dataCBDetail = dataCBDetail.Where(x => dataCBHeader.Select(h => h.Code).Contains(x.Code)).ToList();
         }
 
 
         if (type == 1)
         {
-            var endBalance = initCBHeader.Where(x => !x.IsInterCashBank).Sum(x => x.Amount) + (initCBHeader.Where(x => x.IsInterCashBank && x.Type == "D").Sum(x => x.Amount) - initCBHeader.Where(x => x.IsInterCashBank && x.Type == "C").Sum(x => x.Amount));
+            var endBalance = initCBDetail.Where(x => x.TypeAmount == "C").Sum(x => x.Amount) - initCBDetail.Where(x => x.TypeAmount == "D").Sum(x => x.Amount);
             reportA.Add(new ReportByAccount
             {
                 Code = "Saldo Awal",
@@ -63,25 +66,17 @@ public class CBReportService : ICBReportService
 
             foreach (var item in dataCBHeader.OrderBy(x => x.ChequeDate.GetValueOrDefault(x.Date)))
             {
-                if (item.IsInterCashBank)
-                {
-                    if (item.Type == "D")
-                        endBalance += item.Amount;
-                    else
-                        endBalance -= item.Amount;
-                }
-                else
-                {
-                    endBalance += item.Amount;
-                }
+                var selectedDetail = dataCBDetail.Where(x => x.Code == item.Code).ToList();
+                var selectedAmount = selectedDetail.Where(x => x.TypeAmount == "C").Sum(x => x.Amount) - selectedDetail.Where(x => x.TypeAmount == "D").Sum(x => x.Amount);
+                endBalance += selectedAmount;
 
                 reportA.Add(new ReportByAccount
                 {
                     Date = item.ChequeDate.GetValueOrDefault(item.Date),
                     Code = item.Code,
                     Notes = item.Notes,
-                    IncomingBalance = item.Type == "D" ? item.Amount : 0,
-                    OutgoingBalance = item.Type == "D" ? 0 : Math.Abs(item.Amount),
+                    IncomingBalance = item.Type == "D" ? selectedAmount : 0,
+                    OutgoingBalance = item.Type == "D" ? 0 : Math.Abs(selectedAmount),
                     EndingBalance = endBalance,
                     IsBold = false
                 });
@@ -100,7 +95,7 @@ public class CBReportService : ICBReportService
         }
         else if (type == 2)
         {
-            var endBalance = initCBHeader.Where(x => !x.IsInterCashBank).Sum(x => x.Amount) + (initCBHeader.Where(x => x.IsInterCashBank && x.Type == "D").Sum(x => x.Amount) - initCBHeader.Where(x => x.IsInterCashBank && x.Type == "C").Sum(x => x.Amount));
+            var endBalance = initCBDetail.Where(x => x.TypeAmount == "C").Sum(x => x.Amount) - initCBDetail.Where(x => x.TypeAmount == "D").Sum(x => x.Amount);
             reportAD.Add(new ReportByAccountDetail
             {
                 Code = "Saldo Awal",
@@ -156,9 +151,9 @@ public class CBReportService : ICBReportService
         {
             foreach (var item in dataCOA)
             {
-                var bBalance = initCBHeader.Where(x => x.CoaCode == item.Code && !x.IsInterCashBank).Sum(x => x.Amount) + (initCBHeader.Where(x => x.CoaCode == item.Code && x.IsInterCashBank && x.Type == "D").Sum(x => x.Amount) - initCBHeader.Where(x => x.CoaCode == item.Code && x.IsInterCashBank && x.Type == "C").Sum(x => x.Amount));
-                var iBalance = dataCBHeader.Where(x => x.CoaCode == item.Code && x.Type == "D").Sum(x => x.Amount);
-                var oBalance = dataCBHeader.Where(x => x.IsInterCashBank && x.CoaCode == item.Code && x.Type == "C").Sum(x => x.Amount) + Math.Abs(dataCBHeader.Where(x => !x.IsInterCashBank && x.CoaCode == item.Code && x.Type == "C").Sum(x => x.Amount));
+                var bBalance = dataCBDetail.Where(x => initCBHeader.Where(y => y.CoaCode == item.Code).Select(y => y.Code).Contains(x.Code) && x.TypeAmount == "C").Sum(x => x.Amount) - dataCBDetail.Where(x => initCBHeader.Where(y => y.CoaCode == item.Code).Select(y => y.Code).Contains(x.Code) && x.TypeAmount == "D").Sum(x => x.Amount);
+                var iBalance = dataCBDetail.Where(x => dataCBHeader.Where(y => y.CoaCode == item.Code).Select(y => y.Code).Contains(x.Code) && x.TypeAmount == "C").Sum(x => x.Amount);
+                var oBalance = dataCBDetail.Where(x => dataCBHeader.Where(y => y.CoaCode == item.Code).Select(y => y.Code).Contains(x.Code) && x.TypeAmount == "D").Sum(x => x.Amount);
                 var eBalance = (bBalance + iBalance) - oBalance;
                 reportAC.Add(new ReportByAllAccount
                 {
