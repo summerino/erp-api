@@ -2290,7 +2290,10 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
 
 
             // Update Invoice header data
-            data.PaidAmount = newMemos.Any() ? newMemos.Sum(x => x.CreditMemoAmount) : 0;
+            var relatedData = GetRelatedTransactions(data.Code).Where(x => x.Type == "Kas Bank").Sum(x => (decimal)x.Total);
+            data.PaidAmount = newMemos.Any() ? newMemos.Sum(x => x.CreditMemoAmount) : 0m + relatedData;
+            if (data.PaidAmount >= data.Total)
+                data.PaidAmount = data.Total;
             data.Mark = data.Mark == "OL" ? "OL" : data.PaidAmount > 0 ? data.Total == data.PaidAmount ? "CMP" : "PP" : "A";
             Db.SalesInvoiceHeaders.Update(data);
             Db.Entry(data).Property(e => e.Code).IsModified = false;
