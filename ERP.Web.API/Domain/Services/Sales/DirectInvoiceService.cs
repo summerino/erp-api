@@ -1151,7 +1151,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
 
             // Check & assign overlimit
             var isOverLimit = !CheckCreditLimit(data.CustCode, data.Total);
-            if (isOverLimit)
+            if (isOverLimit && data.Mark == "A")
                 data.Mark = "OL";
 
             if (data.Memos.Sum(x => x.CreditMemoAmount) > data.Total)
