@@ -25,25 +25,25 @@ public class VisitOrderService : GeneralService<MobileVisitLog>, IVisitOrderServ
         {
             var startFrom = DateTime.Today.AddMonths(-1);
             var data = (from visits in Db.VwVisitOrders.Where(x => x.Date >= startFrom)
-                join user in Db.Users on visits.SalesmanId equals user.EmployeeId
-                where user.Id == userId
-                select new VwVisitOrder
-                {
-                    Code = visits.Code,
-                    Date = visits.Date,
-                    SalesmanId = visits.SalesmanId,
-                    VisitPlanCode = visits.VisitPlanCode,
-                    Notes = visits.Notes,
-                    Status = visits.Status,
-                    SalesmanInitial = visits.SalesmanInitial,
-                    SalesmanName = visits.SalesmanName,
-                    GroupInitial = visits.GroupInitial,
-                    CreatedInitial = visits.CreatedInitial,
-                    UpdatedInitial = visits.UpdatedInitial,
-                    ApprovedInitial = visits.ApprovedInitial,
-                    Mark = visits.Mark,
-                    UpdatedDate = visits.UpdatedDate
-                }).AsQueryable();
+                        join user in Db.Users on visits.SalesmanId equals user.EmployeeId
+                        where user.Id == userId
+                        select new VwVisitOrder
+                        {
+                            Code = visits.Code,
+                            Date = visits.Date,
+                            SalesmanId = visits.SalesmanId,
+                            VisitPlanCode = visits.VisitPlanCode,
+                            Notes = visits.Notes,
+                            Status = visits.Status,
+                            SalesmanInitial = visits.SalesmanInitial,
+                            SalesmanName = visits.SalesmanName,
+                            GroupInitial = visits.GroupInitial,
+                            CreatedInitial = visits.CreatedInitial,
+                            UpdatedInitial = visits.UpdatedInitial,
+                            ApprovedInitial = visits.ApprovedInitial,
+                            Mark = visits.Mark,
+                            UpdatedDate = visits.UpdatedDate
+                        }).AsQueryable();
 
             if (lastUpdate != null)
             {
@@ -70,29 +70,29 @@ public class VisitOrderService : GeneralService<MobileVisitLog>, IVisitOrderServ
     {
         var startFrom = DateTime.Today.AddMonths(-1);
         var data = (from vl in Db.MobileVisitLogs
-            join visits in Db.VisitOrders on vl.VisitOrderCode equals visits.Code
-            join user in Db.Users on visits.SalesmanId equals user.EmployeeId
-            where user.Id == userId && visits.Date >= startFrom
-            select new MobileVisitLog
-            {
-                NoVisitReasonId = vl.NoVisitReasonId,
-                UnscheduledVisitReasonId = vl.UnscheduledVisitReasonId,
-                Total = vl.Total,
-                EndTime = vl.EndTime,
-                StartTime = vl.StartTime,
-                Lng = vl.Lng,
-                NoOrderReasonId = vl.NoOrderReasonId,
-                Lat = vl.Lat,
-                Scheduled = vl.Scheduled,
-                CustCode = vl.CustCode,
-                SalesmanId = vl.SalesmanId,
-                VisitOrderCode = vl.VisitOrderCode,
-                Date = vl.Date,
-                Code = vl.Code,
-                Visited = vl.Visited,
-                Image = vl.Image,
-                UpdatedDate = vl.UpdatedDate
-            });
+                    join visits in Db.VisitOrders on vl.VisitOrderCode equals visits.Code
+                    join user in Db.Users on visits.SalesmanId equals user.EmployeeId
+                    where user.Id == userId && visits.Date >= startFrom
+                    select new MobileVisitLog
+                    {
+                        NoVisitReasonId = vl.NoVisitReasonId,
+                        UnscheduledVisitReasonId = vl.UnscheduledVisitReasonId,
+                        Total = vl.Total,
+                        EndTime = vl.EndTime,
+                        StartTime = vl.StartTime,
+                        Lng = vl.Lng,
+                        NoOrderReasonId = vl.NoOrderReasonId,
+                        Lat = vl.Lat,
+                        Scheduled = vl.Scheduled,
+                        CustCode = vl.CustCode,
+                        SalesmanId = vl.SalesmanId,
+                        VisitOrderCode = vl.VisitOrderCode,
+                        Date = vl.Date,
+                        Code = vl.Code,
+                        Visited = vl.Visited,
+                        Image = vl.Image,
+                        UpdatedDate = vl.UpdatedDate
+                    });
 
         if (lastUpdate != null)
         {
@@ -114,22 +114,22 @@ public class VisitOrderService : GeneralService<MobileVisitLog>, IVisitOrderServ
 
         var startFrom = DateTime.Today.AddMonths(-1);
         var data = (from dd in Db.MobileOrderDetailDiscounts
-            join oh in header on dd.Code equals oh.Code
-            join user in Db.Users on oh.SalesBy equals user.EmployeeId
-            where user.Id == userId && oh.Date >= startFrom
-            select new MobileOrderDetailDiscount
-            {
-                Id = dd.Id,
-                Code = dd.Code,
-                OrderDetailId = dd.OrderDetailId,
-                LineNo = dd.LineNo,
-                PromoCode = dd.PromoCode,
-                PromoDetailId = dd.PromoDetailId,
-                Name = dd.Name,
-                IsPercentage = dd.IsPercentage,
-                Value = dd.Value,
-                Amount = dd.Amount
-            });
+                    join oh in header on dd.Code equals oh.Code
+                    join user in Db.Users on oh.SalesBy equals user.EmployeeId
+                    where user.Id == userId && oh.Date >= startFrom
+                    select new MobileOrderDetailDiscount
+                    {
+                        Id = dd.Id,
+                        Code = dd.Code,
+                        OrderDetailId = dd.OrderDetailId,
+                        LineNo = dd.LineNo,
+                        PromoCode = dd.PromoCode,
+                        PromoDetailId = dd.PromoDetailId,
+                        Name = dd.Name,
+                        IsPercentage = dd.IsPercentage,
+                        Value = dd.Value,
+                        Amount = dd.Amount
+                    });
         return data;
     }
 
@@ -145,34 +145,34 @@ public class VisitOrderService : GeneralService<MobileVisitLog>, IVisitOrderServ
 
         var startFrom = DateTime.Today.AddMonths(-1);
         var data = (from od in Db.MobileOrderDetails
-            join oh in header on od.Code equals oh.Code
-            join it in Db.Items on od.ItemId equals it.Id
-            join unit in Db.UoMConversions on od.UnitId equals unit.Id
-            join tax in Db.Taxes on od.TaxId equals tax.Id into py
-            from sub in py.DefaultIfEmpty()
-            join user in Db.Users on oh.SalesBy equals user.EmployeeId
-            where user.Id == userId && oh.Date >= startFrom
-            select new OrderDetailModel
-            {
-                Id = od.Id,
-                Code = od.Code,
-                LineNo = od.LineNo,
-                ItemId = od.ItemId,
-                ItemName = it.Name,
-                UomId = od.UomId,
-                UnitId = od.UnitId,
-                UnitName = unit.UnitEquivalent,
-                Qty = od.Qty,
-                UnitPrice = od.UnitPrice,
-                Disc = od.Disc,
-                TaxId = od.TaxId,
-                TaxName = sub.Name,
-                TaxAmount = od.TaxAmount,
-                ExemptTaxAmount = od.ExemptTaxAmount,
-                NettPrice = od.NettPrice,
-                Total = od.Total,
-                Dpp = od.Dpp
-            });
+                    join oh in header on od.Code equals oh.Code
+                    join it in Db.Items on od.ItemId equals it.Id
+                    join unit in Db.UoMConversions on od.UnitId equals unit.Id
+                    join tax in Db.Taxes on od.TaxId equals tax.Id into py
+                    from sub in py.DefaultIfEmpty()
+                    join user in Db.Users on oh.SalesBy equals user.EmployeeId
+                    where user.Id == userId && oh.Date >= startFrom
+                    select new OrderDetailModel
+                    {
+                        Id = od.Id,
+                        Code = od.Code,
+                        LineNo = od.LineNo,
+                        ItemId = od.ItemId,
+                        ItemName = it.Name,
+                        UomId = od.UomId,
+                        UnitId = od.UnitId,
+                        UnitName = unit.UnitEquivalent,
+                        Qty = od.Qty,
+                        UnitPrice = od.UnitPrice,
+                        Disc = od.Disc,
+                        TaxId = od.TaxId,
+                        TaxName = sub.Name,
+                        TaxAmount = od.TaxAmount,
+                        ExemptTaxAmount = od.ExemptTaxAmount,
+                        NettPrice = od.NettPrice,
+                        Total = od.Total,
+                        Dpp = od.Dpp
+                    });
 
         return data;
     }
@@ -182,70 +182,70 @@ public class VisitOrderService : GeneralService<MobileVisitLog>, IVisitOrderServ
 
         var startFrom = DateTime.Today.AddMonths(-1);
         var dataWeb = (from oh in Db.MobileOrderHeaders
-            join cu in Db.Customers on oh.CustCode equals cu.Code
-            join curr in Db.Currencies on oh.CurrCode equals curr.Code
-            join pt in Db.PaymentTerms on oh.PaymentTermId equals pt.Id into py
-            from sub in py.DefaultIfEmpty()
-            join user in Db.Users on oh.SalesBy equals user.EmployeeId
-            where user.Id == userId && oh.Date >= startFrom
-            select new OrderHeaderModel
-            {
-                Code = oh.Code,
-                Date = oh.Date,
-                VisitLogCode = oh.VisitLogCode,
-                SalesOrderCode = oh.SalesOrderCode,
-                Type = oh.Type,
-                CustCode = oh.CustCode,
-                CustName = cu.Name,
-                CurrCode = oh.CurrCode,
-                CurrName = curr.Name,
-                PaymentTermId = oh.PaymentTermId,
-                PaymentTermName = sub.Name,
-                PaidAmount = oh.PaidAmount,
-                TaxAmount = oh.TaxAmount,
-                ExemptTaxAmount = oh.ExemptTaxAmount,
-                Dpp = oh.Dpp,
-                Rate = oh.Rate,
-                FinalDisc = oh.FinalDisc,
-                FinalDiscPercent = oh.FinalDiscPercent,
-                IncludeTax = oh.IncludeTax,
-                SubTotal = oh.SubTotal,
-                Total = oh.Total,
-                UpdatedDate = oh.UpdatedDate
-            });
+                       join cu in Db.Customers on oh.CustCode equals cu.Code
+                       join curr in Db.Currencies on oh.CurrCode equals curr.Code
+                       join pt in Db.PaymentTerms on oh.PaymentTermId equals pt.Id into py
+                       from sub in py.DefaultIfEmpty()
+                       join user in Db.Users on oh.SalesBy equals user.EmployeeId
+                       where user.Id == userId && oh.Date >= startFrom
+                       select new OrderHeaderModel
+                       {
+                           Code = oh.Code,
+                           Date = oh.Date,
+                           VisitLogCode = oh.VisitLogCode,
+                           SalesOrderCode = oh.SalesOrderCode,
+                           Type = oh.Type,
+                           CustCode = oh.CustCode,
+                           CustName = cu.Name,
+                           CurrCode = oh.CurrCode,
+                           CurrName = curr.Name,
+                           PaymentTermId = oh.PaymentTermId,
+                           PaymentTermName = sub.Name,
+                           PaidAmount = oh.PaidAmount,
+                           TaxAmount = oh.TaxAmount,
+                           ExemptTaxAmount = oh.ExemptTaxAmount,
+                           Dpp = oh.Dpp,
+                           Rate = oh.Rate,
+                           FinalDisc = oh.FinalDisc,
+                           FinalDiscPercent = oh.FinalDiscPercent,
+                           IncludeTax = oh.IncludeTax,
+                           SubTotal = oh.SubTotal,
+                           Total = oh.Total,
+                           UpdatedDate = oh.UpdatedDate
+                       });
 
         var dataMobile = (from oh in Db.MobileOrderHeaders
-                    join cu in Db.MobileCustomers on oh.CustCode equals cu.Code
-                    join curr in Db.Currencies on oh.CurrCode equals curr.Code
-                    join pt in Db.PaymentTerms on oh.PaymentTermId equals pt.Id into py
-                    from sub in py.DefaultIfEmpty()
-                    join user in Db.Users on oh.SalesBy equals user.EmployeeId
-                    where user.Id == userId && oh.Date >= startFrom
-                    select new OrderHeaderModel
-                    {
-                        Code = oh.Code,
-                        Date = oh.Date,
-                        VisitLogCode = oh.VisitLogCode,
-                        SalesOrderCode = oh.SalesOrderCode,
-                        Type = oh.Type,
-                        CustCode = oh.CustCode,
-                        CustName = cu.Name,
-                        CurrCode = oh.CurrCode,
-                        CurrName = curr.Name,
-                        PaymentTermId = oh.PaymentTermId,
-                        PaymentTermName = sub.Name,
-                        PaidAmount = oh.PaidAmount,
-                        TaxAmount = oh.TaxAmount,
-                        ExemptTaxAmount = oh.ExemptTaxAmount,
-                        Dpp = oh.Dpp,
-                        Rate = oh.Rate,
-                        FinalDisc = oh.FinalDisc,
-                        FinalDiscPercent = oh.FinalDiscPercent,
-                        IncludeTax = oh.IncludeTax,
-                        SubTotal = oh.SubTotal,
-                        Total = oh.Total,
-                        UpdatedDate = oh.UpdatedDate
-                    });
+                          join cu in Db.MobileCustomers on oh.CustCode equals cu.Code
+                          join curr in Db.Currencies on oh.CurrCode equals curr.Code
+                          join pt in Db.PaymentTerms on oh.PaymentTermId equals pt.Id into py
+                          from sub in py.DefaultIfEmpty()
+                          join user in Db.Users on oh.SalesBy equals user.EmployeeId
+                          where user.Id == userId && oh.Date >= startFrom
+                          select new OrderHeaderModel
+                          {
+                              Code = oh.Code,
+                              Date = oh.Date,
+                              VisitLogCode = oh.VisitLogCode,
+                              SalesOrderCode = oh.SalesOrderCode,
+                              Type = oh.Type,
+                              CustCode = oh.CustCode,
+                              CustName = cu.Name,
+                              CurrCode = oh.CurrCode,
+                              CurrName = curr.Name,
+                              PaymentTermId = oh.PaymentTermId,
+                              PaymentTermName = sub.Name,
+                              PaidAmount = oh.PaidAmount,
+                              TaxAmount = oh.TaxAmount,
+                              ExemptTaxAmount = oh.ExemptTaxAmount,
+                              Dpp = oh.Dpp,
+                              Rate = oh.Rate,
+                              FinalDisc = oh.FinalDisc,
+                              FinalDiscPercent = oh.FinalDiscPercent,
+                              IncludeTax = oh.IncludeTax,
+                              SubTotal = oh.SubTotal,
+                              Total = oh.Total,
+                              UpdatedDate = oh.UpdatedDate
+                          });
 
         var data = dataWeb.Union(dataMobile).AsQueryable();
         if (lastUpdate != null)
@@ -261,46 +261,46 @@ public class VisitOrderService : GeneralService<MobileVisitLog>, IVisitOrderServ
     {
         var startFrom = DateTime.Today.AddMonths(-1);
         var dataWeb = (from mpi in Db.MobilePaymentInvoices
-            join cu in Db.Customers on mpi.CustCode equals cu.Code
-            join coa in Db.Coas on mpi.CoaCode equals coa.Code
-            join user in Db.Users on mpi.SalesmanId equals user.EmployeeId
-            where user.Id == userId && mpi.Date >= startFrom
-            select new PaymentInvoiceModel
-            {
-                Code = mpi.Code,
-                VisitLogCode = mpi.VisitLogCode,
-                Date = mpi.Date,
-                CustCode = mpi.CustCode,
-                CustName = cu.Name,
-                CoaCode = mpi.CoaCode,
-                CoaName = coa.Name,
-                TransCode = mpi.TransCode,
-                Amount = mpi.Amount,
-                NotesFailCollect = mpi.NotesFailCollect,
-                SrcTrans = mpi.SrcTrans,
-                UpdatedDate = mpi.UpdatedDate
-            });
+                       join cu in Db.Customers on mpi.CustCode equals cu.Code
+                       join coa in Db.Coas on mpi.CoaCode equals coa.Code
+                       join user in Db.Users on mpi.SalesmanId equals user.EmployeeId
+                       where user.Id == userId && mpi.Date >= startFrom
+                       select new PaymentInvoiceModel
+                       {
+                           Code = mpi.Code,
+                           VisitLogCode = mpi.VisitLogCode,
+                           Date = mpi.Date,
+                           CustCode = mpi.CustCode,
+                           CustName = cu.Name,
+                           CoaCode = mpi.CoaCode,
+                           CoaName = coa.Name,
+                           TransCode = mpi.TransCode,
+                           Amount = mpi.Amount,
+                           NotesFailCollect = mpi.NotesFailCollect,
+                           SrcTrans = mpi.SrcTrans,
+                           UpdatedDate = mpi.UpdatedDate
+                       });
 
         var dataMobile = (from mpi in Db.MobilePaymentInvoices
-                    join cu in Db.MobileCustomers on mpi.CustCode equals cu.Code
-                    join coa in Db.Coas on mpi.CoaCode equals coa.Code
-                    join user in Db.Users on mpi.SalesmanId equals user.EmployeeId
-                    where user.Id == userId && mpi.Date >= startFrom
-                    select new PaymentInvoiceModel
-                    {
-                        Code = mpi.Code,
-                        VisitLogCode = mpi.VisitLogCode,
-                        Date = mpi.Date,
-                        CustCode = mpi.CustCode,
-                        CustName = cu.Name,
-                        CoaCode = mpi.CoaCode,
-                        CoaName = coa.Name,
-                        TransCode = mpi.TransCode,
-                        Amount = mpi.Amount,
-                        NotesFailCollect = mpi.NotesFailCollect,
-                        SrcTrans = mpi.SrcTrans,
-                        UpdatedDate = mpi.UpdatedDate
-                    });
+                          join cu in Db.MobileCustomers on mpi.CustCode equals cu.Code
+                          join coa in Db.Coas on mpi.CoaCode equals coa.Code
+                          join user in Db.Users on mpi.SalesmanId equals user.EmployeeId
+                          where user.Id == userId && mpi.Date >= startFrom
+                          select new PaymentInvoiceModel
+                          {
+                              Code = mpi.Code,
+                              VisitLogCode = mpi.VisitLogCode,
+                              Date = mpi.Date,
+                              CustCode = mpi.CustCode,
+                              CustName = cu.Name,
+                              CoaCode = mpi.CoaCode,
+                              CoaName = coa.Name,
+                              TransCode = mpi.TransCode,
+                              Amount = mpi.Amount,
+                              NotesFailCollect = mpi.NotesFailCollect,
+                              SrcTrans = mpi.SrcTrans,
+                              UpdatedDate = mpi.UpdatedDate
+                          });
 
         var data = dataWeb.Union(dataMobile).AsQueryable();
 
@@ -324,22 +324,22 @@ public class VisitOrderService : GeneralService<MobileVisitLog>, IVisitOrderServ
 
         var startFrom = DateTime.Today.AddMonths(-1);
         var data = (from dd in Db.MobileOrderDetailFreeGoods
-            join oh in header on dd.Code equals oh.Code
-            join user in Db.Users on oh.SalesBy equals user.EmployeeId
-            where user.Id == userId && oh.Date >= startFrom
-            select new MobileOrderDetailFreeGood
-            {
-                Id = dd.Id,
-                Code = dd.Code,
-                OrderDetailId = dd.OrderDetailId,
-                LineNo = dd.LineNo,
-                PromoCode = dd.PromoCode,
-                ItemId = dd.ItemId,
-                UomId = dd.UomId,
-                UnitId = dd.UnitId,
-                Qty = dd.Qty,
-                UnitPrice = dd.UnitPrice
-            });
+                    join oh in header on dd.Code equals oh.Code
+                    join user in Db.Users on oh.SalesBy equals user.EmployeeId
+                    where user.Id == userId && oh.Date >= startFrom
+                    select new MobileOrderDetailFreeGood
+                    {
+                        Id = dd.Id,
+                        Code = dd.Code,
+                        OrderDetailId = dd.OrderDetailId,
+                        LineNo = dd.LineNo,
+                        PromoCode = dd.PromoCode,
+                        ItemId = dd.ItemId,
+                        UomId = dd.UomId,
+                        UnitId = dd.UnitId,
+                        Qty = dd.Qty,
+                        UnitPrice = dd.UnitPrice
+                    });
         return data;
     }
 
@@ -354,28 +354,28 @@ public class VisitOrderService : GeneralService<MobileVisitLog>, IVisitOrderServ
         }
 
         var data = (from pd in Db.PromoDetails
-            join ph in header
-                on pd.Code equals ph.Code
-            select new PromoDetail
-            {
-                Id = pd.Id,
-                Code = pd.Code,
-                LineNo = pd.LineNo,
-                ApplyTo = pd.ApplyTo,
-                ItemId = pd.ItemId,
-                PromoType = pd.PromoType,
-                IsPercentage = pd.IsPercentage,
-                ValuePercentage = pd.ValuePercentage,
-                ValueAmount = pd.ValueAmount,
-                IsPromoWithBudget = pd.IsPromoWithBudget,
-                BudgetMaximumValue = pd.BudgetMaximumValue,
-                OverBudgetAction = pd.OverBudgetAction,
-                SubGroup1 = pd.SubGroup1,
-                SubGroup2 = pd.SubGroup2,
-                SubGroup3 = pd.SubGroup3,
-                SubGroup4 = pd.SubGroup4,
-                SubGroup5 = pd.SubGroup5
-            });
+                    join ph in header
+                        on pd.Code equals ph.Code
+                    select new PromoDetail
+                    {
+                        Id = pd.Id,
+                        Code = pd.Code,
+                        LineNo = pd.LineNo,
+                        ApplyTo = pd.ApplyTo,
+                        ItemId = pd.ItemId,
+                        PromoType = pd.PromoType,
+                        IsPercentage = pd.IsPercentage,
+                        ValuePercentage = pd.ValuePercentage,
+                        ValueAmount = pd.ValueAmount,
+                        IsPromoWithBudget = pd.IsPromoWithBudget,
+                        BudgetMaximumValue = pd.BudgetMaximumValue,
+                        OverBudgetAction = pd.OverBudgetAction,
+                        SubGroup1 = pd.SubGroup1,
+                        SubGroup2 = pd.SubGroup2,
+                        SubGroup3 = pd.SubGroup3,
+                        SubGroup4 = pd.SubGroup4,
+                        SubGroup5 = pd.SubGroup5
+                    });
         return data;
     }
 
@@ -390,14 +390,14 @@ public class VisitOrderService : GeneralService<MobileVisitLog>, IVisitOrderServ
         }
 
         var data = (from pdmi in Db.PromoDetailMultipleItems
-            join pd in Db.PromoDetails on pdmi.PromoDetailId equals pd.Id
-            join ph in header on pd.Code equals ph.Code
-            select new PromoDetailMultipleItem
-            {
-                Id = pdmi.Id,
-                PromoDetailId = pdmi.PromoDetailId,
-                ItemId = pdmi.ItemId
-            });
+                    join pd in Db.PromoDetails on pdmi.PromoDetailId equals pd.Id
+                    join ph in header on pd.Code equals ph.Code
+                    select new PromoDetailMultipleItem
+                    {
+                        Id = pdmi.Id,
+                        PromoDetailId = pdmi.PromoDetailId,
+                        ItemId = pdmi.ItemId
+                    });
 
         return data;
     }
@@ -413,24 +413,24 @@ public class VisitOrderService : GeneralService<MobileVisitLog>, IVisitOrderServ
         }
 
         var data = (from pdt in Db.PromoDetailTiers
-            join pd in Db.PromoDetails on pdt.PromoDetailId equals pd.Id
-            join ph in header
-                on pd.Code equals ph.Code
-            select new PromoDetailTier
-            {
-                Id = pdt.Id,
-                PromoDetailId = pdt.PromoDetailId,
-                FromQty = pdt.FromQty,
-                ToQty = pdt.ToQty,
-                IsPercentage = pdt.IsPercentage,
-                Value = pdt.Value,
-                SaleUnit = pdt.SaleUnit,
-                ApplyToAllUnit = pdt.ApplyToAllUnit,
-                FreeGoodItemId = pdt.FreeGoodItemId,
-                UnitFreeGood = pdt.UnitFreeGood,
-                IsMultiple = pdt.IsMultiple,
-                PaymentTermId = pdt.PaymentTermId
-            });
+                    join pd in Db.PromoDetails on pdt.PromoDetailId equals pd.Id
+                    join ph in header
+                        on pd.Code equals ph.Code
+                    select new PromoDetailTier
+                    {
+                        Id = pdt.Id,
+                        PromoDetailId = pdt.PromoDetailId,
+                        FromQty = pdt.FromQty,
+                        ToQty = pdt.ToQty,
+                        IsPercentage = pdt.IsPercentage,
+                        Value = pdt.Value,
+                        SaleUnit = pdt.SaleUnit,
+                        ApplyToAllUnit = pdt.ApplyToAllUnit,
+                        FreeGoodItemId = pdt.FreeGoodItemId,
+                        UnitFreeGood = pdt.UnitFreeGood,
+                        IsMultiple = pdt.IsMultiple,
+                        PaymentTermId = pdt.PaymentTermId
+                    });
         return data;
     }
 
@@ -459,15 +459,15 @@ public class VisitOrderService : GeneralService<MobileVisitLog>, IVisitOrderServ
         }
 
         var data = (from ps in Db.PromoSubjects
-            join ph in header
-                on ps.Code equals ph.Code
-            select new PromoSubject
-            {
-                Id = ps.Id,
-                Code = ps.Code,
-                CustCode = ps.CustCode,
-                CustTypeId = ps.CustTypeId
-            });
+                    join ph in header
+                        on ps.Code equals ph.Code
+                    select new PromoSubject
+                    {
+                        Id = ps.Id,
+                        Code = ps.Code,
+                        CustCode = ps.CustCode,
+                        CustTypeId = ps.CustTypeId
+                    });
         return data;
     }
 
@@ -495,30 +495,30 @@ public class VisitOrderService : GeneralService<MobileVisitLog>, IVisitOrderServ
 
         var startFrom = DateTime.Today.AddMonths(-1);
         var data = (from vi in Db.VisitOrderInvoices
-            join inv in Db.SalesInvoiceHeaders on vi.InvCode equals inv.Code
-            join visits in visitOrders on vi.Code equals visits.Code
-            join curr in Db.Currencies on inv.CurrCode equals curr.Code
-            join so in Db.SalesOrderHeaders on inv.SoCode equals so.Code
-            join pay in Db.PaymentTerms on so.PaymentTermId equals pay.Id into py
-            from sub in py.DefaultIfEmpty()
-            join user in Db.Users on visits.SalesmanId equals user.EmployeeId
-            where user.Id == userId && visits.Date >= startFrom
-            select new SalesInvoiceModel
-            {
-                Code = inv.Code,
-                Date = inv.Date,
-                DueDate = inv.DueDate,
-                SoCode = inv.SoCode,
-                CustCode = inv.CustCode,
-                PaymentTermId = so.PaymentTermId,
-                PaymentTermName = sub.Name,
-                CurrCode = inv.CurrCode,
-                CurrName = curr.Name,
-                PaidAmount = inv.PaidAmount,
-                Total = inv.Total,
-                Notes = inv.Notes,
-                UpdatedDate = inv.UpdatedDate
-            });
+                    join inv in Db.SalesInvoiceHeaders on vi.InvCode equals inv.Code
+                    join visits in visitOrders on vi.Code equals visits.Code
+                    join curr in Db.Currencies on inv.CurrCode equals curr.Code
+                    join so in Db.SalesOrderHeaders on inv.SoCode equals so.Code
+                    join pay in Db.PaymentTerms on so.PaymentTermId equals pay.Id into py
+                    from sub in py.DefaultIfEmpty()
+                    join user in Db.Users on visits.SalesmanId equals user.EmployeeId
+                    where user.Id == userId && visits.Date >= startFrom
+                    select new SalesInvoiceModel
+                    {
+                        Code = inv.Code,
+                        Date = inv.Date,
+                        DueDate = inv.DueDate,
+                        SoCode = inv.SoCode,
+                        CustCode = inv.CustCode,
+                        PaymentTermId = so.PaymentTermId,
+                        PaymentTermName = sub.Name,
+                        CurrCode = inv.CurrCode,
+                        CurrName = curr.Name,
+                        PaidAmount = inv.PaidAmount,
+                        Total = inv.Total,
+                        Notes = inv.Notes,
+                        UpdatedDate = inv.UpdatedDate
+                    });
 
         return data;
     }
@@ -534,25 +534,25 @@ public class VisitOrderService : GeneralService<MobileVisitLog>, IVisitOrderServ
 
         var startFrom = DateTime.Today.AddMonths(-1);
         var data = (from vc in Db.VwVisitOrderCustomers
-            join visits in visitOrders on vc.Code equals visits.Code
-            join user in Db.Users on visits.SalesmanId equals user.EmployeeId
-            join address in Db.CustomerAddress.Where(x=>x.IsDefault.Equals(true)) on vc.CustCode equals address.Code
-            where user.Id == userId && visits.Date >= startFrom
-            select new VwVisitOrderCustomer
-            {
-                Id = vc.Id,
-                Code = vc.Code,
-                CustCode = vc.CustCode,
-                ReplacingForSalesmanId = vc.ReplacingForSalesmanId,
-                Visited = vc.Visited,
-                CustomerInitial = vc.CustomerInitial,
-                CustomerName = vc.CustomerName,
-                Address = vc.Address??address.Address1,
-                AreaName1 = vc.AreaName1,
-                AreaName2 = vc.AreaName2,
-                ReplacemanInitial = vc.ReplacemanInitial,
-                ReplacemanName = vc.ReplacemanName
-            });
+                    join visits in visitOrders on vc.Code equals visits.Code
+                    join user in Db.Users on visits.SalesmanId equals user.EmployeeId
+                    join address in Db.CustomerAddress.Where(x => x.IsDefault.Equals(true)) on vc.CustCode equals address.Code
+                    where user.Id == userId && visits.Date >= startFrom
+                    select new VwVisitOrderCustomer
+                    {
+                        Id = vc.Id,
+                        Code = vc.Code,
+                        CustCode = vc.CustCode,
+                        ReplacingForSalesmanId = vc.ReplacingForSalesmanId,
+                        Visited = vc.Visited,
+                        CustomerInitial = vc.CustomerInitial,
+                        CustomerName = vc.CustomerName,
+                        Address = vc.Address ?? address.Address1,
+                        AreaName1 = vc.AreaName1,
+                        AreaName2 = vc.AreaName2,
+                        ReplacemanInitial = vc.ReplacemanInitial,
+                        ReplacemanName = vc.ReplacemanName
+                    });
 
         return data;
     }
@@ -568,19 +568,19 @@ public class VisitOrderService : GeneralService<MobileVisitLog>, IVisitOrderServ
 
         var startFrom = DateTime.Today.AddMonths(-1);
         var data = (from vi in Db.VisitOrderInvoices
-            join visits in visitOrders on vi.Code equals visits.Code
-            join user in Db.Users on visits.SalesmanId equals user.EmployeeId
-            where user.Id == userId && visits.Date >= startFrom
-            select new VisitOrderInvoice
-            {
-                Id = vi.Id,
-                Code = vi.Code,
-                InvCode = vi.InvCode,
-                Collecting = vi.Collecting,
-                FailCollect = vi.FailCollect,
-                NotesFailCollect = vi.NotesFailCollect
+                    join visits in visitOrders on vi.Code equals visits.Code
+                    join user in Db.Users on visits.SalesmanId equals user.EmployeeId
+                    where user.Id == userId && visits.Date >= startFrom
+                    select new VisitOrderInvoice
+                    {
+                        Id = vi.Id,
+                        Code = vi.Code,
+                        InvCode = vi.InvCode,
+                        Collecting = vi.Collecting,
+                        FailCollect = vi.FailCollect,
+                        NotesFailCollect = vi.NotesFailCollect
 
-            });
+                    });
         return data;
     }
 
@@ -595,18 +595,18 @@ public class VisitOrderService : GeneralService<MobileVisitLog>, IVisitOrderServ
 
         var startFrom = DateTime.Today.AddMonths(-1);
         var data = (from vr in Db.MobileVisitReasons
-            join vl in Db.MobileVisitLogs on vr.VisitLogCode equals vl.Code
-            join visits in visitOrders on vl.VisitOrderCode equals visits.Code
-            join user in Db.Users on visits.SalesmanId equals user.EmployeeId
-            join rs in Db.MobileReasons on vr.VisitReasonId equals rs.Id
-            where user.Id == userId && visits.Date >= startFrom
-            select new VisitReasonModel
-            {
-                Id = vr.Id,
-                VisitLogCode = vr.VisitLogCode,
-                VisitReasonId = vr.VisitReasonId,
-                VisitReasonName = rs.Name
-            });
+                    join vl in Db.MobileVisitLogs on vr.VisitLogCode equals vl.Code
+                    join visits in visitOrders on vl.VisitOrderCode equals visits.Code
+                    join user in Db.Users on visits.SalesmanId equals user.EmployeeId
+                    join rs in Db.MobileReasons on vr.VisitReasonId equals rs.Id
+                    where user.Id == userId && visits.Date >= startFrom
+                    select new VisitReasonModel
+                    {
+                        Id = vr.Id,
+                        VisitLogCode = vr.VisitLogCode,
+                        VisitReasonId = vr.VisitReasonId,
+                        VisitReasonName = rs.Name
+                    });
         return data;
     }
 
@@ -645,10 +645,10 @@ public class VisitOrderService : GeneralService<MobileVisitLog>, IVisitOrderServ
             var cust = Db.MobileCustomers.Where(x => x.Code.Equals(data.CustCode)).FirstOrDefault();
             if (cust != null)
             {
-                custCode = cust.CustCode??cust.Code;
+                custCode = cust.CustCode ?? cust.Code;
             }
         }
-        
+
         var result = new SaveResult(false);
 
         using var transaction = Db.Database.BeginTransaction();
@@ -783,7 +783,7 @@ public class VisitOrderService : GeneralService<MobileVisitLog>, IVisitOrderServ
                             Name = discount.Name,
                             IsPercentage = discount.IsPercentage,
                             Value = discount.Value,
-                            Amount = discount.Amount
+                            Amount = discount.IsPercentage ? discount.Value / 100 * detail.UnitPrice : discount.Value
                         });
                     }
 
@@ -987,7 +987,7 @@ public class VisitOrderService : GeneralService<MobileVisitLog>, IVisitOrderServ
                             Name = discount.Name,
                             IsPercentage = discount.IsPercentage,
                             Value = discount.Value,
-                            Amount = discount.Amount
+                            Amount = discount.IsPercentage ? discount.Value / 100 * detail.UnitPrice : discount.Value
                         });
                     }
 
@@ -1056,56 +1056,56 @@ public class VisitOrderService : GeneralService<MobileVisitLog>, IVisitOrderServ
         var dataVisit = Db.MobileVisitLogs.Where(x => x.Date.Equals(date) && x.SalesmanId.Equals(salesId));
 
         var dataOriginal = (from dv in dataVisit
-            join cu in Db.VwCustomers on dv.CustCode equals cu.Code
-            select new VisitLogByDateModel
-            {
-                Code = dv.Code,
-                Date = dv.Date,
-                CustCode = dv.CustCode,
-                CustInitial = cu.Initial,
-                CustName = cu.Name,
-                StartTime = dv.StartTime,
-                EndTime = dv.EndTime,
-                Visited = dv.Visited,
-                Scheduled = dv.Scheduled,
-                UnscheduledVisitReasonId = dv.UnscheduledVisitReasonId,
-                AreaId1 = cu.AreaId1,
-                AreaId2 = cu.AreaId2,
-                AreaId3 = cu.AreaId3,
-                AreaId4 = cu.AreaId4,
-                AreaId5 = cu.AreaId5,
-                AreaName1 = cu.AreaName1,
-                AreaName2 = cu.AreaName2,
-                AreaName3 = cu.AreaName3,
-                AreaName4 = cu.AreaName4,
-                AreaName5 = cu.AreaName5,
-            });
+                            join cu in Db.VwCustomers on dv.CustCode equals cu.Code
+                            select new VisitLogByDateModel
+                            {
+                                Code = dv.Code,
+                                Date = dv.Date,
+                                CustCode = dv.CustCode,
+                                CustInitial = cu.Initial,
+                                CustName = cu.Name,
+                                StartTime = dv.StartTime,
+                                EndTime = dv.EndTime,
+                                Visited = dv.Visited,
+                                Scheduled = dv.Scheduled,
+                                UnscheduledVisitReasonId = dv.UnscheduledVisitReasonId,
+                                AreaId1 = cu.AreaId1,
+                                AreaId2 = cu.AreaId2,
+                                AreaId3 = cu.AreaId3,
+                                AreaId4 = cu.AreaId4,
+                                AreaId5 = cu.AreaId5,
+                                AreaName1 = cu.AreaName1,
+                                AreaName2 = cu.AreaName2,
+                                AreaName3 = cu.AreaName3,
+                                AreaName4 = cu.AreaName4,
+                                AreaName5 = cu.AreaName5,
+                            });
 
         var dataMobile = (from dv in dataVisit
-                    join cu in Db.VwMobileCustomers on dv.CustCode equals cu.Code
-                    select new VisitLogByDateModel
-                    {
-                        Code = dv.Code,
-                        Date = dv.Date,
-                        CustCode = dv.CustCode,
-                        CustInitial = cu.Initial,
-                        CustName = cu.Name,
-                        StartTime = dv.StartTime,
-                        EndTime = dv.EndTime,
-                        Visited = dv.Visited,
-                        Scheduled = dv.Scheduled,
-                        UnscheduledVisitReasonId = dv.UnscheduledVisitReasonId,
-                        AreaId1 = cu.AreaId1,
-                        AreaId2 = cu.AreaId2,
-                        AreaId3 = cu.AreaId3,
-                        AreaId4 = cu.AreaId4,
-                        AreaId5 = cu.AreaId5,
-                        AreaName1 = cu.AreaName1,
-                        AreaName2 = cu.AreaName2,
-                        AreaName3 = cu.AreaName3,
-                        AreaName4 = cu.AreaName4,
-                        AreaName5 = cu.AreaName5,
-                    });
+                          join cu in Db.VwMobileCustomers on dv.CustCode equals cu.Code
+                          select new VisitLogByDateModel
+                          {
+                              Code = dv.Code,
+                              Date = dv.Date,
+                              CustCode = dv.CustCode,
+                              CustInitial = cu.Initial,
+                              CustName = cu.Name,
+                              StartTime = dv.StartTime,
+                              EndTime = dv.EndTime,
+                              Visited = dv.Visited,
+                              Scheduled = dv.Scheduled,
+                              UnscheduledVisitReasonId = dv.UnscheduledVisitReasonId,
+                              AreaId1 = cu.AreaId1,
+                              AreaId2 = cu.AreaId2,
+                              AreaId3 = cu.AreaId3,
+                              AreaId4 = cu.AreaId4,
+                              AreaId5 = cu.AreaId5,
+                              AreaName1 = cu.AreaName1,
+                              AreaName2 = cu.AreaName2,
+                              AreaName3 = cu.AreaName3,
+                              AreaName4 = cu.AreaName4,
+                              AreaName5 = cu.AreaName5,
+                          });
 
         var data = dataOriginal.Union(dataMobile);
         return data;
@@ -1127,38 +1127,38 @@ public class VisitOrderService : GeneralService<MobileVisitLog>, IVisitOrderServ
     public VisitLogDetailModel GetDetailVisitLog(string code)
     {
         var data = (from vl in Db.VwMobileVisitLogs
-            join r1 in Db.MobileReasons on vl.UnscheduledVisitReasonId equals r1.Id into p1
-            from sub in p1.DefaultIfEmpty()
-            join r2 in Db.MobileReasons on vl.NoOrderReasonId equals r2.Id into p2
-            from sub2 in p2.DefaultIfEmpty()
-            join r3 in Db.MobileReasons on vl.NoVisitReasonId equals r3.Id into p3
-            from sub3 in p3.DefaultIfEmpty()
-            where vl.Code == code
-            select new VisitLogDetailModel
-            {
-                VisitOrderCode = vl.VisitOrderCode,
-                Date = vl.Date,
-                Code = vl.Code,
-                CustCode = vl.CustCode,
-                CustInitial = vl.CustomerInitial,
-                CustName = vl.CustomerName,
-                Scheduled = vl.Scheduled,
-                Visited = vl.Visited,
-                Lat = vl.Lat,
-                Lng = vl.Lng,
-                StartTime = vl.StartTime,
-                EndTime = vl.EndTime,
-                Total = vl.Total,
-                Image = vl.Image,
-                UnscheduledVisitReasonId = vl.UnscheduledVisitReasonId,
-                UnscheduledVisitReasonName = sub.Name,
-                NoOrderReasonId = vl.NoOrderReasonId,
-                NoOrderReasonName = sub2.Name,
-                NoVisitReasonId = vl.NoVisitReasonId,
-                NoVisitReasonName = sub3.Name,
-                OnGoing = false,
-                IsDraft = false
-            }).Single();
+                    join r1 in Db.MobileReasons on vl.UnscheduledVisitReasonId equals r1.Id into p1
+                    from sub in p1.DefaultIfEmpty()
+                    join r2 in Db.MobileReasons on vl.NoOrderReasonId equals r2.Id into p2
+                    from sub2 in p2.DefaultIfEmpty()
+                    join r3 in Db.MobileReasons on vl.NoVisitReasonId equals r3.Id into p3
+                    from sub3 in p3.DefaultIfEmpty()
+                    where vl.Code == code
+                    select new VisitLogDetailModel
+                    {
+                        VisitOrderCode = vl.VisitOrderCode,
+                        Date = vl.Date,
+                        Code = vl.Code,
+                        CustCode = vl.CustCode,
+                        CustInitial = vl.CustomerInitial,
+                        CustName = vl.CustomerName,
+                        Scheduled = vl.Scheduled,
+                        Visited = vl.Visited,
+                        Lat = vl.Lat,
+                        Lng = vl.Lng,
+                        StartTime = vl.StartTime,
+                        EndTime = vl.EndTime,
+                        Total = vl.Total,
+                        Image = vl.Image,
+                        UnscheduledVisitReasonId = vl.UnscheduledVisitReasonId,
+                        UnscheduledVisitReasonName = sub.Name,
+                        NoOrderReasonId = vl.NoOrderReasonId,
+                        NoOrderReasonName = sub2.Name,
+                        NoVisitReasonId = vl.NoVisitReasonId,
+                        NoVisitReasonName = sub3.Name,
+                        OnGoing = false,
+                        IsDraft = false
+                    }).Single();
 
         return data;
     }
@@ -1168,61 +1168,61 @@ public class VisitOrderService : GeneralService<MobileVisitLog>, IVisitOrderServ
         List<OrderDetailRequestModel> data = new();
 
         var details = (from od in Db.MobileOrderDetails
-            join it in Db.Items on od.ItemId equals it.Id
-            join unit in Db.UoMConversions on od.UnitId equals unit.Id
-            join tax in Db.Taxes on od.TaxId equals tax.Id into py
-            from sub in py.DefaultIfEmpty()
-            where od.Code == orderCode
-            select new OrderDetailModel
-            {
-                Id = od.Id,
-                Code = od.Code,
-                LineNo = od.LineNo,
-                ItemId = od.ItemId,
-                ItemName = it.Name,
-                UomId = od.UomId,
-                UnitId = od.UnitId,
-                UnitName = unit.UnitEquivalent,
-                Qty = od.Qty,
-                UnitPrice = od.UnitPrice,
-                Disc = od.Disc,
-                TaxId = od.TaxId,
-                TaxName = sub.Name,
-                TaxAmount = od.TaxAmount,
-                NettPrice = od.NettPrice,
-                Total = od.Total,
-                Dpp = od.Dpp
-            }).AsEnumerable();
+                       join it in Db.Items on od.ItemId equals it.Id
+                       join unit in Db.UoMConversions on od.UnitId equals unit.Id
+                       join tax in Db.Taxes on od.TaxId equals tax.Id into py
+                       from sub in py.DefaultIfEmpty()
+                       where od.Code == orderCode
+                       select new OrderDetailModel
+                       {
+                           Id = od.Id,
+                           Code = od.Code,
+                           LineNo = od.LineNo,
+                           ItemId = od.ItemId,
+                           ItemName = it.Name,
+                           UomId = od.UomId,
+                           UnitId = od.UnitId,
+                           UnitName = unit.UnitEquivalent,
+                           Qty = od.Qty,
+                           UnitPrice = od.UnitPrice,
+                           Disc = od.Disc,
+                           TaxId = od.TaxId,
+                           TaxName = sub.Name,
+                           TaxAmount = od.TaxAmount,
+                           NettPrice = od.NettPrice,
+                           Total = od.Total,
+                           Dpp = od.Dpp
+                       }).AsEnumerable();
 
         foreach (var detail in details)
         {
 
             var discounts = (from od in Db.MobileOrderDetailDiscounts
-                where od.OrderDetailId == detail.Id
-                select new PromoDiscountModel
-                {
-                    PromoCode = od.PromoCode,
-                    PromoDetailId = od.PromoDetailId,
-                    Name = od.Name,
-                    IsPercentage = od.IsPercentage,
-                    Value = od.Value,
-                    Amount = od.Amount,
-                });
+                             where od.OrderDetailId == detail.Id
+                             select new PromoDiscountModel
+                             {
+                                 PromoCode = od.PromoCode,
+                                 PromoDetailId = od.PromoDetailId,
+                                 Name = od.Name,
+                                 IsPercentage = od.IsPercentage,
+                                 Value = od.Value,
+                                 Amount = od.Amount,
+                             });
             var freeGoods = (from fg in Db.MobileOrderDetailFreeGoods
-                join it in Db.Items on fg.ItemId equals it.Id
-                join un in Db.UoMConversions on fg.UnitId equals un.Id
-                where fg.OrderDetailId == detail.Id
-                select new PromoFreeGoodsModel
-                {
-                    PromoCode = fg.PromoCode,
-                    ItemId = fg.ItemId,
-                    ItemName = it.Name,
-                    UomId = fg.UomId,
-                    UnitId = fg.UnitId,
-                    UnitName = un.UnitEquivalent,
-                    Qty = fg.Qty,
-                    UnitPrice = fg.UnitPrice
-                });
+                             join it in Db.Items on fg.ItemId equals it.Id
+                             join un in Db.UoMConversions on fg.UnitId equals un.Id
+                             where fg.OrderDetailId == detail.Id
+                             select new PromoFreeGoodsModel
+                             {
+                                 PromoCode = fg.PromoCode,
+                                 ItemId = fg.ItemId,
+                                 ItemName = it.Name,
+                                 UomId = fg.UomId,
+                                 UnitId = fg.UnitId,
+                                 UnitName = un.UnitEquivalent,
+                                 Qty = fg.Qty,
+                                 UnitPrice = fg.UnitPrice
+                             });
 
             data.Add(new OrderDetailRequestModel
             {
@@ -1253,35 +1253,35 @@ public class VisitOrderService : GeneralService<MobileVisitLog>, IVisitOrderServ
     public OrderHeaderModel GetOrderHeader(string visitLogCode)
     {
         var data = (from oh in Db.MobileOrderHeaders
-            join cu in Db.Customers on oh.CustCode equals cu.Code
-            join curr in Db.Currencies on oh.CurrCode equals curr.Code
-            join pt in Db.PaymentTerms on oh.PaymentTermId equals pt.Id into py
-            from sub in py.DefaultIfEmpty()
-            where oh.VisitLogCode == visitLogCode
-            select new OrderHeaderModel
-            {
-                Code = oh.Code,
-                Date = oh.Date,
-                VisitLogCode = oh.VisitLogCode,
-                SalesOrderCode = oh.SalesOrderCode,
-                Type = oh.Type,
-                CustCode = oh.CustCode,
-                CustName = cu.Name,
-                CurrCode = oh.CurrCode,
-                CurrName = curr.Name,
-                PaymentTermId = oh.PaymentTermId,
-                PaymentTermName = sub.Name,
-                PaidAmount = oh.PaidAmount,
-                TaxAmount = oh.TaxAmount,
-                Dpp = oh.Dpp,
-                Rate = oh.Rate,
-                FinalDisc = oh.FinalDisc,
-                FinalDiscPercent = oh.FinalDiscPercent,
-                IncludeTax = oh.IncludeTax,
-                SubTotal = oh.SubTotal,
-                Total = oh.Total,
-                UpdatedDate = oh.UpdatedDate
-            }).SingleOrDefault();
+                    join cu in Db.Customers on oh.CustCode equals cu.Code
+                    join curr in Db.Currencies on oh.CurrCode equals curr.Code
+                    join pt in Db.PaymentTerms on oh.PaymentTermId equals pt.Id into py
+                    from sub in py.DefaultIfEmpty()
+                    where oh.VisitLogCode == visitLogCode
+                    select new OrderHeaderModel
+                    {
+                        Code = oh.Code,
+                        Date = oh.Date,
+                        VisitLogCode = oh.VisitLogCode,
+                        SalesOrderCode = oh.SalesOrderCode,
+                        Type = oh.Type,
+                        CustCode = oh.CustCode,
+                        CustName = cu.Name,
+                        CurrCode = oh.CurrCode,
+                        CurrName = curr.Name,
+                        PaymentTermId = oh.PaymentTermId,
+                        PaymentTermName = sub.Name,
+                        PaidAmount = oh.PaidAmount,
+                        TaxAmount = oh.TaxAmount,
+                        Dpp = oh.Dpp,
+                        Rate = oh.Rate,
+                        FinalDisc = oh.FinalDisc,
+                        FinalDiscPercent = oh.FinalDiscPercent,
+                        IncludeTax = oh.IncludeTax,
+                        SubTotal = oh.SubTotal,
+                        Total = oh.Total,
+                        UpdatedDate = oh.UpdatedDate
+                    }).SingleOrDefault();
 
         return data;
     }
