@@ -104,11 +104,11 @@ public class SalesReturnService : GeneralService<SalesReturnHeader>, ISalesRetur
             }
 
             // Checking receive qty is excess or not
-            if (IsQtyExcess(data.WarehouseCode,data.DiffItemDetails, null))
-            {
-                result.Message = "Data pengembalian penjualan tidak bisa disimpan karena qty yg dikembalikan lebih besar dari qty yang tersedia.";
-                return result;
-            }
+            // if (IsQtyExcess(data.WarehouseCode,data.DiffItemDetails, null))
+            // {
+            //     result.Message = "Data pengembalian penjualan tidak bisa disimpan karena qty yg dikembalikan lebih besar dari qty yang tersedia.";
+            //     return result;
+            // }
 
             // Get new code
             var newCode = GetNewCode("SR_NUM_FMT", data.Date);
@@ -275,11 +275,11 @@ public class SalesReturnService : GeneralService<SalesReturnHeader>, ISalesRetur
             }
 
             // Checking receive qty is excess or not
-            if (IsQtyExcess(data.WarehouseCode ,data.DiffItemDetails, data.Code))
-            {
-                result.Message = "Data pengembalian penjualan tidak bisa diubah karena qty yg dikembalikan lebih besar dari qty yang tersedia.";
-                return result;
-            }
+            // if (IsQtyExcess(data.WarehouseCode ,data.DiffItemDetails, data.Code))
+            // {
+            //     result.Message = "Data pengembalian penjualan tidak bisa diubah karena qty yg dikembalikan lebih besar dari qty yang tersedia.";
+            //     return result;
+            // }
 
             //Restore stock mutation
             RestoreWarehouseQty(data.Code);
