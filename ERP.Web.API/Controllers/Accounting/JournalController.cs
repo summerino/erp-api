@@ -4,6 +4,7 @@ using ERP.Common;
 using ERP.Entity;
 using ERP.Web.API.Domain.Interfaces.Accounting;
 using ERP.Web.API.Domain.Interfaces.Auth;
+using ERP.Web.API.Domain.Services.Background;
 using ERP.Web.API.Model;
 using ERP.Web.API.Model.Accounting;
 
@@ -13,26 +14,26 @@ namespace ERP.Web.API.Controllers.Accounting;
 [ApiController]
 public class JournalController : ControllerBase
 {
+    private readonly IBackgroundTaskQueue _taskQueue;
     private readonly IJournalService _js;
     private readonly IClosingMonthService _cm;
     private readonly IClaimService _claim;
     private readonly IAuthService _auth;
-    private readonly IServiceScopeFactory _scopeFactory;
 
     private const int MenuId = (int)Menu.Posting;
 
-    public JournalController(IJournalService journal, IClosingMonthService cm,
-        IClaimService claim, IAuthService auth, IServiceScopeFactory scopeFactory)
+    public JournalController(IBackgroundTaskQueue taskQueue, IJournalService journal,
+        IClosingMonthService cm, IClaimService claim, IAuthService auth)
     {
+        _taskQueue = taskQueue;
         _js = journal;
         _cm = cm;
         _claim = claim;
         _auth = auth;
-        _scopeFactory = scopeFactory;
     }
 
     [HttpPost]
-    public IActionResult OnPost(JournalRequest data)
+    public async Task<IActionResult> OnPost(JournalRequest data)
     {
         if (!_auth.GetActions(MenuId, _claim.RoleId, new[] { Actions.Post }).Any())
             return Ok(new SaveResult(false, AppConstant.UnAuthMessage));
@@ -45,14 +46,19 @@ public class JournalController : ControllerBase
 
         var userId = _claim.UserId;
         var tenantId = _claim.TenantId;
+        
+        await _taskQueue.QueueBackgroundWorkItemAsync(async token =>
+        {
+            await _js.DoQueueWork(data, userId, tenantId, token);
+        });
 
         // Fire and forget
-        Task.Run(() =>
-        {
-            using var scope = _scopeFactory.CreateScope();
-            var repo = scope.ServiceProvider.GetRequiredService<IJournalService>();
-            repo.PostingJournal(data, userId, tenantId);
-        });
+        // Task.Run(() =>
+        // {
+        //     using var scope = _scopeFactory.CreateScope();
+        //     var repo = scope.ServiceProvider.GetRequiredService<IJournalService>();
+        //     repo.PostingJournal(data, userId, tenantId);
+        // });
 
         return Ok();
     }

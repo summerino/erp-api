@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using ERP.Common;
 using ERP.Entity;
 using ERP.Entity.Accounting;
 using ERP.Entity.AssetManagement;
@@ -13,23 +12,40 @@ namespace ERP.Web.API.Domain.Services.Accounting;
 
 public class JournalService : IJournalService
 {
-    private readonly CatalogContext _catalogCtx;
     private readonly TenantContext _ctx;
     private readonly IClaimService _claim;
+    private readonly IConfiguration _configuration;
+    private readonly ILogger<JournalService> _logger;
 
-    public JournalService(CatalogContext catalogCtx, TenantContext db, IClaimService claim)
+    public JournalService(TenantContext db, IClaimService claim,
+        IConfiguration configuration, ILogger<JournalService> logger)
     {
-        _catalogCtx = catalogCtx;
         _ctx = db;
         _claim = claim;
+        _configuration = configuration;
+        _logger = logger;
+    }
+    
+    public async ValueTask DoQueueWork(JournalRequest data, int userId, int tenantId,
+        CancellationToken cancellationToken)
+    {
+        _logger.LogInformation($"Posting Journal Queued Background Task {data.Date:yyyy-MM-dd} is starting.");
+
+        await PostingJournal(data, userId, tenantId, cancellationToken);
     }
 
-    public void PostingJournal(JournalRequest data, int userId, int tenantId)
+    private async Task PostingJournal(JournalRequest data, int userId, int tenantId,
+        CancellationToken cancellationToken)
     {
-        var result = new SaveResult(false);
-
+        // Re configure catalog context
+        var contextOptions = new DbContextOptionsBuilder<CatalogContext>()
+            .UseSqlServer(_configuration.GetConnectionString("CatalogConnection"))
+            .Options;
+        
+        await using var catalogCtx = new CatalogContext(contextOptions);
+        
         // Get tenant server information
-        var tenant = _catalogCtx.Tenants.Find(tenantId);
+        var tenant = await catalogCtx.Tenants.FindAsync(tenantId, cancellationToken);
         if (tenant == null)
         {
             throw new Exception("Tenant doesn't exists (called from JournalService).");
@@ -39,11 +55,11 @@ public class JournalService : IJournalService
         optionsBuilder.UseSqlServer(
             $"Server={tenant.ServerName};Database={tenant.DatabaseName};User Id={tenant.ServerUserId};Password={tenant.ServerPassword};MultipleActiveResultSets=True;TrustServerCertificate=True;Command Timeout=600;Application Name=ERP");
 
-        var tenantCtx = new TenantContext(optionsBuilder.Options, _catalogCtx, _claim);
+        await using var tenantCtx = new TenantContext(optionsBuilder.Options, catalogCtx, _claim);
 
-        var systemParam = tenantCtx.SystemParameters.AsNoTracking().ToList();
-        var items = tenantCtx.Items.AsNoTracking().ToList();
-        var taxes = tenantCtx.Taxes.AsNoTracking().ToList();
+        var systemParam = await tenantCtx.SystemParameters.AsNoTracking().ToListAsync(cancellationToken);
+        var items = await tenantCtx.Items.AsNoTracking().ToListAsync(cancellationToken);
+        var taxes = await tenantCtx.Taxes.AsNoTracking().ToListAsync(cancellationToken);
 
         try
         {
@@ -57,20 +73,21 @@ public class JournalService : IJournalService
                 Notes = ""
             };
 
-            tenantCtx.PostingStates.Add(stateData);
-            tenantCtx.SaveChanges();
+            await tenantCtx.PostingStates.AddAsync(stateData, cancellationToken);
+            await tenantCtx.SaveChangesAsync(cancellationToken);
 
-            tenantCtx.Database.ExecuteSqlRaw(
+            await tenantCtx.Database.ExecuteSqlRawAsync(
                 "DELETE Accounting.Journal WHERE YEAR([Date]) = {0} AND MONTH([Date]) = {1}",
                 data.Date.Year, data.Date.Month);
 
-            newCalculateHPP(tenantCtx, data.Date);
+            await NewCalculateHPPAsync(tenantCtx, data.Date, stateData, cancellationToken);
 
+            stateData.Notes = $"Done calculate HPP at {DateTime.Now:yyyy-MM-dd HH:mm:ss}.";
             if (data.Date < Convert.ToDateTime(systemParam.FirstOrDefault(x => x.Code == "DATA_START_DATE").Value))
             {
                 stateData.Step++; //2
                 tenantCtx.PostingStates.Update(stateData);
-                tenantCtx.SaveChanges();
+                await tenantCtx.SaveChangesAsync(cancellationToken);
 
                 var journalBBAP = ProcessBBAPJournal(tenantCtx, systemParam);
                 if (journalBBAP != null)
@@ -78,7 +95,7 @@ public class JournalService : IJournalService
 
                 stateData.Step++; //3
                 tenantCtx.PostingStates.Update(stateData);
-                tenantCtx.SaveChanges();
+                await tenantCtx.SaveChangesAsync(cancellationToken);
 
                 var journalBBAR = ProcessBBARJournal(tenantCtx, systemParam);
                 if (journalBBAR != null)
@@ -86,7 +103,7 @@ public class JournalService : IJournalService
 
                 stateData.Step++; //4
                 tenantCtx.PostingStates.Update(stateData);
-                tenantCtx.SaveChanges();
+                await tenantCtx.SaveChangesAsync(cancellationToken);
 
                 var journalBBDM = ProcessBBDebitMemoJournal(tenantCtx, systemParam);
                 if (journalBBDM != null)
@@ -94,7 +111,7 @@ public class JournalService : IJournalService
 
                 stateData.Step++; //5
                 tenantCtx.PostingStates.Update(stateData);
-                tenantCtx.SaveChanges();
+                await tenantCtx.SaveChangesAsync(cancellationToken);
 
                 var journalBBCM = ProcessBBCreditMemoJournal(tenantCtx, systemParam);
                 if (journalBBCM != null)
@@ -102,7 +119,7 @@ public class JournalService : IJournalService
 
                 stateData.Step++; //6
                 tenantCtx.PostingStates.Update(stateData);
-                tenantCtx.SaveChanges();
+                await tenantCtx.SaveChangesAsync(cancellationToken);
 
                 var journalINVT = ProcessBBInventoryJournal(tenantCtx, systemParam);
                 if (journalINVT != null)
@@ -111,7 +128,7 @@ public class JournalService : IJournalService
 
             stateData.Step++; //2 /7
             tenantCtx.PostingStates.Update(stateData);
-            tenantCtx.SaveChanges();
+            await tenantCtx.SaveChangesAsync(cancellationToken);
 
             var journalRCV = ProcessPurchaseRcvJournal(tenantCtx, data.Date, systemParam, items, taxes);
             if (journalRCV != null)
@@ -119,7 +136,7 @@ public class JournalService : IJournalService
 
             stateData.Step++; //3 /8
             tenantCtx.PostingStates.Update(stateData);
-            tenantCtx.SaveChanges();
+            await tenantCtx.SaveChangesAsync(cancellationToken);
 
             var journalPR = ProcessPurchaseReturnJournal(tenantCtx, data.Date, systemParam, items, taxes);
             if (journalPR != null)
@@ -127,7 +144,7 @@ public class JournalService : IJournalService
 
             stateData.Step++; //4 /9
             tenantCtx.PostingStates.Update(stateData);
-            tenantCtx.SaveChanges();
+            await tenantCtx.SaveChangesAsync(cancellationToken);
 
             var journalPI = ProcessPurchaseInvJournal(tenantCtx, data.Date, systemParam, items, taxes);
             if (journalPI != null)
@@ -135,7 +152,7 @@ public class JournalService : IJournalService
 
             stateData.Step++; //5 /10
             tenantCtx.PostingStates.Update(stateData);
-            tenantCtx.SaveChanges();
+            await tenantCtx.SaveChangesAsync(cancellationToken);
 
             var journalDO = ProcessSaleDlvJournal(tenantCtx, data.Date, systemParam, items, taxes);
             if (journalDO != null)
@@ -143,7 +160,7 @@ public class JournalService : IJournalService
 
             stateData.Step++; //6 /11
             tenantCtx.PostingStates.Update(stateData);
-            tenantCtx.SaveChanges();
+            await tenantCtx.SaveChangesAsync(cancellationToken);
 
             var journalSI = ProcessSaleInvJournal(tenantCtx, data.Date, systemParam, items, taxes, journalDO);
             if (journalSI != null)
@@ -151,7 +168,7 @@ public class JournalService : IJournalService
 
             stateData.Step++; //7 /12
             tenantCtx.PostingStates.Update(stateData);
-            tenantCtx.SaveChanges();
+            await tenantCtx.SaveChangesAsync(cancellationToken);
 
             var journalSR = ProcessSalesReturnJournal(tenantCtx, data.Date, systemParam, items, taxes);
             if (journalSR != null)
@@ -159,7 +176,7 @@ public class JournalService : IJournalService
 
             stateData.Step++; //8 /13
             tenantCtx.PostingStates.Update(stateData);
-            tenantCtx.SaveChanges();
+            await tenantCtx.SaveChangesAsync(cancellationToken);
 
             var journalCB = ProcessCashBankJournal(tenantCtx, data.Date, systemParam);
             if (journalCB != null)
@@ -167,7 +184,7 @@ public class JournalService : IJournalService
 
             stateData.Step++; //9 /14
             tenantCtx.PostingStates.Update(stateData);
-            tenantCtx.SaveChanges();
+            await tenantCtx.SaveChangesAsync(cancellationToken);
 
             var journalEXP = ProcessExpeditionJournal(tenantCtx, data.Date, systemParam);
             if (journalEXP != null)
@@ -175,7 +192,7 @@ public class JournalService : IJournalService
 
             stateData.Step++; //10 /15
             tenantCtx.PostingStates.Update(stateData);
-            tenantCtx.SaveChanges();
+            await tenantCtx.SaveChangesAsync(cancellationToken);
 
             var journalFA = ProcessFixedAssetJournal(tenantCtx, data.Date, systemParam);
             if (journalFA != null)
@@ -183,7 +200,7 @@ public class JournalService : IJournalService
 
             stateData.Step++; //11 /16
             tenantCtx.PostingStates.Update(stateData);
-            tenantCtx.SaveChanges();
+            await tenantCtx.SaveChangesAsync(cancellationToken);
 
             var journalDFA = ProcessDepreciationFixedAssetJournal(tenantCtx, data.Date, systemParam);
             if (journalDFA != null)
@@ -191,7 +208,7 @@ public class JournalService : IJournalService
 
             stateData.Step++; //12 /17
             tenantCtx.PostingStates.Update(stateData);
-            tenantCtx.SaveChanges();
+            await tenantCtx.SaveChangesAsync(cancellationToken);
 
             //var journalEYAS = ProcessEndYearAssetJournal(data.Date, systemParam, journalDFA);
             //if (journalEYAS != null)
@@ -203,7 +220,7 @@ public class JournalService : IJournalService
 
             stateData.Step++; //13 /18
             tenantCtx.PostingStates.Update(stateData);
-            tenantCtx.SaveChanges();
+            await tenantCtx.SaveChangesAsync(cancellationToken);
 
             var journalGJ = ProcessGeneralJournal(tenantCtx, data.Date);
             if (journalGJ != null)
@@ -211,7 +228,7 @@ public class JournalService : IJournalService
 
             stateData.Step++; //14 /19
             tenantCtx.PostingStates.Update(stateData);
-            tenantCtx.SaveChanges();
+            await tenantCtx.SaveChangesAsync(cancellationToken);
 
             var journalTS = ProcessTransferStockJournal(tenantCtx, data.Date, systemParam);
             if (journalTS != null)
@@ -219,7 +236,7 @@ public class JournalService : IJournalService
 
             stateData.Step++; //15 /20
             tenantCtx.PostingStates.Update(stateData);
-            tenantCtx.SaveChanges();
+            await tenantCtx.SaveChangesAsync(cancellationToken);
 
             var journalSDP = ProcessSalesDownPaymentJournal(tenantCtx, systemParam);
             if (journalSDP != null)
@@ -229,7 +246,7 @@ public class JournalService : IJournalService
             {
                 stateData.Step++; //16 /21
                 tenantCtx.PostingStates.Update(stateData);
-                tenantCtx.SaveChanges();
+                await tenantCtx.SaveChangesAsync(cancellationToken);
 
                 tenantCtx.Database.ExecuteSqlRaw(
                     "DELETE Accounting.Journal WHERE Code = {0}",
@@ -237,14 +254,14 @@ public class JournalService : IJournalService
 
                 stateData.Step++; //17 /22
                 tenantCtx.PostingStates.Update(stateData);
-                tenantCtx.SaveChanges();
+                await tenantCtx.SaveChangesAsync(cancellationToken);
 
                 ProcessEndYearJournal(tenantCtx, data.Date);
             }
 
             stateData.Step++; //16 /23 /21
             tenantCtx.PostingStates.Update(stateData);
-            tenantCtx.SaveChanges();
+            await tenantCtx.SaveChangesAsync(cancellationToken);
 
             //Update posting log
             var plData = tenantCtx.PostingLogs.FirstOrDefault(x => x.Period == data.Date.ToString("yyyyMM"));
@@ -267,9 +284,10 @@ public class JournalService : IJournalService
             }
 
             stateData.Status = "FINISH";
+            stateData.Notes = $"Finish Time at {DateTime.Now:yyyy-MM-dd HH:mm:ss}.";
             tenantCtx.PostingStates.Update(stateData);
 
-            tenantCtx.SaveChanges();
+            await tenantCtx.SaveChangesAsync(cancellationToken);
         }
         catch (Exception ex)
         {
@@ -277,7 +295,7 @@ public class JournalService : IJournalService
             stateData.Status = "FAILED";
             stateData.Notes = ex.InnerException?.Message ?? ex.Message;
             tenantCtx.PostingStates.Update(stateData);
-            tenantCtx.SaveChanges();
+            await tenantCtx.SaveChangesAsync(cancellationToken);
         }
     }
 
@@ -4118,23 +4136,30 @@ public class JournalService : IJournalService
         return true;
     }
 
-    private void newCalculateHPP(TenantContext db, DateTime date)
+    private async Task NewCalculateHPPAsync(TenantContext db, DateTime date, PostingState stateData,
+        CancellationToken cancellationToken)
     {
         var postingDate = new DateTime(date.Year, date.Month, 1).AddMonths(1);
 
-        var doData = db.SalesDeliveryHeaders.AsNoTracking().Where(x => x.Date < postingDate && x.Mark != "V").ToList();
+        var doData = await db.SalesDeliveryHeaders.AsNoTracking().Where(x => x.Date < postingDate && x.Mark != "V").ToListAsync(cancellationToken: cancellationToken);
 
-        var srData = db.SalesReturnHeaders.AsNoTracking().Where(x => x.Date < postingDate && x.Mark != "V").ToList();
+        var srData = await db.SalesReturnHeaders.AsNoTracking().Where(x => x.Date < postingDate && x.Mark != "V").ToListAsync(cancellationToken: cancellationToken);
 
-        var rcvData = db.PurchaseReceiveHeaders.AsNoTracking().Where(x => x.Date < postingDate && x.Mark != "V").ToList();
+        var rcvData = await db.PurchaseReceiveHeaders.AsNoTracking().Where(x => x.Date < postingDate && x.Mark != "V").ToListAsync(cancellationToken: cancellationToken);
 
-        var tsData = db.TransferStockHeaders.AsNoTracking().Where(x => x.Date < postingDate && x.Mark != "V").ToList();
+        var tsData = await db.TransferStockHeaders.AsNoTracking().Where(x => x.Date < postingDate && x.Mark != "V").ToListAsync(cancellationToken: cancellationToken);
 
-        var prData = db.PurchaseReturnHeaders.AsNoTracking().Where(x => x.Date < postingDate && x.Mark != "V").ToList();
+        var prData = await db.PurchaseReturnHeaders.AsNoTracking().Where(x => x.Date < postingDate && x.Mark != "V").ToListAsync(cancellationToken: cancellationToken);
 
-        var curMonthItem =  db.StockMutations.AsNoTracking().Where(x => x.Date >= postingDate.AddMonths(-1) && x.Date < postingDate).GroupBy(x => x.ItemId).Select(x => x.First()).ToList();
+        var curMonthItem =  await db.StockMutations.AsNoTracking().Where(x => x.Date >= postingDate.AddMonths(-1) && x.Date < postingDate).GroupBy(x => x.ItemId).Select(x => x.First()).ToListAsync(cancellationToken);
 
-        foreach (var curItem in curMonthItem)
+        // Update posting state notes 
+        stateData.Notes = $"Calculate HPP {curMonthItem.Count} items.";
+        db.PostingStates.Update(stateData);
+        await db.SaveChangesAsync(cancellationToken);
+        _logger.LogInformation(stateData.Notes);
+        
+        foreach (var curItem in curMonthItem.AsParallel().WithCancellation(cancellationToken))
         {
             DateTime latestDate = new();
             decimal latestQty = 0;
@@ -4155,7 +4180,7 @@ public class JournalService : IJournalService
 				ELSE 6
 				END, sm.Id";
 
-            var listSM = db.StockMutations.FromSqlRaw(@"SELECT sm.*
+            var listSM = await db.StockMutations.FromSqlRaw(@"SELECT sm.*
 			FROM Inventory.StockMutation sm
 			LEFT JOIN Inventory.Item im on im.Id = sm.ItemId
 			LEFT JOIN Sales.SalesDeliveryHeader do ON do.Code = sm.RefCode1
@@ -4173,10 +4198,17 @@ public class JournalService : IJournalService
             SELECT Code FROM Purchasing.PurchaseReturnHeader WHERE Mark = 'V' AND [Date] < '{postingDate}'
             UNION
             SELECT Code FROM Sales.SalesReturnHeader WHERE Mark = 'V' AND [Date] < '{postingDate}')" +
-            $" AND sm.ItemId = {curItem.ItemId} AND sm.Date < '{postingDate}'" + orderQuery).ToList();
+            $" AND sm.ItemId = {curItem.ItemId} AND sm.Date < '{postingDate}'" + orderQuery).ToListAsync(cancellationToken);
 
             //latestDate = listSM.First().Date;
-
+            
+            // Update posting state notes 
+            stateData.Notes = $"Calculate HPP item: {curItem.ItemId}.";
+            db.PostingStates.Update(stateData);
+            await db.SaveChangesAsync(cancellationToken);
+            _logger.LogInformation(stateData.Notes);
+            
+            // Calculate HPP
             foreach (var item in listSM)
             {
                 if (item.Qty == 0 || item.BaseQty == 0)
@@ -4286,7 +4318,8 @@ public class JournalService : IJournalService
                 latestDate = item.Date;
             }
 
-            db.SaveChanges();
+            // Save HPP to DB
+            await db.SaveChangesAsync(cancellationToken);
         }
     }
 }

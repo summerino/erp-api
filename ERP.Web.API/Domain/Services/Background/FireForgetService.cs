@@ -1,7 +1,11 @@
-﻿using ERP.Web.API.Domain.Interfaces;
-using ERP.Web.API.Domain.Interfaces.Accounting;
+﻿using ERP.Web.API.Domain.Interfaces.Accounting;
 
-namespace ERP.Web.API.Domain.Services;
+namespace ERP.Web.API.Domain.Services.Background;
+
+public interface IFireForgetService
+{
+    void Execute(Func<IJournalService, Task> DoWork);
+}
 
 public class FireForgetService : IFireForgetService
 {

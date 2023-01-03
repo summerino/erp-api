@@ -5,7 +5,9 @@ namespace ERP.Web.API.Domain.Interfaces.Accounting;
 
 public interface IJournalService
 {
-    void PostingJournal(JournalRequest data, int userId, int tenantId);
+    ValueTask DoQueueWork(JournalRequest data, int userId, int tenantId, CancellationToken cancellationToken);
+    
+    // void PostingJournal(JournalRequest data, int userId, int tenantId, CancellationToken cancellationToken);
 
     IEnumerable<PostingLog> GetPostingHistory(JournalRequest data);
 

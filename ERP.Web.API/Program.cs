@@ -33,6 +33,7 @@ using ERP.Web.API.Domain.Services;
 using ERP.Web.API.Domain.Services.Accounting;
 using ERP.Web.API.Domain.Services.AssetManagement;
 using ERP.Web.API.Domain.Services.Auth;
+using ERP.Web.API.Domain.Services.Background;
 using ERP.Web.API.Domain.Services.Catalog;
 using ERP.Web.API.Domain.Services.Expedition;
 using ERP.Web.API.Domain.Services.Finance;
@@ -162,6 +163,15 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IMobileAuthService, MobileAuthService>();
 builder.Services.AddScoped<IFireForgetService, FireForgetService>();
 builder.Services.AddScoped<ILocalReportService, LocalReportService>();
+
+// Background services
+builder.Services.AddHostedService<QueuedHostedService>();
+builder.Services.AddSingleton<IBackgroundTaskQueue>(ctx =>
+{
+    if (!int.TryParse(builder.Configuration["QueueCapacity"], out var queueCapacity))
+        queueCapacity = 100;
+    return new BackgroundTaskQueue(queueCapacity);
+});
 
 // Accounting services
 builder.Services.AddScoped<IBeginningBalanceAccountPayableService, BeginningBalanceAccountPayableService>();
