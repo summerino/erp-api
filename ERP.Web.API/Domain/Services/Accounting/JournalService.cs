@@ -4159,7 +4159,7 @@ public class JournalService : IJournalService
         await db.SaveChangesAsync(cancellationToken);
         _logger.LogInformation(stateData.Notes);
         
-        foreach (var curItem in curMonthItem.AsParallel().WithCancellation(cancellationToken))
+        foreach (var curItem in curMonthItem)
         {
             DateTime latestDate = new();
             decimal latestQty = 0;
