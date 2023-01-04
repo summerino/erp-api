@@ -4154,12 +4154,13 @@ public class JournalService : IJournalService
         var curMonthItem =  await db.StockMutations.AsNoTracking().Where(x => x.Date >= postingDate.AddMonths(-1) && x.Date < postingDate).GroupBy(x => x.ItemId).Select(x => x.First()).ToListAsync(cancellationToken);
 
         // Update posting state notes 
-        stateData.Notes = $"Calculate HPP {curMonthItem.Count} items.";
+        var countMonthItem = curMonthItem.Count;
+        stateData.Notes = $"Calculate HPP {countMonthItem} items.";
         // db.PostingStates.Update(stateData);
         await db.SaveChangesAsync(cancellationToken);
         _logger.LogInformation(stateData.Notes);
         
-        foreach (var curItem in curMonthItem)
+        foreach (var (curItem, curIdx) in curMonthItem.Select((item, index) => (item, index)))
         {
             DateTime latestDate = new();
             decimal latestQty = 0;
@@ -4205,7 +4206,7 @@ public class JournalService : IJournalService
             //latestDate = listSM.First().Date;
             
             // Update posting state notes 
-            stateData.Notes = $"Calculate HPP item: {curItem.ItemId}.";
+            stateData.Notes = $"Calculate HPP item of {curIdx} {countMonthItem} : {curItem.ItemId}.";
             // db.PostingStates.Update(stateData);
             await db.SaveChangesAsync(cancellationToken);
             _logger.LogInformation(stateData.Notes);
