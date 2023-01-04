@@ -4206,7 +4206,7 @@ public class JournalService : IJournalService
             //latestDate = listSM.First().Date;
             
             // Update posting state notes 
-            stateData.Notes = $"Calculate HPP item of {curIdx} {countMonthItem} : {curItem.ItemId}.";
+            stateData.Notes = $"Calculate HPP item {curIdx} of {countMonthItem}, ItemId: {curItem.ItemId}.";
             // db.PostingStates.Update(stateData);
             await db.SaveChangesAsync(cancellationToken);
             _logger.LogInformation(stateData.Notes);
@@ -4214,6 +4214,8 @@ public class JournalService : IJournalService
             // Calculate HPP
             foreach (var item in listSM)
             {
+                _logger.LogInformation($"StockMutation Id: {item.Id}, Date: {item.Date:yyyy-MM-dd}");
+                
                 if (item.Qty == 0 || item.BaseQty == 0)
                     continue;
 
