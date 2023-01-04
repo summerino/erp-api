@@ -154,6 +154,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
 
             short i = 0;
             List<SalesOrderDetailFreeGood> bonusPromoMulti = new();
+            var sumDetail = data.ItemDetails.Sum(x => x.UnitPrice * x.Qty);
             var dummyDetails = data.ItemDetails.ToList();
             var qtyOriginal = new Dictionary<long, decimal>();
             foreach (var itemDummy in dummyDetails)
@@ -490,16 +491,15 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
 
                 var taxData = taxes.FirstOrDefault(x => x.Id == item.TaxId);
                 var discHeaderProrate = 0m;
-                var sumDetail = data.ItemDetails.Sum(x => (x.UnitPrice - x.Disc) * x.Qty);
                 if (data.FinalDiscPercent > 0)
                 {
                     var amountPercent = sumDetail * (data.FinalDiscPercent / 100);
-                    discHeaderProrate = amountPercent / sumDetail * (item.Qty * (item.UnitPrice - item.Disc));
+                    discHeaderProrate = amountPercent / sumDetail * (item.Qty * item.UnitPrice);
                     discHeaderProrate /= item.Qty;
                 }
                 else if (data.FinalDisc > 0)
                 {
-                    discHeaderProrate = data.FinalDisc / sumDetail * (item.Qty * (item.UnitPrice - item.Disc));
+                    discHeaderProrate = data.FinalDisc / sumDetail * (item.Qty * item.UnitPrice);
                     discHeaderProrate /= item.Qty;
                 }
 
@@ -744,16 +744,15 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
 
                     var taxData = taxes.FirstOrDefault(x => x.Id == item.TaxId);
                     var discHeaderProrate = 0m;
-                    var sumDetail = data.ItemDetails.Sum(x => (x.UnitPrice - x.Disc) * x.Qty);
                     if (data.FinalDiscPercent > 0)
                     {
                         var amountPercent = sumDetail * (data.FinalDiscPercent / 100);
-                        discHeaderProrate = amountPercent / sumDetail * (item.Qty * (item.UnitPrice - item.Disc));
+                        discHeaderProrate = amountPercent / sumDetail * (item.Qty * item.UnitPrice);
                         discHeaderProrate /= item.Qty;
                     }
                     else if (data.FinalDisc > 0)
                     {
-                        discHeaderProrate = data.FinalDisc / sumDetail * (item.Qty * (item.UnitPrice - item.Disc));
+                        discHeaderProrate = data.FinalDisc / sumDetail * (item.Qty * item.UnitPrice);
                         discHeaderProrate /= item.Qty;
                     }
 
@@ -1208,6 +1207,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
 
             short i = 0;
             List<SalesOrderDetailFreeGood> bonusPromoMulti = new();
+            var sumDetail = data.ItemDetails.Sum(x => x.UnitPrice * x.Qty);
             var dummyDetails = data.ItemDetails.ToList();
             var qtyOriginal = new Dictionary<long, decimal>();
             foreach (var itemDummy in dummyDetails)
@@ -1234,7 +1234,6 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
             Db.SalesOrderPromos.RemoveRange(delPromo);
 
             List<SalesOrderPromo> soPromo = new();
-
             foreach (var item in data.ItemDetails)
             {
                 //Promo
@@ -1563,16 +1562,15 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
 
                 var taxData = taxes.FirstOrDefault(x => x.Id == item.TaxId);
                 var discHeaderProrate = 0m;
-                var sumDetail = data.ItemDetails.Sum(x => (x.UnitPrice - x.Disc) * x.Qty);
                 if (data.FinalDiscPercent > 0)
                 {
                     var amountPercent = sumDetail * (data.FinalDiscPercent / 100);
-                    discHeaderProrate = amountPercent / sumDetail * (item.Qty * (item.UnitPrice - item.Disc));
+                    discHeaderProrate = amountPercent / sumDetail * (item.Qty * item.UnitPrice);
                     discHeaderProrate /= item.Qty;
                 }
                 else if (data.FinalDisc > 0)
                 {
-                    discHeaderProrate = data.FinalDisc / sumDetail * (item.Qty * (item.UnitPrice - item.Disc));
+                    discHeaderProrate = data.FinalDisc / sumDetail * (item.Qty * item.UnitPrice);
                     discHeaderProrate /= item.Qty;
                 }
 
@@ -2013,16 +2011,15 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
 
                     var taxData = taxes.FirstOrDefault(x => x.Id == item.TaxId);
                     var discHeaderProrate = 0m;
-                    var sumDetail = data.ItemDetails.Sum(x => (x.UnitPrice - x.Disc) * x.Qty);
                     if (data.FinalDiscPercent > 0)
                     {
                         var amountPercent = sumDetail * (data.FinalDiscPercent / 100);
-                        discHeaderProrate = amountPercent / sumDetail * (item.Qty * (item.UnitPrice - item.Disc));
+                        discHeaderProrate = amountPercent / sumDetail * (item.Qty * item.UnitPrice);
                         discHeaderProrate /= item.Qty;
                     }
                     else if (data.FinalDisc > 0)
                     {
-                        discHeaderProrate = data.FinalDisc / sumDetail * (item.Qty * (item.UnitPrice - item.Disc));
+                        discHeaderProrate = data.FinalDisc / sumDetail * (item.Qty * item.UnitPrice);
                         discHeaderProrate /= item.Qty;
                     }
 
@@ -2642,12 +2639,12 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
     private void RestoreCreditUsed(string transCode, string custCode)
     {
         var prevAmount = Db.SalesOrderHeaders.AsNoTracking().FirstOrDefault(x => x.Code.Equals(transCode))?.Total;
-        string query = $"update General.Customer set CreditUsed= (CreditUsed - {prevAmount}) where code = '{custCode}'";
+        string query = $"update General.Customer set CreditUsed= (CreditUsed - CONVERT(decimal,REPLACE('{prevAmount}', ',','.'))) where code = '{custCode}'";
         Db.Database.ExecuteSqlRaw(query);
     }
     private void UpdateCreditUsed(string custCode, decimal total)
     {
-        string query = $"update General.Customer set CreditUsed= (CreditUsed + {total}) where code = '{custCode}'";
+        string query = $"update General.Customer set CreditUsed= (CreditUsed + CONVERT(decimal,REPLACE('{total}', ',','.'))) where code = '{custCode}'";
         Db.Database.ExecuteSqlRaw(query);
     }
     #endregion
