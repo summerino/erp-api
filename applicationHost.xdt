@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<configuration xmlns:xdt="http://schemas.microsoft.com/XML-Document-Transform">
+  <system.applicationHost>
+    <applicationPools>
+      <add name="%XDT_SITENAME%" xdt:Locator="Match(name)" xdt:Transform="SetAttributes(startMode)" startMode="AlwaysRunning">
+        <recycling disallowOverlappingRotation="true" xdt:Transform="InsertIfMissing">
+            <periodicRestart time="00:00:00" xdt:Transform="InsertIfMissing">
+                <schedule xdt:Transform="InsertIfMissing">
+                    <clear xdt:Transform="InsertIfMissing" />
+                    <add value="05:00:00" xdt:Transform="InsertIfMissing" />
+                    <add value="12:00:00" xdt:Transform="InsertIfMissing" />
+                    <add value="18:00:00" xdt:Transform="InsertIfMissing" />
+                </schedule>
+            </periodicRestart>
+        </recycling>
+        <processModel idleTimeout="00:00:00" xdt:Transform="SetAttributes(idleTimeout)" />
+      </add>
+      <!--<add name="~1apnm-api" xdt:Locator="Match(name)">
+        <recycling disallowOverlappingRotation="true" xdt:Transform="Insert">
+            <periodicRestart time="00:00:00" xdt:Transform="Insert">
+                <schedule xdt:Transform="Insert">
+                    <clear xdt:Transform="Insert" />
+                    <add value="05:00:00" xdt:Transform="Insert" />
+                    <add value="12:00:00" xdt:Transform="Insert" />
+                    <add value="18:00:00" xdt:Transform="Insert" />
+                </schedule>
+            </periodicRestart>
+        </recycling>
+      </add>-->
+    </applicationPools>
+  </system.applicationHost>
+</configuration>
