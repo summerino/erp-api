@@ -4180,7 +4180,7 @@ public class JournalService : IJournalService
 				ELSE 6
 				END, sm.Id";
 
-            var listSM = await db.StockMutations.FromSqlRaw(@"SELECT sm.*
+            var listSM = await db.StockMutations.FromSqlRaw(@$"SELECT sm.*
 			    FROM Inventory.StockMutation sm
 			    LEFT JOIN Inventory.Item im on im.Id = sm.ItemId
 			    LEFT JOIN Sales.SalesDeliveryHeader do ON do.Code = sm.RefCode1
