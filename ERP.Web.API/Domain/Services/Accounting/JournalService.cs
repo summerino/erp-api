@@ -4155,7 +4155,7 @@ public class JournalService : IJournalService
 
         // Update posting state notes 
         stateData.Notes = $"Calculate HPP {curMonthItem.Count} items.";
-        db.PostingStates.Update(stateData);
+        // db.PostingStates.Update(stateData);
         await db.SaveChangesAsync(cancellationToken);
         _logger.LogInformation(stateData.Notes);
         
@@ -4166,7 +4166,7 @@ public class JournalService : IJournalService
             decimal latestStockValue = 0;
             decimal hpp = 0;
 
-            var orderQuery = @" ORDER BY sm.Date, CASE
+            var orderQuery = @"ORDER BY sm.Date, CASE
 				WHEN sm.Src = 'BB' THEN 1
 				WHEN sm.Src = 'RCV' AND rcv.SrcTrans = 1 THEN 2
 				WHEN sm.Src = 'RCV' AND rcv.SrcTrans = 2 THEN 3
@@ -4181,30 +4181,32 @@ public class JournalService : IJournalService
 				END, sm.Id";
 
             var listSM = await db.StockMutations.FromSqlRaw(@"SELECT sm.*
-			FROM Inventory.StockMutation sm
-			LEFT JOIN Inventory.Item im on im.Id = sm.ItemId
-			LEFT JOIN Sales.SalesDeliveryHeader do ON do.Code = sm.RefCode1
-			LEFT JOIN Sales.SalesReturnHeader sr ON sr.Code = do.TransCode
-            LEFT JOIN Purchasing.PurchaseReceiveHeader rcv ON rcv.Code = sm.RefCode1
-			WHERE sm.Src IN ('RCV','DO','TS','ADJ','BB','PR','CNEE','DOF','SR') AND sm.[Type] = 'OH' " +
-            $@" AND sm.RefCode1 NOT IN (SELECT Code FROM Purchasing.PurchaseReceiveHeader WHERE Mark = 'V' AND [Date] < '{postingDate}'
-            UNION
-            SELECT Code FROM Sales.SalesDeliveryHeader WHERE Mark = 'V' AND [Date] < '{postingDate}'
-            UNION
-            SELECT Code FROM Inventory.AdjustmentHeader WHERE Mark = 'V' AND [Date] < '{postingDate}'
-            UNION
-            SELECT Code FROM Inventory.TransferStockHeader WHERE Mark = 'V' AND [Date] < '{postingDate}'
-            UNION
-            SELECT Code FROM Purchasing.PurchaseReturnHeader WHERE Mark = 'V' AND [Date] < '{postingDate}'
-            UNION
-            SELECT Code FROM Sales.SalesReturnHeader WHERE Mark = 'V' AND [Date] < '{postingDate}')" +
-            $" AND sm.ItemId = {curItem.ItemId} AND sm.Date < '{postingDate}'" + orderQuery).ToListAsync(cancellationToken);
+			    FROM Inventory.StockMutation sm
+			    LEFT JOIN Inventory.Item im on im.Id = sm.ItemId
+			    LEFT JOIN Sales.SalesDeliveryHeader do ON do.Code = sm.RefCode1
+			    LEFT JOIN Sales.SalesReturnHeader sr ON sr.Code = do.TransCode
+                LEFT JOIN Purchasing.PurchaseReceiveHeader rcv ON rcv.Code = sm.RefCode1
+			    WHERE sm.Src IN ('RCV','DO','TS','ADJ','BB','PR','CNEE','DOF','SR') AND sm.[Type] = 'OH' 
+                AND sm.RefCode1 NOT IN (
+                    SELECT Code FROM Purchasing.PurchaseReceiveHeader WHERE Mark = 'V' AND [Date] < '{postingDate}'
+                    UNION
+                    SELECT Code FROM Sales.SalesDeliveryHeader WHERE Mark = 'V' AND [Date] < '{postingDate}'
+                    UNION
+                    SELECT Code FROM Inventory.AdjustmentHeader WHERE Mark = 'V' AND [Date] < '{postingDate}'
+                    UNION
+                    SELECT Code FROM Inventory.TransferStockHeader WHERE Mark = 'V' AND [Date] < '{postingDate}'
+                    UNION
+                    SELECT Code FROM Purchasing.PurchaseReturnHeader WHERE Mark = 'V' AND [Date] < '{postingDate}'
+                    UNION
+                    SELECT Code FROM Sales.SalesReturnHeader WHERE Mark = 'V' AND [Date] < '{postingDate}')
+                AND sm.ItemId = {curItem.ItemId} AND sm.Date < '{postingDate}'
+                {orderQuery}").ToListAsync(cancellationToken);
 
             //latestDate = listSM.First().Date;
             
             // Update posting state notes 
             stateData.Notes = $"Calculate HPP item: {curItem.ItemId}.";
-            db.PostingStates.Update(stateData);
+            // db.PostingStates.Update(stateData);
             await db.SaveChangesAsync(cancellationToken);
             _logger.LogInformation(stateData.Notes);
             
@@ -4226,7 +4228,7 @@ public class JournalService : IJournalService
                         item.NettPrice = listSM.FirstOrDefault(x => x.RefCode1 == item.RefCode2)?.NettPrice ?? 0m;
                         latestStockValue += item.BaseNettPrice * item.BaseQty;
                         latestQty += item.BaseQty;
-                        db.StockMutations.Update(item);
+                        // db.StockMutations.Update(item);
                     }
                     else
                     {
@@ -4278,7 +4280,7 @@ public class JournalService : IJournalService
 
                     latestStockValue += item.BaseNettPrice * item.BaseQty;
                     latestQty += item.BaseQty;
-                    db.StockMutations.Update(item);
+                    // db.StockMutations.Update(item);
                 }
                 else
                 {
@@ -4295,7 +4297,7 @@ public class JournalService : IJournalService
                         item.NettPrice = listSM.FirstOrDefault(x => x.RefCode1 == item.RefCode2)?.NettPrice ?? 0m;
                         latestStockValue -= item.BaseNettPrice * item.BaseQty;
                         latestQty -= item.BaseQty;
-                        db.StockMutations.Update(item);
+                        // db.StockMutations.Update(item);
                     }
                     else
                     {
@@ -4311,15 +4313,40 @@ public class JournalService : IJournalService
                         }
                         latestStockValue -= item.BaseNettPrice * item.BaseQty;
                         latestQty -= item.BaseQty;
-                        db.StockMutations.Update(item);
+                        // db.StockMutations.Update(item);
                     }
                 }
 
                 latestDate = item.Date;
             }
 
-            // Save HPP to DB
-            await db.SaveChangesAsync(cancellationToken);
+            var saved = false;
+            try
+            {
+                // Save HPP to DB
+                await db.SaveChangesAsync(cancellationToken);
+                saved = true;
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                foreach (var entry in ex.Entries)
+                {
+                    var proposedValues = entry.CurrentValues;
+                    var databaseValues = await entry.GetDatabaseValuesAsync(cancellationToken);
+                    
+                    // foreach (var property in proposedValues.Properties)
+                    // {
+                    //     var proposedValue = proposedValues[property];
+                    //     var databaseValue = databaseValues[property];
+                    //
+                    //     // TODO: decide which value should be written to database
+                    //     // proposedValues[property] = <value to be saved>;
+                    // }
+                    
+                    // Refresh original values to bypass next concurrency check
+                    entry.OriginalValues.SetValues(databaseValues);
+                }
+            }
         }
     }
 }
