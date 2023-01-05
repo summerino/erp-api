@@ -662,7 +662,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
             }
 
             if (data.FinalDiscPercent > 0)
-                data.FinalDisc = data.ItemDetails.Sum(x => x.FinalDiscHeader * x.Qty);
+                data.FinalDisc = data.ItemDetails.Sum(x => (x.UnitPrice - x.Disc) * x.Qty) / data.FinalDiscPercent;
             data.SubTotal = totalDetail.Sum();
             data.TaxAmount = totalTax.Sum();
             data.ExemptTaxAmount = totalExemptTax.Sum();
@@ -892,7 +892,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                 Db.SalesOrderPromos.AddRange(soPromo);
 
             if (data.FinalDiscPercent > 0)
-                data.FinalDisc = data.ItemDetails.Sum(x => x.FinalDiscHeader * x.Qty);
+                data.FinalDisc = data.ItemDetails.Sum(x => (x.UnitPrice - x.Disc) * x.Qty) / data.FinalDiscPercent;
             data.SubTotal = totalDetail.Sum();
             data.TaxAmount = totalTax.Sum();
             data.ExemptTaxAmount = totalExemptTax.Sum();
@@ -1862,7 +1862,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
             }
 
             if (data.FinalDiscPercent > 0)
-                data.FinalDisc = data.ItemDetails.Sum(x => x.FinalDiscHeader * x.Qty);
+                data.FinalDisc = data.ItemDetails.Sum(x => (x.UnitPrice - x.Disc) * x.Qty) / data.FinalDiscPercent;
             data.SubTotal = totalDetail.Sum();
             data.TaxAmount = totalTax.Sum();
             data.ExemptTaxAmount = totalExemptTax.Sum();
@@ -2138,7 +2138,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                 Db.SalesOrderPromos.AddRange(soPromo);
 
             if (data.FinalDiscPercent > 0)
-                data.FinalDisc = data.ItemDetails.Sum(x => x.FinalDiscHeader * x.Qty);
+                data.FinalDisc = data.ItemDetails.Sum(x => (x.UnitPrice - x.Disc) * x.Qty) / data.FinalDiscPercent;
             data.SubTotal = totalDetail.Sum();
             data.TaxAmount = totalTax.Sum();
             data.ExemptTaxAmount = totalExemptTax.Sum();
