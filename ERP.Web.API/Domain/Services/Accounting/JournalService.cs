@@ -4162,7 +4162,7 @@ public class JournalService : IJournalService
                                         LEFT JOIN cte_max_date_item_cogs_history cte_ich
                                             ON cte_ich.ItemId = ich.ItemId
                                             AND cte_ich.max_date = ich.[Date]
-                                        WHERE ich.[Date] < '{postingDate}'").ToListAsync(cancellationToken);
+                                        WHERE ich.[Date] < '{postingDate.AddMonths(-1)}'").ToListAsync(cancellationToken);
 
         // Update posting state notes 
         var countMonthItem = curMonthItem.Count;
