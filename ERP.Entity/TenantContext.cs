@@ -138,6 +138,7 @@ public class TenantContext : DbContext
     public DbSet<VwItem> VwItems { get; set; }
     public DbSet<ItemCategory> ItemCategories { get; set; }
     public DbSet<VwItemCategory> VwItemCategories { get; set; }
+    public DbSet<ItemCogsHistory> ItemCogsHistories { get; set; }
     public DbSet<ItemGroup> ItemGroups { get; set; }
     public DbSet<VwItemGroup> VwItemGroups { get; set; }
     public DbSet<ItemGroupSubGroup> ItemGroupSubGroups { get; set; }
@@ -1069,6 +1070,25 @@ public class TenantContext : DbContext
         modelBuilder.Entity<VwItemCategory>()
             .HasNoKey()
             .ToView("vwItemCategory", Schema.Inventory);
+        
+        // Item Cogs History model
+        modelBuilder.Entity<ItemCogsHistory>(entity =>
+        {
+            entity.HasOne<Item>()
+                .WithMany()
+                .HasForeignKey(d => d.ItemId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            entity.HasOne<UoM>()
+                .WithMany()
+                .HasForeignKey(d => d.UomId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            entity.HasOne<UoMConversion>()
+                .WithMany()
+                .HasForeignKey(d => d.BaseUnit)
+                .OnDelete(DeleteBehavior.NoAction);
+        });
 
         // Item Group model
         modelBuilder.Entity<VwItemGroup>()
