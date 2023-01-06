@@ -164,7 +164,6 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
             // Insert detail data
             short i = 0;
             List<SalesOrderDetailFreeGood> bonusPromoMulti = new();
-            var sumDetail = data.ItemDetails.Sum(x => x.UnitPrice * x.Qty);
             var dummyDetails = data.ItemDetails.ToList();
             var qtyOriginal = new Dictionary<long, decimal>();
             foreach (var itemDummy in dummyDetails)
@@ -500,32 +499,20 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                 item.Disc = discPromo.Sum(x => x.Amount);
 
                 var taxData = taxes.FirstOrDefault(x => x.Id == item.TaxId);
-                var discHeaderProrate = 0m;
-                if (data.FinalDiscPercent > 0)
-                {
-                    var amountPercent = sumDetail * (data.FinalDiscPercent / 100);
-                    discHeaderProrate = amountPercent / sumDetail * (item.Qty * (item.UnitPrice - item.Disc));
-                    discHeaderProrate /= item.Qty;
-                }
-                else if (data.FinalDisc > 0)
-                {
-                    discHeaderProrate = data.FinalDisc / sumDetail * (item.Qty * (item.UnitPrice - item.Disc));
-                    discHeaderProrate /= item.Qty;
-                }
 
                 if (data.IncludeTax)
                 {
-                    item.TaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) - ((item.UnitPrice - item.Disc - discHeaderProrate) / (1 + (taxData.Rate / 100)));
-                    item.ExemptTaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) - ((item.UnitPrice - item.Disc - discHeaderProrate) / (1 + (taxData.ExemptRate / 100)));
-                    item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate;
-                    item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate - item.TaxAmount + item.ExemptTaxAmount;
+                    item.TaxAmount = (item.UnitPrice - item.Disc) - ((item.UnitPrice - item.Disc) / (1 + (taxData.Rate / 100)));
+                    item.ExemptTaxAmount = (item.UnitPrice - item.Disc) - ((item.UnitPrice - item.Disc) / (1 + (taxData.ExemptRate / 100)));
+                    item.NettPrice = item.UnitPrice - item.Disc;
+                    item.Dpp = item.UnitPrice - item.Disc - item.TaxAmount + item.ExemptTaxAmount;
                 }
                 else
                 {
-                    item.TaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) * (taxData.Rate / 100);
-                    item.ExemptTaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) * (taxData.ExemptRate / 100);
-                    item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate + item.TaxAmount - item.ExemptTaxAmount;
-                    item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate;
+                    item.TaxAmount = (item.UnitPrice - item.Disc) * (taxData.Rate / 100);
+                    item.ExemptTaxAmount = (item.UnitPrice - item.Disc) * (taxData.ExemptRate / 100);
+                    item.NettPrice = item.UnitPrice - item.Disc + item.TaxAmount - item.ExemptTaxAmount;
+                    item.Dpp = item.UnitPrice - item.Disc;
                 }
 
                 if (item.NettPrice < 0)
@@ -534,7 +521,6 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                     return result;
                 }
 
-                item.FinalDiscHeader = discHeaderProrate;
                 item.Total = item.Qty * item.NettPrice;
                 totalDetail.Add(item.Total);
                 totalTax.Add(item.Qty * item.TaxAmount);
@@ -661,13 +647,13 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                 }
             }
 
-            if (data.FinalDiscPercent > 0)
-                data.FinalDisc = data.ItemDetails.Sum(x => (x.UnitPrice - x.Disc) * x.Qty) / data.FinalDiscPercent;
             data.SubTotal = totalDetail.Sum();
             data.TaxAmount = totalTax.Sum();
             data.ExemptTaxAmount = totalExemptTax.Sum();
             data.Dpp = totalDpp.Sum();
             data.Total = data.SubTotal;
+            var sumDetail = data.ItemDetails.Sum(x => (x.UnitPrice - x.Disc) * x.Qty);
+
             foreach (var item in data.ItemDetails)
             {
                 //Promo
@@ -747,23 +733,20 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                     }
                 }
 
-                if (discPromo.Any())
+                if (discPromo.Any() || data.FinalDisc > 0 || data.FinalDiscPercent > 0)
                 {
                     item.Disc += discPromo.Sum(x => x.Amount);
 
                     var taxData = taxes.FirstOrDefault(x => x.Id == item.TaxId);
                     var discHeaderProrate = 0m;
-                    //var sumDetail = data.ItemDetails.Sum(x => (x.UnitPrice - x.Disc) * x.Qty);
                     if (data.FinalDiscPercent > 0)
                     {
                         var amountPercent = sumDetail * (data.FinalDiscPercent / 100);
-                        discHeaderProrate = amountPercent / sumDetail * (item.Qty * (item.UnitPrice - item.Disc));
-                        discHeaderProrate /= item.Qty;
+                        discHeaderProrate = amountPercent / sumDetail * (item.UnitPrice - item.Disc);
                     }
                     else if (data.FinalDisc > 0)
                     {
-                        discHeaderProrate = data.FinalDisc / sumDetail * (item.Qty * (item.UnitPrice - item.Disc));
-                        discHeaderProrate /= item.Qty;
+                        discHeaderProrate = data.FinalDisc / sumDetail * (item.UnitPrice - item.Disc);
                     }
 
                     if (data.IncludeTax)
@@ -892,7 +875,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                 Db.SalesOrderPromos.AddRange(soPromo);
 
             if (data.FinalDiscPercent > 0)
-                data.FinalDisc = data.ItemDetails.Sum(x => (x.UnitPrice - x.Disc) * x.Qty) / data.FinalDiscPercent;
+                data.FinalDisc = data.ItemDetails.Sum(x => (x.UnitPrice - x.Disc) * x.Qty) * (data.FinalDiscPercent / 100);
             data.SubTotal = totalDetail.Sum();
             data.TaxAmount = totalTax.Sum();
             data.ExemptTaxAmount = totalExemptTax.Sum();
@@ -1254,7 +1237,6 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
             // Update detail data
             short i = 0;
             List<SalesOrderDetailFreeGood> bonusPromoMulti = new();
-            var sumDetail = data.ItemDetails.Sum(x => x.UnitPrice * x.Qty);
             var dummyDetails = data.ItemDetails.ToList();
             var qtyOriginal = new Dictionary<long, decimal>();
             foreach (var itemDummy in dummyDetails)
@@ -1609,32 +1591,20 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                 }
 
                 var taxData = taxes.FirstOrDefault(x => x.Id == item.TaxId);
-                var discHeaderProrate = 0m;
-                if (data.FinalDiscPercent > 0)
-                {
-                    var amountPercent = sumDetail * (data.FinalDiscPercent / 100);
-                    discHeaderProrate = amountPercent / sumDetail * (item.Qty * (item.UnitPrice - item.Disc));
-                    discHeaderProrate /= item.Qty;
-                }
-                else if (data.FinalDisc > 0)
-                {
-                    discHeaderProrate = data.FinalDisc / sumDetail * (item.Qty * (item.UnitPrice - item.Disc));
-                    discHeaderProrate /= item.Qty;
-                }
 
                 if (data.IncludeTax)
                 {
-                    item.TaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) - ((item.UnitPrice - item.Disc - discHeaderProrate) / (1 + (taxData.Rate / 100)));
-                    item.ExemptTaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) - ((item.UnitPrice - item.Disc - discHeaderProrate) / (1 + (taxData.ExemptRate / 100)));
-                    item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate;
-                    item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate - item.TaxAmount + item.ExemptTaxAmount;
+                    item.TaxAmount = (item.UnitPrice - item.Disc) - ((item.UnitPrice - item.Disc) / (1 + (taxData.Rate / 100)));
+                    item.ExemptTaxAmount = (item.UnitPrice - item.Disc) - ((item.UnitPrice - item.Disc) / (1 + (taxData.ExemptRate / 100)));
+                    item.NettPrice = item.UnitPrice - item.Disc;
+                    item.Dpp = item.UnitPrice - item.Disc - item.TaxAmount + item.ExemptTaxAmount;
                 }
                 else
                 {
-                    item.TaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) * (taxData.Rate / 100);
-                    item.ExemptTaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) * (taxData.ExemptRate / 100);
-                    item.NettPrice = item.UnitPrice - item.Disc - discHeaderProrate + item.TaxAmount - item.ExemptTaxAmount;
-                    item.Dpp = item.UnitPrice - item.Disc - discHeaderProrate;
+                    item.TaxAmount = (item.UnitPrice - item.Disc) * (taxData.Rate / 100);
+                    item.ExemptTaxAmount = (item.UnitPrice - item.Disc) * (taxData.ExemptRate / 100);
+                    item.NettPrice = item.UnitPrice - item.Disc + item.TaxAmount - item.ExemptTaxAmount;
+                    item.Dpp = item.UnitPrice - item.Disc;
                 }
 
                 if (item.NettPrice < 0)
@@ -1643,7 +1613,6 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                     return result;
                 }
 
-                item.FinalDiscHeader = discHeaderProrate;
                 item.Total = item.Qty * item.NettPrice;
                 totalDetail.Add(item.Total);
                 totalTax.Add(item.Qty * item.TaxAmount);
@@ -1861,13 +1830,12 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                 }
             }
 
-            if (data.FinalDiscPercent > 0)
-                data.FinalDisc = data.ItemDetails.Sum(x => (x.UnitPrice - x.Disc) * x.Qty) / data.FinalDiscPercent;
             data.SubTotal = totalDetail.Sum();
             data.TaxAmount = totalTax.Sum();
             data.ExemptTaxAmount = totalExemptTax.Sum();
             data.Dpp = totalDpp.Sum();
             data.Total = data.SubTotal;
+            var sumDetail = data.ItemDetails.Sum(x => (x.UnitPrice - x.Disc) * x.Qty);
 
             foreach (var item in data.ItemDetails)
             {
@@ -1948,7 +1916,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                     }
                 }
 
-                if (discPromo.Any())
+                if (discPromo.Any() || data.FinalDisc > 0 || data.FinalDiscPercent > 0)
                 {
                     foreach (var discItem in discPromo)
                     {
@@ -1965,13 +1933,11 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                     if (data.FinalDiscPercent > 0)
                     {
                         var amountPercent = sumDetail * (data.FinalDiscPercent / 100);
-                        discHeaderProrate = amountPercent / sumDetail * (item.Qty * (item.UnitPrice - item.Disc));
-                        discHeaderProrate /= item.Qty;
+                        discHeaderProrate = amountPercent / sumDetail * (item.UnitPrice - item.Disc);
                     }
                     else if (data.FinalDisc > 0)
                     {
-                        discHeaderProrate = data.FinalDisc / sumDetail * (item.Qty * (item.UnitPrice - item.Disc));
-                        discHeaderProrate /= item.Qty;
+                        discHeaderProrate = data.FinalDisc / sumDetail * (item.UnitPrice - item.Disc);
                     }
 
                     if (data.IncludeTax)
@@ -2138,7 +2104,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                 Db.SalesOrderPromos.AddRange(soPromo);
 
             if (data.FinalDiscPercent > 0)
-                data.FinalDisc = data.ItemDetails.Sum(x => (x.UnitPrice - x.Disc) * x.Qty) / data.FinalDiscPercent;
+                data.FinalDisc = data.ItemDetails.Sum(x => (x.UnitPrice - x.Disc) * x.Qty) * (data.FinalDiscPercent / 100);
             data.SubTotal = totalDetail.Sum();
             data.TaxAmount = totalTax.Sum();
             data.ExemptTaxAmount = totalExemptTax.Sum();
