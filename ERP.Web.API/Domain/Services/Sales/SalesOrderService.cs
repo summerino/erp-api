@@ -504,12 +504,12 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                 if (data.FinalDiscPercent > 0)
                 {
                     var amountPercent = sumDetail * (data.FinalDiscPercent / 100);
-                    discHeaderProrate = amountPercent / sumDetail * (item.Qty * item.UnitPrice);
+                    discHeaderProrate = amountPercent / sumDetail * (item.Qty * (item.UnitPrice - item.Disc));
                     discHeaderProrate /= item.Qty;
                 }
                 else if (data.FinalDisc > 0)
                 {
-                    discHeaderProrate = data.FinalDisc / sumDetail * (item.Qty * item.UnitPrice);
+                    discHeaderProrate = data.FinalDisc / sumDetail * (item.Qty * (item.UnitPrice - item.Disc));
                     discHeaderProrate /= item.Qty;
                 }
 
@@ -757,12 +757,12 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                     if (data.FinalDiscPercent > 0)
                     {
                         var amountPercent = sumDetail * (data.FinalDiscPercent / 100);
-                        discHeaderProrate = amountPercent / sumDetail * (item.Qty * item.UnitPrice);
+                        discHeaderProrate = amountPercent / sumDetail * (item.Qty * (item.UnitPrice - item.Disc));
                         discHeaderProrate /= item.Qty;
                     }
                     else if (data.FinalDisc > 0)
                     {
-                        discHeaderProrate = data.FinalDisc / sumDetail * (item.Qty * item.UnitPrice);
+                        discHeaderProrate = data.FinalDisc / sumDetail * (item.Qty * (item.UnitPrice - item.Disc));
                         discHeaderProrate /= item.Qty;
                     }
 
@@ -1613,12 +1613,12 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                 if (data.FinalDiscPercent > 0)
                 {
                     var amountPercent = sumDetail * (data.FinalDiscPercent / 100);
-                    discHeaderProrate = amountPercent / sumDetail * (item.Qty * item.UnitPrice);
+                    discHeaderProrate = amountPercent / sumDetail * (item.Qty * (item.UnitPrice - item.Disc));
                     discHeaderProrate /= item.Qty;
                 }
                 else if (data.FinalDisc > 0)
                 {
-                    discHeaderProrate = data.FinalDisc / sumDetail * (item.Qty * item.UnitPrice);
+                    discHeaderProrate = data.FinalDisc / sumDetail * (item.Qty * (item.UnitPrice - item.Disc));
                     discHeaderProrate /= item.Qty;
                 }
 
@@ -1965,12 +1965,12 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                     if (data.FinalDiscPercent > 0)
                     {
                         var amountPercent = sumDetail * (data.FinalDiscPercent / 100);
-                        discHeaderProrate = amountPercent / sumDetail * (item.Qty * item.UnitPrice);
+                        discHeaderProrate = amountPercent / sumDetail * (item.Qty * (item.UnitPrice - item.Disc));
                         discHeaderProrate /= item.Qty;
                     }
                     else if (data.FinalDisc > 0)
                     {
-                        discHeaderProrate = data.FinalDisc / sumDetail * (item.Qty * item.UnitPrice);
+                        discHeaderProrate = data.FinalDisc / sumDetail * (item.Qty * (item.UnitPrice - item.Disc));
                         discHeaderProrate /= item.Qty;
                     }
 
