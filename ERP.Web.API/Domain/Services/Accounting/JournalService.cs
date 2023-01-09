@@ -4153,6 +4153,17 @@ public class JournalService : IJournalService
 
         var curMonthItem =  await db.StockMutations.AsNoTracking().Where(x => x.Date >= postingDate.AddMonths(-1) && x.Date < postingDate).GroupBy(x => x.ItemId).Select(x => x.First()).ToListAsync(cancellationToken);
 
+        var latestItemCogsHistory = await db.ItemCogsHistories.FromSqlRaw(@$"WITH cte_max_date_item_cogs_history AS (
+                                        SELECT ItemId, MAX([Date]) AS max_date 
+                                        FROM Inventory.ItemCogsHistory
+                                        GROUP BY ItemId)
+                                        SELECT ich.*
+                                        FROM Inventory.ItemCogsHistory ich
+                                        LEFT JOIN cte_max_date_item_cogs_history cte_ich
+                                            ON cte_ich.ItemId = ich.ItemId
+                                            AND cte_ich.max_date = ich.[Date]
+                                        WHERE ich.[Date] < '{postingDate.AddMonths(-1)}'").ToListAsync(cancellationToken);
+
         // Update posting state notes 
         var countMonthItem = curMonthItem.Count;
         stateData.Notes = $"Calculate HPP {countMonthItem} items.";
@@ -4163,9 +4174,9 @@ public class JournalService : IJournalService
         foreach (var (curItem, curIdx) in curMonthItem.Select((item, index) => (item, index)))
         {
             DateTime latestDate = new();
-            decimal latestQty = 0;
-            decimal latestStockValue = 0;
-            decimal hpp = 0;
+            decimal latestQty = latestItemCogsHistory.FirstOrDefault(x => x.ItemId == curItem.ItemId)?.TotalBaseQty ?? 0;
+            decimal latestStockValue = latestItemCogsHistory.FirstOrDefault(x => x.ItemId == curItem.ItemId)?.TotalBaseNettPrice ?? 0;
+            decimal hpp = latestItemCogsHistory.FirstOrDefault(x => x.ItemId == curItem.ItemId) != null ? latestStockValue / latestQty : 0;
 
             var orderQuery = @"ORDER BY sm.Date, CASE
 				WHEN sm.Src = 'BB' THEN 1
@@ -4200,7 +4211,7 @@ public class JournalService : IJournalService
                     SELECT Code FROM Purchasing.PurchaseReturnHeader WHERE Mark = 'V' AND [Date] < '{postingDate}'
                     UNION
                     SELECT Code FROM Sales.SalesReturnHeader WHERE Mark = 'V' AND [Date] < '{postingDate}')
-                AND sm.ItemId = {curItem.ItemId} AND sm.Date < '{postingDate}'
+                AND sm.ItemId = {curItem.ItemId} AND sm.Date >= '{postingDate.AddMonths(-1)}' AND sm.Date < '{postingDate}'
                 {orderQuery}").ToListAsync(cancellationToken);
 
             //latestDate = listSM.First().Date;
@@ -4353,6 +4364,29 @@ public class JournalService : IJournalService
                     }
                 }
             }
+
+            var itemCogsHistory = await db.ItemCogsHistories.FirstOrDefaultAsync(x => x.Date == postingDate.AddDays(-1) && x.ItemId == curItem.ItemId);
+            if (itemCogsHistory != null)
+            {
+                itemCogsHistory.UomId = curItem.UomId;
+                itemCogsHistory.BaseUnit = curItem.BaseUnit;
+                itemCogsHistory.TotalBaseNettPrice = latestStockValue;
+                itemCogsHistory.TotalBaseQty = latestQty;
+            }
+            else
+            {
+                await db.ItemCogsHistories.AddAsync(new ItemCogsHistory
+                {
+                    Date = postingDate.AddDays(-1),
+                    ItemId = curItem.ItemId,
+                    BaseUnit = curItem.BaseUnit,
+                    UomId = curItem.UomId,
+                    TotalBaseNettPrice = latestStockValue,
+                    TotalBaseQty = latestQty
+                }, cancellationToken);
+            }
+
+            await db.SaveChangesAsync(cancellationToken);
         }
     }
 }

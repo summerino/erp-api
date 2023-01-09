@@ -20,8 +20,8 @@ public class ItemCogsHistory
     public int BaseUnit { get; set; }
 
     [Precision(18, 6)]
-    public decimal SumBaseQty { get; set; }
+    public decimal TotalBaseQty { get; set; }
 
     [Precision(22, 9)]
-    public decimal SumBaseNettPrice { get; set; }
+    public decimal TotalBaseNettPrice { get; set; }
 }
