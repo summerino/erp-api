@@ -88,6 +88,8 @@ public class SalesOrderController : ControllerBase
                 TotTax = x.Qty * x.TaxAmount,
                 TotDPP = x.Qty * x.Dpp,
                 TotFDH = x.Qty * x.FinalDiscHeader,
+                TotUnitPrice = x.Qty * x.UnitPrice,
+                TotDisc = x.Qty * x.Disc,
                 State = "",
                 discPromo = discData.Where(d => d.OrderDetailId == x.Id).OrderBy(d => d.LineNo)
             })
