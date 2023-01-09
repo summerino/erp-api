@@ -4141,17 +4141,40 @@ public class JournalService : IJournalService
     {
         var postingDate = new DateTime(date.Year, date.Month, 1).AddMonths(1);
 
-        var doData = await db.SalesDeliveryHeaders.AsNoTracking().Where(x => x.Date < postingDate && x.Mark != "V").ToListAsync(cancellationToken: cancellationToken);
+        var doData =
+            await db.SalesDeliveryHeaders.AsNoTracking()
+                .Where(x => x.Date < postingDate && x.Mark != "V")
+                .ToListAsync(cancellationToken: cancellationToken);
 
-        var srData = await db.SalesReturnHeaders.AsNoTracking().Where(x => x.Date < postingDate && x.Mark != "V").ToListAsync(cancellationToken: cancellationToken);
+        var doTransCodeLists = doData.Where(x => x.SrcTrans == 2).Select(x => x.TransCode).ToList();
+        var srData =
+            await db.SalesReturnHeaders.AsNoTracking()
+                .Where(x => ((x.Date >= postingDate.AddMonths(-1) && x.Date < postingDate) || doTransCodeLists.Contains(x.Code))
+                            && x.Mark != "V")
+                .ToListAsync(cancellationToken: cancellationToken);
 
-        var rcvData = await db.PurchaseReceiveHeaders.AsNoTracking().Where(x => x.Date < postingDate && x.Mark != "V").ToListAsync(cancellationToken: cancellationToken);
+        var rcvData =
+            await db.PurchaseReceiveHeaders.AsNoTracking()
+                .Where(x => x.Date < postingDate && x.Mark != "V")
+                .ToListAsync(cancellationToken: cancellationToken);
 
-        var tsData = await db.TransferStockHeaders.AsNoTracking().Where(x => x.Date < postingDate && x.Mark != "V").ToListAsync(cancellationToken: cancellationToken);
+        var tsData =
+            await db.TransferStockHeaders.AsNoTracking()
+                .Where(x => x.Date < postingDate && x.Mark != "V")
+                .ToListAsync(cancellationToken: cancellationToken);
 
-        var prData = await db.PurchaseReturnHeaders.AsNoTracking().Where(x => x.Date < postingDate && x.Mark != "V").ToListAsync(cancellationToken: cancellationToken);
+        var rcvTransCodeLists = rcvData.Where(x => x.SrcTrans == 2).Select(x => x.TransCode).ToList();
+        var prData =
+            await db.PurchaseReturnHeaders.AsNoTracking()
+                .Where(x => ((x.Date >= postingDate.AddMonths(-1) && x.Date < postingDate) || rcvTransCodeLists.Contains(x.Code))
+                            && x.Mark != "V")
+                .ToListAsync(cancellationToken: cancellationToken);
 
-        var curMonthItem =  await db.StockMutations.AsNoTracking().Where(x => x.Date >= postingDate.AddMonths(-1) && x.Date < postingDate).GroupBy(x => x.ItemId).Select(x => x.First()).ToListAsync(cancellationToken);
+        var curMonthItem =
+            await db.StockMutations.AsNoTracking()
+                .Where(x => x.Date >= postingDate.AddMonths(-1) && x.Date < postingDate)
+                .GroupBy(x => x.ItemId).Select(x => x.First())
+                .ToListAsync(cancellationToken);
 
         var latestItemCogsHistory = await db.ItemCogsHistories.FromSqlRaw(@$"WITH cte_max_date_item_cogs_history AS (
                                         SELECT ItemId, MAX([Date]) AS max_date 
