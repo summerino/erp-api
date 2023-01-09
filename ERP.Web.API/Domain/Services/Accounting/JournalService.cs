@@ -4250,12 +4250,12 @@ public class JournalService : IJournalService
                 SELECT *
                 FROM Inventory.StockMutation
                 WHERE RefCode1 IN ({refCode2FromRcv})
-                AND Src == 'PR'
+                AND Src = 'PR'
                 UNION ALL
                 SELECT *
                 FROM Inventory.StockMutation sm_ts
                 WHERE RefCode1 IN ({refCode2FromTs})
-                AND Src == 'TS'
+                AND Src = 'TS'
                 AND EXISTS (
                     SELECT *
                     FROM Inventory.TransferStockHeader ts
@@ -4267,7 +4267,7 @@ public class JournalService : IJournalService
                 SELECT *
                 FROM Inventory.StockMutation
                 WHERE RefCode1 IN ({refCode2FromDo})
-                AND Src == 'SR'")
+                AND Src = 'SR'")
                 .AsNoTracking().ToListAsync(cancellationToken);
 
             // Update posting state notes 
