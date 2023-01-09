@@ -4182,7 +4182,7 @@ public class JournalService : IJournalService
                                         GROUP BY ItemId)
                                         SELECT ich.*
                                         FROM Inventory.ItemCogsHistory ich
-                                        LEFT JOIN cte_max_date_item_cogs_history cte_ich
+                                        RIGHT JOIN cte_max_date_item_cogs_history cte_ich
                                             ON cte_ich.ItemId = ich.ItemId
                                             AND cte_ich.max_date = ich.[Date]
                                         WHERE ich.[Date] < '{postingDate.AddMonths(-1)}'").ToListAsync(cancellationToken);
@@ -4193,7 +4193,7 @@ public class JournalService : IJournalService
         // db.PostingStates.Update(stateData);
         await db.SaveChangesAsync(cancellationToken);
         _logger.LogInformation(stateData.Notes);
-        
+
         foreach (var (curItem, curIdx) in curMonthItem.Select((item, index) => (item, index)))
         {
             DateTime latestDate = new();
@@ -4238,28 +4238,27 @@ public class JournalService : IJournalService
                 {orderQuery}").ToListAsync(cancellationToken);
 
             //latestDate = listSM.First().Date;
-            
+
             // Update posting state notes 
             stateData.Notes = $"Calculate HPP item {curIdx} of {countMonthItem}, ItemId: {curItem.ItemId}.";
             // db.PostingStates.Update(stateData);
             await db.SaveChangesAsync(cancellationToken);
             _logger.LogInformation(stateData.Notes);
-            
+
             // Calculate HPP
             foreach (var item in listSM)
             {
                 _logger.LogInformation($"StockMutation Id: {item.Id}, Date: {item.Date:yyyy-MM-dd}");
-                
+
                 if (item.Qty == 0 || item.BaseQty == 0)
                     continue;
 
                 if (new[] { "RCV", "BB", "SR" }.Contains(item.Src))
                 {
-                    var rcvFromPRSI =
-                        item.Src == "RCV" &&
-                        (rcvData.FirstOrDefault(x => x.Code == item.RefCode1)?.SrcTrans ?? 0) == 2 &&
-                        (prData.FirstOrDefault(x => x.Code == item.RefCode2)?.Type ?? 0) == 2;
-                    if (rcvFromPRSI) // same item
+                    var itemRcvData = rcvData.FirstOrDefault(x => x.Code == item.RefCode1);
+                    var itemPrData = prData.FirstOrDefault(x => x.Code == item.RefCode2);
+
+                    if (item.Src == "RCV" && (itemRcvData?.SrcTrans ?? 0) == 2 && (itemPrData?.Type ?? 0) == 2) // same item
                     {
                         item.BaseNettPrice = listSM.FirstOrDefault(x => x.RefCode1 == item.RefCode2)?.BaseNettPrice ?? 0m;
                         item.NettPrice = listSM.FirstOrDefault(x => x.RefCode1 == item.RefCode2)?.NettPrice ?? 0m;
@@ -4269,8 +4268,7 @@ public class JournalService : IJournalService
                     }
                     else
                     {
-                        var rcvFromPRDI = (item.Src == "RCV" && (prData.FirstOrDefault(z => z.Code == (rcvData.FirstOrDefault(y => y.Code == item.RefCode1)?.TransCode ?? ""))?.Type ?? 0) == 3);
-                        if (item.Src == "SR" || rcvFromPRDI)
+                        if (item.Src == "SR" || item.Src == "RCV" && (itemRcvData?.SrcTrans ?? 0) == 2 && (itemPrData?.Type ?? 0) == 3) // diff item
                         {
                             item.BaseNettPrice = hpp;
                             item.NettPrice = hpp * item.BaseQty / item.Qty;
@@ -4278,7 +4276,7 @@ public class JournalService : IJournalService
                         }
                         latestStockValue += item.BaseNettPrice * item.BaseQty;
                         latestQty += item.BaseQty;
-                        if (item.Src == "BB" || item.Src == "RCV" && (rcvData.FirstOrDefault(x => x.Code == item.RefCode1)?.SrcTrans ?? 0) == 1)
+                        if (item.Src == "BB" || item.Src == "RCV" && (itemRcvData?.SrcTrans ?? 0) == 1)
                         {
                             if (latestStockValue > 0 && latestQty > 0)
                                 hpp = latestStockValue / latestQty;
@@ -4287,7 +4285,8 @@ public class JournalService : IJournalService
                 }
                 else if (new[] { "ADJ", "TS", "CNEE" }.Contains(item.Src))
                 {
-                    if (item.Src == "TS" && (tsData.FirstOrDefault(x => x.Code == item.RefCode1)?.Type ?? "") == "OUT")
+                    var itemTsData = tsData.FirstOrDefault(x => x.Code == item.RefCode1);
+                    if (item.Src == "TS" && (itemTsData?.Type ?? "") == "OUT")
                     {
                         if (latestDate != item.Date)
                         {
@@ -4298,7 +4297,7 @@ public class JournalService : IJournalService
                         item.BaseNettPrice = hpp;
                         item.NettPrice = hpp * item.BaseQty / item.Qty;
                     }
-                    else if (item.Src == "TS" && (tsData.FirstOrDefault(x => x.Code == item.RefCode1)?.Type ?? "") == "IN")
+                    else if (item.Src == "TS" && (itemTsData?.Type ?? "") == "IN")
                     {
                         item.BaseNettPrice = listSM.FirstOrDefault(x => x.RefCode1 == item.RefCode2)?.BaseNettPrice ?? 0m;
                         item.NettPrice = listSM.FirstOrDefault(x => x.RefCode1 == item.RefCode2)?.NettPrice ?? 0m;
@@ -4327,8 +4326,10 @@ public class JournalService : IJournalService
                             hpp = latestStockValue / latestQty;
                     }
 
-                    var dofromPR = item.Src == "DO" && (srData.FirstOrDefault(z => z.Code == (doData.FirstOrDefault(y => y.Code == item.RefCode1)?.TransCode ?? ""))?.Type ?? 0) == 2;
-                    if (dofromPR) // same item
+                    var itemDoData = doData.FirstOrDefault(y => y.Code == item.RefCode1);
+                    var itemSrData = srData.FirstOrDefault(x => x.Code == item.RefCode2);
+
+                    if (item.Src == "DO" && (itemDoData?.SrcTrans ?? 0) == 2 && (itemSrData?.Type ?? 0) == 2) // same item
                     {
                         item.BaseNettPrice = listSM.FirstOrDefault(x => x.RefCode1 == item.RefCode2)?.BaseNettPrice ?? 0m;
                         item.NettPrice = listSM.FirstOrDefault(x => x.RefCode1 == item.RefCode2)?.NettPrice ?? 0m;
@@ -4338,7 +4339,7 @@ public class JournalService : IJournalService
                     }
                     else
                     {
-                        if (item.Src == "DO" && (srData.FirstOrDefault(z => z.Code == (doData.FirstOrDefault(y => y.Code == item.RefCode1)?.TransCode ?? ""))?.Type ?? 0) == 3)
+                        if (item.Src == "DO" && (itemDoData?.SrcTrans ?? 0) == 2 && (itemSrData?.Type ?? 0) == 3) // diff item
                         {
                             item.BaseNettPrice = hpp;
                             item.NettPrice = hpp * item.BaseQty / item.Qty;
