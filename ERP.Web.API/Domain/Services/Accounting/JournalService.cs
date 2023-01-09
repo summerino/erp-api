@@ -4241,20 +4241,22 @@ public class JournalService : IJournalService
                 {orderQuery}").ToListAsync(cancellationToken);
 
             // Get RefCode2 for rcv, ts, do
-            var refCode2FromRcv = $"'{string.Join(", '", listSM.Where(x => x.Src == "RCV").Select(x => x.RefCode2))}'";
-            var refCode2FromTs = $"'{string.Join(", '", listSM.Where(x => x.Src == "TS").Select(x => x.RefCode2))}'";
-            var refCode2FromDo = $"'{string.Join(", '", listSM.Where(x => x.Src == "DO").Select(x => x.RefCode2))}'";
+            var refCode2FromRcv = $"'{string.Join("', '", listSM.Where(x => x.Src == "RCV" && !string.IsNullOrWhiteSpace(x.RefCode2)).Select(x => x.RefCode2))}'";
+            var refCode2FromTs = $"'{string.Join("', '", listSM.Where(x => x.Src == "TS" && !string.IsNullOrWhiteSpace(x.RefCode2)).Select(x => x.RefCode2))}'";
+            var refCode2FromDo = $"'{string.Join("', '", listSM.Where(x => x.Src == "DO" && !string.IsNullOrWhiteSpace(x.RefCode2)).Select(x => x.RefCode2))}'";
 
             // Get stock mutation records for previous month / other month
             var listPrevSM = await db.StockMutations.FromSqlRaw(@$"
                 SELECT *
                 FROM Inventory.StockMutation
                 WHERE RefCode1 IN ({refCode2FromRcv})
+                AND ItemId = {curItem.ItemId}
                 AND Src = 'PR'
                 UNION ALL
                 SELECT *
                 FROM Inventory.StockMutation sm_ts
                 WHERE RefCode1 IN ({refCode2FromTs})
+                AND ItemId = {curItem.ItemId}
                 AND Src = 'TS'
                 AND EXISTS (
                     SELECT *
@@ -4267,6 +4269,7 @@ public class JournalService : IJournalService
                 SELECT *
                 FROM Inventory.StockMutation
                 WHERE RefCode1 IN ({refCode2FromDo})
+                AND ItemId = {curItem.ItemId}
                 AND Src = 'SR'")
                 .AsNoTracking().ToListAsync(cancellationToken);
 
