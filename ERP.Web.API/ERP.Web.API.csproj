@@ -8,7 +8,7 @@
 	<Company>Sahassa Panca Manunggal</Company>
 	<Product>Sahassa® ERP</Product>
 	<Copyright>© Sahassa. All rights reserved.</Copyright>
-	<Version>23.1.9</Version>
+	<Version>23.1.10</Version>
   </PropertyGroup>
 
   <ItemGroup>
