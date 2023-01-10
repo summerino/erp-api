@@ -4178,14 +4178,14 @@ public class JournalService : IJournalService
             await db.ItemCogsHistories.FromSqlRaw(@$"WITH cte_max_date_item_cogs_history AS (
                     SELECT ItemId, MAX([Date]) AS max_date 
                     FROM Inventory.ItemCogsHistory
+                    WHERE [Date] < '{new DateTime(date.Year, date.Month, 1)}'
                     GROUP BY ItemId
                 )
                 SELECT ich.*
                 FROM Inventory.ItemCogsHistory ich
                 RIGHT JOIN cte_max_date_item_cogs_history cte_ich
                     ON cte_ich.ItemId = ich.ItemId
-                    AND cte_ich.max_date = ich.[Date]
-                WHERE ich.[Date] < '{new DateTime(date.Year, date.Month, 1)}'")
+                    AND cte_ich.max_date = ich.[Date]")
                 .ToListAsync(cancellationToken);
 
         // Update posting state notes 
