@@ -20,11 +20,19 @@ public class ARReportService : IARReportService
         {
             if (sysData.Value == "SI")
             {
-                var cusData = _db.ReportByCustomers.FromSqlRaw(@"select cs.Code, cs.Initial, cs.Name, count(*) as TotalTrans, sum(inv.Total) as TotalAmount,
-                            CAST (0 as decimal) as PaidAmount, CAST (0 as decimal) as RemainderAmount
-                            from General.Customer cs
-                            left join Sales.SalesInvoiceHeader inv on inv.CustCode = cs.Code
-                            Where inv.Mark IN('A', 'PP', 'CMP') Group by cs.Code, cs.Initial, cs.Name").ToList();
+                var cusData = _db.ReportByCustomers.FromSqlRaw(@"SELECT a.Code, a.Initial, a.[Name], SUM(a.TotalTrans) AS TotalTrans, SUM(a.TotalAmount) AS TotalAmount,
+                            CAST (0 as decimal) as PaidAmount, CAST (0 as decimal) as RemainderAmount 
+                            FROM (
+                            select cs.Code, cs.Initial, cs.Name, count(*) as TotalTrans, sum(inv.Total) as TotalAmount
+                                                        from General.Customer cs
+                                                        left join Sales.SalesInvoiceHeader inv on inv.CustCode = cs.Code
+                                                        Where inv.Mark IN('A', 'PP', 'CMP') Group by cs.Code, cs.Initial, cs.Name
+							                            UNION
+                            select cs.Code, cs.Initial, cs.Name, count(*) as TotalTrans, sum(ar.Amount) as TotalAmount
+                                                        from General.Customer cs
+                                                        left join Accounting.BeginningBalanceAR ar on ar.CustCode = cs.Code
+                                                        Where ar.IsActive = 1 Group by cs.Code, cs.Initial, cs.Name) a
+                            Group by a.Code, a.Initial, a.[Name]").ToList();
 
                 var invData = _db.ReportByInvoiceARs.FromSqlRaw(@"SELECT inv.Date, inv.DueDate, inv.Code, inv.SOCode AS OrderCode, 
                             e.Id AS SalesId, e.FirstName AS SalesName,  
@@ -37,6 +45,8 @@ public class ARReportService : IARReportService
                             WHERE inv.Mark IN('A', 'PP', 'CMP')" + (slsId > 0 ? $" and so.SalesBy = {slsId} " : " ") + "").ToList();
 
                 var cbData = _db.GeneralCashBankHeaders.Where(x => !new[] { "V", "REJ" }.Contains(x.Mark) && (x.ChequeDate ?? x.Date) <= Convert.ToDateTime(date)).ToList();
+
+                var todayCbData = cbData.Where(x => (x.ChequeDate ?? x.Date) == Convert.ToDateTime(date)).Select(x => x.Code).ToList();
 
                 var bbData = _db.VwBeginningBalanceARs.Where(x => x.IsActive && x.Date <= Convert.ToDateTime(date)).ToList();
 
@@ -57,27 +67,34 @@ public class ARReportService : IARReportService
                     itemInv.RemainderAmount = itemInv.TotalAmount - itemInv.PaidAmount;
                 }
 
+                invData = invData.Where(x => x.RemainderAmount > 0).ToList();
+
                 if (slsId <= 0)
                 {
                     foreach (var itemBB in bbData)
                     {
-                        var totCb = cbDetail.Where(x => x.TransCode == itemBB.Code).Sum(x => x.TransAmount);
-                        invData.Add(new Entity.Sales.ReportByInvoiceAR
+                        var itemCbDetail = cbDetail.Where(x => x.TransCode == itemBB.Code).ToList();
+                        var totCb = itemCbDetail.Sum(x => x.TransAmount);
+                        var isContainInTodayCbData = itemCbDetail.Where(x => todayCbData.Contains(x.Code)).Any();
+                        if (itemBB.Amount - totCb > 0 || (itemBB.Amount - totCb == 0) && isContainInTodayCbData)
                         {
-                            Date = itemBB.Date,
-                            DueDate = itemBB.DueDate,
-                            Code = itemBB.Code,
-                            OrderCode = "",
-                            CustCode = itemBB.CustCode,
-                            CustName = itemBB.CustName,
-                            TotalAmount = itemBB.Amount,
-                            PaidAmount = totCb,
-                            RemainderAmount = itemBB.Amount - totCb
-                        });
+                            invData.Add(new Entity.Sales.ReportByInvoiceAR
+                            {
+                                Date = itemBB.Date,
+                                DueDate = itemBB.DueDate,
+                                Code = itemBB.Code,
+                                OrderCode = "",
+                                CustCode = itemBB.CustCode,
+                                CustName = itemBB.CustName,
+                                TotalAmount = itemBB.Amount,
+                                PaidAmount = totCb,
+                                RemainderAmount = itemBB.Amount - totCb
+                            });
+                        }
                     }
                 }
                 
-                invData = invData.Where(x => x.RemainderAmount > 0).ToList();
+                //invData = invData.Where(x => x.RemainderAmount > 0).ToList();
 
                 foreach (var itemCus in cusData)
                 {
