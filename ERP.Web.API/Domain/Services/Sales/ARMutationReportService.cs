@@ -17,12 +17,21 @@ public class ARMutationReportService : IARMutationReportService
 
     public DataSourceResult GetData(int type, string startDate, string endDate, string custCode, int slsId, string status)
     {
-        var cusData = _db.ReportByCustomerMutations.FromSqlRaw(@"SELECT cs.Code, cs.Initial, cs.[Name], COUNT(*) AS TotalTrans, CAST (0 AS decimal) AS BeginningBalance, SUM(inv.Total) AS TransAmount, CAST (0 AS decimal) AS PaidAmount, CAST (0 AS decimal) AS EndingBalance
-                            FROM General.Customer cs
-                            LEFT JOIN Sales.SalesDeliveryHeader dlv ON dlv.CustCode = cs.Code
-                            LEFT JOIN Sales.SalesInvoiceDetail invD ON invD.DOCode = dlv.Code
-                            LEFT JOIN Sales.SalesInvoiceHeader inv ON inv.Code = invD.Code AND inv.Mark NOT IN ('V', 'OL')
-                            WHERE dlv.Mark <> 'V' AND inv.Total IS NOT NULL GROUP BY cs.Code, cs.Initial, cs.[Name]").ToList();
+        var cusData = _db.ReportByCustomerMutations.FromSqlRaw(@"
+                    SELECT a.Code, a.Initial, a.[Name], SUM(a.TotalTrans) AS TotalTrans, CAST (0 AS decimal) AS BeginningBalance, SUM(a.TransAmount) AS TransAmount,
+                    CAST (0 AS decimal) AS PaidAmount, CAST (0 AS decimal) AS EndingBalance FROM (
+                    SELECT cs.Code, cs.Initial, cs.[Name], COUNT(*) AS TotalTrans, SUM(inv.Total) AS TransAmount
+                                                FROM General.Customer cs
+                                                LEFT JOIN Sales.SalesDeliveryHeader dlv ON dlv.CustCode = cs.Code
+                                                LEFT JOIN Sales.SalesInvoiceDetail invD ON invD.DOCode = dlv.Code
+                                                LEFT JOIN Sales.SalesInvoiceHeader inv ON inv.Code = invD.Code AND inv.Mark NOT IN ('V', 'OL')
+                                                WHERE dlv.Mark <> 'V' AND inv.Total IS NOT NULL GROUP BY cs.Code, cs.Initial, cs.[Name]
+							                    UNION
+                    SELECT cs.Code, cs.Initial, cs.[Name], COUNT(*) AS TotalTrans, SUM(ar.Amount) AS TransAmount
+                                                FROM General.Customer cs
+                                                LEFT JOIN Accounting.BeginningBalanceAR ar on ar.CustCode = cs.Code
+                                                WHERE ar.IsActive = 1 GROUP BY cs.Code, cs.Initial, cs.[Name] ) a
+                    GROUP BY a.Code, a.Initial, a.[Name]").ToList();
 
         var query = "";
         var sysData = _db.SystemParameters.FirstOrDefault(x => x.Code == "AR_RECOG_TIME");
@@ -53,7 +62,9 @@ public class ARMutationReportService : IARMutationReportService
         }
 
 
-        var dlvData = _db.ReportByDeliveryARMutations.FromSqlRaw(query + (slsId > 0 ? $" AND so.SalesBy = {slsId} " : " ") + "").ToList();
+        var dlvData = _db.ReportByDeliveryARMutations.FromSqlRaw(query + (slsId > 0 ? $" AND so.SalesBy = {slsId} " : " ") 
+            + (!string.IsNullOrWhiteSpace(custCode) ? sysData.Value == "SI" ? $" AND inv.CustCode = '{custCode}' " : $" AND dlv.CustCode = '{custCode}' " : " ")
+            + "").ToList();
 
         var cbData = _db.GeneralCashBankHeaders.Where(x => !new[] { "V", "REJ" }.Contains(x.Mark)).ToList();
 
