@@ -91,7 +91,7 @@ public class ARMutationReportService : IARMutationReportService
                 var totDlv = _db.SalesInvoiceHeaders.FirstOrDefault(x => x.Code == item.InvCode)?.Total ?? 0m;
                 if (item.Date < Convert.ToDateTime(startDate))
                 {
-                    var bcbData = cbData.Where(x => x.Date < Convert.ToDateTime(startDate)).ToList();
+                    var bcbData = cbData.Where(x => (x.ChequeDate ?? x.Date) < Convert.ToDateTime(startDate)).ToList();
                     var totBcb = cbDetail.Where(x => x.TransCode == item.InvCode && bcbData.Select(y => y.Code).Contains(x.Code)).Sum(x => x.TransAmount);
                     var totCcb = cbDetail.Where(x => x.TransCode == item.InvCode && !bcbData.Select(y => y.Code).Contains(x.Code)).Sum(x => x.TransAmount);
                     var totBcm = invCMData.Where(x => x.InvCode == item.InvCode && cmData.Where(y => y.Date < Convert.ToDateTime(startDate)).Select(y => y.Code).Contains(x.CreditMemoCode)).Sum(x => x.CreditMemoAmount);
@@ -103,7 +103,7 @@ public class ARMutationReportService : IARMutationReportService
                 }
                 else
                 {
-                    var ccbData = cbData.Where(x => x.Date >= Convert.ToDateTime(startDate)).ToList();
+                    var ccbData = cbData.Where(x => (x.ChequeDate ?? x.Date) >= Convert.ToDateTime(startDate)).ToList();
                     var totCcb = cbDetail.Where(x => x.TransCode == item.InvCode && ccbData.Select(y => y.Code).Contains(x.Code)).Sum(x => x.TransAmount);
                     var totCcm = invCMData.Where(x => x.InvCode == item.InvCode && cmData.Select(y => y.Code).Contains(x.CreditMemoCode)).Sum(x => x.CreditMemoAmount);
                     item.PaidAmount = totDlv > 0 ? (totCcb * item.TransAmount / totDlv) + (totCcm * item.TransAmount / totDlv) : 0;
@@ -141,7 +141,7 @@ public class ARMutationReportService : IARMutationReportService
                 {
                     if (itemBB.Date < Convert.ToDateTime(startDate))
                     {
-                        var bcbData = cbData.Where(x => x.Date < Convert.ToDateTime(startDate)).ToList();
+                        var bcbData = cbData.Where(x => (x.ChequeDate ?? x.Date) < Convert.ToDateTime(startDate)).ToList();
                         var totBcb = cbDetail.Where(x => x.TransCode == newData.Code && bcbData.Select(y => y.Code).Contains(x.Code)).Sum(x => x.TransAmount);
                         var totCcb = cbDetail.Where(x => x.TransCode == newData.Code && !bcbData.Select(y => y.Code).Contains(x.Code)).Sum(x => x.TransAmount);
                         newData.BeginningBalance = newData.TransAmount - totBcb;
@@ -151,7 +151,7 @@ public class ARMutationReportService : IARMutationReportService
                     }
                     else
                     {
-                        var ccbData = cbData.Where(x => x.Date >= Convert.ToDateTime(startDate)).ToList();
+                        var ccbData = cbData.Where(x => (x.ChequeDate ?? x.Date) >= Convert.ToDateTime(startDate)).ToList();
                         var totCcb = cbDetail.Where(x => x.TransCode == newData.Code && ccbData.Select(y => y.Code).Contains(x.Code)).Sum(x => x.TransAmount);
                         newData.PaidAmount = totCcb;
                         newData.EndingBalance = newData.TransAmount - newData.PaidAmount;
