@@ -46,8 +46,6 @@ public class ARReportService : IARReportService
 
                 var cbData = _db.GeneralCashBankHeaders.Where(x => !new[] { "V", "REJ" }.Contains(x.Mark) && (x.ChequeDate ?? x.Date) <= Convert.ToDateTime(date)).ToList();
 
-                var todayCbData = cbData.Where(x => (x.ChequeDate ?? x.Date) == Convert.ToDateTime(date)).Select(x => x.Code).ToList();
-
                 var bbData = _db.VwBeginningBalanceARs.Where(x => x.IsActive && x.Date <= Convert.ToDateTime(date)).ToList();
 
                 var cbDetail = _db.GeneralCashBankDetails.Where(x => cbData.Select(c => c.Code).Contains(x.Code)).ToList();
@@ -67,34 +65,27 @@ public class ARReportService : IARReportService
                     itemInv.RemainderAmount = itemInv.TotalAmount - itemInv.PaidAmount;
                 }
 
-                invData = invData.Where(x => x.RemainderAmount > 0).ToList();
-
                 if (slsId <= 0)
                 {
                     foreach (var itemBB in bbData)
                     {
-                        var itemCbDetail = cbDetail.Where(x => x.TransCode == itemBB.Code).ToList();
-                        var totCb = itemCbDetail.Sum(x => x.TransAmount);
-                        var isContainInTodayCbData = itemCbDetail.Where(x => todayCbData.Contains(x.Code)).Any();
-                        if (itemBB.Amount - totCb > 0 || (itemBB.Amount - totCb == 0) && isContainInTodayCbData)
+                        var totCb = cbDetail.Where(x => x.TransCode == itemBB.Code).Sum(x => x.TransAmount);
+                        invData.Add(new Entity.Sales.ReportByInvoiceAR
                         {
-                            invData.Add(new Entity.Sales.ReportByInvoiceAR
-                            {
-                                Date = itemBB.Date,
-                                DueDate = itemBB.DueDate,
-                                Code = itemBB.Code,
-                                OrderCode = "",
-                                CustCode = itemBB.CustCode,
-                                CustName = itemBB.CustName,
-                                TotalAmount = itemBB.Amount,
-                                PaidAmount = totCb,
-                                RemainderAmount = itemBB.Amount - totCb
-                            });
-                        }
+                            Date = itemBB.Date,
+                            DueDate = itemBB.DueDate,
+                            Code = itemBB.Code,
+                            OrderCode = "",
+                            CustCode = itemBB.CustCode,
+                            CustName = itemBB.CustName,
+                            TotalAmount = itemBB.Amount,
+                            PaidAmount = totCb,
+                            RemainderAmount = itemBB.Amount - totCb
+                        });
                     }
                 }
                 
-                //invData = invData.Where(x => x.RemainderAmount > 0).ToList();
+                invData = invData.Where(x => x.RemainderAmount > 0).ToList();
 
                 foreach (var itemCus in cusData)
                 {
