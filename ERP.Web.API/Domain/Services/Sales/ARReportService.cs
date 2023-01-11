@@ -20,11 +20,19 @@ public class ARReportService : IARReportService
         {
             if (sysData.Value == "SI")
             {
-                var cusData = _db.ReportByCustomers.FromSqlRaw(@"select cs.Code, cs.Initial, cs.Name, count(*) as TotalTrans, sum(inv.Total) as TotalAmount,
-                            CAST (0 as decimal) as PaidAmount, CAST (0 as decimal) as RemainderAmount
-                            from General.Customer cs
-                            left join Sales.SalesInvoiceHeader inv on inv.CustCode = cs.Code
-                            Where inv.Mark IN('A', 'PP', 'CMP') Group by cs.Code, cs.Initial, cs.Name").ToList();
+                var cusData = _db.ReportByCustomers.FromSqlRaw(@"SELECT a.Code, a.Initial, a.[Name], SUM(a.TotalTrans) AS TotalTrans, SUM(a.TotalAmount) AS TotalAmount,
+                            CAST (0 as decimal) as PaidAmount, CAST (0 as decimal) as RemainderAmount 
+                            FROM (
+                            select cs.Code, cs.Initial, cs.Name, count(*) as TotalTrans, sum(inv.Total) as TotalAmount
+                                                        from General.Customer cs
+                                                        left join Sales.SalesInvoiceHeader inv on inv.CustCode = cs.Code
+                                                        Where inv.Mark IN('A', 'PP', 'CMP') Group by cs.Code, cs.Initial, cs.Name
+							                            UNION
+                            select cs.Code, cs.Initial, cs.Name, count(*) as TotalTrans, sum(ar.Amount) as TotalAmount
+                                                        from General.Customer cs
+                                                        left join Accounting.BeginningBalanceAR ar on ar.CustCode = cs.Code
+                                                        Where ar.IsActive = 1 Group by cs.Code, cs.Initial, cs.Name) a
+                            Group by a.Code, a.Initial, a.[Name]").ToList();
 
                 var invData = _db.ReportByInvoiceARs.FromSqlRaw(@"SELECT inv.Date, inv.DueDate, inv.Code, inv.SOCode AS OrderCode, 
                             e.Id AS SalesId, e.FirstName AS SalesName,  

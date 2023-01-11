@@ -16,17 +16,24 @@ public class ARAgingReportService : IARAgingReportService
     }
     public DataSourceResult GetData(int type, string date, string custCode, int? slsId, string duration)
     {
-        var cusData = _db.ReportByCustomerAgings.FromSqlRaw(@"SELECT cs.Code, cs.[Name], COUNT(*) AS TotalTrans, CAST (0 AS decimal(19, 6)) AS RemainderAmount, 
+        var cusData = _db.ReportByCustomerAgings.FromSqlRaw(@"SELECT a.Code, a.[Name], SUM(a.TotalTrans) AS TotalTrans, CAST (0 AS decimal(19, 6)) AS RemainderAmount, 
 	                        CAST (0 AS decimal(19, 6)) AS Past90, CAST (0 AS decimal(19, 6)) AS Past61To90, CAST (0 AS decimal(19, 6)) AS Past31To60, 
 							CAST (0 AS decimal(19, 6)) AS Past15To30, CAST (0 AS decimal(19, 6)) AS Past8To14, CAST (0 AS decimal(19, 6)) AS Past1To7,
 							CAST (0 AS decimal(19, 6)) AS DueToday, CAST (0 AS decimal(19, 6)) AS Due1To7, CAST (0 AS decimal(19, 6)) AS Due8To14,
 							CAST (0 AS decimal(19, 6)) AS Due15To30, CAST (0 AS decimal(19, 6)) AS Due31To60, CAST (0 AS decimal(19, 6)) AS Due61To90,
-							CAST (0 AS decimal(19, 6)) AS Due90
-                            FROM General.Customer cs
-                            LEFT JOIN Sales.SalesDeliveryHeader dlv ON dlv.CustCode = cs.Code
-                            LEFT JOIN Sales.SalesInvoiceDetail invD ON invD.DOCode = dlv.Code
-                            LEFT JOIN Sales.SalesInvoiceHeader inv ON inv.Code = invD.Code AND inv.Mark IN('A', 'PP', 'CMP')
-                            WHERE dlv.Mark IN('A', 'INV') AND inv.Total IS NOT NULL GROUP BY cs.Code, cs.Initial, cs.[Name]").ToList();
+							CAST (0 AS decimal(19, 6)) AS Due90 FROM (
+                    SELECT cs.Code, cs.[Name], COUNT(*) AS TotalTrans
+                                                FROM General.Customer cs
+                                                LEFT JOIN Sales.SalesDeliveryHeader dlv ON dlv.CustCode = cs.Code
+                                                LEFT JOIN Sales.SalesInvoiceDetail invD ON invD.DOCode = dlv.Code
+                                                LEFT JOIN Sales.SalesInvoiceHeader inv ON inv.Code = invD.Code AND inv.Mark IN('A', 'PP', 'CMP')
+                                                WHERE dlv.Mark IN('A', 'INV') AND inv.Total IS NOT NULL GROUP BY cs.Code, cs.Initial, cs.[Name]
+							                    UNION
+                    SELECT cs.Code, cs.[Name], COUNT(*) AS TotalTrans
+                                                FROM General.Customer cs
+                                                LEFT JOIN Accounting.BeginningBalanceAR ar on ar.CustCode = cs.Code
+                                                WHERE ar.IsActive = 1 GROUP BY cs.Code, cs.Initial, cs.[Name]) a
+                    GROUP BY a.Code, a.[Name]").ToList();
 
         var query = "";
         var sysData = _db.SystemParameters.FirstOrDefault(x => x.Code == "AR_RECOG_TIME");
