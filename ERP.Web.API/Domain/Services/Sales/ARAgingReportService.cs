@@ -74,7 +74,7 @@ public class ARAgingReportService : IARAgingReportService
                     LEFT JOIN ( 
 			                    SELECT cb_d.TransCode AS Code, SUM(cb_d.Amount) AS Amount FROM Finance.GeneralCashBankDetail cb_d
 			                    LEFT JOIN Finance.GeneralCashBankHeader cb_h ON cb_h.Code = cb_d.Code
-			                    WHERE cb_h.Mark NOT IN ('V', 'REJ') AND cb_d.Src = 'SI' AND cb_d.[Type] = 'AR' AND cb_h.Date <= '{date}'
+			                    WHERE cb_h.Mark NOT IN ('V', 'REJ') AND cb_d.Src = 'SI' AND cb_d.[Type] = 'AR' AND CASE WHEN cb_h.ChequeDate IS NOT NULL AND cb_h.ChequeDate <= '{date}' THEN 1 WHEN cb_h.ChequeDate IS NULL AND cb_h.Date <= '{date}' THEN 1 ELSE 0 END = 1
 			                    GROUP BY cb_d.TransCode
 			                    ) cb ON cb.Code = inv.Code
                     LEFT JOIN (
@@ -125,7 +125,7 @@ public class ARAgingReportService : IARAgingReportService
                     LEFT JOIN ( 
 			                    SELECT cb_d.TransCode AS Code, SUM(cb_d.Amount) AS Amount FROM Finance.GeneralCashBankDetail cb_d
 			                    LEFT JOIN Finance.GeneralCashBankHeader cb_h ON cb_h.Code = cb_d.Code
-			                    WHERE cb_h.Mark NOT IN ('V', 'REJ') AND cb_d.Src = 'SI' AND cb_d.[Type] = 'AR' AND cb_h.Date <= '{date}'
+			                    WHERE cb_h.Mark NOT IN ('V', 'REJ') AND cb_d.Src = 'SI' AND cb_d.[Type] = 'AR' AND CASE WHEN cb_h.ChequeDate IS NOT NULL AND cb_h.ChequeDate <= '{date}' THEN 1 WHEN cb_h.ChequeDate IS NULL AND cb_h.Date <= '{date}' THEN 1 ELSE 0 END = 1
 			                    GROUP BY cb_d.TransCode
 			                    ) cb ON cb.Code = inv.Code
                     LEFT JOIN (
@@ -170,7 +170,7 @@ public class ARAgingReportService : IARAgingReportService
                     LEFT JOIN ( 
 			                    SELECT cb_d.TransCode AS Code, SUM(cb_d.Amount) AS Amount FROM Finance.GeneralCashBankDetail cb_d
 			                    LEFT JOIN Finance.GeneralCashBankHeader cb_h ON cb_h.Code = cb_d.Code
-			                    WHERE cb_h.Mark NOT IN ('V', 'REJ') AND cb_d.[Type] = 'AR' AND cb_h.Date <= '{date}'
+			                    WHERE cb_h.Mark NOT IN ('V', 'REJ') AND cb_d.[Type] = 'AR' AND CASE WHEN cb_h.ChequeDate IS NOT NULL AND cb_h.ChequeDate <= '{date}' THEN 1 WHEN cb_h.ChequeDate IS NULL AND cb_h.Date <= '{date}' THEN 1 ELSE 0 END = 1
 			                    GROUP BY cb_d.TransCode
 			                    ) cb ON cb.Code = bb.Code
                     WHERE bb.IsActive = 1") +

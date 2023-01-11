@@ -26,66 +26,84 @@ public class APAgingReportService : IAPAgingReportService
                             LEFT JOIN Purchasing.PurchaseInvoiceHeader inv on inv.SupCode = sp.Code
                             WHERE inv.Mark IN('A', 'PP', 'CMP') GROUP BY sp.Code, sp.Initial, sp.Name").ToList();
 
-        var invData = _db.ReportByInvoiceAPAgings.FromSqlRaw(@"WITH cte_apa_report AS (SELECT inv.[Date], inv.DueDate, inv.Code, inv.POCode AS OrderCode, inv.SupCode, sp.[Name] AS SupName, inv.Total - inv.PaidAmount AS RemainderAmount,
+        var invData = _db.ReportByInvoiceAPAgings.FromSqlRaw($@"WITH cte_apa_report AS (SELECT inv.[Date], inv.DueDate, inv.Code, inv.POCode AS OrderCode, inv.SupCode, sp.[Name] AS SupName, inv.Total - (ISNULL(pi_dm.Amount, 0) + ISNULL(cb.Amount, 0)) AS RemainderAmount,
 							CAST (CASE WHEN DATEDIFF(DAY, inv.DueDate, dbo.udf_current_local_time()) > 90 THEN
-							inv.Total - inv.PaidAmount ELSE 0 END AS decimal(19, 6)) AS Past90,
+							inv.Total - (ISNULL(pi_dm.Amount, 0) + ISNULL(cb.Amount, 0)) ELSE 0 END AS decimal(19, 6)) AS Past90,
 							CAST (CASE WHEN DATEDIFF(DAY, inv.DueDate, dbo.udf_current_local_time()) > 60 AND DATEDIFF(DAY, inv.DueDate, dbo.udf_current_local_time()) <= 90 THEN
-							inv.Total - inv.PaidAmount ELSE 0 END AS decimal(19, 6)) AS Past61To90,
+							inv.Total - (ISNULL(pi_dm.Amount, 0) + ISNULL(cb.Amount, 0)) ELSE 0 END AS decimal(19, 6)) AS Past61To90,
 							CAST (CASE WHEN DATEDIFF(DAY, inv.DueDate, dbo.udf_current_local_time()) > 30 AND DATEDIFF(DAY, inv.DueDate, dbo.udf_current_local_time()) <= 60 THEN
-							inv.Total - inv.PaidAmount ELSE 0 END AS decimal(19, 6)) AS Past31To60,
+							inv.Total - (ISNULL(pi_dm.Amount, 0) + ISNULL(cb.Amount, 0)) ELSE 0 END AS decimal(19, 6)) AS Past31To60,
 							CAST (CASE WHEN DATEDIFF(DAY, inv.DueDate, dbo.udf_current_local_time()) >= 15 AND DATEDIFF(DAY, inv.DueDate, dbo.udf_current_local_time()) <= 30 THEN
-							inv.Total - inv.PaidAmount ELSE 0 END AS decimal(19, 6)) AS Past15To30,
+							inv.Total - (ISNULL(pi_dm.Amount, 0) + ISNULL(cb.Amount, 0)) ELSE 0 END AS decimal(19, 6)) AS Past15To30,
 							CAST (CASE WHEN DATEDIFF(DAY, inv.DueDate, dbo.udf_current_local_time()) >= 8 AND DATEDIFF(DAY, inv.DueDate, dbo.udf_current_local_time()) <= 14 THEN
-							inv.Total - inv.PaidAmount ELSE 0 END AS decimal(19, 6)) AS Past8To14,
+							inv.Total - (ISNULL(pi_dm.Amount, 0) + ISNULL(cb.Amount, 0)) ELSE 0 END AS decimal(19, 6)) AS Past8To14,
 							CAST (CASE WHEN DATEDIFF(DAY, inv.DueDate, dbo.udf_current_local_time()) >= 1 AND DATEDIFF(DAY, inv.DueDate, dbo.udf_current_local_time()) <= 7 THEN
-							inv.Total - inv.PaidAmount ELSE 0 END AS decimal(19, 6)) AS Past1To7,
+							inv.Total - (ISNULL(pi_dm.Amount, 0) + ISNULL(cb.Amount, 0)) ELSE 0 END AS decimal(19, 6)) AS Past1To7,
 							CAST (CASE WHEN DATEDIFF(DAY, inv.DueDate, dbo.udf_current_local_time()) = 0 THEN
-							inv.Total - inv.PaidAmount ELSE 0 END AS decimal(19, 6)) AS DueToday,
+							inv.Total - (ISNULL(pi_dm.Amount, 0) + ISNULL(cb.Amount, 0)) ELSE 0 END AS decimal(19, 6)) AS DueToday,
 							CAST (CASE WHEN DATEDIFF(DAY, dbo.udf_current_local_time(), inv.DueDate) >= 1 AND DATEDIFF(DAY, dbo.udf_current_local_time(), inv.DueDate) <= 7 THEN
-							inv.Total - inv.PaidAmount ELSE 0 END AS decimal(19, 6)) AS Due1To7,
+							inv.Total - (ISNULL(pi_dm.Amount, 0) + ISNULL(cb.Amount, 0)) ELSE 0 END AS decimal(19, 6)) AS Due1To7,
 							CAST (CASE WHEN DATEDIFF(DAY, dbo.udf_current_local_time(), inv.DueDate) >= 8 AND DATEDIFF(DAY, dbo.udf_current_local_time(), inv.DueDate) <= 14 THEN
-							inv.Total - inv.PaidAmount ELSE 0 END AS decimal(19, 6)) AS Due8To14,
+							inv.Total - (ISNULL(pi_dm.Amount, 0) + ISNULL(cb.Amount, 0)) ELSE 0 END AS decimal(19, 6)) AS Due8To14,
 							CAST (CASE WHEN DATEDIFF(DAY, dbo.udf_current_local_time(), inv.DueDate) >= 15 AND DATEDIFF(DAY, dbo.udf_current_local_time(), inv.DueDate) <= 30 THEN
-							inv.Total - inv.PaidAmount ELSE 0 END AS decimal(19, 6)) AS Due15To30,
+							inv.Total - (ISNULL(pi_dm.Amount, 0) + ISNULL(cb.Amount, 0)) ELSE 0 END AS decimal(19, 6)) AS Due15To30,
 							CAST (CASE WHEN DATEDIFF(DAY, dbo.udf_current_local_time(), inv.DueDate) > 30 AND DATEDIFF(DAY, dbo.udf_current_local_time(), inv.DueDate) <= 60 THEN
-							inv.Total - inv.PaidAmount ELSE 0 END AS decimal(19, 6)) AS Due31To60,
+							inv.Total - (ISNULL(pi_dm.Amount, 0) + ISNULL(cb.Amount, 0)) ELSE 0 END AS decimal(19, 6)) AS Due31To60,
 							CAST (CASE WHEN DATEDIFF(DAY, dbo.udf_current_local_time(), inv.DueDate) > 60 AND DATEDIFF(DAY, dbo.udf_current_local_time(), inv.DueDate) <= 90 THEN
-							inv.Total - inv.PaidAmount ELSE 0 END AS decimal(19, 6)) AS Due61To90,
+							inv.Total - (ISNULL(pi_dm.Amount, 0) + ISNULL(cb.Amount, 0)) ELSE 0 END AS decimal(19, 6)) AS Due61To90,
 							CAST (CASE WHEN DATEDIFF(DAY, dbo.udf_current_local_time(), inv.DueDate) > 90 THEN
-							inv.Total - inv.PaidAmount ELSE 0 END AS decimal(19, 6)) AS Due90
+							inv.Total - (ISNULL(pi_dm.Amount, 0) + ISNULL(cb.Amount, 0)) ELSE 0 END AS decimal(19, 6)) AS Due90
 							FROM Purchasing.PurchaseInvoiceHeader inv
 							LEFT JOIN General.Supplier sp on sp.Code = inv.SupCode
+                            LEFT JOIN ( 
+			                            SELECT cb_d.TransCode AS Code, SUM(cb_d.Amount) AS Amount FROM Finance.GeneralCashBankDetail cb_d
+			                            LEFT JOIN Finance.GeneralCashBankHeader cb_h ON cb_h.Code = cb_d.Code
+			                            WHERE cb_h.Mark NOT IN ('V', 'REJ') AND cb_d.Src = 'PI' AND cb_d.[Type] = 'AP' AND CASE WHEN cb_h.ChequeDate IS NOT NULL AND cb_h.ChequeDate <= '{date}' THEN 1 WHEN cb_h.ChequeDate IS NULL AND cb_h.Date <= '{date}' THEN 1 ELSE 0 END = 1
+			                            GROUP BY cb_d.TransCode
+			                            ) cb ON cb.Code = inv.Code
+                            LEFT JOIN (
+			                            SELECT InvCode AS Code, SUM(DebitMemoAmount) AS Amount FROM Purchasing.PurchaseInvoiceDebitMemo pi_dm
+			                            LEFT JOIN Purchasing.DebitMemo dm ON dm.Code = pi_dm.DebitMemoCode
+			                            WHERE dm.Mark <> 'V' AND dm.Date <= '{date}'
+			                            GROUP BY InvCode
+			                            ) pi_dm ON  pi_dm.Code = inv.Code
 							WHERE inv.Mark IN('A', 'PP', 'CMP')
 							UNION
-							SELECT bb.[Date], bb.DueDate, bb.Code, '' AS OrderCode, bb.SupCode, bb.SupName, bb.Amount - bb.PaidAmount AS RemainderAmount,
+							SELECT bb.[Date], bb.DueDate, bb.Code, '' AS OrderCode, bb.SupCode, bb.SupName, bb.Amount - ISNULL(cb.Amount, 0) AS RemainderAmount,
 							CAST (CASE WHEN DATEDIFF(DAY, bb.DueDate, dbo.udf_current_local_time()) > 90 THEN
-							bb.Amount - bb.PaidAmount ELSE 0 END AS decimal(19, 6)) AS Past90,
+							bb.Amount - ISNULL(cb.Amount, 0) ELSE 0 END AS decimal(19, 6)) AS Past90,
 							CAST (CASE WHEN DATEDIFF(DAY, bb.DueDate, dbo.udf_current_local_time()) > 60 AND DATEDIFF(DAY, bb.DueDate, dbo.udf_current_local_time()) <= 90 THEN
-							bb.Amount - bb.PaidAmount ELSE 0 END AS decimal(19, 6)) AS Past61To90,
+							bb.Amount - ISNULL(cb.Amount, 0) ELSE 0 END AS decimal(19, 6)) AS Past61To90,
 							CAST (CASE WHEN DATEDIFF(DAY, bb.DueDate, dbo.udf_current_local_time()) > 30 AND DATEDIFF(DAY, bb.DueDate, dbo.udf_current_local_time()) <= 60 THEN
-							bb.Amount - bb.PaidAmount ELSE 0 END AS decimal(19, 6)) AS Past31To60,
+							bb.Amount - ISNULL(cb.Amount, 0) ELSE 0 END AS decimal(19, 6)) AS Past31To60,
 							CAST (CASE WHEN DATEDIFF(DAY, bb.DueDate, dbo.udf_current_local_time()) >= 15 AND DATEDIFF(DAY, bb.DueDate, dbo.udf_current_local_time()) <= 30 THEN
-							bb.Amount - bb.PaidAmount ELSE 0 END AS decimal(19, 6)) AS Past15To30,
+							bb.Amount - ISNULL(cb.Amount, 0) ELSE 0 END AS decimal(19, 6)) AS Past15To30,
 							CAST (CASE WHEN DATEDIFF(DAY, bb.DueDate, dbo.udf_current_local_time()) >= 8 AND DATEDIFF(DAY, bb.DueDate, dbo.udf_current_local_time()) <= 14 THEN
-							bb.Amount - bb.PaidAmount ELSE 0 END AS decimal(19, 6)) AS Past8To14,
+							bb.Amount - ISNULL(cb.Amount, 0) ELSE 0 END AS decimal(19, 6)) AS Past8To14,
 							CAST (CASE WHEN DATEDIFF(DAY, bb.DueDate, dbo.udf_current_local_time()) >= 1 AND DATEDIFF(DAY, bb.DueDate, dbo.udf_current_local_time()) <= 7 THEN
-							bb.Amount - bb.PaidAmount ELSE 0 END AS decimal(19, 6)) AS Past1To7,
+							bb.Amount - ISNULL(cb.Amount, 0) ELSE 0 END AS decimal(19, 6)) AS Past1To7,
 							CAST (CASE WHEN DATEDIFF(DAY, bb.DueDate, dbo.udf_current_local_time()) = 0 THEN
-							bb.Amount - bb.PaidAmount ELSE 0 END AS decimal(19, 6)) AS DueToday,
+							bb.Amount - ISNULL(cb.Amount, 0) ELSE 0 END AS decimal(19, 6)) AS DueToday,
 							CAST (CASE WHEN DATEDIFF(DAY, dbo.udf_current_local_time(), bb.DueDate) >= 1 AND DATEDIFF(DAY, dbo.udf_current_local_time(), bb.DueDate) <= 7 THEN
-							bb.Amount - bb.PaidAmount ELSE 0 END AS decimal(19, 6)) AS Due1To7,
+							bb.Amount - ISNULL(cb.Amount, 0) ELSE 0 END AS decimal(19, 6)) AS Due1To7,
 							CAST (CASE WHEN DATEDIFF(DAY, dbo.udf_current_local_time(), bb.DueDate) >= 8 AND DATEDIFF(DAY, dbo.udf_current_local_time(), bb.DueDate) <= 14 THEN
-							bb.Amount - bb.PaidAmount ELSE 0 END AS decimal(19, 6)) AS Due8To14,
+							bb.Amount - ISNULL(cb.Amount, 0) ELSE 0 END AS decimal(19, 6)) AS Due8To14,
 							CAST (CASE WHEN DATEDIFF(DAY, dbo.udf_current_local_time(), bb.DueDate) >= 15 AND DATEDIFF(DAY, dbo.udf_current_local_time(), bb.DueDate) <= 30 THEN
-							bb.Amount - bb.PaidAmount ELSE 0 END AS decimal(19, 6)) AS Due15To30,
+							bb.Amount - ISNULL(cb.Amount, 0) ELSE 0 END AS decimal(19, 6)) AS Due15To30,
 							CAST (CASE WHEN DATEDIFF(DAY, dbo.udf_current_local_time(), bb.DueDate) > 30 AND DATEDIFF(DAY, dbo.udf_current_local_time(), bb.DueDate) <= 60 THEN
-							bb.Amount - bb.PaidAmount ELSE 0 END AS decimal(19, 6)) AS Due31To60,
+							bb.Amount - ISNULL(cb.Amount, 0) ELSE 0 END AS decimal(19, 6)) AS Due31To60,
 							CAST (CASE WHEN DATEDIFF(DAY, dbo.udf_current_local_time(), bb.DueDate) > 60 AND DATEDIFF(DAY, dbo.udf_current_local_time(), bb.DueDate) <= 90 THEN
-							bb.Amount - bb.PaidAmount ELSE 0 END AS decimal(19, 6)) AS Due61To90,
+							bb.Amount - ISNULL(cb.Amount, 0) ELSE 0 END AS decimal(19, 6)) AS Due61To90,
 							CAST (CASE WHEN DATEDIFF(DAY, dbo.udf_current_local_time(), bb.DueDate) > 90 THEN
-							bb.Amount - bb.PaidAmount ELSE 0 END AS decimal(19, 6)) AS Due90
+							bb.Amount - ISNULL(cb.Amount, 0) ELSE 0 END AS decimal(19, 6)) AS Due90
 							FROM Accounting.vwBeginningBalanceAP bb
-							WHERE bb.IsActive = 1)
+                            LEFT JOIN ( 
+			                    SELECT cb_d.TransCode AS Code, SUM(cb_d.Amount) AS Amount FROM Finance.GeneralCashBankDetail cb_d
+			                    LEFT JOIN Finance.GeneralCashBankHeader cb_h ON cb_h.Code = cb_d.Code
+			                    WHERE cb_h.Mark NOT IN ('V', 'REJ') AND cb_d.[Type] = 'AP' AND CASE WHEN cb_h.ChequeDate IS NOT NULL AND cb_h.ChequeDate <= '{date}' THEN 1 WHEN cb_h.ChequeDate IS NULL AND cb_h.Date <= '{date}' THEN 1 ELSE 0 END = 1
+			                    GROUP BY cb_d.TransCode
+			                    ) cb ON cb.Code = bb.Code
+                            WHERE bb.IsActive = 1)
 							SELECT *FROM cte_apa_report " + (string.IsNullOrEmpty(duration) ? "" : $"WHERE {duration.Replace("'", "''")} > 0")).ToList();
 
         invData = invData.Where(x => x.Date <= Convert.ToDateTime(date)).ToList();
