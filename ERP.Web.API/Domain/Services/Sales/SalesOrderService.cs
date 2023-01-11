@@ -684,8 +684,8 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                                         {
                                             var curUom = uomConversions.FirstOrDefault(x => x.Id == item.UnitId);
                                             var itemUom = uomConversions.FirstOrDefault(x => x.Id == ctItem.UomSellId);
-                                            var discAmount = tierData.IsPercentage ? data.SubTotal * (tierData.Value / 100) : tierData.Value;
-                                            var prorateDisc = (discAmount / data.SubTotal * (item.Qty * (item.UnitPrice - item.Disc))) / item.Qty;
+                                            var discAmount = tierData.IsPercentage ? sumDetail * (tierData.Value / 100) : tierData.Value;
+                                            var prorateDisc = discAmount / sumDetail * (item.UnitPrice - item.Disc);
 
                                             discPromo.Add(new SalesOrderDetailDiscount
                                             {
@@ -709,8 +709,8 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                                         {
                                             var curUom = uomConversions.FirstOrDefault(x => x.Id == item.UnitId);
                                             var itemUom = uomConversions.FirstOrDefault(x => x.Id == ctItem.UomSellId);
-                                            var discAmount = tierData5.IsPercentage ? data.SubTotal * (tierData5.Value / 100) : tierData5.Value;
-                                            var prorateDisc = (discAmount / data.SubTotal * (item.Qty * (item.UnitPrice - item.Disc))) / item.Qty;
+                                            var discAmount = tierData5.IsPercentage ? sumDetail * (tierData5.Value / 100) : tierData5.Value;
+                                            var prorateDisc = discAmount / sumDetail * (item.UnitPrice - item.Disc);
 
                                             discPromo.Add(new SalesOrderDetailDiscount
                                             {
@@ -733,9 +733,6 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                     }
                 }
 
-                item.Disc += discPromo.Sum(x => x.Amount);
-
-                var taxData = taxes.FirstOrDefault(x => x.Id == item.TaxId);
                 var discHeaderProrate = 0m;
                 if (data.FinalDiscPercent > 0)
                 {
@@ -747,6 +744,9 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                     discHeaderProrate = data.FinalDisc / sumDetail * (item.UnitPrice - item.Disc);
                 }
 
+                item.Disc += discPromo.Sum(x => x.Amount);
+
+                var taxData = taxes.FirstOrDefault(x => x.Id == item.TaxId);
                 if (data.IncludeTax)
                 {
                     item.TaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) - ((item.UnitPrice - item.Disc - discHeaderProrate) / (1 + (taxData.Rate / 100)));
@@ -1864,8 +1864,8 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                                         {
                                             var curUom = uomConversions.FirstOrDefault(x => x.Id == item.UnitId);
                                             var itemUom = uomConversions.FirstOrDefault(x => x.Id == ctItem.UomSellId);
-                                            var discAmount = tierData.IsPercentage ? data.SubTotal * (tierData.Value / 100) : tierData.Value;
-                                            var prorateDisc = (discAmount / data.SubTotal * (item.Qty * (item.UnitPrice - item.Disc))) / item.Qty;
+                                            var discAmount = tierData.IsPercentage ? sumDetail * (tierData.Value / 100) : tierData.Value;
+                                            var prorateDisc = discAmount / sumDetail * (item.UnitPrice - item.Disc);
 
                                             discPromo.Add(new SalesOrderDetailDiscount
                                             {
@@ -1889,8 +1889,8 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                                         {
                                             var curUom = uomConversions.FirstOrDefault(x => x.Id == item.UnitId);
                                             var itemUom = uomConversions.FirstOrDefault(x => x.Id == ctItem.UomSellId);
-                                            var discAmount = tierData5.IsPercentage ? data.SubTotal * (tierData5.Value / 100) : tierData5.Value;
-                                            var prorateDisc = (discAmount / data.SubTotal * (item.Qty * (item.UnitPrice - item.Disc))) / item.Qty;
+                                            var discAmount = tierData5.IsPercentage ? sumDetail * (tierData5.Value / 100) : tierData5.Value;
+                                            var prorateDisc = discAmount / sumDetail * (item.UnitPrice - item.Disc);
 
                                             discPromo.Add(new SalesOrderDetailDiscount
                                             {
@@ -1913,17 +1913,6 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                     }
                 }
 
-                foreach (var discItem in discPromo)
-                {
-                    if (!data.ListPromo.Select(x => x.PromoCode).Contains(discItem.PromoCode)
-                        || discItem.PromoCode == null
-                        || data.ListPromo.Where(x => x.IsActive).Select(x => x.PromoCode).Contains(discItem.PromoCode))
-                    {
-                        item.Disc += discItem.Amount;
-                    }
-                }
-
-                var taxData = taxes.FirstOrDefault(x => x.Id == item.TaxId);
                 var discHeaderProrate = 0m;
                 if (data.FinalDiscPercent > 0)
                 {
@@ -1935,6 +1924,17 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                     discHeaderProrate = data.FinalDisc / sumDetail * (item.UnitPrice - item.Disc);
                 }
 
+                foreach (var discItem in discPromo)
+                {
+                    if (!data.ListPromo.Select(x => x.PromoCode).Contains(discItem.PromoCode)
+                        || discItem.PromoCode == null
+                        || data.ListPromo.Where(x => x.IsActive).Select(x => x.PromoCode).Contains(discItem.PromoCode))
+                    {
+                        item.Disc += discItem.Amount;
+                    }
+                }
+
+                var taxData = taxes.FirstOrDefault(x => x.Id == item.TaxId);
                 if (data.IncludeTax)
                 {
                     item.TaxAmount = (item.UnitPrice - item.Disc - discHeaderProrate) - ((item.UnitPrice - item.Disc - discHeaderProrate) / (1 + (taxData.Rate / 100)));
