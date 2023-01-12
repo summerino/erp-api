@@ -724,18 +724,19 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                 }
 
                 var discHeaderProrate = 0m;
-                if (data.FinalDiscPercent > 0)
-                {
-                    var amountPercent = sumDetail * (data.FinalDiscPercent / 100);
-                    discHeaderProrate = amountPercent / sumDetail * (item.UnitPrice - item.Disc);
-                }
-                else if (data.FinalDisc > 0)
+                if (data.FinalDisc > 0)
                 {
                     discHeaderProrate = data.FinalDisc / sumDetail * (item.UnitPrice - item.Disc);
                 }
 
                 item.Disc += discPromo.Sum(x => x.Amount);
 
+                if (data.FinalDiscPercent > 0)
+                {
+                    var amountPercent = sumDetail * (data.FinalDiscPercent / 100);
+                    discHeaderProrate = amountPercent / sumDetail * (item.UnitPrice - item.Disc);
+                }
+                 
                 var taxData = taxes.FirstOrDefault(x => x.Id == item.TaxId);
                 if (data.IncludeTax)
                 {
@@ -1962,12 +1963,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                 }
 
                 var discHeaderProrate = 0m;
-                if (data.FinalDiscPercent > 0)
-                {
-                    var amountPercent = sumDetail * (data.FinalDiscPercent / 100);
-                    discHeaderProrate = amountPercent / sumDetail * (item.UnitPrice - item.Disc);
-                }
-                else if (data.FinalDisc > 0)
+                if (data.FinalDisc > 0)
                 {
                     discHeaderProrate = data.FinalDisc / sumDetail * (item.UnitPrice - item.Disc);
                 }
@@ -1982,6 +1978,12 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                     }
                 }
 
+                if (data.FinalDiscPercent > 0)
+                {
+                    var amountPercent = sumDetail * (data.FinalDiscPercent / 100);
+                    discHeaderProrate = amountPercent / sumDetail * (item.UnitPrice - item.Disc);
+                }
+                    
                 var taxData = taxes.FirstOrDefault(x => x.Id == item.TaxId);
                 if (data.IncludeTax)
                 {
