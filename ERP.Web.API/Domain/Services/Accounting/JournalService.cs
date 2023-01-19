@@ -4465,6 +4465,53 @@ public class JournalService : IJournalService
                 latestDate = item.Date;
             }
 
+            if (listSM.Where(x => x.BaseNettPrice == 0).Any())
+            {
+                foreach (var item in listSM.Where(x => x.BaseNettPrice == 0))
+                {
+                    if (item.Src == "RCV")
+                    {
+                        short prType = 0;
+                        var itemRcvData = rcvData.FirstOrDefault(y => y.Code == item.RefCode1);
+                        short rcvSrcTrans = itemRcvData?.SrcTrans ?? 0;
+                        if (rcvSrcTrans == 2)
+                            prType = prData.FirstOrDefault(x => x.Code == (itemRcvData?.TransCode ?? ""))?.Type ?? 0;
+
+                        if (prType == 2) // same item
+                        {
+                            var refSM = listSM.FirstOrDefault(x => x.ItemId == item.ItemId && x.UnitId == item.UnitId &&
+                                                                   x.RefCode1 == item.RefCode2);
+                            if (refSM != null)
+                            {
+                                item.BaseNettPrice = refSM.BaseNettPrice;
+                                item.NettPrice = refSM.NettPrice;
+                            }
+
+                            latestStockValue += item.BaseNettPrice * item.BaseQty;
+                            latestQty += item.BaseQty;
+                        }
+                    }
+                    else if (item.Src == "TS")
+                    {
+                        var tsType = tsData.FirstOrDefault(x => x.Code == item.RefCode1)?.Type ?? "";
+
+                        if (tsType == "IN")
+                        {
+                            var refSM = listSM.FirstOrDefault(x => x.ItemId == item.ItemId && x.UnitId == item.UnitId &&
+                                                                   x.RefCode1 == item.RefCode2);
+                            if (refSM != null)
+                            {
+                                item.BaseNettPrice = refSM.BaseNettPrice;
+                                item.NettPrice = refSM.NettPrice;
+                            }
+
+                            latestStockValue += item.BaseNettPrice * item.BaseQty;
+                            latestQty += item.BaseQty;
+                        }
+                    }
+                }
+            }
+
             var saved = false;
             while (!saved)
             {
