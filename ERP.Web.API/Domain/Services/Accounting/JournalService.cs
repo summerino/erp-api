@@ -879,7 +879,7 @@ public class JournalService : IJournalService
                             Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_INVENTORY")?.Value ?? ""} {itemFreeDetail.Item.Initial}").Trim(),
                             RefCode1 = itemData.Dlvheader.TransCode,
                             RefCode2 = itemFreeDetail.Item.Initial,
-                            Group = 1,
+                            Group = 3,
                             CurrCode = itemData.Dlvheader.CurrCode,
                             Period = itemData.Dlvheader.Date.ToString("yyyyMMdd"),
                             Type = "C",
