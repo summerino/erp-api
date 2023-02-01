@@ -41,7 +41,41 @@ public class SalesInvoiceReportService : ISalesInvoiceReportService
                             FROM cte_header ch
                             GROUP BY ch.[Date], ch.DueDate, ch.Code, ch.OrderCode, ch.SalesInitial, ch.SalesName, ch.CustCode, ch.CustName, ch.[Status]").ToList();
 
-        var siDetailData = _db.ReportByDetailSIs.FromSqlRaw(@"SELECT inv.[Date], inv.DueDate, inv.Code,
+        var siDetailData = _db.ReportByDetailSIs.FromSqlRaw(@"WITH cte_detail_si AS (SELECT inv.[Date], inv.DueDate, inv.Code,
+                            so.SalesInitial, so.SalesName, inv.CustCode,inv.CustName,
+                            im.Initial AS ItemInitial, im.[Name] AS ItemName, dlv_d.Qty,
+                            dlv_d.UnitId, dlv_d.UnitName, dlv_d.UnitPrice AS GrossAmount,
+                            CAST(0 as decimal) AS Disc, CAST(0 as decimal) AS DiscHeader,
+                            CAST(0 as decimal) AS SubTotal,
+                            CAST(0 as decimal) AS DPP, CAST(0 as decimal) AS TaxAmount, CAST(0 as decimal) AS ExemptTaxAmount, CAST(0 as decimal) AS NettPrice,
+                            CAST(0 as decimal) AS TotalGrossAmount, CAST(0 as decimal) AS TotalAfterDisc,
+                            CAST(0 as decimal) AS TotalDisc, CAST(0 as decimal) AS TotalDiscHeader,
+                            CAST(0 as decimal) AS TotalDPP, CAST(0 as decimal) AS TotalTaxAmount, CAST(0 as decimal) AS TotalExemptTaxAmount, CAST(0 as decimal) AS Total, CAST(0 as decimal) AS TotalNettPrice,
+                            CASE inv.Mark
+	                            WHEN 'A' THEN 'Aktif'
+	                            WHEN 'V' THEN 'Void'
+	                            WHEN 'PP' THEN 'Aktif'
+	                            WHEN 'CMP' THEN 'Aktif' END AS [Status],
+                            ic.Id AS CategoryId, ic.Initial AS CategoryInitial,
+                            inv.SOCode AS OrderCode, dlv.TaxInvoiceDate, dlv.TaxInvoiceNo, dlv.Code AS DoCode
+                            FROM Sales.SalesInvoiceDetail inv_d
+                            LEFT JOIN Sales.vwSalesInvoiceHeader inv ON inv.Code = inv_d.Code
+                            LEFT JOIN Sales.vwSalesDeliveryHeader dlv ON inv_d.DOCode = dlv.Code  
+                            LEFT JOIN (
+                            SELECT do_d.*, uom.Initial AS UomInitial, uom_c.UnitEquivalent AS UnitName
+                            FROM Sales.SalesDeliveryDetailFreeGood do_d
+                            LEFT JOIN Inventory.UoM uom  
+	                            ON uom.Id = do_d.UomId  
+                            LEFT JOIN Inventory.UoMConversion uom_c  
+	                            ON uom_c.Id = do_d.UnitId) dlv_d on dlv_d.Code = dlv.Code
+                            LEFT JOIN Sales.vwSalesOrderHeader so ON so.Code = inv.SOCode
+                            LEFT JOIN Inventory.Item im ON im.Id = dlv_d.ItemId
+                            LEFT JOIN Inventory.ItemCategory ic ON ic.Id = im.CategoryId" +
+                            (string.IsNullOrEmpty(status) ? "" : status.Replace("'", "''").Equals("A") ? $" WHERE inv.Mark IN('A', 'PP', 'CMP')" : $" WHERE inv.Mark = '{status.Replace("'", "''")}'") +
+                            (salesId.HasValue ? string.IsNullOrEmpty(status) ? $" WHERE so.SalesBy = {salesId.Value}" : $" AND so.SalesBy = {salesId.Value}" : "") +
+                            (!itemId.HasValue || itemId <= 0 ? "" : string.IsNullOrEmpty(status) && !salesId.HasValue ? $" WHERE dlv_d.ItemId = {itemId}" : $" AND dlv_d.ItemId = {itemId}") +
+                            @" UNION
+                            SELECT inv.[Date], inv.DueDate, inv.Code,
                             so.SalesInitial, so.SalesName, inv.CustCode,inv.CustName,
                             im.Initial AS ItemInitial, im.[Name] AS ItemName, dlv_d.Qty,
                             dlv_d.UnitId, dlv_d.UnitName, dlv_d.UnitPrice AS GrossAmount,
@@ -66,8 +100,10 @@ public class SalesInvoiceReportService : ISalesInvoiceReportService
                             LEFT JOIN Inventory.Item im ON im.Id = dlv_d.ItemId
                             LEFT JOIN Inventory.ItemCategory ic ON ic.Id = im.CategoryId" +
                             (string.IsNullOrEmpty(status) ? "" : status.Replace("'", "''").Equals("A") ? $" WHERE inv.Mark IN('A', 'PP', 'CMP')" : $" WHERE inv.Mark = '{status.Replace("'", "''")}'") +
-                            (salesId.HasValue ? string.IsNullOrEmpty(status) ? $" WHERE so.SalesBy = {salesId.Value}" : $" AND so.SalesBy = {salesId.Value}" : "" ) +
-                            (!itemId.HasValue || itemId <= 0 ? "" : string.IsNullOrEmpty(status) && !salesId.HasValue ? $" WHERE dlv_d.ItemId = {itemId}" : $" AND dlv_d.ItemId = {itemId}")).ToList();
+                            (salesId.HasValue ? string.IsNullOrEmpty(status) ? $" WHERE so.SalesBy = {salesId.Value}" : $" AND so.SalesBy = {salesId.Value}" : "") +
+                            (!itemId.HasValue || itemId <= 0 ? "" : string.IsNullOrEmpty(status) && !salesId.HasValue ? $" WHERE dlv_d.ItemId = {itemId}" : $" AND dlv_d.ItemId = {itemId}") +
+                            @")SELECT *FROM cte_detail_si
+                            WHERE ItemInitial IS NOT NULL").ToList();
 
         var itemData = _db.ReportByItemSales.FromSqlRaw(@"SELECT im.Initial, im.[Name], 
                             ic.Id AS CategoryId, ic.Initial AS CategoryInitial,
@@ -76,7 +112,10 @@ public class SalesInvoiceReportService : ISalesInvoiceReportService
                             CAST (0 AS decimal) AS Disc, CAST (0 AS decimal) AS DiscHeader, CAST (0 AS decimal) AS Dpp,
                             CAST (0 AS decimal) AS TaxAmount, CAST (0 AS decimal) AS ExemptTaxAmount, CAST (0 AS decimal) AS Total, CAST (0 AS decimal) AS GrossAmount
                             FROM Inventory.Item im
-                            LEFT JOIN Sales.SalesDeliveryDetail dlv_d ON dlv_d.ItemId = im.Id
+                            LEFT JOIN (
+                            SELECT ItemId, Code, UnitId FROM Sales.SalesDeliveryDetail
+                            UNION
+                            SELECT ItemId, Code, UnitId FROM Sales.SalesDeliveryDetailFreeGood) dlv_d ON dlv_d.ItemId = im.Id
                             LEFT JOIN Sales.SalesInvoiceDetail inv_d ON inv_d.DOCode = dlv_d.Code
                             LEFT JOIN Inventory.ItemCategory ic ON ic.Id = im.CategoryId
                             LEFT JOIN Inventory.UoMConversion uc ON uc.Id = dlv_d.UnitId
@@ -98,12 +137,15 @@ public class SalesInvoiceReportService : ISalesInvoiceReportService
                             CAST (0 AS decimal) AS TaxAmount,  CAST (0 AS decimal) AS ExemptTaxAmount, CAST (0 AS decimal) AS Total, CAST (0 AS decimal) AS GrossAmount
                             FROM Inventory.ItemCategory ic
                             LEFT JOIN Inventory.Item im ON im.CategoryId = ic.Id 
-                            LEFT JOIN Sales.SalesDeliveryDetail dlv_d ON dlv_d.ItemId = im.Id
+                            LEFT JOIN (
+                            SELECT ItemId, Code, UnitId FROM Sales.SalesDeliveryDetail
+                            UNION
+                            SELECT ItemId, Code, UnitId FROM Sales.SalesDeliveryDetailFreeGood) dlv_d ON dlv_d.ItemId = im.Id
                             LEFT JOIN Sales.SalesInvoiceDetail inv_d ON inv_d.DOCode = dlv_d.Code
                             LEFT JOIN Inventory.UoMConversion uc ON uc.Id = dlv_d.UnitId
                             WHERE uc.Id IS NOT NULL" +
-                                                                        (!categoryId.HasValue || categoryId <= 0 ? "" : $" AND ic.Id = {categoryId}") +
-                                                                        " GROUP BY ic.Id, ic.Initial, ic.[Name], uc.Id, uc.UnitEquivalent").ToList();
+                            (!categoryId.HasValue || categoryId <= 0 ? "" : $" AND ic.Id = {categoryId}") +
+                            " GROUP BY ic.Id, ic.Initial, ic.[Name], uc.Id, uc.UnitEquivalent").ToList();
 
         if (!string.IsNullOrEmpty(startDate) && !string.IsNullOrEmpty(endDate))
         {
