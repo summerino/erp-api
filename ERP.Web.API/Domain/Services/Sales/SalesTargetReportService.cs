@@ -43,10 +43,46 @@ public class SalesTargetReportService : ISalesTargetReportService
                             LEFT JOIN Inventory.ItemGroup ig ON ig.Id = ic.GroupId
                             LEFT JOIN Inventory.ItemGroupSubGroup igs ON igs.ItemGroupId = ig.Id
                             WHERE inv.Mark NOT IN ('V', 'OL')" +
-                          (!salesId.HasValue || salesId <= 0 ? "" : $" AND so.SalesBy = {salesId}") +
-                          (!groupId.HasValue || groupId <= 0 ? "" : $" AND ig.Id = {groupId}") +
-                          (!groupSubGroupId.HasValue || groupSubGroupId <= 0 ? "" : $" AND igs.Id = {groupSubGroupId}") +
-                          (string.IsNullOrEmpty(groupSubGroup) ? "" : @$" AND (im.SubGroup1 = '{groupSubGroup}'
+                            (!salesId.HasValue || salesId <= 0 ? "" : $" AND so.SalesBy = {salesId}") +
+                            (!groupId.HasValue || groupId <= 0 ? "" : $" AND ig.Id = {groupId}") +
+                            (!groupSubGroupId.HasValue || groupSubGroupId <= 0 ? "" : $" AND igs.Id = {groupSubGroupId}") +
+                            (string.IsNullOrEmpty(groupSubGroup) ? "" : @$" AND (im.SubGroup1 = '{groupSubGroup}'
+                            OR im.SubGroup2 = '{groupSubGroup}' OR im.SubGroup3 = '{groupSubGroup}' OR im.SubGroup4 = '{groupSubGroup}'
+                            OR im.SubGroup5 = '{groupSubGroup}')") +
+                            @"UNION
+                            SELECT inv.[Date], inv.DueDate, inv.Code, inv.CustCode, inv.CustName,
+                            im.Initial AS ItemInitial, im.[Name] AS ItemName, dlv_d.Qty,
+                            dlv_d.UnitId, uom_c.UnitEquivalent AS UnitName, dlv_d.UnitPrice AS GrossAmount,
+                            CAST(0 as decimal) AS Disc, CAST(0 as decimal) AS DiscHeader,
+                            CAST(0 as decimal) AS SubTotal,
+                            CAST(0 as decimal) AS DPP, CAST(0 as decimal) AS TaxAmount, CAST(0 as decimal) AS ExemptTaxAmount, CAST(0 as decimal) AS NettPrice,
+                            CAST(0 as decimal) AS TotalGrossAmount, CAST(0 as decimal) AS TotalAfterDisc,
+                            CAST(0 as decimal) AS TotalDisc, CAST(0 as decimal) AS TotalDiscHeader,
+                            CAST(0 as decimal) AS TotalDPP, CAST(0 as decimal) AS TotalTaxAmount, CAST(0 as decimal) AS TotalExemptTaxAmount, CAST(0 as decimal) AS Total, CAST(0 as decimal) AS TotalNettPrice,
+                            CASE inv.Mark
+	                            WHEN 'A' THEN 'Aktif'
+	                            WHEN 'PP' THEN 'Aktif'
+	                            WHEN 'CMP' THEN 'Aktif' END AS [Status],
+                            ic.Id AS CategoryId, ic.Initial AS CategoryInitial,
+                            inv.SOCode AS OrderCode, dlv.TaxInvoiceDate, dlv.TaxInvoiceNo, dlv.Code AS DoCode,
+                            ig.Id AS ItemGroupId, igs.Id AS ItemSubGroupId, im.SubGroup1, im.SubGroup2, im.SubGroup3,
+                            im.SubGroup4, im.SubGroup5, so.SalesBy AS SalesId
+                            FROM Sales.SalesInvoiceDetail inv_d
+                            LEFT JOIN Sales.vwSalesInvoiceHeader inv ON inv.Code = inv_d.Code
+                            LEFT JOIN Sales.SalesOrderHeader so ON so.Code = inv.SOCode
+                            LEFT JOIN Sales.vwSalesDeliveryHeader dlv ON inv_d.DOCode = dlv.Code  
+                            LEFT JOIN Sales.SalesDeliveryDetailFreeGood dlv_d on dlv_d.Code = dlv.Code
+	                        LEFT JOIN Inventory.UoM uom ON uom.Id = dlv_d.UomId  
+	                        LEFT JOIN Inventory.UoMConversion uom_c ON uom_c.Id = dlv_d.UnitId
+                            LEFT JOIN Inventory.Item im ON im.Id = dlv_d.ItemId
+                            LEFT JOIN Inventory.ItemCategory ic ON ic.Id = im.CategoryId
+                            LEFT JOIN Inventory.ItemGroup ig ON ig.Id = ic.GroupId
+                            LEFT JOIN Inventory.ItemGroupSubGroup igs ON igs.ItemGroupId = ig.Id
+                            WHERE inv.Mark NOT IN ('V', 'OL')" +
+                            (!salesId.HasValue || salesId <= 0 ? "" : $" AND so.SalesBy = {salesId}") +
+                            (!groupId.HasValue || groupId <= 0 ? "" : $" AND ig.Id = {groupId}") +
+                            (!groupSubGroupId.HasValue || groupSubGroupId <= 0 ? "" : $" AND igs.Id = {groupSubGroupId}") +
+                            (string.IsNullOrEmpty(groupSubGroup) ? "" : @$" AND (im.SubGroup1 = '{groupSubGroup}'
                             OR im.SubGroup2 = '{groupSubGroup}' OR im.SubGroup3 = '{groupSubGroup}' OR im.SubGroup4 = '{groupSubGroup}'
                             OR im.SubGroup5 = '{groupSubGroup}')");
 
