@@ -83,6 +83,45 @@ public class SalesDeliveryReportService : ISalesDeliveryReportService
                             (salesId.HasValue ? $@" AND CASE WHEN do.SrcTrans = 1 AND so.SalesBy = {salesId.Value} THEN 1
                             WHEN do.SrcTrans = 2 AND sr.SalesBy = {salesId.Value} THEN 1 ELSE 0 END = 1" : "") +
                             (string.IsNullOrEmpty(status) ? " AND do.Mark <> 'OL'" : status.Replace("'", "''").Equals("NV") ? " AND do.Mark NOT IN ('V', 'OL')" : $" AND do.Mark = '{status.Replace("'", "''")}'") +
+                            (!itemId.HasValue || itemId <= 0 ? "" : $" AND do_d.ItemId = {itemId}") +
+                            @"UNION
+                            SELECT do.[Date], do.Code,
+                            CASE 
+	                            WHEN do.SrcTrans = 1 THEN so.SalesInitial
+	                            ELSE sr.SalesInitial
+                            END AS SalesInitial,
+                            CASE 
+	                            WHEN do.SrcTrans = 1 THEN so.SalesName
+	                            ELSE sr.SalesName
+                            END AS SalesName,
+                            do.CustCode, do.CustName, do.TaxInvoiceNo, do.TaxInvoiceDate,
+                            CAST(do.SrcTrans AS int) AS SrcTrans, do.TransCode, wh.[Name] AS WarehouseName,
+                            im.Initial AS ItemInitial, im.[Name] AS ItemName, do_d.Qty,
+                            do_d.UnitId, uom_c.UnitEquivalent AS UnitName, do_d.UnitPrice AS GrossAmount,
+                            CAST(0 as decimal) AS Disc, CAST(0 as decimal) AS DiscHeader,
+                            CAST(0 as decimal) AS SubTotal,
+                            CAST(0 as decimal) AS DPP, CAST(0 as decimal) AS TaxAmount, CAST(0 as decimal) AS ExemptTaxAmount, CAST(0 as decimal) AS NettPrice,
+                            CAST(0 as decimal) AS TotalGrossAmount, CAST(0 as decimal) AS TotalAfterDisc,
+                            CAST(0 as decimal) AS TotalDisc, CAST(0 as decimal) AS TotalDiscHeader,
+                            CAST(0 as decimal) AS TotalDPP, CAST(0 as decimal) AS TotalTaxAmount, CAST(0 as decimal) AS TotalExemptTaxAmount, CAST(0 as decimal) AS Total, CAST(0 as decimal) AS TotalNettPrice,
+                            CASE do.Mark
+                                WHEN 'A' THEN 'Aktif'
+                                WHEN 'V' THEN 'Void'
+                                WHEN 'INV' THEN 'Difakturkan' END AS [Status],
+                            ic.Id AS CategoryId, ic.Initial AS CategoryInitial
+                            FROM Sales.SalesDeliveryDetailFreeGood do_d
+                            LEFT JOIN Inventory.UoM uom ON uom.Id = do_d.UomId  
+                            LEFT JOIN Inventory.UoMConversion uom_c ON uom_c.Id = do_d.UnitId
+                            LEFT JOIN Sales.vwSalesDeliveryHeader do ON do.Code = do_d.Code
+                            LEFT JOIN Sales.vwSalesOrderHeader so ON so.Code = do.TransCode
+                            LEFT JOIN Sales.vwSalesReturnHeader sr ON sr.Code = do.TransCode
+                            LEFT JOIN Inventory.Item im ON im.Id = do_d.ItemId
+                            LEFT JOIN Inventory.ItemCategory ic ON ic.Id = im.CategoryId
+                            LEFT JOIN Inventory.Warehouse wh ON wh.Code = do.WarehouseCode
+                            WHERE do.FromDirectInvoice = 0" +
+                            (salesId.HasValue ? $@" AND CASE WHEN do.SrcTrans = 1 AND so.SalesBy = {salesId.Value} THEN 1
+                            WHEN do.SrcTrans = 2 AND sr.SalesBy = {salesId.Value} THEN 1 ELSE 0 END = 1" : "") +
+                            (string.IsNullOrEmpty(status) ? " AND do.Mark <> 'OL'" : status.Replace("'", "''").Equals("NV") ? " AND do.Mark NOT IN ('V', 'OL')" : $" AND do.Mark = '{status.Replace("'", "''")}'") +
                             (!itemId.HasValue || itemId <= 0 ? "" : $" AND do_d.ItemId = {itemId}")).ToList();
 
         var itemData = _db.ReportByItemSales.FromSqlRaw(@"SELECT im.Initial, im.[Name], 
@@ -92,7 +131,10 @@ public class SalesDeliveryReportService : ISalesDeliveryReportService
                             CAST (0 AS decimal) AS Disc, CAST (0 AS decimal) AS DiscHeader, CAST (0 AS decimal) AS Dpp,
                             CAST (0 AS decimal) AS TaxAmount, CAST (0 AS decimal) AS ExemptTaxAmount, CAST (0 AS decimal) AS Total, CAST (0 AS decimal) AS GrossAmount
                             FROM Inventory.Item im
-                            LEFT JOIN Sales.SalesDeliveryDetail do_d ON do_d.ItemId = im.Id
+                            LEFT JOIN (
+                            SELECT ItemId, Code, UnitId FROM Sales.SalesDeliveryDetail
+                            UNION
+                            SELECT ItemId, Code, UnitId FROM Sales.SalesDeliveryDetailFreeGood) do_d ON do_d.ItemId = im.Id
                             LEFT JOIN Sales.SalesDeliveryHeader do ON do.Code = do_d.Code
                             LEFT JOIN Inventory.ItemCategory ic ON ic.Id = im.CategoryId
                             LEFT JOIN Inventory.UoMConversion uc ON uc.Id = do_d.UnitId
@@ -114,12 +156,15 @@ public class SalesDeliveryReportService : ISalesDeliveryReportService
                             CAST (0 AS decimal) AS TaxAmount, CAST (0 AS decimal) AS ExemptTaxAmount, CAST (0 AS decimal) AS Total, CAST (0 AS decimal) AS GrossAmount
                             FROM Inventory.ItemCategory ic
                             LEFT JOIN Inventory.Item im ON im.CategoryId = ic.Id 
-                            LEFT JOIN Sales.SalesDeliveryDetail do_d ON do_d.ItemId = im.Id
+                            LEFT JOIN (
+                            SELECT ItemId, Code, UnitId FROM Sales.SalesDeliveryDetail
+                            UNION
+                            SELECT ItemId, Code, UnitId FROM Sales.SalesDeliveryDetailFreeGood) do_d ON do_d.ItemId = im.Id
                             LEFT JOIN Sales.SalesDeliveryHeader do ON do.Code = do_d.Code
                             LEFT JOIN Inventory.UoMConversion uc ON uc.Id = do_d.UnitId
                             WHERE uc.Id IS NOT NULL AND do.FromDirectInvoice = 0" +
-                                                                        (!categoryId.HasValue || categoryId <= 0 ? "" : $" AND ic.Id = {categoryId}") +
-                                                                        " GROUP BY ic.Id, ic.Initial, ic.[Name], uc.Id, uc.UnitEquivalent").ToList();
+                            (!categoryId.HasValue || categoryId <= 0 ? "" : $" AND ic.Id = {categoryId}") +
+                            " GROUP BY ic.Id, ic.Initial, ic.[Name], uc.Id, uc.UnitEquivalent").ToList();
 
         if (!string.IsNullOrEmpty(startDate) && !string.IsNullOrEmpty(endDate))
         {
