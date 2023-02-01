@@ -946,6 +946,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                     WeightMeasurement = item.WeightMeasurement,
                     UnitPrice = item.UnitPrice,
                     Disc = item.Disc,
+                    FinalDiscHeader = item.FinalDiscHeader,
                     TaxId = item.TaxId,
                     TaxAmount = item.TaxAmount,
                     NettPrice = item.NettPrice,
@@ -1818,6 +1819,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                 {
                     Code = InvoiceDetailData.DoCode,
                     LineNo = ++j,
+                    SoDetailId = listOrderIdDetail[j - 1],
                     ItemId = item.ItemId,
                     UomId = item.UomId,
                     UnitId = item.UnitId,
