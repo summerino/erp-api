@@ -862,7 +862,7 @@ public class JournalService : IJournalService
                 {
                     foreach (var itemFreeDetail in DlvDetailFreeData)
                     {
-                        var smData = db.StockMutations.AsNoTracking().FirstOrDefault(x => x.RefDetailId1 == itemFreeDetail.DlvDetail.Id && x.RefCode1 == itemFreeDetail.DlvDetail.Code && x.Type == "OH" && x.Src == "DO");
+                        var smData = db.StockMutations.AsNoTracking().FirstOrDefault(x => x.RefDetailId1 == itemFreeDetail.DlvDetail.Id && x.RefCode1 == itemFreeDetail.DlvDetail.Code && x.Type == "OH" && x.Src == "DOF");
                         if (smData == null) continue;
                         //var nonVoidSM = RemoveVoidSM(db, db.StockMutations.ToList());
                         //CalculateHPP(db, nonVoidSM, smData.ItemId, smData.RefDetailId1, "DOF");
@@ -1330,7 +1330,7 @@ public class JournalService : IJournalService
                     short idf = 0;
                     foreach (var itemFreeDetail in DlvDetailFreeData)
                     {
-                        var smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemFreeDetail.DlvDetail.Id && x.RefCode1 == itemFreeDetail.DlvDetail.Code && x.Type == "OH" && x.Src == "DO");
+                        var smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemFreeDetail.DlvDetail.Id && x.RefCode1 == itemFreeDetail.DlvDetail.Code && x.Type == "OH" && x.Src == "DOF");
                         if (smData == null) continue;
                         var itemFreeHPP = smData != null ? smData.BaseNettPrice * smData.BaseQty : 0m;
                         journals.Add(new Journal
@@ -1350,8 +1350,25 @@ public class JournalService : IJournalService
                             SrcTrans = "SI"
                         });
 
-                        var removedFreeItem = journals.FirstOrDefault(x => x.Code == itemData.InvHeader.Code && x.Group == 2 && x.Amount == itemFreeHPP);
-                        journals.Remove(removedFreeItem);
+                        journals.Add(new Journal
+                        {
+                            Code = itemData.InvHeader.Code,
+                            LineNo = idf,
+                            Date = itemData.InvHeader.Date,
+                            CoaCode = systemParam.FirstOrDefault(x => x.Code == "COGS_COA")?.Value ?? "",
+                            TypeCode = "AR_DT",
+                            Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_COGS")?.Value ?? ""} {itemData.Customer.Initial}").Trim(),
+                            RefCode1 = itemData.InvHeader.SoCode,
+                            RefCode2 = itemFreeDetail.Item.Initial,
+                            Group = 2,
+                            CurrCode = itemData.InvHeader.CurrCode,
+                            Period = itemData.InvHeader.Date.ToString("yyyyMMdd"),
+                            Type = "C",
+                            Amount = itemFreeHPP,
+                            SrcTrans = "SI"
+                        });
+                        //var removedFreeItem = journals.FirstOrDefault(x => x.Code == itemData.InvHeader.Code && x.Group == 2 && x.Amount == itemFreeHPP);
+                        //journals.Remove(removedFreeItem);
                     }
                 }
 
