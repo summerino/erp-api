@@ -808,7 +808,7 @@ public class JournalService : IJournalService
             {
                 foreach (var itemDetail in DlvDetailData)
                 {
-                    var smData = db.StockMutations.AsNoTracking().FirstOrDefault(x => x.RefDetailId1 == itemDetail.DlvDetail.Id && x.RefCode1 == itemDetail.DlvDetail.Code);
+                    var smData = db.StockMutations.AsNoTracking().FirstOrDefault(x => x.RefDetailId1 == itemDetail.DlvDetail.Id && x.RefCode1 == itemDetail.DlvDetail.Code && x.Type == "OH" && x.Src == "DO");
                     if (smData == null) continue;
                     //var nonVoidSM = RemoveVoidSM(db, db.StockMutations.ToList());
                     //CalculateHPP(db, nonVoidSM, smData.ItemId, smData.RefDetailId1, "DO");
@@ -862,7 +862,7 @@ public class JournalService : IJournalService
                 {
                     foreach (var itemFreeDetail in DlvDetailFreeData)
                     {
-                        var smData = db.StockMutations.AsNoTracking().FirstOrDefault(x => x.RefDetailId1 == itemFreeDetail.DlvDetail.Id && x.RefCode1 == itemFreeDetail.DlvDetail.Code);
+                        var smData = db.StockMutations.AsNoTracking().FirstOrDefault(x => x.RefDetailId1 == itemFreeDetail.DlvDetail.Id && x.RefCode1 == itemFreeDetail.DlvDetail.Code && x.Type == "OH" && x.Src == "DO");
                         if (smData == null) continue;
                         //var nonVoidSM = RemoveVoidSM(db, db.StockMutations.ToList());
                         //CalculateHPP(db, nonVoidSM, smData.ItemId, smData.RefDetailId1, "DOF");
@@ -879,7 +879,7 @@ public class JournalService : IJournalService
                             Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_INVENTORY")?.Value ?? ""} {itemFreeDetail.Item.Initial}").Trim(),
                             RefCode1 = itemData.Dlvheader.TransCode,
                             RefCode2 = itemFreeDetail.Item.Initial,
-                            Group = 3,
+                            Group = 1,
                             CurrCode = itemData.Dlvheader.CurrCode,
                             Period = itemData.Dlvheader.Date.ToString("yyyyMMdd"),
                             Type = "C",
@@ -1330,7 +1330,7 @@ public class JournalService : IJournalService
                     short idf = 0;
                     foreach (var itemFreeDetail in DlvDetailFreeData)
                     {
-                        var smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemFreeDetail.DlvDetail.Id && x.RefCode1 == itemFreeDetail.DlvDetail.Code);
+                        var smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemFreeDetail.DlvDetail.Id && x.RefCode1 == itemFreeDetail.DlvDetail.Code && x.Type == "OH" && x.Src == "DO");
                         if (smData == null) continue;
                         var itemFreeHPP = smData != null ? smData.BaseNettPrice * smData.BaseQty : 0m;
                         journals.Add(new Journal
