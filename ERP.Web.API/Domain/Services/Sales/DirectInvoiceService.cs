@@ -2017,6 +2017,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
 
                 var soDetail = Db.SalesOrderDetails.FirstOrDefault(x => x.Code == data.Code && x.ItemId == item.ItemId && x.UnitId == item.UnitId);
                 var orderDetail = new SalesOrderDetail();
+                var dlvDetail = new SalesDeliveryDetail();
                 if (soDetail == null)
                 {
                     orderDetail = new SalesOrderDetail
@@ -2033,7 +2034,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                         Weight = item.Weight,
                         DimensionMeasurement = item.DimensionMeasurement,
                         WeightMeasurement = item.WeightMeasurement,
-                        QtyDlv = 0,
+                        QtyDlv = item.Qty,
                         UnitPrice = item.UnitPrice,
                         Disc = item.Disc,
                         FinalDiscHeader = item.FinalDiscHeader,
@@ -2053,6 +2054,33 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                     };
 
                     Db.SalesOrderDetails.Add(orderDetail);
+
+                    dlvDetail = new SalesDeliveryDetail
+                    {
+                        Code = data.Code,
+                        LineNo = ++i,
+                        ItemId = item.ItemId,
+                        UomId = item.UomId,
+                        UnitId = item.UnitId,
+                        Qty = item.Qty,
+                        Length = item.Length,
+                        Width = item.Width,
+                        Height = item.Height,
+                        Weight = item.Weight,
+                        DimensionMeasurement = item.DimensionMeasurement,
+                        WeightMeasurement = item.WeightMeasurement,
+                        UnitPrice = item.UnitPrice,
+                        Disc = item.Disc,
+                        FinalDiscHeader = item.FinalDiscHeader,
+                        TaxId = item.TaxId,
+                        TaxAmount = item.TaxAmount,
+                        ExemptTaxAmount = item.ExemptTaxAmount,
+                        NettPrice = item.NettPrice,
+                        Total = item.Total,
+                        Dpp = item.Dpp
+                    };
+
+                    Db.SalesDeliveryDetails.Add(dlvDetail);
                 }
                 else
                 {
@@ -2071,6 +2099,19 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                     soDetail.Dpp = item.Dpp;
 
                     Db.SalesOrderDetails.Update(soDetail);
+
+                    dlvDetail = Db.SalesDeliveryDetails.FirstOrDefault(x => x.SoDetailId == soDetail.Id);
+
+                    dlvDetail.Disc = item.Disc;
+                    dlvDetail.FinalDiscHeader = item.FinalDiscHeader;
+                    dlvDetail.TaxId = item.TaxId;
+                    dlvDetail.TaxAmount = item.TaxAmount;
+                    dlvDetail.ExemptTaxAmount = item.ExemptTaxAmount;
+                    dlvDetail.NettPrice = item.NettPrice;
+                    dlvDetail.Total = item.Total;
+                    dlvDetail.Dpp = item.Dpp;
+
+                    Db.SalesDeliveryDetails.Update(dlvDetail);
                 }
                 
                 Db.SaveChanges();
