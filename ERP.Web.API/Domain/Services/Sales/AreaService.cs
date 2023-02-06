@@ -4,6 +4,7 @@ using ERP.Common.Models;
 using ERP.Entity;
 using ERP.Entity.Sales;
 using ERP.Web.API.Domain.Interfaces.Sales;
+using Microsoft.EntityFrameworkCore;
 
 namespace ERP.Web.API.Domain.Services.Sales;
 
@@ -118,6 +119,31 @@ public class AreaService : GeneralService<Area>, IAreaService
             {
                 result.Message = "Inisial sudah terdaftar. Tolong gunakan inisial lain.";
                 return result;
+            }
+
+            var oldData = Db.Areas.AsNoTracking().FirstOrDefault(x => x.Id == data.Id);
+            if (data.Initial != oldData.Initial)
+            {
+                var lineageSplit = data.Lineage.Split("\\");
+
+                lineageSplit[data.Deep.Value - 1] = data.Initial;
+
+                data.Lineage = string.Join("\\", lineageSplit);
+
+                var relatedAreaData = Db.Areas.Where(x => x.Lineage.StartsWith(oldData.Lineage) && x.IsActive && x.Id != data.Id).ToList();
+                if (relatedAreaData.Any())
+                {
+                    foreach (var relatedItem in relatedAreaData)
+                    {
+                        var lineageSplitItem = relatedItem.Lineage.Split("\\");
+
+                        lineageSplitItem[data.Deep.Value - 1] = data.Initial;
+
+                        relatedItem.Lineage = string.Join("\\", lineageSplitItem);
+                    }
+
+                    Db.Areas.UpdateRange(relatedAreaData);
+                }
             }
 
             // Update data
