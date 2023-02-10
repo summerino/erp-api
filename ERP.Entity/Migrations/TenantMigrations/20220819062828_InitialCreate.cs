@@ -11887,11 +11887,6 @@ BEGIN TRY
 	)
 	GROUP BY ItemId, UnitId  
 
-	IF NOT EXISTS (SELECT 1 FROM #tmp_do_free)
-	BEGIN
-		DROP TABLE #tmp_do_free 
-	END
-
 	-- Join all
 	SELECT so.Code, so.ItemId, so.UnitId, so.Qty,
 		ISNULL(do.QtyDlv, 0) AS QtyDlv
