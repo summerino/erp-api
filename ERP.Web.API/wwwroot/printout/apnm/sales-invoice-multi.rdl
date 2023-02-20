@@ -1252,7 +1252,7 @@ FROM SystemManagement.Company</CommandText>
                                 <Paragraph>
                                   <TextRuns>
                                     <TextRun>
-                                      <Value>=Sum(Fields!TaxAmount.Value)</Value>
+                                      <Value>=Sum(Fields!Qty.Value * Fields!TaxAmount.Value)</Value>
                                       <Style>
                                         <FontFamily>Courier New</FontFamily>
                                         <FontWeight>Bold</FontWeight>
@@ -1315,7 +1315,7 @@ FROM SystemManagement.Company</CommandText>
                                 <Paragraph>
                                   <TextRuns>
                                     <TextRun>
-                                      <Value>=Sum(Fields!ExemptTaxAmount.Value)</Value>
+                                      <Value>=Sum(Fields!Qty.Value * Fields!ExemptTaxAmount.Value)</Value>
                                       <Style>
                                         <FontFamily>Courier New</FontFamily>
                                         <FontWeight>Bold</FontWeight>
@@ -1572,7 +1572,7 @@ FROM SystemManagement.Company</CommandText>
               </TablixMembers>
             </TablixRowHierarchy>
             <DataSetName>Data</DataSetName>
-            <Height>2.46074in</Height>
+            <Height>2.46073in</Height>
             <Width>8.3in</Width>
             <Style>
               <Border>

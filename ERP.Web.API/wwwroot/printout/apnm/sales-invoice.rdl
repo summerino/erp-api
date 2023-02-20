@@ -1210,7 +1210,7 @@ FROM SystemManagement.Company</CommandText>
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>=Sum(Fields!TaxAmount.Value, "Detail")</Value>
+                    <Value>=Sum(Fields!Qty.Value * Fields!TaxAmount.Value, "Detail")</Value>
                     <Style>
                       <FontFamily>Courier New</FontFamily>
                       <FontWeight>Bold</FontWeight>
@@ -1273,7 +1273,7 @@ FROM SystemManagement.Company</CommandText>
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>=Sum(Fields!ExemptTaxAmount.Value, "Detail")</Value>
+                    <Value>=Sum(Fields!Qty.Value * Fields!ExemptTaxAmount.Value, "Detail")</Value>
                     <Style>
                       <FontFamily>Courier New</FontFamily>
                       <FontWeight>Bold</FontWeight>

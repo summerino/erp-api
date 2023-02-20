@@ -10248,9 +10248,10 @@ BEGIN
 				ELSE ca_b.Phone END AS CustPhone,
 			CASE WHEN c.ShippingAddressId IS NULL THEN ca_d.ContactPerson
 				ELSE ca_b.ContactPerson END AS CustContactPerson,
+			w.Initial AS WarehouseInitial,
 			e_shp.Initial AS ShippedInitial
 		FROM (
-			SELECT Code, [Date], SrcTrans, TransCode, CustCode, ShippedBy, Notes
+			SELECT Code, [Date], SrcTrans, TransCode, CustCode, WarehouseCode, ShippedBy, Notes
 			FROM Sales.SalesDeliveryHeader
 			WHERE Code IN (
 				SELECT [value]
@@ -10275,6 +10276,8 @@ BEGIN
 			ON ca_b.Code = c.Code
 			AND ca_b.Id = c.ShippingAddressId
 			AND c.BillingAddressId IS NOT NULL
+		LEFT JOIN Inventory.Warehouse w
+			ON w.Code = do_h.WarehouseCode
 		LEFT JOIN General.Employee e_shp
 			ON e_shp.Id = do_h.ShippedBy
 	)
@@ -10288,21 +10291,21 @@ BEGIN
 		)
 	)
 	,cte_union AS (
-		SELECT do.Code, do.[Date], do.SrcTrans, do.TransCode, do.SalesInitial, do.ShippedInitial,
+		SELECT do.Code, do.[Date], do.SrcTrans, do.TransCode, do.SalesInitial, do.WarehouseInitial, do.ShippedInitial,
 			do.CustCode, do.CustInitial, do.CustName, do.CustAddress1, do.CustPhone, do.CustContactPerson,
 			do.Notes,
 			do.DetailId, do.ItemId, do.Qty, do.UnitId,
 			1 AS Sort
 		FROM cte_do_src do
 		UNION ALL
-		SELECT do.Code, do.[Date], do.SrcTrans, do.TransCode, do.SalesInitial, do.ShippedInitial,
+		SELECT do.Code, do.[Date], do.SrcTrans, do.TransCode, do.SalesInitial, do.WarehouseInitial, do.ShippedInitial,
 			do.CustCode, do.CustInitial, do.CustName, do.CustAddress1, do.CustPhone, do.CustContactPerson,
 			do.Notes,
 			do_f.Id AS DetailId, do_f.ItemId, do_f.Qty, do_f.UnitId,
 			2 AS Sort
 		FROM cte_do_free_src do_f
 		LEFT JOIN (
-			SELECT DISTINCT Code, [Date], SrcTrans, TransCode, SalesInitial, ShippedInitial,
+			SELECT DISTINCT Code, [Date], SrcTrans, TransCode, SalesInitial, WarehouseInitial, ShippedInitial,
 				CustCode, CustInitial, CustName, CustAddress1, CustPhone, CustContactPerson,
 				Notes
 			FROM cte_do_src
@@ -10340,6 +10343,7 @@ BEGIN
 				ELSE ca_b.Phone END AS CustPhone,
 			CASE WHEN c.ShippingAddressId IS NULL THEN ca_d.ContactPerson
 				ELSE ca_b.ContactPerson END AS CustContactPerson,
+			w.Initial AS WarehouseInitial,
 			e_shp.Initial AS ShippedInitial
 		FROM (
 			SELECT *
@@ -10362,6 +10366,8 @@ BEGIN
 			ON ca_b.Code = c.Code
 			AND ca_b.Id = c.ShippingAddressId
 			AND c.BillingAddressId IS NOT NULL
+		LEFT JOIN Inventory.Warehouse w
+			ON w.Code = do_h.WarehouseCode
 		LEFT JOIN General.Employee e_shp
 			ON e_shp.Id = do_h.ShippedBy
 	END
