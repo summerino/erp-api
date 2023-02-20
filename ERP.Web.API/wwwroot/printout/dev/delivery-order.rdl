@@ -193,6 +193,10 @@ FROM SystemManagement.Company</CommandText>
           <DataField>CustContactPerson</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
+        <Field Name="WarehouseInitial">
+          <DataField>WarehouseInitial</DataField>
+          <rd:UserDefined>true</rd:UserDefined>
+        </Field>
         <Field Name="ShippedInitial">
           <DataField>ShippedInitial</DataField>
           <rd:UserDefined>true</rd:UserDefined>
@@ -740,7 +744,7 @@ FROM SystemManagement.Company</CommandText>
       <Width>8.3in</Width>
       <Page>
         <PageHeader>
-          <Height>1.49816in</Height>
+          <Height>1.68566in</Height>
           <PrintOnFirstPage>true</PrintOnFirstPage>
           <PrintOnLastPage>true</PrintOnLastPage>
           <ReportItems>
@@ -1136,7 +1140,7 @@ FROM SystemManagement.Company</CommandText>
               </Style>
             </Textbox>
             <Line Name="Line1">
-              <Top>0.87484in</Top>
+              <Top>1.06234in</Top>
               <Height>0in</Height>
               <Width>8.3in</Width>
               <ZIndex>15</ZIndex>
@@ -1163,7 +1167,7 @@ FROM SystemManagement.Company</CommandText>
                   <Style />
                 </Paragraph>
               </Paragraphs>
-              <Top>0.93734in</Top>
+              <Top>1.12484in</Top>
               <Height>0.18694in</Height>
               <Width>0.75352in</Width>
               <ZIndex>16</ZIndex>
@@ -1191,7 +1195,7 @@ FROM SystemManagement.Company</CommandText>
                   <Style />
                 </Paragraph>
               </Paragraphs>
-              <Top>0.93734in</Top>
+              <Top>1.12484in</Top>
               <Left>0.75352in</Left>
               <Height>0.18694in</Height>
               <Width>7.54444in</Width>
@@ -1219,7 +1223,7 @@ FROM SystemManagement.Company</CommandText>
                   <Style />
                 </Paragraph>
               </Paragraphs>
-              <Top>1.12428in</Top>
+              <Top>1.31178in</Top>
               <Left>0.75352in</Left>
               <Height>0.18694in</Height>
               <Width>7.54444in</Width>
@@ -1247,11 +1251,89 @@ FROM SystemManagement.Company</CommandText>
                   <Style />
                 </Paragraph>
               </Paragraphs>
-              <Top>1.31122in</Top>
+              <Top>1.49872in</Top>
               <Left>0.75352in</Left>
               <Height>0.18694in</Height>
               <Width>7.54444in</Width>
               <ZIndex>19</ZIndex>
+              <Style>
+                <Border>
+                  <Style>None</Style>
+                </Border>
+                <VerticalAlign>Top</VerticalAlign>
+              </Style>
+            </Textbox>
+            <Textbox Name="Textbox30">
+              <CanShrink>true</CanShrink>
+              <KeepTogether>true</KeepTogether>
+              <Paragraphs>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>Gudang</Value>
+                      <Style />
+                    </TextRun>
+                  </TextRuns>
+                  <Style />
+                </Paragraph>
+              </Paragraphs>
+              <Top>0.81651in</Top>
+              <Left>6.00055in</Left>
+              <Height>0.18694in</Height>
+              <Width>0.78359in</Width>
+              <ZIndex>20</ZIndex>
+              <Style>
+                <Border>
+                  <Style>None</Style>
+                </Border>
+                <VerticalAlign>Top</VerticalAlign>
+              </Style>
+            </Textbox>
+            <Textbox Name="Textbox31">
+              <CanShrink>true</CanShrink>
+              <KeepTogether>true</KeepTogether>
+              <Paragraphs>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>:</Value>
+                      <Style />
+                    </TextRun>
+                  </TextRuns>
+                  <Style />
+                </Paragraph>
+              </Paragraphs>
+              <Top>0.81651in</Top>
+              <Left>6.78414in</Left>
+              <Height>0.18694in</Height>
+              <Width>0.12284in</Width>
+              <ZIndex>21</ZIndex>
+              <Style>
+                <Border>
+                  <Style>None</Style>
+                </Border>
+                <VerticalAlign>Top</VerticalAlign>
+              </Style>
+            </Textbox>
+            <Textbox Name="Textbox32">
+              <CanShrink>true</CanShrink>
+              <KeepTogether>true</KeepTogether>
+              <Paragraphs>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>=First(Fields!WarehouseInitial.Value, "Header")</Value>
+                      <Style />
+                    </TextRun>
+                  </TextRuns>
+                  <Style />
+                </Paragraph>
+              </Paragraphs>
+              <Top>0.81651in</Top>
+              <Left>6.90698in</Left>
+              <Height>0.18694in</Height>
+              <Width>1.39098in</Width>
+              <ZIndex>22</ZIndex>
               <Style>
                 <Border>
                   <Style>None</Style>
