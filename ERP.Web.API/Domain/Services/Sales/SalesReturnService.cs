@@ -250,6 +250,13 @@ public class SalesReturnService : GeneralService<SalesReturnHeader>, ISalesRetur
                 return result;
             }
 
+            if (oldSRData.Type == 1 && data.Type != 1)
+            {
+                cdtMemo = Db.CreditMemos.FirstOrDefault(x => x.TransCode == data.Code);
+                if (cdtMemo != null)
+                    Db.CreditMemos.Remove(cdtMemo);
+            }
+
             // Checking mark header data
             if (Db.SalesReturnHeaders.Any(x => x.Code == data.Code && x.Mark == "CMP"))
             {
@@ -351,19 +358,47 @@ public class SalesReturnService : GeneralService<SalesReturnHeader>, ISalesRetur
             if (data.Type == 1)
             {
                 cdtMemo = Db.CreditMemos.FirstOrDefault(x => x.TransCode == data.Code);
-                cdtMemo.SrcTrans = (short)(data.Type == 1 ? 2 : 3);
-                cdtMemo.CustCode = data.CustCode;
-                cdtMemo.CurrCode = data.CurrCode;
-                cdtMemo.Rate = data.Rate;
-                cdtMemo.Amount = data.Total;
-                cdtMemo.UpdatedBy = data.UpdatedBy;
-                cdtMemo.UpdatedDate = data.UpdatedDate;
-                Db.CreditMemos.Update(cdtMemo);
-                Db.Entry(cdtMemo).Property(e => e.Code).IsModified = false;
-                Db.Entry(cdtMemo).Property(e => e.TransCode).IsModified = false;
-                Db.Entry(cdtMemo).Property(e => e.Notes).IsModified = false;
-                Db.Entry(cdtMemo).Property(e => e.CreatedBy).IsModified = false;
-                Db.Entry(cdtMemo).Property(e => e.CreatedDate).IsModified = false;
+                if (cdtMemo != null)
+                {
+                    cdtMemo.SrcTrans = (short)(data.Type == 1 ? 2 : 3);
+                    cdtMemo.CustCode = data.CustCode;
+                    cdtMemo.CurrCode = data.CurrCode;
+                    cdtMemo.Rate = data.Rate;
+                    cdtMemo.Amount = data.Total;
+                    cdtMemo.UpdatedBy = data.UpdatedBy;
+                    cdtMemo.UpdatedDate = data.UpdatedDate;
+                    Db.CreditMemos.Update(cdtMemo);
+                    Db.Entry(cdtMemo).Property(e => e.Code).IsModified = false;
+                    Db.Entry(cdtMemo).Property(e => e.TransCode).IsModified = false;
+                    Db.Entry(cdtMemo).Property(e => e.Notes).IsModified = false;
+                    Db.Entry(cdtMemo).Property(e => e.CreatedBy).IsModified = false;
+                    Db.Entry(cdtMemo).Property(e => e.CreatedDate).IsModified = false;
+                }
+                else
+                {
+                    var cdtCode = GetNewCode("CM_NUM_FMT", data.Date);
+
+                    cdtMemo = new CreditMemo
+                    {
+                        Code = cdtCode,
+                        Date = data.Date,
+                        SrcTrans = (short)(data.Type == 1 ? 2 : 3),
+                        CustCode = data.CustCode,
+                        TransCode = data.Code,
+                        CurrCode = data.CurrCode,
+                        Rate = data.Rate,
+                        Amount = data.Total,
+                        Used = 0,
+                        //Notes = data.RcvCode != null ? "Automatically created by Sales Return " + newCode : "Automatically created by Sales Return W/O Doc. " + newCode,
+                        Mark = "A",
+                        CreatedBy = data.CreatedBy,
+                        CreatedDate = data.CreatedDate,
+                        UpdatedBy = data.UpdatedBy,
+                        UpdatedDate = data.UpdatedDate
+                    };
+
+                    Db.CreditMemos.Add(cdtMemo);
+                }
             }
 
             // Save changes
