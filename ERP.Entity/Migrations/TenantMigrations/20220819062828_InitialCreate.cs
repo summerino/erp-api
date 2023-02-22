@@ -11902,7 +11902,7 @@ BEGIN TRY
 		ON do.ItemId = so.ItemId
 		AND do.UnitId = so.UnitId 
 
-	IF OBJECT_ID('tempdb.dbo.#tmp_do_free') IS NOT NULL AND OBJECT_ID('tempdb.dbo.#tmp_do_free') IS NOT NULL
+	IF OBJECT_ID('tempdb.dbo.#tmp_so_free') IS NOT NULL AND OBJECT_ID('tempdb.dbo.#tmp_do_free') IS NOT NULL
 	BEGIN
 		SELECT so.Code, so.ItemId, so.UnitId, so.Qty,
 			ISNULL(do.QtyDlv, 0) AS QtyDlv
