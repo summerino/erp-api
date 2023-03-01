@@ -15,9 +15,9 @@ variables:
 steps:
 - task: UseDotNet@2
   inputs:
-    version: '7.0.100'
+    version: '7.0.201'
     performMultiLevelLookup: true
-  displayName: 'Install .NET Core SDK 7.0.100'
+  displayName: 'Install .NET Core SDK 7.0.201'
 
 - task: DotNetCoreCLI@2
   inputs:
