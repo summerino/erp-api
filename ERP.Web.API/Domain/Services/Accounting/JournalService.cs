@@ -81,188 +81,191 @@ public class JournalService : IJournalService
                 data.Date.Year, data.Date.Month);
 
             await NewCalculateHPPAsync(tenantCtx, data.Date, stateData, cancellationToken);
-
+            
             stateData.Notes = $"Done calculate HPP at {DateTime.Now:yyyy-MM-dd HH:mm:ss}.";
             if (data.Date < Convert.ToDateTime(systemParam.FirstOrDefault(x => x.Code == "DATA_START_DATE").Value))
             {
                 stateData.Step++; //2
                 //tenantCtx.PostingStates.Update(stateData);
                 await tenantCtx.SaveChangesAsync(cancellationToken);
-
+            
                 var journalBBAP = ProcessBBAPJournal(tenantCtx, systemParam);
                 if (journalBBAP != null)
                     tenantCtx.AddRange(journalBBAP);
-
+            
                 stateData.Step++; //3
                 //tenantCtx.PostingStates.Update(stateData);
                 await tenantCtx.SaveChangesAsync(cancellationToken);
-
+            
                 var journalBBAR = ProcessBBARJournal(tenantCtx, systemParam);
                 if (journalBBAR != null)
                     tenantCtx.AddRange(journalBBAR);
-
+            
                 stateData.Step++; //4
                 //tenantCtx.PostingStates.Update(stateData);
                 await tenantCtx.SaveChangesAsync(cancellationToken);
-
+            
                 var journalBBDM = ProcessBBDebitMemoJournal(tenantCtx, systemParam);
                 if (journalBBDM != null)
                     tenantCtx.AddRange(journalBBDM);
-
+            
                 stateData.Step++; //5
                 //tenantCtx.PostingStates.Update(stateData);
                 await tenantCtx.SaveChangesAsync(cancellationToken);
-
+            
                 var journalBBCM = ProcessBBCreditMemoJournal(tenantCtx, systemParam);
                 if (journalBBCM != null)
                     tenantCtx.AddRange(journalBBCM);
-
+            
                 stateData.Step++; //6
                 //tenantCtx.PostingStates.Update(stateData);
                 await tenantCtx.SaveChangesAsync(cancellationToken);
-
+            
                 var journalINVT = ProcessBBInventoryJournal(tenantCtx, systemParam);
                 if (journalINVT != null)
                     tenantCtx.AddRange(journalINVT);
             }
-
+            
             stateData.Step++; //2 /7
             //tenantCtx.PostingStates.Update(stateData);
             await tenantCtx.SaveChangesAsync(cancellationToken);
-
+            
             var journalRCV = ProcessPurchaseRcvJournal(tenantCtx, data.Date, systemParam, items, taxes);
             if (journalRCV != null)
                 tenantCtx.AddRange(journalRCV);
-
+            
             stateData.Step++; //3 /8
             //tenantCtx.PostingStates.Update(stateData);
             await tenantCtx.SaveChangesAsync(cancellationToken);
-
+            
             var journalPR = ProcessPurchaseReturnJournal(tenantCtx, data.Date, systemParam, items, taxes);
             if (journalPR != null)
                 tenantCtx.AddRange(journalPR);
-
+            
             stateData.Step++; //4 /9
             //tenantCtx.PostingStates.Update(stateData);
             await tenantCtx.SaveChangesAsync(cancellationToken);
-
+            
             var journalPI = ProcessPurchaseInvJournal(tenantCtx, data.Date, systemParam, items, taxes);
             if (journalPI != null)
                 tenantCtx.AddRange(journalPI);
-
+            
             stateData.Step++; //5 /10
             //tenantCtx.PostingStates.Update(stateData);
             await tenantCtx.SaveChangesAsync(cancellationToken);
-
+            
             var journalDO = ProcessSaleDlvJournal(tenantCtx, data.Date, systemParam, items, taxes);
             if (journalDO != null)
                 tenantCtx.AddRange(journalDO);
-
+            
             stateData.Step++; //6 /11
             //tenantCtx.PostingStates.Update(stateData);
             await tenantCtx.SaveChangesAsync(cancellationToken);
 
-            var journalSI = ProcessSaleInvJournal(tenantCtx, data.Date, systemParam, items, taxes, journalDO);
+            _logger.LogInformation($"Start posting journal SI at {DateTime.Now:yyyy-MM-dd HH:mm:ss}.");
+            var journalSI = ProcessSaleInvJournal(tenantCtx, data.Date, systemParam, items, taxes);
             if (journalSI != null)
                 tenantCtx.AddRange(journalSI);
 
+            _logger.LogInformation($"Insert posting journal SI at {DateTime.Now:yyyy-MM-dd HH:mm:ss}.");
             stateData.Step++; //7 /12
-            tenantCtx.PostingStates.Update(stateData);
-            //await tenantCtx.SaveChangesAsync(cancellationToken);
+            //tenantCtx.PostingStates.Update(stateData);
+            await tenantCtx.SaveChangesAsync(cancellationToken);
+            _logger.LogInformation($"Done posting journal SI at {DateTime.Now:yyyy-MM-dd HH:mm:ss}.");
 
             var journalSR = ProcessSalesReturnJournal(tenantCtx, data.Date, systemParam, items, taxes);
             if (journalSR != null)
                 tenantCtx.AddRange(journalSR);
-
+            
             stateData.Step++; //8 /13
             //tenantCtx.PostingStates.Update(stateData);
             await tenantCtx.SaveChangesAsync(cancellationToken);
-
+            
             var journalCB = ProcessCashBankJournal(tenantCtx, data.Date, systemParam);
             if (journalCB != null)
                 tenantCtx.AddRange(journalCB);
-
+            
             stateData.Step++; //9 /14
             //tenantCtx.PostingStates.Update(stateData);
             await tenantCtx.SaveChangesAsync(cancellationToken);
-
+            
             var journalEXP = ProcessExpeditionJournal(tenantCtx, data.Date, systemParam);
             if (journalEXP != null)
                 tenantCtx.AddRange(journalEXP);
-
+            
             stateData.Step++; //10 /15
             //tenantCtx.PostingStates.Update(stateData);
             await tenantCtx.SaveChangesAsync(cancellationToken);
-
+            
             var journalFA = ProcessFixedAssetJournal(tenantCtx, data.Date, systemParam);
             if (journalFA != null)
                 tenantCtx.AddRange(journalFA);
-
+            
             stateData.Step++; //11 /16
             //tenantCtx.PostingStates.Update(stateData);
             await tenantCtx.SaveChangesAsync(cancellationToken);
-
+            
             var journalDFA = ProcessDepreciationFixedAssetJournal(tenantCtx, data.Date, systemParam);
             if (journalDFA != null)
                 tenantCtx.AddRange(journalDFA);
-
+            
             stateData.Step++; //12 /17
             //tenantCtx.PostingStates.Update(stateData);
             await tenantCtx.SaveChangesAsync(cancellationToken);
-
+            
             //var journalEYAS = ProcessEndYearAssetJournal(data.Date, systemParam, journalDFA);
             //if (journalEYAS != null)
             //    tenantCtx.AddRange(journalEYAS);
-
+            
             var journalADJ = ProcessAdjustmentJournal(tenantCtx, data.Date, systemParam);
             if (journalADJ != null)
                 tenantCtx.AddRange(journalADJ);
-
+            
             stateData.Step++; //13 /18
             //tenantCtx.PostingStates.Update(stateData);
             await tenantCtx.SaveChangesAsync(cancellationToken);
-
+            
             var journalGJ = ProcessGeneralJournal(tenantCtx, data.Date);
             if (journalGJ != null)
                 tenantCtx.AddRange(journalGJ);
-
+            
             stateData.Step++; //14 /19
             //tenantCtx.PostingStates.Update(stateData);
             await tenantCtx.SaveChangesAsync(cancellationToken);
-
+            
             var journalTS = ProcessTransferStockJournal(tenantCtx, data.Date, systemParam);
             if (journalTS != null)
                 tenantCtx.AddRange(journalTS);
-
+            
             stateData.Step++; //15 /20
             //tenantCtx.PostingStates.Update(stateData);
             await tenantCtx.SaveChangesAsync(cancellationToken);
-
+            
             var journalSDP = ProcessSalesDownPaymentJournal(tenantCtx, systemParam);
             if (journalSDP != null)
                 tenantCtx.AddRange(journalSDP);
-
+            
             if (data.Date.Month == 12)
             {
                 stateData.Step++; //16 /21
                 //tenantCtx.PostingStates.Update(stateData);
                 await tenantCtx.SaveChangesAsync(cancellationToken);
-
+            
                 tenantCtx.Database.ExecuteSqlRaw(
                     "DELETE Accounting.Journal WHERE Code = {0}",
                     "ENDYEAR-" + data.Date.Year.ToString());
-
+            
                 stateData.Step++; //17 /22
                 //tenantCtx.PostingStates.Update(stateData);
                 await tenantCtx.SaveChangesAsync(cancellationToken);
-
+            
                 ProcessEndYearJournal(tenantCtx, data.Date);
             }
-
+            
             stateData.Step++; //16 /23 /21
             //tenantCtx.PostingStates.Update(stateData);
             await tenantCtx.SaveChangesAsync(cancellationToken);
-
+            
             //Update posting log
             var plData = tenantCtx.PostingLogs.FirstOrDefault(x => x.Period == data.Date.ToString("yyyyMM"));
             if (plData == null)
@@ -282,11 +285,10 @@ public class JournalService : IJournalService
                 plData.PostedDate = DateTime.Now;
                 tenantCtx.PostingLogs.Update(plData);
             }
-
+            
             stateData.Status = "FINISH";
             stateData.Notes = $"Finish Time at {DateTime.Now:yyyy-MM-dd HH:mm:ss}.";
             //tenantCtx.PostingStates.Update(stateData);
-
             await tenantCtx.SaveChangesAsync(cancellationToken);
         }
         catch (Exception ex)
@@ -1212,32 +1214,101 @@ public class JournalService : IJournalService
         return journals;
     }
 
-    private IEnumerable<Journal> ProcessSaleInvJournal(TenantContext db, DateTime dateTime, List<SystemParameter> systemParam, List<Item> items, List<Tax> taxes, IEnumerable<Journal> journalDOs)
+    private IEnumerable<Journal> ProcessSaleInvJournal(TenantContext db, DateTime dateTime, List<SystemParameter> systemParam, List<Item> items, List<Tax> taxes)
     {
         List<Journal> journals = new();
         var arRecog = systemParam.FirstOrDefault(x => x.Code == "AR_RECOG_TIME").Value;
 
         if (arRecog == "SI")
         {
-            var InvData = (from invheader in db.SalesInvoiceHeaders
-                           join customer in db.Customers on invheader.CustCode equals customer.Code
-                           where invheader.Date.Month == dateTime.Month && invheader.Date.Year == dateTime.Year && !new[] { "OL", "V" }.Contains(invheader.Mark)
-                           select new { InvHeader = invheader, Customer = customer }).ToList();
+            _logger.LogInformation($"Posting journal SI: get sales invoice data.");
+            var invData =
+                (from invheader in db.SalesInvoiceHeaders
+                join customer in db.Customers on invheader.CustCode equals customer.Code
+                where invheader.Date.Month == dateTime.Month && invheader.Date.Year == dateTime.Year &&
+                      !new[] {"OL", "V"}.Contains(invheader.Mark)
+                select new
+                {
+                    InvHeader = invheader, Customer = customer
+                }).AsNoTracking().ToList();
 
-            foreach (var itemData in InvData)
+            _logger.LogInformation($"Posting journal SI: get invoice detail data.");
+            var invDetailData =
+                (from invdetail in db.SalesInvoiceDetails
+                join dodata in db.SalesDeliveryHeaders on invdetail.DoCode equals dodata.Code
+                where invData.Select(i => i.InvHeader.Code).Contains(invdetail.Code)
+                select new
+                {
+                    InvDetail = invdetail, DoData = dodata
+                }).AsNoTracking().ToList();
+            
+            _logger.LogInformation($"Posting journal SI: get do data.");
+            var dlvDetailData =
+                (from dlvdetail in db.SalesDeliveryDetails
+                join item in db.Items on dlvdetail.ItemId equals item.Id
+                where invDetailData.Select(i => i.DoData.Code).Contains(dlvdetail.Code)
+                select new
+                {
+                    DlvDetail = dlvdetail, Item = item
+                }).AsNoTracking().ToList();
+            
+            _logger.LogInformation($"Posting journal SI: get do free data.");
+            var dlvDetailFreeData =
+                (from dlvdetail in db.SalesDeliveryDetailFreeGoods
+                join item in db.Items on dlvdetail.ItemId equals item.Id
+                where invDetailData.Select(i => i.DoData.Code).Contains(dlvdetail.Code)
+                select new
+                {
+                    DlvDetail = dlvdetail, Item = item
+                }).AsNoTracking().ToList();
+            
+            _logger.LogInformation($"Posting journal SI: get stock mutation data.");
+            var smData =
+                db.StockMutations.AsNoTracking()
+                    .Where(x => dlvDetailFreeData.Select(dof => dof.DlvDetail.Id.ToString() + '~' + dof.DlvDetail.Code).ToList().Contains(x.RefDetailId1.ToString() + '~' + x.RefCode1) &&
+                                x.Type == "OH" && x.Src == "DOF")
+                    .ToList();
+
+            // var sdpData =
+            //     db.SalesInvoiceCreditMemos.AsNoTracking()
+            //         .Where(x => invData.Select(i => i.InvHeader.Code).Contains(x.InvCode) && x.Src == "DP")
+            //         .ToList();
+
+            _logger.LogInformation($"Posting journal SI: get invoice memo data.");
+            var invMemo =
+                db.SalesInvoiceCreditMemos.AsNoTracking()
+                    .Where(x => invData.Select(i => i.InvHeader.Code).Contains(x.InvCode) &&
+                                new[] { "DP", "CM" }.Contains(x.Src))
+                    .ToList();
+            
+            _logger.LogInformation($"Posting journal SI: get memo data.");
+            var invMemoCm = invMemo.Where(im => im.Src == "CM").ToList();
+            var memoData =
+                db.CreditMemos.AsNoTracking()
+                    .Where(x => invMemoCm.Select(im => im.CreditMemoCode).Contains(x.Code))
+                    .ToList();
+
+            _logger.LogInformation($"Posting journal SI: get do journal data for hpp or barang terkirim.");
+            var dlvJournal =
+                db.Journals.AsNoTracking()
+                    .Where(x => x.SrcTrans == "DLV" && invDetailData.Select(id => id.DoData.Code).Contains(x.Code))
+                    .ToList();
+
+            foreach (var itemData in invData)
             {
-                var InvDetailData = (from invdetail in db.SalesInvoiceDetails
-                                     join dodata in db.SalesDeliveryHeaders on invdetail.DoCode equals dodata.Code
-                                     where invdetail.Code == itemData.InvHeader.Code
-                                     select new { InvDetail = invdetail, DoData = dodata }).ToList();
+                // var InvDetailData = (from invdetail in db.SalesInvoiceDetails
+                //                      join dodata in db.SalesDeliveryHeaders on invdetail.DoCode equals dodata.Code
+                //                      where invdetail.Code == itemData.InvHeader.Code
+                //                      select new { InvDetail = invdetail, DoData = dodata }).AsNoTracking().ToList();
 
                 decimal taxAmount = 0m;
                 decimal discAmount = 0m;
                 decimal arAmount = 0m;
 
-                foreach (var itemDetail in InvDetailData)
+                foreach (var itemDetail in invDetailData.Where(x => x.InvDetail.Code == itemData.InvHeader.Code))
                 {
-                    var doJournal = journalDOs.Where(x => x.Code == itemDetail.InvDetail.DoCode).ToList();
+                    _logger.LogInformation($"Posting journal SI: {itemData.InvHeader.Code} - {itemDetail.InvDetail.DoCode} (HPP or Barang Terkirim).");
+                    var doJournal = dlvJournal.Where(x => x.Code == itemDetail.InvDetail.DoCode).ToList();
                     short id = 0;
                     short ic = 0;
                     foreach (var itemDo in doJournal)
@@ -1271,18 +1342,27 @@ public class JournalService : IJournalService
                     taxAmount += itemDetail.DoData.TaxAmount - itemDetail.DoData.ExemptTaxAmount;
                     //PPN Yang Dibebaskan
                     //extTaxAmount += itemDetail.RcvData.ExemptTaxAmount;
-                    var DlvDetailData = (from dlvdetail in db.SalesDeliveryDetails
-                                         join item in db.Items on dlvdetail.ItemId equals item.Id
-                                         where dlvdetail.Code == itemDetail.DoData.Code
-                                         select new { DlvDetail = dlvdetail, Item = item }).ToList();
+                    // var DlvDetailData =
+                    //     (from dlvdetail in db.SalesDeliveryDetails
+                    //     join item in db.Items on dlvdetail.ItemId equals item.Id
+                    //     where dlvdetail.Code == itemDetail.DoData.Code
+                    //     select new
+                    //     {
+                    //         DlvDetail = dlvdetail, Item = item
+                    //     }).AsNoTracking().ToList();
 
-                    var DlvDetailFreeData = (from dlvdetail in db.SalesDeliveryDetailFreeGoods
-                                             join item in db.Items on dlvdetail.ItemId equals item.Id
-                                             where dlvdetail.Code == itemDetail.DoData.Code
-                                             select new { DlvDetail = dlvdetail, Item = item }).ToList();
+                    // var DlvDetailFreeData =
+                    //     (from dlvdetail in db.SalesDeliveryDetailFreeGoods
+                    //     join item in db.Items on dlvdetail.ItemId equals item.Id
+                    //     where dlvdetail.Code == itemDetail.DoData.Code
+                    //     select new
+                    //     {
+                    //         DlvDetail = dlvdetail, Item = item
+                    //     }).AsNoTracking().ToList();
 
+                    _logger.LogInformation($"Posting journal SI: {itemData.InvHeader.Code} - {itemDetail.DoData.Code} (PPN).");
                     short ix = 0;
-                    foreach (var itemDlvDetail in DlvDetailData)
+                    foreach (var itemDlvDetail in dlvDetailData.Where(x => x.DlvDetail.Code == itemDetail.DoData.Code))
                     {
                         discAmount += itemDlvDetail.DlvDetail.Disc * itemDlvDetail.DlvDetail.Qty;
                         if (itemDlvDetail.DlvDetail.ExemptTaxAmount > 0)
@@ -1327,12 +1407,14 @@ public class JournalService : IJournalService
                         }
                     }
 
+                    _logger.LogInformation($"Posting journal SI: {itemData.InvHeader.Code} - {itemDetail.DoData.Code} (DOF).");
                     short idf = 0;
-                    foreach (var itemFreeDetail in DlvDetailFreeData)
+                    foreach (var itemFreeDetail in dlvDetailFreeData.Where(x => x.DlvDetail.Code == itemDetail.DoData.Code))
                     {
-                        var smData = db.StockMutations.FirstOrDefault(x => x.RefDetailId1 == itemFreeDetail.DlvDetail.Id && x.RefCode1 == itemFreeDetail.DlvDetail.Code && x.Type == "OH" && x.Src == "DOF");
-                        if (smData == null) continue;
-                        var itemFreeHPP = smData != null ? smData.BaseNettPrice * smData.BaseQty : 0m;
+                        // var smData = db.StockMutations.AsNoTracking().FirstOrDefault(x => x.RefDetailId1 == itemFreeDetail.DlvDetail.Id && x.RefCode1 == itemFreeDetail.DlvDetail.Code && x.Type == "OH" && x.Src == "DOF");
+                        var smItemData = smData.FirstOrDefault(x => x.RefDetailId1 == itemFreeDetail.DlvDetail.Id && x.RefCode1 == itemFreeDetail.DlvDetail.Code && x.Type == "OH" && x.Src == "DOF");
+                        if (smItemData == null) continue;
+                        var itemFreeHPP = smItemData.BaseNettPrice * smItemData.BaseQty;
                         journals.Add(new Journal
                         {
                             Code = itemData.InvHeader.Code,
@@ -1372,8 +1454,9 @@ public class JournalService : IJournalService
                     }
                 }
 
-                var SDPData = db.SalesInvoiceCreditMemos.Where(x => x.InvCode == itemData.InvHeader.Code && x.Src == "DP").ToList();
-                foreach (var itemSDP in SDPData)
+                _logger.LogInformation($"Posting journal SI: {itemData.InvHeader.Code} (DP).");
+                // var SDPData = db.SalesInvoiceCreditMemos.Where(x => x.InvCode == itemData.InvHeader.Code && x.Src == "DP").ToList();
+                foreach (var itemSDP in invMemo.Where(x => x.InvCode == itemData.InvHeader.Code && x.Src == "DP"))
                 {
                     //Uang Muka               
                     journals.Add(new Journal
@@ -1505,53 +1588,52 @@ public class JournalService : IJournalService
                     SrcTrans = "SI"
                 });
 
-                var invMemo = db.SalesInvoiceCreditMemos.Where(x => x.InvCode == itemData.InvHeader.Code && x.Src == "CM").ToList();
-                if (invMemo.Any())
+                _logger.LogInformation($"Posting journal SI: {itemData.InvHeader.Code} (CM).");
+                // var invMemo = db.SalesInvoiceCreditMemos.Where(x => x.InvCode == itemData.InvHeader.Code && x.Src == "CM").ToList();
+                short k = 0;
+                foreach (var itemMemo in invMemoCm.Where(x => x.InvCode == itemData.InvHeader.Code))
                 {
-                    short k = 0;
-                    foreach (var itemMemo in invMemo)
+                    // var memoData = db.CreditMemos.AsNoTracking().FirstOrDefault(x => x.Code == itemMemo.CreditMemoCode);
+                    var memoItemData = memoData.FirstOrDefault(x => x.Code == itemMemo.CreditMemoCode);
+                    if (memoItemData != null && memoItemData.Mark != "V")
                     {
-                        var memoData = db.CreditMemos.FirstOrDefault(x => x.Code == itemMemo.CreditMemoCode);
-                        if (memoData != null || memoData.Mark != "V")
+                        journals.Add(new Journal
                         {
-                            journals.Add(new Journal
-                            {
-                                Code = itemData.InvHeader.Code + "-CN",
-                                LineNo = ++k,
-                                Date = itemData.InvHeader.Date,
-                                CoaCode = memoData.SrcTrans == 1 ? systemParam.FirstOrDefault(x => x.Code == "DEP_CUST_COA")?.Value ?? "" : systemParam.FirstOrDefault(x => x.Code == "CM_AP_COA")?.Value ?? "",
-                                TypeCode = "CM_AR",
-                                Notes = ($"{(memoData.SrcTrans == 1 ? systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_DEP_CUST")?.Value ?? "" : systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_CM_AP")?.Value ?? "")} {itemData.Customer.Initial}").Trim(),
-                                RefCode1 = itemMemo.CreditMemoCode,
-                                RefCode2 = itemData.InvHeader.Code,
-                                RefCode3 = itemData.InvHeader.SoCode,
-                                Group = 1,
-                                CurrCode = itemData.InvHeader.CurrCode,
-                                Period = itemData.InvHeader.Date.ToString("yyyyMMdd"),
-                                Type = "D",
-                                Amount = itemMemo.CreditMemoAmount,
-                                SrcTrans = "SI"
-                            });
+                            Code = itemData.InvHeader.Code + "-CN",
+                            LineNo = ++k,
+                            Date = itemData.InvHeader.Date,
+                            CoaCode = memoItemData.SrcTrans == 1 ? systemParam.FirstOrDefault(x => x.Code == "DEP_CUST_COA")?.Value ?? "" : systemParam.FirstOrDefault(x => x.Code == "CM_AP_COA")?.Value ?? "",
+                            TypeCode = "CM_AR",
+                            Notes = ($"{(memoItemData.SrcTrans == 1 ? systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_DEP_CUST")?.Value ?? "" : systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_CM_AP")?.Value ?? "")} {itemData.Customer.Initial}").Trim(),
+                            RefCode1 = itemMemo.CreditMemoCode,
+                            RefCode2 = itemData.InvHeader.Code,
+                            RefCode3 = itemData.InvHeader.SoCode,
+                            Group = 1,
+                            CurrCode = itemData.InvHeader.CurrCode,
+                            Period = itemData.InvHeader.Date.ToString("yyyyMMdd"),
+                            Type = "D",
+                            Amount = itemMemo.CreditMemoAmount,
+                            SrcTrans = "SI"
+                        });
 
-                            journals.Add(new Journal
-                            {
-                                Code = itemData.InvHeader.Code + "-CN",
-                                LineNo = k,
-                                Date = itemData.InvHeader.Date,
-                                CoaCode = systemParam.FirstOrDefault(x => x.Code == "AR_COA")?.Value ?? "",
-                                TypeCode = "AR",
-                                Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_AR")?.Value ?? ""} {itemData.Customer.Initial}").Trim(),
-                                RefCode1 = itemData.InvHeader.Code,
-                                RefCode2 = itemData.InvHeader.SoCode,
-                                RefCode3 = itemMemo.CreditMemoCode,
-                                Group = 2,
-                                CurrCode = itemData.InvHeader.CurrCode,
-                                Period = itemData.InvHeader.Date.ToString("yyyyMMdd"),
-                                Type = "C",
-                                Amount = itemMemo.CreditMemoAmount,
-                                SrcTrans = "SI"
-                            });
-                        }
+                        journals.Add(new Journal
+                        {
+                            Code = itemData.InvHeader.Code + "-CN",
+                            LineNo = k,
+                            Date = itemData.InvHeader.Date,
+                            CoaCode = systemParam.FirstOrDefault(x => x.Code == "AR_COA")?.Value ?? "",
+                            TypeCode = "AR",
+                            Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_AR")?.Value ?? ""} {itemData.Customer.Initial}").Trim(),
+                            RefCode1 = itemData.InvHeader.Code,
+                            RefCode2 = itemData.InvHeader.SoCode,
+                            RefCode3 = itemMemo.CreditMemoCode,
+                            Group = 2,
+                            CurrCode = itemData.InvHeader.CurrCode,
+                            Period = itemData.InvHeader.Date.ToString("yyyyMMdd"),
+                            Type = "C",
+                            Amount = itemMemo.CreditMemoAmount,
+                            SrcTrans = "SI"
+                        });
                     }
                 }
             }
