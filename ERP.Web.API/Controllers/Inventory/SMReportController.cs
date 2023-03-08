@@ -15,7 +15,9 @@ public class SmReportController : ControllerBase
     private readonly ISMReportService _sm;
     private readonly IClaimService _claim;
     private readonly IAuthService _auth;
-    private const int MenuId = (int)Menu.StockMutationReport;
+
+    private const int MenuId = (int) Menu.StockMutationReport;
+    
     public SmReportController(ISMReportService sm, IClaimService claim, IAuthService auth)
     {
         _sm = sm;
@@ -24,7 +26,8 @@ public class SmReportController : ControllerBase
     }
 
     [HttpGet]
-    public IActionResult GetData(int type, string startDate, string endDate, string whCode, int? itemId, int typeUnit, bool isSm, string sorts)
+    public IActionResult GetData(int type, string startDate, string endDate, string whCode, int? itemId,
+        int typeUnit, bool isSm)
     {
         var result = _sm.GetData(type, startDate, endDate, whCode, itemId, typeUnit, isSm);
 
