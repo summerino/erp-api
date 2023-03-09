@@ -1330,6 +1330,34 @@ FROM SystemManagement.Company</CommandText>
                 <VerticalAlign>Top</VerticalAlign>
               </Style>
             </Textbox>
+            <Textbox Name="Textbox6">
+              <CanShrink>true</CanShrink>
+              <KeepTogether>true</KeepTogether>
+              <Paragraphs>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>="Tgl. Cetak " &amp; Format(Now(), "dd-MM-yyyy HH:mm:ss")</Value>
+                      <Style>
+                        <FontStyle>Italic</FontStyle>
+                        <FontSize>9pt</FontSize>
+                      </Style>
+                    </TextRun>
+                  </TextRuns>
+                  <Style />
+                </Paragraph>
+              </Paragraphs>
+              <Top>0.06458in</Top>
+              <Height>0.18694in</Height>
+              <Width>1.81974in</Width>
+              <ZIndex>13</ZIndex>
+              <Style>
+                <Border>
+                  <Style>None</Style>
+                </Border>
+                <VerticalAlign>Top</VerticalAlign>
+              </Style>
+            </Textbox>
           </ReportItems>
           <Style>
             <Border>
