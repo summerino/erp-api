@@ -19,62 +19,64 @@ namespace ERP.Web.API.Domain.Services.Purchase
         {
 			List<ReportByAPCard> cardListData = new();
 			List<ReportByAPCard> bbData = new();
-			var cardData = _db.ReportByAPCards.FromSqlRaw(
-							$@"SELECT dt.[Date], dt.Code, dt.Notes, dt.DebitAmount, dt.CreditAmount, CAST(0 AS decimal(19,8)) AS RemainingAmount, dt.SupCode, CAST(0 as bit) AS IsBold
-							FROM 
-							(
-								SELECT 
-									inv.[Date], inv.Code, 'Kd. Order: ' + inv.POCode AS Notes, inv.SupCode, 
-									CAST(0 AS decimal(19,8)) AS DebitAmount, inv.Total AS CreditAmount, 1 AS Sort
-								FROM Purchasing.PurchaseInvoiceHeader inv
-								UNION
-								SELECT 
-									ap.[Date], ap.Code, 'Saldo Awal Hutang' AS Notes, ap.SupCode, 
-									CAST(0 AS decimal(19,8)) AS DebitAmount, ap.Amount AS CreditAmount, 1 AS Sort
-								FROM Accounting.BeginningBalanceAP ap
-								UNION
-								SELECT
-									ISNULL(cb_h.ChequeDate, cb_h.[Date]) AS [Date], cb_d.Code, 'Kd. Faktur: ' + cb_d.TransCode AS Notes, inv.SupCode,
-									cb_d.TransAmount AS DebitAmount, CAST(0 AS decimal(19,8)) AS CreditAmount, 2 AS Sort
-								FROM Finance.GeneralCashBankDetail cb_d
-								LEFT JOIN Finance.GeneralCashBankHeader cb_h ON cb_h.Code = cb_d.Code
-								LEFT JOIN Purchasing.PurchaseInvoiceHeader inv ON inv.Code = cb_d.TransCode
-								WHERE cb_d.[Type] = 'AP' AND cb_h.Mark <> 'V' AND cb_d.Src = 'PI'
-								UNION
-								SELECT
-									ISNULL(cb_h.ChequeDate, cb_h.[Date]) AS [Date], cb_d.Code, 'Kd. Saldo Awal Hutang: ' + cb_d.TransCode AS Notes, ap.SupCode,
-									cb_d.TransAmount AS DebitAmount, CAST(0 AS decimal(19,8)) AS CreditAmount, 2 AS Sort
-								FROM Finance.GeneralCashBankDetail cb_d
-								LEFT JOIN Finance.GeneralCashBankHeader cb_h ON cb_h.Code = cb_d.Code
-								LEFT JOIN Accounting.BeginningBalanceAP ap ON ap.Code = cb_d.TransCode
-								WHERE cb_d.[Type] = 'AP' AND cb_h.Mark <> 'V' AND cb_d.Src = 'BB'
-								UNION
-								SELECT
-									dm.[Date], dm.Code, 'Kd. Faktur: ' + pi_dm.InvCode AS Notes, inv.SupCode,
-									pi_dm.DebitMemoAmount AS DebitAmount, CAST(0 AS decimal(19,8)) AS DebitAmount, 2 AS Sort
-								FROM Purchasing.PurchaseInvoiceDebitMemo pi_dm
-								LEFT JOIN Purchasing.DebitMemo dm ON dm.Code = pi_dm.DebitMemoCode
-								LEFT JOIN Purchasing.PurchaseInvoiceHeader inv ON inv.Code = pi_dm.InvCode
-								WHERE dm.Mark NOT IN ('V', 'PP')
-							) dt
-							WHERE dt.SupCode = '{supCode.Replace("'", "''")}'
-							ORDER BY dt.[Date], dt.Sort")
-                            .ToList();
 
-			if (!string.IsNullOrEmpty(startDate) && !string.IsNullOrEmpty(endDate))
+			string whEndDate = "", whCbEndDate = "", whDmEndDate = "";
+			if (!string.IsNullOrEmpty(endDate))
 			{
-				bbData = cardData.Where(x => x.Date < Convert.ToDateTime(startDate)).ToList();
-				cardData = cardData.Where(x => x.Date >= Convert.ToDateTime(startDate) && x.Date <= Convert.ToDateTime(endDate)).ToList();
+				whEndDate = $"AND [Date] <= '{endDate.Replace("'", "''")}'";
+				whCbEndDate = $"AND ISNULL(cb_h.ChequeDate, cb_h.[Date]) <= '{endDate.Replace("'", "''")}'";
+				whDmEndDate = $"AND dm.[Date] <= '{endDate.Replace("'", "''")}'";
 			}
-			else if (!string.IsNullOrEmpty(startDate))
+			
+			var cardData = _db.ReportByAPCards.FromSqlRaw(
+				$@"SELECT dt.[Date], dt.Code, dt.Notes, dt.DebitAmount, dt.CreditAmount,
+    				CAST(0 AS decimal(19,8)) AS RemainingAmount, dt.SupCode, CAST(0 as bit) AS IsBold
+				FROM 
+				(
+					SELECT 
+						inv.[Date], inv.Code, 'Kd. Order: ' + inv.POCode AS Notes, inv.SupCode, 
+						CAST(0 AS decimal(19,8)) AS DebitAmount, inv.Total AS CreditAmount, 1 AS Sort
+					FROM Purchasing.PurchaseInvoiceHeader inv
+					WHERE inv.Mark <> 'V' {whEndDate}
+					UNION ALL
+					SELECT 
+						bb.[Date], bb.Code, 'Saldo Awal Hutang' AS Notes, bb.SupCode, 
+						CAST(0 AS decimal(19,8)) AS DebitAmount, bb.Amount AS CreditAmount, 1 AS Sort
+					FROM Accounting.BeginningBalanceAP bb
+					WHERE bb.IsActive = 1 {whEndDate}
+					UNION ALL
+					SELECT
+						ISNULL(cb_h.ChequeDate, cb_h.[Date]) AS [Date], cb_d.Code, 'Kd. Faktur: ' + cb_d.TransCode AS Notes, inv.SupCode,
+						cb_d.TransAmount AS DebitAmount, CAST(0 AS decimal(19,8)) AS CreditAmount, 2 AS Sort
+					FROM Finance.GeneralCashBankDetail cb_d
+					LEFT JOIN Finance.GeneralCashBankHeader cb_h ON cb_h.Code = cb_d.Code
+					LEFT JOIN Purchasing.PurchaseInvoiceHeader inv ON inv.Code = cb_d.TransCode
+					WHERE cb_d.[Type] = 'AP' AND cb_h.Mark NOT IN ('V', 'REJ') AND cb_d.Src = 'PI' {whCbEndDate}
+					UNION ALL
+					SELECT
+						ISNULL(cb_h.ChequeDate, cb_h.[Date]) AS [Date], cb_d.Code, 'Kd. Saldo Awal Hutang: ' + cb_d.TransCode AS Notes, bb.SupCode,
+						cb_d.TransAmount AS DebitAmount, CAST(0 AS decimal(19,8)) AS CreditAmount, 2 AS Sort
+					FROM Finance.GeneralCashBankDetail cb_d
+					LEFT JOIN Finance.GeneralCashBankHeader cb_h ON cb_h.Code = cb_d.Code
+					LEFT JOIN Accounting.BeginningBalanceAP bb ON bb.Code = cb_d.TransCode
+					WHERE cb_d.[Type] = 'AP' AND cb_h.Mark NOT IN ('V', 'REJ') AND cb_d.Src = 'BB' {whCbEndDate}
+					UNION ALL
+					SELECT
+						dm.[Date], dm.Code, 'Kd. Faktur: ' + pi_dm.InvCode AS Notes, inv.SupCode,
+						pi_dm.DebitMemoAmount AS DebitAmount, CAST(0 AS decimal(19,8)) AS DebitAmount, 2 AS Sort
+					FROM Purchasing.PurchaseInvoiceDebitMemo pi_dm
+					LEFT JOIN Purchasing.DebitMemo dm ON dm.Code = pi_dm.DebitMemoCode
+					LEFT JOIN Purchasing.PurchaseInvoiceHeader inv ON inv.Code = pi_dm.InvCode
+					WHERE dm.Mark NOT IN ('V', 'PP') {whDmEndDate}
+				) dt
+				WHERE dt.SupCode = '{supCode.Replace("'", "''")}'
+				ORDER BY dt.[Date], dt.Sort").ToList();
+
+			if (!string.IsNullOrEmpty(startDate))
             {
 				bbData = cardData.Where(x => x.Date < Convert.ToDateTime(startDate)).ToList();
 				cardData = cardData.Where(x => x.Date >= Convert.ToDateTime(startDate)).ToList();
             }
-            else if (!string.IsNullOrEmpty(endDate))
-            {
-				cardData = cardData.Where(x => x.Date <= Convert.ToDateTime(endDate)).ToList();
-			}
 
 			cardListData.Add(new ReportByAPCard
 			{
@@ -102,7 +104,6 @@ namespace ERP.Web.API.Domain.Services.Purchase
 			});
 
 			return cardListData.AsQueryable().ToDataSourceResult(0, cardListData.Count, null, null);
-
 		}
 	}
 }
