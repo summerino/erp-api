@@ -79,7 +79,7 @@ public class JournalService : IJournalService
             await tenantCtx.Database.ExecuteSqlRawAsync(
                 "DELETE Accounting.Journal WHERE YEAR([Date]) = {0} AND MONTH([Date]) = {1}",
                 data.Date.Year, data.Date.Month);
-
+            
             await NewCalculateHPPAsync(tenantCtx, data.Date, stateData, cancellationToken);
             
             stateData.Notes = $"Done calculate HPP at {DateTime.Now:yyyy-MM-dd HH:mm:ss}.";
@@ -161,18 +161,18 @@ public class JournalService : IJournalService
             stateData.Step++; //6 /11
             //tenantCtx.PostingStates.Update(stateData);
             await tenantCtx.SaveChangesAsync(cancellationToken);
-
+            
             _logger.LogInformation($"Start posting journal SI at {DateTime.Now:yyyy-MM-dd HH:mm:ss}.");
-            var journalSI = ProcessSaleInvJournal(tenantCtx, data.Date, systemParam, items, taxes);
+            var journalSI = await ProcessSaleInvJournalAsync(tenantCtx, data.Date, systemParam, items, taxes, cancellationToken);
             if (journalSI != null)
-                tenantCtx.AddRange(journalSI);
-
+                await tenantCtx.AddRangeAsync(journalSI, cancellationToken);
+            
             _logger.LogInformation($"Insert posting journal SI at {DateTime.Now:yyyy-MM-dd HH:mm:ss}.");
             stateData.Step++; //7 /12
             //tenantCtx.PostingStates.Update(stateData);
             await tenantCtx.SaveChangesAsync(cancellationToken);
             _logger.LogInformation($"Done posting journal SI at {DateTime.Now:yyyy-MM-dd HH:mm:ss}.");
-
+            
             var journalSR = ProcessSalesReturnJournal(tenantCtx, data.Date, systemParam, items, taxes);
             if (journalSR != null)
                 tenantCtx.AddRange(journalSR);
@@ -181,14 +181,17 @@ public class JournalService : IJournalService
             //tenantCtx.PostingStates.Update(stateData);
             await tenantCtx.SaveChangesAsync(cancellationToken);
             
-            var journalCB = ProcessCashBankJournal(tenantCtx, data.Date, systemParam);
+            _logger.LogInformation($"Start posting journal CB at {DateTime.Now:yyyy-MM-dd HH:mm:ss}.");
+            var journalCB = await ProcessCashBankJournalAsync(tenantCtx, data.Date, systemParam, cancellationToken);
             if (journalCB != null)
-                tenantCtx.AddRange(journalCB);
+                await tenantCtx.AddRangeAsync(journalCB, cancellationToken);
             
+            _logger.LogInformation($"Insert posting journal CB at {DateTime.Now:yyyy-MM-dd HH:mm:ss}.");
             stateData.Step++; //9 /14
             //tenantCtx.PostingStates.Update(stateData);
             await tenantCtx.SaveChangesAsync(cancellationToken);
-            
+            _logger.LogInformation($"Done posting journal CB at {DateTime.Now:yyyy-MM-dd HH:mm:ss}.");
+
             var journalEXP = ProcessExpeditionJournal(tenantCtx, data.Date, systemParam);
             if (journalEXP != null)
                 tenantCtx.AddRange(journalEXP);
@@ -1214,85 +1217,86 @@ public class JournalService : IJournalService
         return journals;
     }
 
-    private IEnumerable<Journal> ProcessSaleInvJournal(TenantContext db, DateTime dateTime, List<SystemParameter> systemParam, List<Item> items, List<Tax> taxes)
+    private async Task<IEnumerable<Journal>> ProcessSaleInvJournalAsync(TenantContext db, DateTime date,
+        List<SystemParameter> systemParam, List<Item> items, List<Tax> taxes, CancellationToken cancellationToken)
     {
         List<Journal> journals = new();
-        var arRecog = systemParam.FirstOrDefault(x => x.Code == "AR_RECOG_TIME").Value;
+        var arRecog = systemParam.FirstOrDefault(x => x.Code == "AR_RECOG_TIME")?.Value;
 
         if (arRecog == "SI")
         {
-            _logger.LogInformation($"Posting journal SI: get sales invoice data.");
+            _logger.LogInformation("Posting journal SI: get invoice data.");
             var invData =
-                (from invheader in db.SalesInvoiceHeaders
+                await (from invheader in db.SalesInvoiceHeaders
                 join customer in db.Customers on invheader.CustCode equals customer.Code
-                where invheader.Date.Month == dateTime.Month && invheader.Date.Year == dateTime.Year &&
+                where invheader.Date.Month == date.Month && invheader.Date.Year == date.Year &&
                       !new[] {"OL", "V"}.Contains(invheader.Mark)
                 select new
                 {
                     InvHeader = invheader, Customer = customer
-                }).AsNoTracking().ToList();
+                }).AsNoTracking().ToListAsync(cancellationToken);
 
-            _logger.LogInformation($"Posting journal SI: get invoice detail data.");
+            _logger.LogInformation("Posting journal SI: get invoice detail data.");
             var invDetailData =
-                (from invdetail in db.SalesInvoiceDetails
+                await (from invdetail in db.SalesInvoiceDetails
                 join dodata in db.SalesDeliveryHeaders on invdetail.DoCode equals dodata.Code
                 where invData.Select(i => i.InvHeader.Code).Contains(invdetail.Code)
                 select new
                 {
                     InvDetail = invdetail, DoData = dodata
-                }).AsNoTracking().ToList();
+                }).AsNoTracking().ToListAsync(cancellationToken);
             
-            _logger.LogInformation($"Posting journal SI: get do data.");
+            _logger.LogInformation("Posting journal SI: get do data.");
             var dlvDetailData =
-                (from dlvdetail in db.SalesDeliveryDetails
+                await (from dlvdetail in db.SalesDeliveryDetails
                 join item in db.Items on dlvdetail.ItemId equals item.Id
                 where invDetailData.Select(i => i.DoData.Code).Contains(dlvdetail.Code)
                 select new
                 {
                     DlvDetail = dlvdetail, Item = item
-                }).AsNoTracking().ToList();
+                }).AsNoTracking().ToListAsync(cancellationToken);
             
-            _logger.LogInformation($"Posting journal SI: get do free data.");
+            _logger.LogInformation("Posting journal SI: get do free data.");
             var dlvDetailFreeData =
-                (from dlvdetail in db.SalesDeliveryDetailFreeGoods
+                await (from dlvdetail in db.SalesDeliveryDetailFreeGoods
                 join item in db.Items on dlvdetail.ItemId equals item.Id
                 where invDetailData.Select(i => i.DoData.Code).Contains(dlvdetail.Code)
                 select new
                 {
                     DlvDetail = dlvdetail, Item = item
-                }).AsNoTracking().ToList();
+                }).AsNoTracking().ToListAsync(cancellationToken);
             
-            _logger.LogInformation($"Posting journal SI: get stock mutation data.");
+            _logger.LogInformation("Posting journal SI: get stock mutation data.");
             var smData =
-                db.StockMutations.AsNoTracking()
+                await db.StockMutations.AsNoTracking()
                     .Where(x => dlvDetailFreeData.Select(dof => dof.DlvDetail.Id.ToString() + '~' + dof.DlvDetail.Code).ToList().Contains(x.RefDetailId1.ToString() + '~' + x.RefCode1) &&
                                 x.Type == "OH" && x.Src == "DOF")
-                    .ToList();
+                    .ToListAsync(cancellationToken);
 
             // var sdpData =
-            //     db.SalesInvoiceCreditMemos.AsNoTracking()
+            //     await db.SalesInvoiceCreditMemos.AsNoTracking()
             //         .Where(x => invData.Select(i => i.InvHeader.Code).Contains(x.InvCode) && x.Src == "DP")
-            //         .ToList();
+            //         .ToListAsync(cancellationToken);
 
-            _logger.LogInformation($"Posting journal SI: get invoice memo data.");
+            _logger.LogInformation("Posting journal SI: get invoice memo data.");
             var invMemo =
-                db.SalesInvoiceCreditMemos.AsNoTracking()
+                await db.SalesInvoiceCreditMemos.AsNoTracking()
                     .Where(x => invData.Select(i => i.InvHeader.Code).Contains(x.InvCode) &&
                                 new[] { "DP", "CM" }.Contains(x.Src))
-                    .ToList();
+                    .ToListAsync(cancellationToken);
             
-            _logger.LogInformation($"Posting journal SI: get memo data.");
+            _logger.LogInformation("Posting journal SI: get memo data.");
             var invMemoCm = invMemo.Where(im => im.Src == "CM").ToList();
             var memoData =
-                db.CreditMemos.AsNoTracking()
+                await db.CreditMemos.AsNoTracking()
                     .Where(x => invMemoCm.Select(im => im.CreditMemoCode).Contains(x.Code))
-                    .ToList();
+                    .ToListAsync(cancellationToken);
 
-            _logger.LogInformation($"Posting journal SI: get do journal data for hpp or barang terkirim.");
+            _logger.LogInformation("Posting journal SI: get do journal data for hpp or barang terkirim.");
             var dlvJournal =
-                db.Journals.AsNoTracking()
+                await db.Journals.AsNoTracking()
                     .Where(x => x.SrcTrans == "DLV" && invDetailData.Select(id => id.DoData.Code).Contains(x.Code))
-                    .ToList();
+                    .ToListAsync(cancellationToken);
 
             foreach (var itemData in invData)
             {
@@ -1642,29 +1646,47 @@ public class JournalService : IJournalService
         return journals;
     }
 
-    private IEnumerable<Journal> ProcessCashBankJournal(TenantContext db, DateTime dateTime, List<SystemParameter> systemParam)
+    private async Task<IEnumerable<Journal>> ProcessCashBankJournalAsync(TenantContext db, DateTime date,
+        List<SystemParameter> systemParam, CancellationToken cancellationToken)
     {
         List<Journal> journals = new();
-        var cashBankData = db.GeneralCashBankHeaders.Where(x => x.Date.Month == dateTime.Month && x.Date.Year == dateTime.Year && x.Mark != "V").ToList();
-        foreach (var itemData in cashBankData)
+        
+        _logger.LogInformation("Posting journal CB: get cash bank data.");
+        var cbData =
+            await db.GeneralCashBankHeaders.AsNoTracking()
+                .Where(x => ((x.Date.Month == date.Month && x.Date.Year == date.Year) ||
+                             (x.ChequeDate.Value.Month == date.Month && x.ChequeDate.Value.Year == date.Year)) &&
+                            x.Mark != "V")
+                .ToListAsync(cancellationToken);
+        
+        _logger.LogInformation("Posting journal CB: get cash bank detail data.");
+        var cbDetailData =
+            await db.GeneralCashBankDetails.AsNoTracking()
+                .Where(x => cbData.Select(i => i.Code).Contains(x.Code))
+                .ToListAsync(cancellationToken);
+        
+        _logger.LogInformation("Posting journal CB: delete cash bank journal data.");
+        var journalData = db.Journals.AsNoTracking().Where(x => cbData.Select(i => i.Code).Contains(x.Code));
+        if (await journalData.AnyAsync(cancellationToken))
+            db.Journals.RemoveRange(journalData);
+        
+        foreach (var itemData in cbData)
         {
-            var journalData = db.Journals.Where(x => x.Code == itemData.Code);
-            if (journalData.Any())
-                db.Journals.RemoveRange(journalData);
-
-            var cashBankDetailData = db.GeneralCashBankDetails.Where(x => x.Code == itemData.Code).ToList();
+            // var cbDetailData = db.GeneralCashBankDetails.Where(x => x.Code == itemData.Code).ToList();
             short i = 0;
             short j = 0;
             short k = 0;
             short l = 0;
-            foreach (var itemDetailData in cashBankDetailData)
+            foreach (var itemDetailData in cbDetailData.Where(x => x.Code == itemData.Code))
             {
+                _logger.LogInformation($"Posting journal CB: {itemData.Code} - {itemDetailData.Type} - {itemDetailData.CoaCode} - {itemDetailData.TransCode}.");
+                
                 //Detail
                 journals.Add(new Journal
                 {
                     Code = itemData.Code,
                     LineNo = ++i,
-                    Date = itemData.ChequeDate.HasValue ? itemData.ChequeDate.Value : itemData.Date,
+                    Date = itemData.ChequeDate ?? itemData.Date,
                     CoaCode = itemDetailData.CoaCode ?? systemParam.FirstOrDefault(x => x.Code == $"{itemDetailData.Type}_COA")?.Value ?? "",
                     TypeCode = $"CB_{itemDetailData.Type}",
                     Notes = ($"{systemParam.FirstOrDefault(x => x.Code == $"JR_PREFIX_{itemDetailData.Type}")?.Value ?? ""} {itemDetailData.Notes}").Trim(),
@@ -1683,7 +1705,7 @@ public class JournalService : IJournalService
                 {
                     Code = itemData.Code,
                     LineNo = ++j,
-                    Date = itemData.ChequeDate.HasValue ? itemData.ChequeDate.Value : itemData.Date,
+                    Date = itemData.ChequeDate ?? itemData.Date,
                     CoaCode = itemData.CoaCode ?? "",
                     TypeCode = "CB",
                     Notes = "Kas/Bank",
@@ -1703,7 +1725,7 @@ public class JournalService : IJournalService
                     {
                         Code = itemData.Code,
                         LineNo = 1,
-                        Date = itemData.ChequeDate.HasValue ? itemData.ChequeDate.Value : itemData.Date,
+                        Date = itemData.ChequeDate ?? itemData.Date,
                         CoaCode = systemParam.FirstOrDefault(x => x.Code == $"CHQ_{(itemData.Type == "D" ? "AR" : "AP")}_COA")?.Value ?? "",
                         TypeCode = "CB",
                         Notes = $"Terima Cek / Giro, Kode Cek: {(string.IsNullOrEmpty(itemData.ChequeNo) ? "-" : $"{itemData.ChequeNo}")}",
@@ -1720,7 +1742,7 @@ public class JournalService : IJournalService
                     {
                         Code = itemData.Code,
                         LineNo = 1,
-                        Date = itemData.ChequeDate.HasValue ? itemData.ChequeDate.Value : itemData.Date,
+                        Date = itemData.ChequeDate ?? itemData.Date,
                         CoaCode = systemParam.FirstOrDefault(x => x.Code == $"CHQ_{(itemData.Type == "D" ? "AR" : "AP")}_COA")?.Value ?? "",
                         TypeCode = "CB",
                         Notes = $"{(itemData.Mark == "A" ? "Kliring" : "Penolakan")} Cek / Giro, Kode Cek: {(string.IsNullOrEmpty(itemData.ChequeNo) ? "-" : $"{itemData.ChequeNo}")}",
@@ -1738,7 +1760,7 @@ public class JournalService : IJournalService
                         {
                             Code = itemData.Code,
                             LineNo = ++k,
-                            Date = itemData.ChequeDate.HasValue ? itemData.ChequeDate.Value : itemData.Date,
+                            Date = itemData.ChequeDate ?? itemData.Date,
                             CoaCode = itemDetailData.CoaCode ?? systemParam.FirstOrDefault(x => x.Code == $"{itemDetailData.Type}_COA")?.Value ?? "",
                             TypeCode = $"CB_{itemDetailData.Type}",
                             Notes = $"Penolakan Cek / Giro, Kode Cek: {(string.IsNullOrEmpty(itemData.ChequeNo) ? "-" : $"{itemData.ChequeNo}")}",
@@ -1754,7 +1776,7 @@ public class JournalService : IJournalService
                         {
                             Code = itemData.Code,
                             LineNo = ++l,
-                            Date = itemData.ChequeDate.HasValue ? itemData.ChequeDate.Value : itemData.Date,
+                            Date = itemData.ChequeDate ?? itemData.Date,
                             CoaCode = itemData.CoaCode ?? "",
                             TypeCode = "CB",
                             Notes = $"Penolakan Cek / Giro, Kode Cek: {(string.IsNullOrEmpty(itemData.ChequeNo) ? "-" : $"{itemData.ChequeNo}")}",
