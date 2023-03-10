@@ -217,10 +217,10 @@ public class SMReportService : ISMReportService
 					WHERE 1=1 {whStartDate}
 					GROUP BY ItemId
 				) cte_sm
-				LEFT JOIN cte_begin_sm_src cte_b_sm
-					ON cte_b_sm.ItemId = cte_sm.ItemId
 				RIGHT JOIN Inventory.Item i
 					ON i.Id = cte_sm.ItemId
+				LEFT JOIN cte_begin_sm_src cte_b_sm
+					ON cte_b_sm.ItemId = i.Id
 				LEFT JOIN Inventory.ItemCategory ic
 					ON ic.Id = i.CategoryId
 				LEFT JOIN Inventory.UoMConversion uom_c_bu
@@ -267,6 +267,7 @@ public class SMReportService : ISMReportService
 				FROM cte_sm_all cte_sm
 				LEFT JOIN cte_begin_sm_src cte_b_sm
 					ON cte_b_sm.ItemId = cte_sm.ItemId
+				WHERE 1=1 {whStartDate}
 				ORDER BY [Date], Seq").ToList();
 
 		        decimal balanceQty = 0, balanceInv = 0;
@@ -424,10 +425,10 @@ public class SMReportService : ISMReportService
 					WHERE 1=1 {whStartDate}
 					GROUP BY ItemId
 				) cte_sm
-				LEFT JOIN cte_begin_sm_src cte_b_sm
-					ON cte_b_sm.ItemId = cte_sm.ItemId
 				RIGHT JOIN Inventory.Item i
 					ON i.Id = cte_sm.ItemId
+				LEFT JOIN cte_begin_sm_src cte_b_sm
+					ON cte_b_sm.ItemId = i.Id
 				LEFT JOIN Inventory.ItemCategory ic
 					ON ic.Id = i.CategoryId
 				LEFT JOIN Inventory.UoMConversion uom_c_bu
