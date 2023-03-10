@@ -1,9 +1,9 @@
-﻿using ERP.Common.Extensions;
+﻿using Microsoft.EntityFrameworkCore;
+using ERP.Common.Extensions;
 using ERP.Common.Models;
 using ERP.Entity;
 using ERP.Entity.Sales;
 using ERP.Web.API.Domain.Interfaces.Sales;
-using Microsoft.EntityFrameworkCore;
 
 namespace ERP.Web.API.Domain.Services.Sales;
 
@@ -17,219 +17,183 @@ public class ARMutationReportService : IARMutationReportService
 
     public DataSourceResult GetData(int type, string startDate, string endDate, string custCode, int slsId, string status)
     {
-        var cusData = _db.ReportByCustomerMutations.FromSqlRaw(@"
-                    SELECT a.Code, a.Initial, a.[Name], SUM(a.TotalTrans) AS TotalTrans, CAST (0 AS decimal) AS BeginningBalance, SUM(a.TransAmount) AS TransAmount,
-                    CAST (0 AS decimal) AS PaidAmount, CAST (0 AS decimal) AS EndingBalance FROM (
-                    SELECT cs.Code, cs.Initial, cs.[Name], COUNT(*) AS TotalTrans, SUM(inv.Total) AS TransAmount
-                                                FROM General.Customer cs
-                                                LEFT JOIN Sales.SalesDeliveryHeader dlv ON dlv.CustCode = cs.Code
-                                                LEFT JOIN Sales.SalesInvoiceDetail invD ON invD.DOCode = dlv.Code
-                                                LEFT JOIN Sales.SalesInvoiceHeader inv ON inv.Code = invD.Code AND inv.Mark NOT IN ('V', 'OL')
-                                                WHERE dlv.Mark <> 'V' AND inv.Total IS NOT NULL GROUP BY cs.Code, cs.Initial, cs.[Name]
-							                    UNION
-                    SELECT cs.Code, cs.Initial, cs.[Name], COUNT(*) AS TotalTrans, SUM(ar.Amount) AS TransAmount
-                                                FROM General.Customer cs
-                                                LEFT JOIN Accounting.BeginningBalanceAR ar on ar.CustCode = cs.Code
-                                                WHERE ar.IsActive = 1 GROUP BY cs.Code, cs.Initial, cs.[Name] ) a
-                    GROUP BY a.Code, a.Initial, a.[Name]").ToList();
-
-        var query = "";
-        var sysData = _db.SystemParameters.FirstOrDefault(x => x.Code == "AR_RECOG_TIME");
-
-        if (sysData.Value == "SI")
+        var sysData = _db.SystemParameters.FirstOrDefault(x => x.Code == "AR_RECOG_TIME")?.Value;
+        
+        if (string.IsNullOrEmpty(startDate))
         {
-            query = @"SELECT inv.[Date], inv.DueDate, inv.Code, inv.SOCode AS SrcCode, inv.Code AS InvCode, sls.FirstName AS SlsName,
-                    inv.CustCode, sp.[Name] AS CustName, CAST (0 AS decimal) AS BeginningBalance, inv.Total AS TransAmount,
-                    CAST (0 AS decimal) AS PaidAmount, CAST (0 AS decimal) AS EndingBalance
-                    FROM Sales.SalesInvoiceHeader inv
-                    LEFT JOIN Sales.SalesOrderHeader so ON so.Code = inv.SOCode
-                    LEFT JOIN General.Employee sls ON sls.Id = so.SalesBy
-                    LEFT JOIN General.Customer sp ON sp.Code = inv.CustCode
-                    WHERE inv.Mark NOT IN ('V', 'OL')";
+            startDate = "1900-01-01";
         }
-        else
-        {
-            query = @"SELECT dlv.[Date], inv.DueDate, dlv.Code, dlv.TransCode AS SrcCode, inv.Code AS InvCode, sls.FirstName AS SlsName,
-                    dlv.CustCode, sp.[Name] AS CustName, CAST (0 AS decimal) AS BeginningBalance, dlv.Total AS TransAmount,
-                    CAST (0 AS decimal) AS PaidAmount, CAST (0 AS decimal) AS EndingBalance
-                    FROM Sales.SalesDeliveryHeader dlv
-                    LEFT JOIN Sales.SalesOrderHeader so ON so.Code = dlv.TransCode
-                    LEFT JOIN General.Employee sls ON sls.Id = so.SalesBy
-                    LEFT JOIN General.Customer sp ON sp.Code = dlv.CustCode
-                    LEFT JOIN Sales.SalesInvoiceDetail invD ON invD.DOCode = dlv.Code
-                    LEFT JOIN Sales.SalesInvoiceHeader inv ON inv.Code = invD.Code AND inv.Mark IN('A','PP','CMP')
-                    WHERE dlv.Mark NOT IN ('V', 'OL')";
-        }
-
-
-        var dlvData = _db.ReportByDeliveryARMutations.FromSqlRaw(query + (slsId > 0 ? $" AND so.SalesBy = {slsId} " : " ") 
-            + (!string.IsNullOrWhiteSpace(custCode) ? sysData.Value == "SI" ? $" AND inv.CustCode = '{custCode}' " : $" AND dlv.CustCode = '{custCode}' " : " ")
-            + "").ToList();
-
-        var cbData = _db.GeneralCashBankHeaders.Where(x => !new[] { "V", "REJ" }.Contains(x.Mark)).ToList();
-
-        var bbData = _db.VwBeginningBalanceARs.Where(x => x.IsActive).ToList();
-
-        var invCMData = _db.SalesInvoiceCreditMemos.Where(x => dlvData.Select(y => y.Code).Contains(x.InvCode)).ToList();
-
-        var cmData = _db.CreditMemos.Where(x => x.Mark != "V").ToList();
-
+        
+        string whEndDate = "", whBbEndDate = "",whDoEndDate = "", whCbEndDate = "";
         if (!string.IsNullOrEmpty(endDate))
         {
-            dlvData = dlvData.Where(x => x.Date <= Convert.ToDateTime(endDate)).ToList();
-            cbData = cbData.Where(x => (x.ChequeDate ?? x.Date) <= Convert.ToDateTime(endDate)).ToList();
-            bbData = bbData.Where(x => x.Date <= Convert.ToDateTime(endDate)).ToList();
-            cmData = cmData.Where(x => x.Date <= Convert.ToDateTime(endDate)).ToList();
+            whEndDate = $"AND inv.[Date] <= '{endDate.Replace("'", "''")}'";
+            whBbEndDate = $"AND [Date] <= '{endDate.Replace("'", "''")}'";
+            whDoEndDate = $"AND dlv.[Date] <= '{endDate.Replace("'", "''")}'";
+            whCbEndDate = $"AND ISNULL(cb_h.ChequeDate, cb_h.[Date]) <= '{endDate.Replace("'", "''")}'";
+        }
+        
+        string whCust = "", whBbCust = "", whDoCust = "";
+        if (!string.IsNullOrWhiteSpace(custCode))
+        {
+            whCust = $"AND inv.CustCode = '{custCode.Replace("'", "''")}'";
+            whBbCust = $"AND CustCode = '{custCode.Replace("'", "''")}'";
+            whDoCust = $"AND dlv.CustCode = '{custCode.Replace("'", "''")}'";
         }
 
-        var cbDetail = _db.GeneralCashBankDetails.Where(x => cbData.Select(c => c.Code).Contains(x.Code)).ToList();
-
-        foreach (var item in dlvData)
+        string whSales = "", whBbSales = "";
+        if (slsId > 0)
         {
-            if (!string.IsNullOrEmpty(startDate))
-            {
-                var totDlv = _db.SalesInvoiceHeaders.FirstOrDefault(x => x.Code == item.InvCode)?.Total ?? 0m;
-                if (item.Date < Convert.ToDateTime(startDate))
-                {
-                    var bcbData = cbData.Where(x => (x.ChequeDate ?? x.Date) < Convert.ToDateTime(startDate)).ToList();
-                    var totBcb = cbDetail.Where(x => x.TransCode == item.InvCode && bcbData.Select(y => y.Code).Contains(x.Code)).Sum(x => x.TransAmount);
-                    var totCcb = cbDetail.Where(x => x.TransCode == item.InvCode && !bcbData.Select(y => y.Code).Contains(x.Code)).Sum(x => x.TransAmount);
-                    var totBcm = invCMData.Where(x => x.InvCode == item.InvCode && cmData.Where(y => y.Date < Convert.ToDateTime(startDate)).Select(y => y.Code).Contains(x.CreditMemoCode)).Sum(x => x.CreditMemoAmount);
-                    var totCcm = invCMData.Where(x => x.InvCode == item.InvCode && cmData.Where(y => y.Date >= Convert.ToDateTime(startDate)).Select(y => y.Code).Contains(x.CreditMemoCode)).Sum(x => x.CreditMemoAmount);
-                    item.BeginningBalance = item.TransAmount - (totDlv > 0 ? (totBcb * item.TransAmount / totDlv) + (totBcm * item.TransAmount / totDlv) : 0m);
-                    item.PaidAmount = totDlv > 0 ? (totCcb * item.TransAmount / totDlv) + (totCcm * item.TransAmount / totDlv) : 0m;
-                    item.EndingBalance = item.BeginningBalance - item.PaidAmount;
-                    item.TransAmount = 0;
-                }
-                else
-                {
-                    var ccbData = cbData.Where(x => (x.ChequeDate ?? x.Date) >= Convert.ToDateTime(startDate)).ToList();
-                    var totCcb = cbDetail.Where(x => x.TransCode == item.InvCode && ccbData.Select(y => y.Code).Contains(x.Code)).Sum(x => x.TransAmount);
-                    var totCcm = invCMData.Where(x => x.InvCode == item.InvCode && cmData.Select(y => y.Code).Contains(x.CreditMemoCode)).Sum(x => x.CreditMemoAmount);
-                    item.PaidAmount = totDlv > 0 ? (totCcb * item.TransAmount / totDlv) + (totCcm * item.TransAmount / totDlv) : 0;
-                    item.EndingBalance = item.TransAmount - item.PaidAmount;
-                }
-            }
-            else
-            {
-                var totDlv = _db.SalesInvoiceHeaders.FirstOrDefault(x => x.Code == item.InvCode)?.Total ?? 0m;
-                var totCcb = cbDetail.Where(x => x.TransCode == item.InvCode && cbData.Select(y => y.Code).Contains(x.Code)).Sum(x => x.TransAmount);
-                var totCcm = invCMData.Where(x => x.InvCode == item.InvCode && cmData.Select(y => y.Code).Contains(x.CreditMemoCode)).Sum(x => x.CreditMemoAmount);
-                item.PaidAmount = totDlv > 0 ? (totCcb * item.TransAmount / totDlv) + (totCcm * item.TransAmount / totDlv) : 0;
-                item.EndingBalance = item.TransAmount - item.PaidAmount;
-            }
+            whSales = $"AND so.SalesBy = {slsId}";
+            whBbSales = "AND 1=2";
         }
-
-        if (slsId <= 0)
+        
+        var whStatus = status switch
         {
-            foreach (var itemBB in bbData)
-            {
-                var newData = new ReportByDeliveryARMutation
-                {
-                    Date = itemBB.Date,
-                    DueDate = itemBB.DueDate,
-                    Code = itemBB.Code,
-                    CustCode = itemBB.CustCode,
-                    CustName = itemBB.CustName,
-                    BeginningBalance = 0m,
-                    TransAmount = itemBB.Amount,
-                    PaidAmount = 0m,
-                    EndingBalance = 0m
-                };
+            "NP" => "WHERE EndingBalance > 0",
+            "P" => "WHERE EndingBalance <= 0",
+            _ => ""
+        };
 
-                if (!string.IsNullOrEmpty(startDate))
-                {
-                    if (itemBB.Date < Convert.ToDateTime(startDate))
-                    {
-                        var bcbData = cbData.Where(x => (x.ChequeDate ?? x.Date) < Convert.ToDateTime(startDate)).ToList();
-                        var totBcb = cbDetail.Where(x => x.TransCode == newData.Code && bcbData.Select(y => y.Code).Contains(x.Code)).Sum(x => x.TransAmount);
-                        var totCcb = cbDetail.Where(x => x.TransCode == newData.Code && !bcbData.Select(y => y.Code).Contains(x.Code)).Sum(x => x.TransAmount);
-                        newData.BeginningBalance = newData.TransAmount - totBcb;
-                        newData.PaidAmount = totCcb;
-                        newData.EndingBalance = newData.BeginningBalance - newData.PaidAmount;
-                        newData.TransAmount = 0;
-                    }
-                    else
-                    {
-                        var ccbData = cbData.Where(x => (x.ChequeDate ?? x.Date) >= Convert.ToDateTime(startDate)).ToList();
-                        var totCcb = cbDetail.Where(x => x.TransCode == newData.Code && ccbData.Select(y => y.Code).Contains(x.Code)).Sum(x => x.TransAmount);
-                        newData.PaidAmount = totCcb;
-                        newData.EndingBalance = newData.TransAmount - newData.PaidAmount;
-                    }
-                }
-                else
-                {
-                    var totCcb = cbDetail.Where(x => x.TransCode == newData.Code && cbData.Select(y => y.Code).Contains(x.Code)).Sum(x => x.TransAmount);
-                    newData.PaidAmount = totCcb;
-                    newData.EndingBalance = newData.TransAmount - newData.PaidAmount;
-                }
+        var srcQuery = sysData == "SI"
+            ? @$"WITH cte_ar_src AS (
+                SELECT inv.[Date], inv.DueDate, inv.Code, inv.SOCode AS SrcCode,
+		            inv.Code AS InvCode, inv.CustCode, inv.Total, 
+		            so.SalesBy, 'SI' AS src
+	            FROM Sales.SalesInvoiceHeader inv
+	            LEFT JOIN Sales.SalesOrderHeader so
+		            ON so.Code = inv.SOCode
+                WHERE inv.Mark NOT IN ('V', 'OL') {whEndDate} {whCust} {whSales}
+				UNION ALL
+				SELECT [Date], DueDate, Code, '' AS SrcCode,
+					Code AS InvCode, CustCode, Amount,
+					0 AS SalesBy, 'BB' AS src
+				FROM Accounting.BeginningBalanceAR
+				WHERE IsActive = 1 {whBbEndDate} {whBbCust} {whBbSales}
+            )"
+            : @$"WITH cte_ar_src AS (
+                SELECT dlv.[Date], inv.DueDate, dlv.Code, dlv.TransCode AS SrcCode,
+		            inv.Code AS InvCode, dlv.CustCode, dlv.Total,
+		            so.SalesBy, 'DO' AS src
+                FROM Sales.SalesDeliveryHeader dlv
+                LEFT JOIN Sales.SalesOrderHeader so
+	                ON so.Code = dlv.TransCode
+                LEFT JOIN Sales.SalesInvoiceDetail invD
+	                ON invD.DOCode = dlv.Code
+                LEFT JOIN Sales.SalesInvoiceHeader inv
+	                ON inv.Code = invD.Code AND inv.Mark NOT IN ('V', 'OL')
+                WHERE dlv.Mark NOT IN ('V', 'OL')
+				AND dlv.SrcTrans = 1 {whDoEndDate} {whDoCust} {whSales}
+	            UNION ALL
+	            SELECT [Date], DueDate, Code, '' AS SrcCode,
+		            '' AS InvCode, CustCode, Amount,
+		            0 AS SalesBy, 'BB' AS src
+	            FROM Accounting.BeginningBalanceAR
+	            WHERE IsActive = 1 {whBbSales}
+            )";
 
-                dlvData.Add(newData);
-            }
-        }
+        var baseQuery = @$"{srcQuery}
+            , cte_cb_src AS (
+	            SELECT cb_h.Code, ISNULL(cb_h.ChequeDate, cb_h.[Date]) AS [Date], cb_d.TransCode, cb_d.TransAmount, 'CB' AS Src
+	            FROM Finance.GeneralCashBankHeader cb_h
+	            LEFT JOIN Finance.GeneralCashBankDetail cb_d
+		            ON cb_h.Code = cb_d.Code
+	            WHERE cb_h.Mark NOT IN ('V', 'REJ')
+	            AND cb_d.[Type] = 'AR' {whCbEndDate}
+	            UNION ALL
+	            SELECT inv_cm.CreditMemoCode, cte.[Date], inv_cm.InvCode, inv_cm.CreditMemoAmount, inv_cm.Src
+	            FROM Sales.SalesInvoiceCreditMemo inv_cm
+	            INNER JOIN cte_ar_src cte
+		            ON cte.Code = inv_cm.InvCode
+            ), cte_inv_cm_src AS (
+	            SELECT *
+	            FROM Sales.SalesInvoiceCreditMemo inv_cm
+	            WHERE EXISTS (
+		            SELECT 1
+		            FROM cte_ar_src cte
+		            WHERE cte.Code = inv_cm.InvCode
+	            )
+            ), cte_cb_begin_calc AS (
+	            SELECT TransCode, SUM(TransAmount) AS sum_cb_amount
+	            FROM cte_cb_src
+	            WHERE [Date] < '{startDate.Replace("'", "''")}'
+	            GROUP BY TransCode
+            ), cte_cb_calc AS (
+	            SELECT TransCode, SUM(TransAmount) AS sum_cb_amount
+	            FROM cte_cb_src
+	            WHERE [Date] >= '{startDate.Replace("'", "''")}'
+	            GROUP BY TransCode
+            ), cte_ar_all AS (
+	            SELECT ar.*,
+		            ISNULL(cb_b.sum_cb_amount, 0) AS cb_begin_amount,
+		            CASE WHEN ar.[Date] < '{startDate.Replace("'", "''")}' THEN ar.Total - ISNULL(cb_b.sum_cb_amount, 0)
+			            ELSE 0 END AS BeginningBalance,
+		            CASE WHEN ar.[Date] >= '{startDate.Replace("'", "''")}' THEN ar.Total
+			            ELSE 0 END AS TransAmount,
+		            ISNULL(cb.sum_cb_amount, 0) AS PaidAmount
+	            FROM cte_ar_src ar
+	            LEFT JOIN cte_cb_begin_calc cb_b
+		            ON cb_b.TransCode = ar.InvCode
+	            LEFT JOIN cte_cb_calc cb
+		            ON cb.TransCode = ar.InvCode
+            ), cte_ar_all_calc AS (
+                SELECT *,
+	                BeginningBalance + TransAmount - PaidAmount AS EndingBalance
+                FROM cte_ar_all
+            )";
 
-        if (!string.IsNullOrEmpty(status))
+        if (type == 2)
         {
-            if (status == "NP")
-            {
-                dlvData = dlvData.Where(x => x.EndingBalance > 0).ToList();
-            }
-            else if (status == "P")
-            {
-                dlvData = dlvData.Where(x => x.EndingBalance == 0).ToList();
-            }
-        }
-
-        dlvData = dlvData
-            .Where(x => x.BeginningBalance > 0 || x.TransAmount > 0 || x.PaidAmount > 0 || x.EndingBalance > 0)
-            .OrderBy(x => x.Date).ToList();
-
-        foreach (var itemCus in cusData)
-        {
-            itemCus.TotalTrans = dlvData.Count(x => x.CustCode == itemCus.Code);
-            itemCus.BeginningBalance = dlvData.Where(x => x.CustCode == itemCus.Code).Sum(x => x.BeginningBalance);
-            itemCus.TransAmount = dlvData.Where(x => x.CustCode == itemCus.Code).Sum(x => x.TransAmount);
-            itemCus.PaidAmount = dlvData.Where(x => x.CustCode == itemCus.Code).Sum(x => x.PaidAmount);
-            itemCus.EndingBalance = dlvData.Where(x => x.CustCode == itemCus.Code).Sum(x => x.EndingBalance);
-        }
-
-        cusData = cusData.Where(x => x.TotalTrans > 0).ToList();
-
-        if (type == 1)
-        {
-            if (!string.IsNullOrEmpty(custCode))
-            {
-                dlvData = dlvData.Where(x => x.CustCode == custCode).ToList();
-            }
-
-            dlvData.Add(new ReportByDeliveryARMutation
-            {
-                Code = "Total",
-                BeginningBalance = dlvData.Sum(x => x.BeginningBalance),
-                TransAmount = dlvData.Sum(x => x.TransAmount),
-                PaidAmount = dlvData.Sum(x => x.PaidAmount),
-                EndingBalance = dlvData.Sum(x => x.EndingBalance),
-            });
-
-            return dlvData.AsQueryable().ToDataSourceResult(0, dlvData.Count, null, null);
-        }
-        else
-        {
-            if (!string.IsNullOrEmpty(custCode))
-            {
-                cusData = cusData.Where(x => x.Code == custCode).ToList();
-            }
-
-            cusData.Add(new ReportByCustomerMutation
+            var custData = _db.ReportByCustomerMutations.FromSqlRaw(@$"{baseQuery}
+            SELECT ar.*,
+	            c.[Name] AS Name
+            FROM (
+				SELECT CustCode AS Code,
+					COUNT(Code) AS TotalTrans,
+					SUM(BeginningBalance) AS BeginningBalance,
+					SUM(TransAmount) AS TransAmount,
+					SUM(PaidAmount) AS PaidAmount,
+					SUM(EndingBalance) AS EndingBalance
+				FROM cte_ar_all_calc
+                {whStatus}
+				GROUP BY CustCode
+			) ar
+            LEFT JOIN General.Customer c
+	            ON c.Code = ar.Code
+			ORDER BY ar.Code").ToList();
+            
+            custData.Add(new ReportByCustomerMutation
             {
                 Name = "Total",
-                BeginningBalance = cusData.Sum(x => x.BeginningBalance),
-                TransAmount = cusData.Sum(x => x.TransAmount),
-                PaidAmount = cusData.Sum(x => x.PaidAmount),
-                EndingBalance = cusData.Sum(x => x.EndingBalance),
+                BeginningBalance = custData.Sum(x => x.BeginningBalance),
+                TransAmount = custData.Sum(x => x.TransAmount),
+                PaidAmount = custData.Sum(x => x.PaidAmount),
+                EndingBalance = custData.Sum(x => x.EndingBalance),
             });
-
-            return cusData.AsQueryable().ToDataSourceResult(0, cusData.Count, null, null);
+            
+            return custData.AsQueryable().ToDataSourceResult(0, custData.Count, null, null);
         }
+        
+        var data = _db.ReportByDeliveryARMutations.FromSqlRaw(@$"{baseQuery}
+            SELECT ar.*,
+	            sls.FirstName AS SlsName,
+	            c.[Name] AS CustName
+            FROM cte_ar_all_calc ar
+            LEFT JOIN General.Employee sls
+	            ON sls.Id = ar.SalesBy
+            LEFT JOIN General.Customer c
+	            ON c.Code = ar.CustCode {whStatus}
+			ORDER BY ar.Code").ToList();
+        
+        data.Add(new ReportByDeliveryARMutation
+        {
+            Code = "Total",
+            BeginningBalance = data.Sum(x => x.BeginningBalance),
+            TransAmount = data.Sum(x => x.TransAmount),
+            PaidAmount = data.Sum(x => x.PaidAmount),
+            EndingBalance = data.Sum(x => x.EndingBalance),
+        });
+
+        return data.AsQueryable().ToDataSourceResult(0, data.Count, null, null);
     }
 }

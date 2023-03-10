@@ -62,7 +62,7 @@ namespace ERP.Web.API.Domain.Services.Purchase
 					WHERE cb_d.[Type] = 'AP' AND cb_h.Mark NOT IN ('V', 'REJ') AND cb_d.Src = 'BB' {whCbEndDate}
 					UNION ALL
 					SELECT
-						dm.[Date], dm.Code, 'Kd. Faktur: ' + pi_dm.InvCode AS Notes, inv.SupCode,
+						inv.[Date], dm.Code, 'Kd. Faktur: ' + pi_dm.InvCode AS Notes, inv.SupCode,
 						pi_dm.DebitMemoAmount AS DebitAmount, CAST(0 AS decimal(19,8)) AS DebitAmount, 2 AS Sort
 					FROM Purchasing.PurchaseInvoiceDebitMemo pi_dm
 					LEFT JOIN Purchasing.DebitMemo dm ON dm.Code = pi_dm.DebitMemoCode

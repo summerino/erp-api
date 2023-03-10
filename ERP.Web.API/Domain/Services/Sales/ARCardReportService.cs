@@ -65,7 +65,7 @@ namespace ERP.Web.API.Domain.Services.Sales
 					WHERE cb_d.[Type] = 'AR' AND cb_h.Mark NOT IN ('V', 'REJ') AND cb_d.Src = 'BB' {whCbEndDate}
 					UNION ALL
 					SELECT
-						cm.[Date], cm.Code, 'Kd. Faktur: ' + si_cm.InvCode AS Notes, inv.CustCode, so.SalesBy AS SalesId,
+						inv.[Date], cm.Code, 'Kd. Faktur: ' + si_cm.InvCode AS Notes, inv.CustCode, so.SalesBy AS SalesId,
 						CAST(0 AS decimal(19,8)) AS DebitAmount, si_cm.CreditMemoAmount AS CreditAmount, 2 AS Sort
 					FROM Sales.SalesInvoiceCreditMemo si_cm
 					LEFT JOIN Sales.CreditMemo cm ON cm.Code = si_cm.CreditMemoCode
