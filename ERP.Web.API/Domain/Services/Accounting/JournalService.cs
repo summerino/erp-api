@@ -83,7 +83,8 @@ public class JournalService : IJournalService
             await NewCalculateHPPAsync(tenantCtx, data.Date, stateData, cancellationToken);
             
             stateData.Notes = $"Done calculate HPP at {DateTime.Now:yyyy-MM-dd HH:mm:ss}.";
-            if (data.Date < Convert.ToDateTime(systemParam.FirstOrDefault(x => x.Code == "DATA_START_DATE").Value))
+            var startDate = Convert.ToDateTime(systemParam.FirstOrDefault(x => x.Code == "DATA_START_DATE")?.Value).AddDays(-1);
+            if (data.Date.Year == startDate.Year && data.Date.Month == startDate.Month)
             {
                 stateData.Step++; //2
                 await tenantCtx.SaveChangesAsync(cancellationToken);
