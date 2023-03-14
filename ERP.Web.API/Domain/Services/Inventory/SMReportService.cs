@@ -338,10 +338,10 @@ public class SMReportService : ISMReportService
 					WHERE 1=1 {whStartDate}
 					GROUP BY WarehouseCode
 				) cte_sm
-				LEFT JOIN cte_begin_sm_src cte_b_sm
-					ON cte_b_sm.WarehouseCode = cte_sm.WarehouseCode
 				RIGHT JOIN Inventory.Warehouse w
-					ON w.Code = cte_sm.WarehouseCode").ToList();
+					ON w.Code = cte_sm.WarehouseCode
+				LEFT JOIN cte_begin_sm_src cte_b_sm
+					ON cte_b_sm.WarehouseCode = w.Code").ToList();
 	        
 	        return data.AsQueryable().ToDataSourceResult(0, data.Count, null, null);
         }
