@@ -167,7 +167,7 @@ public class JournalService : IJournalService
             stateData.Step++; //7 /12
             await tenantCtx.SaveChangesAsync(cancellationToken);
             _logger.LogInformation($"Done posting journal SI at {DateTime.Now:yyyy-MM-dd HH:mm:ss}.");
-
+            
             // Posting sr journals
             _logger.LogInformation($"Start posting journal SR at {DateTime.Now:yyyy-MM-dd HH:mm:ss}.");
             var journalSR = await ProcessSalesReturnJournalAsync(tenantCtx, data.Date, systemParam, items, taxes, cancellationToken);
@@ -255,7 +255,6 @@ public class JournalService : IJournalService
             if (data.Date.Month == 12)
             {
                 stateData.Step++; //17 /22
-                //tenantCtx.PostingStates.Update(stateData);
                 await tenantCtx.SaveChangesAsync(cancellationToken);
             
                 tenantCtx.Database.ExecuteSqlRaw(
@@ -300,7 +299,6 @@ public class JournalService : IJournalService
             var stateData = tenantCtx.PostingStates.OrderByDescending(x => x.Id).FirstOrDefault(x => x.UserId == userId);
             stateData.Status = "FAILED";
             stateData.Notes = ex.InnerException?.Message ?? ex.Message;
-            //tenantCtx.PostingStates.Update(stateData);
             await tenantCtx.SaveChangesAsync(cancellationToken);
         }
     }
@@ -3127,7 +3125,7 @@ public class JournalService : IJournalService
                     CoaCode = string.IsNullOrWhiteSpace(items.FirstOrDefault(x => x.Id == itemDetail.DlvDetail.ItemId)?.CoaCogs) ? systemParam.FirstOrDefault(x => x.Code == "COGS_COA")?.Value ?? "" : items.FirstOrDefault(x => x.Id == itemDetail.DlvDetail.ItemId)?.CoaCogs,
                     TypeCode = "DLV_DT",
                     Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_COGS")?.Value ?? ""} {itemDetail.Item.Initial}").Trim(),
-                    RefCode1 = itemDlvData.DlvHeader.Code,
+                    RefCode1 = itemDlvData.DlvHeader.TransCode,
                     RefCode2 = itemDetail.Item.Initial,
                     Group = 2,
                     CurrCode = itemDlvData.DlvHeader.CurrCode,
@@ -3148,7 +3146,7 @@ public class JournalService : IJournalService
                         CoaCode = string.IsNullOrWhiteSpace(taxes.FirstOrDefault(x => x.Id == itemDetail.DlvDetail.TaxId)?.ExemptCoaCode) ? "" : taxes.FirstOrDefault(x => x.Id == itemDetail.DlvDetail.TaxId)?.ExemptCoaCode,
                         TypeCode = "DLV_DT",
                         Notes = "PPN Yang Dibebaskan",
-                        RefCode1 = itemDlvData.DlvHeader.Code,
+                        RefCode1 = itemDlvData.DlvHeader.TransCode,
                         RefCode2 = itemDetail.Item.Initial,
                         Group = 8,
                         CurrCode = itemDlvData.DlvHeader.CurrCode,
@@ -3166,7 +3164,7 @@ public class JournalService : IJournalService
                         CoaCode = string.IsNullOrWhiteSpace(taxes.FirstOrDefault(x => x.Id == itemDetail.DlvDetail.TaxId)?.ExemptCoaCode) ? "" : taxes.FirstOrDefault(x => x.Id == itemDetail.DlvDetail.TaxId)?.ExemptCoaCode,
                         TypeCode = "DLV_DT",
                         Notes = "PPN Yang Dibebaskan",
-                        RefCode1 = itemDlvData.DlvHeader.Code,
+                        RefCode1 = itemDlvData.DlvHeader.TransCode,
                         RefCode2 = itemDetail.Item.Initial,
                         Group = 6,
                         CurrCode = itemDlvData.DlvHeader.CurrCode,
@@ -3188,7 +3186,7 @@ public class JournalService : IJournalService
                         CoaCode = systemParam.FirstOrDefault(x => x.Code == "TAX_IN_COA")?.Value ?? "",
                         TypeCode = "PPN",
                         Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_TAX_IN")?.Value ?? ""} {itemDlvData.Customer.Initial}").Trim(),
-                        RefCode1 = itemDlvData.DlvHeader.Code,
+                        RefCode1 = itemDlvData.DlvHeader.TransCode,
                         RefCode2 = "",
                         Group = 5,
                         CurrCode = itemDlvData.DlvHeader.CurrCode,
@@ -3198,7 +3196,7 @@ public class JournalService : IJournalService
                         SrcTrans = "DLV"
                     });
                 }
-
+                
                 //Piutang - AR
                 journals.Add(new Journal
                 {
@@ -3208,7 +3206,7 @@ public class JournalService : IJournalService
                     CoaCode = systemParam.FirstOrDefault(x => x.Code == "AR_COA")?.Value ?? "",
                     TypeCode = "AR",
                     Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_AR")?.Value ?? ""} {itemDlvData.Customer.Initial}").Trim(),
-                    RefCode1 = itemDlvData.DlvHeader.Code,
+                    RefCode1 = itemDlvData.DlvHeader.TransCode,
                     Group = 1,
                     CurrCode = itemDlvData.DlvHeader.CurrCode,
                     Period = itemDlvData.DlvHeader.Date.ToString("yyyyMMdd"),
@@ -3228,7 +3226,7 @@ public class JournalService : IJournalService
                     CoaCode = systemParam.FirstOrDefault(x => x.Code == "SLS_RTN_COA")?.Value ?? "",
                     TypeCode = "DLV",
                     Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_SLS_RTN")?.Value ?? ""} {itemDlvData.Customer.Initial}").Trim(),
-                    RefCode1 = itemDlvData.DlvHeader.Code,
+                    RefCode1 = itemDlvData.DlvHeader.TransCode,
                     Group = 3,
                     CurrCode = itemDlvData.DlvHeader.CurrCode,
                     Period = itemDlvData.DlvHeader.Date.ToString("yyyyMMdd"),
