@@ -789,6 +789,7 @@ public class JournalService : IJournalService
             join customer in db.Customers on dlvheader.CustCode equals customer.Code
             where dlvheader.Date.Month == date.Month && dlvheader.Date.Year == date.Year && dlvheader.SrcTrans == 1 &&
                   !new[] { "OL", "V" }.Contains(dlvheader.Mark)
+                  && dlvheader.Code == "DI-221107-00172"
             select new
             {
                Dlvheader = dlvheader, Customer = customer
@@ -815,22 +816,35 @@ public class JournalService : IJournalService
             }).AsNoTracking().ToListAsync(cancellationToken);
         
         _logger.LogInformation("Posting journal DO: get stock mutation data.");
-        var smData = await db.StockMutations.FromSql(@$";
+        var smData = await db.StockMutations.FromSql(@$"
+            WITH cte_do_h_src AS (
+                SELECT *
+                FROM Sales.SalesDeliveryHeader
+                WHERE Mark NOT IN ('OL', 'V')
+                AND MONTH([Date]) = {date.Month}
+                AND YEAR([Date]) = {date.Year}
+                AND SrcTrans = 1
+            ), cte_do_d_src AS (
+                SELECT do_d.Id, do_d.Code, 'DO' AS Src
+                FROM Sales.SalesDeliveryDetail do_d
+                INNER JOIN cte_do_h_src cte_do_h
+                    ON cte_do_h.Code = do_d.Code
+                UNION ALL
+                SELECT do_d_fg.Id, do_d_fg.Code, 'DOF' AS Src
+                FROM Sales.SalesDeliveryDetailFreeGood do_d_fg
+                INNER JOIN cte_do_h_src cte_do_h
+                    ON cte_do_h.Code = do_d_fg.Code
+            )
             SELECT *
             FROM Inventory.StockMutation sm
             WHERE sm.[Type] = 'OH'
             AND sm.Src IN ('DO', 'DOF')
             AND EXISTS (
                 SELECT 1
-                FROM Sales.SalesDeliveryDetail do_d
-                INNER JOIN Sales.SalesDeliveryHeader do_h
-                    ON do_h.Code = do_d.Code
-                WHERE do_h.Mark NOT IN ('OL', 'V')
-                AND MONTH(do_h.[Date]) = {date.Month}
-                AND YEAR(do_h.[Date]) = {date.Year}
-                AND do_h.SrcTrans = 1
-                AND do_d.Id = sm.RefDetailId1
-                AND do_d.Code = sm.RefCode1
+                FROM cte_do_d_src cte_do_d
+                WHERE cte_do_d.Id = sm.RefDetailId1
+                AND cte_do_d.Code = sm.RefCode1
+                AND cte_do_d.Src = sm.Src
             )").AsNoTracking().ToListAsync(cancellationToken);
 
         // var smData =
