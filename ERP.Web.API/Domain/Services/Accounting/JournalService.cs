@@ -789,7 +789,6 @@ public class JournalService : IJournalService
             join customer in db.Customers on dlvheader.CustCode equals customer.Code
             where dlvheader.Date.Month == date.Month && dlvheader.Date.Year == date.Year && dlvheader.SrcTrans == 1 &&
                   !new[] { "OL", "V" }.Contains(dlvheader.Mark)
-                  && dlvheader.Code == "DI-221107-00172"
             select new
             {
                Dlvheader = dlvheader, Customer = customer
