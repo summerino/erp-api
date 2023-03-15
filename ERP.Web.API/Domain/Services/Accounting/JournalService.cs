@@ -2631,47 +2631,6 @@ public class JournalService : IJournalService
                 AND sr_d.Code = sm.RefCode1
             )").AsNoTracking().ToListAsync(cancellationToken);
 
-        _logger.LogInformation("Posting journal SR: get do data.");
-        var doData =
-            await (from dlvheader in db.SalesDeliveryHeaders
-            join returnHeader in db.SalesReturnHeaders on dlvheader.TransCode equals returnHeader.Code
-            join customer in db.Customers on dlvheader.CustCode equals customer.Code
-            where dlvheader.Date.Month == date.Month && dlvheader.Date.Year == date.Year && dlvheader.SrcTrans == 2 &&
-                  dlvheader.Mark != "V"
-            select new
-            {
-                DlvHeader = dlvheader, ReturnType = returnHeader.Type, Customer = customer
-            }).AsNoTracking().ToListAsync(cancellationToken);
-            
-        _logger.LogInformation("Posting journal SR: get do detail data.");
-        var doDetailData = 
-            await (from dlvdetail in db.SalesDeliveryDetails
-            join item in db.Items on dlvdetail.ItemId equals item.Id
-            where doData.Select(d => d.DlvHeader.Code).Contains(dlvdetail.Code)
-            select new
-            {
-                DlvDetail = dlvdetail, Item = item
-            }).AsNoTracking().ToListAsync(cancellationToken);
-        
-        _logger.LogInformation("Posting journal SR: get stock mutation for do data.");
-        var smDoData = await db.StockMutations.FromSql(@$";
-            SELECT *
-            FROM Inventory.StockMutation sm
-            WHERE sm.[Type] = 'OH'
-            AND sm.Src = 'DO'
-            AND EXISTS (
-                SELECT 1
-                FROM Sales.SalesDeliveryDetail do_d
-                INNER JOIN Sales.SalesDeliveryHeader do_h
-                    ON do_h.Code = do_d.Code
-                WHERE do_h.Mark <> 'V'
-                AND MONTH(do_h.[Date]) = {date.Month}
-                AND YEAR(do_h.[Date]) = {date.Year}
-                AND do_h.SrcTrans = 2
-                AND do_d.Id = sm.RefDetailId1
-                AND do_d.Code = sm.RefCode1
-            )").AsNoTracking().ToListAsync(cancellationToken);
-        
         foreach (var itemData in rtnData)
         {
             if (itemData.RtnHeader.Type != 1)
@@ -2858,7 +2817,7 @@ public class JournalService : IJournalService
                 short i = 0;
                 short j = 0;
                 short ix = 0;
-                foreach (var itemDetail in rtnDetailData)
+                foreach (var itemDetail in rtnDetailData.Where(x => x.RtnDetail.Code == itemData.RtnHeader.Code))
                 {
                     _logger.LogInformation($"Posting journal SR: {itemData.RtnHeader.Code} - {itemDetail.Item.Initial} ({itemDetail.Item.Id}).");
 
