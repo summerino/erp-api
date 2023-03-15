@@ -1104,9 +1104,21 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
         using var transaction = Db.Database.BeginTransaction();
         try
         {
-            if (Db.SalesInvoiceHeaders.Any(x => x.Code == data.Code && x.Mark == "V"))
+            var oldDIData = Db.SalesInvoiceHeaders.AsNoTracking().FirstOrDefault(x => x.Code == data.Code);
+
+            if (oldDIData.Mark == "V")
             {
                 result.Message = "Data penjualan langsung tidak bisa diubah karena status data bukan aktif.";
+                return result;
+            }
+            else if (new[] { "CMP", "PP" }.Contains(oldDIData.Mark))
+            {
+                result.Message = "Data order penjualan tidak bisa diubah karena data sudah digunakan pada nota kredit.";
+                return result;
+            }
+            else if (oldDIData.Mark != data.Mark)
+            {
+                result.Message = "Data order penjualan tidak bisa diubah karena status data tidak sesuai.";
                 return result;
             }
 
@@ -1729,77 +1741,88 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                     bonusPromo.AddRange(bonusPromoMulti);
                 }
 
-                var delFreeDetails = Db.SalesOrderDetailFreeGoods
-                    .Where(d => d.Code == data.Code && d.OrderDetailId == item.Id && !bonusPromo.Select(x => x.Id).Contains(d.Id))
-                    .ToList();
-
-                Db.SalesOrderDetailFreeGoods.RemoveRange(delFreeDetails);
-
-                if (bonusPromo.Any())
+                if (bonusPromo != null)
                 {
-                    if (IsQtyExcess(data.WarehouseCode, bonusPromo, item, data.Code))
-                    {
-                        result.Message = "Data penjualan langsung tidak bisa disimpan karena qty bonus yang dipesan lebih besar dari qty yang tersedia.";
-                        return result;
-                    }
+                    var delFreeDetails = Db.SalesOrderDetailFreeGoods
+                        .Where(d => d.Code == data.Code && d.OrderDetailId == item.Id && !bonusPromo.Select(x => x.Id).Contains(d.Id))
+                        .ToList();
 
-                    short f = 0;
-                    foreach (var freeItem in bonusPromo)
+                    Db.SalesOrderDetailFreeGoods.RemoveRange(delFreeDetails);
+
+                    if (bonusPromo.Any())
                     {
-                        if (!data.ListPromo.Select(x => x.PromoCode).Contains(freeItem.PromoCode)
-                                || data.ListPromo.Where(x => x.IsActive).Select(x => x.PromoCode).Contains(freeItem.PromoCode))
+                        if (IsQtyExcess(data.WarehouseCode, bonusPromo, item, data.Code))
                         {
-                            if (freeItem.Id <= 0)
+                            result.Message = "Data penjualan langsung tidak bisa disimpan karena qty bonus yang dipesan lebih besar dari qty yang tersedia.";
+                            return result;
+                        }
+
+                        short f = 0;
+                        foreach (var freeItem in bonusPromo)
+                        {
+                            if (!data.ListPromo.Select(x => x.PromoCode).Contains(freeItem.PromoCode)
+                                    || data.ListPromo.Where(x => x.IsActive).Select(x => x.PromoCode).Contains(freeItem.PromoCode))
                             {
-                                Db.SalesOrderDetailFreeGoods.Add(new SalesOrderDetailFreeGood
+                                if (freeItem.Id <= 0)
                                 {
-                                    Code = data.Code,
-                                    OrderDetailId = listOrderIdDetail[i - 1],
-                                    LineNo = ++f,
-                                    PromoCode = freeItem.PromoCode,
-                                    ItemId = freeItem.ItemId,
-                                    UomId = freeItem.UomId,
-                                    UnitId = freeItem.UnitId,
-                                    Qty = freeItem.Qty,
-                                    QtyClosed = freeItem.QtyClosed,
-                                    UnitPrice = freeItem.UnitPrice,
-                                    CoaCode = freeItem.CoaCode
-                                });
+                                    Db.SalesOrderDetailFreeGoods.Add(new SalesOrderDetailFreeGood
+                                    {
+                                        Code = data.Code,
+                                        OrderDetailId = listOrderIdDetail[i - 1],
+                                        LineNo = ++f,
+                                        PromoCode = freeItem.PromoCode,
+                                        ItemId = freeItem.ItemId,
+                                        UomId = freeItem.UomId,
+                                        UnitId = freeItem.UnitId,
+                                        Qty = freeItem.Qty,
+                                        QtyClosed = freeItem.QtyClosed,
+                                        UnitPrice = freeItem.UnitPrice,
+                                        CoaCode = freeItem.CoaCode
+                                    });
+                                }
+                                else
+                                {
+                                    freeItem.LineNo = ++f;
+
+                                    Db.SalesOrderDetailFreeGoods.Update(freeItem);
+                                    Db.Entry(freeItem).Property(e => e.Id).IsModified = false;
+                                    Db.Entry(freeItem).Property(e => e.Code).IsModified = false;
+                                }
+
+                                if (!soPromo.Any(x => x.PromoCode == freeItem.PromoCode))
+                                {
+                                    soPromo.Add(new SalesOrderPromo
+                                    {
+                                        Code = data.Code,
+                                        LineNo = (short)(soPromo.Count + 1),
+                                        PromoCode = freeItem.PromoCode,
+                                        IsActive = data.ListPromo.FirstOrDefault(x => x.PromoCode == freeItem.PromoCode)?.IsActive ?? true
+                                    });
+                                }
                             }
                             else
                             {
-                                freeItem.LineNo = ++f;
-
-                                Db.SalesOrderDetailFreeGoods.Update(freeItem);
-                                Db.Entry(freeItem).Property(e => e.Id).IsModified = false;
-                                Db.Entry(freeItem).Property(e => e.Code).IsModified = false;
-                            }
-
-                            if (!soPromo.Any(x => x.PromoCode == freeItem.PromoCode))
-                            {
-                                soPromo.Add(new SalesOrderPromo
+                                if (!soPromo.Any(x => x.PromoCode == freeItem.PromoCode))
                                 {
-                                    Code = data.Code,
-                                    LineNo = (short)(soPromo.Count + 1),
-                                    PromoCode = freeItem.PromoCode,
-                                    IsActive = data.ListPromo.FirstOrDefault(x => x.PromoCode == freeItem.PromoCode)?.IsActive ?? true
-                                });
-                            }
-                        }
-                        else
-                        {
-                            if (!soPromo.Any(x => x.PromoCode == freeItem.PromoCode))
-                            {
-                                soPromo.Add(new SalesOrderPromo
-                                {
-                                    Code = data.Code,
-                                    LineNo = (short)(soPromo.Count + 1),
-                                    PromoCode = freeItem.PromoCode,
-                                    IsActive = false
-                                });
+                                    soPromo.Add(new SalesOrderPromo
+                                    {
+                                        Code = data.Code,
+                                        LineNo = (short)(soPromo.Count + 1),
+                                        PromoCode = freeItem.PromoCode,
+                                        IsActive = false
+                                    });
+                                }
                             }
                         }
                     }
+                }
+                else
+                {
+                    var delFreeDetails = Db.SalesOrderDetailFreeGoods
+                        .Where(d => d.Code == data.Code && d.OrderDetailId == item.Id)
+                        .ToList();
+
+                    Db.SalesOrderDetailFreeGoods.RemoveRange(delFreeDetails);
                 }
             }
 
