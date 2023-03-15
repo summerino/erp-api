@@ -392,7 +392,7 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
                 result.Message = "Data pengiriman penjualan tidak bisa diubah karena status data tidak sesuai.";
                 return result;
             }
-
+            
             if (data.SrcTrans == 2)
             {
                 var transData = Db.SalesReturnHeaders.FirstOrDefault(x => x.Code == data.TransCode);
@@ -999,14 +999,27 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
         else
         {
             var SrData = Db.SalesReturnHeaders.FirstOrDefault(x => x.Code == transCode);
-            var detailSrData = Db.SalesReturnDetails.Where(x => x.Code == transCode).ToList();
-            foreach (var item in detailSrData)
+            if (SrData.Type == 3)
             {
-                if (detailSrData.Where(x => x.ItemId == item.ItemId && x.UnitId == item.UnitId).Any())
-                    item.QtyDlv -= detailSrData.FirstOrDefault(x => x.ItemId == item.ItemId && x.UnitId == item.UnitId).Qty;
+                var detailSrDataExc = Db.SalesReturnDetailExchDiffItems.Where(x => x.Code == transCode).ToList();
+                foreach (var item in detailSrDataExc)
+                {
+                    if (detailDoData.Where(x => x.ItemId == item.ItemId && x.UnitId == item.UnitId).Any())
+                        item.QtyDlv -= detailDoData.FirstOrDefault(x => x.ItemId == item.ItemId && x.UnitId == item.UnitId).Qty;
+                }
+                SrData.Mark = detailSrDataExc.Sum(x => x.QtyDlv) == 0 ? "A" : detailSrDataExc.Sum(x => x.QtyDlv) == detailSrDataExc.Sum(x => x.Qty) ? "CMP" : "PR";
             }
-            Db.SalesReturnDetails.UpdateRange(detailSrData);
-            SrData.Mark = detailSrData.Sum(x => x.QtyDlv) == 0 ? "A" : detailSrData.Sum(x => x.QtyDlv) == detailSrData.Sum(x => x.Qty) ? "CMP" : "PR";
+            else
+            {
+                var detailSrData = Db.SalesReturnDetails.Where(x => x.Code == transCode).ToList();
+                foreach (var item in detailSrData)
+                {
+                    if (detailDoData.Where(x => x.ItemId == item.ItemId && x.UnitId == item.UnitId).Any())
+                        item.QtyDlv -= detailDoData.FirstOrDefault(x => x.ItemId == item.ItemId && x.UnitId == item.UnitId).Qty;
+                }
+                Db.SalesReturnDetails.UpdateRange(detailSrData);
+                SrData.Mark = detailSrData.Sum(x => x.QtyDlv) == 0 ? "A" : detailSrData.Sum(x => x.QtyDlv) == detailSrData.Sum(x => x.Qty) ? "CMP" : "PR";
+            }
             Db.SalesReturnHeaders.Update(SrData);
         }
         Db.SaveChanges();

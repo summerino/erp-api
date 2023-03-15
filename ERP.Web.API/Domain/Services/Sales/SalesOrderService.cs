@@ -1168,12 +1168,17 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                 result.Message = "Data order penjualan tidak bisa diubah karena sudah ditandai sebagai void atau closed.";
                 return result;
             }
+            else if (new[] { "CMP", "PS", "PP"}.Contains(oldSOData.Mark))
+            {
+                result.Message = "Data order penjualan tidak bisa diubah karena data sudah digunakan pada surat jalan / nota kredit.";
+                return result;
+            }
             else if (oldSOData.Mark != data.Mark)
             {
                 result.Message = "Data order penjualan tidak bisa diubah karena status data tidak sesuai.";
                 return result;
             }
-
+            
             var (isDuplicate, message) = CheckDuplicateDetail(data.ItemDetails);
             if (isDuplicate)
             {
@@ -1827,6 +1832,14 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                             }
                         }
                     }
+                }
+                else
+                {
+                    var delFreeDetails = Db.SalesOrderDetailFreeGoods
+                        .Where(d => d.Code == data.Code && d.OrderDetailId == item.Id)
+                        .ToList();
+
+                    Db.SalesOrderDetailFreeGoods.RemoveRange(delFreeDetails);
                 }
             }
 
