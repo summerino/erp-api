@@ -1113,7 +1113,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
             }
             else if (new[] { "CMP", "PP" }.Contains(oldDIData.Mark))
             {
-                result.Message = "Data order penjualan tidak bisa diubah karena data sudah digunakan pada nota kredit.";
+                result.Message = "Data order penjualan tidak bisa diubah karena sudah digunakan pada transaksi cash bank.";
                 return result;
             }
             else if (oldDIData.Mark != data.Mark)
@@ -1825,6 +1825,12 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                     Db.SalesOrderDetailFreeGoods.RemoveRange(delFreeDetails);
                 }
             }
+
+            //Remove Bonus if item detail deleted
+            var deletedFreeDetails = Db.SalesOrderDetailFreeGoods
+                        .Where(d => d.Code == data.Code && !data.ItemDetails.Select(y => y.Id).Contains(d.OrderDetailId))
+                        .ToList();
+            Db.SalesOrderDetailFreeGoods.RemoveRange(deletedFreeDetails);
 
             // Update Delivery detail data
             // Get detail data that exists in order before

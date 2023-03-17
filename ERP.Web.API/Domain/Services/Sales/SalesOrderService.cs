@@ -7,6 +7,7 @@ using ERP.Entity;
 using ERP.Entity.Sales;
 using ERP.Web.API.Domain.Interfaces.Sales;
 using ERP.Web.API.Model.Sales;
+using ERP.Entity.Inventory;
 
 namespace ERP.Web.API.Domain.Services.Sales;
 
@@ -1842,6 +1843,12 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                     Db.SalesOrderDetailFreeGoods.RemoveRange(delFreeDetails);
                 }
             }
+
+            //Remove Bonus if item detail deleted
+            var deletedFreeDetails = Db.SalesOrderDetailFreeGoods
+                        .Where(d => d.Code == data.Code && !data.ItemDetails.Select(y => y.Id).Contains(d.OrderDetailId))
+                        .ToList();
+            Db.SalesOrderDetailFreeGoods.RemoveRange(deletedFreeDetails);
 
             data.SubTotal = data.ItemDetails.Sum(x => x.Total);
             data.TaxAmount = data.ItemDetails.Sum(x => x.TaxAmount * x.Qty);
