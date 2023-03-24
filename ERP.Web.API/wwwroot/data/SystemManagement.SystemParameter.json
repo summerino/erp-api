@@ -33,7 +33,7 @@
 {"Id":33,"ModuleId":20,"Code":"AR_COA","Value":"112001","DataType":"string","Description":"Piutang Dagang","Seq":2,"IsActive":true},
 {"Id":34,"ModuleId":20,"Code":"SLS_DISC_COA","Value":"421001","DataType":"string","Description":"Diskon Penjualan","Seq":3,"IsActive":true},
 {"Id":35,"ModuleId":20,"Code":"SLS_RTN_COA","Value":"431001","DataType":"string","Description":"Retur Penjualan","Seq":4,"IsActive":true},
-{"Id":36,"ModuleId":20,"Code":"TAX_OUT_COA","Value":"213006","DataType":"string","Description":"Pajak Masukan","Seq":5,"IsActive":true},
+{"Id":36,"ModuleId":20,"Code":"TAX_OUT_COA","Value":"213006","DataType":"string","Description":"Pajak Keluaran","Seq":5,"IsActive":true},
 {"Id":37,"ModuleId":21,"Code":"CROSS_COA","Value":"174100","DataType":"string","Description":"Ayat Silang","Seq":7,"IsActive":true},
 {"Id":38,"ModuleId":21,"Code":"DEP_CUST_COA","Value":"212001","DataType":"string","Description":"Deposit Pelanggan","Seq":1,"IsActive":true},
 {"Id":39,"ModuleId":21,"Code":"DEP_SUP_COA","Value":"115001","DataType":"string","Description":"Deposit Pemasok","Seq":2,"IsActive":true},
