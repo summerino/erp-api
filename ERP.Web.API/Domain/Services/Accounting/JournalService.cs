@@ -227,13 +227,16 @@ public class JournalService : IJournalService
             //if (journalEYAS != null)
             //    tenantCtx.AddRange(journalEYAS);
             
-            var journalADJ = ProcessAdjustmentJournal(tenantCtx, data.Date, systemParam);
+            _logger.LogInformation($"Start posting journal ADJ at {DateTime.Now:yyyy-MM-dd HH:mm:ss}.");
+            var journalADJ = await ProcessAdjustmentJournalAsync(tenantCtx, data.Date, systemParam, cancellationToken);
             if (journalADJ != null)
-                tenantCtx.AddRange(journalADJ);
+                await tenantCtx.AddRangeAsync(journalADJ, cancellationToken);
             
+            _logger.LogInformation($"Insert posting journal ADJ at {DateTime.Now:yyyy-MM-dd HH:mm:ss}.");
             stateData.Step++; //14 /19
             await tenantCtx.SaveChangesAsync(cancellationToken);
-            
+            _logger.LogInformation($"Done posting journal ADJ at {DateTime.Now:yyyy-MM-dd HH:mm:ss}.");
+ 
             var journalGJ = ProcessGeneralJournal(tenantCtx, data.Date);
             if (journalGJ != null)
                 tenantCtx.AddRange(journalGJ);
@@ -3708,32 +3711,62 @@ public class JournalService : IJournalService
                     DROP TABLE #tmp_jur;", dateTime);
     }
 
-    private IEnumerable<Journal> ProcessAdjustmentJournal(TenantContext db, DateTime dateTime, List<SystemParameter> systemParam)
+    private async Task<IEnumerable<Journal>> ProcessAdjustmentJournalAsync(TenantContext db, DateTime date,
+        List<SystemParameter> systemParam, CancellationToken cancellationToken)
     {
         List<Journal> journals = new();
 
-        var adjData = db.AdjustmentHeaders.AsNoTracking().Where(x => x.Date.Month == dateTime.Month && x.Date.Year == dateTime.Year && x.Mark != "V").ToList();
+        _logger.LogInformation("Posting journal ADJ: get adjustment data.");
+        var adjData =
+            await db.AdjustmentHeaders.AsNoTracking()
+                .Where(x => x.Date.Month == date.Month && x.Date.Year == date.Year && x.Mark != "V")
+                .ToListAsync(cancellationToken);
+
+        _logger.LogInformation("Posting journal ADJ: get adjustment detail data.");
+        var adjDetailData = 
+            await (from adjdetail in db.AdjustmentDetails
+            join item in db.Items on adjdetail.ItemId equals item.Id
+            where adjData.Select(h => h.Code).Contains(adjdetail.Code)
+            select new
+            {
+                AdjDetail = adjdetail, Item = item
+            }).AsNoTracking().ToListAsync(cancellationToken);
+        
+        _logger.LogInformation("Posting journal ADJ: get stock mutation data.");
+        var smData = await db.StockMutations.FromSql(@$";
+            SELECT *
+            FROM Inventory.StockMutation sm
+            WHERE sm.[Type] = 'OH'
+            AND sm.Src = 'ADJ'
+            AND EXISTS (
+                SELECT 1
+                FROM Inventory.AdjustmentDetail adj_d
+                INNER JOIN Inventory.AdjustmentHeader adj_h
+                    ON adj_h.Code = adj_d.Code
+                WHERE adj_h.Mark <> 'V'
+                AND MONTH(adj_h.[Date]) = {date.Month}
+                AND YEAR(adj_h.[Date]) = {date.Year}
+                AND adj_d.Id = sm.RefDetailId1
+                AND adj_d.Code = sm.RefCode1
+            )").AsNoTracking().ToListAsync(cancellationToken);
 
         short i = 0;
         short j = 0;
         foreach (var itemData in adjData)
         {
-            var adjDetailData = (from adjdetail in db.AdjustmentDetails
-                                 join item in db.Items on adjdetail.ItemId equals item.Id
-                                 where adjdetail.Code == itemData.Code
-                                 select new { AdjDetail = adjdetail, Item = item }).AsNoTracking().ToList();
-
             short k = 0;
             short l = 0;
-            foreach (var itemDetail in adjDetailData)
+            foreach (var itemDetail in adjDetailData.Where(x => x.AdjDetail.Code == itemData.Code))
             {
-                var smData = db.StockMutations.AsNoTracking().FirstOrDefault(x => x.RefDetailId1 == itemDetail.AdjDetail.Id && x.RefCode1 == itemDetail.AdjDetail.Code);
-                if (smData == null) continue;
+                _logger.LogInformation($"Posting journal ADJ: {itemData.Code} - {itemDetail.Item.Initial} ({itemDetail.Item.Id}).");
+
+                var smItemData = smData.FirstOrDefault(x => x.RefDetailId1 == itemDetail.AdjDetail.Id && x.RefCode1 == itemDetail.AdjDetail.Code);
+                if (smItemData == null) continue;
 
                 //var nonVoidSM = RemoveVoidSM(db, db.StockMutations.ToList());
                 //CalculateHPP(db, nonVoidSM, smData.ItemId, smData.RefDetailId1, "ADJ");
                 //smData = db.StockMutations.AsNoTracking().FirstOrDefault(x => x.RefDetailId1 == itemDetail.AdjDetail.Id && x.RefCode1 == itemDetail.AdjDetail.Code);
-                var resultHpp = smData.BaseNettPrice > 0 ? smData.BaseNettPrice * smData.BaseQty : 0m;
+                var resultHpp = smItemData.BaseNettPrice * smItemData.BaseQty;
 
                 if (itemData.Type == 1)
                 {
@@ -3797,16 +3830,16 @@ public class JournalService : IJournalService
                 }
             }
 
-            if (journals.Where(x => x.Code == itemData.Code && x.Group == 1).Any())
+            if (journals.Any(x => x.Code == itemData.Code && x.Group == 1))
             {
                 journals.Add(new Journal
                 {
                     Code = itemData.Code,
                     LineNo = ++i,
                     Date = itemData.Date,
-                    CoaCode = systemParam.FirstOrDefault(x => x.Code == "OTH_INCOME_COA")?.Value ?? "",
+                    CoaCode = systemParam.FirstOrDefault(x => x.Code == "ADJ_PLUS_COA")?.Value ?? "",
                     TypeCode = "ADJ_INCOME",
-                    Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_OTH_INCOME")?.Value ?? ""}").Trim(),
+                    Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_ADJ_PLUS")?.Value ?? ""}").Trim(),
                     RefCode1 = "",
                     Group = 3,
                     CurrCode = "IDR",
@@ -3817,16 +3850,16 @@ public class JournalService : IJournalService
                 });
             }
 
-            if (journals.Where(x => x.Code == itemData.Code && x.Group == 2).Any())
+            if (journals.Any(x => x.Code == itemData.Code && x.Group == 2))
             {
                 journals.Add(new Journal
                 {
                     Code = itemData.Code,
                     LineNo = ++j,
                     Date = itemData.Date,
-                    CoaCode = systemParam.FirstOrDefault(x => x.Code == "OTH_EXPENSE_COA")?.Value ?? "",
+                    CoaCode = systemParam.FirstOrDefault(x => x.Code == "ADJ_MINUS_COA")?.Value ?? "",
                     TypeCode = "ADJ_COST",
-                    Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_OTH_EXPENSE")?.Value ?? ""}").Trim(),
+                    Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_ADJ_MINUS")?.Value ?? ""}").Trim(),
                     RefCode1 = "",
                     Group = 4,
                     CurrCode = "IDR",
