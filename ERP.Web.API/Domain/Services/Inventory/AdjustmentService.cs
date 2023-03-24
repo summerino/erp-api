@@ -365,6 +365,34 @@ public class AdjustmentService : GeneralService<AdjustmentHeader>, IAdjustmentSe
                     result.Message = "Data penyesuaian tidak bisa di ubah karena sudah ditandai sebagai void.";
                     return result;
                 }
+                
+                var detailData = Db.AdjustmentDetails.Where(x => x.Code == code).ToList();
+                foreach (var itemDetail in detailData)
+                {
+                    var uom = Db.UoMConversions.FirstOrDefault(x => x.Id == itemDetail.UnitId);
+                    if (!uom.IsBaseUnit)
+                    {
+                        var qtyField = Db.UoMConversions.Where(x => x.UomId == itemDetail.UomId && x.Seq <= uom.Seq).Select(x => x.Conversion).ToList();
+                        var multipliedQty = qtyField.Aggregate(1, (x, y) => (int)(x * y));
+                        itemDetail.QtyAdjust *= multipliedQty;
+                    }
+                }
+
+                var groupedDetail = detailData.GroupBy(x => x.ItemId).Select(x => new
+                {
+                    ItemId = x.Key,
+                    Qty = x.Sum(y => y.QtyAdjust)
+                });
+
+                foreach (var itemGroup in groupedDetail)
+                {
+                    var whQtyData = Db.VwWarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == data.WarehouseCode && x.ItemId == itemGroup.ItemId);
+                    if ((whQtyData.QtyOnHand - itemGroup.Qty) < 0)
+                    {
+                        result.Message = $"Data penyesuaian tidak bisa divoid karena terdapat barang pada gudang {whQtyData.WarehouseInitial} qty tersedia akan menjadi minus.";
+                        return result;
+                    }
+                }
 
                 // Execute sp_update_stock_mutation_from_adj
                 Db.Database.ExecuteSqlRaw(
