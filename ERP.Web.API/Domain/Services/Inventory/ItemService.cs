@@ -255,7 +255,7 @@ public class ItemService : GeneralService<Item>, IItemService
     public IEnumerable<dynamic> GetRelatedOrderTrans(string whid, int itemid)
     {
         var stockM = Db.StockMutations.Where(x => x.WarehouseCode == whid && x.ItemId == itemid && x.Type == "OO").ToList();
-        var header = Db.VwSalesOrderHeaders.Where(s => (new string[] { "A", "PS" }).Contains(s.Mark) && stockM.Select(x => x.RefCode1).Contains(s.Code)).ToList();
+        var header = Db.VwSalesOrderHeaders.Where(s => (new string[] { "A", "PS", "PP" }).Contains(s.Mark) && stockM.Select(x => x.RefCode1).Contains(s.Code)).ToList();
         var details = Db.VwSalesOrderDetails.Where(r => header.Select(x => x.Code).Contains(r.Code) && r.ItemId == itemid).ToList();
         var free = Db.SalesOrderDetailFreeGoods.Where(r => header.Select(x => x.Code).Contains(r.Code) && r.ItemId == itemid).ToList();
         var uomConv = Db.UoMConversions.ToList();
