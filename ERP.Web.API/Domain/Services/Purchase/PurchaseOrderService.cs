@@ -678,7 +678,7 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
             if (data.IsPoInv)
             {
                 // Purchase Receive
-                var RcvData = Db.PurchaseReceiveHeaders.Where(x => x.TransCode == data.Code).ToList();
+                var RcvData = Db.PurchaseReceiveHeaders.Where(x => x.TransCode == data.Code && x.Mark != "V").ToList();
                 if (RcvData.Count == 0)
                 {
                     var newRcvCode = GetNewCode("RCV_NUM_FMT", data.RcvDate);
@@ -841,7 +841,7 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
 
             if (data.IsPoRcv || data.IsPoInv)
             {
-                var rcvData = Db.PurchaseReceiveHeaders.FirstOrDefault(x => x.TransCode == data.Code);
+                var rcvData = Db.PurchaseReceiveHeaders.FirstOrDefault(x => x.TransCode == data.Code && x.Mark != "V");
 
                 // Execute sp_update_stock_mutation_from_rcv
                 Db.Database.ExecuteSqlRaw(
