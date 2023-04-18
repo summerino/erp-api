@@ -181,7 +181,7 @@ public class MobileOrderService : GeneralService<MobileOrderHeader>, IMobileOrde
                             short d = 0;
                             foreach (var discItem in detailDiscData.Where(x => x.OrderDetailId == itemDetail.Id))
                             {
-                                Db.SalesOrderDetailDiscounts.Add(new SalesOrderDetailDiscount
+                                var dataSODD = new SalesOrderDetailDiscount
                                 {
                                     Code = newCode,
                                     OrderDetailId = orderDetail.Id,
@@ -193,7 +193,8 @@ public class MobileOrderService : GeneralService<MobileOrderHeader>, IMobileOrde
                                     Value = discItem.Value,
                                     Amount = discItem.Amount,
                                     CoaCode = barangData.CoaSlsDisc ?? sysparamData.FirstOrDefault(x => x.Code == "SLS_DISC_COA")?.Value
-                                });
+                                };
+                                Db.SalesOrderDetailDiscounts.Add(dataSODD);
                             }
                             Db.SaveChanges();
                         }
@@ -203,7 +204,7 @@ public class MobileOrderService : GeneralService<MobileOrderHeader>, IMobileOrde
                             short f = 0;
                             foreach (var freeItem in detailFreeData.Where(x => x.OrderDetailId == itemDetail.Id))
                             {
-                                Db.SalesOrderDetailFreeGoods.Add(new SalesOrderDetailFreeGood
+                                var dataSODF = new SalesOrderDetailFreeGood
                                 {
                                     Code = newCode,
                                     OrderDetailId = orderDetail.Id,
@@ -216,7 +217,8 @@ public class MobileOrderService : GeneralService<MobileOrderHeader>, IMobileOrde
                                     QtyClosed = freeItem.Qty,
                                     UnitPrice = freeItem.UnitPrice,
                                     CoaCode = barangData.CoaSlsDisc ?? sysparamData.FirstOrDefault(x => x.Code == "SLS_DISC_COA")?.Value
-                                });
+                                };
+                                Db.SalesOrderDetailFreeGoods.Add(dataSODF);
                             }
                             Db.SaveChanges();
                         }
@@ -292,7 +294,7 @@ public class MobileOrderService : GeneralService<MobileOrderHeader>, IMobileOrde
                             short f = 0;
                             foreach (var freeItem in detailFreeData.Where(x => x.OrderDetailId == itemDetail.Id))
                             {
-                                Db.SalesDeliveryDetailFreeGoods.Add(new SalesDeliveryDetailFreeGood
+                                var dataSODF = new SalesDeliveryDetailFreeGood
                                 {
                                     Code = newCode,
                                     DlvOrderDetailId = deliveryDetail.Id,
@@ -304,7 +306,8 @@ public class MobileOrderService : GeneralService<MobileOrderHeader>, IMobileOrde
                                     Qty = freeItem.Qty,
                                     UnitPrice = freeItem.UnitPrice,
                                     CoaCode = barangData.CoaSlsDisc ?? sysparamData.FirstOrDefault(x => x.Code == "SLS_DISC_COA")?.Value
-                                });
+                                };
+                                Db.SalesDeliveryDetailFreeGoods.Add(dataSODF);
                             }
                             Db.SaveChanges();
                         }
