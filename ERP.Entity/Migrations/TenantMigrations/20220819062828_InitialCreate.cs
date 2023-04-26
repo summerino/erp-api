@@ -14180,7 +14180,21 @@ BEGIN TRY
 			END BaseQtyValue
 			FROM Inventory.StockMutation
 		) sm
-		WHERE [Type] = 'OH' GROUP BY WarehouseCode, ItemId 
+		WHERE [Type] = 'OH'
+		AND RefCode1 NOT IN (
+	        SELECT Code FROM Purchasing.PurchaseReceiveHeader WHERE Mark = 'V'
+	        UNION
+	        SELECT Code FROM Sales.SalesDeliveryHeader WHERE Mark = 'V'
+	        UNION
+	        SELECT Code FROM Inventory.AdjustmentHeader WHERE Mark = 'V'
+	        UNION
+	        SELECT Code FROM Inventory.TransferStockHeader WHERE Mark = 'V'
+	        UNION
+	        SELECT Code FROM Purchasing.PurchaseReturnHeader WHERE Mark = 'V'
+	        UNION
+	        SELECT Code FROM Sales.SalesReturnHeader WHERE Mark = 'V'
+	    )
+		GROUP BY WarehouseCode, ItemId 
 	),
 	cte_base_qty_order_free AS (
 		SELECT so_d.Id,
@@ -14205,6 +14219,7 @@ BEGIN TRY
 			ON uom_c.UomId = so_d.UomId
 			AND uom_c.Id = so_d.UnitId
 		WHERE so_h.Mark NOT IN ('V', 'OL', 'CLS', 'CMP')
+		AND so_h.FromDirectInvoice = 0
 	),
 	cte_base_qty_order AS (
 		SELECT so_d.Id,
@@ -14229,6 +14244,7 @@ BEGIN TRY
 			ON uom_c.UomId = so_d.UomId
 			AND uom_c.Id = so_d.UnitId
 		WHERE so_h.Mark NOT IN ('V', 'OL', 'CLS', 'CMP')
+		AND so_h.FromDirectInvoice = 0
 	),
 	cte_on_order AS (
 		SELECT sm.WarehouseCode, sm.ItemId, 
@@ -14310,6 +14326,7 @@ BEGIN TRY
 			ON uom_c.UomId = do_d.UomId
 			AND uom_c.Id = do_d.UnitId
 		WHERE do_h.Mark = 'A'
+		AND do_h.FromDirectInvoice = 0
 	),
 	 cte_base_qty_transit_free AS (
 		SELECT do_d.Id,
@@ -14327,6 +14344,7 @@ BEGIN TRY
 			ON uom_c.UomId = do_d.UomId
 		AND uom_c.Id = do_d.UnitId
 		WHERE do_h.Mark = 'A'
+		AND do_h.FromDirectInvoice = 0
 	),
 	cte_on_transit AS (
 		SELECT sm.WarehouseCode, sm.ItemId, 
