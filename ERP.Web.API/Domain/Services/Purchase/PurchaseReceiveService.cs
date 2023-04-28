@@ -218,7 +218,7 @@ public class PurchaseReceiveService : GeneralService<PurchaseReceiveHeader>, IPu
             if (data.IsPoInv)
             {
                 // Purchase Invoice
-                var newInvCode = GetNewCode("PI_NUM_FMT", data.Date);
+                var newInvCode = GetNewCode("PI_NUM_FMT", data.InvDate);
                 var newPinvData = new PurchaseInvoiceHeader
                 {
                     Code = newInvCode,
@@ -492,7 +492,7 @@ public class PurchaseReceiveService : GeneralService<PurchaseReceiveHeader>, IPu
             if (data.IsPoInv)
             {
                 // Purchase Invoice
-                var newInvCode = GetNewCode("PI_NUM_FMT", data.Date);
+                var newInvCode = GetNewCode("PI_NUM_FMT", data.InvDate);
                 var newPinvData = new PurchaseInvoiceHeader
                 {
                     Code = newInvCode,
