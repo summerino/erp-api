@@ -318,7 +318,7 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
                 Db.PurchaseReceiveHeaders.Add(newPrcvData);
 
                 // Purchase Invoice
-                var newInvCode = GetNewCode("PI_NUM_FMT", data.Date);
+                var newInvCode = GetNewCode("PI_NUM_FMT", data.InvDate);
                 var newPinvData = new PurchaseInvoiceHeader
                 {
                     Code = newInvCode,
@@ -400,7 +400,7 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
                 // Execute sp_update_stock_mutation_from_rcv
                 Db.Database.ExecuteSqlRaw(
                     "EXEC sp_update_stock_mutation_from_rcv {0}, {1}, {2}",
-                    RcvData.Code, data.Date, newCode);
+                    RcvData.Code, data.RcvDate, newCode);
 
                 // Execute sp_update_po_rcv_qty
                 Db.Database.ExecuteSqlRaw("EXEC sp_update_po_rcv_qty {0}", newCode);
@@ -713,7 +713,7 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
                     Db.PurchaseReceiveHeaders.Add(newPrcvData);
 
                     // Purchase Invoice
-                    var newInvCode = GetNewCode("PI_NUM_FMT", data.Date);
+                    var newInvCode = GetNewCode("PI_NUM_FMT", data.InvDate);
                     var newPinvData = new PurchaseInvoiceHeader
                     {
                         Code = newInvCode,
@@ -783,7 +783,7 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
                 else
                 {
                     // Purchase Invoice
-                    var newInvCode = GetNewCode("PI_NUM_FMT", data.Date);
+                    var newInvCode = GetNewCode("PI_NUM_FMT", data.InvDate);
                     var newPinvData = new PurchaseInvoiceHeader
                     {
                         Code = newInvCode,
@@ -846,7 +846,7 @@ public class PurchaseOrderService : GeneralService<PurchaseOrderHeader>, IPurcha
                 // Execute sp_update_stock_mutation_from_rcv
                 Db.Database.ExecuteSqlRaw(
                     "EXEC sp_update_stock_mutation_from_rcv {0}, {1}, {2}",
-                    rcvData?.Code, data.Date, data.Code);
+                    rcvData?.Code, data.RcvDate, data.Code);
 
                 // Execute sp_update_po_rcv_qty
                 Db.Database.ExecuteSqlRaw("EXEC sp_update_po_rcv_qty {0}", data.Code);
