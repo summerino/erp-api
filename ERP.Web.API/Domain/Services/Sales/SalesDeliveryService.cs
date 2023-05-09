@@ -456,7 +456,7 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
             }
 
             // Checking warehouse qty is item is available or not
-            var isQtyAvailable = IsQtyAvailable(data.Code, data.WarehouseCode, data.ItemDetails, data.ItemDetails.SelectMany(x => x.FreeItemDetails), data.WarehouseCode != oldDlvData.WarehouseCode);
+            var isQtyAvailable = IsQtyAvailable(data.Code, data.WarehouseCode, data.ItemDetails, data.ItemDetails.Where(x => x.FreeItemDetails != null).SelectMany(x => x.FreeItemDetails), data.WarehouseCode != oldDlvData.WarehouseCode);
             switch (isQtyAvailable)
             {
                 case 1:
@@ -1099,21 +1099,7 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
     {
         var result = new Dictionary<int, decimal>();
 
-        var listItems = detailDataFree != null ? detailData.Select(x => new
-        {
-            x.Id,
-            x.ItemId,
-            x.UnitId,
-            x.UomId,
-            x.Qty
-        }).Union(detailDataFree.Select(x => new
-        {
-            x.Id,
-            x.ItemId,
-            x.UnitId,
-            x.UomId,
-            x.Qty
-        })).ToList() : detailData.Select(x => new
+        var listItems = detailData.Select(x => new
         {
             x.Id,
             x.ItemId,
@@ -1121,6 +1107,18 @@ public class SalesDeliveryService : GeneralService<SalesDeliveryHeader>, ISalesD
             x.UomId,
             x.Qty
         }).ToList();
+
+        if (detailDataFree.Any())
+        {
+            listItems.AddRange(detailDataFree.Select(x => new
+            {
+                x.Id,
+                x.ItemId,
+                x.UnitId,
+                x.UomId,
+                x.Qty
+            }).ToList());
+        }
 
         foreach (var item in listItems)
         {
