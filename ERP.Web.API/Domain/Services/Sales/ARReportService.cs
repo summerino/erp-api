@@ -18,193 +18,143 @@ public class ARReportService : IARReportService
         var sysData = _db.SystemParameters.FirstOrDefault(x => x.Code == "AR_RECOG_TIME");
         if (sysData != null)
         {
+            var baseQuery = @$"DECLARE @date VARCHAR(50), @salesId int;
+                            SET @date = '{date}';
+                            SET @salesId = {slsId};
+                            WITH cte_cb_detail_sum AS (
+                                SELECT cb_d.TransCode, SUM(cb_d.TransAmount) AS TransAmount
+                                FROM Finance.GeneralCashBankDetail cb_d
+                                WHERE cb_d.Code IN ( 
+                                    SELECT cb_h.Code
+                                    FROM Finance.GeneralCashBankHeader cb_h
+                                    WHERE cb_h.Mark NOT IN ('V', 'REJ') AND 
+                                    ((cb_h.ChequeDate IS NULL AND cb_h.[Date] <= @date) OR (cb_h.ChequeDate IS NOT NULL AND cb_h.ChequeDate <= @date))
+                                )
+                                GROUP BY cb_d.TransCode
+                            ),
+                            cte_inv_cm_sum AS (
+                                SELECT inv_cm.InvCode AS TransCode, SUM(inv_cm.CreditMemoAmount) AS TransAmount
+                                FROM Sales.SalesInvoiceCreditMemo inv_cm
+                                WHERE inv_cm.CreditMemoCode IN (
+                                    SELECT cm.Code
+                                    FROM Sales.CreditMemo cm
+                                    WHERE cm.Mark != 'V' AND cm.[Date] <= @date
+                                )
+                                GROUP BY inv_cm.InvCode
+                            ),
+                            cte_inv_sum AS (
+                                SELECT inv.Code, ISNULL(SUM(cb_d.TransAmount), CAST(0 as decimal(19,8))) + ISNULL(SUM(inv_cm.TransAmount), CAST(0 as decimal(19,8))) AS PaidAmount
+                                FROM Sales.SalesInvoiceHeader inv
+                                LEFT JOIN cte_cb_detail_sum cb_d ON cb_d.TransCode = inv.Code
+                                LEFT JOIN cte_inv_cm_sum inv_cm ON inv_cm.TransCode = inv.Code
+                                WHERE inv.[Date] <= @date        
+                                GROUP BY inv.Code
+                                UNION 
+                                SELECT bb_ar.Code, ISNULL(SUM(cb_d.TransAmount), CAST(0 as decimal(19,8))) AS PaidAmount
+                                FROM Accounting.vwBeginningBalanceAR bb_ar
+                                LEFT JOIN cte_cb_detail_sum cb_d ON cb_d.TransCode = bb_ar.Code
+                                WHERE @salesId <= 0 AND bb_ar.[Date] <= @date
+                                GROUP BY bb_ar.Code
+                            )";
             if (sysData.Value == "SI")
             {
-                var cusData = _db.ReportByCustomers.FromSqlRaw(@"SELECT a.Code, a.Initial, a.[Name], SUM(a.TotalTrans) AS TotalTrans, SUM(a.TotalAmount) AS TotalAmount,
-                            CAST (0 as decimal) as PaidAmount, CAST (0 as decimal) as RemainderAmount 
-                            FROM (
-                            select cs.Code, cs.Initial, cs.Name, count(*) as TotalTrans, sum(inv.Total) as TotalAmount
-                                                        from General.Customer cs
-                                                        left join Sales.SalesInvoiceHeader inv on inv.CustCode = cs.Code
-                                                        Where inv.Mark IN('A', 'PP', 'CMP') Group by cs.Code, cs.Initial, cs.Name
-							                            UNION
-                            select cs.Code, cs.Initial, cs.Name, count(*) as TotalTrans, sum(ar.Amount) as TotalAmount
-                                                        from General.Customer cs
-                                                        left join Accounting.BeginningBalanceAR ar on ar.CustCode = cs.Code
-                                                        Where ar.IsActive = 1 Group by cs.Code, cs.Initial, cs.Name) a
-                            Group by a.Code, a.Initial, a.[Name]").ToList();
-
-                var invData = _db.ReportByInvoiceARs.FromSqlRaw(@"SELECT inv.Date, inv.DueDate, inv.Code, inv.SOCode AS OrderCode, 
+                var invQuery = baseQuery + @", cte_inv AS (
+                            SELECT inv.[Date], inv.DueDate, inv.Code, inv.SOCode AS OrderCode, 
                             e.Id AS SalesId, e.FirstName AS SalesName,  
                             inv.CustCode, cust.[Name] AS CustName, 
-                            inv.Total AS TotalAmount, CAST (0 AS decimal) AS PaidAmount, CAST (0 AS decimal) AS RemainderAmount
+                            inv.Total AS TotalAmount,
+                            inv_sum.PaidAmount AS PaidAmount,
+                            inv.Total - inv_sum.PaidAmount AS RemainderAmount
                             FROM Sales.SalesInvoiceHeader inv
                             LEFT JOIN General.Customer cust on cust.Code = inv.CustCode
                             LEFT JOIN Sales.SalesOrderHeader so ON so.Code = inv.SOCode
                             LEFT JOIN General.Employee e ON e.Id = so.SalesBy  
-                            WHERE inv.Mark IN('A', 'PP', 'CMP')" + (slsId > 0 ? $" and so.SalesBy = {slsId} " : " ") + "").ToList();
+                            LEFT JOIN cte_inv_sum inv_sum ON inv_sum.Code = inv.Code
+                            WHERE inv.Mark IN('A', 'PP', 'CMP') AND inv.[Date] <= @date 
+                            AND inv.Total - inv_sum.PaidAmount > 0" + 
+                            (slsId > 0 ? $" AND so.SalesBy = {slsId} " : "") +
+                            (!string.IsNullOrEmpty(custCode) ? $" AND inv.CustCode = '{custCode}'" : "") + 
+                            @" UNION
+                            SELECT bb_ar.[Date], bb_ar.DueDate, bb_ar.Code,
+                            '' AS SalesId, '' AS SalesName,
+                            '' AS OrderCode, bb_ar.CustCode, bb_ar.CustName,
+                            bb_ar.Amount AS TotalAmount, inv_sum.PaidAmount AS PaidAmount,
+                            bb_ar.Amount - inv_sum.PaidAmount AS RemainderAmount
+                            FROM Accounting.vwBeginningBalanceAR bb_ar
+                            LEFT JOIN cte_inv_sum inv_sum ON inv_sum.Code = bb_ar.Code
+                            WHERE @salesId <= 0 AND bb_ar.[Date] <= @date AND (bb_ar.Amount - inv_sum.PaidAmount) > 0" +
+                            (!string.IsNullOrEmpty(custCode) ? $" AND bb_ar.CustCode = '{custCode}'" : "") + ")";
 
-                var cbData = _db.GeneralCashBankHeaders.Where(x => !new[] { "V", "REJ" }.Contains(x.Mark) && (x.ChequeDate ?? x.Date) <= Convert.ToDateTime(date)).ToList();
-
-                var bbData = _db.VwBeginningBalanceARs.Where(x => x.IsActive && x.Date <= Convert.ToDateTime(date)).ToList();
-
-                var cbDetail = _db.GeneralCashBankDetails.Where(x => cbData.Select(c => c.Code).Contains(x.Code)).ToList();
-
-                invData = invData.Where(x => x.Date <= Convert.ToDateTime(date)).ToList();
-
-                var invCMData = _db.SalesInvoiceCreditMemos.Where(x => invData.Select(y => y.Code).Contains(x.InvCode)).ToList();
-
-                var cmData = _db.CreditMemos.Where(x => x.Mark != "V" && x.Date <= Convert.ToDateTime(date)).ToList();
-
-                foreach (var itemInv in invData)
-                {
-                    var totCb = cbDetail.Where(x => x.TransCode == itemInv.Code).Sum(x => x.TransAmount);
-                    var totCm = invCMData.Where(x => x.InvCode == itemInv.Code && cmData.Select(y => y.Code).Contains(x.CreditMemoCode))
-                                    .Sum(x => x.CreditMemoAmount);
-                    itemInv.PaidAmount = totCb + totCm;
-                    itemInv.RemainderAmount = itemInv.TotalAmount - itemInv.PaidAmount;
-                }
-
-                if (slsId <= 0)
-                {
-                    foreach (var itemBB in bbData)
-                    {
-                        var totCb = cbDetail.Where(x => x.TransCode == itemBB.Code).Sum(x => x.TransAmount);
-                        invData.Add(new Entity.Sales.ReportByInvoiceAR
-                        {
-                            Date = itemBB.Date,
-                            DueDate = itemBB.DueDate,
-                            Code = itemBB.Code,
-                            OrderCode = "",
-                            CustCode = itemBB.CustCode,
-                            CustName = itemBB.CustName,
-                            TotalAmount = itemBB.Amount,
-                            PaidAmount = totCb,
-                            RemainderAmount = itemBB.Amount - totCb
-                        });
-                    }
-                }
-                
-                invData = invData.Where(x => x.RemainderAmount > 0).ToList();
-
-                foreach (var itemCus in cusData)
-                {
-                    itemCus.TotalTrans = invData.Count(x => x.CustCode == itemCus.Code);
-                    itemCus.TotalAmount = invData.Where(x => x.CustCode == itemCus.Code).Sum(x => x.TotalAmount);
-                    itemCus.PaidAmount = invData.Where(x => x.CustCode == itemCus.Code).Sum(x => x.PaidAmount);
-                    itemCus.RemainderAmount = invData.Where(x => x.CustCode == itemCus.Code).Sum(x => x.RemainderAmount);
-                }
-
-                cusData = cusData.Where(x => x.TotalTrans > 0).ToList();
+                var custQuery = invQuery + @"SELECT cs.Code, cs.Initial, cs.[Name],
+                            COUNT(inv.CustCode) AS TotalTrans, ISNULL(SUM(inv.TotalAmount), CAST(0 as decimal(19,8))) AS TotalAmount,
+                            ISNULL(SUM(inv.PaidAmount), CAST(0 as decimal(19,8))) AS PaidAmount, ISNULL(SUM(inv.RemainderAmount),
+                            CAST(0 as decimal(19,8))) AS RemainderAmount
+                            FROM General.Customer cs
+                            LEFT JOIN cte_inv inv ON inv.CustCode = cs.Code" +
+                            (!string.IsNullOrEmpty(custCode) ? $" WHERE cs.Code = '{custCode}'" : "") +
+                            @" GROUP BY cs.Code, cs.Initial, cs.[Name]
+                            HAVING COUNT(inv.CustCode) > 0";
 
                 if (type == 1)
                 {
-                    if (!string.IsNullOrEmpty(custCode))
-                    {
-                        invData = invData.Where(x => x.CustCode == custCode).ToList();
-                    }
+                    var invData = _db.ReportByInvoiceARs.FromSqlRaw(invQuery + " SELECT *FROM cte_inv").ToList();
                     return invData.AsQueryable().ToDataSourceResult(0, invData.Count, null, sorts);
                 }
                 else
                 {
-                    if (!string.IsNullOrEmpty(custCode))
-                    {
-                        cusData = cusData.Where(x => x.Code == custCode).ToList();
-                    }
-                    return cusData.AsQueryable().ToDataSourceResult(0, cusData.Count, null, sorts);
+                    var custData = _db.ReportByCustomers.FromSqlRaw(custQuery).ToList();
+                    return custData.AsQueryable().ToDataSourceResult(0, custData.Count, null, sorts);
                 }
             }
             else
             {
-                var cusData = _db.ReportByCustomers.FromSqlRaw(@"select cs.Code, cs.Initial, cs.Name, count(*) as TotalTrans, sum(dlv.Total) as TotalAmount,
-                            CAST (0 as decimal) as PaidAmount, CAST (0 as decimal) as RemainderAmount
-                            from General.Customer cs
-                            left join Sales.SalesDeliveryHeader dlv on dlv.CustCode = cs.Code
-                            left join Sales.SalesInvoiceDetail invD on invD.DOCode = dlv.Code
-                            left join Sales.SalesInvoiceHeader inv on inv.Code = invD.Code and inv.Mark IN('A', 'PP', 'CMP')
-                            Where dlv.Mark IN('A', 'INV') Group by cs.Code, cs.Initial, cs.Name").ToList();
+                var dlvQuery = baseQuery + @", cte_inv AS (
+                                SELECT dlv.Date, inv.DueDate, dlv.Code, dlv.TransCode AS SrcCode, inv.Code AS InvCode,
+                                sls.Initial AS SlsInitial, sls.FirstName AS SlsName, dlv.CustCode, sp.[Name] AS CustName, dlv.Total AS TotalAmount,
+                                ISNULL((inv_sum.PaidAmount * dlv.Total / inv.Total), CAST(0 as decimal(19,8))) AS PaidAmount,
+                                (dlv.Total - ISNULL((inv_sum.PaidAmount * dlv.Total / inv.Total), CAST(0 as decimal(19,8)))) AS RemainderAmount
+                                FROM Sales.SalesDeliveryHeader dlv
+                                LEFT JOIN Sales.SalesOrderHeader so ON so.Code = dlv.TransCode
+                                LEFT JOIN General.Employee sls ON sls.Id = so.SalesBy
+                                LEFT JOIN General.Customer sp ON sp.Code = dlv.CustCode
+                                LEFT JOIN Sales.SalesInvoiceDetail invD ON invD.DOCode = dlv.Code
+                                LEFT JOIN Sales.SalesInvoiceHeader inv ON inv.Code = invD.Code and inv.Mark IN('A','PP','CMP')
+                                LEFT JOIN cte_inv_sum inv_sum ON inv_sum.Code = inv.Code
+                                WHERE dlv.Mark IN ('A','INV') 
+                                AND (dlv.Total - ISNULL((inv_sum.PaidAmount * dlv.Total / inv.Total), CAST(0 as decimal(19,8)))) > 0" + 
+                                (slsId > 0 ? $" AND so.SalesBy = {slsId} " : "") +
+                                (!string.IsNullOrEmpty(custCode) ? $" AND inv.CustCode = '{custCode}'" : "") + 
+                                @" UNION
+                                SELECT bb_ar.[Date], bb_ar.DueDate, bb_ar.Code,
+                                '' AS SrcCode, '' AS InvCode,
+                                '' AS SlsInitial, '' AS SlsName,
+                                bb_ar.CustCode, bb_ar.CustName,
+                                bb_ar.Amount AS TotalAmount, inv_sum.PaidAmount AS PaidAmount,
+                                bb_ar.Amount - inv_sum.PaidAmount AS RemainderAmount
+                                FROM Accounting.vwBeginningBalanceAR bb_ar
+                                LEFT JOIN cte_inv_sum inv_sum ON inv_sum.Code = bb_ar.Code
+                                WHERE @salesId <= 0 AND bb_ar.[Date] <= @date AND (bb_ar.Amount - inv_sum.PaidAmount) > 0" +
+                                (!string.IsNullOrEmpty(custCode) ? $" AND bb_ar.CustCode = '{custCode}'" : "") + ")";
 
-                var dlvData = _db.ReportByDeliveries.FromSqlRaw(@"select dlv.Date, inv.DueDate, dlv.Code, dlv.TransCode as SrcCode, inv.Code as InvCode,
-                            sls.Initial as SlsInitial, sls.FirstName as SlsName, dlv.CustCode, sp.[Name] as CustName, dlv.Total as TotalAmount,
-                            cast(0 as decimal) as PaidAmount, cast(0 as decimal) as RemainderAmount
-                            from Sales.SalesDeliveryHeader dlv
-                            left join Sales.SalesOrderHeader so on so.Code = dlv.TransCode
-                            left join General.Employee sls on sls.Id = so.SalesBy
-                            left join General.Customer sp on sp.Code = dlv.CustCode
-                            left join Sales.SalesInvoiceDetail invD on invD.DOCode = dlv.Code
-                            left join Sales.SalesInvoiceHeader inv on inv.Code = invD.Code and inv.Mark IN('A','PP','CMP')
-                            Where dlv.Mark IN('A','INV')" + (slsId > 0 ? $" and so.SalesBy = {slsId} " : " ") + "").ToList();
-
-                var cbData = _db.GeneralCashBankHeaders.Where(x => x.Mark != "V" && (x.ChequeDate ?? x.Date) <= Convert.ToDateTime(date)).ToList();
-
-                var bbData = _db.VwBeginningBalanceARs.Where(x => x.IsActive && x.Date <= Convert.ToDateTime(date)).ToList();
-
-                var cbDetail = _db.GeneralCashBankDetails.Where(x => cbData.Select(c => c.Code).Contains(x.Code)).ToList();
-
-                dlvData = dlvData.Where(x => x.Date <= Convert.ToDateTime(date)).ToList();
-
-                var invCMData = _db.SalesInvoiceCreditMemos.Where(x => dlvData.Select(y => y.InvCode).Contains(x.InvCode)).ToList();
-
-                var cmData = _db.CreditMemos.Where(x => x.Mark != "V" && x.Date <= Convert.ToDateTime(date)).ToList();
-
-                foreach (var itemDlv in dlvData)
-                {
-                    var invData = _db.SalesInvoiceCreditMemos.Where(x => x.InvCode == itemDlv.InvCode).ToList();
-                    var totDlv = dlvData.Where(x => x.InvCode == itemDlv.InvCode).Sum(x => x.TotalAmount);
-                    var totCb = cbDetail.Where(x => x.TransCode == itemDlv.InvCode).Sum(x => x.TransAmount);
-                    var totCm = invCMData.Where(x => x.InvCode == itemDlv.InvCode && cmData.Select(y => y.Code).Contains(x.CreditMemoCode))
-                                    .Sum(x => x.CreditMemoAmount);
-                    itemDlv.PaidAmount = totDlv > 0 ? (totCb * itemDlv.TotalAmount / totDlv) + (totCm * itemDlv.TotalAmount / totDlv) : 0 + (totCm * itemDlv.TotalAmount / totDlv);
-                    itemDlv.RemainderAmount = itemDlv.TotalAmount - itemDlv.PaidAmount;
-                }
-
-                foreach (var itemBB in bbData)
-                {
-                    var totCb = cbDetail.Where(x => x.TransCode == itemBB.Code).Sum(x => x.TransAmount);
-                    dlvData.Add(new Entity.Sales.ReportByDelivery
-                    {
-                        Date = itemBB.Date,
-                        DueDate = itemBB.DueDate,
-                        Code = itemBB.Code,
-                        SrcCode = "",
-                        InvCode = "",
-                        SlsInitial = "",
-                        SlsName = "",
-                        CustCode = itemBB.CustCode,
-                        CustName = itemBB.CustName,
-                        TotalAmount = itemBB.Amount,
-                        PaidAmount = totCb,
-                        RemainderAmount = itemBB.Amount - totCb
-                    });
-                }
-
-                dlvData = dlvData.Where(x => x.RemainderAmount > 0).ToList();
-
-                foreach (var itemCus in cusData)
-                {
-                    itemCus.TotalTrans = dlvData.Count(x => x.CustCode == itemCus.Code);
-                    itemCus.TotalAmount = dlvData.Where(x => x.CustCode == itemCus.Code).Sum(x => x.TotalAmount);
-                    itemCus.PaidAmount = dlvData.Where(x => x.CustCode == itemCus.Code).Sum(x => x.PaidAmount);
-                    itemCus.RemainderAmount = dlvData.Where(x => x.CustCode == itemCus.Code).Sum(x => x.RemainderAmount);
-                }
-
-                cusData = cusData.Where(x => x.TotalTrans > 0).ToList();
+                var custQuery = dlvQuery + @"SELECT cs.Code, cs.Initial, cs.[Name],
+                            COUNT(inv.CustCode) AS TotalTrans, ISNULL(SUM(inv.TotalAmount), CAST(0 as decimal(19,8))) AS TotalAmount,
+                            ISNULL(SUM(inv.PaidAmount), CAST(0 as decimal(19,8))) AS PaidAmount, ISNULL(SUM(inv.RemainderAmount),
+                            CAST(0 as decimal(19,8))) AS RemainderAmount
+                            FROM General.Customer cs
+                            LEFT JOIN cte_inv inv ON inv.CustCode = cs.Code" +
+                            (!string.IsNullOrEmpty(custCode) ? $" WHERE cs.Code = '{custCode}'" : "") +
+                            @" GROUP BY cs.Code, cs.Initial, cs.[Name]
+                            HAVING COUNT(inv.CustCode) > 0";
 
                 if (type == 1)
                 {
-                    if (!string.IsNullOrEmpty(custCode))
-                    {
-                        dlvData = dlvData.Where(x => x.CustCode == custCode).ToList();
-                    }
+                    var dlvData = _db.ReportByDeliveries.FromSqlRaw(dlvQuery + " SELECT *FROM cte_inv").ToList();
                     return dlvData.AsQueryable().ToDataSourceResult(0, dlvData.Count, null, sorts);
                 }
                 else
                 {
-                    if (!string.IsNullOrEmpty(custCode))
-                    {
-                        cusData = cusData.Where(x => x.Code == custCode).ToList();
-                    }
-                    return cusData.AsQueryable().ToDataSourceResult(0, cusData.Count, null, sorts);
+                    var custData = _db.ReportByCustomers.FromSqlRaw(custQuery).ToList();
+                    return custData.AsQueryable().ToDataSourceResult(0, custData.Count, null, sorts);
                 }
             }
         }
