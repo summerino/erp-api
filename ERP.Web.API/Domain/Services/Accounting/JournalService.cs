@@ -4480,7 +4480,7 @@ public class JournalService : IJournalService
             {
                 latestQty = latestItemCogsHistory.TotalBaseQty;
                 latestStockValue = latestItemCogsHistory.TotalBaseNettPrice;
-                if (latestStockValue > 0 && latestQty > 0)
+                if (latestStockValue != 0 && latestQty != 0)
                     hpp = latestStockValue / latestQty;
             }
 
@@ -4619,7 +4619,7 @@ public class JournalService : IJournalService
                         latestQty += item.BaseQty;
                         if (item.Src == "BB" || (item.Src == "RCV" && rcvSrcTrans == 1))
                         {
-                            if (latestStockValue > 0 && latestQty > 0)
+                            if (latestStockValue != 0 && latestQty != 0)
                                 hpp = latestStockValue / latestQty;
                         }
                     }
@@ -4634,7 +4634,7 @@ public class JournalService : IJournalService
                     {
                         if (latestDate != item.Date)
                         {
-                            if (latestStockValue > 0 && latestQty > 0)
+                            if (latestStockValue != 0 && latestQty != 0)
                                 hpp = latestStockValue / latestQty;
                         }
 
@@ -4662,7 +4662,7 @@ public class JournalService : IJournalService
                     {
                         if (latestDate != item.Date)
                         {
-                            if (latestStockValue > 0 && latestQty > 0)
+                            if (latestStockValue != 0 && latestQty != 0)
                                 hpp = latestStockValue / latestQty;
                         }
 
@@ -4678,7 +4678,7 @@ public class JournalService : IJournalService
                 {
                     if (latestDate != item.Date)
                     {
-                        if (latestStockValue > 0 && latestQty > 0)
+                        if (latestStockValue != 0 && latestQty != 0)
                             hpp = latestStockValue / latestQty;
                     }
 
