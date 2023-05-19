@@ -1105,13 +1105,21 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
         try
         {
             var oldDIData = Db.SalesInvoiceHeaders.AsNoTracking().FirstOrDefault(x => x.Code == data.Code);
+            var cbData = (from cb_d in Db.GeneralCashBankDetails
+                        join cb_h in Db.GeneralCashBankHeaders on cb_d.Code equals cb_h.Code
+                        where cb_h.Mark == "V" && cb_d.TransCode == data.Code
+                        select new 
+                        {
+                            cb_d.Code,
+                            cb_d.Amount
+                        }).ToList();
 
             if (oldDIData.Mark == "V")
             {
                 result.Message = "Data penjualan langsung tidak bisa diubah karena status data bukan aktif.";
                 return result;
             }
-            else if (new[] { "CMP", "PP" }.Contains(oldDIData.Mark))
+            else if (new[] { "CMP", "PP" }.Contains(oldDIData.Mark) && cbData.Any())
             {
                 result.Message = "Data order penjualan tidak bisa diubah karena sudah digunakan pada transaksi cash bank.";
                 return result;
