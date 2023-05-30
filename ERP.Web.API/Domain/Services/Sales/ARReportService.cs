@@ -3,6 +3,8 @@ using ERP.Common.Extensions;
 using ERP.Common.Models;
 using ERP.Entity;
 using ERP.Web.API.Domain.Interfaces.Sales;
+using Syncfusion.XlsIO.Implementation.XmlSerialization;
+using Humanizer;
 
 namespace ERP.Web.API.Domain.Services.Sales;
 
@@ -38,7 +40,7 @@ public class ARReportService : IARReportService
                                 WHERE inv_cm.CreditMemoCode IN (
                                     SELECT cm.Code
                                     FROM Sales.CreditMemo cm
-                                    WHERE cm.Mark != 'V' AND cm.[Date] <= @date
+                                    WHERE cm.Mark != 'V'
                                 )
                                 GROUP BY inv_cm.InvCode
                             ),
@@ -71,7 +73,7 @@ public class ARReportService : IARReportService
                             LEFT JOIN General.Employee e ON e.Id = so.SalesBy  
                             LEFT JOIN cte_inv_sum inv_sum ON inv_sum.Code = inv.Code
                             WHERE inv.Mark IN('A', 'PP', 'CMP') AND inv.[Date] <= @date 
-                            AND inv.Total - inv_sum.PaidAmount > 0" + 
+                            AND ((inv.[Date] = @date AND inv.Total - inv_sum.PaidAmount >= 0) OR (inv.[Date] < @date AND inv.Total - inv_sum.PaidAmount > 0))" + 
                             (slsId > 0 ? $" AND so.SalesBy = {slsId} " : "") +
                             (!string.IsNullOrEmpty(custCode) ? $" AND inv.CustCode = '{custCode}'" : "") + 
                             @" UNION
@@ -121,7 +123,8 @@ public class ARReportService : IARReportService
                                 LEFT JOIN Sales.SalesInvoiceHeader inv ON inv.Code = invD.Code and inv.Mark IN('A','PP','CMP')
                                 LEFT JOIN cte_inv_sum inv_sum ON inv_sum.Code = inv.Code
                                 WHERE dlv.Mark IN ('A','INV') 
-                                AND (dlv.Total - ISNULL((inv_sum.PaidAmount * dlv.Total / inv.Total), CAST(0 as decimal(19,8)))) > 0" + 
+                                AND ((dlv.[Date] = @date AND (dlv.Total - ISNULL((inv_sum.PaidAmount * dlv.Total / inv.Total), CAST(0 as decimal(19,8)))) >= 0)
+                                OR (dlv.[Date] < @date AND (dlv.Total - ISNULL((inv_sum.PaidAmount * dlv.Total / inv.Total), CAST(0 as decimal(19, 8)))) > 0))" + 
                                 (slsId > 0 ? $" AND so.SalesBy = {slsId} " : "") +
                                 (!string.IsNullOrEmpty(custCode) ? $" AND inv.CustCode = '{custCode}'" : "") + 
                                 @" UNION

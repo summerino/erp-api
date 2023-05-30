@@ -40,7 +40,7 @@ public class APReportService : IAPReportService
 
                 var invDMData = _db.PurchaseInvoiceDebitMemos.Where(x => invData.Select(y => y.Code).Contains(x.InvCode)).ToList();
 
-                var dmData = _db.DebitMemos.Where(x => x.Mark != "V" && x.Date <= Convert.ToDateTime(date)).ToList();
+                var dmData = _db.DebitMemos.Where(x => x.Mark != "V").ToList();
 
                 foreach (var itemInv in invData)
                 {
@@ -68,7 +68,7 @@ public class APReportService : IAPReportService
                     });
                 }
 
-                invData = invData.Where(x => x.RemainderAmount > 0).ToList();
+                invData = invData.Where(x => (x.Date < Convert.ToDateTime(date) && x.RemainderAmount > 0) || (x.Date == Convert.ToDateTime(date) && x.RemainderAmount >= 0)).ToList();
 
                 foreach (var itemSup in supData)
                 {
