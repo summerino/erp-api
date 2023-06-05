@@ -84,71 +84,96 @@ public class MobilePaymentInvoiceService : GeneralService<MobilePaymentInvoice>,
                         }
                     }
 
-                    var newCode = GetNewCode("CB_NUM_FMT", item.Date);
+                    item.Mark = "APR";
+                    item.ApprovedBy = userId;
+                    item.ApprovedDate = DateTime.Now;
+                    Db.MobilePaymentInvoices.Update(item);
 
-                    var headCBData = new GeneralCashBankHeader
-                    {
-                        Code = newCode,
-                        Type = "D",
-                        Date = item.Date,
-                        CoaCode = item.CoaCode,
-                        CurrCode = "IDR",
-                        Rate = 1,
-                        Amount = item.Amount,
-                        Notes = data.Notes != null ? data.Notes + $" ({item.Code})" : $"Terbentuk dari Pembayaran Mobile {item.Code}",
-                        Mark = "A",
-                        CreatedBy = userId,
-                        CreatedDate = DateTime.Now,
-                        UpdatedBy = userId,
-                        UpdatedDate = DateTime.Now,
-                        ApprovedBy = userId,
-                        ApprovedDate = DateTime.Now
-                    };
-                    Db.GeneralCashBankHeaders.Add(headCBData);
+                    Db.SaveChanges();
+                }
+                else
+                {
+                    result.Message = $"Data catatan kunjungan mobile {item.VisitLogCode} tidak ada.";
+                    return result;
+                }
+            }
 
-                    var cusData = Db.Customers.FirstOrDefault(x => x.Code == item.CustCode);
-                    var ordData = Db.MobileOrderHeaders.FirstOrDefault(x => x.Code == item.TransCode);
+            var groupedData = data.Data
+                .GroupBy(x => new { x.CoaCode, x.Date })
+                .Select(x => 
+                    new {
+                        x.Key.CoaCode,
+                        x.Key.Date,
+                        Codes = string.Join(",", x.Select(y => y.Code)),
+                        Details = x.ToList()
+                    });
+
+            var mapOrdAmount = new List<(string, decimal)>();
+
+            foreach (var item in groupedData)
+            {
+                var newCode = GetNewCode("CB_NUM_FMT", item.Date);
+
+                var headCBData = new GeneralCashBankHeader
+                {
+                    Code = newCode,
+                    Type = "D",
+                    Date = item.Date,
+                    CoaCode = item.CoaCode,
+                    CurrCode = "IDR",
+                    Rate = 1,
+                    Amount = item.Details.Sum(x => x.Amount),
+                    Notes = data.Notes != null ? data.Notes + $" ({item.Codes})" : $"Terbentuk dari Pembayaran Mobile {item.Codes}",
+                    Mark = "A",
+                    CreatedBy = userId,
+                    CreatedDate = DateTime.Now,
+                    UpdatedBy = userId,
+                    UpdatedDate = DateTime.Now,
+                    ApprovedBy = userId,
+                    ApprovedDate = DateTime.Now
+                };
+                Db.GeneralCashBankHeaders.Add(headCBData);
+
+                short i = 0;
+                foreach (var itemDetail in item.Details)
+                {
+                    var cusData = Db.Customers.FirstOrDefault(x => x.Code == itemDetail.CustCode);
+                    var ordData = Db.MobileOrderHeaders.FirstOrDefault(x => x.Code == itemDetail.TransCode);
 
                     var detailCBData = new GeneralCashBankDetail
                     {
                         Code = newCode,
-                        LineNo = 1,
+                        LineNo = ++i,
                         Type = "AR",
-                        TransCode = item.SrcTrans == "ORD" ? ordData?.SalesOrderCode ?? "" : item.TransCode,
+                        TransCode = itemDetail.SrcTrans == "ORD" ? ordData?.SalesOrderCode ?? "" : itemDetail.TransCode,
                         CoaCode = item.CoaCode,
                         CurrCode = "IDR",
                         Rate = 1,
-                        Amount = item.Amount,
+                        Amount = itemDetail.Amount,
                         TypeAmount = "C",
-                        TransAmount = item.Amount,
+                        TransAmount = itemDetail.Amount,
                         Notes = cusData.Name,
                         Src = "SI"
                     };
                     Db.GeneralCashBankDetails.Add(detailCBData);
 
-                    item.Mark = "APR";
-                    item.ApprovedBy = userId;
-                    item.ApprovedDate = headCBData.ApprovedDate;
-                    Db.MobilePaymentInvoices.Update(item);
-
-                    Db.SaveChanges();
-
                     var queries = new List<string>
                     {
-                        $"update General.Customer set CreditUsed= (CreditUsed - {item.Amount}) where code = '{item.CustCode}'"
+                        $"update General.Customer set CreditUsed= (CreditUsed - {itemDetail.Amount}) where code = '{itemDetail.CustCode}'"
                     };
 
-                    var header = Db.SalesInvoiceHeaders.SingleOrDefault(x => x.Code == (item.SrcTrans == "ORD" ? ordData.SalesOrderCode ?? "" : item.TransCode));
+                    var header = Db.SalesInvoiceHeaders.SingleOrDefault(x => x.Code == (itemDetail.SrcTrans == "ORD" ? ordData.SalesOrderCode ?? "" : itemDetail.TransCode));
                     if (header == null) continue;
-                    var mark = header.Total == (header.PaidAmount + item.Amount) ? "CMP" : "PP";
+                    var mark = header.Total == (header.PaidAmount + mapOrdAmount.Where(x => x.Item1.Equals(header.Code)).Sum(x => x.Item2) + itemDetail.Amount) ? "CMP" : "PP";
+                    mapOrdAmount.Add((header.Code, itemDetail.Amount));
 
                     queries.Add(
-                        $"UPDATE Sales.SalesInvoiceHeader SET PaidAmount= PaidAmount + '{item.Amount}', Mark='{mark}' WHERE Code='{(item.SrcTrans == "ORD" ? ordData.SalesOrderCode ?? "" : item.TransCode)}';");
+                        $"UPDATE Sales.SalesInvoiceHeader SET PaidAmount= PaidAmount + '{itemDetail.Amount}', Mark='{mark}' WHERE Code='{(itemDetail.SrcTrans == "ORD" ? ordData.SalesOrderCode ?? "" : itemDetail.TransCode)}';");
 
-                    var detail = Db.SalesInvoiceDetails.Where(x => x.Code == (item.SrcTrans == "ORD" ? ordData.SalesOrderCode ?? "" : item.TransCode));
+                    var detail = Db.SalesInvoiceDetails.Where(x => x.Code == (itemDetail.SrcTrans == "ORD" ? ordData.SalesOrderCode ?? "" : itemDetail.TransCode));
                     foreach (var item2 in detail)
                     {
-                        var proRateValue = (header.PaidAmount + item.Amount) * item2.Total / header.Total;
+                        var proRateValue = (header.PaidAmount + mapOrdAmount.Where(x => x.Item1.Equals(header.Code)).Sum(x => x.Item2) + + itemDetail.Amount) * item2.Total / header.Total;
                         queries.Add(
                             $"UPDATE Sales.SalesDeliveryHeader SET PaidAmount= PaidAmount + '{proRateValue}' WHERE Code='{item2.DoCode}';");
                     }
@@ -156,11 +181,7 @@ public class MobilePaymentInvoiceService : GeneralService<MobilePaymentInvoice>,
                     var query = string.Join("", queries);
                     Db.Database.ExecuteSqlRaw(query);
                 }
-                else
-                {
-                    result.Message = $"Data catatan kunjungan mobile {item.VisitLogCode} tidak ada.";
-                    return result;
-                }
+                Db.SaveChanges();
             }
             transaction.Commit();
         }
