@@ -31,4 +31,6 @@ public interface ISalesOrderService : IGeneralService<SalesOrderHeader>
     SaveResult Close(string code, int userId);
 
     SaveResult CheckOverLimit(SalesOrderRequest data);
+
+    SaveResult MultipleSave(MultipleSalesOrderRequest data);
 }

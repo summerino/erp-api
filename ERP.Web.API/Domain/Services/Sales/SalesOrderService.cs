@@ -2633,6 +2633,335 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
             }).ToDynamicList();
     }
 
+    public SaveResult MultipleSave(MultipleSalesOrderRequest data)
+    {
+        var result = new SaveResult(false);
+
+        using var transaction = Db.Database.BeginTransaction();
+        try
+        {
+            foreach (var code in data.SOCodes)
+            {
+                var SOData = Db.SalesOrderHeaders.FirstOrDefault(x => x.Code == code);
+                var SODetails = Db.SalesOrderDetails.Where(x => x.Code == code).ToList();
+                if (new[] { "OL", "PS", "CMP", "V" }.Contains(SOData.Mark))
+                {
+                    continue;
+                }
+
+                var relatedTrans = GetRelatedTransactions(code);
+                if (relatedTrans.Any())
+                {
+                    continue;
+                }
+
+                if (data.IsSoDlv)
+                {
+                    var newDlvCode = GetNewCode("DO_NUM_FMT", SOData.Date);
+
+                    var newSdlvData = new SalesDeliveryHeader
+                    {
+                        Code = newDlvCode,
+                        Date = data.DlvDate,
+                        SrcTrans = 1,
+                        TransCode = SOData.Code,
+                        CustCode = SOData.CustCode,
+                        WarehouseCode = SOData.WarehouseCode,
+                        ShippedBy = SOData.SalesBy,
+                        CurrCode = SOData.CurrCode,
+                        Rate = SOData.Rate,
+                        ShipmentFee = SOData.ShipmentFee,
+                        HandlingFee = SOData.HandlingFee,
+                        SubTotal = SOData.SubTotal,
+                        FinalDiscPercent = SOData.FinalDiscPercent,
+                        FinalDisc = SOData.FinalDisc,
+                        IncludeTax = SOData.IncludeTax,
+                        TaxAmount = SOData.TaxAmount,
+                        ExemptTaxAmount = SOData.ExemptTaxAmount,
+                        Total = SOData.Total,
+                        Dpp = SOData.Dpp,
+                        Mark = SOData.Mark,
+                        CreatedBy = SOData.CreatedBy,
+                        CreatedDate = SOData.CreatedDate,
+                        UpdatedBy = SOData.UpdatedBy,
+                        UpdatedDate = SOData.UpdatedDate
+                    };
+
+                    Db.SalesDeliveryHeaders.Add(newSdlvData);
+
+                    var listSDID = new List<dynamic>();
+
+                    short j = 0;
+                    foreach (var item in SODetails)
+                    {
+                        var sdDetail = new SalesDeliveryDetail
+                        {
+                            Code = newDlvCode,
+                            LineNo = ++j,
+                            SoDetailId = item.Id,
+                            ItemId = item.ItemId,
+                            UomId = item.UomId,
+                            UnitId = item.UnitId,
+                            Qty = item.Qty,
+                            Length = item.Length,
+                            Width = item.Width,
+                            Height = item.Height,
+                            Weight = item.Weight,
+                            DimensionMeasurement = item.DimensionMeasurement,
+                            WeightMeasurement = item.WeightMeasurement,
+                            UnitPrice = item.UnitPrice,
+                            Disc = item.Disc,
+                            FinalDiscHeader = item.FinalDiscHeader,
+                            TaxId = item.TaxId,
+                            TaxAmount = item.TaxAmount,
+                            ExemptTaxAmount = item.ExemptTaxAmount,
+                            NettPrice = item.NettPrice,
+                            Total = item.Total,
+                            Dpp = item.Dpp
+                        };
+
+                        Db.SalesDeliveryDetails.Add(sdDetail);
+                        Db.SaveChanges();
+
+                        listSDID.Add(new { Id = sdDetail.Id, SoId = sdDetail.SoDetailId });
+                    }
+
+                    var soFreeList = Db.SalesOrderDetailFreeGoods.Where(x => x.Code == code).ToList();
+
+                    foreach (var item in soFreeList)
+                    {
+                        Db.SalesDeliveryDetailFreeGoods.Add(new SalesDeliveryDetailFreeGood
+                        {
+                            Code = newDlvCode,
+                            DlvOrderDetailId = listSDID.First(x => x.SoId == item.OrderDetailId).Id,
+                            LineNo = 1,
+                            PromoCode = item.PromoCode,
+                            ItemId = item.ItemId,
+                            UomId = item.UomId,
+                            UnitId = item.UnitId,
+                            Qty = item.Qty,
+                            UnitPrice = item.UnitPrice,
+                            CoaCode = item.CoaCode
+                        });
+                    }
+                }
+
+                var newInvCode = "";
+                if (data.IsSoInv)
+                {
+                    var DlvData = Db.SalesDeliveryHeaders.Where(x => x.TransCode == code && x.Mark != "V").ToList();
+                    if (DlvData.Count == 0)
+                    {
+                        // Sales Delivery
+                        var newDlvCode = GetNewCode("DO_NUM_FMT", data.DlvDate);
+
+                        var newSdlvData = new SalesDeliveryHeader
+                        {
+                            Code = newDlvCode,
+                            Date = data.DlvDate,
+                            SrcTrans = 1,
+                            TransCode = SOData.Code,
+                            CustCode = SOData.CustCode,
+                            WarehouseCode = SOData.WarehouseCode,
+                            ShippedBy = SOData.SalesBy,
+                            CurrCode = SOData.CurrCode,
+                            Rate = SOData.Rate,
+                            ShipmentFee = SOData.ShipmentFee,
+                            HandlingFee = SOData.HandlingFee,
+                            SubTotal = SOData.SubTotal,
+                            FinalDiscPercent = SOData.FinalDiscPercent,
+                            FinalDisc = SOData.FinalDisc,
+                            IncludeTax = SOData.IncludeTax,
+                            TaxAmount = SOData.TaxAmount,
+                            ExemptTaxAmount = SOData.ExemptTaxAmount,
+                            Total = SOData.Total,
+                            Dpp = SOData.Dpp,
+                            Mark = "INV",
+                            CreatedBy = SOData.CreatedBy,
+                            CreatedDate = SOData.CreatedDate,
+                            UpdatedBy = SOData.UpdatedBy,
+                            UpdatedDate = SOData.UpdatedDate
+                        };
+
+                        Db.SalesDeliveryHeaders.Add(newSdlvData);
+
+                        // Sales Invoice
+                        newInvCode = GetNewCode("SI_NUM_FMT", data.InvDate);
+                        var newSinvData = new SalesInvoiceHeader
+                        {
+                            Code = newInvCode,
+                            Date = data.InvDate,
+                            DueDate = data.InvDueDate,
+                            SoCode = SOData.Code,
+                            CustCode = SOData.CustCode,
+                            CurrCode = SOData.CurrCode,
+                            Total = SOData.Total,
+                            Notes = SOData.Notes,
+                            Mark = SOData.Mark,
+                            CreatedBy = SOData.CreatedBy,
+                            CreatedDate = SOData.CreatedDate,
+                            UpdatedBy = SOData.UpdatedBy,
+                            UpdatedDate = SOData.UpdatedDate
+                        };
+
+                        Db.SalesInvoiceHeaders.Add(newSinvData);
+
+                        var listSDID = new List<dynamic>();
+
+                        short j = 0;
+                        foreach (var item in SODetails)
+                        {
+                            var sdDetail = new SalesDeliveryDetail
+                            {
+                                Code = newDlvCode,
+                                LineNo = ++j,
+                                SoDetailId = item.Id,
+                                ItemId = item.ItemId,
+                                UomId = item.UomId,
+                                UnitId = item.UnitId,
+                                Qty = item.Qty,
+                                Length = item.Length,
+                                Width = item.Width,
+                                Height = item.Height,
+                                Weight = item.Weight,
+                                DimensionMeasurement = item.DimensionMeasurement,
+                                WeightMeasurement = item.WeightMeasurement,
+                                UnitPrice = item.UnitPrice,
+                                Disc = item.Disc,
+                                FinalDiscHeader = item.FinalDiscHeader,
+                                TaxId = item.TaxId,
+                                TaxAmount = item.TaxAmount,
+                                ExemptTaxAmount = item.ExemptTaxAmount,
+                                NettPrice = item.NettPrice,
+                                Total = item.Total,
+                                Dpp = item.Dpp
+                            };
+
+                            Db.SalesDeliveryDetails.Add(sdDetail);
+                            Db.SaveChanges();
+
+                            listSDID.Add(new { Id = sdDetail.Id, SoId = sdDetail.SoDetailId });
+                        }
+
+                        var soFreeList = Db.SalesOrderDetailFreeGoods.Where(x => x.Code == code).ToList();
+
+                        foreach (var item in soFreeList)
+                        {
+                            Db.SalesDeliveryDetailFreeGoods.Add(new SalesDeliveryDetailFreeGood
+                            {
+                                Code = newDlvCode,
+                                DlvOrderDetailId = listSDID.First(x => x.SoId == item.OrderDetailId).Id,
+                                LineNo = 1,
+                                PromoCode = item.PromoCode,
+                                ItemId = item.ItemId,
+                                UomId = item.UomId,
+                                UnitId = item.UnitId,
+                                Qty = item.Qty,
+                                UnitPrice = item.UnitPrice,
+                                CoaCode = item.CoaCode
+                            });
+                        }
+
+                        Db.SalesInvoiceDetails.Add(new SalesInvoiceDetail
+                        {
+                            Code = newInvCode,
+                            LineNo = 1,
+                            DoCode = newDlvCode,
+                            ShipmentFee = SOData.ShipmentFee,
+                            HandlingFee = SOData.HandlingFee,
+                            SubTotal = SOData.SubTotal,
+                            FinalDisc = SOData.FinalDisc,
+                            TaxAmount = SOData.TaxAmount,
+                            ExemptTaxAmount = SOData.ExemptTaxAmount,
+                            Total = SOData.Total,
+                            Dpp = SOData.Dpp
+                        });
+                    }
+                    else
+                    {
+                        // Sales Invoice
+                        newInvCode = GetNewCode("SI_NUM_FMT", data.InvDate);
+                        var newSinvData = new SalesInvoiceHeader
+                        {
+                            Code = newInvCode,
+                            Date = data.InvDate,
+                            DueDate = data.InvDueDate,
+                            SoCode = SOData.Code,
+                            CustCode = SOData.CustCode,
+                            CurrCode = SOData.CurrCode,
+                            Total = SOData.Total,
+                            Notes = SOData.Notes,
+                            Mark = SOData.Mark,
+                            CreatedBy = SOData.CreatedBy,
+                            CreatedDate = SOData.CreatedDate,
+                            UpdatedBy = SOData.UpdatedBy,
+                            UpdatedDate = SOData.UpdatedDate
+                        };
+
+                        Db.SalesInvoiceHeaders.Add(newSinvData);
+
+                        short j = 0;
+                        foreach (var Dlvitem in DlvData)
+                        {
+                            Dlvitem.Date = data.DlvDate;
+                            Dlvitem.Mark = "INV";
+                            Dlvitem.UpdatedBy = SOData.UpdatedBy;
+                            Dlvitem.UpdatedDate = SOData.UpdatedDate;
+
+                            Db.SalesDeliveryHeaders.Update(Dlvitem);
+
+                            Db.SalesInvoiceDetails.Add(new SalesInvoiceDetail
+                            {
+                                Code = newInvCode,
+                                LineNo = ++j,
+                                DoCode = Dlvitem.Code,
+                                ShipmentFee = Dlvitem.ShipmentFee,
+                                HandlingFee = Dlvitem.HandlingFee,
+                                SubTotal = Dlvitem.SubTotal,
+                                FinalDisc = Dlvitem.FinalDisc,
+                                TaxAmount = Dlvitem.TaxAmount,
+                                ExemptTaxAmount = Dlvitem.ExemptTaxAmount,
+                                Total = Dlvitem.Total,
+                                Dpp = Dlvitem.Dpp
+                            });
+                        }
+                    }
+                }
+
+                if ((data.IsSoDlv || data.IsSoInv))
+                {
+                    var dlvData = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.TransCode == code && x.Mark != "V");
+
+                    // Execute sp_update_stock_mutation_from_rcv
+                    Db.Database.ExecuteSqlRaw(
+                        "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
+                        dlvData?.Code, SOData.Date, code);
+
+                    // Execute sp_update_po_rcv_qty
+                    Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", code);
+
+                    if (data.IsSoInv)
+                    {
+                        // Execute sp_update_stock_mutation_from_si
+                        Db.Database.ExecuteSqlRaw(
+                            "EXEC sp_update_stock_mutation_from_si {0}, {1}, {2}",
+                            newInvCode, SOData.Date, dlvData?.Code);
+                    }
+                }
+            }
+            transaction.Commit();
+        }
+        catch (Exception ex)
+        {
+            result.Message = ex.InnerException?.Message ?? ex.Message;
+            return result;
+        }
+
+        result.Success = true;
+        result.Message = "Data order penjualan berhasil disimpan.";
+        return result;
+    }
+
     private (bool, string) CheckDuplicateDetail(IEnumerable<SalesOrderDetail> data)
     {
         var tData = data.GroupBy(x => new { x.ItemId, x.UnitId }).Where(y => y.Count() > 1);
