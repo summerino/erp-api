@@ -241,6 +241,14 @@ public class SalesOrderController : ControllerBase
         return Ok(result);
     }
 
+    [HttpPost("multi-save")]
+    public IActionResult MultipleSave(MultipleSalesOrderRequest data)
+    {
+        var result = _so.MultipleSave(data);
+
+        return Ok(result);
+    }
+
     private (bool, string) Validate(SalesOrderRequest data, bool onDelete = false, bool checkSeenByOther = true)
     {
         var periods = new List<string> { data.Date.ToString("yyyyMM") };
