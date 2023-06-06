@@ -6,6 +6,7 @@ using ERP.Entity.Accounting;
 using ERP.Entity.Finance;
 using ERP.Entity.MobileSales;
 using ERP.Web.API.Domain.Interfaces.MobileSales;
+using ERP.Web.API.Domain.Models.Mobile.ItemRequest;
 using ERP.Web.API.Domain.Models.Mobile.Operational;
 using ERP.Web.API.Model.MobileSales;
 
@@ -220,7 +221,7 @@ public class MobileCostService : GeneralService<MobileCostHeader>, IMobileCostSe
                         Amount = item.Amount,
                         TransAmount = item.Amount,
                         TypeAmount = "D",
-                        Notes = notes
+                        Notes = string.IsNullOrWhiteSpace(item.Notes) ? notes : item.Notes
                     });
                 }
 
