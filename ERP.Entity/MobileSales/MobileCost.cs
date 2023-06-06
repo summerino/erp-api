@@ -82,9 +82,6 @@ public class MobileCostDetail
 
     [Precision(18, 2)]
     public decimal Amount { get; set; }
-
-    [StringLength(256)]
-    public string Notes { get; set; }
 }
 
 public class VwMobileCostDetail
@@ -100,9 +97,6 @@ public class VwMobileCostDetail
     [Precision(18, 2)]
     public decimal Amount { get; set; }
 
-    public string Notes { get; set; }
-
-    
     public string CoaName { get; set; }
 }
 
