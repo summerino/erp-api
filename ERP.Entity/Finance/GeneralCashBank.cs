@@ -286,6 +286,8 @@ public class VwAR
     public string CustCode { get; set; }
 
     public string CustName { get; set; }
+
+    public string CustAddress { get; set; }
         
     public string CurrCode { get; set; }
 
