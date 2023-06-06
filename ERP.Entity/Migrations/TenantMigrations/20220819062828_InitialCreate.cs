@@ -8260,20 +8260,26 @@ AS
 
             // Create view Finance.vwAR
             sql = @"CREATE VIEW [Finance].[vwAR]
-AS    
-	SELECT B.Code, B.CustCode, C.[Name] AS CustName, [Date], CurrCode, Rate AS Rate,    
-		Amount, PaidAmount, Amount - PaidAmount AS Remaining, B.Notes, 'BB' AS Src    
-	FROM Accounting.BeginningBalanceAR B    
-	JOIN General.Customer C    
-		ON B.CustCode = C.Code    
-	WHERE B.PaidAmount < B.Amount AND B.IsActive = 1    
-	UNION ALL    
-	SELECT S.Code,S.CustCode, C.[Name] AS CustName, S.[Date], S.CurrCode, 1 AS Rate,    
-		Total AS Amount, PaidAmount, Total - PaidAmount AS Remaining, S.Notes, 'SI' AS Src    
-	FROM Sales.SalesInvoiceHeader S    
-	JOIN General.Customer C    
-		ON S.CustCode = C.Code    
-	WHERE S.PaidAmount < S.Total AND S.Mark NOT IN ('V', 'OL')";
+AS
+	SELECT b.Code, b.CustCode, c.[Name] AS CustName, ca.Address1 AS CustAddress, b.[Date], b.CurrCode, b.Rate AS Rate,
+		b.Amount, b.PaidAmount, b.Amount - b.PaidAmount AS Remaining, b.Notes, 'BB' AS Src
+	FROM Accounting.BeginningBalanceAR b
+	JOIN General.Customer c
+		ON b.CustCode = c.Code
+	LEFT JOIN General.CustomerAddress ca
+		ON ca.Code = c.Code
+		AND ca.IsDefault = 1
+	WHERE b.PaidAmount < b.Amount AND b.IsActive = 1
+	UNION ALL
+	SELECT s.Code, s.CustCode, c.[Name] AS CustName, ca.Address1 AS CustAddress, s.[Date], s.CurrCode, 1 AS Rate,
+		s.Total AS Amount, s.PaidAmount, s.Total - s.PaidAmount AS Remaining, s.Notes, 'SI' AS Src
+	FROM Sales.SalesInvoiceHeader s
+	JOIN General.Customer c
+		ON s.CustCode = c.Code
+	LEFT JOIN General.CustomerAddress ca
+		ON ca.Code = c.Code
+		AND ca.IsDefault = 1
+	WHERE s.PaidAmount < s.Total AND s.Mark NOT IN ('V', 'OL')";
             migrationBuilder.Sql(sql);
 
             // Create view Finance.vwCashBankType
