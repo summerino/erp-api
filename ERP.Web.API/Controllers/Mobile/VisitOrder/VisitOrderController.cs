@@ -288,6 +288,21 @@ public class VisitOrderController : ControllerBase
         return Ok(result);
     }
 
+    [HttpPost("submit")]
+    public IActionResult OnSubmit(VisitSubmitModel data)
+    {
+        data.Mark = "A";
+        data.CreatedBy = _claim.UserId;
+        data.CreatedDate = DateTime.Now;
+        data.UpdatedBy = data.CreatedBy;
+        data.UpdatedDate = data.CreatedDate;
+
+        var result =
+            _visitOrder.SubmitVisit(data);
+
+        return Ok(result);
+    }
+
     [HttpGet("paymentMethod")]
     public IActionResult GetPaymentMethod(string lastUpdate)
     {
