@@ -1298,4 +1298,222 @@ public class VisitOrderService : GeneralService<MobileVisitLog>, IVisitOrderServ
 
         return data;
     }
+
+    public SaveResult SubmitVisit(VisitSubmitModel data)
+    {
+        var custCode = data.CustCode;
+        var createDate = DateTime.Now;
+        if (data.CustCode.Contains('-'))
+        {
+            var cust = Db.MobileCustomers.Where(x => x.Code.Equals(data.CustCode)).FirstOrDefault();
+            if (cust != null)
+            {
+                custCode = cust.CustCode ?? cust.Code;
+            }
+        }
+
+        var result = new SaveResult(false);
+
+        using var transaction = Db.Database.BeginTransaction();
+        try
+        {
+            data.CustCode = custCode;
+            Db.MobileVisitLogs.Add(data);
+
+            //if (data.Visited == true)
+            //{
+            //    var vo = Db.VisitOrders.First(x => x.Code == data.VisitOrderCode);
+            //    vo.UpdatedBy = data.UpdatedBy;
+            //    vo.UpdatedDate = data.UpdatedDate;
+
+            //    if (data.Scheduled)
+            //    {
+            //        var order = Db.VisitOrderCustomers.First(x => x.Code == data.VisitOrderCode && x.CustCode == data.CustCode);
+            //        order.Visited = true;
+            //    }
+            //}
+
+            foreach (var reason in data.VisitReasons)
+            {
+                Db.MobileVisitReasons.Add(new MobileVisitReason
+                {
+                    VisitLogCode = data.Code,
+                    VisitReasonId = reason
+                });
+            }
+
+            foreach (var invoice in data.Invoices)
+            {
+                Db.MobilePaymentInvoices.Add(new MobilePaymentInvoice
+                {
+                    Code = invoice.Code,
+                    VisitLogCode = data.Code,
+                    Date = data.Date,
+                    SalesmanId = data.SalesmanId,
+                    CustCode = custCode,
+                    CoaCode = invoice.CoaCode,
+                    TransCode = invoice.TransCode,
+                    Amount = invoice.Amount,
+                    NotesFailCollect = invoice.NotesFailCollect,
+                    SrcTrans = invoice.SrcTrans,
+                    CreatedBy = data.CreatedBy,
+                    CreatedDate = createDate,
+                    UpdatedBy = data.CreatedBy,
+                    UpdatedDate = createDate,
+                    Mark = "A"
+                });
+
+                var inv = Db.VisitOrderInvoices.FirstOrDefault(x => x.Code == data.VisitOrderCode && x.InvCode == invoice.TransCode);
+                if (inv != null)
+                {
+                    inv.Collecting = true;
+                }
+            }
+
+
+            foreach (var orderHeader in data.OrderHeaders)
+            {
+                Db.MobileOrderHeaders.Add(new MobileOrderHeader
+                {
+                    Code = orderHeader.Code,
+                    Date = data.Date,
+                    VisitLogCode = data.Code,
+                    Type = orderHeader.Type,
+                    CustCode = custCode,
+                    SalesBy = data.SalesmanId,
+                    PaymentTermId = orderHeader.PaymentTermId,
+                    CurrCode = orderHeader.CurrCode,
+                    Rate = orderHeader.Rate,
+                    SubTotal = orderHeader.SubTotal,
+                    FinalDiscPercent = orderHeader.FinalDiscPercent,
+                    FinalDisc = orderHeader.FinalDisc,
+                    IncludeTax = orderHeader.IncludeTax,
+                    TaxAmount = orderHeader.TaxAmount,
+                    ExemptTaxAmount = orderHeader.ExemptTaxAmount,
+                    Total = orderHeader.Total,
+                    Dpp = orderHeader.Dpp,
+                    PaidAmount = orderHeader.PaidAmount,
+                    CreatedBy = data.CreatedBy,
+                    CreatedDate = createDate,
+                    UpdatedBy = data.CreatedBy,
+                    UpdatedDate = createDate,
+                    Mark = "A"
+                });
+
+
+                short i = 0;
+                foreach (var detail in orderHeader.OrderDetail)
+                {
+
+                    MobileOrderDetail newDetail = new()
+                    {
+                        Code = orderHeader.Code,
+                        LineNo = ++i,
+                        ItemId = detail.ItemId,
+                        UomId = detail.UomId,
+                        UnitId = detail.UnitId,
+                        Qty = detail.Qty,
+                        UnitPrice = detail.UnitPrice,
+                        Disc = detail.Disc,
+                        TaxId = detail.TaxId,
+                        TaxAmount = detail.TaxAmount,
+                        ExemptTaxAmount = detail.ExemptTaxAmount,
+                        NettPrice = detail.NettPrice,
+                        Total = detail.Total,
+                        Dpp = detail.Dpp
+                    };
+
+                    Db.MobileOrderDetails.Add(newDetail);
+
+                    Db.SaveChanges();
+
+                    short j = 0;
+                    foreach (var discount in detail.Discounts)
+                    {
+
+                        Db.MobileOrderDetailDiscounts.Add(new MobileOrderDetailDiscount
+                        {
+                            Code = orderHeader.Code,
+                            OrderDetailId = newDetail.Id,
+                            LineNo = ++j,
+                            PromoCode = discount.PromoCode,
+                            PromoDetailId = discount.PromoDetailId,
+                            Name = discount.Name,
+                            IsPercentage = discount.IsPercentage,
+                            Value = discount.Value,
+                            Amount = discount.IsPercentage ? discount.Value / 100 * detail.UnitPrice : discount.Value
+                        });
+                    }
+
+                    short k = 0;
+                    foreach (var item in detail.FreeGoods)
+                    {
+
+                        Db.MobileOrderDetailFreeGoods.Add(new MobileOrderDetailFreeGood
+                        {
+                            Code = orderHeader.Code,
+                            OrderDetailId = newDetail.Id,
+                            LineNo = ++k,
+                            PromoCode = item.PromoCode,
+                            ItemId = item.ItemId,
+                            UomId = item.UomId,
+                            UnitId = item.UnitId,
+                            Qty = item.Qty,
+                            UnitPrice = item.UnitPrice
+                        });
+                    }
+
+                    foreach (var invoice in orderHeader.Invoices)
+                    {
+                        Db.MobilePaymentInvoices.Add(new MobilePaymentInvoice
+                        {
+                            Code = invoice.Code,
+                            VisitLogCode = data.Code,
+                            Date = data.Date,
+                            SalesmanId = data.SalesmanId,
+                            CustCode = custCode,
+                            CoaCode = invoice.CoaCode,
+                            TransCode = orderHeader.Code,
+                            Amount = invoice.Amount,
+                            NotesFailCollect = invoice.NotesFailCollect,
+                            SrcTrans = invoice.SrcTrans,
+                            CreatedBy = data.CreatedBy,
+                            CreatedDate = createDate,
+                            UpdatedBy = data.CreatedBy,
+                            UpdatedDate = createDate,
+                            Mark = "A"
+                        });
+                    }
+                }
+
+                short l = 0;
+                foreach (var promo in orderHeader.Promotions)
+                {
+                    Db.MobileOrderPromos.Add(new MobileOrderPromo
+                    {
+                        Code = orderHeader.Code,
+                        LineNo = ++l,
+                        PromoCode = promo.PromoCode,
+                        IsActive = promo.IsActive,
+                    });
+                }
+
+                
+            }
+
+            Db.SaveChanges();
+
+            transaction.Commit();
+        }
+        catch (Exception ex)
+        {
+            result.Message = ex.InnerException?.Message ?? ex.Message;
+            return result;
+        }
+
+        result.Success = true;
+        result.Data = data.Code;
+        result.Message = "Kunjungan berhasil disimpan.";
+        return result;
+    }
 }

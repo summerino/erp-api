@@ -31,6 +31,7 @@ public interface IVisitOrderService
     IEnumerable<Tax> GetTax(string lastUpdate);
     IEnumerable<PaymentTerm> GetPaymentTerms(string lastUpdate);
     SaveResult Insert(VisitRequestModel data);
+    SaveResult SubmitVisit(VisitSubmitModel data);
     IEnumerable<DateTime> GetListDate(int userId, DateTime date);
     IEnumerable<VisitLogByDateModel> GetVisitLogByDate(int userId, DateTime date);
     IEnumerable<MobilePaymentMethod> GetMobilePaymentMethod(string lastUpdate);
