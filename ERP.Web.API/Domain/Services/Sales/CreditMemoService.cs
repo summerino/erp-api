@@ -57,7 +57,9 @@ public class CreditMemoService : GeneralService<CreditMemo>, ICreditMemoService
         //           where piD.Contains(piH.Code) && piH.Mark == "A"
         //           select new { piH.Code, piH.Date, piH.Total };
             
-        var data = (from h in Db.GeneralCashBankHeaders
+        var data = (
+            new[] { new { Code = "", Date = new DateTime(), Total = new decimal() } }
+        ).Union(from h in Db.GeneralCashBankHeaders
             join d in Db.GeneralCashBankDetails on h.Code equals d.Code
             where h.Mark == "A" && d.TransCode == code
             select new
@@ -74,7 +76,7 @@ public class CreditMemoService : GeneralService<CreditMemo>, ICreditMemoService
                 Code = s.InvCode,
                 Date = c.Date,
                 Total = c.Total
-            });
+            }).Skip(1);
         return data.ToDynamicList();
     }
 
