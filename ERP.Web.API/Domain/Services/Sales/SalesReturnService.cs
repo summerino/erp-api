@@ -360,6 +360,7 @@ public class SalesReturnService : GeneralService<SalesReturnHeader>, ISalesRetur
                 cdtMemo = Db.CreditMemos.FirstOrDefault(x => x.TransCode == data.Code);
                 if (cdtMemo != null)
                 {
+                    cdtMemo.Date = data.Date;
                     cdtMemo.SrcTrans = (short)(data.Type == 1 ? 2 : 3);
                     cdtMemo.CustCode = data.CustCode;
                     cdtMemo.CurrCode = data.CurrCode;
