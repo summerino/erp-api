@@ -42,11 +42,15 @@ public class APReportService : IAPReportService
 
                 var dmData = _db.DebitMemos.Where(x => x.Mark != "V").ToList();
 
+                var bbDMData = _db.VwBeginningBalanceDebitMemos.Where(x => x.IsActive).ToList();
+
                 foreach (var itemInv in invData)
                 {
                     var totCb = cbDetail.Where(x => x.TransCode == itemInv.Code).Sum(x => x.TransAmount);
-                    var totDm = invDMData.Where(x => x.InvCode == itemInv.Code && dmData.Select(y => y.Code).Contains(x.DebitMemoCode))
-                                    .Sum(x => x.DebitMemoAmount);
+                    var totDm = invDMData.Where(x => x.InvCode == itemInv.Code && 
+                                dmData.Select(y => y.Code).Contains(x.DebitMemoCode) &&
+                                bbDMData.Select(y => y.Code).Contains(x.DebitMemoCode))
+                                .Sum(x => x.DebitMemoAmount);
                     itemInv.PaidAmount = totDm + totCb;
                     itemInv.RemainderAmount = itemInv.TotalAmount - itemInv.PaidAmount;
                 }
@@ -125,12 +129,16 @@ public class APReportService : IAPReportService
 
                 var dmData = _db.DebitMemos.Where(x => x.Mark != "V" && x.Date <= Convert.ToDateTime(date)).ToList();
 
+                var bbDMData = _db.VwBeginningBalanceDebitMemos.Where(x => x.IsActive).ToList();
+
                 foreach (var itemRcv in rcvData)
                 {
                     var totInv = rcvData.Where(x => x.InvCode == itemRcv.InvCode).Sum(x => x.TotalAmount);
                     var totCb = cbDetail.Where(x => x.TransCode == itemRcv.InvCode).Sum(x => x.TransAmount);
-                    var totDm = invDMData.Where(x => x.InvCode == itemRcv.InvCode && dmData.Select(y => y.Code).Contains(x.DebitMemoCode))
-                                    .Sum(x => x.DebitMemoAmount);
+                    var totDm = invDMData.Where(x => x.InvCode == itemRcv.InvCode && 
+                                dmData.Select(y => y.Code).Contains(x.DebitMemoCode) &&
+                                bbDMData.Select(y => y.Code).Contains(x.DebitMemoCode))
+                                .Sum(x => x.DebitMemoAmount);
                     itemRcv.PaidAmount = (totDm * itemRcv.TotalAmount / totInv) + (totCb * itemRcv.TotalAmount / totInv);
                     itemRcv.RemainderAmount = itemRcv.TotalAmount - itemRcv.PaidAmount;
                 }
