@@ -328,6 +328,7 @@ public class PurchaseReturnService : GeneralService<PurchaseReturnHeader>, IPurc
             if (data.Type == 1)
             {
                 dbtMemo = Db.DebitMemos.FirstOrDefault(x => x.TransCode == data.Code);
+                dbtMemo.Date = data.Date;
                 dbtMemo.SrcTrans = (short)(data.Type == 1 ? 2 : 3);
                 dbtMemo.SupCode = data.SupCode;
                 dbtMemo.CurrCode = data.CurrCode;
