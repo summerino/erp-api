@@ -2657,7 +2657,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
 
                 if (data.IsSoDlv)
                 {
-                    var newDlvCode = GetNewCode("DO_NUM_FMT", SOData.Date);
+                    var newDlvCode = GetNewCode("DO_NUM_FMT", data.DlvDate);
 
                     var newSdlvData = new SalesDeliveryHeader
                     {
@@ -2927,6 +2927,8 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                         }
                     }
                 }
+
+                Db.SaveChanges();
 
                 if ((data.IsSoDlv || data.IsSoInv))
                 {
