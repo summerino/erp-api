@@ -41,6 +41,10 @@ public class ARReportService : IARReportService
                                     SELECT cm.Code
                                     FROM Sales.CreditMemo cm
                                     WHERE cm.Mark != 'V'
+                                    UNION
+		                            SELECT bb_cm.Code
+		                            FROM Accounting.BeginningBalanceCreditMemo bb_cm
+		                            Where bb_cm.IsActive = 1
                                 )
                                 GROUP BY inv_cm.InvCode
                             ),
