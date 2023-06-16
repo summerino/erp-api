@@ -1118,7 +1118,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                 // Execute sp_update_stock_mutation_from_rcv
                 Db.Database.ExecuteSqlRaw(
                     "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
-                    dlvData?.Code, data.Date, newCode);
+                    dlvData?.Code, data.DlvDate, newCode);
 
                 // Execute sp_update_po_rcv_qty
                 Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", newCode);
@@ -1128,7 +1128,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                     // Execute sp_update_stock_mutation_from_si
                     Db.Database.ExecuteSqlRaw(
                         "EXEC sp_update_stock_mutation_from_si {0}, {1}, {2}",
-                        newInvCode, data.Date, dlvData?.Code);
+                        newInvCode, data.InvDate, dlvData?.Code);
                 }
             }
 
@@ -2425,7 +2425,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                 // Execute sp_update_stock_mutation_from_rcv
                 Db.Database.ExecuteSqlRaw(
                     "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
-                    dlvData?.Code, data.Date, data.Code);
+                    dlvData?.Code, data.DlvDate, data.Code);
 
                 // Execute sp_update_po_rcv_qty
                 Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", data.Code);
@@ -2435,7 +2435,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                     // Execute sp_update_stock_mutation_from_si
                     Db.Database.ExecuteSqlRaw(
                         "EXEC sp_update_stock_mutation_from_si {0}, {1}, {2}",
-                        newInvCode, data.Date, dlvData?.Code);
+                        newInvCode, data.InvDate, dlvData?.Code);
                 }
             }
 
@@ -2937,7 +2937,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                     // Execute sp_update_stock_mutation_from_rcv
                     Db.Database.ExecuteSqlRaw(
                         "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
-                        dlvData?.Code, SOData.Date, code);
+                        dlvData?.Code, data.DlvDate, code);
 
                     // Execute sp_update_po_rcv_qty
                     Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", code);
@@ -2947,7 +2947,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                         // Execute sp_update_stock_mutation_from_si
                         Db.Database.ExecuteSqlRaw(
                             "EXEC sp_update_stock_mutation_from_si {0}, {1}, {2}",
-                            newInvCode, SOData.Date, dlvData?.Code);
+                            newInvCode, data.InvDate, dlvData?.Code);
                     }
                 }
             }
