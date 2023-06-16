@@ -22,9 +22,9 @@ steps:
 
 - task: UseDotNet@2
   inputs:
-    version: '7.0.203'
+    version: '7.0.304'
     performMultiLevelLookup: true
-  displayName: 'Install .NET Core SDK 7.0.203'
+  displayName: 'Install .NET Core SDK 7.0.304'
 
 - task: DotNetCoreCLI@2
   inputs:
