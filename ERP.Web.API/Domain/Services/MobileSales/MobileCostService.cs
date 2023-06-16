@@ -79,7 +79,8 @@ public class MobileCostService : GeneralService<MobileCostHeader>, IMobileCostSe
                     Code = newCode,
                     LineNo = ++i,
                     CoaCode = cost.CoaCode,
-                    Amount = cost.Amount
+                    Amount = cost.Amount,
+                    Notes = cost.Notes
                 });
             }
 
@@ -148,7 +149,8 @@ public class MobileCostService : GeneralService<MobileCostHeader>, IMobileCostSe
                 Code = data.Code,
                 LineNo = ++i,
                 CoaCode = item.CoaCode,
-                Amount = item.Amount
+                Amount = item.Amount,
+                Notes = item.Notes
             });
         }
 
