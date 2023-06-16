@@ -609,7 +609,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
 
                 if (bonusPromo.Any())
                 {
-                    if (((checkQty && (!data.IsSoDlv || !data.IsSoInv)) || data.IsSoDlv || data.IsSoInv) && IsQtyExcess(data.WarehouseCode, bonusPromo, orderDetail, null, data.IsSoInv || data.IsSoDlv))
+                    if (((checkQty && (!data.IsSoDlv || !data.IsSoInv)) || data.IsSoDlv || data.IsSoInv) && IsQtyExcess(data.WarehouseCode, bonusPromo, orderDetail))
                     {
                         result.Message = "Data order penjualan tidak bisa disimpan karena qty barang & bonus yang dipesan lebih besar dari qty " + ((data.IsSoInv || data.IsSoDlv) ? "sistem." : "tersedia.");
                         return result;
@@ -1769,7 +1769,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
 
                     if (bonusPromo.Any())
                     {
-                        if (((checkQty && (!data.IsSoDlv || !data.IsSoInv)) || data.IsSoDlv || data.IsSoInv) && IsQtyExcess(data.WarehouseCode, bonusPromo, item, data.Code, data.IsSoInv || data.IsSoDlv))
+                        if (((checkQty && (!data.IsSoDlv || !data.IsSoInv)) || data.IsSoDlv || data.IsSoInv) && IsQtyExcess(data.WarehouseCode, bonusPromo, item))
                         {
                             result.Message = "Data order penjualan tidak bisa disimpan karena qty barang & bonus yang dipesan lebih besar dari qty " + ((data.IsSoInv || data.IsSoDlv) ? "sistem." : "tersedia.");
                             return result;
@@ -2544,7 +2544,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
         return result;
     }
 
-    private bool IsQtyExcess(string warehouseCode, IEnumerable<SalesOrderDetailFreeGood> items, SalesOrderDetail itemDetail, string code, bool isSaveDO = false)
+    private bool IsQtyExcess(string warehouseCode, IEnumerable<SalesOrderDetailFreeGood> items, SalesOrderDetail itemDetail)
     {
         var baseItems = GroupAndConvertItemBaseUnit(items, itemDetail);
         var result = false;
@@ -2553,18 +2553,8 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
             var stock = Db.WarehouseQuantities.AsNoTracking().FirstOrDefault(x => x.WarehouseCode == warehouseCode && x.ItemId == item.Key);
             if (stock != null)
             {
-                if (code == null)
-                {
-                    if (item.Value > (!isSaveDO ? (stock.QtyOnHand - stock.QtyOnOrder) : stock.QtyOnHand))
-                        result = true;
-                }
-                else
-                {
-                    var oldStock = Db.StockMutations.AsNoTracking().Where(x => x.ItemId == item.Key && x.RefCode1 == code && x.Type == "OO" && new[] {"SO", "SOF"}.Contains(x.Src)).Sum(x => x.BaseQty);
-
-                    if (item.Value > (!isSaveDO ? (stock.QtyOnHand - (stock.QtyOnOrder - oldStock)) : stock.QtyOnHand))
-                        result = true;
-                }
+                if (item.Value > stock.QtyOnHand)
+                    result = true;
             }
             else
             {
