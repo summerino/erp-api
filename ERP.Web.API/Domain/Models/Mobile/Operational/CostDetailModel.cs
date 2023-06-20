@@ -8,4 +8,5 @@ public class CostDetailModel
     public string CoaCode { get; set; }
     public string CoaName { get; set; }
     public decimal Amount { get; set; }
+    public string Notes { get; set; }
 }

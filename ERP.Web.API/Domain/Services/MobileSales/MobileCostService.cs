@@ -6,7 +6,6 @@ using ERP.Entity.Accounting;
 using ERP.Entity.Finance;
 using ERP.Entity.MobileSales;
 using ERP.Web.API.Domain.Interfaces.MobileSales;
-using ERP.Web.API.Domain.Models.Mobile.ItemRequest;
 using ERP.Web.API.Domain.Models.Mobile.Operational;
 using ERP.Web.API.Model.MobileSales;
 
@@ -80,7 +79,7 @@ public class MobileCostService : GeneralService<MobileCostHeader>, IMobileCostSe
                     LineNo = ++i,
                     CoaCode = cost.CoaCode,
                     Amount = cost.Amount,
-                    Notes = cost.Notes
+                    Notes = cost.Notes,
                 });
             }
 
@@ -150,7 +149,7 @@ public class MobileCostService : GeneralService<MobileCostHeader>, IMobileCostSe
                 LineNo = ++i,
                 CoaCode = item.CoaCode,
                 Amount = item.Amount,
-                Notes = item.Notes
+                Notes = item.Notes,
             });
         }
 
@@ -311,6 +310,7 @@ public class MobileCostService : GeneralService<MobileCostHeader>, IMobileCostSe
                        CoaCode = cost.CoaCode,
                        CoaName = coa.Name,
                        Amount = cost.Amount,
+                       Notes = cost.Notes
                    };
         return data.ToList();
     }
@@ -339,7 +339,8 @@ public class MobileCostService : GeneralService<MobileCostHeader>, IMobileCostSe
                     Code = newCode,
                     LineNo = ++i,
                     CoaCode = cost.CoaCode,
-                    Amount = cost.Amount
+                    Amount = cost.Amount,
+                    Notes = cost.Notes
                 });
             }
 

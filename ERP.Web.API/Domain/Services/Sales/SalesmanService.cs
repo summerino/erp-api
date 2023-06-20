@@ -95,6 +95,7 @@ public class SalesmanService : GeneralService<SalesmanGroup>, ISalesmanService
     public SalesProfile GetSalesProfileForMobile(int id)
     {
         var param = Db.SystemParameters.FirstOrDefault(x => x.Code.Equals("DEF_SALES_TAX_INC"))?.Value;
+        var param2 = Db.SystemParameters.FirstOrDefault(x => x.Code.Equals("MOB_ORD_SHOW_OPT_TAX"))?.Value;
 
         var data = (from user in Db.Users
             join empl in Db.Employees on user.EmployeeId equals empl.Id
@@ -106,7 +107,8 @@ public class SalesmanService : GeneralService<SalesmanGroup>, ISalesmanService
                 SalesId = empl.Id,
                 SalesInitialId = empl.Initial,
                 SalesGroup = groupSl.Name,
-                TaxInclude = int.Parse(param)
+                TaxInclude = int.Parse(param),
+                ShowTaxOption = int.Parse(param2)
             }).SingleOrDefault(x => x.UserId.Equals(id));
         return data;
     }
