@@ -48,6 +48,7 @@ public class ExpeditionInvoiceService : GeneralService<ExpeditionInvoiceHeader>,
                         dt.TransCode,
                         dt.LineNo,
                         dto.Date,
+                        dto.RefNo,
                         dto.Mark
 
                     }).ToList<dynamic>();
@@ -253,6 +254,7 @@ public class ExpeditionInvoiceService : GeneralService<ExpeditionInvoiceHeader>,
                     {
                         dt.Code,
                         dt.Date,
+                        dt.RefNo,
                         dt.SupName,
                         dt.Mark
                     }).AsQueryable();
