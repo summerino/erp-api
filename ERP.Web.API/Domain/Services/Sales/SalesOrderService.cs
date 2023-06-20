@@ -609,7 +609,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
 
                 if (bonusPromo.Any())
                 {
-                    if (((checkQty && (!data.IsSoDlv || !data.IsSoInv)) || data.IsSoDlv || data.IsSoInv) && IsQtyExcess(data.WarehouseCode, bonusPromo, orderDetail, null, data.IsSoInv || data.IsSoDlv))
+                    if (((checkQty && (!data.IsSoDlv || !data.IsSoInv)) || data.IsSoDlv || data.IsSoInv) && IsQtyExcess(data.WarehouseCode, bonusPromo, orderDetail))
                     {
                         result.Message = "Data order penjualan tidak bisa disimpan karena qty barang & bonus yang dipesan lebih besar dari qty " + ((data.IsSoInv || data.IsSoDlv) ? "sistem." : "tersedia.");
                         return result;
@@ -1118,7 +1118,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                 // Execute sp_update_stock_mutation_from_rcv
                 Db.Database.ExecuteSqlRaw(
                     "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
-                    dlvData?.Code, data.Date, newCode);
+                    dlvData?.Code, data.DlvDate, newCode);
 
                 // Execute sp_update_po_rcv_qty
                 Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", newCode);
@@ -1128,7 +1128,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                     // Execute sp_update_stock_mutation_from_si
                     Db.Database.ExecuteSqlRaw(
                         "EXEC sp_update_stock_mutation_from_si {0}, {1}, {2}",
-                        newInvCode, data.Date, dlvData?.Code);
+                        newInvCode, data.InvDate, dlvData?.Code);
                 }
             }
 
@@ -1769,7 +1769,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
 
                     if (bonusPromo.Any())
                     {
-                        if (((checkQty && (!data.IsSoDlv || !data.IsSoInv)) || data.IsSoDlv || data.IsSoInv) && IsQtyExcess(data.WarehouseCode, bonusPromo, item, data.Code, data.IsSoInv || data.IsSoDlv))
+                        if (((checkQty && (!data.IsSoDlv || !data.IsSoInv)) || data.IsSoDlv || data.IsSoInv) && IsQtyExcess(data.WarehouseCode, bonusPromo, item))
                         {
                             result.Message = "Data order penjualan tidak bisa disimpan karena qty barang & bonus yang dipesan lebih besar dari qty " + ((data.IsSoInv || data.IsSoDlv) ? "sistem." : "tersedia.");
                             return result;
@@ -2425,7 +2425,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                 // Execute sp_update_stock_mutation_from_rcv
                 Db.Database.ExecuteSqlRaw(
                     "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
-                    dlvData?.Code, data.Date, data.Code);
+                    dlvData?.Code, data.DlvDate, data.Code);
 
                 // Execute sp_update_po_rcv_qty
                 Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", data.Code);
@@ -2435,7 +2435,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                     // Execute sp_update_stock_mutation_from_si
                     Db.Database.ExecuteSqlRaw(
                         "EXEC sp_update_stock_mutation_from_si {0}, {1}, {2}",
-                        newInvCode, data.Date, dlvData?.Code);
+                        newInvCode, data.InvDate, dlvData?.Code);
                 }
             }
 
@@ -2544,7 +2544,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
         return result;
     }
 
-    private bool IsQtyExcess(string warehouseCode, IEnumerable<SalesOrderDetailFreeGood> items, SalesOrderDetail itemDetail, string code, bool isSaveDO = false)
+    private bool IsQtyExcess(string warehouseCode, IEnumerable<SalesOrderDetailFreeGood> items, SalesOrderDetail itemDetail)
     {
         var baseItems = GroupAndConvertItemBaseUnit(items, itemDetail);
         var result = false;
@@ -2553,18 +2553,8 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
             var stock = Db.WarehouseQuantities.AsNoTracking().FirstOrDefault(x => x.WarehouseCode == warehouseCode && x.ItemId == item.Key);
             if (stock != null)
             {
-                if (code == null)
-                {
-                    if (item.Value > (!isSaveDO ? (stock.QtyOnHand - stock.QtyOnOrder) : stock.QtyOnHand))
-                        result = true;
-                }
-                else
-                {
-                    var oldStock = Db.StockMutations.AsNoTracking().Where(x => x.ItemId == item.Key && x.RefCode1 == code && x.Type == "OO" && new[] {"SO", "SOF"}.Contains(x.Src)).Sum(x => x.BaseQty);
-
-                    if (item.Value > (!isSaveDO ? (stock.QtyOnHand - (stock.QtyOnOrder - oldStock)) : stock.QtyOnHand))
-                        result = true;
-                }
+                if (item.Value > stock.QtyOnHand)
+                    result = true;
             }
             else
             {
@@ -2657,7 +2647,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
 
                 if (data.IsSoDlv)
                 {
-                    var newDlvCode = GetNewCode("DO_NUM_FMT", SOData.Date);
+                    var newDlvCode = GetNewCode("DO_NUM_FMT", data.DlvDate);
 
                     var newSdlvData = new SalesDeliveryHeader
                     {
@@ -2928,6 +2918,8 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                     }
                 }
 
+                Db.SaveChanges();
+
                 if ((data.IsSoDlv || data.IsSoInv))
                 {
                     var dlvData = Db.SalesDeliveryHeaders.FirstOrDefault(x => x.TransCode == code && x.Mark != "V");
@@ -2935,7 +2927,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                     // Execute sp_update_stock_mutation_from_rcv
                     Db.Database.ExecuteSqlRaw(
                         "EXEC sp_update_stock_mutation_from_do {0}, {1}, {2}",
-                        dlvData?.Code, SOData.Date, code);
+                        dlvData?.Code, data.DlvDate, code);
 
                     // Execute sp_update_po_rcv_qty
                     Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", code);
@@ -2945,7 +2937,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                         // Execute sp_update_stock_mutation_from_si
                         Db.Database.ExecuteSqlRaw(
                             "EXEC sp_update_stock_mutation_from_si {0}, {1}, {2}",
-                            newInvCode, SOData.Date, dlvData?.Code);
+                            newInvCode, data.InvDate, dlvData?.Code);
                     }
                 }
             }
