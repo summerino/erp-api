@@ -8,4 +8,5 @@ public class SalesProfile
     public string SalesName { get; set; }
     public string SalesGroup { get; set; }
     public int TaxInclude { get; set; }
+    public int ShowTaxOption { get; set; }
 }
