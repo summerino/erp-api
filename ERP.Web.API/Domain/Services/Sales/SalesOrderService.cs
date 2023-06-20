@@ -8,6 +8,7 @@ using ERP.Entity.Sales;
 using ERP.Web.API.Domain.Interfaces.Sales;
 using ERP.Web.API.Model.Sales;
 using ERP.Entity.Inventory;
+using Microsoft.Reporting.Map.WebForms.BingMaps;
 
 namespace ERP.Web.API.Domain.Services.Sales;
 
@@ -2634,15 +2635,70 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
             {
                 var SOData = Db.SalesOrderHeaders.FirstOrDefault(x => x.Code == code);
                 var SODetails = Db.SalesOrderDetails.Where(x => x.Code == code).ToList();
+                var SOFDetails = Db.SalesOrderDetailFreeGoods.Where(x => x.Code == code).ToList();
                 if (new[] { "OL", "PS", "CMP", "V" }.Contains(SOData.Mark))
                 {
+                    result.Message += $"&bull; Data order penjualan {code} tidak bisa disimpan karena status bukan aktif.<br/>";
                     continue;
                 }
 
                 var relatedTrans = GetRelatedTransactions(code);
                 if (relatedTrans.Any())
                 {
+                    result.Message += $"&bull; Data order penjualan {code} tidak bisa disimpan karena status bukan aktif.<br/>";
                     continue;
+                }
+
+                if (data.IsSoDlv && data.DlvDate < SOData.Date)
+                {
+                    result.Message += @$"&bull; Data order penjualan {code} tidak bisa disimpan karena 
+                                    tanggal surat jalan tidak boleh lebih kecil dari tanggal order penjualan.<br/>";
+                    continue;
+                }
+                else if (data.IsSoInv && (data.InvDate < SOData.Date || data.InvDate < data.DlvDate || data.DlvDate < SOData.Date))
+                {
+                    result.Message += @$"&bull; Data order penjualan {code} tidak bisa disimpan karena 
+                                    tanggal surat jalan/faktur penjualan tidak boleh lebih kecil dari 
+                                    tanggal order penjualan/surat jalan & order penjualan.";
+                    continue;
+                }
+
+                // Checking order qty is excess or not
+                var checkQty = Db.SystemParameters.FirstOrDefault(x => x.Code == "DEF_SLS_ORD_CHECK_QTY")?.Value == "1";
+
+                if (SOFDetails.Any())
+                {
+                    var isQtyExcess = false;
+                    foreach (var SODetail in SODetails)
+                    {
+                        var baseItems = GroupAndConvertItemBaseUnit(SOFDetails.Where(x => x.OrderDetailId == SODetail.Id), SODetail);
+                        foreach (var item in baseItems)
+                        {
+                            var stock = Db.WarehouseQuantities.AsNoTracking().FirstOrDefault(x => x.WarehouseCode == SOData.WarehouseCode && x.ItemId == item.Key);
+                            if (stock != null)
+                            {
+                                if (item.Value > (stock.QtyOnHand - stock.QtyOnOrder))
+                                    isQtyExcess = true;
+                            }
+                            else
+                            {
+                                isQtyExcess = true;
+                            }
+                        }
+                    }
+                    if (checkQty && isQtyExcess)
+                    {
+                        result.Message += $"&bull; Data order penjualan {code} tidak bisa disimpan karena qty barang yang dipesan lebih besar dari qty sistem.<br/>";
+                        continue;
+                    }
+                }
+                else if (!SOFDetails.Any())
+                {
+                    if (checkQty && IsQtyExcess(SOData.WarehouseCode, SODetails, SOData.Code))
+                    {
+                        result.Message += $"&bull; Data order penjualan {code} tidak bisa disimpan karena qty barang yang dipesan lebih besar dari qty sistem.<br/>";
+                        continue;
+                    }
                 }
 
                 if (data.IsSoDlv)
@@ -2940,6 +2996,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                             newInvCode, data.InvDate, dlvData?.Code);
                     }
                 }
+                result.Message += $"&bull; Data order penjualan {code} berhasil disimpan.<br/>";
             }
             transaction.Commit();
         }
@@ -2950,7 +3007,6 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
         }
 
         result.Success = true;
-        result.Message = "Data order penjualan berhasil disimpan.";
         return result;
     }
 
