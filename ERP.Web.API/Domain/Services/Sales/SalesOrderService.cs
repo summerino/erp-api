@@ -2664,8 +2664,6 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                 }
 
                 // Checking order qty is excess or not
-                var checkQty = Db.SystemParameters.FirstOrDefault(x => x.Code == "DEF_SLS_ORD_CHECK_QTY")?.Value == "1";
-
                 if (SOFDetails.Any())
                 {
                     var isQtyExcess = false;
@@ -2677,7 +2675,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                             var stock = Db.WarehouseQuantities.AsNoTracking().FirstOrDefault(x => x.WarehouseCode == SOData.WarehouseCode && x.ItemId == item.Key);
                             if (stock != null)
                             {
-                                if (item.Value > (stock.QtyOnHand - stock.QtyOnOrder))
+                                if (item.Value > stock.QtyOnHand)
                                     isQtyExcess = true;
                             }
                             else
@@ -2686,7 +2684,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                             }
                         }
                     }
-                    if (checkQty && isQtyExcess)
+                    if (isQtyExcess)
                     {
                         result.Message += $"&bull; Data order penjualan {code} tidak bisa disimpan karena qty barang yang dipesan lebih besar dari qty sistem.<br/>";
                         continue;
@@ -2694,7 +2692,22 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
                 }
                 else if (!SOFDetails.Any())
                 {
-                    if (checkQty && IsQtyExcess(SOData.WarehouseCode, SODetails, SOData.Code))
+                    var isQtyExcess = false;
+                    var baseItems = GroupAndConvertItemBaseUnit(SODetails);
+                    foreach (var item in baseItems)
+                    {
+                        var stock = Db.WarehouseQuantities.AsNoTracking().FirstOrDefault(x => x.WarehouseCode == SOData.WarehouseCode && x.ItemId == item.Key);
+                        if (stock != null)
+                        {
+                            if (item.Value > stock.QtyOnHand)
+                                isQtyExcess = true;
+                        }
+                        else
+                        {
+                            isQtyExcess = true;
+                        }
+                    }
+                    if (isQtyExcess)
                     {
                         result.Message += $"&bull; Data order penjualan {code} tidak bisa disimpan karena qty barang yang dipesan lebih besar dari qty sistem.<br/>";
                         continue;
