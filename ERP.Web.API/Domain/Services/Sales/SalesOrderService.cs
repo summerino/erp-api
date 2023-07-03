@@ -67,7 +67,7 @@ public class SalesOrderService : GeneralService<SalesOrderHeader>, ISalesOrderSe
 
     public IEnumerable<VwSalesOrderHeader> GetInCompleteInvoiceData(string searchBy, string search, string invCode)
     {
-        var data = Db.VwSalesOrderHeaders.Where(x => new[] { "A", "PS", "CMP" }.Contains(x.Mark));
+        var data = Db.VwSalesOrderHeaders.Where(x => new[] { "A", "PS", "CLS", "CMP" }.Contains(x.Mark));
 
         if (!string.IsNullOrEmpty(search))
         {
