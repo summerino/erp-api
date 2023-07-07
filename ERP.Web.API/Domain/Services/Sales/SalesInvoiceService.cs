@@ -601,7 +601,30 @@ public class SalesInvoiceService : GeneralService<SalesInvoiceHeader>, ISalesInv
 
     private bool IsSalesOrderInvalid(string soCode)
     {
-        return Db.SalesOrderHeaders.Any(x => x.Code == soCode && !new[] { "PS", "CMP" }.Contains(x.Mark));
+        var soData = Db.SalesOrderHeaders.FirstOrDefault(x => x.Code == soCode);
+        if (soData != null)
+        {
+            if (!new[] { "PS", "CMP", "CLS" }.Contains(soData.Mark))
+            {
+                return true;
+            }
+            else if (soData.Mark == "CLS")
+            {
+                var isDlvSoValid = Db.SalesDeliveryHeaders.Any(x => x.TransCode == soCode && x.Mark == "A");
+                if (isDlvSoValid)
+                    return false;
+                else
+                    return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        else
+        {
+            return true;
+        }
     }
 
     private bool IsAlreadyInTransaction(string code)
