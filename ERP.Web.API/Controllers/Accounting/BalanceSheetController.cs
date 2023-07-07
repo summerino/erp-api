@@ -35,7 +35,7 @@ public class BalanceSheetController : ControllerBase
         var lastDay = firstDay.AddMonths(1).AddDays(-1);
 
         var details = _gl.GetGeneralLedgerLists(firstDay.ToString(), lastDay.ToString(), data.Acc, data.Acc2,
-            "IDR", "N", null).Where(x => x.Sort == "1");
+            "IDR", "N", null).Where(x => x.Sort == "3");
 
         var result = _bs.GetBalanceSheetLists(details).ToList<dynamic>();
 
