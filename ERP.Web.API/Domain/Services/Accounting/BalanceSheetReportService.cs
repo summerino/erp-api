@@ -28,38 +28,26 @@ public class BalanceSheetReportService : IBalanceSheetReportService
             if (isParent.Any())
             {
                 var coaGroup = item.Code.Split('0')[0];
-                var filterData = data.Where(x => x.CoaCode.StartsWith(coaGroup))
-                    .GroupBy(x => x.CoaCode)
-                    .Select(g => new
-                    {
-                        CoaCode = g.Key,
-                        Amount = g.Sum(x => (decimal)x.DebetOc - (decimal)x.CreditOc)
-                    }).ToList();
+                var filterData = data.Where(x => x.CoaCode.StartsWith(coaGroup) && x.EndBalOc != null & x.CreditOc != null && x.DebetOc != null).ToList();
 
                 result.Add(new BalanceSheetResult
                 {
                     Code = item.Code,
                     Name = item.Name,
-                    Amount = filterData.Sum(x => x.Amount),
+                    Amount = (decimal)filterData.Sum(x => x.EndBalOc),
                     Deep = item.Deep,
                     IsBold = true
                 });
             }
             else
             {
-                var filterData = data.Where(x => x.CoaCode == item.Code)
-                    .GroupBy(x => x.CoaCode)
-                    .Select(g => new
-                    {
-                        CoaCode = g.Key,
-                        Amount = g.Sum(x => (decimal)x.DebetOc - (decimal)x.CreditOc)
-                    }).ToList();
+                var filterData = data.Where(x => x.CoaCode == item.Code && x.EndBalOc != null & x.CreditOc != null && x.DebetOc != null).ToList();
 
                 result.Add(new BalanceSheetResult
                 {
                     Code = item.Code,
                     Name = item.Name,
-                    Amount = filterData.Sum(x => x.Amount),
+                    Amount = (decimal)filterData.Sum(x => x.EndBalOc),
                     Deep = item.Deep,
                     IsBold = false
                 });
