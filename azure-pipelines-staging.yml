@@ -4,7 +4,7 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
 
 trigger:
-- development
+- none
 
 pool:
   vmImage: windows-2022
@@ -15,9 +15,11 @@ variables:
 steps:
 - task: FileTransform@1
   inputs:
-    folderPath: '$(System.DefaultWorkingDirectory)'
-    fileType: 'json'
-    targetFiles: '**/appsettings.json'
+    folderPath: '$(System.DefaultWorkingDirectory)/ERP.Web.API'
+    fileType: json
+    targetFiles: appsettings.json
+  displayName: 'File Transform: appsettings.json'
+
 
 - task: UseDotNet@2
   inputs:
