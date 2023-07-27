@@ -123,7 +123,7 @@ public class MobilePaymentInvoiceService : GeneralService<MobilePaymentInvoice>,
                     CurrCode = "IDR",
                     Rate = 1,
                     Amount = item.Details.Sum(x => x.Amount),
-                    Notes = data.Notes != null ? data.Notes + $" ({item.Codes})" : $"Terbentuk dari Pembayaran Mobile {item.Codes}",
+                    Notes = data.Notes != null ? data.Notes + $"" : $"Terbentuk dari Pembayaran Mobile {item.Codes}",
                     Mark = "A",
                     CreatedBy = userId,
                     CreatedDate = DateTime.Now,
@@ -139,6 +139,7 @@ public class MobilePaymentInvoiceService : GeneralService<MobilePaymentInvoice>,
                 {
                     var cusData = Db.Customers.FirstOrDefault(x => x.Code == itemDetail.CustCode);
                     var ordData = Db.MobileOrderHeaders.FirstOrDefault(x => x.Code == itemDetail.TransCode);
+                    var defaultARCoa = Db.SystemParameters.FirstOrDefault(x => x.Code == "AR_COA");
 
                     var detailCBData = new GeneralCashBankDetail
                     {
@@ -146,7 +147,7 @@ public class MobilePaymentInvoiceService : GeneralService<MobilePaymentInvoice>,
                         LineNo = ++i,
                         Type = "AR",
                         TransCode = itemDetail.SrcTrans == "ORD" ? ordData?.SalesOrderCode ?? "" : itemDetail.TransCode,
-                        CoaCode = item.CoaCode,
+                        CoaCode = defaultARCoa.Value,
                         CurrCode = "IDR",
                         Rate = 1,
                         Amount = itemDetail.Amount,
