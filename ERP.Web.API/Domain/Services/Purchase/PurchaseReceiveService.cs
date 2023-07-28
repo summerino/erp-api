@@ -752,10 +752,14 @@ public class PurchaseReceiveService : GeneralService<PurchaseReceiveHeader>, IPu
                 else if (itemData.Type == "OI")
                 {
                     var itemTransSMData = transSMData.FirstOrDefault(x => x.ItemId == itemData.ItemId && x.UnitId == itemData.UnitId);
-                    whQtyData = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == itemTransSMData.WarehouseCode && x.ItemId == itemData.ItemId);
-                    whQtyData.QtyOnIndent = whQtyData.QtyOnIndent + itemData.BaseQty;
+                    if(itemTransSMData != null)
+                    {
+                        whQtyData = Db.WarehouseQuantities.FirstOrDefault(x => x.WarehouseCode == itemTransSMData.WarehouseCode && x.ItemId == itemData.ItemId);
+                        whQtyData.QtyOnIndent = whQtyData.QtyOnIndent + itemData.BaseQty;
+                    }
                 }
-                Db.WarehouseQuantities.Update(whQtyData);
+                if (whQtyData.WarehouseCode != null)
+                    Db.WarehouseQuantities.Update(whQtyData);
             }
         }
         else
