@@ -113,6 +113,7 @@ public class MobilePaymentInvoiceService : GeneralService<MobilePaymentInvoice>,
             foreach (var item in groupedData)
             {
                 var newCode = GetNewCode("CB_NUM_FMT", item.Date);
+                var useRefCode = Db.SystemParameters.FirstOrDefault(x => x.Code == "MOB_PYMT_REF_IN_NOTES_WHEN_APPROVE").Value == "1";
 
                 var headCBData = new GeneralCashBankHeader
                 {
@@ -123,7 +124,7 @@ public class MobilePaymentInvoiceService : GeneralService<MobilePaymentInvoice>,
                     CurrCode = "IDR",
                     Rate = 1,
                     Amount = item.Details.Sum(x => x.Amount),
-                    Notes = data.Notes != null ? data.Notes + $"" : $"Terbentuk dari Pembayaran Mobile {item.Codes}",
+                    Notes = data.Notes != null ? data.Notes + (useRefCode ? $" ({item.Codes})" : $"") : $"Terbentuk dari Pembayaran Mobile {item.Codes}",
                     Mark = "A",
                     CreatedBy = userId,
                     CreatedDate = DateTime.Now,
