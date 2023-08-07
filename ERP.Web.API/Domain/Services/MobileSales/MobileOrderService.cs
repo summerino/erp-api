@@ -96,6 +96,7 @@ public class MobileOrderService : GeneralService<MobileOrderHeader>, IMobileOrde
                         FinalDisc = itemData.FinalDisc,
                         IncludeTax = itemData.IncludeTax,
                         TaxAmount = itemData.TaxAmount,
+                        ExemptTaxAmount = itemData.ExemptTaxAmount,
                         Total = itemData.Total,
                         Dpp = itemData.Dpp,
                         Notes = $"Created from Mobile Order {itemData.Code}",
@@ -241,6 +242,7 @@ public class MobileOrderService : GeneralService<MobileOrderHeader>, IMobileOrde
                         FinalDisc = itemData.FinalDisc,
                         IncludeTax = itemData.IncludeTax,
                         TaxAmount = itemData.TaxAmount,
+                        ExemptTaxAmount = itemData.ExemptTaxAmount,
                         Total = itemData.Total,
                         Dpp = itemData.Dpp,
                         Mark = "INV",
@@ -343,6 +345,7 @@ public class MobileOrderService : GeneralService<MobileOrderHeader>, IMobileOrde
                         SubTotal = itemData.SubTotal,
                         FinalDisc = itemData.FinalDisc,
                         TaxAmount = itemData.TaxAmount,
+                        ExemptTaxAmount = itemData.ExemptTaxAmount,
                         Total = itemData.Total,
                         Dpp = itemData.Dpp
                     });

@@ -1772,7 +1772,7 @@ public class JournalService : IJournalService
                     Date = itemData.ChequeDate ?? itemData.Date,
                     CoaCode = itemData.CoaCode ?? "",
                     TypeCode = "CB",
-                    Notes = "Kas/Bank",
+                    Notes = itemData.Notes,
                     RefCode2 = itemData.Code,
                     Group = 3,
                     CurrCode = itemData.CurrCode,
