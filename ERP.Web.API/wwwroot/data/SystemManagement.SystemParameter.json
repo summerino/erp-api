@@ -107,4 +107,5 @@
 {"Id":107,"ModuleId":14,"Code":"SLS_DP_NUM_FMT","Value":"SDP-{Y}{M}{D}-{5}","DataType":"string","Description":"Uang Muka Penjualan (Maks. 17 Karakter)","Seq":9,"IsActive":true},
 {"Id":108,"ModuleId":12,"Code":"PURC_DP_NUM_FMT","Value":"PDP-{Y}{M}{D}-{5}","DataType":"string","Description":"Uang Muka Pembelian (Maks. 17 Karakter)","Seq":6,"IsActive":false},
 {"Id":109,"ModuleId":32,"Code":"MOB_IR_TS_TYPE","Value":"OUT","DataType":"string","Description":"Tipe Transfer Persediaan Pada Saat Disetujui","Seq":1,"IsActive":false},
-{"Id":110,"ModuleId":32,"Code":"MOB_ORD_SHOW_OPT_TAX","Value":"0","DataType":"bool","Description":"Tampilkan Pilihan Tipe Pajak Di Pesanan Mobile","Seq":1,"IsActive":false}]
+{"Id":110,"ModuleId":32,"Code":"MOB_ORD_SHOW_OPT_TAX","Value":"0","DataType":"bool","Description":"Tampilkan Pilihan Tipe Pajak Di Pesanan Mobile","Seq":1,"IsActive":false},
+{"Id":111,"ModuleId":32,"Code":"MOB_PYMT_REF_IN_NOTES_WHEN_APPROVE","Value":"1","DataType":"bool","Description":"Tampilkan Pilihan Tipe Pajak Di Pesanan Mobile","Seq":1,"IsActive":false}]
