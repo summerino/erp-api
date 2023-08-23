@@ -8244,14 +8244,14 @@ AS
             sql = @"CREATE VIEW [Finance].[vwAP]
 AS
 	SELECT B.Code, B.SupCode, S.[Name] AS SupName, [Date], CurrCode, Rate,
-		Amount, PaidAmount, Amount - PaidAmount AS Remaining, B.Notes, 'BB' AS Src
+		Amount, PaidAmount, Amount - PaidAmount AS Remaining, B.Notes, 'BB' AS Src, '' AS RefNo, '' AS OrderCode
 	FROM Accounting.BeginningBalanceAP B
 	JOIN General.Supplier S
 		ON B.SupCode = S.Code
 	WHERE B.PaidAmount < B.Amount AND B.IsActive = 1
 	UNION ALL
 	SELECT P.Code,P.SupCode, S.[Name] AS SupName, P.[Date], P.CurrCode, 1 AS Rate,
-		Total AS Amount, PaidAmount, Total - PaidAmount AS Remaining, P.Notes, 'PI' AS Src
+		Total AS Amount, PaidAmount, Total - PaidAmount AS Remaining, P.Notes, 'PI' AS Src, ISNULL(P.RefNo,'') AS RefNo, P.POCode AS OrderCode
 	FROM Purchasing.PurchaseInvoiceHeader P
 	JOIN General.Supplier S
 		ON P.SupCode = S.Code
