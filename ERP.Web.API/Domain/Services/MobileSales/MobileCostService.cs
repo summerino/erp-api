@@ -126,11 +126,11 @@ public class MobileCostService : GeneralService<MobileCostHeader>, IMobileCostSe
         // Delete detail data that exists in detail before
         Db.MobileCostDetails.RemoveRange(delDetails);
 
-        if (data.ItemDetails.GroupBy(x => x.CoaCode).Any(x => x.Count() > 1))
-        {
-            result.Message = "Terdapat akun dengan code yang sama pada bagian detail.";
-            return result;
-        }
+        //if (data.ItemDetails.GroupBy(x => x.CoaCode).Any(x => x.Count() > 1))
+        //{
+        //    result.Message = "Terdapat akun dengan code yang sama pada bagian detail.";
+        //    return result;
+        //}
 
         var headerData = Db.MobileCostHeaders.FirstOrDefault(x => x.Code == data.Code);
         if (headerData == null)
