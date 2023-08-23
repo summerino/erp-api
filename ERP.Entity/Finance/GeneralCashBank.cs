@@ -314,6 +314,8 @@ public class VwAP
 {
     public string Code { get; set; }
 
+    public string RefNo { get; set; }
+
     public string SupCode { get; set; }
 
     public string SupName { get; set; }
@@ -335,6 +337,8 @@ public class VwAP
     public decimal Remaining { get; set; }
 
     public string Notes { get; set; }
+
+    public string OrderCode { get; set; }
 
     public string Src { get; set; }
 }
