@@ -1864,48 +1864,44 @@ public class JournalService : IJournalService
     {
         List<Journal> journals = new();
         var startDate = Convert.ToDateTime(systemParam.FirstOrDefault(x => x.Code == "DATA_START_DATE").Value).AddDays(-1);
-        var latestData = db.VwBeginningBalanceAPs.AsNoTracking().OrderByDescending(x => x.Date).FirstOrDefault();
-        if (latestData?.Date.Month == startDate.Month && latestData?.Date.Year == startDate.Year)
+        var bbapData = db.VwBeginningBalanceAPs.Where(x => x.Date < startDate).AsNoTracking().ToList();
+        short i = 0;
+        foreach (var item in bbapData)
         {
-            var bbapData = db.VwBeginningBalanceAPs.AsNoTracking().ToList();
-            short i = 0;
-            foreach (var item in bbapData)
-            {
-                journals.Add(new Journal
-                {
-                    Code = "BB-AP-" + startDate.ToString("yyyyMMdd"),
-                    LineNo = ++i,
-                    Date = startDate,
-                    CoaCode = systemParam.FirstOrDefault(x => x.Code == "AP_COA")?.Value ?? "",
-                    TypeCode = "BB_AP",
-                    Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_AP")?.Value ?? ""} {item.SupName}").Trim(),
-                    RefCode1 = item.Code,
-                    Group = 2,
-                    CurrCode = "IDR",
-                    Period = item.Date.ToString("yyyyMMdd"),
-                    Type = "C",
-                    Amount = item.Amount,
-                    SrcTrans = "BB_AP"
-                });
-            }
-
             journals.Add(new Journal
             {
                 Code = "BB-AP-" + startDate.ToString("yyyyMMdd"),
-                LineNo = 1,
+                LineNo = ++i,
                 Date = startDate,
-                CoaCode = systemParam.FirstOrDefault(x => x.Code == "BB_COA")?.Value ?? "",
+                CoaCode = systemParam.FirstOrDefault(x => x.Code == "AP_COA")?.Value ?? "",
                 TypeCode = "BB_AP",
-                Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_BB_AP")?.Value ?? ""}").Trim(),
-                RefCode1 = "BB-AP-" + startDate.ToString("yyyyMMdd"),
-                Group = 1,
+                Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_AP")?.Value ?? ""} {item.SupName}").Trim(),
+                RefCode1 = item.Code,
+                Group = 2,
                 CurrCode = "IDR",
-                Period = startDate.ToString("yyyyMMdd"),
-                Type = "D",
-                Amount = journals.Where(x => x.Code == "BB-AP-" + startDate.ToString("yyyyMMdd")).Sum(x => x.Amount),
+                Period = item.Date.ToString("yyyyMMdd"),
+                Type = "C",
+                Amount = item.Amount,
                 SrcTrans = "BB_AP"
             });
         }
+
+        journals.Add(new Journal
+        {
+            Code = "BB-AP-" + startDate.ToString("yyyyMMdd"),
+            LineNo = 1,
+            Date = startDate,
+            CoaCode = systemParam.FirstOrDefault(x => x.Code == "BB_COA")?.Value ?? "",
+            TypeCode = "BB_AP",
+            Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_BB_AP")?.Value ?? ""}").Trim(),
+            RefCode1 = "BB-AP-" + startDate.ToString("yyyyMMdd"),
+            Group = 1,
+            CurrCode = "IDR",
+            Period = startDate.ToString("yyyyMMdd"),
+            Type = "D",
+            Amount = journals.Where(x => x.Code == "BB-AP-" + startDate.ToString("yyyyMMdd")).Sum(x => x.Amount),
+            SrcTrans = "BB_AP"
+        });
         return journals;
     }
 
@@ -1913,114 +1909,106 @@ public class JournalService : IJournalService
     {
         List<Journal> journals = new();
         var startDate = Convert.ToDateTime(systemParam.FirstOrDefault(x => x.Code == "DATA_START_DATE").Value).AddDays(-1);
-        var latestData = db.VwBeginningBalanceARs.AsNoTracking().OrderByDescending(x => x.Date).FirstOrDefault();
-        if (latestData?.Date.Month == startDate.Month && latestData?.Date.Year == startDate.Year)
+        var bbarData = db.VwBeginningBalanceARs.Where(x => x.Date < startDate).AsNoTracking().ToList();
+        short i = 0;
+        foreach (var item in bbarData)
         {
-            var bbapData = db.VwBeginningBalanceARs.AsNoTracking().ToList();
-            short i = 0;
-            foreach (var item in bbapData)
-            {
-                journals.Add(new Journal
-                {
-                    Code = "BB-AR-" + startDate.ToString("yyyyMMdd"),
-                    LineNo = ++i,
-                    Date = startDate,
-                    CoaCode = systemParam.FirstOrDefault(x => x.Code == "AR_COA")?.Value ?? "",
-                    TypeCode = "BB_AR",
-                    Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_AR")?.Value ?? ""} {item.CustName}").Trim(),
-                    RefCode1 = item.Code,
-                    Group = 2,
-                    CurrCode = "IDR",
-                    Period = item.Date.ToString("yyyyMMdd"),
-                    Type = "D",
-                    Amount = item.Amount,
-                    SrcTrans = "BB_AR"
-                });
-            }
-
             journals.Add(new Journal
             {
                 Code = "BB-AR-" + startDate.ToString("yyyyMMdd"),
-                LineNo = 1,
+                LineNo = ++i,
                 Date = startDate,
-                CoaCode = systemParam.FirstOrDefault(x => x.Code == "BB_COA")?.Value ?? "",
+                CoaCode = systemParam.FirstOrDefault(x => x.Code == "AR_COA")?.Value ?? "",
                 TypeCode = "BB_AR",
-                Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_BB_AR")?.Value ?? ""}").Trim(),
-                RefCode1 = "BB-AR-" + startDate.ToString("yyyyMMdd"),
-                Group = 1,
+                Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_AR")?.Value ?? ""} {item.CustName}").Trim(),
+                RefCode1 = item.Code,
+                Group = 2,
                 CurrCode = "IDR",
-                Period = startDate.ToString("yyyyMMdd"),
-                Type = "C",
-                Amount = journals.Where(x => x.Code == "BB-AR-" + startDate.ToString("yyyyMMdd")).Sum(x => x.Amount),
+                Period = item.Date.ToString("yyyyMMdd"),
+                Type = "D",
+                Amount = item.Amount,
                 SrcTrans = "BB_AR"
             });
         }
+
+        journals.Add(new Journal
+        {
+            Code = "BB-AR-" + startDate.ToString("yyyyMMdd"),
+            LineNo = 1,
+            Date = startDate,
+            CoaCode = systemParam.FirstOrDefault(x => x.Code == "BB_COA")?.Value ?? "",
+            TypeCode = "BB_AR",
+            Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_BB_AR")?.Value ?? ""}").Trim(),
+            RefCode1 = "BB-AR-" + startDate.ToString("yyyyMMdd"),
+            Group = 1,
+            CurrCode = "IDR",
+            Period = startDate.ToString("yyyyMMdd"),
+            Type = "C",
+            Amount = journals.Where(x => x.Code == "BB-AR-" + startDate.ToString("yyyyMMdd")).Sum(x => x.Amount),
+            SrcTrans = "BB_AR"
+        });
         return journals;
     }
 
     private IEnumerable<Journal> ProcessBBDebitMemoJournal(TenantContext db, List<SystemParameter> systemParam)
     {
         List<Journal> journals = new();
-        var startDate = Convert.ToDateTime(systemParam.FirstOrDefault(x => x.Code == "DATA_START_DATE").Value).AddDays(-1);
-        var latestData = db.VwBeginningBalanceDebitMemos.AsNoTracking().OrderByDescending(x => x.Date).FirstOrDefault();
-        if (latestData?.Date.Month == startDate.Month && latestData?.Date.Year == startDate.Year)
+    var startDate = Convert.ToDateTime(systemParam.FirstOrDefault(x => x.Code == "DATA_START_DATE").Value).AddDays(-1);
+        var bbdmData = db.VwBeginningBalanceDebitMemos.Where(x => x.Date < startDate).AsNoTracking().ToList();
+        short i = 0;
+        foreach (var item in bbdmData)
         {
-            var bbapData = db.VwBeginningBalanceDebitMemos.AsNoTracking().ToList();
-            short i = 0;
-            foreach (var item in bbapData)
-            {
-                journals.Add(new Journal
-                {
-                    Code = $"BB-DM-{(item.Type == 1 ? "DEP-SUP" : "AR")}-" + startDate.ToString("yyyyMMdd"),
-                    LineNo = ++i,
-                    Date = startDate,
-                    CoaCode = systemParam.FirstOrDefault(x => x.Code == $"{(item.Type == 1 ? "DEP_SUP" : "DM_AR")}_COA")?.Value ?? "",
-                    TypeCode = $"BB_{(item.Type == 1 ? "DEP_SUP" : "DM_AR")}",
-                    Notes = ($"{systemParam.FirstOrDefault(x => x.Code == $"JR_PREFIX_BB_{(item.Type == 1 ? "DEP_SUP" : "DM_AR")}")?.Value ?? ""} {item.SupName}").Trim(),
-                    RefCode1 = item.Code,
-                    Group = 2,
-                    CurrCode = "IDR",
-                    Period = item.Date.ToString("yyyyMMdd"),
-                    Type = "D",
-                    Amount = item.Amount,
-                    SrcTrans = "BB_DM"
-                });
-            }
-
             journals.Add(new Journal
             {
-                Code = "BB-DM-AR-" + startDate.ToString("yyyyMMdd"),
-                LineNo = 2,
+                Code = $"BB-DM-{(item.Type == 1 ? "DEP-SUP" : "AR")}-" + startDate.ToString("yyyyMMdd"),
+                LineNo = ++i,
                 Date = startDate,
-                CoaCode = systemParam.FirstOrDefault(x => x.Code == "BB_COA")?.Value ?? "",
-                TypeCode = "BB_DM_AR",
-                Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_BB_DM_AR")?.Value ?? ""}").Trim(),
-                RefCode1 = "",
-                Group = 1,
+                CoaCode = systemParam.FirstOrDefault(x => x.Code == $"{(item.Type == 1 ? "DEP_SUP" : "DM_AR")}_COA")?.Value ?? "",
+                TypeCode = $"BB_{(item.Type == 1 ? "DEP_SUP" : "DM_AR")}",
+                Notes = ($"{systemParam.FirstOrDefault(x => x.Code == $"JR_PREFIX_BB_{(item.Type == 1 ? "DEP_SUP" : "DM_AR")}")?.Value ?? ""} {item.SupName}").Trim(),
+                RefCode1 = item.Code,
+                Group = 2,
                 CurrCode = "IDR",
-                Period = startDate.ToString("yyyyMMdd"),
-                Type = "C",
-                Amount = journals.Where(x => x.Code == "BB-DM-AR-" + startDate.ToString("yyyyMMdd") && x.TypeCode == "BB_DM_AR").Sum(x => x.Amount),
-                SrcTrans = "BB_DM"
-            });
-
-            journals.Add(new Journal
-            {
-                Code = "BB-DM-DEP-SUP-" + startDate.ToString("yyyyMMdd"),
-                LineNo = 1,
-                Date = startDate,
-                CoaCode = systemParam.FirstOrDefault(x => x.Code == "BB_COA")?.Value ?? "",
-                TypeCode = "BB_DEP_SUP",
-                Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_BB_DEP_SUP")?.Value ?? ""}").Trim(),
-                RefCode1 = "",
-                Group = 1,
-                CurrCode = "IDR",
-                Period = startDate.ToString("yyyyMMdd"),
-                Type = "C",
-                Amount = journals.Where(x => x.Code == "BB-DM-DEP-SUP-" + startDate.ToString("yyyyMMdd") && x.TypeCode == "BB_DEP_SUP").Sum(x => x.Amount),
+                Period = item.Date.ToString("yyyyMMdd"),
+                Type = "D",
+                Amount = item.Amount,
                 SrcTrans = "BB_DM"
             });
         }
+
+        journals.Add(new Journal
+        {
+            Code = "BB-DM-AR-" + startDate.ToString("yyyyMMdd"),
+            LineNo = 2,
+            Date = startDate,
+            CoaCode = systemParam.FirstOrDefault(x => x.Code == "BB_COA")?.Value ?? "",
+            TypeCode = "BB_DM_AR",
+            Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_BB_DM_AR")?.Value ?? ""}").Trim(),
+            RefCode1 = "",
+            Group = 1,
+            CurrCode = "IDR",
+            Period = startDate.ToString("yyyyMMdd"),
+            Type = "C",
+            Amount = journals.Where(x => x.Code == "BB-DM-AR-" + startDate.ToString("yyyyMMdd") && x.TypeCode == "BB_DM_AR").Sum(x => x.Amount),
+            SrcTrans = "BB_DM"
+        });
+
+        journals.Add(new Journal
+        {
+            Code = "BB-DM-DEP-SUP-" + startDate.ToString("yyyyMMdd"),
+            LineNo = 1,
+            Date = startDate,
+            CoaCode = systemParam.FirstOrDefault(x => x.Code == "BB_COA")?.Value ?? "",
+            TypeCode = "BB_DEP_SUP",
+            Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_BB_DEP_SUP")?.Value ?? ""}").Trim(),
+            RefCode1 = "",
+            Group = 1,
+            CurrCode = "IDR",
+            Period = startDate.ToString("yyyyMMdd"),
+            Type = "C",
+            Amount = journals.Where(x => x.Code == "BB-DM-DEP-SUP-" + startDate.ToString("yyyyMMdd") && x.TypeCode == "BB_DEP_SUP").Sum(x => x.Amount),
+            SrcTrans = "BB_DM"
+        });
         return journals;
     }
 
@@ -2028,65 +2016,61 @@ public class JournalService : IJournalService
     {
         List<Journal> journals = new();
         var startDate = Convert.ToDateTime(systemParam.FirstOrDefault(x => x.Code == "DATA_START_DATE").Value).AddDays(-1);
-        var latestData = db.VwBeginningBalanceCreditMemos.AsNoTracking().OrderByDescending(x => x.Date).FirstOrDefault();
-        if (latestData?.Date.Month == startDate.Month && latestData?.Date.Year == startDate.Year)
+        var bbcmData = db.VwBeginningBalanceCreditMemos.AsNoTracking().ToList();
+        short i = 0;
+        foreach (var item in bbcmData)
         {
-            var bbapData = db.VwBeginningBalanceCreditMemos.AsNoTracking().ToList();
-            short i = 0;
-            foreach (var item in bbapData)
-            {
-                journals.Add(new Journal
-                {
-                    Code = $"BB-CM-{(item.Type == 1 ? "DEP-CUST" : "AP")}-" + startDate.ToString("yyyyMMdd"),
-                    LineNo = ++i,
-                    Date = startDate,
-                    CoaCode = systemParam.FirstOrDefault(x => x.Code == $"{(item.Type == 1 ? "DEP_CUST" : "CM_AP")}_COA")?.Value ?? "",
-                    TypeCode = $"BB_{(item.Type == 1 ? "DEP_CUST" : "CM_AP")}",
-                    Notes = ($"{systemParam.FirstOrDefault(x => x.Code == $"JR_PREFIX_BB_{(item.Type == 1 ? "DEP_CUST" : "CM_AP")}")?.Value ?? ""} {item.CustName}").Trim(),
-                    RefCode1 = item.Code,
-                    Group = 2,
-                    CurrCode = "IDR",
-                    Period = item.Date.ToString("yyyyMMdd"),
-                    Type = "C",
-                    Amount = item.Amount,
-                    SrcTrans = "BB_CM"
-                });
-            }
-
             journals.Add(new Journal
             {
-                Code = "BB-CM-AP-" + startDate.ToString("yyyyMMdd"),
-                LineNo = 2,
+                Code = $"BB-CM-{(item.Type == 1 ? "DEP-CUST" : "AP")}-" + startDate.ToString("yyyyMMdd"),
+                LineNo = ++i,
                 Date = startDate,
-                CoaCode = systemParam.FirstOrDefault(x => x.Code == "BB_COA")?.Value ?? "",
-                TypeCode = "BB_CM_AP",
-                Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_BB_CM_AP")?.Value ?? ""}").Trim(),
-                RefCode1 = "",
-                Group = 1,
+                CoaCode = systemParam.FirstOrDefault(x => x.Code == $"{(item.Type == 1 ? "DEP_CUST" : "CM_AP")}_COA")?.Value ?? "",
+                TypeCode = $"BB_{(item.Type == 1 ? "DEP_CUST" : "CM_AP")}",
+                Notes = ($"{systemParam.FirstOrDefault(x => x.Code == $"JR_PREFIX_BB_{(item.Type == 1 ? "DEP_CUST" : "CM_AP")}")?.Value ?? ""} {item.CustName}").Trim(),
+                RefCode1 = item.Code,
+                Group = 2,
                 CurrCode = "IDR",
-                Period = startDate.ToString("yyyyMMdd"),
-                Type = "D",
-                Amount = journals.Where(x => x.Code == "BB-CM-AP-" + startDate.ToString("yyyyMMdd") && x.TypeCode == "BB_CM_AP").Sum(x => x.Amount),
-                SrcTrans = "BB_CM"
-            });
-
-            journals.Add(new Journal
-            {
-                Code = "BB-CM-DEP-CUST-" + startDate.ToString("yyyyMMdd"),
-                LineNo = 1,
-                Date = startDate,
-                CoaCode = systemParam.FirstOrDefault(x => x.Code == "BB_COA")?.Value ?? "",
-                TypeCode = "BB_DEP_CUST",
-                Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_BB_DEP_CUST")?.Value ?? ""}").Trim(),
-                RefCode1 = "",
-                Group = 1,
-                CurrCode = "IDR",
-                Period = startDate.ToString("yyyyMMdd"),
-                Type = "D",
-                Amount = journals.Where(x => x.Code == "BB-CM-DEP-CUST-" + startDate.ToString("yyyyMMdd") && x.TypeCode == "BB_DEP_CUST").Sum(x => x.Amount),
+                Period = item.Date.ToString("yyyyMMdd"),
+                Type = "C",
+                Amount = item.Amount,
                 SrcTrans = "BB_CM"
             });
         }
+
+        journals.Add(new Journal
+        {
+            Code = "BB-CM-AP-" + startDate.ToString("yyyyMMdd"),
+            LineNo = 2,
+            Date = startDate,
+            CoaCode = systemParam.FirstOrDefault(x => x.Code == "BB_COA")?.Value ?? "",
+            TypeCode = "BB_CM_AP",
+            Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_BB_CM_AP")?.Value ?? ""}").Trim(),
+            RefCode1 = "",
+            Group = 1,
+            CurrCode = "IDR",
+            Period = startDate.ToString("yyyyMMdd"),
+            Type = "D",
+            Amount = journals.Where(x => x.Code == "BB-CM-AP-" + startDate.ToString("yyyyMMdd") && x.TypeCode == "BB_CM_AP").Sum(x => x.Amount),
+            SrcTrans = "BB_CM"
+        });
+
+        journals.Add(new Journal
+        {
+            Code = "BB-CM-DEP-CUST-" + startDate.ToString("yyyyMMdd"),
+            LineNo = 1,
+            Date = startDate,
+            CoaCode = systemParam.FirstOrDefault(x => x.Code == "BB_COA")?.Value ?? "",
+            TypeCode = "BB_DEP_CUST",
+            Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_BB_DEP_CUST")?.Value ?? ""}").Trim(),
+            RefCode1 = "",
+            Group = 1,
+            CurrCode = "IDR",
+            Period = startDate.ToString("yyyyMMdd"),
+            Type = "D",
+            Amount = journals.Where(x => x.Code == "BB-CM-DEP-CUST-" + startDate.ToString("yyyyMMdd") && x.TypeCode == "BB_DEP_CUST").Sum(x => x.Amount),
+            SrcTrans = "BB_CM"
+        });
         return journals;
     }
 
@@ -3510,53 +3494,49 @@ public class JournalService : IJournalService
     {
         List<Journal> journals = new();
         var startDate = Convert.ToDateTime(systemParam.FirstOrDefault(x => x.Code == "DATA_START_DATE").Value).AddDays(-1);
-        var latestData = db.VwBeginningBalanceStockHeaders.AsNoTracking().OrderByDescending(x => x.Date).FirstOrDefault();
-        if (latestData?.Date.Month == startDate.Month && latestData?.Date.Year == startDate.Year)
+        var bbinvData = db.VwBeginningBalanceStockHeaders.Where(x => x.Date < startDate).AsNoTracking().ToList();
+        foreach (var item in bbinvData)
         {
-            var bbapData = db.VwBeginningBalanceStockHeaders.AsNoTracking().ToList();
-            foreach (var item in bbapData)
-            {
-                var detailData = db.VwBeginningBalanceStockDetails.AsNoTracking().Where(x => x.Code == item.Code).ToList();
+            var detailData = db.VwBeginningBalanceStockDetails.AsNoTracking().Where(x => x.Code == item.Code).ToList();
 
-                short i = 0;
-                foreach (var itemDetail in detailData)
+            short i = 0;
+            foreach (var itemDetail in detailData)
+            {
+                journals.Add(new Journal
                 {
-                    journals.Add(new Journal
-                    {
-                        Code = "BB-INVT-" + startDate.ToString("yyyyMMdd"),
-                        LineNo = ++i,
-                        Date = startDate,
-                        CoaCode = systemParam.FirstOrDefault(x => x.Code == "INVENTORY_COA")?.Value ?? "",
-                        TypeCode = "BB_INVT",
-                        Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_INVENTORY")?.Value ?? ""} {itemDetail.ItemName}").Trim(),
-                        RefCode1 = itemDetail.ItemInitial,
-                        Group = 2,
-                        CurrCode = "IDR",
-                        Period = item.Date.ToString("yyyyMMdd"),
-                        Type = "D",
-                        Amount = itemDetail.UnitPrice * itemDetail.Qty,
-                        SrcTrans = "BB_INVT"
-                    });
-                }
+                    Code = "BB-INVT-" + startDate.ToString("yyyyMMdd"),
+                    LineNo = ++i,
+                    Date = startDate,
+                    CoaCode = systemParam.FirstOrDefault(x => x.Code == "INVENTORY_COA")?.Value ?? "",
+                    TypeCode = "BB_INVT",
+                    Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_INVENTORY")?.Value ?? ""} {itemDetail.ItemName}").Trim(),
+                    RefCode1 = itemDetail.ItemInitial,
+                    Group = 2,
+                    CurrCode = "IDR",
+                    Period = item.Date.ToString("yyyyMMdd"),
+                    Type = "D",
+                    Amount = itemDetail.UnitPrice * itemDetail.Qty,
+                    SrcTrans = "BB_INVT"
+                });
             }
-
-            journals.Add(new Journal
-            {
-                Code = "BB-INVT-" + startDate.ToString("yyyyMMdd"),
-                LineNo = 1,
-                Date = startDate,
-                CoaCode = systemParam.FirstOrDefault(x => x.Code == "BB_COA")?.Value ?? "",
-                TypeCode = "BB_INVT",
-                Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_BB_INVT")?.Value ?? ""}").Trim(),
-                RefCode1 = "",
-                Group = 1,
-                CurrCode = "IDR",
-                Period = startDate.ToString("yyyyMMdd"),
-                Type = "C",
-                Amount = journals.Where(x => x.Code == "BB-INVT-" + startDate.ToString("yyyyMMdd")).Sum(x => x.Amount),
-                SrcTrans = "BB_INVT"
-            });
         }
+
+        journals.Add(new Journal
+        {
+            Code = "BB-INVT-" + startDate.ToString("yyyyMMdd"),
+            LineNo = 1,
+            Date = startDate,
+            CoaCode = systemParam.FirstOrDefault(x => x.Code == "BB_COA")?.Value ?? "",
+            TypeCode = "BB_INVT",
+            Notes = ($"{systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_BB_INVT")?.Value ?? ""}").Trim(),
+            RefCode1 = "",
+            Group = 1,
+            CurrCode = "IDR",
+            Period = startDate.ToString("yyyyMMdd"),
+            Type = "C",
+            Amount = journals.Where(x => x.Code == "BB-INVT-" + startDate.ToString("yyyyMMdd")).Sum(x => x.Amount),
+            SrcTrans = "BB_INVT"
+        });
         return journals;
     }
 
