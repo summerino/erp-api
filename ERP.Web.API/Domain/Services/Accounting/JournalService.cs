@@ -1864,7 +1864,7 @@ public class JournalService : IJournalService
     {
         List<Journal> journals = new();
         var startDate = Convert.ToDateTime(systemParam.FirstOrDefault(x => x.Code == "DATA_START_DATE").Value).AddDays(-1);
-        var bbapData = db.VwBeginningBalanceAPs.Where(x => x.Date < startDate).AsNoTracking().ToList();
+        var bbapData = db.VwBeginningBalanceAPs.Where(x => x.Date <= startDate).AsNoTracking().ToList();
         short i = 0;
         foreach (var item in bbapData)
         {
@@ -1909,7 +1909,7 @@ public class JournalService : IJournalService
     {
         List<Journal> journals = new();
         var startDate = Convert.ToDateTime(systemParam.FirstOrDefault(x => x.Code == "DATA_START_DATE").Value).AddDays(-1);
-        var bbarData = db.VwBeginningBalanceARs.Where(x => x.Date < startDate).AsNoTracking().ToList();
+        var bbarData = db.VwBeginningBalanceARs.Where(x => x.Date <= startDate).AsNoTracking().ToList();
         short i = 0;
         foreach (var item in bbarData)
         {
@@ -1954,7 +1954,7 @@ public class JournalService : IJournalService
     {
         List<Journal> journals = new();
     var startDate = Convert.ToDateTime(systemParam.FirstOrDefault(x => x.Code == "DATA_START_DATE").Value).AddDays(-1);
-        var bbdmData = db.VwBeginningBalanceDebitMemos.Where(x => x.Date < startDate).AsNoTracking().ToList();
+        var bbdmData = db.VwBeginningBalanceDebitMemos.Where(x => x.Date <= startDate).AsNoTracking().ToList();
         short i = 0;
         foreach (var item in bbdmData)
         {
@@ -2016,7 +2016,7 @@ public class JournalService : IJournalService
     {
         List<Journal> journals = new();
         var startDate = Convert.ToDateTime(systemParam.FirstOrDefault(x => x.Code == "DATA_START_DATE").Value).AddDays(-1);
-        var bbcmData = db.VwBeginningBalanceCreditMemos.AsNoTracking().ToList();
+        var bbcmData = db.VwBeginningBalanceCreditMemos.Where(x => x.Date <= startDate).AsNoTracking().ToList();
         short i = 0;
         foreach (var item in bbcmData)
         {
@@ -3494,7 +3494,7 @@ public class JournalService : IJournalService
     {
         List<Journal> journals = new();
         var startDate = Convert.ToDateTime(systemParam.FirstOrDefault(x => x.Code == "DATA_START_DATE").Value).AddDays(-1);
-        var bbinvData = db.VwBeginningBalanceStockHeaders.Where(x => x.Date < startDate).AsNoTracking().ToList();
+        var bbinvData = db.VwBeginningBalanceStockHeaders.Where(x => x.Date <= startDate).AsNoTracking().ToList();
         foreach (var item in bbinvData)
         {
             var detailData = db.VwBeginningBalanceStockDetails.AsNoTracking().Where(x => x.Code == item.Code).ToList();
