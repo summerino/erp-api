@@ -93,6 +93,10 @@ public class TenantContext : DbContext
     public DbSet<OutstandingChequeReport> OutstandingChequeReports { get; set; }
     public DbSet<CashFlowReportAll> CashFlowReportAlls { get; set; }
     public DbSet<CashFlowReportByCOA> CashFlowReportByCOAs { get; set; }
+    public DbSet<ReportByAllAccount> ReportByAllAccounts { get; set; }
+    public DbSet<ReportByAccount> ReportByAccounts { get; set; }
+    public DbSet<ReportByAccountDetail> ReportByAccountDetails { get; set; }
+
 
     // General entities
     public DbSet<VwApproval> VwApprovals { get; set; }
@@ -757,6 +761,18 @@ public class TenantContext : DbContext
         modelBuilder.Entity<CashFlowReportByCOA>()
             .HasNoKey()
             .ToTable("CashFlowReportByCOA", t => t.ExcludeFromMigrations());
+
+        modelBuilder.Entity<ReportByAllAccount>()
+            .HasNoKey()
+            .ToTable("ReportByAllAccount", t => t.ExcludeFromMigrations());
+
+        modelBuilder.Entity<ReportByAccount>()
+            .HasNoKey()
+            .ToTable("ReportByAccount", t => t.ExcludeFromMigrations());
+
+        modelBuilder.Entity<ReportByAccountDetail>()
+            .HasNoKey()
+            .ToTable("ReportByAccountDetail", t => t.ExcludeFromMigrations());
 
         // General entities
         // Approval model
