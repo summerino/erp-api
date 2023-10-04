@@ -28,30 +28,30 @@ public class GeneralLedgerReportService : IGeneralLedgerReportService
         if (!isMain)
         {
             Columns = new() {
-                new() { text= "Kode Akun", value= "AccCode"},
-                new() { text= "Nama Akun", value= "AccName"},
-                new() { text= "Catatan", value= "Notes"},
-                new() { text= "Kode Ref 1", value= "RefCode1"},
-                new(){ text= "Debit", value= "DebetOc", isDecimal= true},
-                new(){ text= "Kredit", value= "CreditOc", isDecimal= true},
-                new(){ text= "Kode Ref 2", value= "RefCode2"},
-                new(){ text= "Kode Ref 3", value= "RefCode3"},
-                new(){ text= "Kode Ref 4", value= "RefCode4" }
+                new() { text= "Kode Akun", value= "AccCode", width = 30},
+                new() { text= "Nama Akun", value= "AccName", width = 30},
+                new() { text= "Catatan", value= "Notes", width = 30},
+                new() { text= "Kode Ref 1", value= "RefCode1", width = 30},
+                new(){ text= "Debit", value= "DebetOc", width = 30, isDecimal= true},
+                new(){ text= "Kredit", value= "CreditOc", width = 30, isDecimal= true},
+                new(){ text= "Kode Ref 2", value= "RefCode2", width = 30},
+                new(){ text= "Kode Ref 3", value= "RefCode3", width = 30},
+                new(){ text= "Kode Ref 4", value= "RefCode4", width = 30 }
             };
         }
         else
         {
             Columns = new() {
-                new() { text= "Tanggal", value= "AccCode"},
-                new() { text= "Kode", value= "AccName"},
-                new() { text= "Catatan", value= "Notes"},
-                new() { text= "Kode Ref 1", value= "RefCode1"},
-                new(){ text= "Debit", value= "DebetOc", isDecimal= true},
-                new(){ text= "Kredit", value= "CreditOc", isDecimal= true},
-                new(){ text= "Saldo Akhir", value= "EndBalOc", isDecimal= true},
-                new(){ text= "Kode Ref 2", value= "RefCode2"},
-                new(){ text= "Kode Ref 3", value= "RefCode3"},
-                new(){ text= "Kode Ref 4", value= "RefCode4" }
+                new() { text= "Tanggal", value= "AccCode", width = 30},
+                new() { text= "Kode", value= "AccName", width = 30},
+                new() { text= "Catatan", value= "Notes", width = 30},
+                new() { text= "Kode Ref 1", value= "RefCode1", width = 30},
+                new(){ text= "Debit", value= "DebetOc", width = 30, isDecimal= true},
+                new(){ text= "Kredit", value= "CreditOc", width = 30, isDecimal= true},
+                new(){ text= "Saldo Akhir", value= "EndBalOc", width = 30, isDecimal= true},
+                new(){ text= "Kode Ref 2", value= "RefCode2", width = 30},
+                new(){ text= "Kode Ref 3", value= "RefCode3", width = 30},
+                new(){ text= "Kode Ref 4", value= "RefCode4", width = 30 }
             };
         }
 

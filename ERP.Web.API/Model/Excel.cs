@@ -78,6 +78,8 @@ namespace ERP.Web.API.Model
                 worksheet.Range[6, i].CellStyle.Font.Color = ExcelKnownColors.White;
                 worksheet.Range[6, i].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
                 worksheet.Range[6, i].CellStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
+                worksheet.Range[6, i].RowHeight = 20;
+
                 if (data.column[i - 1].width > 0)
                 {
                     worksheet.Range[6, i].ColumnWidth = data.column[i - 1].width;
