@@ -23,63 +23,62 @@ public class CBReportService : ICBReportService
         List<ReportByAccount> reportA = new();
         List<ReportByAccountDetail> reportAD = new();
 
-        var dataCOA = _db.Coas.Where(x => x.IsActive).ToList();
-        var dataPCOA = dataCOA;
+        var baseQuery = $@"WITH cte_cb AS (SELECT ISNULL(cb_header.ChequeDate, cb_header.[Date]) AS [Date], cb_header.Code,
+	        cb_header.CoaCode AS HeaderCoaCode, cb_detail.CoaCode AS DetailCoaCode, sys_par.[Description], coa.[Name],
+	        cb_header.Notes AS HeaderNotes, cb_detail.Notes AS DetailNotes, cb_detail.TransCode,
+	        CASE WHEN cb_detail.TypeAmount = 'C' THEN TransAmount ELSE 0 END AS IncomingBalance,
+	        CASE WHEN cb_detail.TypeAmount = 'D' THEN TransAmount ELSE 0 END AS OutgoingBalance
+	        FROM  Finance.GeneralCashBankDetail cb_detail
+	        LEFT JOIN Finance.GeneralCashBankHeader cb_header ON cb_header.Code = cb_detail.Code
+	        LEFT JOIN Accounting.COA coa ON coa.Code = cb_detail.CoaCode
+	        LEFT JOIN SystemManagement.SystemParameter sys_par ON sys_par.[Value] = cb_detail.CoaCode
+	        WHERE cb_header.Mark = 'A'" +
+            (!string.IsNullOrEmpty(coaCode) ? $" AND cb_header.CoaCode = {coaCode}" : "") +
+            (!string.IsNullOrEmpty(startDate) && !string.IsNullOrEmpty(endDate) ? $" AND ISNULL(cb_header.ChequeDate, cb_header.Date) BETWEEN '{startDate}' AND '{endDate}'"
+            : !string.IsNullOrEmpty(endDate) ? $" AND ISNULL(cb_header.ChequeDate, cb_header.Date) <= '{endDate}'" : "") + ")";
 
-        dataCOA = dataCOA.Where(x => !dataPCOA.Select(t => t.ParentId).Contains(x.Id)).ToList();
-        dataCOA = dataCOA.Where(x => x.TypeId == 1).ToList();
-
-        var dataCBHeader = _db.GeneralCashBankHeaders.Where(x => x.Mark == "A").ToList();
-        var dataCBDetail = _db.GeneralCashBankDetails.ToList();
-        var initCBDetail = dataCBDetail;
-
-        var initCBHeader = dataCBHeader.Where(x => x.ChequeDate.GetValueOrDefault(x.Date) < Convert.ToDateTime(startDate)).ToList();
-
-        if (!string.IsNullOrEmpty(startDate) && !string.IsNullOrEmpty(endDate))
-        {
-            dataCBHeader = dataCBHeader.Where(x => x.ChequeDate.GetValueOrDefault(x.Date) >= Convert.ToDateTime(startDate) && x.ChequeDate.GetValueOrDefault(x.Date) <= Convert.ToDateTime(endDate)).ToList();
-        }
-        else if (!string.IsNullOrEmpty(endDate))
-        {
-            dataCBHeader = dataCBHeader.Where(x => x.ChequeDate.GetValueOrDefault(x.Date) <= Convert.ToDateTime(endDate)).ToList();
-        }
-
-        if (!string.IsNullOrEmpty(coaCode))
-        {
-            dataCOA = dataCOA.Where(x => x.Code == coaCode).ToList();
-            dataCBHeader = dataCBHeader.Where(x => x.CoaCode == coaCode).ToList();
-            initCBHeader = initCBHeader.Where(x => x.CoaCode == coaCode).ToList();
-            initCBDetail = initCBDetail.Where(x => initCBHeader.Select(h => h.Code).Contains(x.Code)).ToList();
-            dataCBDetail = dataCBDetail.Where(x => dataCBHeader.Select(h => h.Code).Contains(x.Code)).ToList();
-        }
+        var initQuery = $@"
+            WITH cte_init_cb AS ( SELECT cb_header.CoaCode, 
+            CASE WHEN cb_detail.TypeAmount = 'C' THEN TransAmount ELSE 0 END AS IncomingBalance,
+	        CASE WHEN cb_detail.TypeAmount = 'D' THEN TransAmount ELSE 0 END AS OutgoingBalance
+	        FROM  Finance.GeneralCashBankDetail cb_detail
+	        LEFT JOIN Finance.GeneralCashBankHeader cb_header ON cb_header.Code = cb_detail.Code
+	        WHERE cb_header.Mark = 'A' AND ISNULL(cb_header.ChequeDate, cb_header.Date) < '{startDate}'" +
+            (!string.IsNullOrEmpty(coaCode) ? $" AND cb_header.CoaCode = {coaCode}" : "") + ")";
 
 
         if (type == 1)
         {
-            var endBalance = initCBDetail.Where(x => x.TypeAmount == "C").Sum(x => x.Amount) - initCBDetail.Where(x => x.TypeAmount == "D").Sum(x => x.Amount);
-            reportA.Add(new ReportByAccount
+            var endBalance = 0m;
+            if (!string.IsNullOrEmpty(startDate))
             {
-                Code = "Saldo Awal",
-                EndingBalance = endBalance,
-                IsBold = true
-            });
-
-            foreach (var item in dataCBHeader.OrderBy(x => x.ChequeDate.GetValueOrDefault(x.Date)))
+                reportA.AddRange(_db.ReportByAccounts.FromSqlRaw(initQuery + " SELECT NULL AS [Date], 'Saldo Awal' AS Code, NULL AS Notes, CAST(0 AS decimal) AS IncomingBalance," +
+                    "CAST(0 AS decimal) AS OutgoingBalance, ISNULL(SUM(IncomingBalance - OutgoingBalance),CAST(0 AS decimal)) AS EndingBalance, CAST(1 AS bit) AS IsBold FROM cte_init_cb").ToList());
+                endBalance = reportA.FirstOrDefault().EndingBalance;
+            }
+            else
             {
-                var selectedDetail = dataCBDetail.Where(x => x.Code == item.Code).ToList();
-                var selectedAmount = selectedDetail.Where(x => x.TypeAmount == "C").Sum(x => x.Amount) - selectedDetail.Where(x => x.TypeAmount == "D").Sum(x => x.Amount);
-                endBalance += selectedAmount;
-
                 reportA.Add(new ReportByAccount
                 {
-                    Date = item.ChequeDate.GetValueOrDefault(item.Date),
-                    Code = item.Code,
-                    Notes = item.Notes,
-                    IncomingBalance = item.Type == "D" ? selectedAmount : 0,
-                    OutgoingBalance = item.Type == "D" ? 0 : Math.Abs(selectedAmount),
+                    Code = "Saldo Awal",
                     EndingBalance = endBalance,
-                    IsBold = false
+                    IsBold = true
                 });
+            }
+
+            var fetchedData = _db.ReportByAccounts.FromSqlRaw(baseQuery +
+                @",cte_cb_sum AS ( SELECT [Date], Code, HeaderNotes As Notes, SUM(IncomingBalance) AS IncomingBalance,
+                SUM(OutgoingBalance) AS OutgoingBalance, CAST(0 AS decimal) AS EndingBalance, CAST(0 as bit) AS IsBold
+                FROM cte_cb GROUP BY [Date],Code,HeaderNotes)
+                SELECT *FROM cte_cb_sum ORDER BY [Date], Code").ToList();
+
+
+            foreach (var item in fetchedData)
+            {
+                item.EndingBalance = endBalance + item.IncomingBalance.Value - item.OutgoingBalance.Value;
+                endBalance = item.EndingBalance;
+
+                reportA.Add(item);
             }
 
             reportA.Add(new ReportByAccount
@@ -95,45 +94,35 @@ public class CBReportService : ICBReportService
         }
         else if (type == 2)
         {
-            var endBalance = initCBDetail.Where(x => x.TypeAmount == "C").Sum(x => x.Amount) - initCBDetail.Where(x => x.TypeAmount == "D").Sum(x => x.Amount);
-            reportAD.Add(new ReportByAccountDetail
+            var endBalance = 0m;
+            if (!string.IsNullOrEmpty(startDate))
             {
-                Code = "Saldo Awal",
-                EndingBalance = endBalance,
-                IsBold = true
-            });
-
-            foreach (var item in dataCBHeader.OrderBy(x => x.ChequeDate.GetValueOrDefault(x.Date)))
+                reportAD.AddRange(_db.ReportByAccountDetails.FromSqlRaw(initQuery + " SELECT NULL AS [Date], 'Saldo Awal' AS Code, NULL AS Notes," +
+                    "NULL AS TransCode, NULL AS CoaCode, NULL AS CoaName, CAST(0 AS decimal) AS IncomingBalance," +
+                    "CAST(0 AS decimal) AS OutgoingBalance, ISNULL(SUM(IncomingBalance - OutgoingBalance), CAST(0 AS decimal)) AS EndingBalance, CAST(1 as bit) AS IsBold FROM cte_init_cb").ToList());
+                endBalance = reportAD.FirstOrDefault().EndingBalance;
+            }
+            else
             {
-                var selectedDetail = dataCBDetail.Where(x => x.Code == item.Code).ToList();
-                foreach (var itemDetail in selectedDetail)
+                reportAD.Add(new ReportByAccountDetail
                 {
-                    if(itemDetail.TypeAmount == "C")
-                    {
-                        endBalance += itemDetail.Amount;
-                    }
-                    else
-                    {
-                        endBalance -= itemDetail.Amount;
-                    }
+                    Code = "Saldo Awal",
+                    EndingBalance = endBalance,
+                    IsBold = true
+                });
+            }
 
-                    var sysCoa = _db.SystemParameters.FirstOrDefault(x => x.Value == itemDetail.CoaCode);
-                    var coa = _db.Coas.FirstOrDefault(x => x.Code == itemDetail.CoaCode);
+            var fetchedData = _db.ReportByAccountDetails.FromSqlRaw(baseQuery +
+                @"SELECT [Date], Code, DetailNotes As Notes, TransCode, DetailCoaCode AS CoaCode, ISNULL([Description],[Name]) AS CoaName,
+	            IncomingBalance, OutgoingBalance, CAST(0 AS decimal) AS EndingBalance, CAST(0 as bit) AS IsBold
+	            FROM cte_cb ORDER BY [Date], Code").ToList();
 
-                    reportAD.Add(new ReportByAccountDetail
-                    {
-                        Date = item.ChequeDate.GetValueOrDefault(item.Date),
-                        Code = item.Code,
-                        Notes = itemDetail.Notes,
-                        TransCode = itemDetail.TransCode,
-                        CoaCode = itemDetail.CoaCode,
-                        CoaName = sysCoa?.Description ?? coa?.Name ?? "",
-                        IncomingBalance = itemDetail.TypeAmount == "C" ? itemDetail.Amount : 0,
-                        OutgoingBalance = itemDetail.TypeAmount == "D" ? itemDetail.Amount : 0,
-                        EndingBalance = endBalance,
-                        IsBold = false
-                    });
-                }
+            foreach (var item in fetchedData)
+            {
+                item.EndingBalance = endBalance + item.IncomingBalance.Value - item.OutgoingBalance.Value;
+                endBalance = item.EndingBalance;
+
+                reportAD.Add(item);
             }
 
             reportAD.Add(new ReportByAccountDetail
@@ -149,21 +138,27 @@ public class CBReportService : ICBReportService
         }
         else
         {
-            foreach (var item in dataCOA)
+            var initData = new List<ReportByAllAccount>();
+            if(!string.IsNullOrEmpty(startDate))
             {
-                var bBalance = dataCBDetail.Where(x => initCBHeader.Where(y => y.CoaCode == item.Code).Select(y => y.Code).Contains(x.Code) && x.TypeAmount == "C").Sum(x => x.Amount) - dataCBDetail.Where(x => initCBHeader.Where(y => y.CoaCode == item.Code).Select(y => y.Code).Contains(x.Code) && x.TypeAmount == "D").Sum(x => x.Amount);
-                var iBalance = dataCBDetail.Where(x => dataCBHeader.Where(y => y.CoaCode == item.Code).Select(y => y.Code).Contains(x.Code) && x.TypeAmount == "C").Sum(x => x.Amount);
-                var oBalance = dataCBDetail.Where(x => dataCBHeader.Where(y => y.CoaCode == item.Code).Select(y => y.Code).Contains(x.Code) && x.TypeAmount == "D").Sum(x => x.Amount);
-                var eBalance = (bBalance + iBalance) - oBalance;
-                reportAC.Add(new ReportByAllAccount
-                {
-                    Code = item.Code,
-                    Name = item.Name,
-                    BeginningBalance = bBalance,
-                    IncomingBalance = iBalance,
-                    OutgoingBalance = oBalance,
-                    EndingBalance = eBalance
-                });
+                initData = _db.ReportByAllAccounts.FromSqlRaw(initQuery + @"SELECT CoaCode AS Code, NULL AS Name, CAST(0 AS decimal) AS BeginningBalance,
+                CAST(0 AS decimal) AS IncomingBalance, CAST(0 AS decimal) AS OutgoingBalance, ISNULL(SUM(IncomingBalance - OutgoingBalance),CAST(0 AS decimal)) AS EndingBalance
+	            FROM cte_init_cb GROUP BY CoaCode").ToList();
+            }
+
+            var fetchedData = _db.ReportByAllAccounts.FromSqlRaw(baseQuery +
+                @"SELECT cb.HeaderCoaCode AS Code, coa.[Name] As [Name], CAST(0 AS decimal) AS BeginningBalance,
+	            SUM(cb.IncomingBalance) AS IncomingBalance, SUM(cb.OutgoingBalance) AS OutgoingBalance, CAST(0 AS decimal) AS EndingBalance
+	            FROM cte_cb cb
+	            LEFT JOIN Accounting.COA coa ON coa.Code = cb.HeaderCoaCode
+	            GROUP BY cb.HeaderCoaCode, coa.[Name]").ToList();
+
+
+            foreach (var item in fetchedData)
+            {
+                item.BeginningBalance = initData.FirstOrDefault(x => x.Code == item.Code).EndingBalance;
+                item.EndingBalance = (item.BeginningBalance + item.IncomingBalance) - item.OutgoingBalance;
+                reportAC.Add(item);
             }
             return reportAC.AsQueryable().ToDataSourceResult(0, reportAC.Count, null, sorts);
         }
