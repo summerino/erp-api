@@ -1,18 +1,80 @@
-﻿using ERP.Entity;
+﻿using ERP.Common.Models;
+using ERP.Entity;
 using ERP.Entity.Accounting;
 using ERP.Entity.SQLQuery;
 using ERP.Web.API.Domain.Interfaces.Accounting;
+using ERP.Web.API.Model;
 using Microsoft.EntityFrameworkCore;
+using Syncfusion.XlsIO;
+using System.Linq.Dynamic.Core;
 
 namespace ERP.Web.API.Domain.Services.Accounting;
 
 public class GeneralLedgerReportService : IGeneralLedgerReportService
 {
     private readonly TenantContext _db;
+    private readonly IWebHostEnvironment _env;
 
-    public GeneralLedgerReportService(TenantContext db)
+    public GeneralLedgerReportService(TenantContext db, IWebHostEnvironment env)
     {
         _db = db;
+        _env = env;
+    }
+
+    public async Task<Stream> GetDataExcel(IEnumerable<Filter> filters, IEnumerable<Sort> sorts, string search, IEnumerable<JournalReportWrapper> wrappedData, bool isMain, string title)
+    {
+        List<ColumnExcel> Columns = new();
+
+        if (!isMain)
+        {
+            Columns = new() {
+                new() { text= "Kode Akun", value= "AccCode"},
+                new() { text= "Nama Akun", value= "AccName"},
+                new() { text= "Catatan", value= "Notes"},
+                new() { text= "Kode Ref 1", value= "RefCode1"},
+                new(){ text= "Debit", value= "DebetOc", isDecimal= true},
+                new(){ text= "Kredit", value= "CreditOc", isDecimal= true},
+                new(){ text= "Kode Ref 2", value= "RefCode2"},
+                new(){ text= "Kode Ref 3", value= "RefCode3"},
+                new(){ text= "Kode Ref 4", value= "RefCode4" }
+            };
+        }
+        else
+        {
+            Columns = new() {
+                new() { text= "Tanggal", value= "AccCode"},
+                new() { text= "Kode", value= "AccName"},
+                new() { text= "Catatan", value= "Notes"},
+                new() { text= "Kode Ref 1", value= "RefCode1"},
+                new(){ text= "Debit", value= "DebetOc", isDecimal= true},
+                new(){ text= "Kredit", value= "CreditOc", isDecimal= true},
+                new(){ text= "Saldo Akhir", value= "EndBalOc", isDecimal= true},
+                new(){ text= "Kode Ref 2", value= "RefCode2"},
+                new(){ text= "Kode Ref 3", value= "RefCode3"},
+                new(){ text= "Kode Ref 4", value= "RefCode4" }
+            };
+        }
+
+        var memoryStream = new MemoryStream();
+
+        var company = await _db.Companies.FirstOrDefaultAsync();
+        var data = new RequestExcel()
+        {
+            column = Columns,
+            data = wrappedData.ToDynamicList()
+        };
+
+        using ExcelEngine excelEngine = new();
+        IApplication application = excelEngine.Excel;
+        application.DefaultVersion = ExcelVersion.Xlsx;
+        IWorkbook workbook = application.Workbooks.Create(1);
+        IWorksheet worksheet = workbook.Worksheets[0];
+
+        worksheet = ExportExcel.ExportExcelGL(worksheet, title, company.Name, search, data, filters, sorts);
+        workbook.SaveAs(memoryStream);
+        
+        memoryStream.Seek(0, SeekOrigin.Begin);
+        return memoryStream;
     }
 
     public IEnumerable<GeneralLedgerResult> GetGeneralLedgerLists(string dateFrom, string dateTo, string coaFrom, string coaTo, string currCode, string sort, int? caller)
