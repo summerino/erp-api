@@ -24,14 +24,13 @@ public class CBReportService : ICBReportService
         List<ReportByAccountDetail> reportAD = new();
 
         var baseQuery = $@"WITH cte_cb AS (SELECT ISNULL(cb_header.ChequeDate, cb_header.[Date]) AS [Date], cb_header.Code,
-	        cb_header.CoaCode AS HeaderCoaCode, cb_detail.CoaCode AS DetailCoaCode, sys_par.[Description], coa.[Name],
+	        cb_header.CoaCode AS HeaderCoaCode, cb_detail.CoaCode AS DetailCoaCode, coa.[Name],
 	        cb_header.Notes AS HeaderNotes, cb_detail.Notes AS DetailNotes, cb_detail.TransCode,
 	        CASE WHEN cb_detail.TypeAmount = 'C' THEN TransAmount ELSE 0 END AS IncomingBalance,
 	        CASE WHEN cb_detail.TypeAmount = 'D' THEN TransAmount ELSE 0 END AS OutgoingBalance
 	        FROM  Finance.GeneralCashBankDetail cb_detail
 	        LEFT JOIN Finance.GeneralCashBankHeader cb_header ON cb_header.Code = cb_detail.Code
 	        LEFT JOIN Accounting.COA coa ON coa.Code = cb_detail.CoaCode
-	        LEFT JOIN SystemManagement.SystemParameter sys_par ON sys_par.[Value] = cb_detail.CoaCode
 	        WHERE cb_header.Mark = 'A'" +
             (!string.IsNullOrEmpty(coaCode) ? $" AND cb_header.CoaCode = {coaCode}" : "") +
             (!string.IsNullOrEmpty(startDate) && !string.IsNullOrEmpty(endDate) ? $" AND ISNULL(cb_header.ChequeDate, cb_header.Date) BETWEEN '{startDate}' AND '{endDate}'"
@@ -113,7 +112,7 @@ public class CBReportService : ICBReportService
             }
 
             var fetchedData = _db.ReportByAccountDetails.FromSqlRaw(baseQuery +
-                @"SELECT [Date], Code, DetailNotes As Notes, TransCode, DetailCoaCode AS CoaCode, ISNULL([Description],[Name]) AS CoaName,
+                @"SELECT [Date], Code, DetailNotes As Notes, TransCode, DetailCoaCode AS CoaCode, [Name] AS CoaName,
 	            IncomingBalance, OutgoingBalance, CAST(0 AS decimal) AS EndingBalance, CAST(0 as bit) AS IsBold
 	            FROM cte_cb ORDER BY [Date], Code").ToList();
 
