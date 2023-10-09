@@ -1356,6 +1356,11 @@ public class JournalService : IJournalService
                     .Where(x => invMemoCm.Select(im => im.CreditMemoCode).Contains(x.Code))
                     .ToListAsync(cancellationToken);
 
+            var bbMemoData = 
+                await db.BeginningBalanceCreditMemos.AsNoTracking()
+                    .Where(x => invMemoCm.Select(im => im.CreditMemoCode).Contains(x.Code))
+                    .ToListAsync(cancellationToken);
+
             _logger.LogInformation("Posting journal SI: get do journal data for hpp or barang terkirim.");
             var dlvJournal =
                 await db.Journals.AsNoTracking()
@@ -1663,16 +1668,17 @@ public class JournalService : IJournalService
                 {
                     // var memoData = db.CreditMemos.AsNoTracking().FirstOrDefault(x => x.Code == itemMemo.CreditMemoCode);
                     var memoItemData = memoData.FirstOrDefault(x => x.Code == itemMemo.CreditMemoCode);
-                    if (memoItemData != null && memoItemData.Mark != "V")
+                    var bbMemoItemData = bbMemoData.FirstOrDefault(x => x.Code == itemMemo.CreditMemoCode);
+                    if ((memoItemData != null && memoItemData.Mark != "V") || (bbMemoItemData != null && bbMemoItemData.IsActive))
                     {
                         journals.Add(new Journal
                         {
                             Code = itemData.InvHeader.Code + "-CN",
                             LineNo = ++k,
                             Date = itemData.InvHeader.Date,
-                            CoaCode = memoItemData.SrcTrans == 1 ? systemParam.FirstOrDefault(x => x.Code == "DEP_CUST_COA")?.Value ?? "" : systemParam.FirstOrDefault(x => x.Code == "CM_AP_COA")?.Value ?? "",
+                            CoaCode =  (memoItemData?.SrcTrans ?? bbMemoItemData?.Type) == 1 ? systemParam.FirstOrDefault(x => x.Code == "DEP_CUST_COA")?.Value ?? "" : systemParam.FirstOrDefault(x => x.Code == "CM_AP_COA")?.Value ?? "",
                             TypeCode = "CM_AR",
-                            Notes = ($"{(memoItemData.SrcTrans == 1 ? systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_DEP_CUST")?.Value ?? "" : systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_CM_AP")?.Value ?? "")} {itemData.Customer.Initial}").Trim(),
+                            Notes = bbMemoItemData != null ? ($"{(bbMemoItemData.Type == 1 ? systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_BB_DEP_CUST")?.Value ?? "" : systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_BB_CM_AP")?.Value ?? "")} {itemData.Customer.Initial}").Trim() : ($"{(memoItemData.SrcTrans == 1 ? systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_DEP_CUST")?.Value ?? "" : systemParam.FirstOrDefault(x => x.Code == "JR_PREFIX_CM_AP")?.Value ?? "")} {itemData.Customer.Initial}").Trim(),
                             RefCode1 = itemMemo.CreditMemoCode,
                             RefCode2 = itemData.InvHeader.Code,
                             RefCode3 = itemData.InvHeader.SoCode,
