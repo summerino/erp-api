@@ -382,7 +382,7 @@ public class TenantContext : DbContext
                  !string.IsNullOrWhiteSpace(tenant.ServerUserId) || !string.IsNullOrWhiteSpace(tenant.ServerPassword)))
             {
                 optionsBuilder.UseSqlServer(
-                    $"Server={tenant.ServerName};Database={tenant.DatabaseName};User Id={tenant.ServerUserId};Password={tenant.ServerPassword};MultipleActiveResultSets=True;TrustServerCertificate=True;Command Timeout=600;Application Name=ERP");
+                    $"Server={tenant.ServerName};Database={tenant.DatabaseName};User Id={tenant.ServerUserId};Password={tenant.ServerPassword};MultipleActiveResultSets=True;TrustServerCertificate=True;Command Timeout=1000;Application Name=ERP");
             }
             else
             {
