@@ -298,7 +298,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                                     case 3:
                                         // Apply to Barang - Promo Method Bonus
                                         var originalQty3 = qtyOriginal[item.Id];
-                                        var tierData3 = applyTo == 3 ? detailTierPromo.FirstOrDefault(x => item.Qty >= x.FromQty && item.Qty <= x.ToQty) : detailTierPromo.FirstOrDefault(x => originalQty3 >= x.FromQty && originalQty3 <= x.ToQty && x.SaleUnit == item.UnitId);
+                                        var tierData3 = applyTo == 3 ? detailTierPromo.FirstOrDefault(x => x.Value > 0 && item.Qty >= x.FromQty && item.Qty <= x.ToQty) : detailTierPromo.FirstOrDefault(x => x.Value > 0 && originalQty3 >= x.FromQty && originalQty3 <= x.ToQty && x.SaleUnit == item.UnitId);
                                         if (tierData3 != null)
                                         {
                                             var sellPrice = 0m;
@@ -416,7 +416,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                                             // Apply to Barang - Promo Method Bonus
                                             var miData3 = dummyDetails.Where(x => multiItem.Contains(x.ItemId)).ToList();
 
-                                            var tierData3 = detailTierPromo.FirstOrDefault(x => miData3.Sum(x => x.Qty) >= x.FromQty && miData3.Sum(x => x.Qty) <= x.ToQty);
+                                            var tierData3 = detailTierPromo.FirstOrDefault(x => x.Value > 0 && miData3.Sum(x => x.Qty) >= x.FromQty && miData3.Sum(x => x.Qty) <= x.ToQty);
                                             if (tierData3 != null)
                                             {
                                                 var sellPrice = 0m;
@@ -1355,7 +1355,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                                     case 3:
                                         // Apply to Barang - Promo Method Bonus
                                         var originalQty3 = qtyOriginal[item.Id];
-                                        var tierData3 = applyTo == 3 ? detailTierPromo.FirstOrDefault(x => item.Qty >= x.FromQty && item.Qty <= x.ToQty) : detailTierPromo.FirstOrDefault(x => originalQty3 >= x.FromQty && originalQty3 <= x.ToQty && x.SaleUnit == item.UnitId);
+                                        var tierData3 = applyTo == 3 ? detailTierPromo.FirstOrDefault(x => x.Value > 0 && item.Qty >= x.FromQty && item.Qty <= x.ToQty) : detailTierPromo.FirstOrDefault(x => x.Value > 0 && originalQty3 >= x.FromQty && originalQty3 <= x.ToQty && x.SaleUnit == item.UnitId);
                                         if (tierData3 != null)
                                         {
                                             var sellPrice = 0m;
@@ -1473,7 +1473,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                                             // Apply to Barang - Promo Method Bonus
                                             var miData3 = dummyDetails.Where(x => multiItem.Contains(x.ItemId)).ToList();
 
-                                            var tierData3 = detailTierPromo.FirstOrDefault(x => miData3.Sum(x => x.Qty) >= x.FromQty && miData3.Sum(x => x.Qty) <= x.ToQty);
+                                            var tierData3 = detailTierPromo.FirstOrDefault(x => x.Value > 0 && miData3.Sum(x => x.Qty) >= x.FromQty && miData3.Sum(x => x.Qty) <= x.ToQty);
                                             if (tierData3 != null)
                                             {
                                                 var sellPrice = 0m;

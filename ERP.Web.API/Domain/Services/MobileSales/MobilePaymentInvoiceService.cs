@@ -166,7 +166,7 @@ public class MobilePaymentInvoiceService : GeneralService<MobilePaymentInvoice>,
 
                     var header = Db.SalesInvoiceHeaders.SingleOrDefault(x => x.Code == (itemDetail.SrcTrans == "ORD" ? ordData.SalesOrderCode ?? "" : itemDetail.TransCode));
                     if (header == null) continue;
-                    var endAmount = (header.PaidAmount + mapOrdAmount.Where(x => x.Item1.Equals(header.Code)).Sum(x => x.Item2) + itemDetail.Amount);
+                    var endAmount = header.Total - (header.PaidAmount + mapOrdAmount.Where(x => x.Item1.Equals(header.Code)).Sum(x => x.Item2) + itemDetail.Amount);
                     if (endAmount < 0)
                     {
                         result.Message = $"Data pembayaran mobile {item.Codes} tidak dapat diproses. Karena nilai sisa faktur akan menjadi minus.";
