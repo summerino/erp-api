@@ -39,6 +39,7 @@ public class ReportViewerController : ControllerBase, IReportController
     }
 
     // Method will be called to initialize the report information to load the report with ReportHelper for processing.
+    [NonAction]
     public void OnInitReportOptions(ReportViewerOptions reportOption)
     {
         reportOption.ReportModel.EmbedImageData = true;
@@ -52,6 +53,7 @@ public class ReportViewerController : ControllerBase, IReportController
     }
 
     // Method will be called when reported is loaded with internally to start to layout process with ReportHelper.
+    [NonAction]
     public void OnReportLoaded(ReportViewerOptions reportOption)
     {
         if (_jsonArray != null && _jsonArray.Keys.Count > 0)
