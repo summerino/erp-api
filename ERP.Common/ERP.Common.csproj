@@ -2,11 +2,12 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
-	  <Authors>Sahassa Dev. Team</Authors>
-	  <Company>Sahassa Panca Manunggal</Company>
-	  <Product>Sahassa® ERP</Product>
-	  <Copyright>© Sahassa. All rights reserved.</Copyright>
-	  <Version>23.11.30</Version>
+    <Authors>Sahassa Dev. Team</Authors>
+    <Company>Sahassa Panca Manunggal</Company>
+    <Product>Sahassa® ERP</Product>
+    <Copyright>© Sahassa. All rights reserved.</Copyright>
+    <Version>23.12.11</Version>
+    <IncludeSourceRevisionInInformationalVersion>False</IncludeSourceRevisionInInformationalVersion>
   </PropertyGroup>
 
   <ItemGroup>
