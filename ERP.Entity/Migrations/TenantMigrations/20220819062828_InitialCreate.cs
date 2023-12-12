@@ -8243,15 +8243,15 @@ AS
             // Create view Finance.vwAP
             sql = @"CREATE VIEW [Finance].[vwAP]
 AS
-	SELECT B.Code, B.SupCode, S.[Name] AS SupName, [Date], CurrCode, Rate,
-		Amount, PaidAmount, Amount - PaidAmount AS Remaining, B.Notes, 'BB' AS Src
+	SELECT B.Code, '' AS RefNo, B.SupCode, S.[Name] AS SupName, [Date], CurrCode, Rate,
+		Amount, PaidAmount, Amount - PaidAmount AS Remaining, B.Notes, '' AS OrderCode, 'BB' AS Src
 	FROM Accounting.BeginningBalanceAP B
 	JOIN General.Supplier S
 		ON B.SupCode = S.Code
 	WHERE B.PaidAmount < B.Amount AND B.IsActive = 1
 	UNION ALL
-	SELECT P.Code,P.SupCode, S.[Name] AS SupName, P.[Date], P.CurrCode, 1 AS Rate,
-		Total AS Amount, PaidAmount, Total - PaidAmount AS Remaining, P.Notes, 'PI' AS Src
+	SELECT P.Code, ISNULL(P.RefNo,'') AS RefNo, P.SupCode, S.[Name] AS SupName, P.[Date], P.CurrCode, 1 AS Rate,
+		Total AS Amount, PaidAmount, Total - PaidAmount AS Remaining, P.Notes, P.POCode AS OrderCode, 'PI' AS Src
 	FROM Purchasing.PurchaseInvoiceHeader P
 	JOIN General.Supplier S
 		ON P.SupCode = S.Code

@@ -58,6 +58,7 @@ using ERP.Web.API.Model;
 using ERP.Web.API.Model.Auth;
 using Newtonsoft.Json.Serialization;
 using Swift.Framework;
+using Syncfusion.Licensing;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -365,6 +366,9 @@ app.UseStaticFiles();
 app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Register Syncfusion license
+SyncfusionLicenseProvider.RegisterLicense(builder.Configuration["SyncfusionLic"]);
 
 // Register Bold license
 BoldLicenseProvider.RegisterLicense(builder.Configuration["BoldLic"]);

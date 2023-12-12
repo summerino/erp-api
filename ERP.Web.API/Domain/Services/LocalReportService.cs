@@ -54,7 +54,7 @@ EXEC sp_get_do_multi_print_data '{string.Join(",", codes)}';",
         cn.Open();
 
         using var da = new SqlDataAdapter(query, cn);
-        da.SelectCommand.CommandTimeout = 600;
+        da.SelectCommand.CommandTimeout = 1000;
         da.Fill(ds);
 
         var report = new LocalReport();

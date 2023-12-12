@@ -3050,6 +3050,10 @@ namespace ERP.Entity.Migrations.TenantMigrations
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
 
+                    b.Property<string>("OrderCode")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
                     b.Property<decimal>("PaidAmount")
                         .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
@@ -3057,6 +3061,10 @@ namespace ERP.Entity.Migrations.TenantMigrations
                     b.Property<decimal>("Rate")
                         .HasPrecision(19, 6)
                         .HasColumnType("decimal(19,6)");
+
+                    b.Property<string>("RefNo")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
 
                     b.Property<decimal>("Remaining")
                         .HasPrecision(23, 6)
