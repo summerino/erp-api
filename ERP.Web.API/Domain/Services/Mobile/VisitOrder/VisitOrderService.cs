@@ -1462,7 +1462,7 @@ public class VisitOrderService : GeneralService<MobileVisitLog>, IVisitOrderServ
                             UnitPrice = item.UnitPrice
                         });
                     }
-
+                }
                     foreach (var invoice in orderHeader.Invoices)
                     {
                         Db.MobilePaymentInvoices.Add(new MobilePaymentInvoice
@@ -1484,7 +1484,6 @@ public class VisitOrderService : GeneralService<MobileVisitLog>, IVisitOrderServ
                             Mark = "A"
                         });
                     }
-                }
 
                 short l = 0;
                 foreach (var promo in orderHeader.Promotions)
