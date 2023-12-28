@@ -4476,7 +4476,7 @@ public class JournalService : IJournalService
 				WHEN sm.Src = 'RCV' AND rcv.SrcTrans = 2 THEN 3
 				WHEN sm.Src = 'ADJ' AND sm.BaseQty > 0 THEN 3
 				WHEN sm.Src = 'SR' THEN 3
-1				WHEN sm.Src IN('TS', 'CNEE') AND sm.[Type] = 'OH' AND sm.BaseQty < 0 THEN 3
+				WHEN sm.Src IN('TS', 'CNEE') AND sm.[Type] = 'OH' AND sm.BaseQty < 0 THEN 3
 				WHEN sm.Src = 'DO' AND sr.[Type] = 2 THEN 4
 				WHEN sm.Src = 'ADJ' AND sm.BaseQty < 0 THEN 5
 				WHEN sm.Src IN('DO', 'DOF', 'PR') THEN 5
