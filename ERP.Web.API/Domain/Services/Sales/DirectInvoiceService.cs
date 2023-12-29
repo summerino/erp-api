@@ -2343,7 +2343,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
             Db.SaveChanges();
 
             // Credit Used
-            if (!isOverLimit)
+            if (!new[] { "OL", "V" }.Contains(data.Mark))
             {
                 UpdateCreditUsed(data.CustCode, data.Total);
 
