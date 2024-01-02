@@ -2364,6 +2364,12 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
 
                 Db.Database.ExecuteSqlRaw("EXEC sp_update_so_dlv_qty {0}", data.Code);
             }
+            else if (data.Mark == "OL")
+            {
+                RestoreWarehouseQty(data.Code);
+                var diSMData = Db.StockMutations.Where(x => x.RefCode1 == data.Code).ToList();
+                Db.StockMutations.RemoveRange(diSMData);
+            }
 
             // Check all sales delivery are invoiced
             //if (
@@ -2571,7 +2577,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
     private void RestoreWarehouseQty(string code)
     {
         var diSMData = Db.StockMutations.Where(x => x.RefCode1 == code).ToList();
-        if (diSMData.Any())
+        if (diSMData.Count != 0)
         {
             foreach (var itemData in diSMData)
             {
