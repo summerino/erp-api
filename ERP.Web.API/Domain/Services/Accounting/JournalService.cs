@@ -3906,7 +3906,7 @@ public class JournalService : IJournalService
             .Where(x => x.Date.Month == dateTime.Month && x.Date.Year == dateTime.Year && x.Mark != "V")
             .ToList();
 
-        var dataHPP = (new[] { new { Code = "", ItemId = 0, UnitId = 0, HPP = 0m } }).ToList();
+        //var dataHPP = (new[] { new { Code = "", ItemId = 0, UnitId = 0, HPP = 0m } }).ToList();
 
         foreach (var itemData in dataHeader)
         {
@@ -3923,24 +3923,24 @@ public class JournalService : IJournalService
                 if (smData == null) continue;
 
                 //var nonVoidSM = RemoveVoidSM(db, db.StockMutations.ToList());
-                var resultHpp = 0m;
-                if (itemData.Type != "IN")
-                {
-                    //var srcType = new[] { "OUT", "DT" }.Contains(itemData.Type) ? "TS" : "CNEE";
-                    //CalculateHPP(db, nonVoidSM, smData.ItemId, smData.RefDetailId1, srcType);
-                    //smData = db.StockMutations.AsNoTracking().FirstOrDefault(x => x.RefDetailId1 == itemDetail.TsDetail.Id && x.RefCode1 == itemDetail.TsDetail.Code);
-                    resultHpp = smData.BaseNettPrice > 0 ? smData.BaseNettPrice * smData.BaseQty : 0m;
-                }
+                var resultHpp = smData.BaseNettPrice > 0 ? smData.BaseNettPrice * smData.BaseQty : 0m;
+                //if (itemData.Type != "IN")
+                //{
+                //    //var srcType = new[] { "OUT", "DT" }.Contains(itemData.Type) ? "TS" : "CNEE";
+                //    //CalculateHPP(db, nonVoidSM, smData.ItemId, smData.RefDetailId1, srcType);
+                //    //smData = db.StockMutations.AsNoTracking().FirstOrDefault(x => x.RefDetailId1 == itemDetail.TsDetail.Id && x.RefCode1 == itemDetail.TsDetail.Code);
+                //    resultHpp = smData.BaseNettPrice > 0 ? smData.BaseNettPrice * smData.BaseQty : 0m;
+                //}
 
-                if (itemData.Type == "OUT")
-                    dataHPP.Add(new { Code = itemData.Code, ItemId = itemDetail.TsDetail.ItemId, UnitId = itemDetail.TsDetail.UnitId, HPP = resultHpp });
+                //if (itemData.Type == "OUT")
+                //    dataHPP.Add(new { Code = itemData.Code, ItemId = itemDetail.TsDetail.ItemId, UnitId = itemDetail.TsDetail.UnitId, HPP = resultHpp });
 
-                if (itemData.Type == "IN")
-                {
-                    var valueHPP = dataHPP.FirstOrDefault(x => x.Code == itemData.OriginTransferCode && x.ItemId == itemDetail.TsDetail.ItemId && x.UnitId == itemDetail.TsDetail.UnitId);
-                    if (valueHPP != null)
-                        resultHpp = valueHPP.HPP;
-                }
+                //if (itemData.Type == "IN")
+                //{
+                //    var valueHPP = dataHPP.FirstOrDefault(x => x.Code == itemData.OriginTransferCode && x.ItemId == itemDetail.TsDetail.ItemId && x.UnitId == itemDetail.TsDetail.UnitId);
+                //    if (valueHPP != null)
+                //        resultHpp = valueHPP.HPP;
+                //}
 
                 //Persediaan Barang
                 journals.Add(new Journal
