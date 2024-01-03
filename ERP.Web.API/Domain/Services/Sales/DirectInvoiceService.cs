@@ -2369,6 +2369,7 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                 RestoreWarehouseQty(data.Code);
                 var diSMData = Db.StockMutations.Where(x => x.RefCode1 == data.Code).ToList();
                 Db.StockMutations.RemoveRange(diSMData);
+                Db.SaveChanges();
             }
 
             // Check all sales delivery are invoiced
