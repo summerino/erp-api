@@ -143,7 +143,7 @@ public class Journal
     [StringLength(1)]
     public string Type { get; set; }
 
-    [Precision(19, 6)]
+    [Precision(22, 9)]
     public decimal Amount { get; set; }
 
     [Required]

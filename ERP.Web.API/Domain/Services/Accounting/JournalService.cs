@@ -3564,7 +3564,7 @@ public class JournalService : IJournalService
 	                    [jur_period] [varchar](8) NOT NULL,
 	                    [jur_custom_rate] [decimal](18, 6) NOT NULL,
 	                    [jur_dc] [varchar](1) NOT NULL,
-	                    [jur_amount] [decimal](18, 6) NOT NULL,
+	                    [jur_amount] [decimal](22, 9) NOT NULL,
 	                    [jur_src] [varchar](10) NOT NULL
                     ) ON [PRIMARY];
 
