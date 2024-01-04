@@ -26,15 +26,17 @@ public class MobileOrderService : GeneralService<MobileOrderHeader>, IMobileOrde
         if (!data.Any())
             return new SaveResult(false, "Tidak ada data yang di proses");
 
-        if (data.Any(x => x.Mark != "A"))
+        var moData = Db.MobileOrderHeaders.Where(x => data.Select(y => y.Code).Contains(x.Code)).ToList();
+
+        if (moData.Any(x => x.Mark != "A"))
             return new SaveResult(false, "Tidak dapat menyetujui data yang sudah disetujui atau ditolak");
 
         using var transaction = Db.Database.BeginTransaction();
         try
         {
             var sysparamData = Db.SystemParameters.ToList();
-            var validateOL = ValidateOverlimit(data);
-            foreach (var itemData in data)
+            var validateOL = ValidateOverlimit(moData);
+            foreach (var itemData in moData)
             {
                 var vlData = Db.MobileVisitLogs.FirstOrDefault(x => x.Code == itemData.VisitLogCode);
                 if (vlData != null)
