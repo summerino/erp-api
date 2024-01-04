@@ -23,20 +23,22 @@ public class MobileVisitLogService : GeneralService<MobileVisitLog>, IMobileVisi
         if (!data.Any())
             return new SaveResult(false, "Tidak ada data yang di proses");
 
-        if (data.Any(x => x.Mark != "A"))
+        var mvlData = Db.MobileVisitLogs.Where(x => data.Select(y => y.Code).Contains(x.Code)).ToList();
+
+        if (mvlData.Any(x => x.Mark != "A"))
             return new SaveResult(false, "Tidak dapat menyetujui data yang sudah disetujui atau ditolak");
 
         using var transaction = Db.Database.BeginTransaction();
         try
         {
-            var isDuplicate = data.GroupBy(x => new { x.SalesmanId, x.CustCode, x.Date }).Any(x => x.Count() > 1);
+            var isDuplicate = mvlData.GroupBy(x => new { x.SalesmanId, x.CustCode, x.Date }).Any(x => x.Count() > 1);
             if (isDuplicate)
             {
                 result.Message = "Terdapat data penjual mengunjungi pelanggan di hari yang sama lebih dari 1 kali.";
                 return result;
             }
 
-            foreach (var item in data)
+            foreach (var item in mvlData)
             {
                 var mcustData = Db.MobileCustomers.FirstOrDefault(x => x.Code == item.CustCode);
 

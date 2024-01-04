@@ -25,13 +25,15 @@ public class MobilePaymentInvoiceService : GeneralService<MobilePaymentInvoice>,
         if (!data.Data.Any())
             return new SaveResult(false, "Tidak ada data yang di proses");
 
-        if (data.Data.Any(x => x.Mark != "A"))
+        var mpiData = Db.MobilePaymentInvoices.Where(x => data.Data.Select(y => y.Code).Contains(x.Code)).ToList();
+
+        if (mpiData.Any(x => x.Mark != "A"))
             return new SaveResult(false, "Tidak dapat menyetujui data yang sudah disetujui atau ditolak");
 
         using var transaction = Db.Database.BeginTransaction();
         try
         {
-            foreach (var item in data.Data)
+            foreach (var item in mpiData)
             {
                 var vlData = Db.MobileVisitLogs.FirstOrDefault(x => x.Code == item.VisitLogCode);
                 if(vlData != null)
@@ -98,7 +100,7 @@ public class MobilePaymentInvoiceService : GeneralService<MobilePaymentInvoice>,
                 }
             }
 
-            var groupedData = data.Data
+            var groupedData = mpiData
                 .GroupBy(x => new { x.CoaCode, x.Date })
                 .Select(x => 
                     new {
