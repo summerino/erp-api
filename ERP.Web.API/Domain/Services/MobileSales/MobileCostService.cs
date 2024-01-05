@@ -171,7 +171,9 @@ public class MobileCostService : GeneralService<MobileCostHeader>, IMobileCostSe
         if (!data.Any())
             return new SaveResult(false, "Tidak ada data yang di proses");
 
-        if (data.Any(x => x.Mark != "A"))
+        var selectedMcData = Db.MobileCostHeaders.Where(x => data.Select(y => y.Code).Contains(x.Code)).ToList();
+
+        if (selectedMcData.Any(x => x.Mark != "A"))
             return new SaveResult(false, "Tidak dapat menyetujui data yang sudah disetujui atau ditolak");
 
         var vDate = Convert.ToDateTime(date);
@@ -179,7 +181,7 @@ public class MobileCostService : GeneralService<MobileCostHeader>, IMobileCostSe
         using var transaction = Db.Database.BeginTransaction();
         try
         {
-            foreach (var itemCost in data)
+            foreach (var itemCost in selectedMcData)
             {
                 // Get new code
                 var newCode = GetNewCode("CB_NUM_FMT", vDate);

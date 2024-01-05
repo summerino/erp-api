@@ -24,7 +24,9 @@ public class MobileItemRequestService : GeneralService<MobileItemRequestHeader>,
         if (!data.Any())
             return new SaveResult(false, "Tidak ada data yang di proses");
 
-        if (data.Any(x => x.Mark != "A"))
+        var miData = Db.MobileItemRequestHeaders.Where(x => data.Select(y => y.Code).Contains(x.Code)).ToList();
+
+        if (miData.Any(x => x.Mark != "A"))
             return new SaveResult(false, "Tidak dapat menyetujui data yang sudah disetujui atau ditolak");
 
         var items = Db.Items.Where(x => x.IsActive).ToList();
@@ -34,7 +36,7 @@ public class MobileItemRequestService : GeneralService<MobileItemRequestHeader>,
         using var transaction = Db.Database.BeginTransaction();
         try
         {
-            foreach (var itemRequest in data)
+            foreach (var itemRequest in miData)
             {
                 // Get new code
                 var newCode = GetNewCode("TS_NUM_FMT", vDate);
