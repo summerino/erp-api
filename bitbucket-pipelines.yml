@@ -1,0 +1,19 @@
+#  Template .NET Core build
+
+# To run your pipeline on a Windows machine, create a self-hosted Windows runner.
+# For instructions on setting up a Windows runner, see https://support.atlassian.com/bitbucket-cloud/docs/set-up-runners-for-windows/
+
+image: mcr.microsoft.com/dotnet/sdk:8.0
+
+pipelines:
+  branches:
+    development:
+      - step:
+          name: Build
+          caches:
+            - dotnetcore
+          script:
+            - dotnet --version
+            - dotnet publish -c Release -o ./publish
+          artifacts:
+            - publish/**
