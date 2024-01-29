@@ -16,13 +16,13 @@ pipelines:
             - apt-get update
             - apt-get install -y jq
             - dotnet --version
-            - dotnet publish -c Release -o ./publish-$BITBUCKET_BUILD_NUMBER
+            - dotnet publish -c Release -o ./publish
             - tmp=$(mktemp)
             - jq '.ConnectionStrings.CatalogConnection = "$SMS_CATALOG_CONNECTION"' ./ERP.Web.API/appsettings.json > "$tmp" && mv "$tmp" ./ERP.Web.API/appsettings.json
-            - dotnet publish -c Release -o ./publish_sms-$BITBUCKET_BUILD_NUMBER
+            - dotnet publish -c Release -o ./publish_sms
           artifacts:
-            - publish-$BITBUCKET_BUILD_NUMBER/**
-            - publish_sms-$BITBUCKET_BUILD_NUMBER/**
+            - publish/**
+            - publish_sms/**
       - step:
           name: Deployed to Tested
           deployment: Test
