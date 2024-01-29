@@ -18,7 +18,7 @@ pipelines:
             - dotnet --version
             - dotnet publish -c Release -o ./publish-$BITBUCKET_BUILD_NUMBER
             - tmp=$(mktemp)
-            - jq '.ConnectionStrings.CatalogConnection = "$SMS_CATALOG_CONNECTION"' appsettings.json > "$tmp" && mv "$tmp" appsettings.json
+            - jq '.ConnectionStrings.CatalogConnection = "$SMS_CATALOG_CONNECTION"' ./ERP.Web.API/appsettings.json > "$tmp" && mv "$tmp" ./ERP.Web.API/appsettings.json
             - dotnet publish -c Release -o ./publish_sms-$BITBUCKET_BUILD_NUMBER
           artifacts:
             - publish-$BITBUCKET_BUILD_NUMBER/**
