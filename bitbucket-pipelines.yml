@@ -16,15 +16,13 @@ pipelines:
             - apt-get update
             - apt-get install -y jq
             - dotnet --version
-            - dotnet publish -c Release -o ./publish
+            - dotnet publish -c Release -o ./publish-$BITBUCKET_BUILD_NUMBER
             - tmp=$(mktemp)
-            - jq '.ConnectionStrings.CatalogConnection = "$
-SMS_CATALOG_CONNECTION
-"' appsettings.json > "$tmp" && mv "$tmp" appsettings.json
-            - dotnet publish -c Release -o ./publish_sms
+            - jq '.ConnectionStrings.CatalogConnection = "$SMS_CATALOG_CONNECTION"' appsettings.json > "$tmp" && mv "$tmp" appsettings.json
+            - dotnet publish -c Release -o ./publish_sms-$BITBUCKET_BUILD_NUMBER
           artifacts:
-            - publish/**
-            - publish_sms/**
+            - publish-$BITBUCKET_BUILD_NUMBER/**
+            - publish_sms-$BITBUCKET_BUILD_NUMBER/**
       - step:
           name: Deployed to Tested
           deployment: Test
