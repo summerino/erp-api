@@ -20,8 +20,7 @@ pipelines:
             - dotnet publish -c Release -o ./publish
             # change connection string in appsettings.json value for sms
             - tmp=$(mktemp)
-            - c=${SMS_CATALOG_CONNECTION}
-            - jq --arg con "$c" '.ConnectionStrings.CatalogConnection = @con' ./ERP.Web.API/appsettings.json > "$tmp" && mv "$tmp" ./ERP.Web.API/appsettings.json
+            - jq '.ConnectionStrings.CatalogConnection = "Server=SHS-VM-1\\SQL2019;Database=ERPCatalog_SMS;User Id=sa;Password=p@s$w0rd;MultipleActiveResultSets=True;TrustServerCertificate=True;Application Name=ERP"' ./ERP.Web.API/appsettings.json > "$tmp" && mv "$tmp" ./ERP.Web.API/appsettings.json
             # publish erp sms object
             - dotnet publish -c Release -o ./publish_sms
           artifacts:
