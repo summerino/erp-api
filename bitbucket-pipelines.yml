@@ -13,10 +13,18 @@ pipelines:
           caches:
             - dotnetcore
           script:
+            - apt-get update
+            - apt-get install -y jq
             - dotnet --version
             - dotnet publish -c Release -o ./publish
+            - tmp=$(mktemp)
+            - jq '.ConnectionStrings.CatalogConnection = "$
+SMS_CATALOG_CONNECTION
+"' appsettings.json > "$tmp" && mv "$tmp" appsettings.json
+            - dotnet publish -c Release -o ./publish_sms
           artifacts:
             - publish/**
+            - publish_sms/**
       - step:
           name: Deployed to Tested
           deployment: Test
