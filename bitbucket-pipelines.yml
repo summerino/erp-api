@@ -16,9 +16,12 @@ pipelines:
             - apt-get update
             - apt-get install -y jq
             - dotnet --version
+            # publish erp object
             - dotnet publish -c Release -o ./publish
+            # change connection string in appsettings.json value for sms
             - tmp=$(mktemp)
             - jq '.ConnectionStrings.CatalogConnection = "$SMS_CATALOG_CONNECTION"' ./ERP.Web.API/appsettings.json > "$tmp" && mv "$tmp" ./ERP.Web.API/appsettings.json
+            # publish erp sms object
             - dotnet publish -c Release -o ./publish_sms
           artifacts:
             - publish/**
@@ -31,7 +34,13 @@ pipelines:
             - windows
             - shsdev.rw
           script:
+            # deploy erp object
             - C:\Windows\System32\inetsrv\appcmd.exe stop sites "ERP API"
             - Get-ChildItem -Path "D:\Hosting Spaces\TEST" -Exclude wwwroot | Remove-Item -Recurse -Force
             - Copy-Item -Path "publish\*" -Destination "D:\Hosting Spaces\TEST" -Recurse -Force
             - C:\Windows\System32\inetsrv\appcmd.exe start sites "ERP API"
+            # deploy erp sms object
+            - C:\Windows\System32\inetsrv\appcmd.exe stop sites "ERP API SMS"
+            - Get-ChildItem -Path "D:\Hosting Spaces\TEST2" -Exclude wwwroot | Remove-Item -Recurse -Force
+            - Copy-Item -Path "publish_sms\*" -Destination "D:\Hosting Spaces\TEST2" -Recurse -Force
+            - C:\Windows\System32\inetsrv\appcmd.exe start sites "ERP API SMS"
