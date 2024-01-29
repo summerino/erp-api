@@ -17,3 +17,15 @@ pipelines:
             - dotnet publish -c Release -o ./publish
           artifacts:
             - publish/**
+      - step:
+          name: Deployed to Tested
+          deployment: Test
+          runs-on:
+            - self.hosted
+            - windows
+            - shsdev.rw
+          script:
+            - C:\Windows\System32\inetsrv\appcmd.exe stop sites "ERP API"
+            - Remove-Item -Path "D:\Hosting Spaces\TEST\*" -Recurse -Force
+            - Copy-Item -Path "publish\*" -Destination "D:\Hosting Spaces\TEST" -Recurse
+            - C:\Windows\System32\inetsrv\appcmd.exe start sites "ERP API"
