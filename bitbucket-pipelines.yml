@@ -26,6 +26,6 @@ pipelines:
             - shsdev.rw
           script:
             - C:\Windows\System32\inetsrv\appcmd.exe stop sites "ERP API"
-            - Remove-Item -Path "D:\Hosting Spaces\TEST\*" -Recurse -Force
+            - Get-ChildItem -Path "D:\Hosting Spaces\TEST" -Exclude wwwroot | Remove-Item -Recurse -Force
             - Copy-Item -Path "publish\*" -Destination "D:\Hosting Spaces\TEST" -Recurse
             - C:\Windows\System32\inetsrv\appcmd.exe start sites "ERP API"
