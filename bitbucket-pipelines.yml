@@ -35,12 +35,12 @@ pipelines:
             - shsdev.rw
           script:
             # deploy erp object
-            - C:\Windows\System32\inetsrv\appcmd.exe stop sites "ERP API"
-            - Get-ChildItem -Path "D:\Hosting Spaces\TEST" -Exclude wwwroot | Remove-Item -Recurse -Force
-            - Copy-Item -Path "publish\*" -Destination "D:\Hosting Spaces\TEST" -Recurse -Force
-            - C:\Windows\System32\inetsrv\appcmd.exe start sites "ERP API"
+            - C:\Windows\System32\inetsrv\appcmd.exe stop sites "$Env:SITE_NAME"
+            - Get-ChildItem -Path "$Env:SITE_PATH" -Exclude wwwroot | Remove-Item -Recurse -Force
+            - Copy-Item -Path "publish\*" -Destination "$Env:SITE_PATH" -Recurse -Force
+            - C:\Windows\System32\inetsrv\appcmd.exe start sites "$Env:SITE_NAME"
             # deploy erp sms object
-            - C:\Windows\System32\inetsrv\appcmd.exe stop sites "ERP API SMS"
-            - Get-ChildItem -Path "D:\Hosting Spaces\TEST2" -Exclude wwwroot | Remove-Item -Recurse -Force
-            - Copy-Item -Path "publish_sms\*" -Destination "D:\Hosting Spaces\TEST2" -Recurse -Force
-            - C:\Windows\System32\inetsrv\appcmd.exe start sites "ERP API SMS"
+            - C:\Windows\System32\inetsrv\appcmd.exe stop sites "$Env:SMS_SITE_NAME"
+            - Get-ChildItem -Path "$Env:SMS_SITE_PATH" -Exclude wwwroot | Remove-Item -Recurse -Force
+            - Copy-Item -Path "publish_sms\*" -Destination "$Env:SMS_SITE_PATH" -Recurse -Force
+            - C:\Windows\System32\inetsrv\appcmd.exe start sites "$Env:SMS_SITE_NAME"
