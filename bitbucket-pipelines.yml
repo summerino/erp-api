@@ -35,12 +35,14 @@ pipelines:
             - shsdev.rw
           script:
             # deploy erp object
+            - site_path=(Get-IISSite "$Env:SITE_NAME").Applications.VirtualDirectories.PhysicalPath
             - C:\Windows\System32\inetsrv\appcmd.exe stop sites "$Env:SITE_NAME"
-            - Get-ChildItem -Path "$Env:SITE_PATH" -Exclude wwwroot | Remove-Item -Recurse -Force
-            - Copy-Item -Path "publish\*" -Destination "$Env:SITE_PATH" -Recurse -Force
+            - Get-ChildItem -Path "$site_path" -Exclude wwwroot | Remove-Item -Recurse -Force
+            - Copy-Item -Path "publish\*" -Destination "$site_path" -Recurse -Force
             - C:\Windows\System32\inetsrv\appcmd.exe start sites "$Env:SITE_NAME"
             # deploy erp sms object
+            - site_path=(Get-IISSite "$Env:SMS_SITE_NAME").Applications.VirtualDirectories.PhysicalPath
             - C:\Windows\System32\inetsrv\appcmd.exe stop sites "$Env:SMS_SITE_NAME"
-            - Get-ChildItem -Path "$Env:SMS_SITE_PATH" -Exclude wwwroot | Remove-Item -Recurse -Force
-            - Copy-Item -Path "publish_sms\*" -Destination "$Env:SMS_SITE_PATH" -Recurse -Force
+            - Get-ChildItem -Path "$site_path" -Exclude wwwroot | Remove-Item -Recurse -Force
+            - Copy-Item -Path "publish_sms\*" -Destination "$site_path" -Recurse -Force
             - C:\Windows\System32\inetsrv\appcmd.exe start sites "$Env:SMS_SITE_NAME"
