@@ -3,7 +3,7 @@
 # To run your pipeline on a Windows machine, create a self-hosted Windows runner.
 # For instructions on setting up a Windows runner, see https://support.atlassian.com/bitbucket-cloud/docs/set-up-runners-for-windows/
 
-image: mcr.microsoft.com/dotnet/sdk:8.0
+image: mcr.microsoft.com/dotnet/sdk:8.0.100
 
 pipelines:
   branches:
@@ -16,12 +16,12 @@ pipelines:
             - apt-get update
             - apt-get install -y jq
             - dotnet --version
-            # publish erp object
+            # publish api object
             - dotnet publish -c Release -o ./publish
             # change connection string in appsettings.json value for sms
             - tmp=$(mktemp)
             - jq --arg conn "$SMS_CATALOG_CONNECTION" '.ConnectionStrings.CatalogConnection = $conn' ./ERP.Web.API/appsettings.json > "$tmp" && mv "$tmp" ./ERP.Web.API/appsettings.json
-            # publish erp sms object
+            # publish api sms object
             - dotnet publish -c Release -o ./publish_sms
           artifacts:
             - publish/**
