@@ -14,7 +14,6 @@ pipelines:
             - apt-get update
             - apt-get install -y jq
             - dotnet --version
-            - dotnet restore
             # publish api object
             - dotnet publish -c Release -o ./publish
             # change connection string in appsettings.json value for sms
