@@ -38,11 +38,11 @@ pipelines:
             - $site_path=(Get-IISSite "$Env:SITE_NAME").Applications.VirtualDirectories.PhysicalPath
             - C:\Windows\System32\inetsrv\appcmd.exe stop sites "$Env:SITE_NAME"
             - Get-ChildItem -Path "$site_path" -Exclude wwwroot | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
-            - Copy-Item -Path "publish\*" -Destination "$site_path" -Recurse -Force
+            - Copy-Item -Path "publish\*" -Destination "$site_path" -Recurse -Force -ErrorAction SilentlyContinue
             - C:\Windows\System32\inetsrv\appcmd.exe start sites "$Env:SITE_NAME"
             # deploy api sms object
             - $site_path=(Get-IISSite "$Env:SMS_SITE_NAME").Applications.VirtualDirectories.PhysicalPath
             - C:\Windows\System32\inetsrv\appcmd.exe stop sites "$Env:SMS_SITE_NAME"
             - Get-ChildItem -Path "$site_path" -Exclude wwwroot | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
-            - Copy-Item -Path "publish_sms\*" -Destination "$site_path" -Recurse -Force
+            - Copy-Item -Path "publish_sms\*" -Destination "$site_path" -Recurse -Force -ErrorAction SilentlyContinue
             - C:\Windows\System32\inetsrv\appcmd.exe start sites "$Env:SMS_SITE_NAME"
