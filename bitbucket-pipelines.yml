@@ -27,7 +27,7 @@ pipelines:
             - publish/**
             - publish_sms/**
       - step:
-          name: Deployed to Tested
+          name: Deploy to Tested
           deployment: Test
           runs-on:
             - self.hosted
