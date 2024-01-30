@@ -10,8 +10,6 @@ pipelines:
     development:
       - step:
           name: Build
-          caches:
-            - dotnetcore
           script:
             - apt-get update
             - apt-get install -y jq
