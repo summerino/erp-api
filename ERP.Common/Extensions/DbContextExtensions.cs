@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Linq.Dynamic.Core;
@@ -159,6 +160,7 @@ public static class DbContextExtensions
         }
     }
 
+    [SuppressMessage("Security", "EF1002:Risk of vulnerability to SQL injection.")]
     public static async Task AddSeedDataAsync<TEntity>(this DbContext context, string schema, string entityName,
         string keyType, List<TEntity> data)
         where TEntity : class
