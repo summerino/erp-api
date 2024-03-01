@@ -4,6 +4,7 @@ using ERP.Common.Models;
 using ERP.Entity;
 using ERP.Entity.Sales;
 using ERP.Web.API.Domain.Interfaces.Sales;
+using ERP.Entity.Inventory;
 
 namespace ERP.Web.API.Domain.Services.Sales;
 
@@ -34,18 +35,26 @@ public class CreditMemoReportService : ICreditMemoReportService
 
         cmData = cmData.Where(x => x.Date <= Convert.ToDateTime(date)).ToList();
 
-        var invCMData = _db.SalesInvoiceCreditMemos.Where(x => cmData.Select(y => y.Code).Contains(x.CreditMemoCode)).ToList();
+        var selectedMemoCode = cmData.Select(y => y.Code).Union(bbData.Select(y => y.Code)).ToList();
+
+        var invCMData = _db.SalesInvoiceCreditMemos.Where(x => selectedMemoCode.Contains(x.CreditMemoCode)).ToList();
 
         foreach (var itemCm in cmData)
         {
             var totCm = invCMData.Where(x => x.CreditMemoCode == itemCm.Code).Sum(x => x.CreditMemoAmount);
             itemCm.UsedAmount = totCm;
             itemCm.RemainderAmount = itemCm.Amount - itemCm.UsedAmount;
+            itemCm.Mark = totCm == 0
+                    ? "A"
+                    : itemCm.Amount - totCm > 0 && totCm > 0
+                        ? "PU" : "FU";
         }
 
         foreach (var itemBB in bbData)
         {
             var totCb = cbDetail.Where(x => x.TransCode == itemBB.Code).Sum(x => x.TransAmount);
+            var totCm = invCMData.Where(x => x.CreditMemoCode == itemBB.Code).Sum(x => x.CreditMemoAmount);
+            var totUsedAmount = totCb + totCm;
             cmData.Add(new ReportByCreditMemo
             {
                 Date = itemBB.Date,
@@ -54,11 +63,11 @@ public class CreditMemoReportService : ICreditMemoReportService
                 CustCode = itemBB.CustCode,
                 CustName = itemBB.CustName,
                 Amount = itemBB.Amount,
-                UsedAmount = totCb,
-                RemainderAmount = itemBB.Amount - totCb,
-                Mark = totCb == 0 
+                UsedAmount = totUsedAmount,
+                RemainderAmount = itemBB.Amount - totUsedAmount,
+                Mark = totUsedAmount == 0 
                     ? "A"
-                    : itemBB.Amount - totCb > 0 && totCb > 0
+                    : itemBB.Amount - totUsedAmount > 0 && totUsedAmount > 0
                         ? "PU" : "FU"
             });
         }
