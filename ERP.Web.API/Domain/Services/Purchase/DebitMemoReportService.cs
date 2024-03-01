@@ -34,18 +34,26 @@ public class DebitMemoReportService : IDebitMemoReportService
 
         dmData = dmData.Where(x => x.Date <= Convert.ToDateTime(date)).ToList();
 
-        var invDMData = _db.PurchaseInvoiceDebitMemos.Where(x => dmData.Select(y => y.Code).Contains(x.DebitMemoCode)).ToList();
+        var selectedMemoCode = dmData.Select(y => y.Code).Union(bbData.Select(y => y.Code)).ToList();
+
+        var invDMData = _db.PurchaseInvoiceDebitMemos.Where(x => selectedMemoCode.Contains(x.DebitMemoCode)).ToList();
 
         foreach (var itemDm in dmData)
         {
             var totDm = invDMData.Where(x => x.DebitMemoCode == itemDm.Code).Sum(x => x.DebitMemoAmount);
             itemDm.UsedAmount = totDm;
             itemDm.RemainderAmount = itemDm.Amount - itemDm.UsedAmount;
+            itemDm.Mark = totDm == 0
+                    ? "A"
+                    : itemDm.Amount - totDm > 0 && totDm > 0
+                        ? "PU" : "FU";
         }
 
         foreach (var itemBB in bbData)
         {
             var totCb = cbDetail.Where(x => x.TransCode == itemBB.Code).Sum(x => x.TransAmount);
+            var totDm = invDMData.Where(x => x.DebitMemoCode == itemBB.Code).Sum(x => x.DebitMemoAmount);
+            var totUsedAmount = totCb + totDm;
             dmData.Add(new ReportByDebitMemo
             {
                 Date = itemBB.Date,
@@ -55,10 +63,10 @@ public class DebitMemoReportService : IDebitMemoReportService
                 SupName = itemBB.SupName,
                 Amount = itemBB.Amount,
                 UsedAmount = totCb,
-                RemainderAmount = itemBB.Amount - totCb,
-                Mark = totCb == 0
+                RemainderAmount = itemBB.Amount - totUsedAmount,
+                Mark = totUsedAmount == 0
                     ? "A"
-                    : itemBB.Amount - totCb > 0 && totCb > 0
+                    : itemBB.Amount - totUsedAmount > 0 && totUsedAmount > 0
                         ? "PU" : "FU"
             });
         }
