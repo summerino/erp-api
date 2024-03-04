@@ -4,6 +4,7 @@ using ERP.Common.Models;
 using ERP.Entity;
 using ERP.Entity.Purchase;
 using ERP.Web.API.Domain.Interfaces.Purchase;
+using ERP.Entity.Inventory;
 
 namespace ERP.Web.API.Domain.Services.Purchase;
 
@@ -41,11 +42,13 @@ public class DebitMemoReportService : IDebitMemoReportService
         foreach (var itemDm in dmData)
         {
             var totDm = invDMData.Where(x => x.DebitMemoCode == itemDm.Code).Sum(x => x.DebitMemoAmount);
-            itemDm.UsedAmount = totDm;
+            var totCb = cbDetail.Where(x => x.TransCode == itemDm.Code && x.Type == "DEPS").Sum(x => x.TransAmount);
+            var totUsedAmount = totCb + totDm;
+            itemDm.UsedAmount = totUsedAmount;
             itemDm.RemainderAmount = itemDm.Amount - itemDm.UsedAmount;
-            itemDm.Mark = totDm == 0
+            itemDm.Mark = totUsedAmount == 0
                     ? "A"
-                    : itemDm.Amount - totDm > 0 && totDm > 0
+                    : itemDm.Amount - totUsedAmount > 0 && totUsedAmount > 0
                         ? "PU" : "FU";
         }
 
