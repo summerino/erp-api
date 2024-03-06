@@ -46,10 +46,6 @@ public class DebitMemoReportService : IDebitMemoReportService
             var totUsedAmount = totCb + totDm;
             itemDm.UsedAmount = totUsedAmount;
             itemDm.RemainderAmount = itemDm.Amount - itemDm.UsedAmount;
-            itemDm.Mark = totUsedAmount == 0
-                    ? "A"
-                    : itemDm.Amount - totUsedAmount > 0 && totUsedAmount > 0
-                        ? "PU" : "FU";
         }
 
         foreach (var itemBB in bbData)
