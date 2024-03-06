@@ -42,7 +42,7 @@ public class DebitMemoReportService : IDebitMemoReportService
         foreach (var itemDm in dmData)
         {
             var totDm = invDMData.Where(x => x.DebitMemoCode == itemDm.Code).Sum(x => x.DebitMemoAmount);
-            var totCb = cbDetail.Where(x => x.TransCode == itemDm.Code && x.Type == "DEPS").Sum(x => x.TransAmount);
+            var totCb = cbDetail.Where(x => x.TransCode == itemDm.Code && x.Type == "RDEPS").Sum(x => x.TransAmount);
             var totUsedAmount = totCb + totDm;
             itemDm.UsedAmount = totUsedAmount;
             itemDm.RemainderAmount = itemDm.Amount - itemDm.UsedAmount;

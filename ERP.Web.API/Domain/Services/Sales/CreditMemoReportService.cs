@@ -42,7 +42,7 @@ public class CreditMemoReportService : ICreditMemoReportService
         foreach (var itemCm in cmData)
         {
             var totCm = invCMData.Where(x => x.CreditMemoCode == itemCm.Code).Sum(x => x.CreditMemoAmount);
-            var totCb = cbDetail.Where(x => x.TransCode == itemCm.Code && x.Type == "DEPC").Sum(x => x.TransAmount);
+            var totCb = cbDetail.Where(x => x.TransCode == itemCm.Code && x.Type == "RDEPC").Sum(x => x.TransAmount);
             var totUsedAmount = totCb + totCm;
             itemCm.UsedAmount = totUsedAmount;
             itemCm.RemainderAmount = itemCm.Amount - itemCm.UsedAmount;
