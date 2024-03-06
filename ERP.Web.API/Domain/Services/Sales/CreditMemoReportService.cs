@@ -46,10 +46,6 @@ public class CreditMemoReportService : ICreditMemoReportService
             var totUsedAmount = totCb + totCm;
             itemCm.UsedAmount = totUsedAmount;
             itemCm.RemainderAmount = itemCm.Amount - itemCm.UsedAmount;
-            itemCm.Mark = totUsedAmount == 0
-                    ? "A"
-                    : itemCm.Amount - totUsedAmount > 0 && totUsedAmount > 0
-                        ? "PU" : "FU";
         }
 
         foreach (var itemBB in bbData)
