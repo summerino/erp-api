@@ -61,7 +61,7 @@ public class DebitMemoReportService : IDebitMemoReportService
                 SupCode = itemBB.SupCode,
                 SupName = itemBB.SupName,
                 Amount = itemBB.Amount,
-                UsedAmount = totCb,
+                UsedAmount = totUsedAmount,
                 RemainderAmount = itemBB.Amount - totUsedAmount,
                 Mark = totUsedAmount == 0
                     ? "A"
