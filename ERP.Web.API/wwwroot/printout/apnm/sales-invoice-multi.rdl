@@ -5,7 +5,7 @@
     <DataSource Name="ERPTenant">
       <ConnectionProperties>
         <DataProvider>SQL</DataProvider>
-        <ConnectString>Data Source=shsdev-rw.southeastasia.cloudapp.azure.com,57500;Initial Catalog=ERPTenant_APNM;user id=sa;password=p@s$w0rd</ConnectString>
+        <ConnectString>Data Source=10.0.0.5,57500;Initial Catalog=ERPTenant_APNM;user id=sa;password=2BmR79V^sKwDJW</ConnectString>
       </ConnectionProperties>
       <rd:SecurityType>None</rd:SecurityType>
       <rd:DataSourceID>20930636-782f-408a-885b-53c2d72bdb9b</rd:DataSourceID>
@@ -1572,6 +1572,7 @@ FROM SystemManagement.Company</CommandText>
               </TablixMembers>
             </TablixRowHierarchy>
             <DataSetName>Data</DataSetName>
+            <Top>0in</Top>
             <Height>2.46073in</Height>
             <Width>8.3in</Width>
             <Style>
@@ -1741,9 +1742,9 @@ FROM SystemManagement.Company</CommandText>
                 </Paragraph>
               </Paragraphs>
               <Top>0.06458in</Top>
-              <Left>6.00055in</Left>
+              <Left>5.81319in</Left>
               <Height>0.18694in</Height>
-              <Width>2.29741in</Width>
+              <Width>2.48477in</Width>
               <ZIndex>5</ZIndex>
               <Style>
                 <Border>
@@ -1767,9 +1768,9 @@ FROM SystemManagement.Company</CommandText>
                 </Paragraph>
               </Paragraphs>
               <Top>0.25152in</Top>
-              <Left>6.00055in</Left>
+              <Left>5.81319in</Left>
               <Height>0.18694in</Height>
-              <Width>0.78359in</Width>
+              <Width>0.97095in</Width>
               <ZIndex>6</ZIndex>
               <Style>
                 <Border>
@@ -1847,9 +1848,9 @@ FROM SystemManagement.Company</CommandText>
                 </Paragraph>
               </Paragraphs>
               <Top>0.43846in</Top>
-              <Left>6.00055in</Left>
+              <Left>5.81319in</Left>
               <Height>0.18694in</Height>
-              <Width>0.78359in</Width>
+              <Width>0.97095in</Width>
               <ZIndex>9</ZIndex>
               <Style>
                 <Border>
@@ -2027,6 +2028,84 @@ FROM SystemManagement.Company</CommandText>
               <Height>0.18694in</Height>
               <Width>7.54444in</Width>
               <ZIndex>16</ZIndex>
+              <Style>
+                <Border>
+                  <Style>None</Style>
+                </Border>
+                <VerticalAlign>Top</VerticalAlign>
+              </Style>
+            </Textbox>
+            <Textbox Name="Textbox20">
+              <CanShrink>true</CanShrink>
+              <KeepTogether>true</KeepTogether>
+              <Paragraphs>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>Tgl. Jth. Tempo</Value>
+                      <Style />
+                    </TextRun>
+                  </TextRuns>
+                  <Style />
+                </Paragraph>
+              </Paragraphs>
+              <Top>0.62818in</Top>
+              <Left>5.81319in</Left>
+              <Height>0.18694in</Height>
+              <Width>0.97095in</Width>
+              <ZIndex>17</ZIndex>
+              <Style>
+                <Border>
+                  <Style>None</Style>
+                </Border>
+                <VerticalAlign>Top</VerticalAlign>
+              </Style>
+            </Textbox>
+            <Textbox Name="Textbox21">
+              <CanShrink>true</CanShrink>
+              <KeepTogether>true</KeepTogether>
+              <Paragraphs>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>:</Value>
+                      <Style />
+                    </TextRun>
+                  </TextRuns>
+                  <Style />
+                </Paragraph>
+              </Paragraphs>
+              <Top>0.62818in</Top>
+              <Left>6.78414in</Left>
+              <Height>0.18694in</Height>
+              <Width>0.12284in</Width>
+              <ZIndex>18</ZIndex>
+              <Style>
+                <Border>
+                  <Style>None</Style>
+                </Border>
+                <VerticalAlign>Top</VerticalAlign>
+              </Style>
+            </Textbox>
+            <Textbox Name="Textbox22">
+              <CanShrink>true</CanShrink>
+              <KeepTogether>true</KeepTogether>
+              <Paragraphs>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>=Format(CDate(Split(Globals!PageName, "^")(2)), "dd-MMM-yyyy")</Value>
+                      <Style />
+                    </TextRun>
+                  </TextRuns>
+                  <Style />
+                </Paragraph>
+              </Paragraphs>
+              <Top>0.62818in</Top>
+              <Left>6.90698in</Left>
+              <Height>0.18694in</Height>
+              <Width>1.39098in</Width>
+              <ZIndex>19</ZIndex>
               <Style>
                 <Border>
                   <Style>None</Style>
