@@ -591,9 +591,20 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                     Db.SaveChanges();
                 }
 
-                if (bonusPromoMulti.Any() && orderDetail.LineNo == 1)
+                if (bonusPromoMulti.Count != 0 && orderDetail.LineNo == data.ItemDetails.Count())
                 {
-                    bonusPromo.AddRange(bonusPromoMulti);
+                    var distinctBonusPromoMulti = bonusPromoMulti.DistinctBy(x => new
+                    {
+                        x.PromoCode,
+                        x.ItemId,
+                        x.UomId,
+                        x.UnitId,
+                        x.Qty,
+                        x.QtyClosed,
+                        x.UnitPrice,
+                        x.CoaCode,
+                    });
+                    bonusPromo.AddRange(distinctBonusPromoMulti);
                 }
 
                 if (bonusPromo.Any())
@@ -1744,9 +1755,20 @@ public class DirectInvoiceService : GeneralService<SalesInvoiceHeader>, IDirectI
                     }
                 }
 
-                if (bonusPromoMulti.Any() && item.LineNo == 1)
+                if (bonusPromoMulti.Count != 0 && item.LineNo == data.ItemDetails.Count())
                 {
-                    bonusPromo.AddRange(bonusPromoMulti);
+                    var distinctBonusPromoMulti = bonusPromoMulti.DistinctBy(x => new
+                    {
+                        x.PromoCode,
+                        x.ItemId,
+                        x.UomId,
+                        x.UnitId,
+                        x.Qty,
+                        x.QtyClosed,
+                        x.UnitPrice,
+                        x.CoaCode,
+                    });
+                    bonusPromo.AddRange(distinctBonusPromoMulti);
                 }
 
                 if (bonusPromo != null)
