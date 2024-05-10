@@ -8,7 +8,7 @@
 	<Company>Sahassa Panca Manunggal</Company>
 	<Product>Sahassa® ERP</Product>
 	<Copyright>© Sahassa. All rights reserved.</Copyright>
-	<Version>24.3.14</Version>
+	<Version>24.5.10</Version>
     <IncludeSourceRevisionInInformationalVersion>False</IncludeSourceRevisionInInformationalVersion>
   </PropertyGroup>
 
@@ -30,8 +30,8 @@
     </PackageReference>
     <PackageReference Include="ReportViewerCore.NETCore" Version="15.1.19" />
     <PackageReference Include="Swift.Framework" Version="22.3.28.2" />
-    <PackageReference Include="Syncfusion.XlsIO.Net.Core" Version="25.1.40" />
-    <PackageReference Include="System.Linq.Dynamic.Core" Version="1.3.12" />
+    <PackageReference Include="Syncfusion.XlsIO.Net.Core" Version="25.2.3" />
+    <PackageReference Include="System.Linq.Dynamic.Core" Version="1.3.14" />
   </ItemGroup>
 
   <ItemGroup>
