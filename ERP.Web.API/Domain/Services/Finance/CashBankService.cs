@@ -246,8 +246,7 @@ public class CashBankService : GeneralService<GeneralCashBankHeader>, ICashBankS
         using var transaction = Db.Database.BeginTransaction();
         try
         {
-            List<string> queries;
-            (result.Message, result.Success, queries) = Validate(data);
+            (result.Message, result.Success, var queries) = Validate(data);
             if (!result.Success) return result;
 
             // Get new code
@@ -279,9 +278,9 @@ public class CashBankService : GeneralService<GeneralCashBankHeader>, ICashBankS
             }
 
 
-            if (queries.Any())
+            if (queries.Count != 0)
             {
-                string query = string.Join("", queries);
+                var query = string.Join("", queries);
                 if (!string.IsNullOrEmpty(query))
                 {
                     Db.Database.ExecuteSqlRaw(query);
@@ -310,13 +309,11 @@ public class CashBankService : GeneralService<GeneralCashBankHeader>, ICashBankS
     public SaveResult Update(CashBankRequest data)
     {
         var result = new SaveResult(false);
-        var listIdDetail = new List<long>();
 
         using var transaction = Db.Database.BeginTransaction();
         try
         {
-            var queries = new List<string>();
-            (result.Message, result.Success, queries) = Validate(data);
+            (result.Message, result.Success, var queries) = Validate(data);
             if (!result.Success) return result;
 
             // Checking mark header data
@@ -390,7 +387,7 @@ public class CashBankService : GeneralService<GeneralCashBankHeader>, ICashBankS
                 listTransCodeAndTransAmount.Add(new { item.TransCode, item.TransAmount });
             }
 
-            if (queries.Any())
+            if (queries.Count != 0)
             {
                 var query = string.Join("", queries);
                 if (!string.IsNullOrEmpty(query))
@@ -543,12 +540,14 @@ public class CashBankService : GeneralService<GeneralCashBankHeader>, ICashBankS
     private (string, bool, List<string>) Validate(CashBankRequest data)
     {
         var listTransCode = data.ItemDetails.Select(x => x.TransCode).ToList();
-        var oldTransactions = Db.VwDebitCreditPayments.Where(x => listTransCode.Contains(x.TransCode) && x.Code != data.Code).ToList();
+        var oldTransactions = Db.VwDebitCreditPayments.AsNoTracking()
+            .Where(x => listTransCode.Contains(x.TransCode) && !string.IsNullOrEmpty(x.TransCode) && x.Code != data.Code)
+            .ToList();
 
         var queries = new List<string>();
 
         var oldSDPList = Db.GeneralCashBankDetails.Where(x => !listTransCode.Contains(x.TransCode) && x.Code == data.Code && x.Type == "SDP").ToList();
-        if (oldSDPList.Any())
+        if (oldSDPList.Count != 0)
         {
             foreach (var oldItem in oldSDPList)
             {
@@ -760,7 +759,7 @@ public class CashBankService : GeneralService<GeneralCashBankHeader>, ICashBankS
 
                     if (item.Src == "BB")
                     {
-                        var bbData = Db.BeginningBalanceCreditMemos.SingleOrDefault(x => x.Code == item.TransCode);
+                        var bbData = Db.BeginningBalanceCreditMemos.AsNoTracking().SingleOrDefault(x => x.Code == item.TransCode);
 
                         if (bbData == null)
                             continue;
@@ -776,7 +775,7 @@ public class CashBankService : GeneralService<GeneralCashBankHeader>, ICashBankS
                     }
                     else
                     {
-                        var memo = Db.CreditMemos.SingleOrDefault(x => x.Code == item.TransCode);
+                        var memo = Db.CreditMemos.AsNoTracking().SingleOrDefault(x => x.Code == item.TransCode);
 
                         if (memo == null)
                             continue;

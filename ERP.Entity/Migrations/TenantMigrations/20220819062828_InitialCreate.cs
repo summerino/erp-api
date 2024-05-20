@@ -8319,9 +8319,15 @@ AS
 	WHERE h.Mark = 'A'
 	UNION
 	SELECT DebitMemoCode AS Code, InvCode AS TransCode, DebitMemoAmount AS Amount, 'D' AS TypeAmount
-	FROM Purchasing.PurchaseInvoiceDebitMemo 
+	FROM Purchasing.PurchaseInvoiceDebitMemo
 	UNION
 	SELECT CreditMemoCode AS Code, InvCode AS TransCode, CreditMemoAmount AS Amount, 'C' AS TypeAmount
+	FROM Sales.SalesInvoiceCreditMemo
+	UNION
+	SELECT InvCode AS Code, DebitMemoCode AS TransCode, DebitMemoAmount AS Amount, 'C' AS TypeAmount
+	FROM Purchasing.PurchaseInvoiceDebitMemo
+	UNION
+	SELECT InvCode AS Code, CreditMemoCode AS TransCode, CreditMemoAmount AS Amount, 'D' AS TypeAmount
 	FROM Sales.SalesInvoiceCreditMemo";
             migrationBuilder.Sql(sql);
 
