@@ -11416,7 +11416,7 @@ BEGIN
 			SET @used = ((SELECT Used FROM Sales.CreditMemo where Code = @transCode) - @transAmount)
 			SET @mark = 'A'
 			IF (@used > 0) SET @mark = 'PU'
-			UPDATE Sales.CreditMemo SET Used = @used, Mark=@mark WHERE Code = @transCode
+			UPDATE Sales.CreditMemo SET Used = @used, Mark = @mark WHERE Code = @transCode
 
 		END
 		ELSE IF ((@type = 'RDEPS' OR @type = 'PR') AND @src = 'BB')
@@ -11433,7 +11433,7 @@ BEGIN
 			SET @used = ((SELECT Used FROM Purchasing.DebitMemo where Code = @transCode) - @transAmount)
 			SET @mark = 'A'
 			IF (@used > 0) SET @mark = 'PU'
-			UPDATE Purchasing.DebitMemo SET Used = @used, Mark = 'A' WHERE Code = @transCode
+			UPDATE Purchasing.DebitMemo SET Used = @used, Mark = @mark WHERE Code = @transCode
 
 		END
 		ELSE IF (@type = 'SDP' OR @type = 'RSDP')
